@@ -7,7 +7,6 @@ const FOOTER_LINKS = {
   product: [
     { href: '/', label: 'Home' },
     { href: '/compare', label: 'Compare' },
-    { href: '/customers', label: 'Customer Stories' },
     { href: '/chefs', label: 'Find a Chef' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/contact', label: 'Contact' },

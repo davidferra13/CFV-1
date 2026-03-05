@@ -103,6 +103,8 @@ async function main() {
         ...sharedStepEnv,
         NEXT_DIST_DIR: buildDistDir,
         NODE_OPTIONS: '--max-old-space-size=8192',
+        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || smokeBaseUrl,
+        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || smokeBaseUrl,
       },
       retries: 1,
     },

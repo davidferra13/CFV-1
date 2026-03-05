@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { CUSTOMER_STORIES } from '@/lib/marketing/customer-stories'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { WorkflowSteps } from '@/components/public/workflow-steps'
 import { HowItWorksSection } from '@/components/public/how-it-works-section'
@@ -181,66 +180,6 @@ export default function Home() {
                 Read FAQ
               </TrackedLink>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative border-y border-stone-700/50 bg-stone-900/40 backdrop-blur-sm">
-        <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-          <div className="mb-10 flex flex-col items-center justify-between gap-5 text-center md:flex-row md:text-left">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
-                Early Outcomes
-              </p>
-              <h2 className="mt-2 fluid-display-lg font-display tracking-tight text-stone-100">
-                Operators are seeing measurable gains.
-              </h2>
-              <p className="mt-3 max-w-2xl text-[0.95rem] leading-7 text-stone-300 md:text-base">
-                These snapshots show what changed after replacing scattered tools with one operating
-                flow.
-              </p>
-            </div>
-            <TrackedLink
-              href="/customers"
-              analyticsName="home_proof_view_stories"
-              analyticsProps={{ section: 'proof' }}
-              className="inline-flex items-center rounded-lg border border-stone-600 bg-stone-900 px-5 py-2.5 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
-            >
-              View customer stories
-            </TrackedLink>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {CUSTOMER_STORIES.map((story) => (
-              <article
-                key={story.slug}
-                className="rounded-xl border border-stone-700 bg-stone-900 p-6 shadow-[var(--shadow-card)]"
-              >
-                <p className="text-xs text-muted-soft">
-                  {story.chefName} - {story.location}
-                </p>
-                <h3 className="mt-2 text-lg font-semibold text-stone-100">{story.title}</h3>
-                <div className="mt-4 space-y-2">
-                  {story.metrics.slice(0, 2).map((metric) => (
-                    <div
-                      key={metric.label}
-                      className="flex items-center justify-between rounded-lg bg-stone-800 px-3 py-2"
-                    >
-                      <span className="text-xs text-muted-soft">{metric.label}</span>
-                      <span className="text-sm font-semibold text-brand-300">{metric.delta}</span>
-                    </div>
-                  ))}
-                </div>
-                <TrackedLink
-                  href={`/customers/${story.slug}`}
-                  analyticsName="home_proof_story_open"
-                  analyticsProps={{ story_slug: story.slug }}
-                  className="mt-4 inline-flex text-sm font-semibold text-brand-400 hover:text-brand-300"
-                >
-                  Read full story
-                </TrackedLink>
-              </article>
-            ))}
           </div>
         </div>
       </section>

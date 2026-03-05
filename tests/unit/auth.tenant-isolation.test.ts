@@ -82,6 +82,9 @@ describe('D2: Server actions use tenantId from session', () => {
     // (not from client request bodies). The calling server action already
     // derived tenantId from the session — these are server-to-server calls.
     const internalPipelineAllowlist = new Set([
+      // Admin-only observability filters are scoped by requireAdmin()
+      // and use tenantId only for read filtering.
+      'lib/admin/owner-observability.ts',
       'lib/admin/cannabis-actions.ts',
       'lib/activity/log-chef.ts',
       'lib/activity/track.ts',

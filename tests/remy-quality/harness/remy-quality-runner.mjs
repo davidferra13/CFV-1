@@ -3,7 +3,7 @@
 /**
  * Remy AI Response Quality Test Runner
  *
- * Sends real prompts through the full Remy pipeline (auth → guardrails → Ollama → SSE),
+ * Sends real prompts through the full Remy pipeline (auth  guardrails  Ollama  SSE),
  * times every response, evaluates correctness, and generates benchmark reports.
  *
  * Usage:
@@ -27,8 +27,139 @@ import { generateReports, printSummary } from './report-generator.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..', '..', '..')
+const REMY_TEST_BASE_URL = process.env.REMY_TEST_BASE_URL || 'http://127.0.0.1:3100'
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'
+const DEV_SERVER_TIMEOUT_MS = intFromEnv('REMY_DEV_SERVER_TIMEOUT_MS', 5_000)
+const OLLAMA_CHECK_TIMEOUT_MS = intFromEnv('REMY_OLLAMA_CHECK_TIMEOUT_MS', 5_000)
+const PREWARM_TIMEOUT_MS = intFromEnv('REMY_PREWARM_TIMEOUT_MS', 20_000)
+const PROBE_TIMEOUT_MS = intFromEnv('REMY_PROBE_TIMEOUT_MS', 20_000)
+const PROMPT_TIMEOUT_MS = intFromEnv('REMY_PROMPT_TIMEOUT_MS', 180_000)
 
-// ─── CLI Argument Parsing ─────────────────────────────────────────────────────
+function intFromEnv(name, fallback) {
+  const raw = process.env[name]
+  const parsed = Number.parseInt(raw || '', 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function formatError(err) {
+  if (!err) return 'unknown error'
+  if (err instanceof Error) {
+    const cause = err.cause
+    if (cause instanceof Error) {
+      return `${err.name}: ${err.message} (cause: ${cause.name}: ${cause.message})`
+    }
+    if (cause !== undefined) {
+      return `${err.name}: ${err.message} (cause: ${String(cause)})`
+    }
+    return `${err.name}: ${err.message}`
+  }
+  return String(err)
+}
+
+async function fetchWithTimeout(url, init = {}, timeoutMs = 10_000) {
+  const abortCtrl = new AbortController()
+  const timeout = setTimeout(
+    () => abortCtrl.abort(new Error(`Timeout after ${timeoutMs}ms`)),
+    timeoutMs
+  )
+  try {
+    return await fetch(url, { ...init, signal: abortCtrl.signal })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function fetchWithRetry(label, url, init = {}, opts = {}) {
+  const attempts = opts.attempts ?? 2
+  const timeoutMs = opts.timeoutMs ?? 10_000
+  const backoffMs = opts.backoffMs ?? 600
+  let lastError = null
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fetchWithTimeout(url, init, timeoutMs)
+    } catch (err) {
+      lastError = err
+      if (attempt < attempts) {
+        await delay(backoffMs * attempt)
+      }
+    }
+  }
+  throw new Error(`${label} failed after ${attempts} attempts: ${formatError(lastError)}`)
+}
+
+function buildFailureResult(kind, elapsedMs, status, detail) {
+  return {
+    httpError: kind === 'http',
+    fetchError: kind === 'fetch',
+    status: status ?? null,
+    detail: detail || '',
+    timing: {
+      firstEventMs: null,
+      intentEventMs: null,
+      firstTokenMs: null,
+      totalMs: elapsedMs,
+      tokenCount: 0,
+      approxTokens: 0,
+      tokensPerSec: 0,
+    },
+    intent: null,
+    tokens: '',
+    tasks: [],
+    navSuggestions: [],
+    memoryItems: [],
+    errors: [
+      kind === 'http'
+        ? `HTTP ${status ?? 'unknown'}${detail ? ` - ${detail}` : ''}`
+        : `FETCH FAILED${detail ? ` - ${detail}` : ''}`,
+    ],
+    events: [],
+  }
+}
+
+async function readFirstSSEPayload(response, timeoutMs = 10_000) {
+  if (!response.body) return ''
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let timer = null
+  try {
+    while (true) {
+      const readPromise = reader.read()
+      const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`Timed out waiting for SSE after ${timeoutMs}ms`)),
+          timeoutMs
+        )
+      })
+      const { done, value } = await Promise.race([readPromise, timeoutPromise])
+      if (timer) clearTimeout(timer)
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const boundary = buffer.indexOf('\n\n')
+      if (boundary === -1) continue
+      const eventBlock = buffer.slice(0, boundary)
+      const dataLine = eventBlock
+        .split('\n')
+        .map((line) => line.trim())
+        .find((line) => line.startsWith('data: '))
+      if (dataLine) return dataLine.slice(6)
+    }
+  } finally {
+    if (timer) clearTimeout(timer)
+    try {
+      await reader.cancel()
+    } catch {
+      // Non-blocking: probe reader may already be closed.
+    }
+  }
+  return ''
+}
+
+//  CLI Argument Parsing 
 
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -74,7 +205,7 @@ Options:
   return opts
 }
 
-// ─── Environment & Auth ───────────────────────────────────────────────────────
+//  Environment & Auth 
 
 function loadEnv() {
   const envPath = path.join(ROOT, '.env.local')
@@ -121,11 +252,16 @@ async function authenticate(env) {
   return `${cookieBaseName}=${encoded}`
 }
 
-// ─── Prerequisite Checks ──────────────────────────────────────────────────────
+//  Prerequisite Checks 
 
 async function checkDevServer() {
   try {
-    const res = await fetch('http://localhost:3100', { redirect: 'manual' })
+    await fetchWithRetry(
+      'Dev server check',
+      REMY_TEST_BASE_URL,
+      { redirect: 'manual' },
+      { attempts: 2, timeoutMs: DEV_SERVER_TIMEOUT_MS }
+    )
     // Any response (even redirect) means the server is running
     return true
   } catch {
@@ -135,7 +271,12 @@ async function checkDevServer() {
 
 async function checkOllama() {
   try {
-    const res = await fetch('http://localhost:11434/api/tags')
+    const res = await fetchWithRetry(
+      'Ollama tags check',
+      `${OLLAMA_BASE_URL}/api/tags`,
+      {},
+      { attempts: 2, timeoutMs: OLLAMA_CHECK_TIMEOUT_MS }
+    )
     const data = await res.json()
     const modelNames = (data.models || []).map((m) => m.name)
     return {
@@ -151,18 +292,28 @@ async function checkOllama() {
 
 async function prewarmModel(modelName) {
   try {
-    await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: modelName, prompt: 'hello', options: { num_predict: 1 } }),
-    })
-    return true
-  } catch {
-    return false
+    const res = await fetchWithTimeout(
+      `${OLLAMA_BASE_URL}/api/generate`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelName,
+          prompt: 'hello',
+          stream: false,
+          keep_alive: '30m',
+          options: { num_predict: 1 },
+        }),
+      },
+      PREWARM_TIMEOUT_MS
+    )
+    return res.ok ? true : { ok: false, error: `HTTP ${res.status}` }
+  } catch (err) {
+    return { ok: false, error: formatError(err) }
   }
 }
 
-// ─── Prompt Loading ───────────────────────────────────────────────────────────
+//  Prompt Loading 
 
 function loadPrompts(suite, category, promptId) {
   const promptsDir = path.join(__dirname, '..', 'prompts')
@@ -193,7 +344,7 @@ function loadPrompts(suite, category, promptId) {
   return { prompts, defaults: data.defaults, endpoint: data.endpoint }
 }
 
-// ─── Send a Single Prompt ─────────────────────────────────────────────────────
+//  Send a Single Prompt 
 
 async function sendPrompt(prompt, defaults, endpoint, cookie) {
   // Merge prompt-specific context with defaults
@@ -211,119 +362,152 @@ async function sendPrompt(prompt, defaults, endpoint, cookie) {
   }
 
   const startMs = Date.now()
-
-  const res = await fetch(`http://localhost:3100${endpoint}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: cookie },
-    body: JSON.stringify(body),
-    redirect: 'manual',
-  })
-
-  if (res.status !== 200) {
-    const elapsed = Date.now() - startMs
-    return {
-      httpError: true,
-      status: res.status,
-      timing: {
-        firstEventMs: null,
-        intentEventMs: null,
-        firstTokenMs: null,
-        totalMs: elapsed,
-        tokenCount: 0,
-        approxTokens: 0,
-        tokensPerSec: 0,
-      },
-      intent: null,
-      tokens: '',
-      tasks: [],
-      navSuggestions: [],
-      memoryItems: [],
-      errors: [`HTTP ${res.status}`],
-      events: [],
-    }
+  const abortCtrl = new AbortController()
+  const timeout = setTimeout(
+    () => abortCtrl.abort(new Error(`Prompt timeout after ${PROMPT_TIMEOUT_MS}ms`)),
+    PROMPT_TIMEOUT_MS
+  )
+  let res
+  try {
+    res = await fetch(`${REMY_TEST_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify(body),
+      redirect: 'manual',
+      signal: abortCtrl.signal,
+    })
+  } catch (err) {
+    clearTimeout(timeout)
+    return buildFailureResult('fetch', Date.now() - startMs, null, formatError(err))
   }
 
-  return parseSSEStream(res, startMs)
+  if (res.status !== 200) {
+    clearTimeout(timeout)
+    return buildFailureResult('http', Date.now() - startMs, res.status, '')
+  }
+
+  try {
+    return await parseSSEStream(res, startMs)
+  } catch (err) {
+    return buildFailureResult('fetch', Date.now() - startMs, null, formatError(err))
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+//  Main 
 
 async function main() {
   const opts = parseArgs()
 
   console.log('')
-  console.log('╔═══════════════════════════════════════════════════════════╗')
-  console.log('║        REMY AI RESPONSE QUALITY TEST RUNNER              ║')
-  console.log('╚═══════════════════════════════════════════════════════════╝')
+  console.log('============================================================')
+  console.log('  REMY AI RESPONSE QUALITY TEST RUNNER')
+  console.log('============================================================')
   console.log('')
 
   // 1. Check prerequisites
   console.log('Checking prerequisites...')
+  console.log(`  Base URL: ${REMY_TEST_BASE_URL}`)
+  console.log(`  Ollama URL: ${OLLAMA_BASE_URL}`)
 
   const serverOk = await checkDevServer()
   if (!serverOk) {
-    console.error('ERROR: Dev server not running on port 3100. Start it first.')
+    console.error(`ERROR: Dev server not reachable at ${REMY_TEST_BASE_URL}. Start it first.`)
     process.exit(1)
   }
-  console.log('  ✓ Dev server running on port 3100')
+  console.log(`  OK Dev server reachable (${REMY_TEST_BASE_URL})`)
 
   const ollama = await checkOllama()
   if (!ollama.running) {
     console.error('ERROR: Ollama not running. Start Ollama first.')
     process.exit(1)
   }
-  console.log(`  ✓ Ollama running (${ollama.models.length} models loaded)`)
+  console.log(`  OK Ollama running (${ollama.models.length} models loaded)`)
 
   if (!ollama.hasFast) {
-    console.warn('  ⚠ qwen3:4b not loaded — classification may use a different model')
+    console.warn('  WARN qwen3:4b not loaded - classification may use a different model')
   }
   if (!ollama.hasStandard) {
-    console.warn('  ⚠ qwen3-coder:30b not loaded — responses may use a different model')
+    console.warn('  WARN qwen3-coder:30b not loaded - responses may use a different model')
   }
 
   // 2. Authenticate
   console.log('  Authenticating as agent...')
   const env = loadEnv()
   const cookie = await authenticate(env)
-  console.log('  ✓ Authenticated')
+  console.log('  OK Authenticated')
 
   // 3. Pre-warm models
   console.log('  Pre-warming models...')
   if (ollama.hasFast) {
-    await prewarmModel('qwen3:4b')
-    console.log('    ✓ qwen3:4b warm')
+    const prewarm = await prewarmModel('qwen3:4b')
+    if (prewarm === true) {
+      console.log('    OK qwen3:4b warm')
+    } else {
+      console.warn(
+        '    WARN qwen3:4b prewarm skipped (' +
+          (prewarm?.error || ('non-200 response within ' + PREWARM_TIMEOUT_MS + 'ms')) +
+          ')'
+      )
+    }
   }
   console.log('')
 
   // 4. Probe: verify Remy is enabled before running the suite
   console.log('  Checking Remy is enabled...')
   try {
-    const probeRes = await fetch(`http://localhost:3100/api/remy/stream`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ message: 'ping', currentPage: '/dashboard', recentPages: [], recentActions: [], recentErrors: [], sessionMinutes: 1, activeForm: null, history: [] }),
-      redirect: 'manual',
-    })
-    const probeBody = await probeRes.text()
-    if (probeBody.includes('Remy is currently disabled') || probeBody.includes('Complete AI onboarding')) {
-      console.error('\n❌ ABORT: Remy is disabled for the agent test account.')
+    const probeRes = await fetchWithTimeout(
+      `${REMY_TEST_BASE_URL}/api/remy/stream`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Cookie: cookie },
+        body: JSON.stringify({
+          message: 'ping',
+          currentPage: '/dashboard',
+          recentPages: [],
+          recentActions: [],
+          recentErrors: [],
+          sessionMinutes: 1,
+          activeForm: null,
+          history: [],
+        }),
+        redirect: 'manual',
+      },
+      PROBE_TIMEOUT_MS
+    )
+    const firstPayload = await readFirstSSEPayload(probeRes, PROBE_TIMEOUT_MS)
+    const firstText = (() => {
+      if (!firstPayload) return ''
+      try {
+        const parsed = JSON.parse(firstPayload)
+        return typeof parsed?.data === 'string' ? parsed.data : firstPayload
+      } catch {
+        return firstPayload
+      }
+    })()
+    if (
+      firstText.includes('Remy is currently disabled') ||
+      firstText.includes('Complete AI onboarding')
+    ) {
+      console.error('\nABORT: Remy is disabled for the agent test account.')
       console.error('   Fix: Sign in as the agent, go to Settings > Remy Control Center, and complete AI onboarding.')
-      console.error('   All tests would return 0% — skipping to save time.\n')
+      console.error('   All tests would return 0% - skipping to save time.\n')
       process.exit(1)
     }
     if (probeRes.status === 307) {
-      console.error('\n❌ ABORT: Auth session was redirected (HTTP 307). Cookie may be invalid.')
+      console.error('\nABORT: Auth session was redirected (HTTP 307). Cookie may be invalid.')
       process.exit(1)
     }
-    console.log('  ✓ Remy is enabled')
+    console.log('  OK Remy is enabled')
   } catch (err) {
-    console.warn(`  ⚠ Remy probe failed: ${err.message} — continuing anyway`)
+    console.warn(`  WARN Remy probe failed: ${formatError(err)} - continuing anyway`)
   }
 
   // 5. Load prompts
   const { prompts, defaults, endpoint } = loadPrompts(opts.suite, opts.category, opts.promptId)
 
-  // Build run list — expand prompts × repeat count
+  // Build run list  expand prompts  repeat count
   const runList = []
   for (const prompt of prompts) {
     for (let r = 0; r < opts.repeat; r++) {
@@ -337,7 +521,7 @@ async function main() {
   }
 
   const totalRuns = runList.length
-  console.log(`Suite: ${opts.suite} | Prompts: ${prompts.length}${opts.repeat > 1 ? ` × ${opts.repeat} repeats = ${totalRuns} total runs` : ''}`)
+  console.log(`Suite: ${opts.suite} | Prompts: ${prompts.length}${opts.repeat > 1 ? `  ${opts.repeat} repeats = ${totalRuns} total runs` : ''}`)
   if (opts.category) console.log(`Category filter: ${opts.category}`)
   if (opts.promptId) console.log(`Single prompt: ${opts.promptId}`)
   if (opts.repeat > 1) console.log(`Consistency mode: each prompt runs ${opts.repeat} times`)
@@ -345,7 +529,7 @@ async function main() {
   const estimateMin = Math.round((totalRuns * 45) / 60) // ~45s avg
   console.log(`Estimated duration: ~${estimateMin} minutes`)
   console.log('')
-  console.log('─'.repeat(60))
+  console.log('-'.repeat(60))
   console.log('')
 
   // 6. Run prompts sequentially
@@ -362,8 +546,10 @@ async function main() {
     try {
       const sseResult = await sendPrompt(prompt, defaults, endpoint, cookie)
 
-      if (sseResult.httpError) {
-        console.log(`  ✗ HTTP ERROR: ${sseResult.status}`)
+      if (sseResult.httpError || sseResult.fetchError) {
+        const errorLabel = sseResult.fetchError ? 'FETCH ERROR' : 'HTTP ERROR'
+        const errorDetail = sseResult.detail ? ` (${sseResult.detail})` : ''
+        console.log(`   ${errorLabel}: ${sseResult.status ?? 'n/a'}${errorDetail}`)
         results.push({
           promptId: prompt.id,
           category: prompt.category,
@@ -371,14 +557,20 @@ async function main() {
           overall: 'fail',
           failCount: 1,
           checks: {
-            httpStatus: { pass: false, status: sseResult.status },
+            request: {
+              pass: false,
+              status: sseResult.status,
+              error: sseResult.detail || null,
+            },
           },
           timing: sseResult.timing,
           responsePreview: '',
           fullResponse: '',
           tasks: [],
           navSuggestions: [],
-          notes: `HTTP ${sseResult.status}`,
+          notes: sseResult.fetchError
+            ? `Fetch error: ${sseResult.detail || 'unknown'}`
+            : `HTTP ${sseResult.status}`,
         })
         console.log('')
         continue
@@ -389,7 +581,7 @@ async function main() {
       results.push(evaluation)
 
       // Log result
-      const icon = evaluation.overall === 'pass' ? '✓' : evaluation.overall === 'warn' ? '~' : '✗'
+      const icon = evaluation.overall === 'pass' ? 'OK' : evaluation.overall === 'warn' ? '~' : 'X'
       const intent = sseResult.intent || 'n/a'
       const totalSec = (sseResult.timing.totalMs / 1000).toFixed(1)
       const tps = sseResult.timing.tokensPerSec
@@ -400,7 +592,7 @@ async function main() {
       if (evaluation.overall !== 'pass') {
         for (const [name, check] of Object.entries(evaluation.checks)) {
           if (!check.pass) {
-            console.log(`    ✗ ${name}`)
+            console.log(`    - ${name}`)
           }
         }
       }
@@ -410,7 +602,7 @@ async function main() {
       if (preview) console.log(`  > ${preview}...`)
 
     } catch (err) {
-      console.log(`  ✗ EXCEPTION: ${err.message}`)
+      console.log(`  X EXCEPTION: ${err.message}`)
       results.push({
         promptId: prompt.id,
         category: prompt.category,
@@ -458,9 +650,9 @@ async function main() {
   // 7b. Consistency analysis (when --repeat > 1)
   if (opts.repeat > 1) {
     console.log('')
-    console.log('═'.repeat(60))
+    console.log('-'.repeat(60))
     console.log('  CONSISTENCY ANALYSIS')
-    console.log('═'.repeat(60))
+    console.log('-'.repeat(60))
     console.log('')
 
     // Group results by original prompt ID
@@ -485,17 +677,21 @@ async function main() {
 
       if (allSame && verdicts[0] === 'pass') {
         consistentCount++
-        console.log(`  ✓ ${origId}: ${verdicts.join(', ')} | avg ${(avgTime / 1000).toFixed(1)}s (±${(variance / 1000).toFixed(1)}s)`)
+        console.log(
+          `  OK ${origId}: ${verdicts.join(', ')} | avg ${(avgTime / 1000).toFixed(1)}s (${(variance / 1000).toFixed(1)}s)`
+        )
       } else {
         inconsistentCount++
-        console.log(`  ✗ ${origId}: ${verdicts.join(', ')} | avg ${(avgTime / 1000).toFixed(1)}s (±${(variance / 1000).toFixed(1)}s) ← INCONSISTENT`)
+        console.log(
+          `  X ${origId}: ${verdicts.join(', ')} | avg ${(avgTime / 1000).toFixed(1)}s (${(variance / 1000).toFixed(1)}s) INCONSISTENT`
+        )
       }
     }
 
     console.log('')
     console.log(`  Consistent: ${consistentCount}/${Object.keys(groups).length}`)
     console.log(`  Inconsistent: ${inconsistentCount}/${Object.keys(groups).length}`)
-    console.log('─'.repeat(60))
+    console.log('-'.repeat(60))
   }
 
   console.log(`Benchmark: ${path.relative(ROOT, benchmarkPath)}`)

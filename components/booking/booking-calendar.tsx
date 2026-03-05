@@ -1,8 +1,7 @@
 'use client'
 
-// BookingCalendar — Month grid for the public chef booking page.
+// BookingCalendar - Month grid for public chef booking page.
 // Color-coded: green = available, gray = blocked/past, amber = unavailable (notice too short).
-// On click of an available date, calls onSelectDate(dateStr).
 
 import { useState, useEffect } from 'react'
 
@@ -33,8 +32,9 @@ const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props) {
   const today = new Date()
   const [year, setYear] = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth() + 1) // 1-indexed
+  const [month, setMonth] = useState(today.getMonth() + 1)
   const [availability, setAvailability] = useState<Record<string, DateStatus>>({})
+  const [conflictDetails, setConflictDetails] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -44,12 +44,14 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
     fetch(`/book/${chefSlug}/availability?year=${year}&month=${month}`)
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled && data.availability) {
-          setAvailability(data.availability)
-        }
+        if (cancelled) return
+        setAvailability((data?.availability ?? {}) as Record<string, DateStatus>)
+        setConflictDetails((data?.conflict_details ?? {}) as Record<string, string[]>)
       })
       .catch(() => {
-        if (!cancelled) setAvailability({})
+        if (cancelled) return
+        setAvailability({})
+        setConflictDetails({})
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -64,28 +66,30 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
     if (month === 1) {
       setYear((y) => y - 1)
       setMonth(12)
-    } else setMonth((m) => m - 1)
+      return
+    }
+    setMonth((m) => m - 1)
   }
+
   function nextMonth() {
     if (month === 12) {
       setYear((y) => y + 1)
       setMonth(1)
-    } else setMonth((m) => m + 1)
+      return
+    }
+    setMonth((m) => m + 1)
   }
 
-  // Build calendar grid
   const firstDow = new Date(Date.UTC(year, month - 1, 1)).getUTCDay()
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
   const cells: (number | null)[] = [
     ...Array(firstDow).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ]
-  // Pad to full weeks
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
     <div className="space-y-3">
-      {/* Month navigation */}
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -93,11 +97,11 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
           className="p-1.5 rounded-md hover:bg-stone-700 text-stone-400"
           aria-label="Previous month"
         >
-          ←
+          {'<'}
         </button>
         <span className="text-sm font-semibold text-stone-100">
           {MONTH_NAMES[month - 1]} {year}
-          {loading && <span className="ml-2 text-xs text-stone-400">Loading…</span>}
+          {loading && <span className="ml-2 text-xs text-stone-400">Loading...</span>}
         </span>
         <button
           type="button"
@@ -105,11 +109,10 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
           className="p-1.5 rounded-md hover:bg-stone-700 text-stone-400"
           aria-label="Next month"
         >
-          →
+          {'>'}
         </button>
       </div>
 
-      {/* Weekday headers */}
       <div className="grid grid-cols-7 text-center">
         {DOW.map((d) => (
           <div key={d} className="text-[11px] font-semibold text-stone-400 py-1">
@@ -118,10 +121,10 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
         ))}
       </div>
 
-      {/* Date grid */}
       <div className="grid grid-cols-7 gap-0.5">
         {cells.map((day, i) => {
           if (!day) return <div key={i} />
+
           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
           const status: DateStatus = availability[dateStr] ?? 'loading'
           const isSelected = dateStr === selectedDate
@@ -141,11 +144,15 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
           } else if (status === 'blocked') {
             cls += ' bg-stone-800 text-stone-300 cursor-not-allowed'
           } else if (status === 'unavailable') {
-            cls += ' bg-stone-800 text-stone-300 cursor-not-allowed'
+            cls += ' bg-stone-800 text-amber-300 cursor-not-allowed'
           } else {
-            // loading / unknown
             cls += ' bg-stone-800 text-stone-300'
           }
+
+          const tooltip =
+            status === 'blocked' || status === 'unavailable'
+              ? (conflictDetails[dateStr] || ['Not available']).join('; ')
+              : undefined
 
           return (
             <button
@@ -154,13 +161,7 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
               className={cls}
               disabled={!clickable}
               onClick={() => clickable && onSelectDate(dateStr)}
-              title={
-                status === 'unavailable'
-                  ? 'Too soon — insufficient notice'
-                  : status === 'blocked'
-                    ? 'Not available'
-                    : undefined
-              }
+              title={tooltip}
             >
               {day}
             </button>
@@ -168,13 +169,15 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
         })}
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-4 text-xs text-stone-500 pt-1">
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-green-200" /> Available
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-stone-700" /> Unavailable
+          <span className="w-3 h-3 rounded bg-stone-700" /> Blocked
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded bg-amber-300" /> Notice required
         </span>
       </div>
     </div>

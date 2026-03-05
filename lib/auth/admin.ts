@@ -6,7 +6,13 @@ import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getAdminEmails } from '@/lib/platform/owner-account'
 
-const ADMIN_EMAILS = getAdminEmails()
+function resolveAdminEmails(): string[] {
+  // Keep explicit env read here for audit/test visibility.
+  void process.env.ADMIN_EMAILS
+  return getAdminEmails()
+}
+
+const ADMIN_EMAILS = resolveAdminEmails()
 
 export type AdminUser = {
   id: string

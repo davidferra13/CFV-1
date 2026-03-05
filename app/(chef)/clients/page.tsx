@@ -28,6 +28,9 @@ export default async function ClientsPage() {
           <p className="text-stone-400 mt-1">Manage your client relationships and invitations</p>
         </div>
         <div className="flex gap-2">
+          <Button href="/clients/recurring" variant="secondary">
+            Recurring Board
+          </Button>
           <a
             href="/clients/export"
             className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"

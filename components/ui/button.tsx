@@ -2,15 +2,27 @@
 // Button Component - Consistent styling across the app
 'use client'
 
-import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { AnchorHTMLAttributes, ButtonHTMLAttributes, forwardRef } from 'react'
 
-// Support rendering as either a <button> or an <a> when `href` is provided.
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonBaseProps = {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
-  href?: string
+  disabled?: boolean
 }
+
+type NativeButtonProps = ButtonBaseProps &
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: undefined
+  }
+
+type AnchorButtonProps = ButtonBaseProps &
+  AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string
+  }
+
+// Support rendering as either a <button> or an <a> when `href` is provided.
+export type ButtonProps = NativeButtonProps | AnchorButtonProps
 
 export const Button = forwardRef<any, ButtonProps>(
   (

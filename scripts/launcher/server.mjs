@@ -4045,6 +4045,9 @@ async function handleRequest(req, res) {
     const DOCS_DIR = join(PROJECT_ROOT, 'docs')
     const files = [
       { key: 'main', label: 'Complete Audit', file: 'app-complete-audit.md' },
+      { key: 'cs-masterclass', label: 'CS Masterclass (Visual)', file: 'chefflow-cs-masterclass-visual.md' },
+      { key: 'developer-readiness', label: 'Developer Readiness Playbook', file: 'developer-readiness-playbook.md' },
+      { key: 'beta-proof-pack', label: 'Beta Proof Pack (2026-03-05)', file: 'beta-proof-pack-readiness-2026-03-05.md' },
       { key: 'calendar', label: 'Calendar', file: 'ui-audit-calendar.md' },
       { key: 'settings', label: 'Settings', file: 'ui-audit-settings.md' },
       { key: 'network', label: 'Network & Community', file: 'ui-audit-network-community.md' },

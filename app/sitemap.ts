@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { BLOG_POSTS } from '@/lib/blog/posts'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
-import { CUSTOMER_STORIES } from '@/lib/marketing/customer-stories'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const SITEMAP_QUERY_TIMEOUT_MS = Number(process.env.SITEMAP_QUERY_TIMEOUT_MS ?? 5000)
 
 // Static public routes that are always indexable
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
@@ -24,12 +24,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     url: `${BASE_URL}/chefs`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
-    priority: 0.8,
-  },
-  {
-    url: `${BASE_URL}/customers`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
     priority: 0.8,
   },
   {
@@ -81,11 +75,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase: any = createAdminClient()
 
     // Fetch all chefs who have public profiles enabled and a slug
-    const { data: chefs } = await supabase
-      .from('chefs')
-      .select('slug, updated_at')
-      .not('slug', 'is', null)
-      .eq('profile_public', true)
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('sitemap chef query timeout')), SITEMAP_QUERY_TIMEOUT_MS)
+    })
+
+    const { data: chefs } = (await Promise.race([
+      supabase
+        .from('chefs')
+        .select('slug, updated_at')
+        .not('slug', 'is', null)
+        .eq('profile_public', true),
+      timeoutPromise,
+    ])) as { data: Array<{ slug: string; updated_at: string | null }> | null }
 
     const chefRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}`,
@@ -126,14 +127,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     ]
 
-    // Customer stories
-    const customerStoryRoutes: MetadataRoute.Sitemap = CUSTOMER_STORIES.map((story) => ({
-      url: `${BASE_URL}/customers/${story.slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    }))
-
     // Comparison guides
     const compareRoutes: MetadataRoute.Sitemap = COMPARE_PAGES.map((page) => ({
       url: `${BASE_URL}/compare/${page.slug}`,
@@ -145,7 +138,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [
       ...STATIC_ROUTES,
       ...blogRoutes,
-      ...customerStoryRoutes,
       ...compareRoutes,
       ...chefRoutes,
       ...giftCardRoutes,

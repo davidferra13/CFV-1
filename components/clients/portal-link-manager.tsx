@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { generateClientPortalToken, revokeClientPortalToken } from '@/lib/client-portal/actions'
 import { Link2, RefreshCw, Trash2, Copy, Check } from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 
 interface Props {
   clientId: string
@@ -20,6 +21,7 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const portalUrl = token
     ? `${typeof window !== 'undefined' ? window.location.origin : ''}/client/${token}`
@@ -27,10 +29,13 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
 
   async function handleGenerate() {
     setLoading(true)
+    setError(null)
     try {
       const newToken = await generateClientPortalToken(clientId)
       setToken(newToken)
       setCreatedAt(new Date().toISOString())
+    } catch {
+      setError('Could not generate portal link. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -43,20 +48,27 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
   async function handleConfirmedRevoke() {
     setShowRevokeConfirm(false)
     setLoading(true)
+    setError(null)
     try {
       await revokeClientPortalToken(clientId)
       setToken(null)
       setCreatedAt(null)
+    } catch {
+      setError('Could not revoke portal link. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  function handleCopy() {
+  async function handleCopy() {
     if (!portalUrl) return
-    navigator.clipboard.writeText(portalUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(portalUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Could not copy portal link')
+    }
   }
 
   if (!token) {
@@ -77,6 +89,14 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
 
   return (
     <div className="space-y-1.5">
+      {error && (
+        <div
+          className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
       <div className="flex items-center gap-2">
         <Link2 className="h-4 w-4 text-emerald-500 shrink-0" />
         <span className="text-xs font-medium text-stone-300">Client Portal Active</span>

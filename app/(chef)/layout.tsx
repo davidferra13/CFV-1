@@ -23,7 +23,6 @@ import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
-import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import {
   getCachedCannabisAccess,
   getCachedChefArchetype,
@@ -89,7 +88,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       redirect('/onboarding')
     }
   }
-  // Parallelized — all calls are independent. All 7 use unstable_cache (60s TTL)
+  // Parallelized — all calls are independent. All 6 use unstable_cache (60s TTL)
   // so navigating between pages costs ~0ms for these after the first load.
   const [
     layoutData,
@@ -98,7 +97,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     userIsAdmin,
     chefArchetype,
     deletionStatus,
-    aiPrefs,
   ] = await Promise.all([
     // Cached for 60s — slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -117,17 +115,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       daysRemaining: null,
       requestedAt: null,
       reason: null,
-    })),
-    // Remy visibility follows tenant preferences, not founder-only checks.
-    getAiPreferences().catch(() => ({
-      remy_enabled: false,
-      onboarding_completed: false,
-      onboarding_completed_at: null,
-      data_retention_days: null,
-      allow_memory: true,
-      allow_suggestions: true,
-      allow_document_drafts: true,
-      remy_archetype: null,
     })),
   ])
   // Archetype gate — new chefs pick their persona before seeing the portal.
@@ -153,7 +140,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
-  const shouldRenderRemy = aiPrefs.onboarding_completed && aiPrefs.remy_enabled
+  const shouldRenderRemy = true
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>

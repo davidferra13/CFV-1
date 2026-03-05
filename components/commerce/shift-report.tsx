@@ -125,22 +125,22 @@ export function ShiftReport({ sessions }: Props) {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <a href={`/api/documents/commerce-shift-report/${session.id}?format=csv`}>
-                  <Button variant="ghost" size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Z CSV
-                  </Button>
-                </a>
-                <a
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  href={`/api/documents/commerce-shift-report/${session.id}?format=csv`}
+                >
+                  <Download className="w-4 h-4 mr-2" />Z CSV
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   href={`/api/documents/commerce-shift-report/${session.id}?format=pdf`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="secondary" size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Z PDF
-                  </Button>
-                </a>
+                  <Download className="w-4 h-4 mr-2" />Z PDF
+                </Button>
               </div>
 
               {session.close_notes && (

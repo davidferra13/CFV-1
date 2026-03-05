@@ -46,6 +46,7 @@ export function EightySixModal({ courseId, courseName, onClose, onConfirm }: Eig
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-400"
+          aria-label="Close 86 modal"
         >
           <X className="h-5 w-5" />
         </button>

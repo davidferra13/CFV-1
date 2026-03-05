@@ -86,6 +86,7 @@ export function NewConversationButton() {
               <button
                 onClick={handleClose}
                 className="text-stone-400 hover:text-stone-400 text-xl leading-none"
+                aria-label="Close new conversation modal"
               >
                 &times;
               </button>

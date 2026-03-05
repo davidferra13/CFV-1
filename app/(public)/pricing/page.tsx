@@ -268,25 +268,17 @@ export default function PricingPage() {
 
       <section className="container mx-auto px-4 pb-14 md:pb-20">
         <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
-          <h2 className="text-2xl font-display text-stone-100 md:text-3xl">Need hard proof?</h2>
+          <h2 className="text-2xl font-display text-stone-100 md:text-3xl">Need verification?</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-300 md:text-base">
-            See customer stories with concrete workflow changes and measurable outcomes from early
-            chef operations.
+            Review our trust materials and platform comparisons. We only publish verified customer
+            testimonials.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <TrackedLink
-              href="/customers"
-              analyticsName="pricing_proof_customers"
-              analyticsProps={{ section: 'pricing_proof' }}
-              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-            >
-              Read customer stories
-            </TrackedLink>
             <TrackedLink
               href="/trust"
               analyticsName="pricing_proof_trust"
               analyticsProps={{ section: 'pricing_proof' }}
-              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
             >
               Review trust center
             </TrackedLink>
@@ -297,6 +289,14 @@ export default function PricingPage() {
               className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
             >
               Compare alternatives
+            </TrackedLink>
+            <TrackedLink
+              href="/contact"
+              analyticsName="pricing_proof_contact"
+              analyticsProps={{ section: 'pricing_proof' }}
+              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              Talk to us
             </TrackedLink>
           </div>
         </div>

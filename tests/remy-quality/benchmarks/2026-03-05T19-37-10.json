@@ -1,0 +1,129 @@
+{
+  "runId": "f32d4377-a844-4d0b-9a1a-3c341dd8c843",
+  "timestamp": "2026-03-05T19:37:10.474Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 1,
+  "passed": 0,
+  "warned": 0,
+  "failed": 1,
+  "passRate": 0,
+  "durationMinutes": 3,
+  "averages": {
+    "classificationMs": 19902,
+    "firstTokenMs": 35084,
+    "totalMs": 200065,
+    "tokensPerSec": 7
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 1,
+      "passed": 0,
+      "warned": 0,
+      "failed": 1,
+      "totalMs": 200065,
+      "avgMs": 200065
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 19902,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 200065,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 4791,
+          "tokenChars": 4791,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 19902,
+        "intentEventMs": 19902,
+        "firstTokenMs": 35084,
+        "totalMs": 200065,
+        "tokenCount": 1359,
+        "approxTokens": 1198,
+        "tokensPerSec": 7.3
+      },
+      "responseLength": 4791,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 19902,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 200065,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 4791,
+          "tokenChars": 4791,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    }
+  ]
+}

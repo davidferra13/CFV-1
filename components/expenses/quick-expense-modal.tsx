@@ -105,6 +105,7 @@ export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {
             type="button"
             onClick={onClose}
             className="p-1 rounded hover:bg-stone-700 text-stone-400 hover:text-stone-200"
+            aria-label="Close quick expense modal"
           >
             <X className="w-5 h-5" />
           </button>

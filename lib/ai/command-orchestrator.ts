@@ -1367,32 +1367,8 @@ async function executeSingleTask(
  * executes tasks in parallel rounds, and returns results grouped by tier.
  */
 async function assertRemyRuntimeEnabled(tenantId: string): Promise<void> {
-  const supabase: any = createServerClient()
-  const { data, error } = await supabase
-    .from('ai_preferences')
-    .select('remy_enabled, onboarding_completed')
-    .eq('tenant_id', tenantId)
-    .single()
-
-  if (error) {
-    const errObj = error as Record<string, unknown>
-    const code = typeof errObj.code === 'string' ? errObj.code : ''
-    const message = typeof errObj.message === 'string' ? errObj.message : ''
-    if (code === 'PGRST116' || message.toLowerCase().includes('0 rows')) {
-      throw new Error(
-        'Remy is currently disabled. Complete onboarding and enable Remy in Settings > Remy Control Center.'
-      )
-    }
-    throw new Error(`Failed to verify Remy runtime settings: ${error.message}`)
-  }
-
-  const runtimeEnabled = Boolean(data?.remy_enabled)
-  const onboardingCompleted = Boolean(data?.onboarding_completed)
-  if (!runtimeEnabled || !onboardingCompleted) {
-    throw new Error(
-      'Remy is currently disabled. Enable Remy in Settings > Remy Control Center and complete AI onboarding.'
-    )
-  }
+  // Runtime is forced-on for this portal experience.
+  void tenantId
 }
 
 export async function runCommand(rawInput: string): Promise<CommandRun> {

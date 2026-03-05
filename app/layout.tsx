@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, DM_Serif_Display } from 'next/font/google'
+import { Suspense } from 'react'
 import { CookieConsent } from '@/components/ui/cookie-consent'
 import { SwRegister } from '@/components/pwa/sw-register'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
@@ -108,7 +109,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
 
         <PostHogProvider>
-          <PerformanceTelemetry />
+          <Suspense fallback={null}>
+            <PerformanceTelemetry />
+          </Suspense>
           {children}
         </PostHogProvider>
         <CookieConsent />

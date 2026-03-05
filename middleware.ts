@@ -6,6 +6,14 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { User } from '@supabase/supabase-js'
 import { signRoleCookie, verifyRoleCookie } from '@/lib/auth/signed-cookie'
+import {
+  isAdminRoutePath,
+  isApiSkipAuthPath,
+  isChefRoutePath,
+  isClientRoutePath,
+  isPublicUnauthenticatedPath,
+  isStaffRoutePath,
+} from '@/lib/auth/route-policy'
 
 /** Generate a short, URL-safe correlation ID for request tracing. */
 function generateRequestId(): string {
@@ -13,72 +21,8 @@ function generateRequestId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 16)
 }
 
-// Routes that require chef role (route groups don't create URL segments)
-const chefPaths = [
-  '/dashboard',
-  '/queue',
-  '/leads',
-  '/clients',
-  '/events',
-  '/financials',
-  '/menus',
-  '/inquiries',
-  '/quotes',
-  '/expenses',
-  '/schedule',
-  '/settings',
-  '/aar',
-  '/recipes',
-  '/loyalty',
-  '/import',
-  '/chat',
-  '/network',
-  '/onboarding',
-]
-// Routes that require client role
-const clientPaths = [
-  '/my-events',
-  '/my-quotes',
-  '/my-chat',
-  '/my-profile',
-  '/my-rewards',
-  '/book-now',
-]
-// Routes that require staff role
-const staffPaths = [
-  '/staff-dashboard',
-  '/staff-station',
-  '/staff-recipes',
-  '/staff-schedule',
-  '/staff-tasks',
-]
-// Paths that skip all auth processing
-const skipAuthPaths = [
-  '/pricing',
-  '/contact',
-  '/privacy',
-  '/terms',
-  '/unauthorized',
-  '/share',
-  '/view',
-  '/event',
-  '/chef',
-  '/cannabis/public',
-  '/partner-signup',
-  '/chefs',
-  '/survey',
-  '/book',
-  '/embed',
-  '/demo',
-  '/staff-login',
-  '/reactivate-account',
-  '/kiosk',
-  '/beta',
-  '/beta-survey',
-  '/hub',
-]
+// Route policy lives in lib/auth/route-policy.ts.
 // Admin paths — require authentication but not a specific role (email check is in layout)
-const adminPaths = ['/admin']
 const adminEmails = (process.env.ADMIN_EMAILS ?? '')
   .split(',')
   .map((email) => email.trim().toLowerCase())
@@ -131,37 +75,14 @@ async function getUserWithRetry(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Auth pages, webhooks, and Google/Gmail API routes - no processing needed
-  // /api/e2e/* endpoints establish test sessions — they must be reachable unauthenticated
-  if (
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/api/webhooks') ||
-    pathname.startsWith('/api/auth') ||
-    pathname.startsWith('/api/gmail') ||
-    pathname.startsWith('/api/scheduled') ||
-    pathname.startsWith('/api/e2e') ||
-    pathname.startsWith('/api/remy/client') ||
-    pathname.startsWith('/api/remy/stream') ||
-    pathname.startsWith('/api/remy/public') ||
-    pathname.startsWith('/api/remy/landing') ||
-    pathname.startsWith('/api/ollama-status') ||
-    pathname.startsWith('/api/health') ||
-    pathname.startsWith('/api/ai/health') ||
-    pathname.startsWith('/api/ai/monitor') ||
-    pathname.startsWith('/api/documents') ||
-    pathname.startsWith('/api/embed') ||
-    pathname.startsWith('/api/demo') ||
-    pathname.startsWith('/api/monitoring') ||
-    pathname.startsWith('/api/inngest') ||
-    pathname.startsWith('/api/kiosk') ||
-    pathname.startsWith('/api/feeds')
-  ) {
+  // Auth and technical API namespaces that intentionally bypass middleware auth routing.
+  if (isApiSkipAuthPath(pathname)) {
     return NextResponse.next()
   }
 
   // Static public pages + /unauthorized - no auth check needed
   // /share paths use startsWith to allow /share/[token] subpaths
-  if (skipAuthPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))) {
+  if (isPublicUnauthenticatedPath(pathname)) {
     return NextResponse.next()
   }
 
@@ -273,9 +194,7 @@ export async function middleware(request: NextRequest) {
   let roleData: { role: string } | null = null
 
   // Admin paths — defense-in-depth: check admin email list in middleware AND layout
-  const isAdminRoute = adminPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  )
+  const isAdminRoute = isAdminRoutePath(pathname)
   if (isAdminRoute) {
     if (
       adminEmails.length === 0 ||
@@ -289,13 +208,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Enforce role-based routing using actual URL paths
-  const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
-  const isClientRoute = clientPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  )
-  const isStaffRoute = staffPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  )
+  const isChefRoute = isChefRoutePath(pathname)
+  const isClientRoute = isClientRoutePath(pathname)
+  const isStaffRoute = isStaffRoutePath(pathname)
 
   // Most authenticated routes are protected by server layouts already.
   // Only perform middleware role lookups where we want immediate redirects.

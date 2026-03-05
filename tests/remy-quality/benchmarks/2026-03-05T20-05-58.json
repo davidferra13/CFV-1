@@ -1,0 +1,71 @@
+{
+  "runId": "50b8da6d-7379-4edf-922f-f80a0c9ebe70",
+  "timestamp": "2026-03-05T20:05:58.327Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 1,
+  "passed": 0,
+  "warned": 0,
+  "failed": 1,
+  "passRate": 0,
+  "durationMinutes": 3,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 180019,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 1,
+      "passed": 0,
+      "warned": 0,
+      "failed": 1,
+      "totalMs": 180019,
+      "avgMs": 180019
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "Error: Prompt timeout after 180000ms"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 180019,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "Error: Prompt timeout after 180000ms"
+        }
+      }
+    }
+  ]
+}

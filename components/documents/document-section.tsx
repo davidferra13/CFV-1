@@ -137,33 +137,33 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
               </div>
 
               <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-                <a
+                <Button
+                  variant="ghost"
+                  size="sm"
                   href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE[doc.type]}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="ghost" size="sm">
-                    Blank
-                  </Button>
-                </a>
+                  Blank
+                </Button>
 
                 {/* Packing list gets a specialized "Pack Now" interactive page */}
                 {doc.type === 'packing' && (
-                  <a href={`/events/${eventId}/pack`}>
-                    <Button variant="secondary" size="sm">
-                      Pack Now
-                    </Button>
-                  </a>
+                  <Button variant="secondary" size="sm" href={`/events/${eventId}/pack`}>
+                    Pack Now
+                  </Button>
                 )}
 
                 {/* Interactive viewer — all operational docs except packing */}
                 {doc.type !== 'packing' &&
                   (doc.ready ? (
-                    <a href={`/events/${eventId}/interactive?type=${doc.type}`}>
-                      <Button variant="secondary" size="sm">
-                        Interactive
-                      </Button>
-                    </a>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      href={`/events/${eventId}/interactive?type=${doc.type}`}
+                    >
+                      Interactive
+                    </Button>
                   ) : (
                     <Button variant="secondary" size="sm" disabled>
                       Interactive
@@ -172,15 +172,15 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
 
                 {/* Archive snapshot — saves a versioned PDF copy for this event */}
                 {doc.ready ? (
-                  <a
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     href={`${baseUrl}?type=${doc.type}&archive=1`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Button variant="ghost" size="sm">
-                      Archive
-                    </Button>
-                  </a>
+                    Archive
+                  </Button>
                 ) : (
                   <Button variant="ghost" size="sm" disabled>
                     Archive
@@ -217,11 +217,15 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
 
         {/* Print All — combined 8-page PDF; stays as new-tab link for multi-page print */}
         <div className="mt-5 pt-4 border-t border-stone-700">
-          <a href={`${baseUrl}?type=all&archive=1`} target="_blank" rel="noopener noreferrer">
-            <Button variant="primary" className="w-full">
-              Print All (8 Sheets)
-            </Button>
-          </a>
+          <Button
+            variant="primary"
+            className="w-full"
+            href={`${baseUrl}?type=all&archive=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Print All (8 Sheets)
+          </Button>
         </div>
       </Card>
 
@@ -248,44 +252,48 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            <a
+            <Button
+              variant="ghost"
+              size="sm"
               href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE.travel}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="ghost" size="sm">
-                Blank
-              </Button>
-            </a>
+              Blank
+            </Button>
             {travelRouteReady && (
-              <a
+              <Button
+                variant="ghost"
+                size="sm"
                 href={`${baseUrl}?type=travel&archive=1`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button variant="ghost" size="sm">
-                  Archive
-                </Button>
-              </a>
-            )}
-            <a href={`/events/${eventId}/travel`}>
-              <Button variant="secondary" size="sm">
-                Plan Route
+                Archive
               </Button>
-            </a>
+            )}
+            <Button variant="secondary" size="sm" href={`/events/${eventId}/travel`}>
+              Plan Route
+            </Button>
             {travelRouteReady && (
-              <a href={`/events/${eventId}/interactive?type=travel`}>
-                <Button variant="secondary" size="sm">
-                  Interactive
-                </Button>
-              </a>
+              <Button
+                variant="secondary"
+                size="sm"
+                href={`/events/${eventId}/interactive?type=travel`}
+              >
+                Interactive
+              </Button>
             )}
             {travelRouteReady && (
-              <a href={`${baseUrl}?type=travel`} target="_blank" rel="noopener noreferrer">
-                <Button variant="primary" size="sm">
-                  Print Route ↗
-                </Button>
-              </a>
+              <Button
+                variant="primary"
+                size="sm"
+                href={`${baseUrl}?type=travel`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Print Route ↗
+              </Button>
             )}
           </div>
         </div>
@@ -304,25 +312,31 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             <p className="text-xs text-stone-400 mt-1">Static checklist — no menu data required</p>
           </div>
           <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            <a
+            <Button
+              variant="ghost"
+              size="sm"
               href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE.shots}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="ghost" size="sm">
-                Blank
-              </Button>
-            </a>
-            <a href={`${baseUrl}?type=shots&archive=1`} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="sm">
-                Archive
-              </Button>
-            </a>
-            <a href={`/events/${eventId}/interactive?type=shots`}>
-              <Button variant="secondary" size="sm">
-                Interactive
-              </Button>
-            </a>
+              Blank
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              href={`${baseUrl}?type=shots&archive=1`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Archive
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              href={`/events/${eventId}/interactive?type=shots`}
+            >
+              Interactive
+            </Button>
             <Button
               variant="secondary"
               size="sm"

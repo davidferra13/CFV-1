@@ -69,15 +69,15 @@ export default async function PackPage({ params }: { params: { id: string } }) {
             {clientName} · {dateStr}
           </p>
         </div>
-        <a
+        <Button
+          variant="secondary"
+          size="sm"
           href={`/api/documents/${params.id}?type=packing`}
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button variant="secondary" size="sm">
-            Print PDF
-          </Button>
-        </a>
+          Print PDF
+        </Button>
       </div>
 
       {/* Departure callout — most urgent info, immediately visible */}

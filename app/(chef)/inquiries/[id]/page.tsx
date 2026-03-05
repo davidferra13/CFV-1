@@ -53,6 +53,7 @@ import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
 import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -140,6 +141,11 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   const email = getDisplayEmail(inquiry)
   const phone = getDisplayPhone(inquiry)
   const referralSource = getReferralSource(inquiry)
+  const parsedScheduleRequest = ScheduleRequestSchema.safeParse(
+    (inquiry as any).schedule_request_jsonb ?? undefined
+  )
+  const scheduleRequest = parsedScheduleRequest.success ? parsedScheduleRequest.data : undefined
+  const scheduleSummary = summarizeScheduleRequest(scheduleRequest)
 
   // Track which confirmed facts are still missing
   const missingFacts: string[] = []
@@ -252,6 +258,38 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Inquiry Summary — visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
+
+      {(inquiry as any).service_mode === 'multi_day' && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Series Request</h2>
+          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+              <dt className="text-stone-500">Service Mode</dt>
+              <dd className="text-stone-100 mt-1">Multi-day Service</dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Date Window</dt>
+              <dd className="text-stone-100 mt-1">
+                {scheduleRequest?.start_date || inquiry.confirmed_date || 'TBD'} to{' '}
+                {scheduleRequest?.end_date ||
+                  scheduleRequest?.start_date ||
+                  inquiry.confirmed_date ||
+                  'TBD'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Requested Sessions</dt>
+              <dd className="text-stone-100 mt-1">{scheduleRequest?.sessions?.length || 0}</dd>
+            </div>
+          </dl>
+          {scheduleSummary && <p className="text-sm text-stone-400 mt-4">{scheduleSummary}</p>}
+          {scheduleRequest?.outline && (
+            <p className="text-sm text-stone-300 mt-3 whitespace-pre-wrap">
+              {scheduleRequest.outline}
+            </p>
+          )}
+        </Card>
+      )}
 
       {/* TakeAChef workflow guide — collapsible overview for first-time users */}
       {inquiry.channel === 'take_a_chef' && <TacWorkflowGuide inquiryStatus={inquiry.status} />}

@@ -1,0 +1,69 @@
+{
+  "runId": "ecd48a17-ff5b-4fb7-9522-abd131d698ab",
+  "timestamp": "2026-03-05T19:09:19.014Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 1,
+  "passed": 0,
+  "warned": 0,
+  "failed": 1,
+  "passRate": 0,
+  "durationMinutes": 0,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 83,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 1,
+      "passed": 0,
+      "warned": 0,
+      "failed": 1,
+      "totalMs": 83,
+      "avgMs": 83
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "httpStatus": {
+          "pass": false,
+          "status": 500
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 83,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "httpStatus": {
+          "pass": false,
+          "status": 500
+        }
+      }
+    }
+  ]
+}

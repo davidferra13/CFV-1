@@ -8,6 +8,11 @@ import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
+import {
+  BookingServiceModeSchema,
+  ScheduleRequestSchema,
+  summarizeScheduleRequest,
+} from '@/lib/booking/schedule-schema'
 import { FOUNDER_EMAIL, resolveOwnerChefId } from '@/lib/platform/owner-account'
 import { z } from 'zod'
 
@@ -33,6 +38,11 @@ const PublicInquirySchema = z.object({
   favorite_ingredients_dislikes: z.string().optional().or(z.literal('')),
   allergies_food_restrictions: z.string().optional().or(z.literal('')),
   additional_notes: z.string().optional().or(z.literal('')),
+  service_mode: BookingServiceModeSchema.optional(),
+  recurring_frequency: z.enum(['weekly', 'biweekly', 'monthly']).optional(),
+  recurring_duration_weeks: z.number().int().min(1).max(52).optional(),
+  menu_recommendation_lead_days: z.number().int().min(1).max(21).optional(),
+  schedule_request_jsonb: ScheduleRequestSchema.optional(),
   website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
 })
 
@@ -69,9 +79,24 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         .map((item) => item.trim())
         .filter(Boolean)
     : null
+  const serviceMode = validated.service_mode ?? 'one_off'
+  const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
 
   const sourceParts = [
     `Serving Time: ${validated.serve_time.trim()}`,
+    `Service Mode: ${
+      serviceMode === 'recurring'
+        ? 'Recurring'
+        : serviceMode === 'multi_day'
+          ? 'Multi-day'
+          : 'One-off'
+    }`,
+    serviceMode === 'recurring'
+      ? `Recurring Plan: ${validated.recurring_frequency ?? 'weekly'} for ${
+          validated.recurring_duration_weeks ?? 8
+        } week(s); menu recommendation lead ${validated.menu_recommendation_lead_days ?? 7} day(s).`
+      : null,
+    scheduleSummary,
     validated.budget_cents != null
       ? `Exact Budget: $${(validated.budget_cents / 100).toFixed(2)}`
       : validated.budget_range
@@ -88,6 +113,17 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       : null,
   ].filter(Boolean)
   const sourceMessage = sourceParts.join('\n')
+  const serviceExpectations = [
+    `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
+    serviceMode === 'recurring'
+      ? `Recurring ${validated.recurring_frequency ?? 'weekly'} plan for ${
+          validated.recurring_duration_weeks ?? 8
+        } week(s). Menu recommendations requested ${validated.menu_recommendation_lead_days ?? 7} day(s) ahead.`
+      : null,
+    serviceMode === 'multi_day' && scheduleSummary ? scheduleSummary : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
   let chef: { id: string; business_name: string | null } | null = null
@@ -165,9 +201,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_location: validated.address.trim(),
       confirmed_occasion: validated.occasion.trim(),
       confirmed_budget_cents: budgetCents,
-      confirmed_service_expectations: `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
+      confirmed_service_expectations: serviceExpectations,
       confirmed_dietary_restrictions: allergiesList,
       source_message: sourceMessage || null,
+      service_mode: serviceMode,
+      schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       unknown_fields: {
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),
@@ -178,6 +216,14 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         favorite_ingredients_dislikes: validated.favorite_ingredients_dislikes?.trim() || null,
         allergies_food_restrictions: validated.allergies_food_restrictions?.trim() || null,
         additional_notes: validated.additional_notes?.trim() || null,
+        service_mode: serviceMode,
+        recurring_frequency:
+          serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : null,
+        recurring_duration_weeks:
+          serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
+        menu_recommendation_lead_days:
+          serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
+        schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       },
       status: 'new',
     })
@@ -212,6 +258,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       inquiry_id: inquiry.id,
       event_date: validated.event_date,
       serve_time: validated.serve_time.trim(),
+      service_mode: serviceMode,
       guest_count: validated.guest_count,
       location_address: validated.address.trim(),
       location_city: 'TBD',
@@ -257,6 +304,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         budget_known: budgetKnown,
         budget_range: budgetRange,
         budget_cents: budgetCents,
+        service_mode: serviceMode,
+        recurring_frequency:
+          serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : null,
+        recurring_duration_weeks:
+          serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
       },
     })
   } catch (err) {
@@ -273,6 +325,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       budgetMode,
       budgetRange: budgetRange ?? undefined,
       guestCount: validated.guest_count ?? undefined,
+      serviceMode,
+      recurringFrequency:
+        serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : undefined,
     })
   } catch (err) {
     console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)

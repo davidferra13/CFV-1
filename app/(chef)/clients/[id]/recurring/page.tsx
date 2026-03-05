@@ -9,6 +9,8 @@ import {
   getRecurringPlanningSnapshot,
   getServedHistoryForClient,
   getSuggestedMenuItems,
+  listClientMealRequests,
+  listRecurringRecommendationsForClient,
   listRecurringServices,
 } from '@/lib/recurring/actions'
 import { SERVICE_TYPE_LABELS, REACTION_LABELS } from '@/lib/recurring/constants'
@@ -17,18 +19,22 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { RecurringServiceForm } from './recurring-service-form'
 import { RecommendationDraftCard } from './recommendation-draft-card'
+import { ClientMealRequestsPanel } from './client-meal-requests-panel'
 
 export const metadata: Metadata = { title: 'Recurring Service - ChefFlow' }
 
 export default async function ClientRecurringPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [services, history, suggestions, planning] = await Promise.all([
-    listRecurringServices(params.id),
-    getServedHistoryForClient(params.id, 12),
-    getSuggestedMenuItems(params.id),
-    getRecurringPlanningSnapshot(params.id, 8),
-  ])
+  const [services, history, suggestions, planning, mealRequests, recommendations] =
+    await Promise.all([
+      listRecurringServices(params.id),
+      getServedHistoryForClient(params.id, 12),
+      getSuggestedMenuItems(params.id),
+      getRecurringPlanningSnapshot(params.id, 8),
+      listClientMealRequests(params.id),
+      listRecurringRecommendationsForClient(params.id, 12),
+    ])
 
   const activeServices = services.filter((s: any) => s.status === 'active')
 
@@ -115,6 +121,49 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
         <RecurringServiceForm clientId={params.id} />
       </div>
 
+      <ClientMealRequestsPanel requests={mealRequests} />
+
+      {recommendations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Recommendation Responses</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {recommendations.slice(0, 6).map((recommendation) => (
+              <div
+                key={recommendation.id}
+                className="rounded-lg border border-stone-800 bg-stone-900 px-3 py-2"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-stone-200">
+                    Sent {format(new Date(recommendation.sent_at), 'MMM d, yyyy')}
+                    {recommendation.week_start
+                      ? ` • week of ${format(new Date(`${recommendation.week_start}T00:00:00`), 'MMM d')}`
+                      : ''}
+                  </p>
+                  <Badge
+                    variant={
+                      recommendation.status === 'approved'
+                        ? 'success'
+                        : recommendation.status === 'revision_requested'
+                          ? 'warning'
+                          : 'info'
+                    }
+                  >
+                    {recommendation.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+                {recommendation.client_response_notes && (
+                  <p className="mt-1 text-xs text-stone-400">
+                    Client note: {recommendation.client_response_notes}
+                  </p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {planning.serviceForecasts.length > 0 && (
         <Card>
           <CardHeader>
@@ -175,8 +224,10 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
                 )}
 
                 <RecommendationDraftCard
+                  clientId={params.id}
                   draft={service.recommendationDraft}
                   sendDate={service.recommendationSendDate}
+                  targetWeekStart={service.nextServiceDate}
                 />
               </div>
             ))}

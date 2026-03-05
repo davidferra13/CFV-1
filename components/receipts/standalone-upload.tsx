@@ -91,11 +91,9 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
           <Button size="sm" variant="ghost" onClick={handleReset}>
             Upload Another
           </Button>
-          <a href="/receipts">
-            <Button size="sm" variant="secondary">
-              View Receipt Library
-            </Button>
-          </a>
+          <Button size="sm" variant="secondary" href="/receipts">
+            View Receipt Library
+          </Button>
         </div>
       </div>
     )

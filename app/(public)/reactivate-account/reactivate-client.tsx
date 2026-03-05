@@ -38,9 +38,9 @@ export function ReactivateAccountClient() {
               Your account has been restored. You can now sign in again.
             </p>
           </div>
-          <a href="/auth/signin">
-            <Button variant="primary">Sign In</Button>
-          </a>
+          <Button variant="primary" href="/auth/signin">
+            Sign In
+          </Button>
         </CardContent>
       </Card>
     )

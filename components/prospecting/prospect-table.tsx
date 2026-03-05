@@ -194,16 +194,17 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                       </Button>
                     </Link>
                     {p.website && (
-                      <a
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         href={p.website}
                         target="_blank"
                         rel="noopener noreferrer"
                         title={`Visit ${p.name} website`}
+                        aria-label={`Visit ${p.name} website`}
                       >
-                        <Button variant="ghost" size="sm">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Button>
-                      </a>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
                     )}
                   </div>
                 </td>

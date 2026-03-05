@@ -4,7 +4,10 @@ import Link from 'next/link'
 import { ArrowLeft, Download } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { getCurrentRegisterSession, getRegisterSessionHistory } from '@/lib/commerce/register-actions'
+import {
+  getCurrentRegisterSession,
+  getRegisterSessionHistory,
+} from '@/lib/commerce/register-actions'
 import { ShiftReport } from '@/components/commerce/shift-report'
 import { Button } from '@/components/ui/button'
 
@@ -44,22 +47,22 @@ export default async function ShiftReportsPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a href="/api/documents/commerce-shift-report/current?format=csv">
-                <Button variant="ghost" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  X CSV
-                </Button>
-              </a>
-              <a
+              <Button
+                variant="ghost"
+                size="sm"
+                href="/api/documents/commerce-shift-report/current?format=csv"
+              >
+                <Download className="w-4 h-4 mr-2" />X CSV
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 href="/api/documents/commerce-shift-report/current?format=pdf"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button variant="secondary" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  X PDF
-                </Button>
-              </a>
+                <Download className="w-4 h-4 mr-2" />X PDF
+              </Button>
             </div>
           </div>
         </div>

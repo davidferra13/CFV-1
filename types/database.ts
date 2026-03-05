@@ -30372,6 +30372,30 @@ export type Database = {
           },
         ]
       }
+      event_series: {
+        Row: {
+          [key: string]: any
+        }
+        Insert: {
+          [key: string]: any
+        }
+        Update: {
+          [key: string]: any
+        }
+        Relationships: []
+      }
+      event_service_sessions: {
+        Row: {
+          [key: string]: any
+        }
+        Insert: {
+          [key: string]: any
+        }
+        Update: {
+          [key: string]: any
+        }
+        Relationships: []
+      }
     }
     Views: {
       client_financial_summary: {
@@ -31386,6 +31410,7 @@ export type Database = {
         | "urgent_needs"
         | "professional_proof"
         | "questions_to_network"
+      booking_service_mode: "one_off" | "recurring" | "multi_day"
       client_status: "active" | "dormant" | "repeat_ready" | "vip"
       commerce_dining_check_status: "open" | "closed" | "voided"
       commerce_dining_table_status:
@@ -31484,6 +31509,14 @@ export type Database = {
         | "buffet"
         | "cocktail"
         | "tasting_menu"
+        | "other"
+      event_session_execution_type: "on_site" | "drop_off" | "prep_only" | "hybrid"
+      event_session_meal_slot:
+        | "breakfast"
+        | "lunch"
+        | "dinner"
+        | "late_snack"
+        | "dropoff"
         | "other"
       event_share_invite_status: "active" | "consumed" | "revoked" | "expired"
       event_status:
@@ -32136,6 +32169,7 @@ export const Constants = {
         "professional_proof",
         "questions_to_network",
       ],
+      booking_service_mode: ["one_off", "recurring", "multi_day"],
       client_status: ["active", "dormant", "repeat_ready", "vip"],
       commerce_dining_check_status: ["open", "closed", "voided"],
       commerce_dining_table_status: [
@@ -32243,6 +32277,15 @@ export const Constants = {
         "buffet",
         "cocktail",
         "tasting_menu",
+        "other",
+      ],
+      event_session_execution_type: ["on_site", "drop_off", "prep_only", "hybrid"],
+      event_session_meal_slot: [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "late_snack",
+        "dropoff",
         "other",
       ],
       event_share_invite_status: ["active", "consumed", "revoked", "expired"],

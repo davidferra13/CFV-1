@@ -2208,6 +2208,27 @@ body {
         </div>
 
         <!-- ── Prompt Queue ── -->
+        <!-- Developer Readiness -->
+        <div class="home-section-title">&#x1F393; Developer Readiness</div>
+        <div class="mega-grid">
+          <button class="mega-btn" id="mega-cs-masterclass" onclick="openManualDocFromHome('cs-masterclass')" title="Open the visual CS masterclass in the Manual panel">
+            <span class="mega-icon">&#x1F9E0;</span>
+            <span class="mega-label">CS Masterclass</span>
+            <span class="mega-desc">Visual architecture, security, and oral defense guide</span>
+          </button>
+          <button class="mega-btn" id="mega-dev-readiness" onclick="openManualDocFromHome('developer-readiness')" title="Open the developer training playbook in the Manual panel">
+            <span class="mega-icon">&#x1F4DA;</span>
+            <span class="mega-label">Training Playbook</span>
+            <span class="mega-desc">Learn how to explain the app clearly (what, how, proof)</span>
+          </button>
+          <button class="mega-btn" id="mega-proof-pack" onclick="openManualDocFromHome('beta-proof-pack')" title="Open the latest beta proof pack and readiness evidence">
+            <span class="mega-icon">&#x1F4CB;</span>
+            <span class="mega-label">Beta Proof Pack</span>
+            <span class="mega-desc">Latest release evidence, risks, and next actions</span>
+          </button>
+        </div>
+
+        <!-- Prompt Queue -->
         <div class="home-section-title">&#x1F4DD; Prompt Queue <span class="queue-badge empty" id="queue-badge">0</span></div>
         <div id="prompt-queue-list" style="font-size:13px;color:var(--text-secondary);"></div>
       </div>
@@ -8985,6 +9006,25 @@ function switchSection(section) {
 }
 
 // ── Manual Panel ─────────────────────────────────────────────────
+
+async function openManualDocFromHome(docKey) {
+  switchSection('manual')
+  try {
+    await loadManual()
+    if (!manualDocsData || !manualDocsData[docKey]) {
+      addLog('warn', 'manual', `Doc not found: ${docKey}`)
+      notify('Manual', `Doc not found: ${docKey}`, 'warn')
+      return
+    }
+    manualMode = 'docs'
+    renderManualDoc(docKey)
+    addLog('info', 'manual', `Opened doc: ${manualDocsData[docKey].label}`)
+  } catch (err) {
+    const message = err?.message || String(err)
+    addLog('error', 'manual', `Failed to open doc: ${message}`)
+    notify('Manual', `Failed to open doc: ${message}`, 'error')
+  }
+}
 
 let manualScanData = null
 let manualDocsData = null

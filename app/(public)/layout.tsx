@@ -2,8 +2,6 @@
 
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
-import { PageInfoButton } from '@/components/ui/page-info'
-import { HolidayOverlay } from '@/components/ui/holiday-overlay'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,8 +18,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <PublicFooter />
-      <PageInfoButton />
-      <HolidayOverlay />
     </div>
   )
 }

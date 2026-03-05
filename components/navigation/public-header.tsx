@@ -6,13 +6,11 @@ import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { Button } from '@/components/ui/button'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/compare', label: 'Compare' },
-  { href: '/customers', label: 'Customers' },
   { href: '/chefs', label: 'Find a Chef' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
@@ -74,19 +72,17 @@ export function PublicHeader() {
             href="/auth/signin"
             analyticsName="header_signin"
             analyticsProps={{ section: 'public_header' }}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
           >
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
+            Sign In
           </TrackedLink>
           <TrackedLink
             href={PRIMARY_SIGNUP_HREF}
             analyticsName="header_signup"
             analyticsProps={{ section: 'public_header' }}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
           >
-            <Button variant="primary" size="sm">
-              {isBeta ? 'Join Beta' : 'Sign up'}
-            </Button>
+            {isBeta ? 'Join Beta' : 'Sign up'}
           </TrackedLink>
         </div>
 
@@ -124,25 +120,21 @@ export function PublicHeader() {
           <div className="mx-auto flex max-w-6xl gap-2 px-4 pb-4 sm:px-6 lg:px-8">
             <TrackedLink
               href="/auth/signin"
-              className="flex-1"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-700 hover:text-stone-100"
               analyticsName="header_mobile_signin"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Button variant="secondary" size="sm" className="w-full">
-                Sign In
-              </Button>
+              Sign In
             </TrackedLink>
             <TrackedLink
               href={PRIMARY_SIGNUP_HREF}
-              className="flex-1"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               analyticsName="header_mobile_signup"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Button variant="primary" size="sm" className="w-full">
-                {isBeta ? 'Join Beta' : 'Sign up'}
-              </Button>
+              {isBeta ? 'Join Beta' : 'Sign up'}
             </TrackedLink>
           </div>
         </div>

@@ -1,23 +1,38 @@
-// Public Availability API — /book/[chefSlug]/availability?year=2026&month=3
+﻿// Public Availability API — /book/[chefSlug]/availability?year=2026&month=3
 // Returns date availability for the booking calendar. No auth required.
 // Status: 'available' | 'blocked' | 'unavailable'
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
 export async function GET(request: NextRequest, { params }: { params: { chefSlug: string } }) {
   const { searchParams } = request.nextUrl
-  const year = parseInt(searchParams.get('year') || String(new Date().getFullYear()))
-  const month = parseInt(searchParams.get('month') || String(new Date().getMonth() + 1))
+  const year = Number.parseInt(searchParams.get('year') || String(new Date().getFullYear()), 10)
+  const month = Number.parseInt(searchParams.get('month') || String(new Date().getMonth() + 1), 10)
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
 
-  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+  const hasRange = Boolean(startDateParam && endDateParam)
+  if (
+    hasRange &&
+    (!ISO_DATE.test(startDateParam as string) || !ISO_DATE.test(endDateParam as string))
+  ) {
+    return NextResponse.json(
+      { error: 'Invalid start_date/end_date (expected YYYY-MM-DD)' },
+      { status: 400 }
+    )
+  }
+
+  if (!hasRange && (Number.isNaN(year) || Number.isNaN(month) || month < 1 || month > 12)) {
     return NextResponse.json({ error: 'Invalid year/month' }, { status: 400 })
   }
 
   try {
     const supabase = createServerClient({ admin: true })
 
-    // Resolve slug → chef
+    // Resolve slug -> chef
     const { data: chef } = await supabase
       .from('chefs')
       .select('id, booking_enabled, booking_min_notice_days')
@@ -31,10 +46,28 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     const tenantId = chef.id as string
     const minNoticeDays = (chef.booking_min_notice_days as number) || 7
 
-    // Date range for this month
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
-    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+    const startDate = hasRange
+      ? (startDateParam as string)
+      : `${year}-${String(month).padStart(2, '0')}-01`
+    const endDate = hasRange
+      ? (endDateParam as string)
+      : `${year}-${String(month).padStart(2, '0')}-${String(new Date(Date.UTC(year, month, 0)).getUTCDate()).padStart(2, '0')}`
+
+    const startValue = new Date(`${startDate}T00:00:00.000Z`)
+    const endValue = new Date(`${endDate}T00:00:00.000Z`)
+    if (
+      Number.isNaN(startValue.getTime()) ||
+      Number.isNaN(endValue.getTime()) ||
+      endValue < startValue
+    ) {
+      return NextResponse.json({ error: 'Invalid availability date range' }, { status: 400 })
+    }
+
+    const daySpan =
+      Math.floor((endValue.getTime() - startValue.getTime()) / (1000 * 60 * 60 * 24)) + 1
+    if (daySpan > 180) {
+      return NextResponse.json({ error: 'Date range too large (max 180 days)' }, { status: 400 })
+    }
 
     // Fetch confirmed/in_progress events (block those dates)
     const [eventsResult, blocksResult] = await Promise.all([
@@ -44,7 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
         .eq('tenant_id', tenantId)
         .in('status', ['confirmed', 'in_progress', 'paid', 'accepted'])
         .gte('event_date', startDate)
-        .lte('event_date', endDate + 'T23:59:59Z'),
+        .lte('event_date', `${endDate}T23:59:59Z`),
       supabase
         .from('chef_availability_blocks')
         .select('block_date, block_type')
@@ -65,23 +98,38 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     cutoff.setUTCDate(today.getUTCDate() + minNoticeDays)
 
     const availability: Record<string, 'available' | 'blocked' | 'unavailable'> = {}
+    const conflictDetails: Record<string, string[]> = {}
 
-    for (let d = 1; d <= lastDay; d++) {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      const date = new Date(dateStr + 'T12:00:00Z')
+    const cursor = new Date(startValue)
+    while (cursor.getTime() <= endValue.getTime()) {
+      const dateStr = cursor.toISOString().slice(0, 10)
+      const date = new Date(`${dateStr}T12:00:00Z`)
 
       if (date < cutoff) {
-        // Too soon — not enough notice
         availability[dateStr] = 'unavailable'
+        conflictDetails[dateStr] = [
+          `Minimum notice is ${minNoticeDays} day${minNoticeDays === 1 ? '' : 's'}`,
+        ]
       } else if (bookedDates.has(dateStr) || manualBlocks.has(dateStr)) {
         availability[dateStr] = 'blocked'
+        const reasons: string[] = []
+        if (bookedDates.has(dateStr)) reasons.push('Existing confirmed event')
+        if (manualBlocks.has(dateStr)) reasons.push('Chef blocked availability')
+        conflictDetails[dateStr] = reasons
       } else {
         availability[dateStr] = 'available'
       }
+
+      cursor.setUTCDate(cursor.getUTCDate() + 1)
     }
 
     return NextResponse.json(
-      { availability },
+      {
+        availability,
+        conflict_details: conflictDetails,
+        start_date: startDate,
+        end_date: endDate,
+      },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',

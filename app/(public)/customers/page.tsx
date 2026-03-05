@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { CUSTOMER_STORIES } from '@/lib/marketing/customer-stories'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -8,11 +7,15 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 export const metadata: Metadata = {
   title: 'Customer Stories | ChefFlow',
   description:
-    'Read how private chefs are reducing admin overhead, improving margins, and scaling client service with ChefFlow.',
+    'Customer stories are not yet published. ChefFlow only publishes verified and approved customer testimonials.',
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: {
     title: 'ChefFlow Customer Stories',
     description:
-      'Real workflows and measurable outcomes from chefs using ChefFlow across private dining and meal prep.',
+      'Customer stories are not yet published. ChefFlow only publishes verified and approved customer testimonials.',
     url: `${BASE_URL}/customers`,
     siteName: 'ChefFlow',
     type: 'website',
@@ -29,16 +32,6 @@ export default function CustomersPage() {
     '@type': 'CollectionPage',
     name: 'ChefFlow Customer Stories',
     url: `${BASE_URL}/customers`,
-    hasPart: CUSTOMER_STORIES.map((story) => ({
-      '@type': 'Article',
-      headline: story.title,
-      description: story.summary,
-      url: `${BASE_URL}/customers/${story.slug}`,
-      author: {
-        '@type': 'Person',
-        name: story.chefName,
-      },
-    })),
   }
 
   return (
@@ -51,56 +44,28 @@ export default function CustomersPage() {
         <div className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-[720px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
         <div className="relative mx-auto w-full max-w-6xl px-4 py-16 text-center sm:px-6 md:py-24 lg:px-8">
           <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-            Customer Proof
+            Customer Stories
           </p>
           <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
-            How chefs are using ChefFlow in the real world.
+            We have not published customer stories yet.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
-            These stories show the operating changes, not just feature lists. Each one includes
-            workflow changes and measurable outcomes over the first months.
+            We removed sample testimonials and do not display fabricated outcomes. This page will
+            only show verified, approved customer stories when they are available.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {CUSTOMER_STORIES.map((story) => (
-            <article
-              key={story.slug}
-              className="rounded-2xl border border-stone-700 bg-stone-900/80 p-6 shadow-[var(--shadow-card)]"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-300">
-                {story.timeline}
-              </p>
-              <h2 className="mt-3 text-xl font-semibold text-stone-100">{story.title}</h2>
-              <p className="mt-2 text-sm text-stone-400">
-                {story.chefName} - {story.location}
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-stone-300">{story.summary}</p>
-
-              <div className="mt-5 space-y-2">
-                {story.metrics.slice(0, 2).map((metric) => (
-                  <div
-                    key={metric.label}
-                    className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 px-3 py-2"
-                  >
-                    <span className="text-xs text-stone-400">{metric.label}</span>
-                    <span className="text-sm font-semibold text-brand-300">{metric.delta}</span>
-                  </div>
-                ))}
-              </div>
-
-              <TrackedLink
-                href={`/customers/${story.slug}`}
-                analyticsName="customers_story_open"
-                analyticsProps={{ story_slug: story.slug }}
-                className="mt-6 inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-              >
-                Read full story
-              </TrackedLink>
-            </article>
-          ))}
+      <section className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/80 p-6 md:p-8">
+          <h2 className="text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
+            What to expect
+          </h2>
+          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-stone-300">
+            <li>- Only real customer stories will be published here.</li>
+            <li>- Every published quote or metric will require explicit customer approval.</li>
+            <li>- No generated names, fabricated outcomes, or synthetic testimonials.</li>
+          </ul>
         </div>
       </section>
 

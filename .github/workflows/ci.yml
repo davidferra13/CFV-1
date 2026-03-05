@@ -32,11 +32,20 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Route policy gate (middleware + public coverage)
+        run: node --test --import tsx tests/unit/middleware.routing.test.ts tests/unit/route-policy.public-coverage.test.ts
+
+      - name: File line budget gate
+        run: npm run lines:check
+
       - name: TypeScript check
         run: npx tsc --noEmit --skipLibCheck
 
       - name: ESLint
         run: npx next lint --max-warnings 0
+
+      - name: Accessibility markup audit
+        run: npm run audit:a11y:markup:strict
 
       - name: Notification audit (strict required actions)
         run: npm run audit:notifications:strict

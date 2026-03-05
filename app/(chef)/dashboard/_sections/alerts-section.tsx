@@ -1,4 +1,4 @@
-// Dashboard Alerts Section — streams in independently
+// Dashboard Alerts Section - streams in independently
 // Covers: scheduling gaps, response time, pending follow-ups, holiday outreach, collaboration alerts
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -18,6 +18,7 @@ import {
 import { getRecipeDebt } from '@/lib/recipes/actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import { getRecurringCollaborationCommandCenter } from '@/lib/recurring/actions'
 import { ResponseTimeWidget } from '@/components/dashboard/response-time-widget'
 import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
 import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
@@ -30,9 +31,11 @@ import {
 } from '@/components/events/event-collaborators-panel'
 import { InviteChefCard } from '@/components/marketing/invite-chef-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { createServerClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import type { DashboardWidgetId } from '@/lib/scheduling/types'
 
 // Safe wrapper
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -62,8 +65,32 @@ const emptyOnboardingProgress: OnboardingProgress = {
   completedPhases: 0,
   totalPhases: 5,
 }
+const emptyRecurringCommandCenter = {
+  openMealRequestCount: 0,
+  pendingRecommendationResponseCount: 0,
+  totalOpenItems: 0,
+  items: [] as Array<{
+    id: string
+    type: 'meal_request' | 'recommendation_response'
+    client_id: string
+    client_name: string
+    title: string
+    status: string
+    priority: 'low' | 'normal' | 'high' | null
+    week_start: string | null
+    created_at: string
+  }>,
+}
 
-export async function AlertsSection() {
+interface AlertsSectionProps {
+  widgetEnabled: Record<string, boolean>
+  widgetOrder: Record<string, number>
+}
+
+export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectionProps) {
+  const isWidgetEnabled = (id: DashboardWidgetId) => widgetEnabled[id] ?? true
+  const getWidgetOrder = (id: DashboardWidgetId) => widgetOrder[id] ?? Number.MAX_SAFE_INTEGER
+
   const user = await requireChef()
 
   const [
@@ -77,6 +104,7 @@ export async function AlertsSection() {
     recipeDebt,
     upcomingCalls,
     onboardingProgress,
+    recurringCommandCenter,
     chefProfile,
   ] = await Promise.all([
     safe('schedulingGaps', getSchedulingGaps, []),
@@ -89,6 +117,11 @@ export async function AlertsSection() {
     safe('recipeDebt', getRecipeDebt, emptyRecipeDebt),
     safe('upcomingCalls', () => getUpcomingCalls(5), []),
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
+    safe(
+      'recurringCommandCenter',
+      () => getRecurringCollaborationCommandCenter(12),
+      emptyRecurringCommandCenter
+    ),
     safe(
       'chefProfile',
       async () => {
@@ -126,150 +159,223 @@ export async function AlertsSection() {
 
   return (
     <>
-      {/* Scheduling Gaps */}
-      {schedulingGaps.length > 0 && (
-        <section>
-          <div
-            className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
-              schedulingGaps.some((g: any) => g.severity === 'critical')
-                ? 'bg-red-950 border-red-200 text-red-900'
-                : 'bg-amber-950 border-amber-200 text-amber-900'
-            }`}
-          >
-            <div>
-              <p className="text-sm font-semibold">
-                {schedulingGaps.length} event{schedulingGaps.length !== 1 ? 's' : ''} missing prep
-                blocks
-              </p>
-              <p className="text-xs mt-0.5 opacity-80">
-                {schedulingGaps.some((g: any) => g.severity === 'critical')
-                  ? 'Some events are less than 48 hours away with no prep scheduled.'
-                  : 'Upcoming events need grocery runs, prep sessions, and packing scheduled.'}
-              </p>
+      {isWidgetEnabled('scheduling_gaps') && schedulingGaps.length > 0 && (
+        <section style={{ order: getWidgetOrder('scheduling_gaps') }}>
+          <CollapsibleWidget widgetId="scheduling_gaps" title="Scheduling Gaps">
+            <div
+              className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
+                schedulingGaps.some((g: any) => g.severity === 'critical')
+                  ? 'bg-red-950 border-red-200 text-red-900'
+                  : 'bg-amber-950 border-amber-200 text-amber-900'
+              }`}
+            >
+              <div>
+                <p className="text-sm font-semibold">
+                  {schedulingGaps.length} event{schedulingGaps.length !== 1 ? 's' : ''} missing prep
+                  blocks
+                </p>
+                <p className="text-xs mt-0.5 opacity-80">
+                  {schedulingGaps.some((g: any) => g.severity === 'critical')
+                    ? 'Some events are less than 48 hours away with no prep scheduled.'
+                    : 'Upcoming events need grocery runs, prep sessions, and packing scheduled.'}
+                </p>
+              </div>
+              <Link href="/calendar/week">
+                <span className="text-xs font-medium underline">Plan Week</span>
+              </Link>
             </div>
-            <Link href="/calendar/week">
-              <span className="text-xs font-medium underline">Plan Week →</span>
-            </Link>
-          </div>
+          </CollapsibleWidget>
         </section>
       )}
 
-      {/* Response Time SLA */}
-      {(responseTimeSummary.overdue > 0 ||
-        responseTimeSummary.urgent > 0 ||
-        responseTimeSummary.ok > 0) && (
-        <section>
-          <ResponseTimeWidget summary={responseTimeSummary} />
+      {isWidgetEnabled('response_time') &&
+        (responseTimeSummary.overdue > 0 ||
+          responseTimeSummary.urgent > 0 ||
+          responseTimeSummary.ok > 0) && (
+          <section style={{ order: getWidgetOrder('response_time') }}>
+            <CollapsibleWidget widgetId="response_time" title="Response Time">
+              <ResponseTimeWidget summary={responseTimeSummary} />
+            </CollapsibleWidget>
+          </section>
+        )}
+
+      {isWidgetEnabled('pending_followups') && pendingFollowUps.length > 0 && (
+        <section style={{ order: getWidgetOrder('pending_followups') }}>
+          <CollapsibleWidget widgetId="pending_followups" title="Pending Follow-Ups">
+            <PendingFollowUpsWidget followUps={pendingFollowUps} />
+          </CollapsibleWidget>
         </section>
       )}
 
-      {/* Pending Follow-Ups */}
-      {pendingFollowUps.length > 0 && (
-        <section>
-          <PendingFollowUpsWidget followUps={pendingFollowUps} />
-        </section>
-      )}
-
-      {/* Holiday Outreach */}
-      {serializableHolidayOutreachSuggestions.length > 0 && (
-        <section>
-          <HolidayOutreachPanel suggestions={serializableHolidayOutreachSuggestions} />
-        </section>
-      )}
-
-      {/* Onboarding Checklist */}
-      {onboardingProgress.completedPhases < onboardingProgress.totalPhases && (
-        <section>
-          <OnboardingChecklistWidget progress={onboardingProgress} />
-        </section>
-      )}
-
-      {/* Upcoming Calls */}
-      {upcomingCalls.length > 0 && (
-        <section>
-          <UpcomingCallsWidget calls={upcomingCalls} />
-        </section>
-      )}
-
-      {/* Pending Collaboration Invitations */}
-      {(pendingCollabInvitations as any[]).length > 0 && (
-        <section>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                Collaboration Invitations ({(pendingCollabInvitations as any[]).length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(pendingCollabInvitations as any[]).map((inv: any) => (
-                <CollaborationInvitationCard key={inv.id} collab={inv} />
-              ))}
-            </CardContent>
-          </Card>
-        </section>
-      )}
-
-      {/* Pending Recipe Shares */}
-      {(pendingRecipeShares as any[]).length > 0 && (
-        <section>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                Recipe Shares ({(pendingRecipeShares as any[]).length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(pendingRecipeShares as any[]).map((share: any) => (
-                <PendingRecipeShareCard key={share.id} share={share} />
-              ))}
-            </CardContent>
-          </Card>
-        </section>
-      )}
-
-      {/* Collaborating On */}
-      {(collaboratingOnEvents as any[]).length > 0 && (
-        <section>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Collaborating On</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {(collaboratingOnEvents as any[]).map((item: any) => (
-                <Link
-                  key={item.event?.id}
-                  href={`/events/${item.event?.id}`}
-                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 hover:bg-stone-700 transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-stone-100">
-                      {item.event?.occasion || 'Untitled Event'}
-                    </p>
-                    <p className="text-xs text-stone-500">
-                      {item.event?.event_date
-                        ? format(new Date(item.event.event_date), 'MMM d, yyyy')
-                        : 'Date TBD'}
-                      {item.event?.client ? ` · ${item.event.client.full_name}` : ''}
-                    </p>
-                  </div>
-                  <span className="text-xs rounded-full px-2 py-0.5 bg-brand-900 text-brand-300 font-medium capitalize">
-                    {item.role.replace('_', ' ')}
+      {isWidgetEnabled('inbox_command_center') && recurringCommandCenter.totalOpenItems > 0 && (
+        <section style={{ order: getWidgetOrder('inbox_command_center') }}>
+          <CollapsibleWidget widgetId="inbox_command_center" title="Recurring Collaboration">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  Collaboration Queue ({recurringCommandCenter.totalOpenItems})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="rounded-full border border-amber-700 bg-amber-950 px-2 py-0.5 text-amber-300">
+                    Open requests: {recurringCommandCenter.openMealRequestCount}
                   </span>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
+                  <span className="rounded-full border border-sky-700 bg-sky-950 px-2 py-0.5 text-sky-300">
+                    Pending approvals: {recurringCommandCenter.pendingRecommendationResponseCount}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {recurringCommandCenter.items.slice(0, 8).map((item) => (
+                    <Link
+                      key={`${item.type}-${item.id}`}
+                      href={`/clients/${item.client_id}/recurring`}
+                      className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 hover:bg-stone-700 transition-colors"
+                    >
+                      <div>
+                        <p className="text-sm text-stone-100">
+                          {item.client_name} - {item.title}
+                        </p>
+                        <p className="text-xs text-stone-500">
+                          {item.type === 'meal_request' ? 'Meal request' : 'Recommendation'} -{' '}
+                          {item.status.replace('_', ' ')}
+                          {item.week_start
+                            ? ` • week of ${format(
+                                new Date(`${item.week_start}T00:00:00`),
+                                'MMM d'
+                              )}`
+                            : ''}
+                        </p>
+                      </div>
+                      <span className="text-xs text-brand-500 font-medium">Open</span>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </CollapsibleWidget>
         </section>
       )}
 
-      {/* Recipe Debt */}
-      <RecipeDebtWidget debt={recipeDebt} />
+      {isWidgetEnabled('holiday_outreach') && serializableHolidayOutreachSuggestions.length > 0 && (
+        <section style={{ order: getWidgetOrder('holiday_outreach') }}>
+          <CollapsibleWidget widgetId="holiday_outreach" title="Holiday Outreach">
+            <HolidayOutreachPanel suggestions={serializableHolidayOutreachSuggestions} />
+          </CollapsibleWidget>
+        </section>
+      )}
 
-      {/* Invite a Chef */}
-      <InviteChefCard
-        chefSlug={chefProfile?.slug}
-        chefName={chefProfile?.display_name ?? undefined}
-      />
+      {isWidgetEnabled('onboarding_checklist') &&
+        onboardingProgress.completedPhases < onboardingProgress.totalPhases && (
+          <section style={{ order: getWidgetOrder('onboarding_checklist') }}>
+            <CollapsibleWidget widgetId="onboarding_checklist" title="Onboarding Checklist">
+              <OnboardingChecklistWidget progress={onboardingProgress} />
+            </CollapsibleWidget>
+          </section>
+        )}
+
+      {isWidgetEnabled('upcoming_calls') && upcomingCalls.length > 0 && (
+        <section style={{ order: getWidgetOrder('upcoming_calls') }}>
+          <CollapsibleWidget widgetId="upcoming_calls" title="Upcoming Calls">
+            <UpcomingCallsWidget calls={upcomingCalls} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('collaboration_invites') &&
+        (pendingCollabInvitations as any[]).length > 0 && (
+          <section style={{ order: getWidgetOrder('collaboration_invites') }}>
+            <CollapsibleWidget widgetId="collaboration_invites" title="Collaboration Invitations">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    Collaboration Invitations ({(pendingCollabInvitations as any[]).length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(pendingCollabInvitations as any[]).map((inv: any) => (
+                    <CollaborationInvitationCard key={inv.id} collab={inv} />
+                  ))}
+                </CardContent>
+              </Card>
+            </CollapsibleWidget>
+          </section>
+        )}
+
+      {isWidgetEnabled('recipe_shares') && (pendingRecipeShares as any[]).length > 0 && (
+        <section style={{ order: getWidgetOrder('recipe_shares') }}>
+          <CollapsibleWidget widgetId="recipe_shares" title="Recipe Shares">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  Recipe Shares ({(pendingRecipeShares as any[]).length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {(pendingRecipeShares as any[]).map((share: any) => (
+                  <PendingRecipeShareCard key={share.id} share={share} />
+                ))}
+              </CardContent>
+            </Card>
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('collaborating_on') && (collaboratingOnEvents as any[]).length > 0 && (
+        <section style={{ order: getWidgetOrder('collaborating_on') }}>
+          <CollapsibleWidget widgetId="collaborating_on" title="Collaborating On">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Collaborating On</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {(collaboratingOnEvents as any[]).map((item: any) => (
+                  <Link
+                    key={item.event?.id}
+                    href={`/events/${item.event?.id}`}
+                    className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 hover:bg-stone-700 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-stone-100">
+                        {item.event?.occasion || 'Untitled Event'}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {item.event?.event_date
+                          ? format(new Date(item.event.event_date), 'MMM d, yyyy')
+                          : 'Date TBD'}
+                        {item.event?.client ? ` - ${item.event.client.full_name}` : ''}
+                      </p>
+                    </div>
+                    <span className="text-xs rounded-full px-2 py-0.5 bg-brand-900 text-brand-300 font-medium capitalize">
+                      {item.role.replace('_', ' ')}
+                    </span>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('recipe_debt') && (
+        <section style={{ order: getWidgetOrder('recipe_debt') }}>
+          <CollapsibleWidget widgetId="recipe_debt" title="Recipe Debt">
+            <RecipeDebtWidget debt={recipeDebt} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('invite_chef') && (
+        <section style={{ order: getWidgetOrder('invite_chef') }}>
+          <CollapsibleWidget widgetId="invite_chef" title="Invite a Chef">
+            <InviteChefCard
+              chefSlug={chefProfile?.slug}
+              chefName={chefProfile?.display_name ?? undefined}
+            />
+          </CollapsibleWidget>
+        </section>
+      )}
     </>
   )
 }

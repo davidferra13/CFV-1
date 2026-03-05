@@ -29,6 +29,12 @@ export interface MenuSuggestionBundle {
   likedBacklog: string[]
 }
 
+export interface MealRequestSignalLike {
+  dish_name: string
+  request_type?: 'repeat_dish' | 'new_idea' | 'avoid_dish' | null
+  status?: 'requested' | 'reviewed' | 'scheduled' | 'fulfilled' | 'declined' | 'withdrawn' | null
+}
+
 function toIsoDate(date: Date): string {
   return format(date, 'yyyy-MM-dd')
 }
@@ -132,10 +138,15 @@ function normalizeDishName(name: string): string {
 export function buildMenuSuggestionBundle(
   history: ServedDishLike[],
   favoriteDishes: string[] = [],
-  options?: { recommendationCount?: number; recentWindowEntries?: number }
+  options?: {
+    recommendationCount?: number
+    recentWindowEntries?: number
+    requestSignals?: MealRequestSignalLike[]
+  }
 ): MenuSuggestionBundle {
   const recommendationCount = Math.max(1, options?.recommendationCount ?? 4)
   const recentWindowEntries = Math.max(1, options?.recentWindowEntries ?? 20)
+  const requestSignals = Array.isArray(options?.requestSignals) ? options.requestSignals : []
 
   const normalizedFavorites = favoriteDishes
     .map((name) => name.trim())
@@ -144,13 +155,34 @@ export function buildMenuSuggestionBundle(
   const recent = history.slice(0, recentWindowEntries)
   const recentSet = new Set(recent.map((row) => normalizeDishName(row.dish_name)))
 
+  const activeRequestSignals = requestSignals.filter(
+    (request) => !request.status || ['requested', 'reviewed', 'scheduled'].includes(request.status)
+  )
+
+  const requestedPreferred = activeRequestSignals
+    .filter(
+      (request) =>
+        (request.request_type === 'repeat_dish' || request.request_type === 'new_idea') &&
+        typeof request.dish_name === 'string'
+    )
+    .map((request) => request.dish_name.trim())
+    .filter(Boolean)
+
+  const requestedAvoid = activeRequestSignals
+    .filter(
+      (request) => request.request_type === 'avoid_dish' && typeof request.dish_name === 'string'
+    )
+    .map((request) => request.dish_name.trim())
+    .filter(Boolean)
+
   const avoid = Array.from(
-    new Set(
-      history
+    new Set([
+      ...requestedAvoid,
+      ...history
         .filter((row) => row.client_reaction === 'disliked')
         .map((row) => row.dish_name.trim())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ])
   )
   const avoidSet = new Set(avoid.map((name) => normalizeDishName(name)))
 
@@ -165,21 +197,22 @@ export function buildMenuSuggestionBundle(
     .filter((name) => name.length > 0 && !recentSet.has(normalizeDishName(name)))
 
   const mergedCandidates = [
-    ...lovedBacklog,
-    ...likedBacklog,
-    ...normalizedFavorites,
-    ...history.map((row) => row.dish_name.trim()),
+    ...requestedPreferred.map((dishName) => ({ dishName, skipRecentCheck: true })),
+    ...lovedBacklog.map((dishName) => ({ dishName, skipRecentCheck: false })),
+    ...likedBacklog.map((dishName) => ({ dishName, skipRecentCheck: false })),
+    ...normalizedFavorites.map((dishName) => ({ dishName, skipRecentCheck: false })),
+    ...history.map((row) => ({ dishName: row.dish_name.trim(), skipRecentCheck: false })),
   ]
 
   const seen = new Set<string>()
   const recommended: string[] = []
 
   for (const candidate of mergedCandidates) {
-    const normalized = normalizeDishName(candidate)
+    const normalized = normalizeDishName(candidate.dishName)
     if (!normalized || seen.has(normalized) || avoidSet.has(normalized)) continue
-    if (recentSet.has(normalized)) continue
+    if (!candidate.skipRecentCheck && recentSet.has(normalized)) continue
     seen.add(normalized)
-    recommended.push(candidate)
+    recommended.push(candidate.dishName)
     if (recommended.length >= recommendationCount) break
   }
 

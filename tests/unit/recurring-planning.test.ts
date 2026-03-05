@@ -58,6 +58,31 @@ test('menu suggestion bundle prioritizes rotation and excludes dislikes', () => 
   assert.equal(bundle.recentlyServed[0], 'Duck Confit')
 })
 
+test('menu suggestions prioritize active request signals and respect avoid requests', () => {
+  const bundle = buildMenuSuggestionBundle(
+    [
+      { dish_name: 'Truffle Pasta', client_reaction: 'liked', served_date: '2026-02-20' },
+      { dish_name: 'Lamb Ragout', client_reaction: 'neutral', served_date: '2026-02-14' },
+      { dish_name: 'Miso Cod', client_reaction: 'loved', served_date: '2026-02-10' },
+    ],
+    ['Braised Short Rib'],
+    {
+      recommendationCount: 4,
+      recentWindowEntries: 10,
+      requestSignals: [
+        { dish_name: 'Truffle Pasta', request_type: 'repeat_dish', status: 'requested' },
+        { dish_name: 'Soba Noodles', request_type: 'new_idea', status: 'reviewed' },
+        { dish_name: 'Lamb Ragout', request_type: 'avoid_dish', status: 'requested' },
+      ],
+    }
+  )
+
+  assert.equal(bundle.recommended[0], 'Truffle Pasta')
+  assert.equal(bundle.recommended[1], 'Soba Noodles')
+  assert.ok(bundle.avoid.includes('Lamb Ragout'))
+  assert.ok(!bundle.recommended.includes('Lamb Ragout'))
+})
+
 test('recommendation draft includes menu and scheduling details', () => {
   const draft = buildRecommendationDraftText({
     clientName: 'Taylor',

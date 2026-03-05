@@ -97,11 +97,16 @@ export function TacAddressLead({
         </div>
 
         {tacLink && (
-          <a href={tacLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
-            <Button variant="primary" size="sm" type="button">
-              Open in TakeAChef
-            </Button>
-          </a>
+          <Button
+            variant="primary"
+            size="sm"
+            href={tacLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0"
+          >
+            Open in TakeAChef
+          </Button>
         )}
       </div>
 

@@ -241,7 +241,7 @@ export default async function ChefDashboard() {
         {/* ALERTS — streams in (~200-500ms)             */}
         {/* ============================================ */}
         <Suspense fallback={<AlertsSkeleton />}>
-          <AlertsSection />
+          <AlertsSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
         </Suspense>
 
         {/* ============================================ */}

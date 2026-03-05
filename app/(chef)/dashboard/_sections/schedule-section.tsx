@@ -98,9 +98,11 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
   return (
     <>
       {/* Daily Ops Banner */}
-      {dailyPlanStats && dailyPlanStats.totalItems > 0 && (
-        <section>
-          <DailyPlanBanner stats={dailyPlanStats} />
+      {isWidgetEnabled('daily_plan') && dailyPlanStats && dailyPlanStats.totalItems > 0 && (
+        <section style={{ order: getWidgetOrder('daily_plan') }}>
+          <CollapsibleWidget widgetId="daily_plan" title="Daily Plan">
+            <DailyPlanBanner stats={dailyPlanStats} />
+          </CollapsibleWidget>
         </section>
       )}
 
@@ -193,11 +195,14 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
       )}
 
       {/* DOP Task Digest */}
-      {(dopTaskDigest.totalIncomplete > 0 || dopTaskDigest.overdueCount > 0) && (
-        <section>
-          <DOPTaskPanel digest={dopTaskDigest} weatherByEventId={weatherByEventId} />
-        </section>
-      )}
+      {isWidgetEnabled('dop_tasks') &&
+        (dopTaskDigest.totalIncomplete > 0 || dopTaskDigest.overdueCount > 0) && (
+          <section style={{ order: getWidgetOrder('dop_tasks') }}>
+            <CollapsibleWidget widgetId="dop_tasks" title="DOP Tasks">
+              <DOPTaskPanel digest={dopTaskDigest} weatherByEventId={weatherByEventId} />
+            </CollapsibleWidget>
+          </section>
+        )}
 
       {/* Prep Prompts */}
       {isWidgetEnabled('prep_prompts') && prepPrompts.length > 0 && (

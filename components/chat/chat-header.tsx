@@ -42,6 +42,7 @@ export function ChatHeader({
       <Link
         href={backHref}
         className="flex-shrink-0 p-1 -ml-1 text-stone-500 hover:text-stone-300 transition-colors"
+        aria-label="Back"
       >
         <ArrowLeft className="w-5 h-5" />
       </Link>
@@ -84,6 +85,7 @@ export function ChatHeader({
           onClick={onSearchToggle}
           className="flex-shrink-0 p-1.5 text-stone-400 hover:text-stone-400 transition-colors"
           title="Search messages"
+          aria-label="Search messages"
         >
           <Search className="w-4.5 h-4.5" />
         </button>
