@@ -10,6 +10,7 @@ import {
   queueVendorCatalogRows,
   type QueueVendorCatalogResult,
 } from '@/lib/vendors/catalog-import-actions'
+import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
 import {
   parseExpenseDraftFromExtractedText,
   parseInvoiceDraftFromExtractedText,
@@ -429,6 +430,42 @@ function normalizeCategory(value: string): string {
   if (normalized.includes('education') || normalized.includes('training')) return 'education'
 
   return SUPPORTED_EXPENSE_CATEGORIES.has(normalized) ? normalized : 'other'
+}
+
+async function recordInvoiceLineItemPricePoints(params: {
+  supabase: any
+  tenantId: string
+  vendorId: string
+  invoiceNumber: string | null
+  lineItems: DraftInvoiceLineItem[]
+}) {
+  const dedupedByItem = new Map<string, DraftInvoiceLineItem>()
+
+  for (const line of params.lineItems) {
+    const description = cleanString(line.description)
+    const price = Number(line.unit_price_cents || 0)
+    if (!description || price <= 0) continue
+    dedupedByItem.set(description.toLowerCase(), { ...line, description })
+  }
+
+  for (const line of dedupedByItem.values()) {
+    try {
+      await recordVendorPricePoint({
+        supabase: params.supabase,
+        tenantId: params.tenantId,
+        vendorId: params.vendorId,
+        itemName: line.description,
+        unitMeasure: 'each',
+        unitSize: 1,
+        priceCents: line.unit_price_cents,
+        notes: params.invoiceNumber
+          ? `Imported from invoice ${params.invoiceNumber}`
+          : 'Imported from invoice',
+      })
+    } catch (err) {
+      console.error('[vendor-documents] failed to record invoice line price point', err)
+    }
+  }
 }
 
 function parseCatalogTabularRows(parsed: ParsedCsv): ParsedCatalogRows {
@@ -1482,6 +1519,14 @@ export async function applyVendorDocumentDraft(
     if (lineItemsError) {
       return { success: false, error: lineItemsError.message }
     }
+
+    await recordInvoiceLineItemPricePoints({
+      supabase,
+      tenantId: user.tenantId!,
+      vendorId: uploadRow.vendor_id,
+      invoiceNumber,
+      lineItems: sanitizedLineItems,
+    })
 
     await supabase
       .from('vendor_document_uploads')

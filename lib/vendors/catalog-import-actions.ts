@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
 import { z } from 'zod'
 
 const CatalogRowSchema = z.object({
@@ -152,12 +153,22 @@ async function applyNormalizedRowToVendorItems(
   vendorId: string,
   row: NormalizedCatalogRow
 ): Promise<{ action: 'inserted' | 'updated'; vendorItemId: string }> {
-  let existingItem: { id: string } | null = null
+  let existingItem: {
+    id: string
+    ingredient_id: string | null
+    vendor_item_name: string
+    unit_price_cents: number
+    unit_size: number | null
+    unit_measure: string | null
+    notes: string | null
+  } | null = null
 
   if (row.vendor_sku) {
     const { data: existingBySku, error: skuError } = await supabase
       .from('vendor_items')
-      .select('id')
+      .select(
+        'id, ingredient_id, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes'
+      )
       .eq('chef_id', tenantId)
       .eq('vendor_id', vendorId)
       .eq('vendor_sku', row.vendor_sku)
@@ -171,7 +182,9 @@ async function applyNormalizedRowToVendorItems(
   if (!existingItem) {
     const { data: existingByName, error: nameError } = await supabase
       .from('vendor_items')
-      .select('id')
+      .select(
+        'id, ingredient_id, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes'
+      )
       .eq('chef_id', tenantId)
       .eq('vendor_id', vendorId)
       .eq('vendor_item_name', row.vendor_item_name)
@@ -202,6 +215,18 @@ async function applyNormalizedRowToVendorItems(
 
     if (updateError) throw new Error(updateError.message)
 
+    await recordVendorPricePoint({
+      supabase,
+      tenantId,
+      vendorId,
+      ingredientId: existingItem.ingredient_id,
+      itemName: row.vendor_item_name,
+      unitMeasure: row.unit_measure,
+      unitSize: row.unit_size,
+      priceCents: row.unit_price_cents,
+      notes: row.notes,
+    })
+
     return { action: 'updated', vendorItemId: existingItem.id }
   }
 
@@ -212,6 +237,17 @@ async function applyNormalizedRowToVendorItems(
     .single()
 
   if (insertError) throw new Error(insertError.message)
+
+  await recordVendorPricePoint({
+    supabase,
+    tenantId,
+    vendorId,
+    itemName: row.vendor_item_name,
+    unitMeasure: row.unit_measure,
+    unitSize: row.unit_size,
+    priceCents: row.unit_price_cents,
+    notes: row.notes,
+  })
 
   return { action: 'inserted', vendorItemId: inserted.id }
 }

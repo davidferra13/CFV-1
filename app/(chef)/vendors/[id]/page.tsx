@@ -14,6 +14,9 @@ import { VendorCatalogReviewQueue } from '@/components/vendors/vendor-catalog-re
 import { listVendorCatalogQueue } from '@/lib/vendors/catalog-import-actions'
 import { VendorDocumentIntake } from '@/components/vendors/vendor-document-intake'
 import { listVendorDocumentUploads } from '@/lib/vendors/document-intake-actions'
+import { getVendorPriceInsights } from '@/lib/vendors/price-insights-actions'
+import { VendorPriceInsights } from '@/components/vendors/vendor-price-insights'
+import { VendorPriceAlertSettings } from '@/components/vendors/vendor-price-alert-settings'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import Link from 'next/link'
 
@@ -34,10 +37,20 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
   const { id } = await params
 
   const vendor = await getVendor(id)
-  const invoices = await listInvoices(id)
-  const allVendors = await listVendors()
-  const pendingCatalogRows = await listVendorCatalogQueue(vendor.id, 'pending')
-  const vendorUploads = await listVendorDocumentUploads(vendor.id, 30)
+  const [invoices, allVendors, pendingCatalogRows, vendorUploads, vendorInsights] =
+    await Promise.all([
+      listInvoices(id),
+      listVendors(),
+      listVendorCatalogQueue(vendor.id, 'pending'),
+      listVendorDocumentUploads(vendor.id, 30),
+      getVendorPriceInsights({
+        vendorId: vendor.id,
+        limit: 10,
+        trendItems: 6,
+        pointsPerTrend: 8,
+        lookbackDays: 180,
+      }),
+    ])
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -132,6 +145,18 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
 
       {/* Price list */}
       <VendorPriceList vendorId={vendor.id} items={vendor.items ?? []} />
+
+      {/* Price alerts + trend */}
+      <VendorPriceInsights
+        alerts={vendorInsights.alerts}
+        trends={vendorInsights.trends}
+        title="This Vendor Price Alerts & Trends"
+        thresholdPercent={vendorInsights.thresholdPercent}
+      />
+      <VendorPriceAlertSettings
+        vendorId={vendor.id}
+        thresholdPercent={vendorInsights.thresholdPercent}
+      />
 
       {/* Supplier file intake */}
       <VendorDocumentIntake vendorId={vendor.id} uploads={vendorUploads} />
