@@ -22,7 +22,7 @@ type Incentive = {
 
 // ─── Issue button + modal ────────────────────────────────────────────────────
 
-function IssueButton({ clients }: { clients: Client[] }) {
+export function IssueButton({ clients }: { clients: Client[] }) {
   const [open, setOpen] = useState(false)
   const router = useRouter()
 
@@ -73,7 +73,7 @@ function IssueButton({ clients }: { clients: Client[] }) {
 
 // ─── Row action buttons (Send / Deactivate) ──────────────────────────────────
 
-function RowActions({ incentive }: { incentive: Incentive }) {
+export function RowActions({ incentive }: { incentive: Incentive }) {
   const [sendOpen, setSendOpen] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
@@ -167,10 +167,4 @@ function RowActions({ incentive }: { incentive: Incentive }) {
       )}
     </>
   )
-}
-
-// Export as a namespace so server components can reference sub-components
-export const GiftCardsClientShell = {
-  IssueButton,
-  RowActions,
 }
