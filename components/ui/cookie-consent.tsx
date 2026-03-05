@@ -53,7 +53,7 @@ export function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-2 left-1/2 z-50 w-[calc(100%-1rem)] max-w-lg -translate-x-1/2 animate-slide-up-fade rounded-xl border border-stone-700/60 bg-stone-900/90 px-4 py-4 shadow-lg backdrop-blur-md sm:bottom-4 sm:px-6">
+    <div className="fixed inset-x-2 bottom-2 z-50 animate-slide-up-fade rounded-xl border border-stone-700/60 bg-stone-900/90 px-4 py-4 shadow-lg backdrop-blur-md sm:bottom-4 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:px-6">
       <button
         type="button"
         className="absolute right-2 top-2 rounded-md p-1 text-stone-400 transition-colors hover:text-stone-200"
@@ -70,10 +70,10 @@ export function CookieConsent() {
         </Link>
         .
       </span>
-      <div className="flex w-full shrink-0 gap-2 md:w-auto">
+      <div className="flex w-full shrink-0 flex-wrap gap-2 md:w-auto md:flex-nowrap">
         <button
           type="button"
-          className="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 transition-all hover:text-stone-100"
+          className="min-w-[88px] flex-1 rounded-lg px-4 py-2 text-sm font-medium text-stone-300 transition-all hover:text-stone-100 md:flex-none"
           onClick={handleDismiss}
           aria-label="Dismiss cookie banner for now"
         >
@@ -81,7 +81,7 @@ export function CookieConsent() {
         </button>
         <button
           type="button"
-          className="text-stone-400 hover:text-stone-200 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          className="min-w-[88px] flex-1 rounded-lg px-4 py-2 text-sm font-medium text-stone-400 transition-all hover:text-stone-200 md:flex-none"
           onClick={() => handleConsent('declined')}
           aria-label="Decline cookies"
         >
@@ -89,7 +89,7 @@ export function CookieConsent() {
         </button>
         <button
           type="button"
-          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand-700 transition-all"
+          className="min-w-[88px] flex-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-brand-700 md:flex-none"
           onClick={() => handleConsent('accepted')}
           aria-label="Accept cookies"
         >
