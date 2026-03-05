@@ -23,8 +23,30 @@ type BetaOnboardingLinkInput = {
   source?: string
 }
 
-// Admin email for signup notifications
-const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com'
+// Platform owner account — must always receive critical notifications.
+const FOUNDER_EMAIL = 'davidferra13@gmail.com'
+const DEFAULT_ADMIN_NOTIFICATION_EMAIL = 'info@cheflowhq.com'
+
+function parseEmailList(value: string | undefined): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function resolveBetaSignupNotificationRecipients(): string[] {
+  const recipients = [
+    ...parseEmailList(process.env.ADMIN_NOTIFICATION_EMAILS),
+    ...parseEmailList(process.env.ADMIN_NOTIFICATION_EMAIL),
+    ...parseEmailList(process.env.ADMIN_EMAILS),
+    DEFAULT_ADMIN_NOTIFICATION_EMAIL,
+    FOUNDER_EMAIL,
+  ]
+
+  return Array.from(new Set(recipients))
+}
+
+const ADMIN_NOTIFICATION_RECIPIENTS = resolveBetaSignupNotificationRecipients()
 
 // ── In-memory IP rate limiting (same pattern as embed inquiry) ──
 const ipBuckets = new Map<string, { count: number; windowStart: number }>()
@@ -126,7 +148,7 @@ export async function submitBetaSignup(
       try {
         const totalSignups = await getBetaSignupCount()
         await sendEmail({
-          to: ADMIN_EMAIL,
+          to: ADMIN_NOTIFICATION_RECIPIENTS,
           subject: `New beta signup: ${name}`,
           react: BetaSignupAdminEmail({
             name,

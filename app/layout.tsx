@@ -3,6 +3,7 @@ import { Inter, DM_Serif_Display } from 'next/font/google'
 import { CookieConsent } from '@/components/ui/cookie-consent'
 import { SwRegister } from '@/components/pwa/sw-register'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
+import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
 import './globals.css'
 
 const inter = Inter({
@@ -106,7 +107,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
 
-        <PostHogProvider>{children}</PostHogProvider>
+        <PostHogProvider>
+          <PerformanceTelemetry />
+          {children}
+        </PostHogProvider>
         <CookieConsent />
         <SwRegister />
       </body>

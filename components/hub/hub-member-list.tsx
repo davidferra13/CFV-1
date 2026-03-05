@@ -22,7 +22,7 @@ interface HubMemberListProps {
 export function HubMemberList({ members, currentProfileId }: HubMemberListProps) {
   return (
     <div className="p-4">
-      <h3 className="mb-4 text-sm font-semibold text-stone-300">ðŸ‘¥ Members ({members.length})</h3>
+      <h3 className="mb-4 text-sm font-semibold text-stone-300">👥 Members ({members.length})</h3>
 
       <div className="space-y-2">
         {members.map((member) => {

@@ -1,7 +1,7 @@
 ﻿'use client'
 // Notification Settings Form
 // Per-category channel toggles (email, push, SMS) + SMS phone setup.
-// Mounted on /settings/notifications. Uses optimistic UI â€” saves on toggle.
+// Mounted on /settings/notifications. Uses optimistic UI — saves on toggle.
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -67,7 +67,7 @@ function getTierDefault(category: NotificationCategory): {
   return TIER_CHANNEL_DEFAULTS[tier]
 }
 
-// â”€â”€â”€ Category Channel Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Category Channel Row ────────────────────────────────────────────────────
 
 type ChannelToggleProps = {
   label: string
@@ -104,7 +104,7 @@ function ChannelToggle({ label, checked, disabled, onChange }: ChannelToggleProp
   )
 }
 
-// â”€â”€â”€ Main Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main Form ────────────────────────────────────────────────────────────────
 
 type Props = {
   initialPreferences: CategoryPreference[]
@@ -240,7 +240,7 @@ export function NotificationSettingsForm({
 
   return (
     <div className="space-y-8">
-      {/* â”€â”€â”€ Browser Push â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Browser Push ───────────────────────────────────────────── */}
       <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h2 className="text-base font-semibold text-stone-100">Browser Push Notifications</h2>
         <p className="mt-1 text-sm text-stone-500">
@@ -257,7 +257,7 @@ export function NotificationSettingsForm({
             )}
             {pushState === 'denied' && (
               <p className="text-sm text-red-600">
-                Blocked by browser â€” open browser settings to re-allow.
+                Blocked by browser — open browser settings to re-allow.
               </p>
             )}
             {pushState === 'unsupported' && (
@@ -277,13 +277,13 @@ export function NotificationSettingsForm({
                   : 'bg-stone-900 text-white hover:bg-stone-800',
               ].join(' ')}
             >
-              {pushLoading ? 'â€¦' : pushState === 'subscribed' ? 'Disable push' : 'Enable push'}
+              {pushLoading ? '…' : pushState === 'subscribed' ? 'Disable push' : 'Enable push'}
             </button>
           )}
         </div>
       </section>
 
-      {/* â”€â”€â”€ In-App Attention Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── In-App Attention Controls ─────────────────── */}
       <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h2 className="text-base font-semibold text-stone-100">In-App Attention Controls</h2>
         <p className="mt-1 text-sm text-stone-500">
@@ -357,7 +357,7 @@ export function NotificationSettingsForm({
               disabled={isPending}
               className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : 'Save attention controls'}
+              {isPending ? 'Saving...' : 'Save attention controls'}
             </button>
             {experienceSaved && <span className="text-sm text-emerald-600">Saved</span>}
             {experienceError && <span className="text-sm text-red-600">{experienceError}</span>}
@@ -405,7 +405,7 @@ export function NotificationSettingsForm({
               disabled={isPending}
               className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Savingâ€¦' : 'Save SMS settings'}
+              {isPending ? 'Saving…' : 'Save SMS settings'}
             </button>
             {smsSaved && <span className="text-sm text-emerald-600">Saved</span>}
             {smsError && <span className="text-sm text-red-600">{smsError}</span>}
@@ -413,7 +413,7 @@ export function NotificationSettingsForm({
         </div>
       </section>
 
-      {/* â”€â”€â”€ Per-Category Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Per-Category Toggles ────────────────────────────────────── */}
       <section className="rounded-xl border border-stone-700 bg-stone-900">
         <div className="border-b border-stone-700 p-5">
           <h2 className="text-base font-semibold text-stone-100">Channel Overrides by Category</h2>

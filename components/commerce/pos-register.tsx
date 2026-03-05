@@ -1252,7 +1252,7 @@ export function PosRegister({
         try {
           await createOrderQueueEntry({ saleId: result.saleId })
         } catch {
-          // Non-blocking â€” order queue is optional
+          // Non-blocking — order queue is optional
         }
 
         if (selectedDiningCheck) {

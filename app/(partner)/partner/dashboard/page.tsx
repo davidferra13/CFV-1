@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 // Partner Portal Dashboard
-// The partner's home base â€” stats, location cards, recent events, and their
+// The partner's home base — stats, location cards, recent events, and their
 // partnership origin story. Tone: pride, warmth, validation.
 // No financial data shown here. Exposure IS the value.
 
@@ -52,7 +52,7 @@ export default async function PartnerDashboardPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Welcome back, {partner.name}</h1>
         <p className="mt-1 text-stone-500">
-          Here's the impact your space is making â€” every event below happened because of you.
+          Here's the impact your space is making — every event below happened because of you.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export default async function PartnerDashboardPage() {
                   ? `This partnership began when a guest (${originClientName}) hosted a ${originEventSummary} at your space. They were so impressed, they reached out about becoming a partner.`
                   : originEventSummary
                     ? `This partnership began with a ${originEventSummary} at your space. One great event changed everything.`
-                    : `This partnership began through a client referral â€” proof that great experiences create lasting relationships.`}
+                    : `This partnership began through a client referral — proof that great experiences create lasting relationships.`}
               </p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default async function PartnerDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-stone-100">Your Locations</h2>
             <Link href="/partner/locations" className="text-sm text-stone-500 hover:text-stone-200">
-              Manage â†’
+              Manage →
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,7 +132,7 @@ export default async function PartnerDashboardPage() {
                       <p className="text-xs text-stone-400 mt-2">
                         {eventCount} event{eventCount === 1 ? '' : 's'} hosted
                         {location.max_guest_count
-                          ? ` Â· Up to ${location.max_guest_count} guests`
+                          ? ` · Up to ${location.max_guest_count} guests`
                           : ''}
                       </p>
                     </div>
@@ -165,10 +165,10 @@ export default async function PartnerDashboardPage() {
                       <td className="px-4 py-3 text-stone-300">
                         {format(new Date(evt.event_date), 'MMM d, yyyy')}
                       </td>
-                      <td className="px-4 py-3 text-stone-300">{evt.occasion ?? 'â€”'}</td>
-                      <td className="px-4 py-3 text-stone-500">{loc?.name ?? 'â€”'}</td>
+                      <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '—'}</td>
+                      <td className="px-4 py-3 text-stone-500">{loc?.name ?? '—'}</td>
                       <td className="px-4 py-3 text-right text-stone-300">
-                        {evt.guest_count ?? 'â€”'}
+                        {evt.guest_count ?? '—'}
                       </td>
                     </tr>
                   )
@@ -185,7 +185,7 @@ export default async function PartnerDashboardPage() {
           <MapPin size={32} className="mx-auto text-stone-300 mb-3" />
           <h3 className="font-semibold text-stone-300 mb-1">No locations yet</h3>
           <p className="text-sm text-stone-500">
-            Your chef will add your locations. Check back soon â€” your showcase is on its way.
+            Your chef will add your locations. Check back soon — your showcase is on its way.
           </p>
         </div>
       )}

@@ -60,31 +60,33 @@ export default async function CallsPage({ searchParams }: Props) {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex gap-1 text-sm border-b border-stone-700">
-        {[
-          { label: 'All', href: '/calls' },
-          { label: 'Upcoming', href: '/calls?status=scheduled' },
-          { label: 'Completed', href: '/calls?status=completed' },
-          { label: 'No-show', href: '/calls?status=no_show' },
-          { label: 'Cancelled', href: '/calls?status=cancelled' },
-        ].map((tab) => {
-          const isActive =
-            (!statusFilter && tab.href === '/calls') ||
-            (statusFilter && tab.href.includes(statusFilter))
-          return (
-            <Link
-              key={tab.label}
-              href={tab.href}
-              className={`px-3 py-2 border-b-2 -mb-px transition-colors ${
-                isActive
-                  ? 'border-blue-600 text-blue-400 font-medium'
-                  : 'border-transparent text-stone-500 hover:text-stone-300'
-              }`}
-            >
-              {tab.label}
-            </Link>
-          )
-        })}
+      <div className="overflow-x-auto border-b border-stone-700">
+        <div className="flex w-max min-w-full gap-1 text-sm">
+          {[
+            { label: 'All', href: '/calls' },
+            { label: 'Upcoming', href: '/calls?status=scheduled' },
+            { label: 'Completed', href: '/calls?status=completed' },
+            { label: 'No-show', href: '/calls?status=no_show' },
+            { label: 'Cancelled', href: '/calls?status=cancelled' },
+          ].map((tab) => {
+            const isActive =
+              (!statusFilter && tab.href === '/calls') ||
+              (statusFilter && tab.href.includes(statusFilter))
+            return (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className={`whitespace-nowrap px-3 py-2 border-b-2 -mb-px transition-colors ${
+                  isActive
+                    ? 'border-blue-600 text-blue-400 font-medium'
+                    : 'border-transparent text-stone-500 hover:text-stone-300'
+                }`}
+              >
+                {tab.label}
+              </Link>
+            )
+          })}
+        </div>
       </div>
 
       {/* Upcoming section */}

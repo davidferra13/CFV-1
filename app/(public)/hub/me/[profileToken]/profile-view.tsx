@@ -27,9 +27,9 @@ export function ProfileView({ profile: initialProfile, eventHistory, groups }: P
     .slice(0, 2)
 
   const tabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
-    { id: 'dinners', label: 'My Dinners', emoji: 'ðŸ½ï¸', count: eventHistory.length },
-    { id: 'groups', label: 'My Groups', emoji: 'ðŸ‘¥', count: groups.length },
-    { id: 'dietary', label: 'Dietary', emoji: 'ðŸ¥—' },
+    { id: 'dinners', label: 'My Dinners', emoji: '🍽️', count: eventHistory.length },
+    { id: 'groups', label: 'My Groups', emoji: '👥', count: groups.length },
+    { id: 'dietary', label: 'Dietary', emoji: '🥗' },
   ]
 
   return (
@@ -181,7 +181,7 @@ export function ProfileView({ profile: initialProfile, eventHistory, groups }: P
                     href={`/hub/g/${group.group_token}`}
                     className="flex items-center gap-3 rounded-xl border border-stone-800 bg-stone-900/50 p-4 transition-colors hover:bg-stone-800/50"
                   >
-                    <span className="text-2xl">{group.emoji ?? 'ðŸ‘¥'}</span>
+                    <span className="text-2xl">{group.emoji ?? '👥'}</span>
                     <div className="flex-1 min-w-0">
                       <h3 className="truncate text-sm font-semibold text-stone-200">
                         {group.name}

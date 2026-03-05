@@ -1,4 +1,4 @@
-﻿// Menu Approval Workflow â€” Server Actions
+﻿// Menu Approval Workflow — Server Actions
 // Enables chefs to send menu snapshots to clients for formal approval,
 // and clients to approve or request revisions.
 
@@ -114,7 +114,7 @@ export async function sendMenuForApproval(eventId: string) {
     const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/my-events/${eventId}/approve-menu?req=${request.request_id}`
     await sendEmail({
       to: client.email,
-      subject: `Menu ready for review â€” ${event.occasion ?? 'your event'}`,
+      subject: `Menu ready for review — ${event.occasion ?? 'your event'}`,
       react: React.createElement(MenuApprovalRequestEmail, {
         clientName: client.full_name ?? 'there',
         occasion: event.occasion ?? 'your upcoming event',

@@ -19,7 +19,7 @@ type Props = {
   guestToken?: string
 }
 
-const QUICK_EMOJIS = ['ðŸŽ‰', 'ðŸ½ï¸', 'ðŸ¤©', 'â¤ï¸', 'ðŸ”¥', 'ðŸ‘¨â€ðŸ³']
+const QUICK_EMOJIS = ['🎉', '🍽️', '🤩', '❤️', '🔥', '👨‍🍳']
 
 export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
@@ -41,7 +41,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
       const data = await getEventMessages(shareToken)
       setMessages(data)
     } catch {
-      // Silently fail â€” wall is non-critical
+      // Silently fail — wall is non-critical
     } finally {
       setLoading(false)
     }
@@ -124,7 +124,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, 500))}
-            placeholder="Can't wait for this dinner! ðŸŽ‰"
+            placeholder="Can't wait for this dinner! 🎉"
             rows={2}
             required
             className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none"

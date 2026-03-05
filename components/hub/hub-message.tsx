@@ -5,7 +5,7 @@ import { useState } from 'react'
 import type { HubMessage, HubGuestProfile } from '@/lib/hub/types'
 import { addReaction, removeReaction } from '@/lib/hub/message-actions'
 
-const QUICK_REACTIONS = ['ðŸ”¥', 'â¤ï¸', 'ðŸ˜‚', 'ðŸ½ï¸', 'ðŸ‘', 'ðŸŽ‰']
+const QUICK_REACTIONS = ['🔥', '❤️', '😂', '🍽️', '👏', '🎉']
 
 interface HubMessageBubbleProps {
   message: HubMessage
@@ -43,7 +43,7 @@ export function HubMessageBubble({
     return (
       <div className="flex justify-center py-2">
         <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-4 py-3 text-sm text-stone-300">
-          ðŸ“Š {message.body}
+          📊 {message.body}
         </div>
       </div>
     )
@@ -132,7 +132,7 @@ export function HubMessageBubble({
           )}
 
           {/* Pin badge */}
-          {message.is_pinned && <div className="mt-1 text-xs opacity-60">ðŸ“Œ Pinned</div>}
+          {message.is_pinned && <div className="mt-1 text-xs opacity-60">📌 Pinned</div>}
         </div>
 
         {isOwn && <span className="mt-0.5 text-xs text-stone-600">{timeStr}</span>}
@@ -160,7 +160,7 @@ export function HubMessageBubble({
             className="rounded p-1 text-xs text-stone-500 hover:bg-stone-800 hover:text-stone-300"
             title="React"
           >
-            ðŸ˜€
+            😀
           </button>
           {onReply && (
             <button
@@ -168,7 +168,7 @@ export function HubMessageBubble({
               className="rounded p-1 text-xs text-stone-500 hover:bg-stone-800 hover:text-stone-300"
               title="Reply"
             >
-              â†©ï¸
+              ↩️
             </button>
           )}
           {onPin && (
@@ -177,7 +177,7 @@ export function HubMessageBubble({
               className="rounded p-1 text-xs text-stone-500 hover:bg-stone-800 hover:text-stone-300"
               title={message.is_pinned ? 'Unpin' : 'Pin'}
             >
-              ðŸ“Œ
+              📌
             </button>
           )}
         </div>

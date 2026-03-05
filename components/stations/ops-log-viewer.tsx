@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
-// Ops Log Viewer â€” Searchable, paginated history of all station operations
+// Ops Log Viewer — Searchable, paginated history of all station operations
 // Filter by action type, station, and date range. Expandable detail rows.
 
 import { useState, useEffect } from 'react'

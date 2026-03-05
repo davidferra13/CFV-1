@@ -588,7 +588,7 @@ export function ControlPacketClient({
             >
               {initialData.snapshots.map((snapshot) => (
                 <option key={snapshot.id} value={snapshot.id}>
-                  v{snapshot.version_number} Â·{' '}
+                  v{snapshot.version_number} ·{' '}
                   {new Date(snapshot.generated_at).toLocaleString('en-US')}
                 </option>
               ))}
@@ -752,13 +752,13 @@ export function ControlPacketClient({
                 {(activeSnapshot.seating_snapshot ?? []).map((seat: any) => (
                   <tr key={String(seat.seatId)} className="border-t border-[#1e3520]">
                     <td className="px-2 py-2 text-[#d2e8d4]">{String(seat.seatId ?? '')}</td>
-                    <td className="px-2 py-2 text-[#d2e8d4]">{String(seat.guestName ?? 'â€”')}</td>
+                    <td className="px-2 py-2 text-[#d2e8d4]">{String(seat.guestName ?? '—')}</td>
                     <td className="px-2 py-2 text-[#8ebf92]">
                       {String(seat.participationStatus ?? '')}
                     </td>
                     {displayCourses.map((course) => (
                       <td key={course.courseIndex} className="px-2 py-2 text-[#7cab80]">
-                        Dose â˜ Skip â˜ Out â˜
+                        Dose ☐ Skip ☐ Out ☐
                       </td>
                     ))}
                   </tr>
@@ -859,7 +859,7 @@ export function ControlPacketClient({
                       key={`${row.seatId}-${row.guestName}`}
                       className="border-t border-[#1e3520]"
                     >
-                      <td className="px-2 py-2 text-[#8ebf92]">{row.seatId || 'â€”'}</td>
+                      <td className="px-2 py-2 text-[#8ebf92]">{row.seatId || '—'}</td>
                       <td className="px-2 py-2 text-[#d2e8d4]">{row.guestName}</td>
                       <td className="px-2 py-2">
                         <input
@@ -1027,8 +1027,8 @@ export function ControlPacketClient({
           className="rounded-xl p-3 text-xs"
           style={{ background: '#181b12', border: '1px solid #7f5a2b', color: '#ffd8a6' }}
         >
-          Missing entries: {(mismatchSummary.missingEntries ?? []).length} Â· Planned/served
-          mismatch: {(mismatchSummary.plannedVsServedMismatch ?? []).length} Â· Course mismatch:{' '}
+          Missing entries: {(mismatchSummary.missingEntries ?? []).length} · Planned/served
+          mismatch: {(mismatchSummary.plannedVsServedMismatch ?? []).length} · Course mismatch:{' '}
           {(mismatchSummary.courseMismatch ?? []).length}
         </section>
       )}

@@ -9,7 +9,7 @@ import { Star, Plus, Trash2, GripVertical } from 'lucide-react'
 import { addPortfolioItem, removePortfolioItem, reorderPortfolio } from '@/lib/portfolio/actions'
 import { toast } from 'sonner'
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PortfolioItem {
   id: string
@@ -23,7 +23,7 @@ interface GridEditorProps {
   items: PortfolioItem[]
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function GridEditor({ items: initialItems }: GridEditorProps) {
   const [items, setItems] = useState<PortfolioItem[]>(initialItems)

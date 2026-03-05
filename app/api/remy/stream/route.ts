@@ -1,5 +1,5 @@
-// Remy â€” Streaming Chat API Route
-// PRIVACY: Processes chef messages with full business context â€” must stay local via Ollama.
+// Remy - Streaming Chat API Route
+// PRIVACY: Processes chef messages with full business context - must stay local via Ollama.
 // Uses Server-Sent Events (SSE) to stream token-by-token responses.
 
 import { NextRequest } from 'next/server'
@@ -51,14 +51,14 @@ import { recordRemyMetric } from '@/lib/ai/remy-metrics'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Types
 
 interface StreamEvent {
   type: 'token' | 'tasks' | 'nav' | 'memories' | 'done' | 'error' | 'intent'
   data: unknown
 }
 
-// â”€â”€â”€ Navigation Route Map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Navigation Route Map
 
 const NAV_ROUTE_MAP = `
 AVAILABLE PAGES (suggest these when relevant):
@@ -98,7 +98,7 @@ AVAILABLE PAGES (suggest these when relevant):
 /remy - Remy history (everything Remy has saved)
 `.trim()
 
-// â”€â”€â”€ System Prompt Builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  System Prompt Builder
 
 function formatMemoriesForPrompt(memories: RemyMemory[]): string {
   if (memories.length === 0) return ''
@@ -119,7 +119,7 @@ function formatMemoriesForPrompt(memories: RemyMemory[]): string {
   }
 
   sections.push(
-    "\nUse these memories naturally â€” reference them when relevant, but don't recite them mechanically."
+    "\nUse these memories naturally - reference them when relevant, but don't recite them mechanically."
   )
 
   return sections.join('\n')
@@ -147,7 +147,7 @@ function buildRemySystemPrompt(
   const archetype = getArchetype(archetypeId)
   parts.push(`\n${archetype.promptModifier}`)
 
-  // Few-shot examples â€” show Remy how to respond, not just what to be
+  // Few-shot examples - show Remy how to respond, not just what to be
   parts.push(REMY_FEW_SHOT_EXAMPLES)
 
   parts.push(REMY_DRAFT_INSTRUCTIONS)
@@ -158,18 +158,18 @@ function buildRemySystemPrompt(
   // Inject culinary profile if available
   if (culinaryProfile) {
     parts.push(
-      `\nCHEF'S CULINARY IDENTITY:\n${culinaryProfile}\nUse this to personalize responses â€” reference their style, cuisines, and philosophy when relevant.`
+      `\nCHEF'S CULINARY IDENTITY:\n${culinaryProfile}\nUse this to personalize responses - reference their style, cuisines, and philosophy when relevant.`
     )
   }
 
   // Inject favorite chefs if available
   if (favoriteChefs) {
     parts.push(
-      `\nCHEF'S CULINARY HEROES:\n${favoriteChefs}\nReference these when discussing inspiration, technique, or style â€” the chef admires these people.`
+      `\nCHEF'S CULINARY HEROES:\n${favoriteChefs}\nReference these when discussing inspiration, technique, or style - the chef admires these people.`
     )
   }
 
-  // Current timestamp â€” so Remy knows the time, day, and date
+  // Current timestamp - so Remy knows the time, day, and date
   const now = new Date()
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const timeStr = now.toLocaleTimeString('en-US', {
@@ -185,7 +185,7 @@ function buildRemySystemPrompt(
   parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}`)
 
   parts.push(`\nBUSINESS CONTEXT:
-- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` â€” "${context.tagline}"` : ''}
+- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
@@ -215,7 +215,7 @@ ${context.upcomingEvents
     )
   }
 
-  // Daily plan â€” what's on the chef's plate today
+  // Daily plan - what's on the chef's plate today
   if (context.dailyPlan && context.dailyPlan.totalItems > 0) {
     const dp = context.dailyPlan
     parts.push(`\nTODAY'S DAILY PLAN (${dp.totalItems} items, ~${dp.estimatedMinutes} min):
@@ -226,7 +226,7 @@ ${context.upcomingEvents
 The chef can see the full structured view at /daily.`)
   }
 
-  // Email digest â€” proactive communication awareness
+  // Email digest - proactive communication awareness
   if (context.emailDigest && context.emailDigest.totalSinceYesterday > 0) {
     const d = context.emailDigest
     const emailLines: string[] = [
@@ -242,11 +242,11 @@ The chef can see the full structured view at /daily.`)
             : e.classification === 'existing_thread'
               ? ' [CLIENT REPLY]'
               : ''
-        emailLines.push(`- From: ${e.from} â€” "${e.subject}"${cls}`)
+        emailLines.push(`- From: ${e.from} - "${e.subject}"${cls}`)
       }
     }
     emailLines.push(
-      'You can search, read, or summarize emails. Draft replies are always drafts â€” never auto-sent.'
+      'You can search, read, or summarize emails. Draft replies are always drafts - never auto-sent.'
     )
     parts.push(emailLines.join('\n'))
   }
@@ -262,7 +262,7 @@ The chef can see the full structured view at /daily.`)
     }
     if (cal.calendarEntries.length > 0) {
       sections.push(
-        `Calendar entries: ${cal.calendarEntries.map((c) => `${c.title} ${c.startDate}â€“${c.endDate} [${c.type.replace(/_/g, ' ')}]${c.blocksBookings ? ' BLOCKS BOOKINGS' : ''}`).join('; ')}`
+        `Calendar entries: ${cal.calendarEntries.map((c) => `${c.title} ${c.startDate}-${c.endDate} [${c.type.replace(/_/g, ' ')}]${c.blocksBookings ? ' BLOCKS BOOKINGS' : ''}`).join('; ')}`
       )
     }
     if (cal.waitlistEntries.length > 0) {
@@ -314,7 +314,7 @@ ${context.activeTodos.map((t) => `- ${t.title}${t.dueDate ? ` (due ${t.dueDate})
   // Scheduled calls
   if (context.upcomingCalls && context.upcomingCalls.length > 0) {
     parts.push(`\nUPCOMING CALLS (${context.upcomingCalls.length}):
-${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` â€” ${c.purpose}` : ''}`).join('\n')}`)
+${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` - ${c.purpose}` : ''}`).join('\n')}`)
   }
 
   // Documents
@@ -333,7 +333,7 @@ ${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledA
 ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title} (${new Date(a.createdAt).toLocaleDateString()})`).join('\n')}`)
   }
 
-  // â”€â”€â”€ Context enrichment sections (2026-02-28) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  Context enrichment sections (2026-02-28)
 
   // Recipe library stats
   if (context.recipeStats && context.recipeStats.totalRecipes > 0) {
@@ -349,7 +349,7 @@ ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title}
       (c) => c.allergies.length > 0 || c.dietaryRestrictions.length > 0
     )
     if (clientsWithAllergies.length > 0) {
-      parts.push(`\nâš ï¸ CLIENT DIETARY & ALLERGY DATA (SAFETY-CRITICAL â€” always flag prominently):
+      parts.push(`\n[ALERT] CLIENT DIETARY & ALLERGY DATA (SAFETY-CRITICAL - always flag prominently):
 ${clientsWithAllergies
   .map((c) => {
     const lines: string[] = [`- ${c.name}:`]
@@ -373,7 +373,7 @@ ${clientsWithAllergies
           su.includes('CROSS-CONTAM')
         )
       })
-      if (safetySentences.length > 0) lines.push(`  âš ï¸ ${safetySentences.join('. ')}`)
+      if (safetySentences.length > 0) lines.push(`  [ALERT] ${safetySentences.join('. ')}`)
     }
     return lines.join('\n')
   })
@@ -383,7 +383,7 @@ When asked about these clients' dietary needs, ALWAYS prominently flag allergies
 
     parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
 ${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}
-Use these to personalize communication â€” draft emails and messages that match each client's vibe.`)
+Use these to personalize communication - draft emails and messages that match each client's vibe.`)
   }
 
   // Recent after-action review insights
@@ -396,20 +396,20 @@ Use these to personalize communication â€” draft emails and messages that m
 ${aars
   .map((a) => {
     const parts: string[] = []
-    if (a.wentWell) parts.push(`âœ… ${a.wentWell}`)
-    if (a.toImprove) parts.push(`âš ï¸ ${a.toImprove}`)
-    if (a.lessonsLearned) parts.push(`ðŸ’¡ ${a.lessonsLearned}`)
+    if (a.wentWell) parts.push(`[OK] ${a.wentWell}`)
+    if (a.toImprove) parts.push(`[ALERT] ${a.toImprove}`)
+    if (a.lessonsLearned) parts.push(`[TIP] ${a.lessonsLearned}`)
     return parts.join(' | ')
   })
   .join('\n')}
-Reference these when relevant â€” help the chef avoid past mistakes and repeat successes.`)
+Reference these when relevant - help the chef avoid past mistakes and repeat successes.`)
     }
   }
 
   // Pending menu approvals
   if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
     parts.push(
-      `\nðŸ“‹ PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')} â€” waiting for client response`
+      `\n[CHECKLIST] PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')} - waiting for client response`
     )
   }
 
@@ -417,11 +417,11 @@ Reference these when relevant â€” help the chef avoid past mistakes and rep
   if (context.unreadInquiryMessages && context.unreadInquiryMessages.length > 0) {
     const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
     parts.push(
-      `\nðŸ“¬ UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')} â€” need a response`
+      `\n[MAIL] UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')} - need a response`
     )
   }
 
-  // Navigation trail â€” what pages the chef visited this session
+  // Navigation trail - what pages the chef visited this session
   if (recentPages && recentPages.length > 0) {
     const trail = recentPages.map((p) => {
       const time = new Date(p.at).toLocaleTimeString('en-US', {
@@ -431,12 +431,12 @@ Reference these when relevant â€” help the chef avoid past mistakes and rep
       })
       return `- ${time}: ${p.label} (${p.path})`
     })
-    parts.push(`\nSESSION NAVIGATION (where the chef has been this session, oldestâ†’newest):
+    parts.push(`\nSESSION NAVIGATION (where the chef has been this session, oldest->newest):
 ${trail.join('\n')}
-This shows the chef's workflow â€” what they've been looking at and in what order. Use it to understand their current focus.`)
+This shows the chef's workflow - what they've been looking at and in what order. Use it to understand their current focus.`)
   }
 
-  // Recent mutations â€” what the chef just did in the app
+  // Recent mutations - what the chef just did in the app
   if (recentActions && recentActions.length > 0) {
     const actions = recentActions.map((a) => {
       const time = new Date(a.at).toLocaleTimeString('en-US', {
@@ -444,14 +444,14 @@ This shows the chef's workflow â€” what they've been looking at and in what
         minute: '2-digit',
         hour12: true,
       })
-      return `- ${time}: ${a.action} â€” ${a.entity}`
+      return `- ${time}: ${a.action} - ${a.entity}`
     })
     parts.push(`\nRECENT ACTIONS (what the chef just did in the app):
 ${actions.join('\n')}
-These are real actions the chef just took. Reference them when relevant â€” e.g. "I see you just created that event, want me to draft a confirmation?"`)
+These are real actions the chef just took. Reference them when relevant - e.g. "I see you just created that event, want me to draft a confirmation?"`)
   }
 
-  // Recent errors â€” help the chef if they hit problems
+  // Recent errors - help the chef if they hit problems
   if (recentErrors && recentErrors.length > 0) {
     const errs = recentErrors.map((e) => {
       const time = new Date(e.at).toLocaleTimeString('en-US', {
@@ -463,10 +463,10 @@ These are real actions the chef just took. Reference them when relevant â€”
     })
     parts.push(`\nRECENT ERRORS (the chef hit these problems):
 ${errs.join('\n')}
-If the chef seems frustrated or asks about something failing, these errors are context. Proactively acknowledge if relevant â€” "I saw that didn't work earlier â€” let's figure it out."`)
+If the chef seems frustrated or asks about something failing, these errors are context. Proactively acknowledge if relevant - "I saw that didn't work earlier - let's figure it out."`)
   }
 
-  // Session duration â€” how long the chef has been working
+  // Session duration - how long the chef has been working
   if (sessionMinutes && sessionMinutes > 0) {
     const hours = Math.floor(sessionMinutes / 60)
     const mins = sessionMinutes % 60
@@ -474,23 +474,23 @@ If the chef seems frustrated or asks about something failing, these errors are c
     parts.push(`\nSESSION DURATION: The chef has been active for ${duration} this session.`)
     if (sessionMinutes > 120) {
       parts.push(
-        `That's a long session â€” they're grinding. Be efficient and sharp, don't waste their time.`
+        `That's a long session - they're grinding. Be efficient and sharp, don't waste their time.`
       )
     }
   }
 
-  // Cross-chat awareness â€” what was discussed in the other chat channel
+  // Cross-chat awareness - what was discussed in the other chat channel
   if (otherChannelDigest) {
     parts.push(`\nCONTEXT FROM OTHER CHAT CHANNEL:
 ${otherChannelDigest}
-You can reference this context naturally if relevant â€” don't force it or repeat what was already said.`)
+You can reference this context naturally if relevant - don't force it or repeat what was already said.`)
   }
 
-  // Survey mode â€” conversational survey takes over prompt context
+  // Survey mode - conversational survey takes over prompt context
   if (activeForm === 'remy-survey' && surveyPromptSection) {
     parts.push(`\n${surveyPromptSection}`)
   } else if (activeForm) {
-    // Active form â€” what the chef is currently working on
+    // Active form - what the chef is currently working on
     parts.push(
       `\nCURRENTLY WORKING ON: The chef is in the middle of "${activeForm}". If they ask a question, it's probably related to this. Keep answers contextual.`
     )
@@ -527,8 +527,8 @@ ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent c
 ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
 ON CLIENT PAGES: Full event history, client notes, and client reviews.
 ON INQUIRY PAGES: Full message thread.
-Use all available data when answering questions â€” never say "I don't have that info" if it's in one of these sections.
-If a section says "0" or is empty, that means there are NONE â€” do not invent any.
+Use all available data when answering questions - never say "I don't have that info" if it's in one of these sections.
+If a section says "0" or is empty, that means there are NONE - do not invent any.
 NEVER fabricate names, dates, amounts, or details to sound helpful.`)
 
   // Streaming mode: plain text with nav suggestions as JSON at the end
@@ -542,7 +542,7 @@ Present all suggestions as drafts. Never claim to have taken autonomous actions.
   return parts.join('\n')
 }
 
-// â”€â”€â”€ Conversation History Formatter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Conversation History Formatter
 
 function formatConversationHistory(history: RemyMessage[]): string {
   if (history.length === 0) return ''
@@ -553,7 +553,7 @@ function formatConversationHistory(history: RemyMessage[]): string {
   return `Previous conversation:\n${formatted}\n\n`
 }
 
-// â”€â”€â”€ Memory Intent Detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Memory Intent Detection
 
 const MEMORY_LIST_PATTERNS = [
   /\b(what|show|list|see|view|display)\b.*(you\s+)?remember/i,
@@ -591,7 +591,7 @@ function formatCategoryLabel(cat: string): string {
   return cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-// â”€â”€â”€ Pi Test Detection (Admin Only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Pi Test Detection (Admin Only)
 
 const PI_TEST_PATTERNS = [
   /\brun\s+(a\s+)?test\b/i,
@@ -617,7 +617,7 @@ async function handlePiTest(): Promise<Response> {
           encoder.encode(
             encodeSSE({
               type: 'token',
-              data: '**Pi Test â€” FAILED**\n\nNo `OLLAMA_PI_URL` configured in environment. Set it in `.env.local` and restart the dev server.',
+              data: '**Pi Test - FAILED**\n\nNo `OLLAMA_PI_URL` configured in environment. Set it in `.env.local` and restart the dev server.',
             })
           )
         )
@@ -651,7 +651,7 @@ async function handlePiTest(): Promise<Response> {
           encoder.encode(
             encodeSSE({
               type: 'token',
-              data: `**Pi Test â€” UNREACHABLE**\n\nCould not reach the Pi endpoint. Check that Ollama is running on the Pi and the network is connected.`,
+              data: `**Pi Test - UNREACHABLE**\n\nCould not reach the Pi endpoint. Check that Ollama is running on the Pi and the network is connected.`,
             })
           )
         )
@@ -689,7 +689,7 @@ async function handlePiTest(): Promise<Response> {
   const totalMs = Date.now() - startTime
 
   const report = [
-    '**Pi Test â€” SUCCESS**\n',
+    '**Pi Test - SUCCESS**\n',
     `| Detail | Value |`,
     `|--------|-------|`,
     `| Endpoint | Pi (configured) |`,
@@ -712,7 +712,7 @@ async function handlePiTest(): Promise<Response> {
   return new Response(stream, { headers: sseHeaders() })
 }
 
-// â”€â”€â”€ Task Result Summarizer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Task Result Summarizer
 
 function summarizeTaskResults(results: RemyTaskResult[]): string {
   if (results.length === 0)
@@ -739,10 +739,10 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       if (pendingData?.draftText) {
         const label = pendingData.clientName ? ` for ${pendingData.clientName}` : ''
         summaries.push(
-          `I've drafted "${name}"${label} for your review â€” edit before sending:\n\n${pendingData.draftText}`
+          `I've drafted "${name}"${label} for your review - edit before sending:\n\n${pendingData.draftText}`
         )
       } else {
-        summaries.push(`I've drafted "${name}" for your review â€” check the card below.`)
+        summaries.push(`I've drafted "${name}" for your review - check the card below.`)
       }
       continue
     }
@@ -762,13 +762,13 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
           const parts = [c.name]
           if (c.loyaltyTier) parts.push(`(${c.loyaltyTier} tier)`)
           if (c.allergies && c.allergies.length > 0)
-            parts.push(`\n  âš ï¸ ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
+            parts.push(`\n  [ALERT] ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
           if (c.dietaryRestrictions && c.dietaryRestrictions.length > 0)
             parts.push(`\n  Dietary: ${c.dietaryRestrictions.join(', ')}`)
           return parts.join(' ')
         })
         summaries.push(
-          `Found ${d.clients.length} client${d.clients.length > 1 ? 's' : ''}:\n${clientLines.map((l) => `â€¢ ${l}`).join('\n')}`
+          `Found ${d.clients.length} client${d.clients.length > 1 ? 's' : ''}:\n${clientLines.map((l) => `- ${l}`).join('\n')}`
         )
       }
     } else if (task.taskType === 'calendar.availability' && task.data) {
@@ -777,7 +777,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         available: boolean
         conflicts?: Array<{ occasion: string }>
       }
-      if (d.available) summaries.push(`${d.date} is available â€” no events booked.`)
+      if (d.available) summaries.push(`${d.date} is available - no events booked.`)
       else
         summaries.push(
           `${d.date} is not available. You have: ${d.conflicts?.map((c) => c.occasion).join(', ') ?? 'a conflict'}`
@@ -794,7 +794,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       if (d.events.length === 0) summaries.push('No upcoming events.')
       else
         summaries.push(
-          `Here are your upcoming events:\n${d.events.map((e) => `â€¢ ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.status})`).join('\n')}`
+          `Here are your upcoming events:\n${d.events.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.status})`).join('\n')}`
         )
     } else if (task.taskType === 'event.details' && task.data) {
       const d = task.data as {
@@ -841,7 +841,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       if (d.results.length === 0) summaries.push(`No web results found for "${d.query}".`)
       else
         summaries.push(
-          `Here's what I found online for "${d.query}":\n${d.results.map((r) => `â€¢ **${r.title}**\n  ${r.snippet}\n  [${r.url}](${r.url})`).join('\n')}`
+          `Here's what I found online for "${d.query}":\n${d.results.map((r) => `- **${r.title}**\n  ${r.snippet}\n  [${r.url}](${r.url})`).join('\n')}`
         )
     } else if (task.taskType === 'web.read' && task.data) {
       const d = task.data as { url: string; title: string; summary: string }
@@ -878,7 +878,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       } else {
         const lines = [`Your ${d.count} culinary heroes:`]
         for (const c of d.chefs) {
-          lines.push(`- **${c.name}**${c.reason ? ` â€” ${c.reason}` : ''}`)
+          lines.push(`- **${c.name}**${c.reason ? ` - ${c.reason}` : ''}`)
         }
         summaries.push(lines.join('\n'))
       }
@@ -918,7 +918,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         const lines = [`**Prep Timeline for ${d.eventName}** (~${d.totalPrepHours}h total)\n`]
         for (const step of d.steps) {
           lines.push(
-            `- **${step.time}** ${step.task} _(${step.duration})_${step.notes ? ` â€” ${step.notes}` : ''}`
+            `- **${step.time}** ${step.task} _(${step.duration})_${step.notes ? ` - ${step.notes}` : ''}`
           )
         }
         lines.push(`\n${d.summary}`)
@@ -937,7 +937,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         count: number
       }
       if (d.count === 0) {
-        summaries.push("Nothing urgent right now â€” you're all caught up!")
+        summaries.push("Nothing urgent right now - you're all caught up!")
       } else {
         const lines = [`Here's what needs your attention (${d.count} items):\n`]
         for (const n of d.nudges) {
@@ -990,7 +990,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         summaries.push(d.summary)
       } else {
         const lines = [
-          `**${d.recipeName}** â€” scaled from ${d.originalYield} to ${d.targetGuests} servings (${d.scaleFactor}x)\n`,
+          `**${d.recipeName}** - scaled from ${d.originalYield} to ${d.targetGuests} servings (${d.scaleFactor}x)\n`,
         ]
         for (const ing of d.ingredients) {
           lines.push(`- ${ing.scaledQty} ${ing.unit} ${ing.name} _(was ${ing.originalQty})_`)
@@ -1014,9 +1014,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         for (const cat of d.categories) {
           lines.push(`**${cat.name}:**`)
           for (const item of cat.items) {
-            lines.push(
-              `- ${item.quantity} Ã— ${item.item}${item.notes ? ` _(${item.notes})_` : ''}`
-            )
+            lines.push(`- ${item.quantity}  ${item.item}${item.notes ? ` _(${item.notes})_` : ''}`)
           }
           lines.push('')
         }
@@ -1080,10 +1078,10 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       if (d.suggestions.length === 0) {
         summaries.push(d.summary)
       } else {
-        const lines = [`**${d.recipeName}** â€” $${(d.currentCostCents / 100).toFixed(2)} total\n`]
+        const lines = [`**${d.recipeName}** - $${(d.currentCostCents / 100).toFixed(2)} total\n`]
         for (const s of d.suggestions) {
           lines.push(
-            `- **${s.ingredient}** (${s.currentCost}): ${s.suggestion} â€” save ~${s.estimatedSaving}`
+            `- **${s.ingredient}** (${s.currentCost}): ${s.suggestion} - save ~${s.estimatedSaving}`
           )
         }
         summaries.push(lines.join('\n'))
@@ -1125,7 +1123,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       const d = task.data as { subject?: string; draftText: string; clientName?: string }
       const label = d.clientName ? ` for ${d.clientName}` : ''
       summaries.push(
-        `Here's your ${name.toLowerCase()}${label} â€” review and edit before sending:\n\n${d.draftText}`
+        `Here's your ${name.toLowerCase()}${label} - review and edit before sending:\n\n${d.draftText}`
       )
     } else if (task.taskType === 'inquiry.list_open' && task.data) {
       const d = task.data as {
@@ -1141,7 +1139,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         }>
       }
       if (!d.inquiries || d.inquiries.length === 0) {
-        summaries.push('No open inquiries right now â€” your pipeline is clear!')
+        summaries.push('No open inquiries right now - your pipeline is clear!')
       } else {
         const lines = [
           `You have ${d.inquiries.length} open inquir${d.inquiries.length === 1 ? 'y' : 'ies'}:\n`,
@@ -1154,7 +1152,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
           if (inq.eventDate) details.push(inq.eventDate)
           if (inq.guestCount) details.push(`${inq.guestCount} guests`)
           details.push(`(${inq.status.replace(/_/g, ' ')})`)
-          lines.push(`â€¢ ${details.join(' â€” ')}`)
+          lines.push(`- ${details.join(' - ')}`)
         }
         summaries.push(lines.join('\n'))
       }
@@ -1178,10 +1176,8 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         for (const r of d.recipes) {
           const totalTime = (r.prepTime || 0) + (r.cookTime || 0)
           const timeStr = totalTime > 0 ? ` (${totalTime} min)` : ''
-          const cookedStr = r.timesCooked > 0 ? ` â€” cooked ${r.timesCooked}Ã—` : ''
-          lines.push(
-            `â€¢ **${r.name}**${r.category ? ` [${r.category}]` : ''}${timeStr}${cookedStr}`
-          )
+          const cookedStr = r.timesCooked > 0 ? ` - cooked ${r.timesCooked}` : ''
+          lines.push(`- **${r.name}**${r.category ? ` [${r.category}]` : ''}${timeStr}${cookedStr}`)
         }
         summaries.push(lines.join('\n'))
       }
@@ -1196,7 +1192,7 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
   return summaries.join('\n\n')
 }
 
-// â”€â”€â”€ SSE Encoder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  SSE Encoder
 
 function encodeSSE(event: StreamEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`
@@ -1209,7 +1205,7 @@ function sseErrorResponse(message: string, status = 200): Response {
   })
 }
 
-// â”€â”€â”€ POST Handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  POST Handler
 
 async function getRemyRuntimeState(
   tenantId: string
@@ -1265,7 +1261,7 @@ export async function POST(req: NextRequest) {
     }
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {
-      return sseErrorResponse('Invalid request — please try again.', 400)
+      return sseErrorResponse('Invalid request - please try again.', 400)
     }
     const {
       message,
@@ -1278,14 +1274,14 @@ export async function POST(req: NextRequest) {
     } = validated
     const rawRecord =
       rawBody && typeof rawBody === 'object' ? (rawBody as Record<string, unknown>) : {}
-    // Cross-chat digest is optional â€” passed through without validation (plain string)
+    // Cross-chat digest is optional - passed through without validation (plain string)
     const otherChannelDigest =
       typeof rawRecord.otherChannelDigest === 'string'
         ? rawRecord.otherChannelDigest.slice(0, 600)
         : null
     const history = validateHistory(rawRecord.history, 10) as RemyMessage[]
 
-    // â”€â”€â”€ GUARDRAILS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  GUARDRAILS
     const admin = await isRemyAdmin()
 
     if (!admin) {
@@ -1301,7 +1297,7 @@ export async function POST(req: NextRequest) {
         await checkRateLimit(`remy-stream:${user.tenantId!}`, 12, 60_000)
       } catch {
         return sseErrorResponse(
-          'Whoa, slow down chef — I can only handle 12 messages a minute. Give me about a minute and try again.',
+          'Whoa, slow down chef - I can only handle 12 messages a minute. Give me about a minute and try again.',
           429
         )
       }
@@ -1320,7 +1316,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // â”€â”€â”€ RECIPE GENERATION BLOCK (hard rule â€” AI never generates recipes) â”€â”€â”€
+    //  RECIPE GENERATION BLOCK (hard rule - AI never generates recipes)
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
       // Return as a friendly Remy chat response, not an error
@@ -1329,7 +1325,7 @@ export async function POST(req: NextRequest) {
       return new Response(body, { headers: sseHeaders() })
     }
 
-    // â”€â”€â”€ OUT-OF-SCOPE BLOCK (non-business requests) â”€â”€â”€
+    //  OUT-OF-SCOPE BLOCK (non-business requests)
     const outOfScopeBlock = checkOutOfScopeBlock(message)
     if (outOfScopeBlock) {
       // Return as a friendly Remy chat response, not an error
@@ -1339,7 +1335,7 @@ export async function POST(req: NextRequest) {
       return new Response(body, { headers: sseHeaders() })
     }
 
-    // â”€â”€â”€ DANGEROUS ACTION BLOCK (delete, developer mode, system introspection) â”€â”€â”€
+    //  DANGEROUS ACTION BLOCK (delete, developer mode, system introspection)
     const dangerousActionBlock = checkDangerousActionBlock(message)
     if (dangerousActionBlock) {
       // Return as a friendly Remy refusal, not an error
@@ -1349,12 +1345,12 @@ export async function POST(req: NextRequest) {
       return new Response(body, { headers: sseHeaders() })
     }
 
-    // â”€â”€â”€ PI TEST (admin only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  PI TEST (admin only)
     if (admin && detectPiTestIntent(message)) {
       return handlePiTest()
     }
 
-    // â”€â”€â”€ MEMORY PATH (no streaming needed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  MEMORY PATH (no streaming needed)
     const memoryIntent = detectMemoryIntent(message)
     if (memoryIntent === 'list') {
       const memories = await listRemyMemories({ limit: 200 })
@@ -1371,7 +1367,7 @@ export async function POST(req: NextRequest) {
       let text: string
       if (memories.length === 0) {
         text =
-          'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules â€” or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.'
+          'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules - or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.'
       } else {
         const grouped = new Map<string, typeof memories>()
         for (const mem of memories) {
@@ -1379,12 +1375,12 @@ export async function POST(req: NextRequest) {
           grouped.get(mem.category)!.push(mem)
         }
         const lines: string[] = [
-          `Here's everything I remember (${memories.length} memories). You can delete any of these â€” just tap the X next to it.\n`,
+          `Here's everything I remember (${memories.length} memories). You can delete any of these - just tap the X next to it.\n`,
         ]
         for (const [category, items] of grouped) {
           lines.push(`**${formatCategoryLabel(category)}**`)
           for (const item of items) {
-            lines.push(`â€¢ ${item.content}${item.importance >= 8 ? ' âš ï¸' : ''}`)
+            lines.push(`- ${item.content}${item.importance >= 8 ? ' [ALERT]' : ''}`)
           }
           lines.push('')
         }
@@ -1465,7 +1461,7 @@ export async function POST(req: NextRequest) {
 
       await addRemyMemoryManual({ content: fact, category, importance: 5 })
 
-      const text = `Got it â€” I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\nâ€¢ ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`
+      const text = `Got it - I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\n- ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         start(controller) {
@@ -1478,12 +1474,12 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    // â”€â”€â”€ INTERACTIVE LOCK: pause background worker while Remy is streaming â”€â”€
+    //  INTERACTIVE LOCK: pause background worker while Remy is streaming
     // This prevents the AI queue worker from competing for Ollama while
     // we're streaming a response. Released in the finally block.
     acquireInteractiveLock()
 
-    // â”€â”€â”€ MAIN PATH: classify + load context â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  MAIN PATH: classify + load context
     // Hard timeout: if the entire pre-stream setup takes >120s, bail out.
     // Classifier + context + memories usually takes 5-15s. Cold model load
     // on 6GB VRAM can add 30-60s. 120s accommodates worst-case cold start.
@@ -1551,8 +1547,8 @@ export async function POST(req: NextRequest) {
         encodeSSE({
           type: 'error',
           data: isOllama
-            ? 'Ollama is loading the AI model â€” this can take a minute on the first request. Hit retry and I should be ready!'
-            : sanitizeErrorForClient(setupErr, 'Setup failed â€” please try again in a moment.'),
+            ? 'Ollama is loading the AI model - this can take a minute on the first request. Hit retry and I should be ready!'
+            : sanitizeErrorForClient(setupErr, 'Setup failed - please try again in a moment.'),
         }),
         { headers: sseHeaders() }
       )
@@ -1562,7 +1558,7 @@ export async function POST(req: NextRequest) {
     const surveyPromptSection =
       activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
 
-    // â”€â”€â”€ Safety-critical fast-path: dietary/allergy queries â†’ command â”€â”€â”€â”€
+    //  Safety-critical fast-path: dietary/allergy queries -> command
     // Allergy queries are safety-critical and MUST route through dietary.check
     // to return structured data. The LLM classifier sometimes misroutes these
     // as "question" intent, causing the LLM to answer without querying the DB.
@@ -1571,17 +1567,17 @@ export async function POST(req: NextRequest) {
       classification = { ...classification, intent: 'command' }
     }
 
-    // â”€â”€â”€ Financial context queries â†’ question path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Financial context queries -> question path
     // Payment/outstanding/invoice questions about clients are best answered by the
     // LLM from its full financial context, not by client.search which only returns
-    // name/tier/allergies. Override command â†’ question for these.
+    // name/tier/allergies. Override command -> question for these.
     const financialQueryRegex =
       /(?:outstanding|payment|invoice|owe|balance|paid|unpaid|overdue|past due)/i
     if (classification.intent === 'command' && financialQueryRegex.test(message)) {
       classification = { ...classification, intent: 'question' }
     }
 
-    // â”€â”€â”€ COMMAND path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  COMMAND path
     if (classification.intent === 'command') {
       const commandRun = await runCommand(message)
 
@@ -1590,7 +1586,7 @@ export async function POST(req: NextRequest) {
         return new Response(
           encodeSSE({
             type: 'error',
-            data: "I'm offline right now â€” Ollama needs to be running for me to help. Start it up and try again!",
+            data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
           }),
           { headers: sseHeaders() }
         )
@@ -1630,7 +1626,7 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    // â”€â”€â”€ MIXED path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  MIXED path
     if (classification.intent === 'mixed') {
       const commandInput = classification.commandPart ?? message
       const questionInput = classification.questionPart ?? message
@@ -1651,7 +1647,7 @@ export async function POST(req: NextRequest) {
 
       const taskSummary = summarizeTaskResults(tasks)
 
-      // Stream the conversational part â€” same load-aware routing as question path
+      // Stream the conversational part - same load-aware routing as question path
       let mixedPrefer: 'auto' | 'pc' | 'pi' = 'auto'
       const mixedPcBusy = isSlotBusy('pc')
       const mixedPcSnap = getEndpointSnapshot('pc')
@@ -1670,7 +1666,7 @@ export async function POST(req: NextRequest) {
         return new Response(
           encodeSSE({
             type: 'error',
-            data: "I'm offline right now â€” no Ollama endpoints are reachable.",
+            data: "I'm offline right now - no Ollama endpoints are reachable.",
           }),
           { headers: sseHeaders() }
         )
@@ -1693,11 +1689,11 @@ export async function POST(req: NextRequest) {
 
       // Warn if system prompt is large enough to risk silent truncation.
       // Without explicit num_ctx the model defaults to its native context
-      // window (~32k for qwen3-coder:30b). 16k chars â‰ˆ 4k tokens â€” safe,
+      // window (~32k for qwen3-coder:30b). 16k chars ~ 4k tokens - safe,
       // but log a warning above 24k chars (~6k tokens) so we notice growth.
       if (systemPrompt.length > 24_000) {
         console.warn(
-          `[remy/stream] âš ï¸ System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) â€” may be truncated by model context window`
+          `[remy/stream] [ALERT] System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) - may be truncated by model context window`
         )
       }
 
@@ -1753,7 +1749,7 @@ export async function POST(req: NextRequest) {
                 throw primaryErr
 
               console.log(
-                `[remy] mixed: ${mixedEndpoint.endpointName} failed â€” falling back to ${fallback.endpointName}`
+                `[remy] mixed: ${mixedEndpoint.endpointName} failed - falling back to ${fallback.endpointName}`
               )
               usedMixedEndpoint = fallback
               const fallbackOllama = new Ollama({ host: fallback.host })
@@ -1818,8 +1814,8 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    // â”€â”€â”€ QUESTION path (default) â€” STREAMED with load-aware routing + failover â”€â”€
-    // â”€â”€â”€ Smart endpoint selection (load-aware) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  QUESTION path (default) - STREAMED with load-aware routing + failover
+    //  Smart endpoint selection (load-aware)
     // If the PC is mid-background-task or actively generating, prefer the Pi
     // to avoid GPU contention. Falls back gracefully if Pi is unavailable.
     let preferEndpoint: 'auto' | 'pc' | 'pi' = 'auto'
@@ -1840,7 +1836,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm offline right now â€” no Ollama endpoints are reachable. Start Ollama and try again!",
+          data: "I'm offline right now - no Ollama endpoints are reachable. Start Ollama and try again!",
         }),
         { headers: sseHeaders() }
       )
@@ -1913,7 +1909,7 @@ export async function POST(req: NextRequest) {
             if (!fallback || fallback.endpointName === endpoint.endpointName) throw primaryErr
 
             console.log(
-              `[remy] ${endpoint.endpointName} failed â€” falling back to ${fallback.endpointName}`
+              `[remy] ${endpoint.endpointName} failed - falling back to ${fallback.endpointName}`
             )
             usedEndpoint = fallback
             const fallbackOllama = new Ollama({ host: fallback.host })
@@ -1968,7 +1964,7 @@ export async function POST(req: NextRequest) {
               encodeSSE({
                 type: 'error',
                 data: isOllamaDown
-                  ? "I'm offline right now â€” Ollama needs to be running for me to help. Start it up and try again!"
+                  ? "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!"
                   : sanitizeErrorForClient(err),
               })
             )
@@ -2014,7 +2010,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Helpers
 
 function sseHeaders(): HeadersInit {
   return {
@@ -2027,16 +2023,16 @@ function sseHeaders(): HeadersInit {
 
 /**
  * Hard timeout for Ollama streaming calls.
- * 3 minutes â€” the 30b MoE model with partial GPU offload (9/49 layers)
+ * 3 minutes - the 30b MoE model with partial GPU offload (9/49 layers)
  * regularly takes 40-74s per response. Under load or with long context,
  * it can exceed 90s. This only fires if Ollama is truly stuck.
  */
-const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min â€” 30b MoE model on 6GB VRAM can take 40-90s per response
+const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min - 30b MoE model on 6GB VRAM can take 40-90s per response
 
 /**
  * Max tokens for streaming conversational responses.
  * Prevents Ollama from generating megabytes of output and ballooning memory.
- * 2048 tokens â‰ˆ ~1500 words â€” more than enough for a chat reply.
+ * 2048 tokens ~ ~1500 words - more than enough for a chat reply.
  */
 const OLLAMA_STREAM_MAX_TOKENS = 2048
 

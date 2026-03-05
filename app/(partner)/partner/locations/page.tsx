@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-// Partner Portal â€” Locations list
+// Partner Portal — Locations list
 // Shows all locations the partner manages. Read-only overview;
 // click into a location for detail and event history.
 
@@ -68,7 +68,7 @@ export default async function PartnerLocationsPage() {
                   )}
                   <p className="text-xs text-stone-400 mt-1">
                     {completedCount} completed event{completedCount === 1 ? '' : 's'}
-                    {location.max_guest_count ? ` Â· Capacity: ${location.max_guest_count}` : ''}
+                    {location.max_guest_count ? ` · Capacity: ${location.max_guest_count}` : ''}
                   </p>
                 </div>
 

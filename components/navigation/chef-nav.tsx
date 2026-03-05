@@ -600,24 +600,25 @@ export function ChefSidebar({
   const [navFilter, setNavFilter] = useState('')
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
-  // Filter nav groups by enabled modules (progressive disclosure)
-  // Admins always see every group — they're the developer, not a gated user
-  // Also strip adminOnly items (e.g. prospecting) for non-admin users
+  // Filter nav groups by role + focus mode.
+  // Focus Mode should simplify nav for everyone, including admins.
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
-  const accessibleGroups = useMemo(
-    () =>
-      (isAdmin
-        ? navGroups
-        : navGroups.map((group) => ({
-            ...group,
-            items: group.items.filter((item) => !item.adminOnly),
-          }))
-      ).filter((group) => group.items.length > 0),
-    [isAdmin]
-  )
+  const accessibleGroups = useMemo(() => {
+    const baseGroups = navGroups
+      .map((group) => ({
+        ...group,
+        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
+      }))
+      .filter((group) => group.items.length > 0)
+
+    if (!focusMode) return baseGroups
+    return baseGroups.filter(
+      (group) => CORE_GROUP_ORDER.includes(group.id) || (isAdmin && group.id === 'admin')
+    )
+  }, [isAdmin, focusMode])
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
@@ -639,8 +640,8 @@ export function ChefSidebar({
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    // Focus Mode: hide non-core standalone items (admins always see everything)
-    if (focusMode && !isAdmin) {
+    // Focus Mode: hide non-core standalone items for everyone.
+    if (focusMode) {
       items = items.filter((item) => item.coreFeature)
     }
     if (!q) return items
@@ -1028,7 +1029,7 @@ export function ChefSidebar({
 
             <div className="border-t border-stone-800 my-2" />
 
-            {isAdmin && (
+            {isAdmin && !focusMode && (
               <SectionAccordion
                 title="Cannabis"
                 items={filteredCannabisItems}
@@ -1048,23 +1049,25 @@ export function ChefSidebar({
               />
             )}
 
-            <SectionAccordion
-              title="Community"
-              items={filteredCommunityItems}
-              icon={Rss}
-              isOpen={communitySectionOpen}
-              onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-              pathname={pathname}
-              searchParams={searchParams}
-              headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-              headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-              dividerClass="border-indigo-800/30"
-              itemActiveClass="text-indigo-400"
-              itemInactiveClass="text-stone-500 hover:text-stone-300"
-              activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
-              iconActiveColor="#818cf8"
-              iconInactiveColor="rgba(99, 102, 241, 0.5)"
-            />
+            {!focusMode && (
+              <SectionAccordion
+                title="Community"
+                items={filteredCommunityItems}
+                icon={Rss}
+                isOpen={communitySectionOpen}
+                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+                pathname={pathname}
+                searchParams={searchParams}
+                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+                dividerClass="border-indigo-800/30"
+                itemActiveClass="text-indigo-400"
+                itemInactiveClass="text-stone-500 hover:text-stone-300"
+                activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
+                iconActiveColor="#818cf8"
+                iconInactiveColor="rgba(99, 102, 241, 0.5)"
+              />
+            )}
 
             <div className="border-t border-stone-800 my-2" />
 
@@ -1546,24 +1549,25 @@ export function ChefMobileNav({
   const [navFilter, setNavFilter] = useState('')
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
-  // Filter nav groups by enabled modules (progressive disclosure)
-  // Admins always see every group — they're the developer, not a gated user
-  // Also strip adminOnly items (e.g. prospecting) for non-admin users
+  // Filter nav groups by role + focus mode.
+  // Focus Mode should simplify nav for everyone, including admins.
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
-  const accessibleGroups = useMemo(
-    () =>
-      (isAdmin
-        ? navGroups
-        : navGroups.map((group) => ({
-            ...group,
-            items: group.items.filter((item) => !item.adminOnly),
-          }))
-      ).filter((group) => group.items.length > 0),
-    [isAdmin]
-  )
+  const accessibleGroups = useMemo(() => {
+    const baseGroups = navGroups
+      .map((group) => ({
+        ...group,
+        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
+      }))
+      .filter((group) => group.items.length > 0)
+
+    if (!focusMode) return baseGroups
+    return baseGroups.filter(
+      (group) => CORE_GROUP_ORDER.includes(group.id) || (isAdmin && group.id === 'admin')
+    )
+  }, [isAdmin, focusMode])
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
@@ -1585,8 +1589,8 @@ export function ChefMobileNav({
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    // Focus Mode: hide non-core standalone items (admins always see everything)
-    if (focusMode && !isAdmin) {
+    // Focus Mode: hide non-core standalone items for everyone.
+    if (focusMode) {
       items = items.filter((item) => item.coreFeature)
     }
     if (!q) return items
@@ -1851,7 +1855,7 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {isAdmin && (
+              {isAdmin && !focusMode && (
                 <SectionAccordion
                   title="Cannabis"
                   items={filteredCannabisItems}
@@ -1871,23 +1875,25 @@ export function ChefMobileNav({
                 />
               )}
 
-              <SectionAccordion
-                title="Community"
-                items={filteredCommunityItems}
-                icon={Rss}
-                isOpen={communitySectionOpen}
-                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-                pathname={pathname}
-                searchParams={searchParams}
-                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-                dividerClass="border-indigo-800/30"
-                itemActiveClass="text-indigo-400 bg-indigo-950/50"
-                itemInactiveClass="text-stone-500 hover:bg-stone-800"
-                iconActiveColor="#818cf8"
-                iconInactiveColor="rgba(99, 102, 241, 0.5)"
-                onNavigate={closeMenu}
-              />
+              {!focusMode && (
+                <SectionAccordion
+                  title="Community"
+                  items={filteredCommunityItems}
+                  icon={Rss}
+                  isOpen={communitySectionOpen}
+                  onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+                  pathname={pathname}
+                  searchParams={searchParams}
+                  headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+                  headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+                  dividerClass="border-indigo-800/30"
+                  itemActiveClass="text-indigo-400 bg-indigo-950/50"
+                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
+                  iconActiveColor="#818cf8"
+                  iconInactiveColor="rgba(99, 102, 241, 0.5)"
+                  onNavigate={closeMenu}
+                />
+              )}
               <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}

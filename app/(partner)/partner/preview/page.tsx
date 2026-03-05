@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
-// Partner Portal â€” Preview
+// Partner Portal — Preview
 // Shows the partner exactly how they appear on the chef's public showcase page.
-// Fetches the same data that clients see â€” truth in advertising.
+// Fetches the same data that clients see — truth in advertising.
 
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -88,7 +88,7 @@ export default async function PartnerPreviewPage() {
         </p>
       </div>
 
-      {/* â”€â”€ Showcase card â€” what clients see â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Showcase card — what clients see ─────────────────────────────── */}
       <div className="rounded-2xl border border-stone-700 bg-stone-900 overflow-hidden shadow-sm">
         {/* Cover image */}
         {partner?.cover_image_url ? (

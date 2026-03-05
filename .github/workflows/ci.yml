@@ -121,6 +121,9 @@ jobs:
       - name: Build
         run: npx next build --no-lint
 
+      - name: Bundle budget check
+        run: npm run bundle:check
+
       - name: Upload build artifact (optional, for smoke tests)
         uses: actions/upload-artifact@v4
         if: success()

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3100 -H 0.0.0.0",
     "build": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build",
+    "bundle:check": "node scripts/check-bundle-budget.mjs",
     "tauri:dev": "npx tauri dev",
     "tauri:build": "npx tauri build",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\" --ignore-path .prettierignore",

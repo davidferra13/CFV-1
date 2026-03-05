@@ -53,6 +53,10 @@ export const ANALYTICS_EVENTS = {
   PAGE_VIEWED: 'page_viewed',
   FEATURE_USED: 'feature_used',
   SEARCH_PERFORMED: 'search_performed',
+
+  // Performance telemetry
+  PERF_WEB_VITAL: 'perf_web_vital',
+  PERF_ROUTE_TRANSITION: 'perf_route_transition',
 } as const
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]

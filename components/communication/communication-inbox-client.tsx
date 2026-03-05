@@ -185,7 +185,7 @@ export function CommunicationInboxClient({
 }) {
   const [viewMode, setViewMode] = useState<ViewMode>('triage')
   const [selectedTab, setSelectedTab] = useState<CommunicationTab>(initialTab)
-  // Local stats state for optimistic updates â€” syncs from server on refresh
+  // Local stats state for optimistic updates — syncs from server on refresh
   const [localStats, setLocalStats] = useState<CommunicationInboxStats>(stats)
   useEffect(() => {
     setLocalStats(stats)
@@ -310,7 +310,7 @@ export function CommunicationInboxClient({
     fn: () => Promise<unknown>,
     statsDelta?: Partial<CommunicationInboxStats>
   ) => {
-    // Optimistic stats update â€” revert on failure
+    // Optimistic stats update — revert on failure
     const prevStats = { ...localStats }
     if (statsDelta) {
       setLocalStats((s) => {
@@ -369,7 +369,7 @@ export function CommunicationInboxClient({
     executeAction(fn, sd)
   }
 
-  // â”€â”€â”€ Keyboard Shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Keyboard Shortcuts ─────────────────────────────────
   const handleKeyboard = useCallback(
     (e: KeyboardEvent) => {
       // Don't capture when typing in inputs/textareas or when modals are open
@@ -586,7 +586,7 @@ export function CommunicationInboxClient({
             }`}
             title={
               shortcutsEnabled
-                ? 'Keyboard shortcuts ON â€” j/k navigate, e done, s snooze, x select, * star, Enter open'
+                ? 'Keyboard shortcuts ON — j/k navigate, e done, s snooze, x select, * star, Enter open'
                 : 'Keyboard shortcuts OFF'
             }
           >
@@ -595,7 +595,7 @@ export function CommunicationInboxClient({
         </div>
       </div>
 
-      {/* â”€â”€â”€ RAW FEED VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── RAW FEED VIEW ─────────────────────────────────── */}
       {viewMode === 'raw_feed' ? (
         <div className="space-y-3">
           <div className="rounded-lg border border-stone-700/50 bg-stone-900/50 px-4 py-3">
@@ -690,7 +690,7 @@ export function CommunicationInboxClient({
         </div>
       ) : (
         <>
-          {/* â”€â”€â”€ EMPTY STATE / ONBOARDING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ─── EMPTY STATE / ONBOARDING ────────────────────── */}
           {isNewUser ? (
             <div className="space-y-6">
               <div className="rounded-2xl border border-stone-700 bg-gradient-to-br from-stone-900 to-stone-800 p-8 text-center space-y-4">
@@ -699,8 +699,8 @@ export function CommunicationInboxClient({
                 </div>
                 <h2 className="text-xl font-bold text-stone-100">Your inbox is ready</h2>
                 <p className="text-stone-400 max-w-md mx-auto">
-                  Every inquiry â€” email, text, Instagram DM, marketplace lead â€” lands here in
-                  one place. Connect your channels to get started.
+                  Every inquiry — email, text, Instagram DM, marketplace lead — lands here in one
+                  place. Connect your channels to get started.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   {!gmailConnected && (
@@ -737,7 +737,7 @@ export function CommunicationInboxClient({
                 <div className="rounded-xl border border-stone-800 bg-stone-900 p-4 space-y-2">
                   <div className="text-sm font-medium text-stone-300">Auto-detected</div>
                   <p className="text-xs text-stone-500">
-                    TakeAChef, Thumbtack, TheKnot, Bark, and more â€” recognized automatically from
+                    TakeAChef, Thumbtack, TheKnot, Bark, and more — recognized automatically from
                     your Gmail.
                   </p>
                 </div>
@@ -757,7 +757,7 @@ export function CommunicationInboxClient({
             </div>
           ) : (
             <>
-              {/* â”€â”€â”€ TRIAGE VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {/* ─── TRIAGE VIEW ─────────────────────────────── */}
               {/* Tabs */}
               <div className="flex flex-wrap gap-2">
                 {TABS.map((tab) => {
@@ -793,7 +793,7 @@ export function CommunicationInboxClient({
                 </Alert>
               ) : null}
 
-              {/* Source filters â€” horizontally scrollable on mobile */}
+              {/* Source filters — horizontally scrollable on mobile */}
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
                 {allSources.map((source) => {
                   const active = activeSources.includes(source)
@@ -817,7 +817,7 @@ export function CommunicationInboxClient({
                 })}
               </div>
 
-              {/* Response turn + follow-up filters â€” wrap on mobile */}
+              {/* Response turn + follow-up filters — wrap on mobile */}
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'all', label: 'All' },
@@ -1076,7 +1076,7 @@ export function CommunicationInboxClient({
                           </div>
                         )}
 
-                        {/* Action buttons â€” wrap better on mobile */}
+                        {/* Action buttons — wrap better on mobile */}
                         <div className="flex flex-wrap gap-1.5 sm:gap-2">
                           <Button
                             size="sm"

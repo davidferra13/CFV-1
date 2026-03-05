@@ -412,7 +412,7 @@ export function PageInfoButton() {
 
   return (
     <>
-      {/* The info button â€” top of page, small and transparent */}
+      {/* The info button — top of page, small and transparent */}
       <button
         onClick={handleToggle}
         className={`fixed top-1.5 right-14 z-50 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 ${
