@@ -7,14 +7,13 @@ import {
   getVoucherAndGiftCards,
   getIncentiveStats,
   getIncentiveRedemptions,
-  deactivateIncentive,
 } from '@/lib/loyalty/voucher-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IncentiveRedemptionHistory } from '@/components/incentives/incentive-redemption-history'
-import { GiftCardsClientShell } from './gift-cards-client-shell'
+import { IssueButton, RowActions } from './gift-cards-client-shell'
 
 export default async function GiftCardsPage() {
   await requireChef()
@@ -48,7 +47,7 @@ export default async function GiftCardsPage() {
             Issue codes to reward clients or sell gift cards via your public profile.
           </p>
         </div>
-        <GiftCardsClientShell.IssueButton clients={clients} />
+        <IssueButton clients={clients} />
       </div>
 
       {/* Stats */}
@@ -188,7 +187,7 @@ export default async function GiftCardsPage() {
                           )}
                         </td>
                         <td className="py-3 text-right">
-                          <GiftCardsClientShell.RowActions incentive={incentive} />
+                          <RowActions incentive={incentive} />
                         </td>
                       </tr>
                     )
