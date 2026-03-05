@@ -2,26 +2,20 @@
 // Server Component checks role before rendering any child components
 
 import { requireChef } from '@/lib/auth/get-user'
+import dynamic from 'next/dynamic'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
-import { PushPermissionPrompt } from '@/components/notifications/push-permission-prompt'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getOnboardingStatus } from '@/lib/chef/profile-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
-import { RemyWrapper } from '@/components/ai/remy-wrapper'
 import { OfflineProvider } from '@/components/offline/offline-provider'
-import { OfflineStatusBar } from '@/components/offline/offline-status-bar'
-import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
-import { BreadcrumbTracker } from '@/components/activity/breadcrumb-tracker'
-import { QuickCapture } from '@/components/mobile/quick-capture'
-import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
@@ -30,7 +24,6 @@ import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
-import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import {
   getCachedCannabisAccess,
@@ -43,6 +36,42 @@ import { AdminPreviewToggle } from '@/components/admin/admin-preview-toggle'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
+
+const PushPermissionPrompt = dynamic(
+  () =>
+    import('@/components/notifications/push-permission-prompt').then((m) => m.PushPermissionPrompt),
+  { ssr: false }
+)
+const FeedbackNudgeModal = dynamic(
+  () => import('@/components/feedback/feedback-nudge-modal').then((m) => m.FeedbackNudgeModal),
+  { ssr: false }
+)
+const OfflineStatusBar = dynamic(
+  () => import('@/components/offline/offline-status-bar').then((m) => m.OfflineStatusBar),
+  { ssr: false }
+)
+const RemyWrapper = dynamic(
+  () => import('@/components/ai/remy-wrapper').then((m) => m.RemyWrapper),
+  {
+    ssr: false,
+  }
+)
+const QuickCapture = dynamic(
+  () => import('@/components/mobile/quick-capture').then((m) => m.QuickCapture),
+  { ssr: false }
+)
+const BreadcrumbTracker = dynamic(
+  () => import('@/components/activity/breadcrumb-tracker').then((m) => m.BreadcrumbTracker),
+  { ssr: false }
+)
+const MilestoneOverlay = dynamic(
+  () => import('@/components/ui/milestone-overlay').then((m) => m.MilestoneOverlay),
+  { ssr: false }
+)
+const PresenceBeacon = dynamic(
+  () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
+  { ssr: false }
+)
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships

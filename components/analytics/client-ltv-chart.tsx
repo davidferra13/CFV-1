@@ -50,7 +50,7 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
             <div className="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center flex-shrink-0">

@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
 import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
+import { getAdminNotificationRecipients } from '@/lib/platform/owner-account'
 
 export interface BetaSignupInput {
   name: string
@@ -23,30 +24,7 @@ type BetaOnboardingLinkInput = {
   source?: string
 }
 
-// Platform owner account — must always receive critical notifications.
-const FOUNDER_EMAIL = 'davidferra13@gmail.com'
-const DEFAULT_ADMIN_NOTIFICATION_EMAIL = 'info@cheflowhq.com'
-
-function parseEmailList(value: string | undefined): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean)
-}
-
-function resolveBetaSignupNotificationRecipients(): string[] {
-  const recipients = [
-    ...parseEmailList(process.env.ADMIN_NOTIFICATION_EMAILS),
-    ...parseEmailList(process.env.ADMIN_NOTIFICATION_EMAIL),
-    ...parseEmailList(process.env.ADMIN_EMAILS),
-    DEFAULT_ADMIN_NOTIFICATION_EMAIL,
-    FOUNDER_EMAIL,
-  ]
-
-  return Array.from(new Set(recipients))
-}
-
-const ADMIN_NOTIFICATION_RECIPIENTS = resolveBetaSignupNotificationRecipients()
+const ADMIN_NOTIFICATION_RECIPIENTS = getAdminNotificationRecipients()
 
 // ── In-memory IP rate limiting (same pattern as embed inquiry) ──
 const ipBuckets = new Map<string, { count: number; windowStart: number }>()

@@ -9,11 +9,9 @@ import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
+import { getAdminEmails } from '@/lib/platform/owner-account'
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
-  .split(',')
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean)
+const ADMIN_EMAILS = getAdminEmails()
 
 // ─── Cannabis Access (cached 60s) ────────────────────────────────────────────
 

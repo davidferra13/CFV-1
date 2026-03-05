@@ -8,9 +8,10 @@ import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
+import { FOUNDER_EMAIL } from '@/lib/platform/owner-account'
 import { z } from 'zod'
 
-const DEFAULT_BOOKING_CHEF_EMAIL = 'davidferra13@gmail.com'
+const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
 const PublicInquirySchema = z.object({
   chef_slug: z.string().optional(),

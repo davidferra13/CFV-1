@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { ingestInboundSms } from '@/lib/sms/ingest'
+import { FOUNDER_EMAIL } from '@/lib/platform/owner-account'
 import { timingSafeEqual, createHmac } from 'crypto'
 import { checkRateLimit } from '@/lib/rateLimit'
 
@@ -22,6 +23,16 @@ function validateTwilioSignature(
   const expectedSignature = createHmac('sha1', authToken).update(data).digest('base64')
   if (expectedSignature.length !== signature.length) return false
   return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
+}
+
+async function getFounderChefId(supabase: any): Promise<string | null> {
+  const { data: founder } = await supabase
+    .from('chefs')
+    .select('id')
+    .ilike('email', FOUNDER_EMAIL)
+    .maybeSingle()
+
+  return founder?.id ?? null
 }
 
 // ─── Twilio Webhook (POST) ──────────────────────────────────────────────────
@@ -118,11 +129,12 @@ export async function POST(request: NextRequest) {
     // For now, we use the TWILIO_FROM_NUMBER env var comparison
     const twilioNumber = process.env.TWILIO_FROM_NUMBER
     if (twilioNumber && toNumber.includes(twilioNumber.replace(/\D/g, '').slice(-10))) {
-      // This is our Twilio number — find the chef who owns it
-      // For single-tenant admin use: get the admin chef
-      const { data: chef } = await supabase.from('chefs').select('id').limit(1).single()
-
-      tenantId = chef?.id ?? null
+      // This is our Twilio number — for single-admin setups, prefer founder account.
+      tenantId = await getFounderChefId(supabase)
+      if (!tenantId) {
+        const { data: chef } = await supabase.from('chefs').select('id').limit(1).single()
+        tenantId = chef?.id ?? null
+      }
     }
   }
 
@@ -138,11 +150,13 @@ export async function POST(request: NextRequest) {
 
     tenantId = clientMatch?.tenant_id ?? null
 
-    // Ultimate fallback for single-admin setup: use first chef
+    // Ultimate fallback for single-admin setup: prefer founder, then first chef.
     if (!tenantId) {
-      const { data: chef } = await supabase.from('chefs').select('id').limit(1).single()
-
-      tenantId = chef?.id ?? null
+      tenantId = await getFounderChefId(supabase)
+      if (!tenantId) {
+        const { data: chef } = await supabase.from('chefs').select('id').limit(1).single()
+        tenantId = chef?.id ?? null
+      }
     }
   }
 

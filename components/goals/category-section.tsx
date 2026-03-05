@@ -6,16 +6,7 @@ import Link from 'next/link'
 import type { GoalView, GoalCategory, GoalCheckIn } from '@/lib/goals/types'
 import { GOAL_CATEGORY_META } from '@/lib/goals/types'
 import { GoalCard } from './goal-card'
-
-const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {}
-
-// Dynamic icon loading using lucide-react
-import * as LucideIcons from 'lucide-react'
-for (const [name, comp] of Object.entries(LucideIcons)) {
-  if (typeof comp === 'function') {
-    ICON_COMPONENTS[name] = comp as React.ComponentType<{ className?: string }>
-  }
-}
+import { GOAL_CATEGORY_ICON_MAP, DEFAULT_GOAL_CATEGORY_ICON } from './goal-category-icons'
 
 interface CategorySectionProps {
   category: GoalCategory
@@ -31,7 +22,7 @@ export function CategorySection({ category, goals, id, onCheckIn }: CategorySect
 
   if (!meta) return null
 
-  const Icon = ICON_COMPONENTS[meta.icon] ?? LucideIcons.Target
+  const Icon = GOAL_CATEGORY_ICON_MAP[meta.icon] ?? DEFAULT_GOAL_CATEGORY_ICON
   const avgProgress =
     goals.length > 0
       ? Math.round(

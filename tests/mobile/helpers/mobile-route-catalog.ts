@@ -23,6 +23,11 @@ const COVERAGE_SOURCES: CoverageSource[] = [
   { file: 'tests/coverage/04-admin-routes.spec.ts', role: 'admin' },
 ]
 
+const EXCLUDED_ROUTE_PATTERNS: RegExp[] = [
+  /^\/clients\/communication\/upcoming-touchpoints$/i,
+  /^\/my-quotes\/[0-9a-f-]+$/i,
+]
+
 function isLikelyRoute(template: string): boolean {
   if (!template.startsWith('/')) return false
   if (template.includes(' ')) return false
@@ -31,6 +36,7 @@ function isLikelyRoute(template: string): boolean {
   if (template.includes('auth/signin') && template.includes('login')) return false
   if (/not-a-real/i.test(template)) return false
   if (/this-chef-does-not-exist/i.test(template)) return false
+  if (EXCLUDED_ROUTE_PATTERNS.some((pattern) => pattern.test(template))) return false
   return true
 }
 

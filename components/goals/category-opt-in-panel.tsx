@@ -2,17 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { Check, X } from 'lucide-react'
-import * as LucideIcons from 'lucide-react'
 import type { GoalCategory, NudgeLevel } from '@/lib/goals/types'
 import { GOAL_CATEGORY_META } from '@/lib/goals/types'
 import { updateCategorySettings } from '@/lib/goals/actions'
-
-const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {}
-for (const [name, comp] of Object.entries(LucideIcons)) {
-  if (typeof comp === 'function') {
-    ICON_COMPONENTS[name] = comp as React.ComponentType<{ className?: string }>
-  }
-}
+import { GOAL_CATEGORY_ICON_MAP, DEFAULT_GOAL_CATEGORY_ICON } from './goal-category-icons'
 
 interface CategoryOptInPanelProps {
   enabledCategories: GoalCategory[]
@@ -78,7 +71,7 @@ export function CategoryOptInPanel({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {GOAL_CATEGORY_META.map((meta) => {
-          const Icon = ICON_COMPONENTS[meta.icon] ?? LucideIcons.Target
+          const Icon = GOAL_CATEGORY_ICON_MAP[meta.icon] ?? DEFAULT_GOAL_CATEGORY_ICON
           const isEnabled = selected.includes(meta.id) || meta.alwaysEnabled
           const locked = meta.alwaysEnabled
 
