@@ -23,15 +23,13 @@ import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
-import { isFounderEmail } from '@/lib/platform/owner-account'
+import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import {
   getCachedCannabisAccess,
   getCachedChefArchetype,
   getCachedDeletionStatus,
   getCachedIsAdmin,
 } from '@/lib/chef/layout-data-cache'
-import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
-import { AdminPreviewToggle } from '@/components/admin/admin-preview-toggle'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
@@ -100,6 +98,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     userIsAdmin,
     chefArchetype,
     deletionStatus,
+    aiPrefs,
   ] = await Promise.all([
     // Cached for 60s — slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -119,6 +118,17 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       requestedAt: null,
       reason: null,
     })),
+    // Remy visibility follows tenant preferences, not founder-only checks.
+    getAiPreferences().catch(() => ({
+      remy_enabled: false,
+      onboarding_completed: false,
+      onboarding_completed_at: null,
+      data_retention_days: null,
+      allow_memory: true,
+      allow_suggestions: true,
+      allow_document_drafts: true,
+      remy_archetype: null,
+    })),
   ])
   // Archetype gate — new chefs pick their persona before seeing the portal.
   // Admins skip this (they have full access and don't need a preset).
@@ -132,9 +142,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     return <ArchetypeSelector />
   }
 
-  // Admin preview mode: when active, sidebar/nav treat admin as regular chef
-  const previewActive = userIsAdmin && isAdminPreviewActive()
-  const effectiveAdmin = (userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && !previewActive
+  const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
 
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
@@ -145,8 +153,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
-  // Remy is founder-only while development is in progress.
-  const shouldRenderRemy = isFounderEmail(user.email)
+  const shouldRenderRemy = aiPrefs.onboarding_completed && aiPrefs.remy_enabled
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -180,8 +187,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
                 )}
                 {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
-                {/* Admin preview toggle — lets admins see the app as a regular chef */}
-                {userIsAdmin && <AdminPreviewToggle initialPreview={previewActive} />}
                 {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
                 <TrialBanner chefId={user.entityId} />
                 {/* Beta survey banner — non-blocking, shows when an active survey hasn't been submitted */}

@@ -218,9 +218,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             />
           </div>
         </div>
-        <Link href={`/events/new?client_id=${client.id}`}>
-          <Button>Create Event for Client</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/clients/${client.id}/recurring`}>
+            <Button variant="secondary">Recurring Planning</Button>
+          </Link>
+          <Link href={`/events/new?client_id=${client.id}`}>
+            <Button>Create Event for Client</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Dormancy Warning */}

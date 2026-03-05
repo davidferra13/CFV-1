@@ -9818,9 +9818,9 @@ async function loginAs(role) {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Failed')
-    appendLog(`[login] Chrome incognito opening as ${role}...`, 'info')
+    addLog('info', 'login', `Chrome incognito opening as ${role}...`)
   } catch (err) {
-    appendLog(`[login] Failed to launch ${role}: ${err.message}`, 'error')
+    addLog('error', 'login', `Failed to launch ${role}: ${err.message}`)
   } finally {
     const label = role === 'developer' ? '\u{1F680} My Dashboard' : `Open as ${role.charAt(0).toUpperCase() + role.slice(1).replace('-b', ' B')}`
     btns.forEach(b => { setTimeout(() => { b.disabled = false; b.textContent = label }, 2000) })
@@ -9829,10 +9829,10 @@ async function loginAs(role) {
 
 async function resetDeveloperAccount() {
   const typed = prompt('This will WIPE ALL DATA from your account (clients, events, recipes, everything) and start fresh.\n\nType DAVID to confirm:')
-  if (typed !== 'DAVID') { if (typed !== null) appendLog('[reset] Reset cancelled — confirmation word did not match.', 'warn'); return }
+  if (typed !== 'DAVID') { if (typed !== null) addLog('warn', 'reset', 'Reset cancelled — confirmation word did not match.'); return }
   const btn = document.getElementById('btn-reset-developer')
   if (btn) { btn.disabled = true; btn.textContent = 'Resetting...' }
-  appendLog('[reset] Resetting developer account — wiping all data...', 'warn')
+  addLog('warn', 'reset', 'Resetting developer account — wiping all data...')
   try {
     const res = await fetch(`${API}/api/reset-developer`, {
       method: 'POST',
@@ -9840,15 +9840,15 @@ async function resetDeveloperAccount() {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Reset failed')
-    appendLog('[reset] Account reset complete — clean slate ready', 'success')
+    addLog('success', 'reset', 'Account reset complete — clean slate ready')
     // Show the output in the log
     if (data.output) {
       data.output.split('\n').filter(l => l.trim()).forEach(line => {
-        appendLog(`[reset] ${line}`, 'info')
+        addLog('info', 'reset', line)
       })
     }
   } catch (err) {
-    appendLog(`[reset] Failed: ${err.message}`, 'error')
+    addLog('error', 'reset', `Failed: ${err.message}`)
   } finally {
     if (btn) { setTimeout(() => { btn.disabled = false; btn.textContent = '\u{1F504} Reset' }, 3000) }
   }

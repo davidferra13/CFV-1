@@ -1,12 +1,5 @@
 #!/usr/bin/env node
-// ═══════════════════════════════════════════════════════════════════
-// Open Login — launches Chrome incognito, signs in, leaves it open
-// ═══════════════════════════════════════════════════════════════════
-// Usage: node scripts/launcher/open-login.mjs <role>
-//   Roles: chef, client, staff, partner, admin, chef-b, developer
-//
-// Requires: Playwright installed (npx playwright install chromium)
-// The dev server must be running on port 3100.
+// Open Login - launches an incognito browser, attempts sign-in, and leaves it open.
 
 import { chromium } from 'playwright'
 import { readFileSync } from 'fs'
@@ -17,7 +10,45 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
 const BASE_URL = 'http://localhost:3100'
 
-// ── Account Definitions ─────────────────────────────────────────
+function attachExitOnBrowserClose(browser) {
+  browser.on('disconnected', () => {
+    console.log('[open-login] Browser closed. Exiting.')
+    process.exit(0)
+  })
+}
+
+async function launchIncognitoBrowser() {
+  try {
+    return await chromium.launch({
+      headless: false,
+      channel: 'chrome',
+      args: ['--incognito'],
+    })
+  } catch (err) {
+    console.warn(`[open-login] Chrome launch failed, falling back to Chromium: ${err.message}`)
+    return chromium.launch({
+      headless: false,
+      args: ['--incognito'],
+    })
+  }
+}
+
+async function keepBrowserOpenForManualRecovery(page, browser, reason) {
+  console.error(`[open-login] ${reason}`)
+  try {
+    await page.goto(`${BASE_URL}/auth/signin`, { timeout: 15_000, waitUntil: 'domcontentloaded' })
+    console.log('[open-login] Opened sign-in page for manual login. Browser will stay open.')
+  } catch (err) {
+    console.error(`[open-login] Could not open sign-in page: ${err.message}`)
+    try {
+      await page.goto(BASE_URL, { timeout: 10_000, waitUntil: 'domcontentloaded' })
+      console.log('[open-login] Opened app root for manual recovery. Browser will stay open.')
+    } catch (fallbackErr) {
+      console.error(`[open-login] Could not open app root: ${fallbackErr.message}`)
+    }
+  }
+  attachExitOnBrowserClose(browser)
+}
 
 function loadSeedIds() {
   try {
@@ -38,7 +69,6 @@ function loadDeveloperCreds() {
 function getAccount(role) {
   const seed = loadSeedIds()
 
-  // Developer account — reads from .auth/developer.json
   if (role === 'developer') {
     const dev = loadDeveloperCreds()
     if (!dev || !dev.email || !dev.password || dev.password === 'FILL_IN_YOUR_PASSWORD_HERE') {
@@ -96,32 +126,22 @@ function getAccount(role) {
   return accounts[role]
 }
 
-// ── Main ─────────────────────────────────────────────────────────
-
 async function main() {
   const role = process.argv[2]
   if (!role) {
     console.error('Usage: node open-login.mjs <role>')
-    console.error('Roles: chef, client, staff, partner, admin, chef-b')
+    console.error('Roles: chef, client, staff, partner, admin, chef-b, developer, guest')
     process.exit(1)
   }
 
-  // Guest mode — no login, just open the site
   if (role === 'guest') {
-    console.log(`[open-login] Launching Chrome incognito as Guest (no login)...`)
-    const browser = await chromium.launch({
-      headless: false,
-      channel: 'chrome',
-      args: ['--incognito'],
-    })
-    const context = browser.contexts()[0] || await browser.newContext()
+    console.log('[open-login] Launching incognito as Guest (no login)...')
+    const browser = await launchIncognitoBrowser()
+    const context = browser.contexts()[0] || (await browser.newContext())
     const page = await context.newPage()
     await page.goto(BASE_URL, { timeout: 60_000 })
-    console.log(`[open-login] ✓ Guest view open. Browser will stay open.`)
-    browser.on('disconnected', () => {
-      console.log(`[open-login] Browser closed. Exiting.`)
-      process.exit(0)
-    })
+    console.log('[open-login] Guest view open. Browser will stay open.')
+    attachExitOnBrowserClose(browser)
     return
   }
 
@@ -131,50 +151,38 @@ async function main() {
     process.exit(1)
   }
 
-  console.log(`[open-login] Launching Chrome incognito as ${account.label} (${account.email})...`)
+  console.log(`[open-login] Launching incognito as ${account.label} (${account.email})...`)
 
-  // Launch real Chrome in incognito. Playwright's channel:'chrome' uses the
-  // system-installed Chrome. The `--incognito` arg opens in private browsing
-  // so multiple roles can be open simultaneously without cookie conflicts.
-  const browser = await chromium.launch({
-    headless: false,
-    channel: 'chrome',
-    args: ['--incognito'],
-  })
-
-  // In incognito, we need to use the first context Playwright creates
-  const context = browser.contexts()[0] || await browser.newContext()
-
-  const page = await context.newPage()
+  let browser = null
+  let page = null
 
   try {
-    // Sign in via the E2E auth endpoint (sets SSR cookies, bypasses rate limiter)
-    console.log(`[open-login] Signing in...`)
+    browser = await launchIncognitoBrowser()
+    const context = browser.contexts()[0] || (await browser.newContext())
+    page = await context.newPage()
+
+    console.log('[open-login] Signing in...')
     const resp = await page.request.post(`${BASE_URL}/api/e2e/auth`, {
       data: { email: account.email, password: account.password },
+      timeout: 20_000,
     })
 
     if (!resp.ok()) {
       const body = await resp.text()
-      console.error(`[open-login] Auth failed (${resp.status()}): ${body}`)
-      await browser.close()
-      process.exit(1)
+      await keepBrowserOpenForManualRecovery(page, browser, `Auth failed (${resp.status()}): ${body}`)
+      return
     }
 
-    // Navigate to the portal
     console.log(`[open-login] Navigating to ${account.portal}...`)
     await page.goto(`${BASE_URL}${account.portal}`, { timeout: 60_000 })
-    console.log(`[open-login] ✓ ${account.label} portal open. Browser will stay open.`)
-
-    // Keep the process alive so the browser stays open.
-    // When the user closes the browser window, the process exits.
-    browser.on('disconnected', () => {
-      console.log(`[open-login] Browser closed. Exiting.`)
-      process.exit(0)
-    })
+    console.log(`[open-login] ${account.label} portal open. Browser will stay open.`)
+    attachExitOnBrowserClose(browser)
   } catch (err) {
-    console.error(`[open-login] Failed: ${err.message}`)
-    await browser.close()
+    if (browser && page) {
+      await keepBrowserOpenForManualRecovery(page, browser, `Automatic sign-in failed: ${err.message}`)
+      return
+    }
+    console.error(`[open-login] Failed before browser session was ready: ${err.message}`)
     process.exit(1)
   }
 }
