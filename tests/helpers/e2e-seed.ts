@@ -111,6 +111,7 @@ function isImmutableEventPricingError(error: any): boolean {
   const message = String(error?.message || '').toLowerCase()
   return (
     message.includes('pricing is immutable once accepted') ||
+    message.includes('must match accepted quote') ||
     (message.includes('quoted_price_cents') &&
       message.includes('cannot be changed') &&
       message.includes('status is paid'))
