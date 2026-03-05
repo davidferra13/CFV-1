@@ -13,6 +13,7 @@ import {
   Clock,
   Compass,
   Contact,
+  CreditCard,
   Crosshair,
   DollarSign,
   FileText,
@@ -104,6 +105,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
   { href: '/commerce', label: 'Commerce', icon: Store },
   { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
+  { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
   { href: '/commerce/table-service', label: 'Table Service', icon: MapPin },
   { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
   { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
@@ -389,6 +391,11 @@ export const navGroups: NavGroup[] = [
         href: '/commerce/register',
         label: 'POS Register',
         icon: ShoppingCart,
+      },
+      {
+        href: '/commerce/virtual-terminal',
+        label: 'Virtual Terminal',
+        icon: CreditCard,
       },
       {
         href: '/commerce/table-service',
@@ -874,7 +881,49 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
-  // ─── TOOLS (utilities) ───
+  // Admin (platform controls)
+  {
+    id: 'admin',
+    label: 'Admin',
+    icon: ShieldAlert,
+    items: [
+      { href: '/admin', label: 'Overview', icon: LayoutDashboard, adminOnly: true },
+      { href: '/admin/presence', label: 'Live Presence', icon: Activity, adminOnly: true },
+      { href: '/admin/users', label: 'Chefs', icon: Users, adminOnly: true },
+      { href: '/admin/clients', label: 'Clients', icon: Contact, adminOnly: true },
+      { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
+      { href: '/admin/financials', label: 'Financials', icon: DollarSign, adminOnly: true },
+      { href: '/admin/events', label: 'All Events', icon: CalendarDays, adminOnly: true },
+      { href: '/admin/audit', label: 'Audit Log', icon: FileText, adminOnly: true },
+      { href: '/admin/system', label: 'System Health', icon: ShieldCheck, adminOnly: true },
+      {
+        href: '/admin/communications',
+        label: 'Communications',
+        icon: MessageCircle,
+        adminOnly: true,
+      },
+      { href: '/admin/flags', label: 'Feature Flags', icon: ShieldAlert, adminOnly: true },
+      {
+        href: '/admin/referral-partners',
+        label: 'Referral Partners',
+        icon: Handshake,
+        adminOnly: true,
+      },
+      { href: '/admin/feedback', label: 'Feedback', icon: MessageCircle, adminOnly: true },
+      { href: '/admin/animations', label: 'Animations', icon: Palette, adminOnly: true },
+      { href: '/admin/cannabis', label: 'Cannabis Tier', icon: ShieldCheck, adminOnly: true },
+      { href: '/admin/beta', label: 'Beta Signups', icon: Star, adminOnly: true },
+      {
+        href: '/admin/beta-surveys',
+        label: 'Beta Surveys',
+        icon: ClipboardCheck,
+        adminOnly: true,
+      },
+      { href: '/admin/directory', label: 'Directory', icon: Compass, adminOnly: true },
+      { href: '/admin/reconciliation', label: 'Reconciliation', icon: Landmark, adminOnly: true },
+    ],
+  },
+  // Tools (utilities)
   {
     id: 'tools',
     label: 'Tools',

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'

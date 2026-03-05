@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import { ArrowRight, CheckCircle2, MinusCircle, ShieldCheck, Sparkles, XCircle } from 'lucide-react'
+import { TrackedLink } from '@/components/analytics/tracked-link'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   FUNCTION_BUCKETS,
@@ -18,7 +19,7 @@ function getCellTone(state: ComparisonCellState) {
   if (state === 'included') return 'text-green-400'
   if (state === 'limited') return 'text-amber-300'
   if (state === 'pilot') return 'text-brand-300'
-  return 'text-stone-500'
+  return 'text-muted-soft'
 }
 
 function ComparisonPill({ cell }: { cell: ComparisonCell }) {
@@ -60,6 +61,8 @@ function ComparisonPill({ cell }: { cell: ComparisonCell }) {
 }
 
 export default function PricingPage() {
+  const isBeta = LAUNCH_MODE === 'beta'
+
   return (
     <div>
       <section className="relative overflow-hidden border-b border-stone-700/50">
@@ -70,7 +73,7 @@ export default function PricingPage() {
             <p className="inline-flex items-center gap-2 rounded-full border border-brand-700/80 bg-stone-900/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Plan Comparison
             </p>
-            <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+            <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-100">
               Choose the tier that matches your operating stage.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -96,7 +99,7 @@ export default function PricingPage() {
               <CardHeader className="border-b border-stone-700/80">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-stone-400">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-soft">
                       {plan.tag}
                     </p>
                     <CardTitle className="mt-1 text-2xl">{plan.name}</CardTitle>
@@ -109,7 +112,7 @@ export default function PricingPage() {
                 </div>
                 <p className="mt-5 flex items-end gap-2">
                   <span className="text-4xl font-semibold text-stone-100">{plan.price}</span>
-                  <span className="pb-1 text-sm text-stone-400">{plan.cadence}</span>
+                  <span className="pb-1 text-sm text-muted-soft">{plan.cadence}</span>
                 </p>
                 <p className="mt-3 text-sm text-stone-300">{plan.summary}</p>
               </CardHeader>
@@ -122,23 +125,25 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={plan.ctaHref}
+                <TrackedLink
+                  href={isBeta ? '/beta' : plan.ctaHref}
+                  analyticsName={`pricing_plan_${plan.id}_cta`}
+                  analyticsProps={{ section: 'pricing_plans' }}
                   className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
                     plan.highlighted
                       ? 'bg-brand-600 text-white hover:bg-brand-700'
                       : 'border border-stone-600 bg-stone-900 text-stone-200 hover:bg-stone-800'
                   }`}
                 >
-                  {plan.ctaLabel}
+                  {isBeta ? 'Join beta waitlist' : plan.ctaLabel}
                   <ArrowRight className="h-4 w-4" />
-                </Link>
-                {plan.finePrint && <p className="text-xs text-stone-400">{plan.finePrint}</p>}
+                </TrackedLink>
+                {plan.finePrint && <p className="text-xs text-muted-soft">{plan.finePrint}</p>}
               </CardContent>
             </Card>
           ))}
         </div>
-        <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs text-stone-400">
+        <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs text-muted-soft">
           <ShieldCheck className="h-3.5 w-3.5 text-brand-300" />
           Trial and paid users both use the same product - no hidden feature branch.
         </p>
@@ -181,7 +186,7 @@ export default function PricingPage() {
       </section>
 
       <section className="container mx-auto px-4 pb-14 md:pb-20">
-        <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
+        <h2 className="text-center fluid-title-md font-display text-stone-100">
           Full feature comparison
         </h2>
         <p className="mx-auto mt-3 max-w-3xl text-center text-sm leading-relaxed text-stone-300 md:text-base">
@@ -214,7 +219,7 @@ export default function PricingPage() {
                     <tr key={row.capability} className="border-b border-stone-800 align-top">
                       <td className="px-5 py-4">
                         <p className="text-sm font-medium text-stone-100">{row.capability}</p>
-                        <p className="mt-1 text-xs text-stone-400">{row.detail}</p>
+                        <p className="mt-1 text-xs text-muted-soft">{row.detail}</p>
                       </td>
                       {PLAN_COLUMNS.map((planId) => (
                         <td key={`${row.capability}-${planId}`} className="px-5 py-4">
@@ -262,6 +267,42 @@ export default function PricingPage() {
       </section>
 
       <section className="container mx-auto px-4 pb-14 md:pb-20">
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
+          <h2 className="text-2xl font-display text-stone-100 md:text-3xl">Need hard proof?</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-300 md:text-base">
+            See customer stories with concrete workflow changes and measurable outcomes from early
+            chef operations.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <TrackedLink
+              href="/customers"
+              analyticsName="pricing_proof_customers"
+              analyticsProps={{ section: 'pricing_proof' }}
+              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              Read customer stories
+            </TrackedLink>
+            <TrackedLink
+              href="/trust"
+              analyticsName="pricing_proof_trust"
+              analyticsProps={{ section: 'pricing_proof' }}
+              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              Review trust center
+            </TrackedLink>
+            <TrackedLink
+              href="/compare"
+              analyticsName="pricing_proof_compare"
+              analyticsProps={{ section: 'pricing_proof' }}
+              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              Compare alternatives
+            </TrackedLink>
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 pb-14 md:pb-20">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
             Common questions
@@ -284,7 +325,7 @@ export default function PricingPage() {
 
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="container mx-auto px-4 py-14 text-center md:py-20">
-          <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
             Start with structure, upgrade for leverage.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
@@ -292,18 +333,22 @@ export default function PricingPage() {
             team rollout requires implementation support.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/auth/signup"
+            <TrackedLink
+              href={PRIMARY_SIGNUP_HREF}
+              analyticsName="pricing_bottom_start_free"
+              analyticsProps={{ section: 'pricing_bottom_cta' }}
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
             >
-              Start Free
-            </Link>
-            <Link
+              {isBeta ? 'Join beta waitlist' : 'Start Free'}
+            </TrackedLink>
+            <TrackedLink
               href="/contact"
+              analyticsName="pricing_bottom_talk_to_sales"
+              analyticsProps={{ section: 'pricing_bottom_cta' }}
               className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
             >
               Talk to Sales
-            </Link>
+            </TrackedLink>
           </div>
         </div>
       </section>

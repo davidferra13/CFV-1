@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-04
 **Tests:** 5 | **Pass:** 2 | **Fail:** 3
-**Runtime:** 9.2 minutes
+**Runtime:** 4.6 minutes
 
 ---
 
@@ -31,9 +31,9 @@
 
 ### ✓ NAV_SUGGESTIONS Validation
 
-- ✓ **nav_suggestions_present:** 7/8 responses included NAV_SUGGESTIONS
+- ✓ **nav_suggestions_present:** 1/8 responses included NAV_SUGGESTIONS
 - ✓ **no_malformed_json:** All NAV_SUGGESTIONS had valid JSON
-- ✓ **all_routes_valid:** All 8 suggested routes are valid client portal paths
+- ✓ **all_routes_valid:** All 1 suggested routes are valid client portal paths
 
 ---
 
@@ -47,8 +47,8 @@
 ### ✗ Cold Model Load
 
 - ✗ **cold_start_succeeds:** Failed: HTTP 401
-- ✓ **cold_start_timing:** Warm: 13372ms, Cold: 10583ms, Slowdown: 0.8x
-- ✓ **within_timeout:** 10583ms < 180000ms timeout
+- ✓ **cold_start_timing:** Warm: 185ms, Cold: 9953ms, Slowdown: 53.8x
+- ✓ **within_timeout:** 9953ms < 180000ms timeout
 
 ---
 

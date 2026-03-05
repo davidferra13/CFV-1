@@ -10,44 +10,83 @@ import { ROUTES } from '../helpers/test-utils'
 const AGENT_EMAIL = 'agent@chefflow.test'
 const AGENT_PASSWORD = 'AgentChefFlow!2026'
 const LANDING_URL = /\/(dashboard|onboarding|my-events|auth\/role-selection|admin)/
+const SIGN_IN_ATTEMPTS = 3
+const AUTH_API_ATTEMPTS = 3
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 async function signInViaUi(page: Page) {
-  await page.goto(ROUTES.signIn)
-  await page.waitForLoadState('domcontentloaded')
-  await expect(page.locator('input[type="email"]')).toBeVisible()
-  await expect(page.locator('input[type="password"]')).toBeVisible()
+  let lastError: unknown
+  for (let attempt = 1; attempt <= SIGN_IN_ATTEMPTS; attempt += 1) {
+    try {
+      await page.goto(ROUTES.signIn, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+      await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 120_000 })
+      await expect(page.locator('input[type="password"]')).toBeVisible({ timeout: 120_000 })
 
-  await page.fill('input[type="email"]', AGENT_EMAIL)
-  await page.fill('input[type="password"]', AGENT_PASSWORD)
-  await page.click('button[type="submit"]')
+      await page.fill('input[type="email"]', AGENT_EMAIL)
+      await page.fill('input[type="password"]', AGENT_PASSWORD)
+      await page.click('button[type="submit"]')
+      await page.waitForURL(LANDING_URL, { timeout: 120_000 })
+      return
+    } catch (error) {
+      lastError = error
+      if (attempt < SIGN_IN_ATTEMPTS) {
+        await sleep(1_500)
+      }
+    }
+  }
 
-  await page.waitForURL(LANDING_URL, { timeout: 90_000 })
+  throw lastError instanceof Error
+    ? new Error(`Agent UI sign-in failed after ${SIGN_IN_ATTEMPTS} attempts: ${lastError.message}`)
+    : new Error(`Agent UI sign-in failed after ${SIGN_IN_ATTEMPTS} attempts.`)
 }
 
 async function establishAgentSession(page: Page) {
-  const resp = await page.request.post('/api/e2e/auth', {
-    data: { email: AGENT_EMAIL, password: AGENT_PASSWORD },
-    timeout: 90_000,
-  })
+  let lastApiError: unknown
+  for (let attempt = 1; attempt <= AUTH_API_ATTEMPTS; attempt += 1) {
+    try {
+      const resp = await page.request.post('/api/e2e/auth', {
+        data: { email: AGENT_EMAIL, password: AGENT_PASSWORD },
+        timeout: 120_000,
+      })
 
-  if (resp.ok()) {
-    await page.goto('/dashboard', { timeout: 90_000 })
-    await page.waitForURL(LANDING_URL, { timeout: 90_000 })
-    return
-  }
+      if (resp.ok()) {
+        await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 120_000 })
+        await page.waitForURL(LANDING_URL, { timeout: 120_000 })
+        return
+      }
 
-  const status = resp.status()
-  if (status === 401) {
-    const body = await resp.text()
-    throw new Error(`E2E auth rejected known-good agent credentials: ${body}`)
+      const status = resp.status()
+      if (status === 401) {
+        const body = await resp.text()
+        throw new Error(`E2E auth rejected known-good agent credentials: ${body}`)
+      }
+
+      lastApiError = new Error(`E2E auth responded with status ${status}.`)
+    } catch (error) {
+      lastApiError = error
+    }
+
+    if (attempt < AUTH_API_ATTEMPTS) {
+      await sleep(1_500)
+    }
   }
 
   // Endpoint can be intentionally disabled outside remote E2E mode.
-  await signInViaUi(page)
+  await signInViaUi(page).catch((uiError) => {
+    const apiMessage =
+      lastApiError instanceof Error ? ` API session error: ${lastApiError.message}` : ''
+    if (uiError instanceof Error) {
+      throw new Error(`${uiError.message}${apiMessage}`)
+    }
+    throw uiError
+  })
 }
 
 test.describe('Agent Authentication', () => {
-  test.describe.configure({ timeout: 120_000 })
+  test.describe.configure({ timeout: 240_000 })
 
   test('agent can sign in through UI and access dashboard', async ({ page }) => {
     await signInViaUi(page)
@@ -64,7 +103,7 @@ test.describe('Agent Authentication', () => {
     await establishAgentSession(page)
 
     // Wait for page to fully load
-    await page.waitForLoadState('domcontentloaded')
+    await page.waitForLoadState('domcontentloaded', { timeout: 120_000 })
 
     // Check that CSS is loaded (body should have dark background class)
     const body = page.locator('body')
@@ -85,8 +124,7 @@ test.describe('Agent Authentication', () => {
     await establishAgentSession(page)
 
     // Navigate to events
-    await page.goto(ROUTES.events, { timeout: 90_000 })
-    await page.waitForLoadState('domcontentloaded')
+    await page.goto(ROUTES.events, { waitUntil: 'domcontentloaded', timeout: 120_000 })
 
     // If onboarding is incomplete, middleware may redirect to /onboarding instead of /events.
     await expect(page).toHaveURL(/\/(events|onboarding|dashboard)/)

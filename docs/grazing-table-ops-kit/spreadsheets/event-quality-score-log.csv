@@ -1,0 +1,3 @@
+event_id,event_date,setup_timeliness,visual_presentation,food_quality,labeling_allergen_clarity,tool_readiness,team_communication,client_satisfaction,cleanup_closeout,total_score,max_score,percent_score,notes
+EVT-001,2026-03-20,5,5,4,5,4,5,5,5,38,40,95,Sample row
+

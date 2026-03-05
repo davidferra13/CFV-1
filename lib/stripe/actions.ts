@@ -7,7 +7,18 @@
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { breakers } from '@/lib/resilience/circuit-breaker'
+import { isConnectOnboardingRequiredForPayments } from '@/lib/stripe/payment-policy'
 import type Stripe from 'stripe'
+
+export type CreatePaymentIntentResult =
+  | {
+      clientSecret: string | null
+      amount: number
+    }
+  | {
+      success: false
+      error: string
+    }
 
 /**
  * Lazy Stripe client initialization
@@ -25,7 +36,7 @@ function getStripe(): Stripe {
  * Create PaymentIntent for event payment
  * Client-only: Can only pay for own events
  */
-export async function createPaymentIntent(eventId: string) {
+export async function createPaymentIntent(eventId: string): Promise<CreatePaymentIntentResult> {
   const user = await requireClient()
   const supabase: any = createServerClient()
 
@@ -46,6 +57,21 @@ export async function createPaymentIntent(eventId: string) {
     return { success: false as const, error: 'Event is not ready for payment' }
   }
 
+  const quotedCents = event.quoted_price_cents ?? 0
+  const depositCents = event.deposit_amount_cents ?? 0
+  if (quotedCents <= 0) {
+    return {
+      success: false as const,
+      error: 'Event is missing a valid quoted price. Please contact your chef.',
+    }
+  }
+  if (depositCents < 0 || depositCents > quotedCents) {
+    return {
+      success: false as const,
+      error: 'Event has an invalid deposit configuration. Please contact your chef.',
+    }
+  }
+
   // Determine amount from financial summary
   const { data: financial } = await supabase
     .from('event_financial_summary')
@@ -55,8 +81,6 @@ export async function createPaymentIntent(eventId: string) {
 
   // Use outstanding balance, or deposit if no payments yet, or quoted price
   const outstandingCents = financial?.outstanding_balance_cents ?? 0
-  const depositCents = event.deposit_amount_cents ?? 0
-  const quotedCents = event.quoted_price_cents ?? 0
   const totalPaidCents = financial?.total_paid_cents ?? 0
 
   // If nothing paid yet and deposit defined, charge deposit; otherwise charge outstanding
@@ -75,7 +99,7 @@ export async function createPaymentIntent(eventId: string) {
   }
 
   if (amountCents <= 0) {
-    throw new Error('Invalid payment amount')
+    return { success: false as const, error: 'Invalid payment amount for this event' }
   }
 
   const stripe = getStripe()
@@ -84,6 +108,15 @@ export async function createPaymentIntent(eventId: string) {
   const { getChefStripeConfig, computeApplicationFee } =
     await import('@/lib/stripe/transfer-routing')
   const chefConfig = await getChefStripeConfig(event.tenant_id)
+  const requireConnect = isConnectOnboardingRequiredForPayments()
+
+  if (requireConnect && !chefConfig.canReceiveTransfers) {
+    return {
+      success: false as const,
+      error:
+        'Online payments are temporarily unavailable while your chef finishes payout setup. Please contact support.',
+    }
+  }
 
   // Build PaymentIntent params
   const createParams: Stripe.PaymentIntentCreateParams = {
@@ -119,9 +152,16 @@ export async function createPaymentIntent(eventId: string) {
 
   // Create PaymentIntent with metadata for webhook processing
   // Circuit breaker: trips after 3 consecutive Stripe failures (30s reset)
-  const paymentIntent = await breakers.stripe.execute(() =>
-    stripe.paymentIntents.create(createParams)
-  )
+  let paymentIntent: Stripe.Response<Stripe.PaymentIntent>
+  try {
+    paymentIntent = await breakers.stripe.execute(() => stripe.paymentIntents.create(createParams))
+  } catch (error) {
+    console.error('[createPaymentIntent] Failed to create PaymentIntent:', error)
+    return {
+      success: false as const,
+      error: 'Unable to initialize payment right now. Please try again.',
+    }
+  }
 
   return {
     clientSecret: paymentIntent.client_secret,

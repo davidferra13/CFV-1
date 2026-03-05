@@ -1,0 +1,6 @@
+event_id,event_date,client,task_phase,role,count,hours_each,total_hours,rate_per_hour,total_labor_cost,notes
+EVT-001,2026-03-20,Sample Client,prep,prep_lead,1,8,8,30,240,Sample row
+EVT-001,2026-03-20,Sample Client,setup,styling_lead,1,4,4,35,140,Sample row
+EVT-001,2026-03-20,Sample Client,service,attendant,2,3,6,28,168,Sample row
+EVT-001,2026-03-20,Sample Client,strike,runner,1,2,2,25,50,Sample row
+

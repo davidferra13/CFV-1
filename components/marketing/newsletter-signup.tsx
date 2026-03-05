@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { subscribeToNewsletter } from '@/lib/marketing/newsletter-actions'
 
 /**
@@ -9,6 +10,7 @@ import { subscribeToNewsletter } from '@/lib/marketing/newsletter-actions'
  */
 export function NewsletterSignup() {
   const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -19,11 +21,13 @@ export function NewsletterSignup() {
     setStatus('loading')
     setErrorMsg('')
 
-    const result = await subscribeToNewsletter(email)
+    const result = await subscribeToNewsletter({ email, website })
 
     if (result.success) {
       setStatus('success')
       setEmail('')
+      setWebsite('')
+      trackEvent(ANALYTICS_EVENTS.NEWSLETTER_SUBSCRIBED, { source: 'public_footer' })
     } else {
       setStatus('error')
       setErrorMsg(result.error || 'Something went wrong.')
@@ -40,6 +44,16 @@ export function NewsletterSignup() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2" noValidate>
+      <div className="absolute opacity-0 -z-10 pointer-events-none" aria-hidden="true">
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
       <div className="flex gap-2">
         <input
           id="newsletter-email"

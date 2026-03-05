@@ -15,6 +15,7 @@ import {
   DollarSign,
   Percent,
   AlertTriangle,
+  CreditCard,
   MapPin,
 } from 'lucide-react'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
@@ -60,6 +61,12 @@ export default async function CommerceDashboardPage() {
           <p className="text-stone-400 mt-1">POS register, products, and sales</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/commerce/virtual-terminal">
+            <Button variant="secondary">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Virtual Terminal
+            </Button>
+          </Link>
           <Link href="/commerce/register">
             <Button variant="primary">
               <ShoppingCart className="w-4 h-4 mr-2" />
@@ -111,12 +118,20 @@ export default async function CommerceDashboardPage() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
         <Link href="/commerce/register">
           <Card interactive>
             <CardContent className="p-4 flex items-center gap-3">
               <ShoppingCart className="w-5 h-5 text-brand-500" />
               <span className="text-stone-200 font-medium">POS Register</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/virtual-terminal">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <CreditCard className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Virtual Terminal</span>
             </CardContent>
           </Card>
         </Link>

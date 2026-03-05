@@ -89,14 +89,14 @@ export interface ClassificationResult {
 
 export async function classifyIntent(message: string): Promise<ClassificationResult> {
   try {
-    // Use 'standard' tier (30b) instead of 'fast' (4b) to avoid model swap on 6GB VRAM.
-    // The 30b model is needed for streaming anyway — using it for classification too
+    // Use 'complex' tier (30b conversation model) instead of 'fast' (4b)
+    // to avoid model swap on 6GB VRAM. Remy streaming now uses the same tier,
     // eliminates the 60-100s model swap penalty that occurs every request.
     const result = await parseWithOllama(
       CLASSIFIER_SYSTEM_PROMPT,
       `Classify this message: "${message}"`,
       ClassificationSchema,
-      { modelTier: 'standard', cache: true }
+      { modelTier: 'complex', cache: true }
     )
 
     // Low confidence → default to question (safe)

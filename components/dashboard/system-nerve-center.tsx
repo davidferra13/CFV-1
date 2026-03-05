@@ -1,9 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
-// System Nerve Center — Dashboard Panel
+// System Nerve Center â€” Dashboard Panel
 // Monitors all ChefFlow services, shows health at a glance,
 // and provides one-click fix buttons for auto-fixable issues.
-// Admin-only — renders nothing for non-admins.
+// Admin-only â€” renders nothing for non-admins.
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
@@ -27,7 +28,7 @@ import type {
   ServiceTier,
 } from '@/lib/system/types'
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const POLL_HEALTHY = 120_000
 const POLL_DEGRADED = 30_000
@@ -59,7 +60,7 @@ const STATUS_TEXT: Record<ServiceStatus, string> = {
   unchecked: 'text-stone-600',
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function SystemNerveCenter() {
   const [sweep, setSweep] = useState<SweepResult | null>(null)
@@ -72,7 +73,7 @@ export default function SystemNerveCenter() {
   const [showDangerousConfirm, setShowDangerousConfirm] = useState(false)
   const [pendingFixAction, setPendingFixAction] = useState<FixAction | null>(null)
 
-  // ── Fetch health ──────────────────────────────────────────────────────
+  // â”€â”€ Fetch health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const fetchHealth = useCallback(async () => {
     try {
@@ -85,13 +86,13 @@ export default function SystemNerveCenter() {
       const data: SweepResult = await res.json()
       setSweep(data)
     } catch {
-      // Network error — don't crash, just keep last known state
+      // Network error â€” don't crash, just keep last known state
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // ── Polling ───────────────────────────────────────────────────────────
+  // â”€â”€ Polling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   useEffect(() => {
     fetchHealth()
@@ -119,7 +120,7 @@ export default function SystemNerveCenter() {
     }
   }, [sweep?.overallStatus, isAdmin, fetchHealth])
 
-  // ── Sweep All ─────────────────────────────────────────────────────────
+  // â”€â”€ Sweep All â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handleSweep = async () => {
     setSweeping(true)
@@ -150,13 +151,13 @@ export default function SystemNerveCenter() {
         toast.success(`All ${data.healthyCount} services healthy`)
       }
     } catch {
-      toast.error('Sweep failed — check console')
+      toast.error('Sweep failed â€” check console')
     } finally {
       setSweeping(false)
     }
   }
 
-  // ── Execute Fix ───────────────────────────────────────────────────────
+  // â”€â”€ Execute Fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handleFix = async (action: FixAction) => {
     if (action.dangerous) {
@@ -199,7 +200,7 @@ export default function SystemNerveCenter() {
     }
   }
 
-  // ── Guard: not admin or still loading ─────────────────────────────────
+  // â”€â”€ Guard: not admin or still loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (isAdmin === false) return null
   if (loading || isAdmin === null) {
@@ -213,7 +214,7 @@ export default function SystemNerveCenter() {
     )
   }
 
-  // ── Group services by display tier ────────────────────────────────────
+  // â”€â”€ Group services by display tier â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const services = sweep?.services ?? []
   const grouped = new Map<ServiceTier, ServiceHealthResult[]>()
@@ -234,7 +235,7 @@ export default function SystemNerveCenter() {
     { label: 'Infrastructure', services: grouped.get(6) || [] },
   ].filter((g) => g.services.length > 0)
 
-  // ── Overall status ────────────────────────────────────────────────────
+  // â”€â”€ Overall status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const overallColor =
     sweep?.overallStatus === 'error'
@@ -462,7 +463,7 @@ export default function SystemNerveCenter() {
   )
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function timeSince(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime()

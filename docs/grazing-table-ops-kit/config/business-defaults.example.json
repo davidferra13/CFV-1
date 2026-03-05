@@ -1,0 +1,10 @@
+{
+  "businessName": "Golden Spread Grazing Co",
+  "businessLegalName": "Golden Spread Grazing LLC",
+  "ownerName": "Jordan Lee",
+  "phone": "(555) 555-0199",
+  "email": "hello@goldenspread.co",
+  "website": "https://goldenspread.co",
+  "state": "New York",
+  "holdDateDaysDefault": 5
+}

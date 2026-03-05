@@ -243,6 +243,8 @@ export async function createInquiry(input: CreateInquiryInput) {
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')
     const clientName = validated.client_name || 'Unknown'
+    const budgetMode = validated.confirmed_budget_cents != null ? 'exact' : 'unset'
+    const budgetKnown = budgetMode === 'exact'
     await evaluateAutomations(user.tenantId!, 'inquiry_created', {
       entityId: inquiry.id,
       entityType: 'inquiry',
@@ -251,6 +253,10 @@ export async function createInquiry(input: CreateInquiryInput) {
         client_name: clientName,
         occasion: validated.confirmed_occasion || null,
         guest_count: validated.confirmed_guest_count ?? null,
+        budget_mode: budgetMode,
+        budget_known: budgetKnown,
+        budget_range: null,
+        budget_cents: validated.confirmed_budget_cents ?? null,
       },
     })
   } catch (err) {
@@ -265,6 +271,7 @@ export async function createInquiry(input: CreateInquiryInput) {
       clientName: validated.client_name,
       occasion: validated.confirmed_occasion ?? undefined,
       budgetCents: validated.confirmed_budget_cents ?? undefined,
+      budgetMode: validated.confirmed_budget_cents != null ? 'exact' : 'unset',
       guestCount: validated.confirmed_guest_count ?? undefined,
     })
   } catch (err) {

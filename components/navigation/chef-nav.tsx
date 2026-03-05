@@ -609,12 +609,13 @@ export function ChefSidebar({
   )
   const accessibleGroups = useMemo(
     () =>
-      isAdmin
+      (isAdmin
         ? navGroups
         : navGroups.map((group) => ({
             ...group,
             items: group.items.filter((item) => !item.adminOnly),
-          })),
+          }))
+      ).filter((group) => group.items.length > 0),
     [isAdmin]
   )
   const groupEntries = useMemo(
@@ -1554,12 +1555,13 @@ export function ChefMobileNav({
   )
   const accessibleGroups = useMemo(
     () =>
-      isAdmin
+      (isAdmin
         ? navGroups
         : navGroups.map((group) => ({
             ...group,
             items: group.items.filter((item) => !item.adminOnly),
-          })),
+          }))
+      ).filter((group) => group.items.length > 0),
     [isAdmin]
   )
   const groupEntries = useMemo(

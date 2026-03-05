@@ -46,6 +46,8 @@ type InquiryFilter =
   | 'confirmed'
   | 'closed'
 
+type BudgetModeFilter = 'all' | 'exact' | 'range' | 'not_sure' | 'unset'
+
 const OPEN_STATUSES = new Set(['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
 function getDisplayName(inquiry: {
@@ -55,6 +57,47 @@ function getDisplayName(inquiry: {
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_name as string) || 'Unknown Lead'
+}
+
+function getBudgetMode(inquiry: {
+  confirmed_budget_cents: number | null
+  unknown_fields: unknown
+}): Exclude<BudgetModeFilter, 'all'> {
+  const exactCents = inquiry.confirmed_budget_cents
+  const unknown =
+    inquiry.unknown_fields && typeof inquiry.unknown_fields === 'object'
+      ? (inquiry.unknown_fields as Record<string, unknown>)
+      : null
+
+  const modeRaw = unknown?.budget_mode
+  const mode = typeof modeRaw === 'string' ? modeRaw : null
+  const rangeRaw = unknown?.budget_range
+  const budgetRange = typeof rangeRaw === 'string' ? rangeRaw : null
+  const unknownExactRaw = unknown?.budget_exact_cents
+  const unknownExactCents =
+    typeof unknownExactRaw === 'number'
+      ? unknownExactRaw
+      : typeof unknownExactRaw === 'string'
+        ? Number.parseInt(unknownExactRaw, 10)
+        : NaN
+
+  if (
+    (typeof exactCents === 'number' && exactCents > 0) ||
+    (Number.isFinite(unknownExactCents) && unknownExactCents > 0) ||
+    mode === 'exact'
+  ) {
+    return 'exact'
+  }
+
+  if (mode === 'not_sure' || budgetRange === 'not_sure') {
+    return 'not_sure'
+  }
+
+  if (mode === 'range' || (budgetRange && budgetRange.trim().length > 0)) {
+    return 'range'
+  }
+
+  return 'unset'
 }
 
 // Shared row component for inquiry cards
@@ -186,9 +229,11 @@ function InquiryRow({
 async function InquiryList({
   filter,
   channelFilter,
+  budgetModeFilter,
 }: {
   filter: InquiryFilter
   channelFilter: string | null
+  budgetModeFilter: BudgetModeFilter
 }) {
   await requireChef()
 
@@ -203,6 +248,10 @@ async function InquiryList({
   // Apply channel filter
   if (channelFilter) {
     inquiries = inquiries.filter((i: any) => i.channel === channelFilter)
+  }
+
+  if (budgetModeFilter !== 'all') {
+    inquiries = inquiries.filter((i: any) => getBudgetMode(i) === budgetModeFilter)
   }
 
   // Apply status filter
@@ -409,12 +458,13 @@ async function InquiryList({
 export default async function InquiriesPage({
   searchParams,
 }: {
-  searchParams: { status?: InquiryFilter; channel?: string }
+  searchParams: { status?: InquiryFilter; channel?: string; budget_mode?: BudgetModeFilter }
 }) {
   await requireChef()
 
   const filter = (searchParams.status || 'all') as InquiryFilter
   const channelFilter = searchParams.channel || null
+  const budgetModeFilter = (searchParams.budget_mode || 'all') as BudgetModeFilter
 
   // Fetch all inquiries for the kanban board (always shows all, unfiltered)
   const allInquiries = await getInquiries()
@@ -458,7 +508,11 @@ export default async function InquiriesPage({
         {/* Status Tabs + List — unchanged, passed as children slot */}
         <div className="space-y-4">
           <Card className="p-4">
-            <InquiriesFilterTabs initialStatus={filter} initialChannel={channelFilter} />
+            <InquiriesFilterTabs
+              initialStatus={filter}
+              initialChannel={channelFilter}
+              initialBudgetMode={budgetModeFilter}
+            />
           </Card>
 
           {/* Inquiry List */}
@@ -469,7 +523,11 @@ export default async function InquiriesPage({
               </Card>
             }
           >
-            <InquiryList filter={filter} channelFilter={channelFilter} />
+            <InquiryList
+              filter={filter}
+              channelFilter={channelFilter}
+              budgetModeFilter={budgetModeFilter}
+            />
           </Suspense>
         </div>
       </InquiriesViewWrapper>

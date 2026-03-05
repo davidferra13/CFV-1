@@ -4,6 +4,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { breakers } from '@/lib/resilience/circuit-breaker'
+import { isConnectOnboardingRequiredForPayments } from '@/lib/stripe/payment-policy'
 import type Stripe from 'stripe'
 
 function getStripe(): Stripe {
@@ -51,6 +52,9 @@ export async function createPaymentCheckoutUrl(
   const totalPaidCents = financial?.total_paid_cents ?? 0
   const quotedCents = event.quoted_price_cents ?? 0
 
+  if (quotedCents <= 0) return null
+  if (depositCents < 0 || depositCents > quotedCents) return null
+
   let amountCents: number
   let paymentType: string
 
@@ -71,6 +75,15 @@ export async function createPaymentCheckoutUrl(
   const { getChefStripeConfig, computeApplicationFee } =
     await import('@/lib/stripe/transfer-routing')
   const chefConfig = await getChefStripeConfig(tenantId)
+  const requireConnect = isConnectOnboardingRequiredForPayments()
+
+  if (requireConnect && !chefConfig.canReceiveTransfers) {
+    console.warn(
+      '[createPaymentCheckoutUrl] Connect onboarding incomplete for tenant in required mode:',
+      tenantId
+    )
+    return null
+  }
 
   const transferRouted = chefConfig.canReceiveTransfers && !!chefConfig.stripeAccountId
 

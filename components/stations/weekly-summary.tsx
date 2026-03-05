@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
-// Weekly Summary — The "8th page" aggregated view
+// Weekly Summary â€” The "8th page" aggregated view
 // Shows per-component totals (made, waste, average on-hand, 86 count) and station-level stats.
 
 import { useState, useEffect } from 'react'
@@ -197,7 +198,7 @@ export function WeeklySummary({ stationId, stationName }: Props) {
 
       {/* Print header */}
       <div className="hidden print:block text-center mb-4">
-        <h2 className="text-xl font-bold">{stationName} — Weekly Summary</h2>
+        <h2 className="text-xl font-bold">{stationName} â€” Weekly Summary</h2>
         <p className="text-sm">
           {weekStart} to {weekEndDate}
         </p>

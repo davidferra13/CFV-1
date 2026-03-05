@@ -129,7 +129,9 @@ export async function routeForRemy(opts?: { preferEndpoint?: LlmEndpoint }): Pro
 
   return {
     host: url,
-    model: getModelForEndpoint(endpointName, 'standard'),
+    // Remy chat is conversational by default, so prefer the complex tier on PC.
+    // On Pi, getModelForEndpoint() always resolves to the Pi model.
+    model: getModelForEndpoint(endpointName, 'complex'),
     endpointName,
   }
 }

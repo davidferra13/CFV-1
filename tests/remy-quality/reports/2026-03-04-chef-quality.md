@@ -1,297 +1,95 @@
 # Remy Quality Report — Chef Suite
 
-**Date:** 2026-03-04 | **Duration:** 52 min | **Pass Rate:** 16/50 (32%)
+**Date:** 2026-03-04 | **Duration:** 42 min | **Pass Rate:** 36/50 (72%)
 
 ## Summary
 
 | Metric                  | Value  |
 | ----------------------- | ------ |
 | Total prompts           | 50     |
-| Passed                  | 16     |
-| Warnings                | 15     |
-| Failed                  | 19     |
-| Pass rate               | 32%    |
-| Avg classification time | 19.7s  |
-| Avg first-token time    | 55.3s  |
-| Avg total response time | 62.2s  |
+| Passed                  | 36     |
+| Warnings                | 14     |
+| Failed                  | 0      |
+| Pass rate               | 72%    |
+| Avg classification time | 10.8s  |
+| Avg first-token time    | 24.0s  |
+| Avg total response time | 50.3s  |
 | Avg tokens/sec          | 9.0    |
-| Total duration          | 52 min |
+| Total duration          | 42 min |
 
 ## Category Breakdown
 
 | Category          | Total | Pass | Warn | Fail | Avg Time |
 | ----------------- | ----- | ---- | ---- | ---- | -------- |
-| business_overview | 50    | 16   | 15   | 19   | 62.2s    |
+| business_overview | 50    | 36   | 14   | 0    | 50.3s    |
 
 ## Timing Distribution
 
 | Bucket  | Count |
 | ------- | ----- |
-| <10s    | 11    |
-| 10-30s  | 3     |
-| 30-60s  | 14    |
-| 60-120s | 15    |
-| >120s   | 7     |
-
-## Failures
-
-### chef-001_run2: "How's my business doing?"
-
-- **classificationTiming:** 46.4s (max: 8.0s)
-- **totalTiming:** 120.5s (max: 120.0s)
-- **Response time:** 120.5s
-- **Response excerpt:** Chef, your business is off to a strong start this year — let’s break it down:
-
-### 📈 Year-to-Date Performance
-
-- **Revenue**: $24,250.00
-- **Expenses**: $4,350.00
-- **Net Profit**: $19,900.00
-- **Events Completed**: 9 out of 16 total
-- **Avg Revenue/Event**: $2,694.44
-
-### 💼 Top Clients (YTD)
-
-1. \*\*...
-
-### chef-001_run3: "How's my business doing?"
-
-- **classificationTiming:** 54.6s (max: 8.0s)
-- **totalTiming:** 126.7s (max: 120.0s)
-- **Response time:** 126.7s
-- **Response excerpt:** Chef, your business is off to a strong start this year — great momentum and solid client engagement. Here's a quick snapshot:
-
-### 📈 Year-to-Date Overview
-
-- **Revenue:** $24,250.00
-- **Expenses:** $4,350.00
-- **Net Profit:** $19,900.00
-- **Events Completed:** 9 out of 16 planned
-- \*\*Avg. Revenue/Ev...
-
-### chef-001_run4: "How's my business doing?"
-
-- **classificationTiming:** 45.2s (max: 8.0s)
-- **totalTiming:** 135.5s (max: 120.0s)
-- **Response time:** 135.5s
-- **Response excerpt:** You're doing _really_ well, chef — and I can see the momentum building. Here's a quick snapshot of where you're at:
-
-### 📈 **Year-to-Date Performance**
-
-- **Revenue:** $24,250.00
-- **Expenses:** $4,350.00
-- **Net Profit:** $19,900.00
-- **Events Completed:** 9 out of 16
-- \*\*Avg Revenue/Event:...
-
-### chef-004_run1: "Give me a quick snapshot of where things stand"
-
-- **classificationTiming:** 33.1s (max: 8.0s)
-- **totalTiming:** 150.2s (max: 120.0s)
-- **Response time:** 150.2s
-- **Response excerpt:** You're currently on the /dashboard page, which gives you a birds-eye view of your business.
-
-Here's a quick snapshot of where things stand:
-
-**Business Overview:**
-
-- Year-to-date revenue: $24,250.00
-- Expenses: $4,350.00
-- Net profit: $19,900.00
-- 16 total events (9 completed)
-
-\*\*Upcoming Events (7)...
-
-### chef-004_run4: "Give me a quick snapshot of where things stand"
-
-- **classificationTiming:** 45.9s (max: 8.0s)
-- **totalTiming:** 147.1s (max: 120.0s)
-- **Response time:** 147.1s
-- **Response excerpt:** You're currently on the /dashboard, which gives you a birds-eye view of your business.
-
-Here's a quick snapshot:
-
-**Financials (YTD):**
-
-- Revenue: $24,250.00
-- Expenses: $4,350.00
-- Net: $19,900.00
-- Avg revenue/event: $2,694.44
-
-**Upcoming Events (7):**
-
-- Q1 Board Dinner (Mar 5) - Apex Group (Corpo...
-
-### chef-004_run5: "Give me a quick snapshot of where things stand"
-
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: fetch failed
-- **Response time:** 44.8s
-- **Response excerpt:** [empty]
-
-### chef-005_run1: "What needs my attention today?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 817ms
-- **Response excerpt:** [empty]
-
-### chef-005_run2: "What needs my attention today?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 826ms
-- **Response excerpt:** [empty]
-
-### chef-005_run3: "What needs my attention today?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 911ms
-- **Response excerpt:** [empty]
-
-### chef-005_run4: "What needs my attention today?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 717ms
-- **Response excerpt:** [empty]
-
-### chef-005_run5: "What needs my attention today?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 741ms
-- **Response excerpt:** [empty]
-
-### chef-006_run5: "Am I on track for my goals this month?"
-
-- **classificationTiming:** 22.6s (max: 8.0s)
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: fetch failed
-- **Response time:** 25.1s
-- **Response excerpt:** [empty]
-
-### chef-007_run1: "What's my year-to-date revenue?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 794ms
-- **Response excerpt:** [empty]
-
-### chef-007_run2: "What's my year-to-date revenue?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 789ms
-- **Response excerpt:** [empty]
-
-### chef-007_run3: "What's my year-to-date revenue?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 732ms
-- **Response excerpt:** [empty]
-
-### chef-007_run4: "What's my year-to-date revenue?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 701ms
-- **Response excerpt:** [empty]
-
-### chef-007_run5: "What's my year-to-date revenue?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!
-- **Response time:** 793ms
-- **Response excerpt:** [empty]
-
-### chef-010_run4: "Who are my top clients?"
-
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: fetch failed
-- **Response time:** 26.9s
-- **Response excerpt:** [empty]
-
-### chef-010_run5: "Who are my top clients?"
-
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: fetch failed
-- **Response time:** 3.8s
-- **Response excerpt:** [empty]
+| <10s    | 0     |
+| 10-30s  | 12    |
+| 30-60s  | 21    |
+| 60-120s | 17    |
+| >120s   | 0     |
 
 ## Warnings
 
 ### chef-001_run1: "How's my business doing?"
 
-- **classificationTiming:** 36.8s (max: 8.0s)
+- **classificationTiming:** 9.0s (max: 8.0s)
 
-### chef-001_run5: "How's my business doing?"
+### chef-005_run3: "What needs my attention today?"
 
-- **classificationTiming:** 36.6s (max: 8.0s)
+- **classificationTiming:** 11.6s (max: 8.0s)
 
-### chef-002_run1: "What's my revenue this month?"
+### chef-005_run4: "What needs my attention today?"
 
-- **classificationTiming:** 43.3s (max: 8.0s)
+- **classificationTiming:** 28.9s (max: 8.0s)
 
-### chef-002_run2: "What's my revenue this month?"
+### chef-005_run5: "What needs my attention today?"
 
-- **classificationTiming:** 37.6s (max: 8.0s)
-
-### chef-002_run3: "What's my revenue this month?"
-
-- **classificationTiming:** 29.2s (max: 8.0s)
-
-### chef-002_run4: "What's my revenue this month?"
-
-- **classificationTiming:** 11.2s (max: 8.0s)
-
-### chef-002_run5: "What's my revenue this month?"
-
-- **totalTiming:** 130.3s (max: 120.0s)
-
-### chef-003_run1: "How many clients do I have?"
-
-- **classificationTiming:** 42.4s (max: 8.0s)
-
-### chef-003_run2: "How many clients do I have?"
-
-- **classificationTiming:** 35.4s (max: 8.0s)
-
-### chef-003_run3: "How many clients do I have?"
-
-- **classificationTiming:** 36.0s (max: 8.0s)
-
-### chef-003_run4: "How many clients do I have?"
-
-- **classificationTiming:** 58.8s (max: 8.0s)
-
-### chef-004_run3: "Give me a quick snapshot of where things stand"
-
-- **totalTiming:** 139.9s (max: 120.0s)
+- **classificationTiming:** 36.4s (max: 8.0s)
 
 ### chef-006_run1: "Am I on track for my goals this month?"
 
-- **classificationTiming:** 29.7s (max: 8.0s)
+- **classificationTiming:** 38.6s (max: 8.0s)
+
+### chef-006_run2: "Am I on track for my goals this month?"
+
+- **classificationTiming:** 27.1s (max: 8.0s)
+
+### chef-006_run3: "Am I on track for my goals this month?"
+
+- **classificationTiming:** 49.8s (max: 8.0s)
+
+### chef-006_run4: "Am I on track for my goals this month?"
+
+- **classificationTiming:** 10.9s (max: 8.0s)
+
+### chef-006_run5: "Am I on track for my goals this month?"
+
+- **classificationTiming:** 15.6s (max: 8.0s)
+
+### chef-007_run3: "What's my year-to-date revenue?"
+
+- **classificationTiming:** 28.7s (max: 8.0s)
+
+### chef-007_run4: "What's my year-to-date revenue?"
+
+- **classificationTiming:** 21.2s (max: 8.0s)
+
+### chef-007_run5: "What's my year-to-date revenue?"
+
+- **classificationTiming:** 31.0s (max: 8.0s)
 
 ### chef-008_run1: "How does this month compare to last month?"
 
-- **classificationTiming:** 11.1s (max: 8.0s)
+- **classificationTiming:** 34.7s (max: 8.0s)
 
-### chef-010_run1: "Who are my top clients?"
+### chef-008_run2: "How does this month compare to last month?"
 
-- **classificationTiming:** 31.2s (max: 8.0s)
+- **classificationTiming:** 23.6s (max: 8.0s)
 
 ## Per-Prompt Results
 
@@ -299,487 +97,479 @@ Here's a quick snapshot:
 
 - **Verdict:** WARN
 - **Intent:** question (expected: question) ✅
-- **Classification:** 36.8s | **First token:** 51.6s | **Total:** 112.9s
-- **Tokens/sec:** 7.9
-- **Response length:** 1927 chars
+- **Classification:** 9.0s | **First token:** 21.3s | **Total:** 76.8s
+- **Tokens/sec:** 9.6
+- **Response length:** 2126 chars
 
 **Full response:**
 
 ```
-Chef, your business is off to a strong start this year — let’s break it down:
+Chef, your business is doing **solid** — and I can see the momentum building. Here's a quick snapshot:
 
-### 📊 **Year-to-Date Overview**
+### 📈 **Year-to-Date Overview**
 - **Revenue:** $24,250.00
 - **Expenses:** $4,350.00
 - **Net Profit:** $19,900.00
-- **Events Completed:** 9 out of 16 planned
+- **Events Completed:** 9 out of 16 total
 - **Avg Revenue/Event:** $2,694.44
 
-### 🎯 **Top Clients (YTD)**
-1. **Alex Chen** – $3,600 (1 event)
-2. **David Garcia** – $3,600 (1 event)
-3. **Apex Group (Corporate)** – $3,500 (1 event)
-4. **Michael O'Brien** – $3,200 (1 event)
-5. **Patricia Foster** – $3,200 (1 event)
-
-### 📅 **Upcoming Events**
-- **Q1 Board Dinner** – March 5 (Apex Group, 30 guests)
-- **Tasting for Morrison Family** – March 8 (4 guests)
-- **Engagement Dinner** – March 11 (Rachel Kim, 8 guests)
-- **Spring Garden Party** – March 17 (Sarah Henderson, 14 guests)
-- **Spring Tasting Menu** – March 31 (Emma Rothschild, 8 guests)
-- **Jessica's Baby Shower** – April 13 (Jessica Park, 20 guests)
-- **Product Launch Celebration** – April 28 (Alex Chen, 50 guests)
-
-### 💬 **Inquiries & Quotes**
-- **Open Inquiries:** 3
-- **Pending Quotes:** 2
-
-### 🧠 **Business Insights**
-- Your top clients are consistently booking high-value events, which is great for revenue.
-- You’re doing well with repeat clients like **Sarah Henderson** (Gold loyalty) and **Alex Chen** (Platinum).
-- You're maintaining a healthy food cost (28–32% of revenue), which shows solid financial discipline.
+You’re well on track to meet or exceed your annual goals, especially with the upcoming events and a strong pipeline.
 
 ---
 
-### 🔜 **What’s Next?**
-You’ve got a packed week ahead with the **Q1 Board Dinner** on March 5, followed by a tasting for the **Morrison Family** on March 8. That’s a great momentum to keep going — and you're clearly building a strong pipeline for April.
-
-Want me to review the upcoming events in more detail or check on any pending tasks?
-
-NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Upcoming Events","href":"/events/upcoming"}, {"label":"Financials","href":"/financials"}]
-```
-
----
-
-### ❌ chef-001_run2: "How's my business doing?"
-
-- **Verdict:** FAIL
-- **Intent:** question (expected: question) ✅
-- **Classification:** 46.4s | **First token:** 64.2s | **Total:** 120.5s
-- **Tokens/sec:** 7.4
-- **Response length:** 1668 chars
-
-**Full response:**
-
-```
-Chef, your business is off to a strong start this year — let’s break it down:
-
-### 📈 Year-to-Date Performance
-- **Revenue**: $24,250.00
-- **Expenses**: $4,350.00
-- **Net Profit**: $19,900.00
-- **Events Completed**: 9 out of 16 total
-- **Avg Revenue/Event**: $2,694.44
-
-### 💼 Top Clients (YTD)
-1. **Alex Chen** – $3,600 (1 event)
-2. **David Garcia** – $3,600 (1 event)
-3. **Apex Group (Corporate)** – $3,500 (1 event)
-4. **Michael O'Brien** – $3,200 (1 event)
-5. **Patricia Foster** – $3,200 (1 event)
-
-You’ve got a solid client base and are generating consistent income. You're also building strong loyalty with Platinum-tier clients like Sofia Martinez and Gold-tier clients like Sarah Henderson.
-
-### 🗓 Upcoming Events
-Here’s what’s coming up next:
-1. **Q1 Board Dinner** – March 5 (Apex Group, 30 guests, Gold)
-2. **Tasting for Morrison Family** – March 8 (4 guests, Bronze)
-3. **Engagement Dinner** – March 11 (Rachel Kim, 8 guests, Bronze)
-4. **Spring Garden Party** – March 17 (Sarah Henderson, 14 guests, Gold)
-5. **Spring Tasting Menu** – March 31 (Emma Rothschild, 8 guests, Platinum)
-6. **Jessica's Baby Shower** – April 13 (Jessica Park, 20 guests, Bronze)
-7. **Product Launch Celebration** – April 28 (Alex Chen, 50 guests, Bronze)
-
-### 🔧 Quick Admin & Prep Items
-You've got a busy day ahead with:
-- **84 Quick Admin Tasks**
-- **81 Event Prep Tasks**
-- **0 Creative Time Tasks**
-- **0 Relationship Tasks**
-
-Looks like you’re juggling a lot — but you're on track. Want me to prioritize anything for you today?
-
-NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Events","href":"/events"}, {"label":"Financials","href":"/financials"}]
-```
+### 🎯 **Upcoming Highlights**
+You’ve got a **busy week ahead**, with:
+- **Q1 Board Dinner** (Apex Group) on **March 5** – 30 guests, Gold loyalty
+- **Tasting for Morrison Family** on **March 8** – 4 guests, Bronze loyalty
+- **Engagement Dinner** on **March 11** – 8 guests, Bronze loyalty
+- **Spring Garden Party** on **March 17** – 14 guests, Gold loyalty
+- **Spring Tasting Menu** on **March 31** – 8 guests, Platinum loyalty
 
 ---
 
-### ❌ chef-001_run3: "How's my business doing?"
-
-- **Verdict:** FAIL
-- **Intent:** question (expected: question) ✅
-- **Classification:** 54.6s | **First token:** 68.4s | **Total:** 126.7s
-- **Tokens/sec:** 7.8
-- **Response length:** 1810 chars
-
-**Full response:**
-
-```
-Chef, your business is off to a strong start this year — great momentum and solid client engagement. Here's a quick snapshot:
-
-### 📈 Year-to-Date Overview
-- **Revenue:** $24,250.00
-- **Expenses:** $4,350.00
-- **Net Profit:** $19,900.00
-- **Events Completed:** 9 out of 16 planned
-- **Avg. Revenue/Event:** $2,694.44
-
-### 🎯 Top Clients (YTD)
-1. Alex Chen – $3,600 (1 event)
-2. David Garcia – $3,600 (1 event)
-3. Apex Group (Corporate) – $3,500 (1 event)
-4. Michael O’Brien – $3,200 (1 event)
-5. Patricia Foster – $3,200 (1 event)
-
-### 🔥 Upcoming Events
-- **Q1 Board Dinner** – March 5 (Apex Group, 30 guests)
-- **Tasting for Morrison Family** – March 8 (4 guests)
-- **Engagement Dinner** – March 11 (Rachel Kim, 8 guests)
-- **Spring Garden Party** – March 17 (Sarah Henderson, 14 guests)
-- **Spring Tasting Menu** – March 31 (Emma Rothschild, 8 guests)
-- **Jessica's Baby Shower** – April 13 (Jessica Park, 20 guests)
-- **Product Launch Celebration** – April 28 (Alex Chen, 50 guests)
-
-### 🧠 Business Highlights
-- You're consistently hitting your food cost target (28–32%).
-- Your loyalty program is working — Sarah Henderson (Gold) and Sofia Martinez (Platinum) are high-value clients.
-- You're booking 2–3 events per month, which is excellent for steady cash flow.
-
-### 🛠️ Quick Wins
-- Follow up with the **Morrison Family** — they’re proposed for March 8.
-- **Jessica Park** (Baby Shower) is a draft — finalize and send quote.
-- Send a gentle reminder to **Victoria Davis** — she’s a late payer.
-
-Let me know if you want a deeper look into any area (e.g., profit margins, client behavior, or upcoming scheduling conflicts).
-
-NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"},{"label":"Events","href":"/events"},{"label":"Clients","href":"/clients"},{"label":"Financials","href":"/financials"}]
-```
+### 💡 **Business Insights**
+- **Top Clients:** Alex Chen, David Garcia, Apex Group, Michael O’Brien, Patricia Foster
+- **High-Value Events:** All your Platinum and Gold clients are booking with you — great retention!
+- **Pricing Strategy:** You’re consistently charging $150/head for standard menus, with premium additions — which is working well.
+- **Food Cost:** You’re maintaining a healthy 28–32% food cost — keep it up!
 
 ---
 
-### ❌ chef-001_run4: "How's my business doing?"
-
-- **Verdict:** FAIL
-- **Intent:** question (expected: question) ✅
-- **Classification:** 45.2s | **First token:** 60.0s | **Total:** 135.5s
-- **Tokens/sec:** 8.8
-- **Response length:** 2658 chars
-
-**Full response:**
-
-```
-You're doing *really* well, chef — and I can see the momentum building. Here's a quick snapshot of where you're at:
-
-### 📈 **Year-to-Date Performance**
-- **Revenue:** $24,250.00
-- **Expenses:** $4,350.00
-- **Net Profit:** $19,900.00
-- **Events Completed:** 9 out of 16
-- **Avg Revenue/Event:** $2,694.44
-
-You're well above average in terms of revenue per event — that’s a solid foundation to build on.
+### 🧠 **Quick Wins**
+- **Follow-up on Morrison Family** – You’ve got a proposed tasting on March 8 — maybe send a quick message to confirm.
+- **Engagement Dinner** with Rachel Kim is confirmed — great for a personal touch.
+- **Spring Garden Party** with Sarah Henderson is confirmed — you’re known for using organic produce, so that’s a win.
 
 ---
 
-### 🎯 **Upcoming Events**
-You’ve got a strong pipeline:
-- **Q1 Board Dinner** (Apex Group) – 30 guests, confirmed, Gold loyalty
-- **Tasting for Morrison Family** – 4 guests, proposed
-- **Engagement Dinner** (Rachel Kim) – 8 guests, accepted
-- **Spring Garden Party** (Sarah Henderson) – 14 guests, confirmed, Gold loyalty
-- **Spring Tasting Menu** (Emma Rothschild) – 8 guests, paid, Platinum loyalty
-- **Jessica's Baby Shower** – 20 guests, proposed
-- **Product Launch Celebration** – 50 guests, draft
-
-You're booked through April — which is great, but keep an eye on that weekend scheduling. You’ve got a **“never more than 2 events in the same weekend”** rule — so we’ll want to keep that in mind as you plan.
+### 🛠️ **Suggestions**
+- Consider setting a **reminder** for the **Apex Group** event to send a **thank-you note** post-event — they're Gold clients.
+- You’ve got **2 upcoming events in the same weekend** (March 17 & 31) — make sure to **schedule your staff accordingly** to maintain quality.
 
 ---
-
-### 💼 **Open Inquiries & Quotes**
-- **3 Open Inquiries**
-- **2 Pending Quotes**
-
-You're getting traction — keep pushing those leads through. The Morrison Family and Jessica’s baby shower are both strong candidates for conversion.
-
----
-
-### 🧠 **Client Insights**
-- **Emma Rothschild** is ultra-private — no social media posts.
-- **The Martinez family** loves when you recreate dishes from their wedding — that’s their love language.
-- **Victoria Davis** tends to pay late — send a gentle reminder around day 7.
-- **The Thompson kids** love mac and cheese — consider a fun twist for their next event.
-
----
-
-### 🧾 **Business Rules in Play**
-- **Food Cost Target:** 28–32% — you’re currently in a healthy range.
-- **Staffing Rule:** For events over 30 guests, always bring at least 2 staff (sous + service).
-- **Produce Preference:** Organic is your default — especially leafy greens and berries.
-
----
-
-### 🛠️ **Quick Wins**
-- Finalize the **Morrison Family tasting menu** and get that quote in.
-- Follow up with **Victoria Davis** — it’s been a week.
-- Confirm **Jessica’s baby shower** — it’s a big one.
-- Start preparing for the **Spring Garden Party** — it’s a Gold client, so make it special.
-
----
-
-Let me know if you want to dig into a specific client or event. You're on a roll — keep it up.
-
-NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Events","href":"/events"}, {"label":"Inquiries","href":"/inquiries"}, {"label":"Financials","href":"/financials"}]
-```
-
----
-
-### ⚠️ chef-001_run5: "How's my business doing?"
-
-- **Verdict:** WARN
-- **Intent:** question (expected: question) ✅
-- **Classification:** 36.6s | **First token:** 53.9s | **Total:** 117.9s
-- **Tokens/sec:** 7.5
-- **Response length:** 1925 chars
-
-**Full response:**
-
-```
-Chef, your business is off to a strong start this year — let’s break it down:
-
-### 📈 Year-to-Date Performance
-- **Revenue**: $24,250.00
-- **Expenses**: $4,350.00
-- **Net Profit**: $19,900.00
-- **Events Completed**: 9 out of 16 total
-- **Avg Revenue/Event**: $2,694.44
-
-Top clients so far:
-1. Alex Chen – $3,600 (1 event)
-2. David Garcia – $3,600 (1 event)
-3. Apex Group (Corporate) – $3,500 (1 event)
-4. Michael O'Brien – $3,200 (1 event)
-5. Patricia Foster – $3,200 (1 event)
-
-You’re clearly building a solid client base with high-value events and strong repeat business — keep up the great work!
-
----
-
-### 🔜 Upcoming Events (7 Total)
-| Date       | Client               | Guests | Status     | Loyalty Tier |
-|------------|----------------------|--------|------------|--------------|
-| 2026-03-05 | Apex Group (Corporate)| 30     | Confirmed  | Gold (200 pts) |
-| 2026-03-08 | Morrison Family      | 4      | Proposed   | Bronze (20 pts) |
-| 2026-03-11 | Rachel Kim           | 8      | Accepted   | Bronze (30 pts) |
-| 2026-03-17 | Sarah Henderson      | 14     | Confirmed  | Gold (340 pts) |
-| 2026-03-31 | Emma Rothschild      | 8      | Paid       | Platinum (950 pts) |
-| 2026-04-13 | Jessica Park         | 20     | Proposed   | Bronze (60 pts) |
-| 2026-04-28 | Alex Chen            | 50     | Draft      | Bronze (60 pts) |
-
----
-
-### 📌 Quick Notes
-- **Emma Rothschild** is extremely private — no photos on social media for her events.
-- **The Martinez family** loves when you recreate dishes from their wedding — it's their love language.
-- **Victoria Davis** tends to pay late — always send a gentle reminder around day 7.
-
-Let me know if you want to dive into specific client insights or event prep details!
 
 NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Events","href":"/events"}, {"label":"Clients","href":"/clients"}, {"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ⚠️ chef-002_run1: "What's my revenue this month?"
+### ✅ chef-001_run2: "How's my business doing?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 43.3s | **First token:** 62.4s | **Total:** 67.1s
-- **Tokens/sec:** 8
-- **Response length:** 151 chars
+- **Classification:** 4.3s | **First token:** 16.4s | **Total:** 56.1s
+- **Tokens/sec:** 9.4
+- **Response length:** 1498 chars
 
 **Full response:**
 
 ```
-February’s total revenue is $0.00.
+You're doing great, chef! Let me break down your current business status:
 
-So far this year, you’ve brought in **$24,250.00**.
+## Financial Overview
+- **Year-to-Date Revenue**: $24,250.00
+- **Expenses**: $4,350.00
+- **Net Profit**: $19,900.00
+- **Avg Revenue/Event**: $2,694.44
 
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}]
+## Upcoming Events (7 total)
+- **March 5**: Q1 Board Dinner (Apex Group) - 30 guests, Gold loyalty
+- **March 8**: Tasting for Morrison Family - 4 guests, Bronze loyalty
+- **March 11**: Engagement Dinner (Rachel Kim) - 8 guests, Bronze loyalty
+- **March 17**: Spring Garden Party (Sarah Henderson) - 14 guests, Gold loyalty
+- **March 31**: Spring Tasting Menu (Emma Rothschild) - 8 guests, Platinum loyalty
+- **April 13**: Jessica's Baby Shower (Jessica Park) - 20 guests, Bronze loyalty
+- **April 28**: Product Launch Celebration (Alex Chen) - 50 guests, Draft
+
+## Client Highlights
+- **Top Clients**: Alex Chen ($3,600), David Garcia ($3,600), Apex Group ($3,500)
+- **Loyalty Program**: Sarah Henderson (Gold - 340 pts), Sofia Martinez (Platinum - 820 pts)
+
+## Quick Business Notes
+- You've completed 9 events this year out of 16 total
+- Your pricing pattern is solid (50% deposit, balance due 48 hours before)
+- You're maintaining your 28-32% food cost target
+
+You're clearly building a strong client base with some high-value accounts. The upcoming schedule looks good with a mix of corporate and private events.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Clients","href":"/clients"}]
 ```
 
 ---
 
-### ⚠️ chef-002_run2: "What's my revenue this month?"
+### ✅ chef-001_run3: "How's my business doing?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 37.6s | **First token:** 51.4s | **Total:** 67.9s
-- **Tokens/sec:** 7.5
-- **Response length:** 496 chars
+- **Classification:** 4.2s | **First token:** 16.2s | **Total:** 73.2s
+- **Tokens/sec:** 9.1
+- **Response length:** 2063 chars
 
 **Full response:**
 
 ```
-February’s total revenue is $0.00 — we’re still building the month.
+Chef, your business is off to a strong start this year — and I'm seeing some great momentum.
 
-That said, here’s your YTD performance so far:
+### 📈 Year-to-Date Performance
+- **Revenue**: $24,250.00
+- **Expenses**: $4,350.00
+- **Net Profit**: $19,900.00
+- **Events Completed**: 9 out of 16 planned
+- **Average Revenue/Event**: $2,694.44
+
+### 🔥 Top Clients (YTD)
+1. Alex Chen – $3,600.00 (1 event)
+2. David Garcia – $3,600.00 (1 event)
+3. Apex Group (Corporate) – $3,500.00 (1 event)
+4. Michael O'Brien – $3,200.00 (1 event)
+5. Patricia Foster – $3,200.00 (1 event)
+
+You’ve got a solid base of high-value clients and a good mix of event types — corporate, private dinners, and celebrations. The average revenue per event is healthy, and you're clearly building a strong reputation.
+
+---
+
+### 🗓️ Upcoming Events
+You’ve got a packed schedule coming up:
+- **Q1 Board Dinner** – March 5 (Apex Group, 30 guests)
+- **Tasting for Morrison Family** – March 8 (4 guests)
+- **Engagement Dinner** – March 11 (Rachel Kim, 8 guests)
+- **Spring Garden Party** – March 17 (Sarah Henderson, 14 guests)
+- **Spring Tasting Menu** – March 31 (Emma Rothschild, 8 guests)
+- **Jessica’s Baby Shower** – April 13 (Jessica Park, 20 guests)
+- **Product Launch Celebration** – April 28 (Alex Chen, 50 guests)
+
+### 🧠 Business Insights
+- You’re consistently hitting your **target food cost** of 28–32%.
+- The **Henderson events** are getting organic produce — great for brand consistency.
+- You're maintaining a **high standard** with 2 staff for events over 30 guests.
+- You're not using **peanuts** in any of your events — that’s a strong brand rule.
+
+---
+
+### 🛠️ Quick Wins
+- You have **3 open inquiries** and **2 pending quotes** — that’s a good pipeline to follow up on.
+- You're currently at **$0.00 in revenue for this month** — but you're preparing for a busy March.
+
+Let me know if you want to review a specific event or client in more detail.
+
+NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Events","href":"/events"}, {"label":"Clients","href":"/clients"}, {"label":"Financials","href":"/financials"}]
+```
+
+---
+
+### ✅ chef-001_run4: "How's my business doing?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.7s | **First token:** 16.9s | **Total:** 59.9s
+- **Tokens/sec:** 9.2
+- **Response length:** 1581 chars
+
+**Full response:**
+
+```
+Chef, your business is off to a strong start this year — let's break down the numbers:
+
+### 📊 Year-to-Date Overview
 - **Revenue:** $24,250.00
 - **Expenses:** $4,350.00
 - **Net Profit:** $19,900.00
-- **Events Completed:** 9
+- **Events Completed:** 9 out of 16 total
 - **Avg Revenue/Event:** $2,694.44
 
-You're on track for a strong year — especially with the upcoming events like the **Apex Group Board Dinner** on March 5 and the **Emma Rothschild Tasting Menu** on March 31.
+You're clearly building a solid client base and delivering high-value experiences. The top clients so far include:
+- Alex Chen ($3,600)
+- David Garcia ($3,600)
+- Apex Group (Corporate) ($3,500)
+- Michael O'Brien ($3,200)
+- Patricia Foster ($3,200)
 
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}]
+### 🔥 Upcoming Events
+You’ve got a packed schedule coming up:
+- **Q1 Board Dinner** – March 5 (Apex Group, 30 guests)
+- **Tasting for Morrison Family** – March 8 (4 guests)
+- **Engagement Dinner** – March 11 (Rachel Kim, 8 guests)
+- **Spring Garden Party** – March 17 (Sarah Henderson, 14 guests)
+- **Spring Tasting Menu** – March 31 (Emma Rothschild, 8 guests)
+- **Jessica's Baby Shower** – April 13 (20 guests)
+- **Product Launch Celebration** – April 28 (50 guests)
+
+### 💼 Business Health
+- **Open Inquiries:** 3
+- **Pending Quotes:** 2
+- **Total Clients:** 15
+
+You're running lean and efficient, with a strong pipeline and solid repeat clients like Sarah Henderson (Gold) and Sofia Martinez (Platinum). Keep up the great work — you’re building a brand that people trust and want to return to.
+
+Would you like me to highlight any specific area or client for follow-up?
+
+NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Events","href":"/events"}, {"label":"Clients","href":"/clients"}, {"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ⚠️ chef-002_run3: "What's my revenue this month?"
+### ✅ chef-001_run5: "How's my business doing?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 29.2s | **First token:** 63.5s | **Total:** 85.3s
-- **Tokens/sec:** 9.4
-- **Response length:** 819 chars
+- **Classification:** 5.2s | **First token:** 17.3s | **Total:** 61.4s
+- **Tokens/sec:** 9.1
+- **Response length:** 1604 chars
+
+**Full response:**
+
+```
+Chef, your business is off to a strong start this year — great momentum!
+
+### 📊 Year-to-Date Overview
+- **Revenue:** $24,250.00
+- **Expenses:** $4,350.00
+- **Net Profit:** $19,900.00
+- **Events Completed:** 9 out of 16 planned
+- **Avg Revenue/Event:** $2,694.44
+
+You've been booking consistently and your top clients are driving strong results:
+1. Alex Chen ($3,600)
+2. David Garcia ($3,600)
+3. Apex Group (Corporate) ($3,500)
+4. Michael O'Brien ($3,200)
+5. Patricia Foster ($3,200)
+
+### 🔥 Upcoming Events
+You’ve got a solid pipeline heading into Q2:
+- **March 5:** Board Dinner for Apex Group (30 guests, Gold)
+- **March 8:** Tasting for Morrison Family (4 guests, Bronze)
+- **March 11:** Engagement Dinner for Rachel Kim (8 guests, Bronze)
+- **March 17:** Spring Garden Party for Sarah Henderson (14 guests, Gold)
+- **March 31:** Spring Tasting Menu for Emma Rothschild (8 guests, Platinum)
+- **April 13:** Jessica's Baby Shower for Jessica Park (20 guests, Bronze)
+- **April 28:** Product Launch Celebration for Alex Chen (50 guests, Bronze)
+
+### 💬 Quick Notes
+- You're still working on a few pending quotes and open inquiries.
+- The Thompson kids love mac and cheese — might want to include that in your menu prep notes!
+- Your food cost is currently in line with your target (28–32%), so no need to adjust menus just yet.
+
+Let me know if you'd like to dive deeper into any area — revenue breakdowns, client insights, or upcoming prep tasks.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Clients","href":"/clients"}]
+```
+
+---
+
+### ✅ chef-002_run1: "What's my revenue this month?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 5.0s | **First token:** 17.0s | **Total:** 43.1s
+- **Tokens/sec:** 11.1
+- **Response length:** 1160 chars
 
 **Full response:**
 
 ```
 February is winding down, and so far this month, your revenue is at **$0.00**.
 
-That’s likely because your upcoming events haven’t started yet, and there are no completed events in February. Your upcoming events are:
+That’s likely because your upcoming events are still in the proposal or booking stage, and no payments have been received yet.
 
-- **Q1 Board Dinner** on March 5 (Apex Group, 30 guests)
-- **Tasting for Morrison Family** on March 8 (4 guests)
-- **Engagement Dinner** on March 11 (Rachel Kim, 8 guests)
-- **Spring Garden Party** on March 17 (Sarah Henderson, 14 guests)
-- **Spring Tasting Menu** on March 31 (Emma Rothschild, 8 guests)
+Here’s a quick breakdown of your upcoming events and their status:
+- **Q1 Board Dinner** (Apex Group) – Confirmed, Gold loyalty (200 pts)
+- **Tasting for Morrison Family** – Proposed, Bronze loyalty (20 pts)
+- **Engagement Dinner** (Rachel Kim) – Accepted, Bronze loyalty (30 pts)
+- **Spring Garden Party** (Sarah Henderson) – Confirmed, Gold loyalty (340 pts)
+- **Spring Tasting Menu** (Emma Rothschild) – Paid, Platinum loyalty (950 pts)
+- **Jessica's Baby Shower** (Jessica Park) – Proposed, Bronze loyalty (60 pts)
+- **Product Launch Celebration** (Alex Chen) – Draft, Bronze loyalty (60 pts)
 
-Once those events are completed and payments are processed, your revenue will start to reflect in the dashboard.
+You’ve got a few confirmed and paid events coming up, so you're on track for a strong month ahead — especially with the **Emma Rothschild** event already paid.
 
-If you're tracking expenses or planning for the month, I can help with that too.
-
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
-```
-
----
-
-### ⚠️ chef-002_run4: "What's my revenue this month?"
-
-- **Verdict:** WARN
-- **Intent:** question (expected: question) ✅
-- **Classification:** 11.2s | **First token:** 44.7s | **Total:** 54.8s
-- **Tokens/sec:** 10.9
-- **Response length:** 439 chars
-
-**Full response:**
-
-```
-February is almost over, and so far this month, your revenue is $0.00.
-
-That’s a bit quiet for the start of the month — are you expecting a big event to come in soon? You’ve got a few upcoming ones that should help bump things up.
-
-Let me know if you want a quick look at your upcoming events or open inquiries that might be driving revenue.
-
-NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Inquiries","href":"/inquiries"}]
-```
-
----
-
-### ⚠️ chef-002_run5: "What's my revenue this month?"
-
-- **Verdict:** WARN
-- **Intent:** question (expected: question) ✅
-- **Classification:** 6.5s | **First token:** 94.7s | **Total:** 130.3s
-- **Tokens/sec:** 7.9
-- **Response length:** 1124 chars
-
-**Full response:**
-
-```
-February is nearly done, and so far this month you've brought in **$0.00** in revenue.
-
-That’s a bit of a slow start, especially with a few confirmed events coming up this month. Here’s a quick look at your upcoming events and their expected revenue:
-
-- **Q1 Board Dinner (Apex Group)** – 30 guests, $150/head → **$4,500.00**
-- **Engagement Dinner (Rachel Kim)** – 8 guests, $150/head → **$1,200.00**
-- **Spring Garden Party (Sarah Henderson)** – 14 guests, $150/head → **$2,100.00**
-- **Spring Tasting Menu (Emma Rothschild)** – 8 guests, $200/head (premium) → **$1,600.00**
-- **Jessica's Baby Shower (Jessica Park)** – 20 guests, $150/head → **$3,000.00**
-- **Product Launch Celebration (Alex Chen)** – 50 guests, $150/head → **$7,500.00**
-
-So, if all these events are confirmed and paid for, your total revenue for March could be around **$19,900.00**.
-
-You’re still in a strong position to meet or exceed your monthly revenue goals, especially with the high-value events like the Product Launch and the Q1 Board Dinner.
+Let me know if you'd like to review payment statuses or send reminders for upcoming events.
 
 NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
 ```
 
 ---
 
-### ⚠️ chef-003_run1: "How many clients do I have?"
+### ✅ chef-002_run2: "What's my revenue this month?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 42.4s | **First token:** 56.4s | **Total:** 59.7s
+- **Classification:** 6.9s | **First token:** 19.6s | **Total:** 54.5s
 - **Tokens/sec:** 8.7
-- **Response length:** 110 chars
+- **Response length:** 1223 chars
 
 **Full response:**
 
 ```
-You currently have **15 clients** in your directory.
+February is almost over, and so far this month, you've brought in **$0.00** in revenue.
+
+That’s a bit of a slow start, but you’ve got a solid pipeline coming up:
+
+- **Q1 Board Dinner** on March 5 for Apex Group (Corporate) — $3500.00
+- **Tasting for Morrison Family** on March 8 — $600.00 (4 guests at $150/head)
+- **Engagement Dinner** on March 11 for Rachel Kim — $1200.00 (8 guests at $150/head)
+- **Spring Garden Party** on March 17 for Sarah Henderson — $2100.00 (14 guests at $150/head)
+- **Spring Tasting Menu** on March 31 for Emma Rothschild — $1200.00 (8 guests at $150/head)
+
+So, if all these events are confirmed and paid, you're looking at a potential **$8600.00** in revenue for March.
+
+You're also planning a few more big events:
+- **Jessica's Baby Shower** on April 13 — $3000.00 (20 guests at $150/head)
+- **Product Launch Celebration** on April 28 — $7500.00 (50 guests at $150/head)
+
+That could push your month-over-month revenue up significantly.
+
+Let me know if you want to review any of those upcoming events or dive into the details of a specific quote or payment.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"},{"label":"Quotes","href":"/quotes"}]
+```
+
+---
+
+### ✅ chef-002_run3: "What's my revenue this month?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.1s | **First token:** 17.0s | **Total:** 29.0s
+- **Tokens/sec:** 10.9
+- **Response length:** 520 chars
+
+**Full response:**
+
+```
+February is winding down, and as of today, your month-to-date revenue is **$0.00**.
+
+That’s a bit of a blank slate for March — you’ve got a few confirmed events coming up that should help bump that number up, especially with the Q1 Board Dinner on the 5th, the Spring Garden Party on the 17th, and the Spring Tasting Menu on the 31st.
+
+Want a quick breakdown of what’s coming in the pipeline? I can pull that up for you.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
+```
+
+---
+
+### ✅ chef-002_run4: "What's my revenue this month?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.2s | **First token:** 17.3s | **Total:** 39.8s
+- **Tokens/sec:** 10.4
+- **Response length:** 931 chars
+
+**Full response:**
+
+```
+February is almost over, and so far this month, your revenue is at **$0.00**.
+
+That’s a bit of a blank slate, but you’ve got a few upcoming events that should help bump that up:
+
+- **Q1 Board Dinner** on March 5 for Apex Group (Corporate) — 30 guests, confirmed.
+- **Tasting for Morrison Family** on March 8 — 4 guests, proposed.
+- **Engagement Dinner** on March 11 for Rachel Kim — 8 guests, accepted.
+- **Spring Garden Party** on March 17 for Sarah Henderson — 14 guests, confirmed.
+- **Spring Tasting Menu** on March 31 for Emma Rothschild — 8 guests, paid.
+
+You're also working on a few inquiries and quotes, so it's shaping up to be a busy month ahead.
+
+Would you like me to check on any specific event or client to help estimate potential revenue?
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"},{"label":"Inquiries","href":"/inquiries"},{"label":"Quotes","href":"/quotes"}]
+```
+
+---
+
+### ✅ chef-002_run5: "What's my revenue this month?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.5s | **First token:** 16.9s | **Total:** 41.4s
+- **Tokens/sec:** 7.2
+- **Response length:** 702 chars
+
+**Full response:**
+
+```
+February’s revenue is $0.00.
+
+You’re currently in March, and the dashboard shows your year-to-date stats:
+- Revenue: **$24,250.00**
+- Expenses: **$4,350.00**
+- Net: **$19,900.00**
+
+Your upcoming events are:
+- Q1 Board Dinner on 2026-03-05 for Apex Group (Corporate) — $3500.00
+- Tasting for Morrison Family on 2026-03-08 — $1200.00
+- Engagement Dinner on 2026-03-11 — $1200.00
+- Spring Garden Party on 2026-03-17 for Sarah Henderson — $2800.00
+- Spring Tasting Menu on 2026-03-31 for Emma Rothschild — $1600.00
+
+These are all confirmed or paid, so they’re expected to contribute to your monthly income.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
+```
+
+---
+
+### ✅ chef-003_run1: "How many clients do I have?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 5.1s | **First token:** 17.8s | **Total:** 19.8s
+- **Tokens/sec:** 11.3
+- **Response length:** 91 chars
+
+**Full response:**
+
+```
+You have **15 clients** in total.
 
 NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
 ```
 
 ---
 
-### ⚠️ chef-003_run2: "How many clients do I have?"
+### ✅ chef-003_run2: "How many clients do I have?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 35.4s | **First token:** 50.9s | **Total:** 53.4s
-- **Tokens/sec:** 9.8
-- **Response length:** 100 chars
+- **Classification:** 4.1s | **First token:** 16.4s | **Total:** 18.5s
+- **Tokens/sec:** 11.1
+- **Response length:** 91 chars
 
 **Full response:**
 
 ```
 You have **15 clients** in total.
 
-NAV_SUGGESTIONS: [{"label":"Client Directory","href":"/clients"}]
+NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
 ```
 
 ---
 
-### ⚠️ chef-003_run3: "How many clients do I have?"
+### ✅ chef-003_run3: "How many clients do I have?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 36.0s | **First token:** 50.2s | **Total:** 55.2s
-- **Tokens/sec:** 5
-- **Response length:** 101 chars
+- **Classification:** 4.3s | **First token:** 16.8s | **Total:** 18.8s
+- **Tokens/sec:** 11.5
+- **Response length:** 91 chars
 
 **Full response:**
 
 ```
 You have **15 clients** in total.
 
-NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"}]
+NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
 ```
 
 ---
 
-### ⚠️ chef-003_run4: "How many clients do I have?"
+### ✅ chef-003_run4: "How many clients do I have?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 58.8s | **First token:** 102.4s | **Total:** 104.6s
-- **Tokens/sec:** 10.6
+- **Classification:** 4.0s | **First token:** 16.4s | **Total:** 18.4s
+- **Tokens/sec:** 11.2
 - **Response length:** 91 chars
 
 **Full response:**
@@ -796,8 +586,8 @@ NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 3.9s | **First token:** 70.2s | **Total:** 72.4s
-- **Tokens/sec:** 10.4
+- **Classification:** 4.3s | **First token:** 17.1s | **Total:** 19.2s
+- **Tokens/sec:** 11
 - **Response length:** 91 chars
 
 **Full response:**
@@ -810,50 +600,47 @@ NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
 
 ---
 
-### ❌ chef-004_run1: "Give me a quick snapshot of where things stand"
+### ✅ chef-004_run1: "Give me a quick snapshot of where things stand"
 
-- **Verdict:** FAIL
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 33.1s | **First token:** 107.9s | **Total:** 150.2s
+- **Classification:** 5.9s | **First token:** 18.5s | **Total:** 59.1s
 - **Tokens/sec:** 8.3
-- **Response length:** 1404 chars
+- **Response length:** 1355 chars
 
 **Full response:**
 
 ```
-You're currently on the /dashboard page, which gives you a birds-eye view of your business.
+You’ve got a busy week ahead, chef. Here’s the quick snapshot:
 
-Here's a quick snapshot of where things stand:
+### 📅 **Upcoming Events**
+- **Mar 5** – Q1 Board Dinner (Apex Group, 30 guests, Gold loyalty)
+- **Mar 8** – Tasting for Morrison Family (4 guests, Proposed)
+- **Mar 11** – Engagement Dinner (Rachel Kim, 8 guests, Bronze loyalty)
+- **Mar 17** – Spring Garden Party (Sarah Henderson, 14 guests, Gold loyalty)
+- **Mar 31** – Spring Tasting Menu (Emma Rothschild, 8 guests, Platinum loyalty)
+- **Apr 13** – Jessica's Baby Shower (Jessica Park, 20 guests, Proposed)
+- **Apr 28** – Product Launch Celebration (Alex Chen, 50 guests, Draft)
 
-**Business Overview:**
-- Year-to-date revenue: $24,250.00
-- Expenses: $4,350.00
-- Net profit: $19,900.00
-- 16 total events (9 completed)
+### 💰 **Financials (YTD)**
+- Revenue: **$24,250**
+- Expenses: **$4,350**
+- Net: **$19,900**
+- Avg Revenue/Event: **$2,694.44**
 
-**Upcoming Events (7):**
-- Q1 Board Dinner on 2026-03-05 for Apex Group (Corporate) (30 guests, confirmed)
-- Tasting for Morrison Family on 2026-03-08 for The Morrison Family (4 guests, proposed)
-- Engagement Dinner on 2026-03-11 for Rachel Kim (8 guests, accepted)
-- Spring Garden Party on 2026-03-17 for Sarah Henderson (114 guests, confirmed)
-- Spring Tasting Menu on 2026-03-31 for Emma Rothschild (8 guests, paid)
-- Jessica's Baby Shower on 2026-04-13 for Jessica Park (20 guests, proposed)
-- Product Launch Celebration on 2026-04-28 for Alex Chen (50 guests, draft)
+### 🧑‍🤝‍🧑 **Clients**
+- Top clients: Alex Chen ($3,600), David Garcia ($3,600), Apex Group ($3,500)
+- Recent clients: Rachel Kim, Morrison Family, Sarah Henderson, Sofia Martinez, Thompson Family
 
-**Open Inquiries:**
-- 3 open inquiries
-- 2 pending quotes
+### 📌 **Today’s Daily Plan**
+- **Quick Admin:** 84 items
+- **Event Prep:** 81 items
+- **Creative Time:** 0 items
+- **Relationship:** 0 items
 
-**Today's Daily Plan:**
-- 165 items total (~1184 min)
-- Quick Admin: 84 items
-- Event Prep: 81 items
-- Creative Time: 0 items
-- Relationship: 0 items
+You’re currently on the **Dashboard** — let me know if you want a deeper dive into any of these areas or need help prioritizing today's tasks.
 
-You're currently in the middle of your day with a full schedule ahead. The dashboard shows you're well into your day with a lot of prep work to do, but also some client relationship work to attend to.
-
-NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Inquiries","href":"/inquiries"},{"label":"Financials","href":"/financials"}]
+NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Financials","href":"/financials"},{"label":"Inquiries","href":"/inquiries"}]
 ```
 
 ---
@@ -862,234 +649,435 @@ NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Inquiries","href
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.5s | **First token:** 41.5s | **Total:** 83.0s
-- **Tokens/sec:** 8.8
-- **Response length:** 1454 chars
+- **Classification:** 5.8s | **First token:** 18.5s | **Total:** 66.9s
+- **Tokens/sec:** 8.2
+- **Response length:** 1596 chars
 
 **Full response:**
 
 ```
-You're currently on the /dashboard page, which gives you a high-level overview of your business.
+You've got a busy week ahead, chef. Let's break it down:
 
-Here's your quick snapshot:
+**Today (Wednesday, March 4):**
+- **Events:** 0 confirmed, 1 proposed (Morrison Family on March 8)
+- **Inquiries:** 3 open
+- **Quotes:** 2 pending
+- **Revenue:** $0.00 this month (but YTD is $24,250)
 
-**Business Overview:**
-- Year-to-date: $24,250.00 revenue, $4,350.00 expenses, $19,900.00 net
-- 16 total events (9 completed)
-- Average revenue per event: $2,694.44
-
-**Upcoming Events (7 total):**
-- Q1 Board Dinner (Mar 5) - Apex Group (Corporate) - 30 guests
-- Tasting for Morrison Family (Mar 8) - 4 guests
-- Engagement Dinner (Mar 11) - Rachel Kim - 8 guests
-- Spring Garden Party (Mar 17) - Sarah Henderson - 14 guests
-- Spring Tasting Menu (Mar 31) - Emma Rothschild - 8 guests
-- Jessica's Baby Shower (Apr 13) - Jessica Park - 20 guests
-- Product Launch Celebration (Apr 28) - Alex Chen - 50 guests
-
-**Current Status:**
-- 3 open inquiries
-- 2 pending quotes
-- No events scheduled for today (Wednesday, March 4)
-
-**Recent Activity:**
-- Last 24h email inbox digest shows [no entries]
-- Recent clients: Rachel Kim, The Morrison Family, Sarah Henderson, Sofia Martinez, The Thompson Family
+**Upcoming Events:**
+- **March 5:** Q1 Board Dinner (Apex Group, 30 guests, Gold loyalty)
+- **March 8:** Tasting for Morrison Family (4 guests, Bronze loyalty)
+- **March 11:** Engagement Dinner (Rachel Kim, 8 guests, Bronze loyalty)
+- **March 17:** Spring Garden Party (Sarah Henderson, 14 guests, Gold loyalty)
+- **March 31:** Spring Tasting Menu (Emma Rothschild, 8 guests, Platinum loyalty)
+- **April 13:** Jessica's Baby Shower (Jessica Park, 20 guests, Bronze loyalty)
+- **April 28:** Product Launch Celebration (Alex Chen, 50 guests, Bronze loyalty)
 
 **Quick Stats:**
-- Top clients: Alex Chen ($3,600), David Garcia ($3,600), Apex Group ($3,500)
-- You're currently in the middle of your daily plan with 165 items (84 quick admin, 81 event prep, 0 creative time, 0 relationship items)
+- **Clients:** 15 total
+- **Year-to-date:** $24,250 revenue, $4,350 expenses, $19,900 net
+- **Top clients:** Alex Chen ($3,600), David Garcia ($3,600), Apex Group ($3,500)
 
-NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"},{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Inquiries","href":"/inquiries"},{"label":"Financials","href":"/financials"}]
+**Today's Daily Plan:**
+- 165 items total (84 quick admin, 81 event prep, 0 creative, 0 relationship)
+- You're starting your day on the dashboard with a full plate
+
+**Immediate Priorities:**
+- Follow up on open inquiries
+- Review and approve the Morrison Family tasting menu
+- Check in with the pending quotes
+- Prepare for the Q1 Board Dinner on Thursday
+
+You're in good shape, chef. Just need to tackle those 84 admin items first to get the ball rolling.
+
+NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"},{"label":"Events","href":"/events"},{"label":"Quotes","href":"/quotes"}]
 ```
 
 ---
 
-### ⚠️ chef-004_run3: "Give me a quick snapshot of where things stand"
+### ✅ chef-004_run3: "Give me a quick snapshot of where things stand"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.5s | **First token:** 95.0s | **Total:** 139.9s
+- **Classification:** 4.2s | **First token:** 16.9s | **Total:** 59.2s
 - **Tokens/sec:** 8.6
-- **Response length:** 1553 chars
+- **Response length:** 1460 chars
+
+**Full response:**
+
+```
+You're in the dashboard, chef. Here's the quick snapshot:
+
+## 📊 Business Overview
+- **Month Revenue**: $0.00 (still building momentum)
+- **Year-to-Date**: $24,250.00 revenue, $4,350.00 expenses, $19,900.00 net
+- **Events**: 16 total (9 completed)
+- **Avg Revenue/Event**: $2,694.44
+
+## 🗓️ Upcoming Events (7)
+- **Mar 5**: Q1 Board Dinner (Apex Group) - 30 guests, Gold loyalty
+- **Mar 8**: Tasting for Morrison Family - 4 guests, Bronze loyalty
+- **Mar 11**: Engagement Dinner (Rachel Kim) - 8 guests, Bronze loyalty
+- **Mar 17**: Spring Garden Party (Sarah Henderson) - 14 guests, Gold loyalty
+- **Mar 31**: Spring Tasting Menu (Emma Rothschild) - 8 guests, Platinum loyalty
+- **Apr 13**: Jessica's Baby Shower (Jessica Park) - 20 guests, Bronze loyalty
+- **Apr 28**: Product Launch Celebration (Alex Chen) - 50 guests, Bronze loyalty
+
+## 🔧 Today's Focus
+- **Quick Admin**: 84 items
+- **Event Prep**: 81 items
+- **Creative Time**: 0 items
+- **Relationship**: 0 items
+
+## 📌 Key Notes
+- Your top clients are Alex Chen, David Garcia, and Apex Group (Corporate)
+- You're targeting 28-32% food cost — watch that with premium menu items
+- You've got a full schedule but remember: never book more than 2 events in the same weekend
+
+You're currently on the dashboard — want to dive into a specific area?
+
+NAV_SUGGESTIONS: [{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Inquiries","href":"/inquiries"},{"label":"Financials","href":"/financials"}]
+```
+
+---
+
+### ✅ chef-004_run4: "Give me a quick snapshot of where things stand"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 5.6s | **First token:** 18.5s | **Total:** 66.1s
+- **Tokens/sec:** 7.4
+- **Response length:** 1419 chars
+
+**Full response:**
+
+```
+You're currently on the dashboard, which gives you a birds-eye view of your business.
+
+Here's a quick snapshot of where things stand:
+
+### 📊 Business Overview
+- **Year-to-Date Revenue:** $24,250.00
+- **Expenses:** $4,350.00
+- **Net Profit:** $19,900.00
+- **Events Completed:** 9 out of 16
+- **Avg Revenue/Event:** $2,694.44
+
+### 🗓️ Upcoming Events
+1. **Q1 Board Dinner** (2026-03-05) - Apex Group (Corporate) - 30 guests
+2. **Tasting for Morrison Family** (2026-03-08) - 4 guests
+3. **Engagement Dinner** (2026-03-11) - Rachel Kim - 8 guests
+4. **Spring Garden Party** (2026-03-17) - Sarah Henderson - 14 guests
+5. **Spring Tasting Menu** (2026-03-31) - Emma Rothschild - 8 guests
+6. **Jessica's Baby Shower** (2026-04-13) - Jessica Park - 20 guests
+7. **Product Launch Celebration** (2026-04-28) - Alex Chen - 50 guests
+
+### 📝 Current Status
+- **Open Inquiries:** 3
+- **Pending Quotes:** 2
+- **Upcoming Events:** 7
+- **Clients:** 15 total
+
+### 🔧 Today's Plan
+- **Quick Admin:** 84 items
+- **Event Prep:** 81 items
+- **Creative Time:** 0 items
+- **Relationship:** 0 items
+
+You're clearly in the thick of things — with a full day of admin and prep tasks ahead. The dashboard shows a healthy pipeline of events and strong revenue performance so far this year.
+
+NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"},{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Inquiries","href":"/inquiries"}]
+```
+
+---
+
+### ✅ chef-004_run5: "Give me a quick snapshot of where things stand"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.2s | **First token:** 16.9s | **Total:** 56.2s
+- **Tokens/sec:** 8.3
+- **Response length:** 1300 chars
 
 **Full response:**
 
 ```
 You’ve got a busy week ahead, chef. Here's the quick snapshot:
 
-### 📅 **Upcoming Events**
-- **Mar 5**: Q1 Board Dinner – Apex Group (Corporate) – 30 guests (Gold loyalty)
-- **Mar 8**: Tasting for Morrison Family – 4 guests (Bronze loyalty)
-- **Mar 11**: Engagement Dinner – Rachel Kim – 8 guests (Bronze loyalty)
-- **Mar 17**: Spring Garden Party – Sarah Henderson – 14 guests (Gold loyalty)
-- **Mar 31**: Spring Tasting Menu – Emma Rothschild – 8 guests (Platinum loyalty)
-- **Apr 13**: Jessica's Baby Shower – Jessica Park – 20 guests (Bronze loyalty)
-- **Apr 28**: Product Launch Celebration – Alex Chen – 50 guests (Bronze loyalty)
-
-### 💰 **Financial Overview**
+### 📊 **Business Overview**
 - **Year-to-Date Revenue**: $24,250.00
 - **Expenses**: $4,350.00
-- **Net**: $19,900.00
+- **Net Profit**: $19,900.00
+- **Events Completed**: 9 out of 16
 - **Avg Revenue/Event**: $2,694.44
 
-### 🎯 **Current Focus**
-- You're deep in your **daily plan** with 165 items (84 quick admin, 81 prep, 0 creative, 0 relationship).
-- You have **3 open inquiries**, **2 pending quotes**, and **15 total clients**.
+### 🗓️ **Upcoming Events**
+1. **Q1 Board Dinner** – March 5 (Apex Group, 30 guests, Gold loyalty)
+2. **Tasting for Morrison Family** – March 8 (4 guests, Proposed)
+3. **Engagement Dinner** – March 11 (Rachel Kim, 8 guests, Accepted)
+4. **Spring Garden Party** – March 17 (Sarah Henderson, 14 guests, Gold loyalty)
+5. **Spring Tasting Menu** – March 31 (Emma Rothschild, 8 guests, Paid)
+6. **Jessica's Baby Shower** – April 13 (Jessica Park, 20 guests, Proposed)
+7. **Product Launch Celebration** – April 28 (Alex Chen, 50 guests, Draft)
 
-### 🔥 **Recent Highlights**
-- **Emma Rothschild** is extremely private – no social media posts for her events.
-- **The Martinez family** loves when you recreate dishes from their wedding.
-- **Victoria Davis** tends to pay late – send a gentle reminder around day 7.
-
-Let me know if you want a breakdown of any specific area — prep, admin, or client follow-ups.
-
-NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Events","href":"/events"}, {"label":"Inquiries","href":"/inquiries"}, {"label":"Financials","href":"/financials"}]
-```
-
----
-
-### ❌ chef-004_run4: "Give me a quick snapshot of where things stand"
-
-- **Verdict:** FAIL
-- **Intent:** question (expected: question) ✅
-- **Classification:** 45.9s | **First token:** 108.0s | **Total:** 147.1s
-- **Tokens/sec:** 8.2
-- **Response length:** 1288 chars
-
-**Full response:**
-
-```
-You're currently on the /dashboard, which gives you a birds-eye view of your business.
-
-Here's a quick snapshot:
-
-**Financials (YTD):**
-- Revenue: $24,250.00
-- Expenses: $4,350.00
-- Net: $19,900.00
-- Avg revenue/event: $2,694.44
-
-**Upcoming Events (7):**
-- Q1 Board Dinner (Mar 5) - Apex Group (Corporate) - 30 guests
-- Tasting for Morrison Family (Mar 8) - 4 guests
-- Engagement Dinner (Mar 11) - Rachel Kim (8 guests)
-- Spring Garden Party (Mar 17) - Sarah Henderson (14 guests)
-- Spring Tasting Menu (Mar 31) - Emma Rothschild (8 guests)
-- Jessica's Baby Shower (Apr 13) - Jessica Park (20 guests)
-- Product Launch Celebration (Apr 28) - Alex Chen (50 guests)
-
-**Open Inquiries:**
+### 📨 **Open Inquiries**
 - 3 open inquiries
 - 2 pending quotes
 
-**Clients:**
-- 15 total clients
-- Top clients: Alex Chen ($3,600), David Garcia ($3,600), Apex Group (Corporate) ($3,500)
+### 🧾 **Today’s Plan**
+- **Quick Admin**: 84 items
+- **Event Prep**: 81 items
+- **Creative Time**: 0 items
+- **Relationship**: 0 items
 
-**Today's Plan:**
-- 165 items total (84 Quick Admin, 81 Event Prep, 0 Creative Time, 0 Relationship)
-- You're in the middle of your daily workflow
+You’re deep in admin mode today — that’s a good sign you’re staying on top of things. The week is packed with events, but you're well-prepped.
 
-You're well-positioned for a busy week with multiple events and inquiries to manage. The dashboard shows your current workload and upcoming commitments.
-
-NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Inquiries","href":"/inquiries"},{"label":"Financials","href":"/financials"}]
+NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"},{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Inquiries","href":"/inquiries"}]
 ```
 
 ---
 
-### ❌ chef-004_run5: "Give me a quick snapshot of where things stand"
+### ✅ chef-005_run1: "What needs my attention today?"
 
-- **Verdict:** FAIL
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 6.2s | **First token:** n/a | **Total:** 44.8s
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Classification:** 5.3s | **First token:** 19.3s | **Total:** 47.7s
+- **Tokens/sec:** 10
+- **Response length:** 1134 chars
 
 **Full response:**
 
 ```
-[no response text]
+You've got a busy day ahead, chef. Here's what needs your attention:
+
+**Quick Admin: 84 items**
+- Most urgent: 3 open inquiries waiting for your response
+- 2 pending quotes to review
+- 1 client payment reminder (Victoria Davis)
+- 1 expense entry to approve
+- 1 staff scheduling update needed
+
+**Event Prep: 81 items**
+- Q1 Board Dinner (Apex Group) on 3/5 - Final menu approval needed
+- Morrison Family tasting on 3/8 - Confirm guest dietary restrictions
+- Engagement Dinner (Rachel Kim) on 3/11 - Confirm final guest count
+- Spring Garden Party (Sarah Henderson) on 3/17 - Confirm organic produce order
+- Spring Tasting Menu (Emma Rothschild) on 3/31 - Final staff assignments needed
+
+**Creative Time: 0 items**
+- No creative tasks scheduled for today
+
+**Relationship: 0 items**
+- No relationship tasks scheduled for today
+
+Your day is primarily focused on administrative tasks and event preparation. The most urgent items are responding to inquiries and finalizing the menu for the Q1 Board Dinner.
+
+NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"},{"label":"Events","href":"/events"},{"label":"Quotes","href":"/quotes"}]
 ```
 
 ---
 
-### ❌ chef-005_run1: "What needs my attention today?"
+### ✅ chef-005_run2: "What needs my attention today?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 817ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.0s | **First token:** 18.0s | **Total:** 62.0s
+- **Tokens/sec:** 8.7
+- **Response length:** 1527 chars
 
 **Full response:**
 
 ```
-[no response text]
+You’ve got a solid day ahead, chef. Here's what’s calling for your attention today:
+
+### 📌 Quick Admin (84 items)
+- **Inquiries**: 3 open inquiries — two from new prospects and one follow-up.
+- **Quotes**: 2 pending quotes to send out.
+- **Payments**: One balance due for a recent event (Emma Rothschild).
+- **Expenses**: 1 new expense entry to log.
+- **Client Notes**: 2 clients with updated preferences or notes.
+
+### 🍽️ Event Prep (81 items)
+- **Q1 Board Dinner (Apex Group)** on 2026-03-05:
+  - Confirm menu with client.
+  - Finalize guest list and seating.
+  - Prepare staff assignments.
+- **Tasting for Morrison Family** on 2026-03-08:
+  - Review proposed menu.
+  - Confirm date and time.
+- **Engagement Dinner (Rachel Kim)** on 2026-03-11:
+  - Finalize event details.
+  - Confirm guest count and dietary restrictions.
+- **Spring Garden Party (Sarah Henderson)** on 2026-03-17:
+  - Confirm menu and guest list.
+  - Confirm staff assignments.
+- **Spring Tasting Menu (Emma Rothschild)** on 2026-03-31:
+  - Confirm menu.
+  - Confirm guest list.
+  - Finalize event details.
+
+### 🧑‍🍳 Creative Time (0 items)
+- No creative time items scheduled today.
+
+### 💬 Relationship (0 items)
+- No relationship items scheduled today.
+
+---
+
+You're on track for a busy but manageable day. Want me to prioritize any of these tasks for you or give you a quick overview of your upcoming events?
+
+NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"}, {"label":"Events","href":"/events"}, {"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ❌ chef-005_run2: "What needs my attention today?"
+### ⚠️ chef-005_run3: "What needs my attention today?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 826ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 11.6s | **First token:** 25.1s | **Total:** 70.0s
+- **Tokens/sec:** 10.4
+- **Response length:** 1861 chars
 
 **Full response:**
 
 ```
-[no response text]
+You’ve got a solid day ahead, chef. Here’s what needs your attention today:
+
+### 📌 Quick Admin (84 items)
+- **Inquiries**: You have 3 open inquiries — worth reviewing.
+- **Quotes**: 2 pending quotes — likely need final touches or sending.
+- **Payments**: Check for any pending payments or late invoices.
+- **Client Notes**: Review any new notes or updates from recent interactions.
+- **Staff Scheduling**: Confirm any staff assignments for upcoming events.
+- **Expense Tracking**: Add any new expenses or receipts.
+- **Calendar Entries**: Ensure all upcoming events are correctly scheduled and blocked.
+
+### 🍽️ Event Prep (81 items)
+- **Q1 Board Dinner (Apex Group)** – March 5: Finalize menu and staff assignments.
+- **Tasting for Morrison Family** – March 8: Confirm guest details and prepare tasting notes.
+- **Engagement Dinner (Rachel Kim)** – March 11: Confirm guest count and finalize menu.
+- **Spring Garden Party (Sarah Henderson)** – March 17: Confirm guest list and finalize menu.
+- **Spring Tasting Menu (Emma Rothschild)** – March 31: Confirm guest count and finalize menu.
+- **Jessica's Baby Shower (Jessica Park)** – April 13: Confirm guest count and finalize menu.
+- **Product Launch Celebration (Alex Chen)** – April 28: Confirm guest count and finalize menu.
+
+### 🧑‍🍳 Creative Time (0 items)
+- No creative time items assigned today. You might want to carve out some time for menu development or recipe refinement.
+
+### 🤝 Relationship (0 items)
+- No relationship items assigned today. Consider reaching out to any high-value clients or prospects for follow-ups.
+
+---
+
+Would you like me to prioritize any of these tasks or suggest a specific order to tackle them?
+
+NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"}, {"label":"Quotes","href":"/quotes"}, {"label":"Events","href":"/events"}, {"label":"Calendar","href":"/calendar"}]
 ```
 
 ---
 
-### ❌ chef-005_run3: "What needs my attention today?"
+### ⚠️ chef-005_run4: "What needs my attention today?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 911ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 28.9s | **First token:** 42.6s | **Total:** 79.6s
+- **Tokens/sec:** 8.2
+- **Response length:** 1217 chars
 
 **Full response:**
 
 ```
-[no response text]
+You’ve got a solid day ahead, chef. Here's what needs your attention today:
+
+### 📌 Quick Admin: 84 items
+These are the urgent tasks that need your immediate attention — from responding to inquiries to finalizing quotes and managing expenses.
+
+### 📌 Event Prep: 81 items
+You’ve got a few events coming up this week, and there are prep tasks to tackle:
+- **Q1 Board Dinner** on 2026-03-05 for Apex Group (Corporate) — 30 guests, confirmed, loyalty gold (200 pts)
+- **Tasting for Morrison Family** on 2026-03-08 for The Morrison Family (4 guests, proposed, loyalty bronze (20 pts))
+- **Engagement Dinner** on 2026-03-11 for Rachel Kim (8 guests, accepted, loyalty bronze (30 pts))
+- **Spring Garden Party** on 2026-03-17 for Sarah Henderson (14 guests, confirmed, loyalty gold (340 pts))
+
+### 📌 Creative Time: 0 items
+No creative tasks scheduled for today — but you can always add some if you feel inspired!
+
+### 📌 Relationship: 0 items
+No relationship tasks today, but keep an eye out for any client follow-ups or messages.
+
+---
+
+NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Inquiries","href":"/inquiries"}, {"label":"Events","href":"/events"}, {"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ❌ chef-005_run4: "What needs my attention today?"
+### ⚠️ chef-005_run5: "What needs my attention today?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 717ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 36.4s | **First token:** 49.6s | **Total:** 101.7s
+- **Tokens/sec:** 8.7
+- **Response length:** 1815 chars
 
 **Full response:**
 
 ```
-[no response text]
-```
+You’ve got a busy day ahead, chef. Here's what needs your attention today:
+
+### Quick Admin: 84 items
+- **Inquiries**: 3 open inquiries
+- **Quotes**: 2 pending quotes
+- **Payments**: 1 pending payment
+- **Client Notes**: 2 client notes to update
+- **Menu Approvals**: 1 menu needs approval
+- **Staff Scheduling**: 2 staff scheduling updates
+- **Expense Tracking**: 3 expense entries to log
+- **Calendar Updates**: 1 calendar entry to confirm
+
+### Event Prep: 81 items
+- **Q1 Board Dinner (Apex Group)** on 2026-03-05
+  - Finalize menu
+  - Confirm guest list
+  - Prepare staff schedule
+- **Tasting for Morrison Family** on 2026-03-08
+  - Confirm attendance
+  - Prepare tasting notes
+- **Engagement Dinner (Rachel Kim)** on 2026-03-11
+  - Finalize menu
+  - Confirm guest list
+  - Prepare staff schedule
+- **Spring Garden Party (Sarah Henderson)** on 2026-03-17
+  - Confirm guest list
+  - Prepare staff schedule
+- **Spring Tasting Menu (Emma Rothschild)** on 2026-03-31
+  - Finalize menu
+  - Confirm guest list
+  - Prepare staff schedule
+
+### Creative Time: 0 items
+- No creative time items scheduled today.
+
+### Relationship: 0 items
+- No relationship items scheduled today.
 
 ---
 
-### ❌ chef-005_run5: "What needs my attention today?"
+**Quick Wins:**
+- Review and respond to the 3 open inquiries.
+- Confirm attendance for the Morrison Family tasting.
+- Finalize the menu for the Q1 Board Dinner.
+- Log the 3 expense entries.
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 741ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+**High Priority:**
+- Confirm the guest list for the Spring Garden Party.
+- Finalize the menu for the Spring Tasting Menu.
+- Confirm staff schedule for the Q1 Board Dinner.
 
-**Full response:**
+Let me know if you need help with any of these tasks or if you want to reschedule anything.
 
-```
-[no response text]
+NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"}, {"label":"Quotes","href":"/quotes"}, {"label":"Events","href":"/events"}, {"label":"Financials","href":"/financials"}]
 ```
 
 ---
@@ -1098,257 +1086,307 @@ NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Inquiries","href
 
 - **Verdict:** WARN
 - **Intent:** question (expected: question) ✅
-- **Classification:** 29.7s | **First token:** 71.8s | **Total:** 115.5s
-- **Tokens/sec:** 9.5
-- **Response length:** 1664 chars
+- **Classification:** 38.6s | **First token:** 51.8s | **Total:** 95.0s
+- **Tokens/sec:** 9.3
+- **Response length:** 1614 chars
 
 **Full response:**
 
 ```
-You're currently at **$24,250.00** in revenue year-to-date, with **$19,900.00** net profit (after $4,350.00 in expenses). That's a strong start, especially since you're still in March.
+You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). That puts you on a strong trajectory — especially considering you're still in the early part of the year.
 
-### Your Monthly Goal:
-Based on your YTD performance, you're averaging about **$2,694.44 per event**, and with **16 events so far** (9 completed), your **monthly average** is strong. If you're aiming for a **$30,000 monthly target**, you're on track — just need to maintain or slightly increase activity in the remaining weeks.
+### Monthly Revenue Goal Progress:
+- **Year-to-Date Revenue:** $24,250.00
+- **Events Completed:** 9
+- **Avg Revenue/Event:** $2,694.44
+
+You’re currently **ahead of the curve** for a typical monthly goal, assuming a steady flow of events and consistent pricing. Based on your average performance, you're likely on track to hit or exceed your monthly targets — especially with the upcoming events like the **Apex Group Board Dinner** (March 5), **Spring Garden Party** (March 17), and **Spring Tasting Menu** (March 31).
 
 ### Upcoming Events:
-You have **7 upcoming events**, with a mix of confirmed, paid, and proposed. Here’s a quick look:
+- **Apex Group (Corporate)** – March 5 (30 guests)
+- **Morrison Family** – March 8 (4 guests)
+- **Rachel Kim** – March 11 (8 guests)
+- **Sarah Henderson** – March 17 (14 guests)
+- **Emma Rothschild** – March 31 (8 guests)
 
-- **Q1 Board Dinner (Apex Group)** – 30 guests, confirmed, loyalty gold
-- **Tasting for Morrison Family** – 4 guests, proposed
-- **Engagement Dinner (Rachel Kim)** – 8 guests, accepted
-- **Spring Garden Party (Sarah Henderson)** – 14 guests, confirmed, loyalty gold
-- **Spring Tasting Menu (Emma Rothschild)** – 8 guests, paid, loyalty platinum
-- **Jessica's Baby Shower (Jessica Park)** – 20 guests, proposed
-- **Product Launch Celebration (Alex Chen)** – 50 guests, draft
+All of these are confirmed or accepted, and you’ve got a healthy pipeline heading into the month.
 
-### Tips to Stay on Track:
-- Focus on converting **proposed events** into confirmed ones (especially Morrison and Jessica’s).
-- Ensure all **pending quotes** are sent out.
-- Consider upselling premium menus for larger events (e.g., 50 guests at Alex Chen’s — a great opportunity to push a truffle or wagyu tasting).
+---
 
-Let me know if you want a deeper analysis of your upcoming revenue potential or a review of your goals.
+### Key Notes:
+- You're still in the **early part of the year**, so your revenue is building nicely.
+- Your **average event revenue** is $2,694 — which is solid.
+- You're also **ahead of the curve** on event volume and client retention, especially with recurring clients like Sarah Henderson (Gold) and Emma Rothschild (Platinum).
 
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"},{"label":"Goals","href":"/goals"}]
+If you keep up this pace, you're on track to hit or exceed your quarterly and annual goals.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
 ```
 
 ---
 
-### ✅ chef-006_run2: "Am I on track for my goals this month?"
+### ⚠️ chef-006_run2: "Am I on track for my goals this month?"
 
-- **Verdict:** PASS
+- **Verdict:** WARN
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.5s | **First token:** 44.6s | **Total:** 92.5s
-- **Tokens/sec:** 8.1
-- **Response length:** 1551 chars
+- **Classification:** 27.1s | **First token:** 41.5s | **Total:** 74.9s
+- **Tokens/sec:** 9.1
+- **Response length:** 1219 chars
 
 **Full response:**
 
 ```
-You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). Your average revenue per event is **$2,694.44**, and your net profit so far is **$19,900.00**.
+You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). That’s a strong start, especially considering you're still in March.
 
-### Monthly Goal Check:
-- You're currently on track to exceed your monthly revenue goal of **$30,000** (based on current pace).
-- You've completed **9 events** out of **16**, which means you're about **56%** through your annual event goal.
-- You're currently at **$0.00** for this month, but that’s because you're in early March and haven't yet billed any events for March.
+### Monthly Revenue Goal Progress:
+- You’ve completed **9 events** so far, with an **average revenue/event of $2,694.44**.
+- Based on your current trajectory, you're likely on track to meet or exceed your monthly goals — assuming you maintain this pace.
 
 ### Upcoming Events This Month:
-- **Q1 Board Dinner** on 2026-03-05 (Apex Group, 30 guests, $3,500)
-- **Tasting for Morrison Family** on 2026-03-08 (4 guests, $600)
-- **Engagement Dinner** on 2026-03-11 (Rachel Kim, 8 guests, $1,200)
-- **Spring Garden Party** on 2026-03-17 (Sarah Henderson, 14 guests, $2,100)
-- **Spring Tasting Menu** on 2026-03-31 (Emma Rothschild, 8 guests, $1,200)
+Here are the confirmed and paid events coming up in March:
+- **Q1 Board Dinner** on 2026-03-05 for Apex Group (Corporate) – 30 guests, confirmed
+- **Engagement Dinner** on 2026-03-11 for Rachel Kim – 8 guests, accepted
+- **Spring Garden Party** on 2026-03-17 for Sarah Henderson – 14 guests, confirmed
+- **Spring Tasting Menu** on 2026-03-31 for Emma Rothschild – 8 guests, paid
 
-### Revenue Projection:
-If all these events are billed at full price, you're looking at an estimated **$8,600** for March alone — which puts you well on track for your monthly goal.
+If all of these events come in at or near their expected revenue, you're well-positioned to hit your monthly targets — especially since you're already past the halfway mark of the year.
 
-### Next Steps:
-- Confirm that all upcoming events are marked as paid or pending.
-- Follow up with any clients who haven’t paid deposits yet (e.g., Morrison Family, Rachel Kim).
-- Consider if you’re planning to book more events this month to maintain your momentum.
+Let me know if you'd like a detailed forecast or a breakdown of what’s left to hit your goal.
 
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}, {"label":"Inquiries","href":"/inquiries"}]
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
 ```
 
 ---
 
-### ✅ chef-006_run3: "Am I on track for my goals this month?"
+### ⚠️ chef-006_run3: "Am I on track for my goals this month?"
 
-- **Verdict:** PASS
+- **Verdict:** WARN
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.2s | **First token:** 50.8s | **Total:** 96.4s
-- **Tokens/sec:** 8
-- **Response length:** 1452 chars
+- **Classification:** 49.8s | **First token:** 63.1s | **Total:** 115.0s
+- **Tokens/sec:** 8.3
+- **Response length:** 1719 chars
 
 **Full response:**
 
 ```
-You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). Your average revenue per event is **$2,694.44**.
+You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). Your average revenue per event is **$2,694.44**, which is solid.
 
 ### Monthly Revenue Goal:
-Based on your current trajectory, you're on track to hit your monthly revenue goal of **$30,000**, assuming a consistent pace.
+Since you haven’t set a specific monthly goal in your settings, we can estimate based on your YTD performance. You’ve completed **9 events** so far this year, generating **$24,250**, which averages to about **$2,694 per event**. That means you’re on track for a **$32,328** monthly average if you maintain this pace (assuming 12 events per month).
 
-### Key Metrics:
-- **Net Profit**: $19,900.00 (after $4,350 in expenses)
-- **Top Clients**:
+If your goal is to hit a **$30,000+ monthly target**, you're currently **slightly above** that, but not quite there yet — especially since you're only on day 4 of March.
+
+### Upcoming Events This Month:
+You have **6 upcoming events** this month:
+1. Q1 Board Dinner on 2026-03-05 (Apex Group – $3,500)
+2. Tasting for Morrison Family on 2026-03-08 ($1,200)
+3. Engagement Dinner on 2026-03-11 ($1,200)
+4. Spring Garden Party on 2026-03-17 (Sarah Henderson – $2,000)
+5. Spring Tasting Menu on 2026-03-31 (Emma Rothschild – $1,200)
+6. Jessica's Baby Shower on 2026-04-13 (Jessica Park – $3,000)
+
+So far, you’re looking at a potential **$12,100** in revenue this month — which is **below** your average per event, but still quite strong.
+
+### Recommendations:
+- Consider pushing for a few more deposits or confirming pending quotes to boost revenue.
+- Focus on high-value clients like Alex Chen, David Garcia, or Patricia Foster to maximize impact.
+
+Would you like me to check your current financials or help you plan a strategy for closing more deals this month?
+
+NAV_SUGGESTIONS: [{"label":"Financial Hub","href":"/financials"},{"label":"Upcoming Events","href":"/events/upcoming"}]
+```
+
+---
+
+### ⚠️ chef-006_run4: "Am I on track for my goals this month?"
+
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 10.9s | **First token:** 25.4s | **Total:** 64.9s
+- **Tokens/sec:** 7.6
+- **Response length:** 1194 chars
+
+**Full response:**
+
+```
+You're currently at **$24,250.00** in year-to-date revenue, with **16 total events**, **9 completed**.
+
+### Monthly Goal Progress:
+- **Month Revenue:** $0.00 (you're starting fresh this month)
+- **Events Completed:** 9 (out of 16 planned so far)
+- **Avg Revenue/Event:** $2,694.44
+
+### What You Need to Do:
+To stay on track for a **$30,000 monthly goal**, you’ll need to bring in **$30,000** by the end of March.
+
+### Upcoming Events This Month:
+- **Q1 Board Dinner** on 2026-03-05 for Apex Group (Corporate) – $3,500
+- **Tasting for Morrison Family** on 2026-03-08 – $1,500
+- **Engagement Dinner** on 2026-03-11 – $1,500
+- **Spring Garden Party** on 2026-03-17 for Sarah Henderson – $3,000
+- **Spring Tasting Menu** on 2026-03-31 for Emma Rothschild – $2,000
+
+That's **$11,500** from upcoming events this month.
+
+### Action Plan:
+You’re on track to hit your monthly goal if you:
+- Close pending quotes/inquiries
+- Secure at least one more high-value event (e.g., $2,000+)
+
+Let me know if you want help reviewing open inquiries or prioritizing leads.
+
+NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"}, {"label":"Events","href":"/events"}, {"label":"Financials","href":"/financials"}]
+```
+
+---
+
+### ⚠️ chef-006_run5: "Am I on track for my goals this month?"
+
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 15.6s | **First token:** 30.6s | **Total:** 71.7s
+- **Tokens/sec:** 9.5
+- **Response length:** 1565 chars
+
+**Full response:**
+
+```
+You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). That’s a strong start — especially with your average revenue per event at **$2,694.44**.
+
+### Monthly Goal Check-In:
+- **Month Revenue:** $0.00 (you're starting fresh this month)
+- **Events Completed:** 9 (so far this year)
+- **Top Clients (YTD):**
   - Alex Chen ($3,600)
   - David Garcia ($3,600)
   - Apex Group (Corporate) ($3,500)
   - Michael O'Brien ($3,200)
   - Patricia Foster ($3,200)
 
+You're on track for a solid month if you continue at this pace. If your goal is to match or exceed last month’s performance, you’ll want to book and secure at least **2-3 more events** this month, depending on your target.
+
+---
+
 ### Upcoming Events This Month:
-1. **Q1 Board Dinner** – Apex Group (Corporate) – 30 guests – $3,500
-2. **Tasting for Morrison Family** – 4 guests – $600
-3. **Engagement Dinner** – Rachel Kim – 8 guests – $1,200
-4. **Spring Garden Party** – Sarah Henderson – 14 guests – $2,100
-5. **Spring Tasting Menu** – Emma Rothschild – 8 guests – $1,200
-6. **Jessica's Baby Shower** – Jessica Park – 20 guests – $3,000
-7. **Product Launch Celebration** – Alex Chen – 50 guests – $7,500 (draft)
+- **March 5**: Q1 Board Dinner – Apex Group (30 guests)
+- **March 8**: Tasting for Morrison Family (4 guests)
+- **March 11**: Engagement Dinner – Rachel Kim (8 guests)
+- **March 17**: Spring Garden Party – Sarah Henderson (14 guests)
+- **March 31**: Spring Tasting Menu – Emma Rothschild (8 guests)
 
-### What’s Next:
-You have **3 open inquiries** and **2 pending quotes**, so there's potential for more revenue in the coming weeks.
+That’s **5 confirmed events** so far this month. If you’re aiming for a full month of activity, consider pushing to get more inquiries converted or booking additional events like the **April Baby Shower** or **Product Launch Celebration**.
 
-If you're aiming for a **$30,000 monthly target**, you're on track — but you’ll want to close those pending quotes and secure new bookings to stay ahead.
+Would you like me to review your upcoming pipeline or suggest how to push toward your monthly revenue goals?
 
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Inquiries","href":"/inquiries"},{"label":"Events","href":"/events"}]
+NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Inquiries","href":"/inquiries"},{"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ✅ chef-006_run4: "Am I on track for my goals this month?"
+### ✅ chef-007_run1: "What's my year-to-date revenue?"
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 5.8s | **First token:** 38.6s | **Total:** 79.8s
-- **Tokens/sec:** 9.8
-- **Response length:** 1609 chars
+- **Classification:** 5.3s | **First token:** 18.4s | **Total:** 30.6s
+- **Tokens/sec:** 7.5
+- **Response length:** 363 chars
 
 **Full response:**
 
 ```
-You're currently at **$24,250.00** in year-to-date revenue, with **16 total events** (9 completed). Your average revenue per event is **$2,694.44**.
+Your year-to-date revenue is **$24,250.00**.
 
-### Monthly Progress:
-- **Month Revenue**: $0.00 (you're starting fresh this month)
-- **Events Completed This Month**: 0
-- **Upcoming Events**: 7 (including 2 confirmed, 5 proposed)
+That’s coming from 16 total events, with 9 completed so far. The average revenue per event is **$2,694.44**.
 
-### Goals:
-You're currently tracking toward your **monthly revenue goal** of **$25,000**, which is just slightly out of reach based on your current progress.
+Not bad — you're on track for a strong year. Want to take a look at the breakdown by client or event type?
 
-### Key Upcoming Events:
-- **Q1 Board Dinner (Apex Group)** – 30 guests, confirmed
-- **Tasting for Morrison Family** – 4 guests, proposed
-- **Engagement Dinner (Rachel Kim)** – 8 guests, accepted
-- **Spring Garden Party (Sarah Henderson)** – 14 guests, confirmed
-- **Spring Tasting Menu (Emma Rothschild)** – 8 guests, paid
-- **Jessica's Baby Shower (Jessica Park)** – 20 guests, proposed
-- **Product Launch Celebration (Alex Chen)** – 50 guests, draft
-
-### Recommendations:
-- You're currently at **0 events this month**. If you want to hit your monthly goal, you’ll need to **book at least 1 more event** or **increase average revenue per event**.
-- You’ve got **3 open inquiries** and **2 pending quotes** — prioritize those to convert more revenue.
-- You're **on track** to meet your monthly goal **if you convert those inquiries and finalize the draft events**.
-
-Let me know if you want a breakdown of your upcoming revenue potential or a review of your current pipeline.
-
-NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"},{"label":"Events","href":"/events"},{"label":"Financials","href":"/financials"}]
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
 ```
 
 ---
 
-### ❌ chef-006_run5: "Am I on track for my goals this month?"
+### ✅ chef-007_run2: "What's my year-to-date revenue?"
 
-- **Verdict:** FAIL
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 22.6s | **First token:** n/a | **Total:** 25.1s
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Classification:** 7.2s | **First token:** 20.6s | **Total:** 29.5s
+- **Tokens/sec:** 9.8
+- **Response length:** 350 chars
 
 **Full response:**
 
 ```
-[no response text]
+Your year-to-date revenue is **$24,250.00**.
+
+That’s a solid start to the year — especially with your top clients like Alex Chen, David Garcia, and Apex Group contributing strong numbers. Let me know if you'd like a breakdown by client or event type.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
 ```
 
 ---
 
-### ❌ chef-007_run1: "What's my year-to-date revenue?"
+### ⚠️ chef-007_run3: "What's my year-to-date revenue?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 794ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 28.7s | **First token:** 42.4s | **Total:** 50.6s
+- **Tokens/sec:** 11.6
+- **Response length:** 381 chars
 
 **Full response:**
 
 ```
-[no response text]
+Your year-to-date revenue is **$24,250.00**.
+
+That’s shaping up to be a strong start to the year — especially with your top clients like Alex Chen, David Garcia, and Apex Group contributing significantly.
+
+Let me know if you'd like a breakdown by client or event, or if you want to review your net profit or expenses.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ❌ chef-007_run2: "What's my year-to-date revenue?"
+### ⚠️ chef-007_run4: "What's my year-to-date revenue?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 789ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 21.2s | **First token:** 37.4s | **Total:** 45.6s
+- **Tokens/sec:** 11.8
+- **Response length:** 386 chars
 
 **Full response:**
 
 ```
-[no response text]
+Your year-to-date revenue is **$24,250.00**.
+
+That’s shaping up to be a strong start to the year — especially with your top clients like Alex Chen, David Garcia, and Apex Group contributing significantly.
+
+Let me know if you'd like a breakdown by client or event type, or if you want to review your net profit or expenses.
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}]
 ```
 
 ---
 
-### ❌ chef-007_run3: "What's my year-to-date revenue?"
+### ⚠️ chef-007_run5: "What's my year-to-date revenue?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 732ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
-
-**Full response:**
-
-```
-[no response text]
-```
-
----
-
-### ❌ chef-007_run4: "What's my year-to-date revenue?"
-
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 701ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 31.0s | **First token:** 44.1s | **Total:** 54.0s
+- **Tokens/sec:** 9.3
+- **Response length:** 371 chars
 
 **Full response:**
 
 ```
-[no response text]
-```
+Your year-to-date revenue is **$24,250.00**.
 
----
+That’s a solid start to the year — especially with your average revenue per event sitting at **$2,694.44**.
 
-### ❌ chef-007_run5: "What's my year-to-date revenue?"
+Would you like a breakdown by client or event type? Or are you looking to track down a specific payment or expense?
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 793ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
-
-**Full response:**
-
-```
-[no response text]
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
 ```
 
 ---
@@ -1357,64 +1395,63 @@ NAV_SUGGESTIONS: [{"label":"Inquiries","href":"/inquiries"},{"label":"Events","h
 
 - **Verdict:** WARN
 - **Intent:** question (expected: question) ✅
-- **Classification:** 11.1s | **First token:** 33.8s | **Total:** 44.7s
-- **Tokens/sec:** 9.3
-- **Response length:** 407 chars
+- **Classification:** 34.7s | **First token:** 51.5s | **Total:** 74.4s
+- **Tokens/sec:** 10.4
+- **Response length:** 952 chars
 
 **Full response:**
 
 ```
-You're looking at year-to-date stats, which show your revenue is currently at $24,250.00, with $4,350.00 in expenses, giving you a net of $19,900.00.
+You're looking at year-to-date stats right now — that's a great starting point.
 
-That's a solid start to the year, but to compare directly to last month, we'd need to look at your monthly revenue and expense figures.
+So far in 2026, your revenue is at **$24,250.00**, with **$4,350.00** in expenses, giving you a net of **$19,900.00**.
 
-Let's look at your financials to get a clearer picture.
+That’s a solid start, but to compare directly to last month, we’d need to look at your **February 2026** performance.
 
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}]
+Since we’re in March, and your February stats aren’t listed here, I can't give you a direct comparison.
+
+However, I can tell you that:
+- You’ve completed **9 events** so far this year.
+- Your **average revenue per event** is **$2,694.44**.
+- Your top clients this year include **Alex Chen**, **David Garcia**, and **Apex Group (Corporate)** — all of whom paid significant deposits.
+
+If you’d like to see a full month-over-month comparison, I recommend checking the **Financials Hub** or **Analytics & Reports**.
+
+NAV_SUGGESTIONS: [{"label":"Financials Hub","href":"/financials"}, {"label":"Analytics & Reports","href":"/analytics"}]
 ```
 
 ---
 
-### ✅ chef-008_run2: "How does this month compare to last month?"
+### ⚠️ chef-008_run2: "How does this month compare to last month?"
 
-- **Verdict:** PASS
+- **Verdict:** WARN
 - **Intent:** question (expected: question) ✅
-- **Classification:** 3.9s | **First token:** 16.9s | **Total:** 70.4s
-- **Tokens/sec:** 7.2
-- **Response length:** 1542 chars
+- **Classification:** 23.6s | **First token:** 36.0s | **Total:** 63.1s
+- **Tokens/sec:** 9
+- **Response length:** 979 chars
 
 **Full response:**
 
 ```
-Let's take a look at how this month is shaping up compared to last month.
+Let's take a quick look at how this month is shaping up compared to last month.
 
-**Year-to-Date Stats (as of March 4, 2026):**
-- Revenue: $24,250.00
-- Expenses: $4,350.00
-- Net: $19,900.00
-- Events: 16 total, 9 completed
+### Year-to-Date Overview:
+- **Revenue:** $24,250.00
+- **Expenses:** $4,350.00
+- **Net Profit:** $19,900.00
+- **Events Completed:** 9
+- **Avg Revenue/Event:** $2,694.44
 
-**Top Clients (Year-to-Date):**
-1. Alex Chen ($3,600.00, 1 event)
-2. David Garcia ($3,600.00, 1 event)
-3. Apex Group (Corporate) ($3,500.00, 1 event)
-4. Michael O'Brien ($3,200.00, 1 event)
-5. Patricia Foster ($3,200.00, 1 event)
+### Last Month vs. This Month:
+We're currently in March 2026, so we can compare March to February. Based on the data available:
+- You've completed **9 events** so far this year, with a strong average revenue per event.
+- The total revenue for the year-to-date is **$24,250.00**, which is a healthy start.
 
-**Events This Month (March 2026):**
-1. Q1 Board Dinner on 2026-03-05 for Apex Group (Corporate) (30 guests, confirmed, loyalty gold (200 pts))
-2. Tasting for Morrison Family on 2026-03-08 for The Morrison Family (4 guests, proposed, loyalty bronze (20 pts))
-3. Engagement Dinner on 2026-03-11 for Rachel Kim (8 guests, accepted, loyalty bronze (30 pts))
-4. Spring Garden Party on 2026-03-17 for Sarah Henderson (14 guests, confirmed, loyalty gold (340 pts))
-5. Spring Tasting Menu on 2026-03-31 for Emma Rothschild (8 guests, paid, loyalty platinum (950 pts))
+However, to make a direct comparison with last month, we would need more specific financial data from February. If you'd like, I can help you pull that up or compare it further if you have access to more detailed monthly reports.
 
-**Upcoming Events:**
-- Jessica's Baby Shower on 2026-04-13 for Jessica Park (20 guests, proposed, loyalty bronze (60 pts))
-- Product Launch Celebration on 2026-04-28 for Alex Chen (50 guests, draft, loyalty bronze (60 pts))
+Would you like to see a breakdown of your revenue or expenses by event this month?
 
-So far this month, we've completed 9 events with a total revenue of $24,250.00, which is quite strong. We're on track for a solid month, and with the upcoming events, we should see continued growth in revenue.
-
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
+NAV_SUGGESTIONS: [{"label":"Financial Hub","href":"/financials"}, {"label":"Events List","href":"/events"}]
 ```
 
 ---
@@ -1423,57 +1460,26 @@ NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events",
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 5.8s | **First token:** 28.2s | **Total:** 77.1s
-- **Tokens/sec:** 8.1
-- **Response length:** 1581 chars
+- **Classification:** 5.8s | **First token:** 21.4s | **Total:** 40.5s
+- **Tokens/sec:** 10.7
+- **Response length:** 815 chars
 
 **Full response:**
 
 ```
-Let's break down how this month (March 2026) is shaping up compared to last month (February 2026):
+You're looking at the year-to-date stats right now — which shows you're on track for **$24,250** in revenue so far this year, with **$19,900 net profit** after expenses.
 
-**Revenue:**
-- This month: $0.00
-- Last month: $24,250.00
+To compare this month to last month, we’ll need to look at your **monthly revenue and expenses** from the financials hub.
 
-So far this month, you've generated no revenue, while last month brought in over $24K.
+### Quick Comparison:
+- **This Month (March 2026)**: $0.00 revenue (as of now)
+- **Last Month (February 2026)**: Based on your year-to-date stats, it looks like you had **$24,250** in revenue for the full year — which means your average monthly revenue is around **$2,020**.
 
-**Events:**
-- This month (as of March 4):
-  - 7 upcoming events
-  - 16 total events this year (9 completed)
-  - 9 completed events in February (which contributed to last month's revenue)
+So unless you’ve already had a few events this month, you're likely behind on revenue compared to last month.
 
-**Year-to-Date Stats:**
-- Revenue: $24,250.00
-- Expenses: $4,350.00
-- Net: $19,900.00
-- Avg revenue/event: $2,694.44
+Let me know if you want a deeper breakdown by event or expense trends.
 
-**Top Clients (Year-to-Date):**
-1. Alex Chen ($3,600.00, 1 event)
-2. David Garcia ($3,600.00, 1 event)
-3. Apex Group (Corporate) ($3,500.00, 1 event)
-4. Michael O'Brien ($3,200.00, 1 event)
-5. Patricia Foster ($3,200.00, 1 event)
-
-**Notes:**
-- You're currently in a quiet period between the end of February and the start of March
-- You have several upcoming events in March that should help boost revenue
-- The February period was quite strong, with a total of $24,250 in revenue
-
-The upcoming events include:
-- Q1 Board Dinner on March 5 (Apex Group - Corporate)
-- Tasting for Morrison Family on March 8
-- Engagement Dinner on March 11 (Rachel Kim)
-- Spring Garden Party on March 17 (Sarah Henderson)
-- Spring Tasting Menu on March 31 (Emma Rothschild)
-- Jessica's Baby Shower on April 13
-- Product Launch Celebration on April 28
-
-Would you like me to focus on any specific upcoming event or client for more detailed analysis?
-
-NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Financials","href":"/financials"}]
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}]
 ```
 
 ---
@@ -1482,28 +1488,44 @@ NAV_SUGGESTIONS: [{"label":"Events","href":"/events"},{"label":"Financials","hre
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.3s | **First token:** 30.1s | **Total:** 55.2s
-- **Tokens/sec:** 8.5
-- **Response length:** 851 chars
+- **Classification:** 4.3s | **First token:** 17.1s | **Total:** 61.4s
+- **Tokens/sec:** 7.9
+- **Response length:** 1407 chars
 
 **Full response:**
 
 ```
-You're looking at year-to-date stats, which show your revenue is at $24,250.00, with $4,350.00 in expenses, giving you a net of $19,900.00. That's a solid start to the year.
+You're in the middle of a busy week, but let's take a quick look at how this month is shaping up compared to last.
 
-Let's break it down:
-
+### **Year-to-Date Overview:**
 - **Revenue:** $24,250.00
 - **Expenses:** $4,350.00
-- **Net:** $19,900.00
-- **Events:** 16 total, 9 completed
-- **Avg revenue/event:** $2,694.44
+- **Net Profit:** $19,900.00
+- **Events Completed:** 9
+- **Avg Revenue/Event:** $2,694.44
 
-The numbers look good so far, but to compare directly to last month, we'd need to know how much you made and spent in February. Based on the data available, it seems like you're on track for a strong month — especially considering you're already at $24,250 in revenue with 9 completed events.
+### **This Month (March 2026):**
+- You've had **3 events so far**:
+  1. **Q1 Board Dinner** (Apex Group) – $3,500.00
+  2. **Engagement Dinner** (Rachel Kim) – $2,400.00
+  3. **Spring Garden Party** (Sarah Henderson) – $3,200.00
 
-If you'd like, I can help you analyze your performance more deeply or set goals for the rest of the month.
+That’s a total of **$9,100.00** in revenue this month.
 
-NAV_SUGGESTIONS: [{"label":"Financial Hub","href":"/financials"},{"label":"Events List","href":"/events"}]
+### **Last Month (February 2026):**
+- You had **6 events** with a total revenue of **$15,150.00**
+- Avg revenue/event was **$2,525.00**
+
+### **Comparison:**
+- This month’s revenue is **~$6,050.00 less** than last month.
+- You've completed **3 events** so far this month vs. **6 last month**.
+- Your average revenue per event is **slightly higher** this month, but you're behind on event volume.
+
+It looks like you're on track for a slower start to March — but you’ve still got a few more big events coming up (like the **Product Launch Celebration** on April 28 and the **Baby Shower** on April 13), so there's still time to catch up.
+
+Would you like me to pull up any specific event details or check how your expenses are tracking?
+
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
 ```
 
 ---
@@ -1512,31 +1534,27 @@ NAV_SUGGESTIONS: [{"label":"Financial Hub","href":"/financials"},{"label":"Event
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.8s | **First token:** 30.2s | **Total:** 58.9s
-- **Tokens/sec:** 8.2
-- **Response length:** 939 chars
+- **Classification:** 5.4s | **First token:** 18.3s | **Total:** 36.9s
+- **Tokens/sec:** 8.8
+- **Response length:** 655 chars
 
 **Full response:**
 
 ```
-You're looking at year-to-date stats right now — that's a great place to start.
+You're looking at year-to-date stats right now — that's a great way to compare performance.
 
-So far this year, you've brought in **$24,250.00** in revenue, with **$4,350.00** in expenses, giving you a net of **$19,900.00**.
+In total, you've brought in **$24,250.00** this year so far, with **$4,350.00** in expenses, leaving a net of **$19,900.00**.
 
-You've completed **9 events** so far this year, with an average revenue per event of **$2,694.44**.
+Here's how it compares to last month:
+- Last month's revenue: **$0.00**
+- Last month's expenses: **$0.00**
+- Last month's net: **$0.00**
 
-Top clients so far:
-- Alex Chen ($3,600.00, 1 event)
-- David Garcia ($3,600.00, 1 event)
-- Apex Group (Corporate) ($3,500.00, 1 event)
-- Michael O'Brien ($3,200.00, 1 event)
-- Patricia Foster ($3,200.00, 1 event)
+So, this month is already ahead of last month in terms of revenue and net profit. You're on track for a strong start to the year!
 
-You're currently at **$0.00** for this month's revenue, which means you're still building momentum — but you've got a strong pipeline coming up.
+Would you like to see a breakdown by client or event type?
 
-If you want to dive deeper into how this month compares to last month, we can look at the monthly breakdown or compare event types, pricing, or client loyalty tiers.
-
-NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
+NAV_SUGGESTIONS: [{"label":"Financial Hub","href":"/financials"},{"label":"Events List","href":"/events"}]
 ```
 
 ---
@@ -1545,16 +1563,18 @@ NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events",
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 5.2s | **First token:** 17.9s | **Total:** 24.3s
-- **Tokens/sec:** 10.4
-- **Response length:** 267 chars
+- **Classification:** 6.0s | **First token:** 18.6s | **Total:** 25.5s
+- **Tokens/sec:** 8.7
+- **Response length:** 238 chars
 
 **Full response:**
 
 ```
-Based on your year-to-date stats, your average revenue per event is **$2,694.44**.
+Your average revenue per event is **$2,694.44**.
 
-This is calculated from your total revenue of $24,250.00 across 9 completed events.
+This is based on your year-to-date stats:
+- Total revenue: $24,250.00
+- Total events: 16
 
 NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
 ```
@@ -1565,18 +1585,16 @@ NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events",
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.6s | **First token:** 42.7s | **Total:** 49.3s
-- **Tokens/sec:** 9
-- **Response length:** 239 chars
+- **Classification:** 4.0s | **First token:** 17.2s | **Total:** 25.3s
+- **Tokens/sec:** 9.1
+- **Response length:** 297 chars
 
 **Full response:**
 
 ```
-Your average revenue per event is **$2,694.44**.
+Based on your year-to-date stats, your average revenue per event is **$2,694.44**.
 
-This is based on your year-to-date stats:
-- Total revenue: $24,250.00
-- Total events: 16
+This is calculated from your total revenue of $24,250.00 across 9 completed events (as shown in your YTD stats).
 
 NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
 ```
@@ -1587,9 +1605,9 @@ NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events"
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 5.1s | **First token:** 41.1s | **Total:** 47.4s
+- **Classification:** 4.2s | **First token:** 17.1s | **Total:** 24.4s
 - **Tokens/sec:** 8.6
-- **Response length:** 214 chars
+- **Response length:** 252 chars
 
 **Full response:**
 
@@ -1600,7 +1618,7 @@ This is based on your year-to-date stats:
 - Total revenue: $24,250.00
 - Total events: 16 (9 completed)
 
-NAV_SUGGESTIONS: [{"label":"Analytics","href":"/analytics"}]
+NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"},{"label":"Events","href":"/events"}]
 ```
 
 ---
@@ -1609,9 +1627,9 @@ NAV_SUGGESTIONS: [{"label":"Analytics","href":"/analytics"}]
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 3.9s | **First token:** 39.1s | **Total:** 45.2s
-- **Tokens/sec:** 8.3
-- **Response length:** 200 chars
+- **Classification:** 4.0s | **First token:** 17.2s | **Total:** 27.0s
+- **Tokens/sec:** 8.8
+- **Response length:** 340 chars
 
 **Full response:**
 
@@ -1619,10 +1637,12 @@ NAV_SUGGESTIONS: [{"label":"Analytics","href":"/analytics"}]
 Your average revenue per event is **$2,694.44**.
 
 This is based on your year-to-date stats:
-- Total revenue: $24,250.00
-- Total events: 16
+- **Total revenue**: $24,250.00
+- **Total events**: 16 (9 completed)
 
-NAV_SUGGESTIONS: [{"label":"Analytics","href":"/analytics"}]
+Let me know if you'd like a breakdown by event type or client segment.
+
+NAV_SUGGESTIONS: [{"label":"Analytics","href":"/analytics"},{"label":"Financials","href":"/financials"}]
 ```
 
 ---
@@ -1631,31 +1651,29 @@ NAV_SUGGESTIONS: [{"label":"Analytics","href":"/analytics"}]
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 6.4s | **First token:** 34.8s | **Total:** 41.8s
-- **Tokens/sec:** 8.5
-- **Response length:** 239 chars
+- **Classification:** 4.3s | **First token:** 17.4s | **Total:** 24.6s
+- **Tokens/sec:** 9.3
+- **Response length:** 268 chars
 
 **Full response:**
 
 ```
-Your average revenue per event is **$2,694.44**.
+Based on your year-to-date stats, your average revenue per event is **$2,694.44**.
 
-This is based on your year-to-date stats:
-- Total revenue: $24,250.00
-- Total events: 16
+This is calculated from your total revenue of $24,250.00 across 9 completed events.
 
 NAV_SUGGESTIONS: [{"label":"Financials","href":"/financials"}, {"label":"Events","href":"/events"}]
 ```
 
 ---
 
-### ⚠️ chef-010_run1: "Who are my top clients?"
+### ✅ chef-010_run1: "Who are my top clients?"
 
-- **Verdict:** WARN
+- **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 31.2s | **First token:** 92.3s | **Total:** 108.5s
-- **Tokens/sec:** 7.8
-- **Response length:** 507 chars
+- **Classification:** 6.0s | **First token:** 19.1s | **Total:** 36.4s
+- **Tokens/sec:** 8.4
+- **Response length:** 578 chars
 
 **Full response:**
 
@@ -1668,11 +1686,9 @@ Based on your year-to-date stats, here are your top clients by revenue:
 - **Michael O'Brien** - $3,200.00 (1 event)
 - **Patricia Foster** - $3,200.00 (1 event)
 
-These are your top 5 clients by revenue so far this year.
+These clients have generated the highest revenue for your business so far this year. Would you like to see more details about any of these clients or their event history?
 
-Would you like to see more details about any of these clients or view your full client directory?
-
-NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
+NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"}, {"label":"Financial Hub","href":"/financials"}]
 ```
 
 ---
@@ -1681,14 +1697,14 @@ NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.8s | **First token:** 41.6s | **Total:** 56.1s
-- **Tokens/sec:** 8.3
-- **Response length:** 479 chars
+- **Classification:** 5.3s | **First token:** 18.6s | **Total:** 41.5s
+- **Tokens/sec:** 8.2
+- **Response length:** 746 chars
 
 **Full response:**
 
 ```
-Based on your year-to-date stats, your top clients are:
+Based on your year-to-date stats, here are your top clients by revenue:
 
 - **Alex Chen** - $3,600.00 (1 event)
 - **David Garcia** - $3,600.00 (1 event)
@@ -1696,9 +1712,15 @@ Based on your year-to-date stats, your top clients are:
 - **Michael O'Brien** - $3,200.00 (1 event)
 - **Patricia Foster** - $3,200.00 (1 event)
 
-These clients have generated the highest revenue for your business so far this year.
+These are your top 5 clients by revenue. You also have some notable loyalty program members like:
+- **Sarah Henderson** (Gold, 340 pts)
+- **Sofia Martinez** (Platinum, 820 pts)
+- **Rachel Kim** (Bronze, 30 pts)
+- **The Morrison Family** (Bronze, 20 pts)
 
-NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"},{"label":"Top Clients Report","href":"/analytics"}]
+Would you like to see more details about any of these clients or their event history?
+
+NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"},{"label":"Client Profiles","href":"/clients"}]
 ```
 
 ---
@@ -1707,14 +1729,66 @@ NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"},{"label":"Top 
 
 - **Verdict:** PASS
 - **Intent:** question (expected: question) ✅
-- **Classification:** 4.3s | **First token:** 39.6s | **Total:** 53.7s
-- **Tokens/sec:** 7.9
-- **Response length:** 444 chars
+- **Classification:** 4.0s | **First token:** 17.5s | **Total:** 32.2s
+- **Tokens/sec:** 7.1
+- **Response length:** 420 chars
 
 **Full response:**
 
 ```
-Based on your year-to-date stats, your top clients are:
+Your top clients, based on year-to-date revenue, are:
+
+1. **Alex Chen** – $3,600.00 (1 event)
+2. **David Garcia** – $3,600.00 (1 event)
+3. **Apex Group (Corporate)** – $3,500.00 (1 event)
+4. **Michael O'Brien** – $3,200.00 (1 event)
+5. **Patricia Foster** – $3,200.00 (1 event)
+
+These clients have contributed the most to your revenue so far this year.
+
+NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"}]
+```
+
+---
+
+### ✅ chef-010_run4: "Who are my top clients?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 3.8s | **First token:** 17.7s | **Total:** 33.4s
+- **Tokens/sec:** 7.4
+- **Response length:** 464 chars
+
+**Full response:**
+
+```
+Your top clients, based on year-to-date revenue, are:
+
+1. **Alex Chen** - $3,600.00 (1 event)
+2. **David Garcia** - $3,600.00 (1 event)
+3. **Apex Group (Corporate)** - $3,500.00 (1 event)
+4. **Michael O'Brien** - $3,200.00 (1 event)
+5. **Patricia Foster** - $3,200.00 (1 event)
+
+These clients have contributed the most to your revenue this year.
+
+NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"},{"label":"Top Clients Report","href":"/analytics"}]
+```
+
+---
+
+### ✅ chef-010_run5: "Who are my top clients?"
+
+- **Verdict:** PASS
+- **Intent:** question (expected: question) ✅
+- **Classification:** 4.9s | **First token:** 17.7s | **Total:** 38.8s
+- **Tokens/sec:** 8.1
+- **Response length:** 684 chars
+
+**Full response:**
+
+```
+Based on your year-to-date stats, here are your top clients by revenue:
 
 - **Alex Chen** - $3,600.00 (1 event)
 - **David Garcia** - $3,600.00 (1 event)
@@ -1722,41 +1796,14 @@ Based on your year-to-date stats, your top clients are:
 - **Michael O'Brien** - $3,200.00 (1 event)
 - **Patricia Foster** - $3,200.00 (1 event)
 
-These are your highest-revenue clients so far this year. Would you like to see more details about any of them?
+You've also had some high-value events with:
+- **Emma Rothschild** - $3,200.00 (1 event)
+- **Rachel Kim** - $2,400.00 (1 event)
+- **The Thompson Family** - $2,400.00 (1 event)
 
-NAV_SUGGESTIONS: [{"label":"Clients","href":"/clients"}]
-```
+Would you like to see more detailed information about any of these clients or their event histories?
 
----
-
-### ❌ chef-010_run4: "Who are my top clients?"
-
-- **Verdict:** FAIL
-- **Intent:** question (expected: question) ✅
-- **Classification:** 4.4s | **First token:** n/a | **Total:** 26.9s
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
-
-**Full response:**
-
-```
-[no response text]
-```
-
----
-
-### ❌ chef-010_run5: "Who are my top clients?"
-
-- **Verdict:** FAIL
-- **Intent:** question (expected: question) ✅
-- **Classification:** 3.8s | **First token:** n/a | **Total:** 3.8s
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
-
-**Full response:**
-
-```
-[no response text]
+NAV_SUGGESTIONS: [{"label":"Clients Directory","href":"/clients"},{"label":"Financial Hub","href":"/financials"}]
 ```
 
 ---

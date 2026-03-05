@@ -9,7 +9,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/lib/ledger/append'
-import type { TaxClass } from './constants'
+import { SALE_CHANNELS, type SaleChannel, type TaxClass } from './constants'
 import { computeRegisterSessionTotals } from './register-metrics'
 import {
   buildCheckoutPaymentIdempotencyKey,
@@ -45,17 +45,29 @@ export type CheckoutItem = {
   unitCostCents?: number
 }
 
+export type SplitTenderInput = {
+  paymentMethod: PaymentMethod
+  amountCents: number
+  amountTenderedCents?: number
+  cardEntryMode?: 'terminal' | 'manual_keyed'
+  manualCardReference?: string
+}
+
 export type CounterCheckoutInput = {
   registerSessionId?: string
   clientId?: string
   items: CheckoutItem[]
   paymentMethod: PaymentMethod
   amountTenderedCents: number
+  saleChannel?: SaleChannel
+  splitTenders?: SplitTenderInput[]
   ageVerified?: boolean
   promotionCode?: string
   tipCents?: number
   idempotencyKey?: string
   taxZipCode?: string
+  cardEntryMode?: 'terminal' | 'manual_keyed'
+  manualCardReference?: string
   notes?: string
 }
 
@@ -110,7 +122,11 @@ type NormalizedCheckoutItem = {
 
 const AGE_RESTRICTED_TAX_CLASSES = new Set<TaxClass>(['alcohol', 'cannabis'])
 const PROMOTION_CODE_PATTERN = /^[A-Z0-9_-]{3,32}$/
+const MANUAL_CARD_REFERENCE_PATTERN = /^[A-Z0-9._-]{3,120}$/i
 const AUTO_PROMOTION_FLAG_SET = new Set(['1', 'true', 'yes', 'on'])
+const SALE_CHANNEL_SET = new Set<SaleChannel>(SALE_CHANNELS)
+const MAX_SPLIT_TENDER_LINES = 6
+const FINALIZED_PAYMENT_STATUS_SET = new Set(['captured', 'settled', 'authorized'])
 
 type PromotionRow = {
   id: string
@@ -131,6 +147,37 @@ type CheckoutLineComputation = {
   key: string
   taxClass: TaxClass
   lineSubtotalCents: number
+}
+
+type NormalizedSplitTenderLine = {
+  paymentMethod: PaymentMethod
+  amountCents: number
+  amountTenderedCents: number
+  cardEntryMode: 'terminal' | 'manual_keyed'
+  manualCardReference: string | null
+}
+
+function assertCardEntryModeInput(input: {
+  paymentMethod: PaymentMethod
+  cardEntryMode?: 'terminal' | 'manual_keyed'
+  manualCardReference?: string
+}) {
+  if (input.cardEntryMode && !['terminal', 'manual_keyed'].includes(input.cardEntryMode)) {
+    throw new Error('Invalid card entry mode')
+  }
+
+  if (input.cardEntryMode === 'manual_keyed') {
+    if (input.paymentMethod !== 'card') {
+      throw new Error('Manual keyed card mode can only be used for card payments')
+    }
+    const manualRef = String(input.manualCardReference ?? '').trim()
+    if (!manualRef) {
+      throw new Error('Manual keyed card reference is required')
+    }
+    if (!MANUAL_CARD_REFERENCE_PATTERN.test(manualRef)) {
+      throw new Error('Manual keyed card reference format is invalid')
+    }
+  }
 }
 
 function assertCounterCheckoutInput(input: CounterCheckoutInput) {
@@ -154,6 +201,43 @@ function assertCounterCheckoutInput(input: CounterCheckoutInput) {
   if (input.items.length > 200) {
     throw new Error('Checkout has too many items (max 200)')
   }
+
+  if (input.saleChannel && !SALE_CHANNEL_SET.has(input.saleChannel)) {
+    throw new Error('Invalid sale channel')
+  }
+
+  assertCardEntryModeInput({
+    paymentMethod: input.paymentMethod,
+    cardEntryMode: input.cardEntryMode,
+    manualCardReference: input.manualCardReference,
+  })
+
+  if (input.splitTenders && input.splitTenders.length > 0) {
+    if (input.splitTenders.length < 2) {
+      throw new Error('Split tender requires at least 2 payment lines')
+    }
+    if (input.splitTenders.length > MAX_SPLIT_TENDER_LINES) {
+      throw new Error(`Split tender supports at most ${MAX_SPLIT_TENDER_LINES} lines`)
+    }
+
+    for (const line of input.splitTenders) {
+      if (!Number.isInteger(line.amountCents) || line.amountCents <= 0) {
+        throw new Error('Each split tender line must be a positive integer (cents)')
+      }
+
+      if (line.amountTenderedCents != null) {
+        if (!Number.isInteger(line.amountTenderedCents) || line.amountTenderedCents < 0) {
+          throw new Error('Split tender amount tendered must be a non-negative integer (cents)')
+        }
+      }
+
+      assertCardEntryModeInput({
+        paymentMethod: line.paymentMethod,
+        cardEntryMode: line.cardEntryMode,
+        manualCardReference: line.manualCardReference,
+      })
+    }
+  }
 }
 
 function computeChangeDueCents(input: {
@@ -164,6 +248,79 @@ function computeChangeDueCents(input: {
   return input.paymentMethod === 'cash'
     ? Math.max(0, input.amountTenderedCents - input.totalChargedCents)
     : 0
+}
+
+function computeSplitTenderChangeDueCents(input: {
+  splitTenders: NormalizedSplitTenderLine[]
+  totalChargedCents: number
+}) {
+  const totalTenderedCents = input.splitTenders.reduce(
+    (sum, line) => sum + line.amountTenderedCents,
+    0
+  )
+  return Math.max(0, totalTenderedCents - input.totalChargedCents)
+}
+
+function normalizeSplitTenders(input: {
+  splitTenders?: SplitTenderInput[]
+  defaultCardEntryMode: 'terminal' | 'manual_keyed'
+  defaultManualCardReference: string | null
+}): NormalizedSplitTenderLine[] | null {
+  if (!input.splitTenders || input.splitTenders.length === 0) return null
+
+  return input.splitTenders.map((line) => {
+    const paymentMethod = line.paymentMethod
+    const amountCents = line.amountCents
+    const amountTenderedCents =
+      paymentMethod === 'cash'
+        ? Math.max(line.amountTenderedCents ?? amountCents, amountCents)
+        : amountCents
+
+    let cardEntryMode: 'terminal' | 'manual_keyed' = 'terminal'
+    let manualCardReference: string | null = null
+
+    if (paymentMethod === 'card') {
+      cardEntryMode = line.cardEntryMode ?? input.defaultCardEntryMode
+      manualCardReference =
+        String(line.manualCardReference ?? '').trim() ||
+        (cardEntryMode === 'manual_keyed' ? input.defaultManualCardReference : null)
+    }
+
+    return {
+      paymentMethod,
+      amountCents,
+      amountTenderedCents,
+      cardEntryMode,
+      manualCardReference,
+    }
+  })
+}
+
+function allocateTipAcrossSplitTenders(input: {
+  splitTenders: NormalizedSplitTenderLine[]
+  tipCents: number
+  totalChargedCents: number
+}): number[] {
+  const { splitTenders, tipCents, totalChargedCents } = input
+  if (tipCents <= 0 || totalChargedCents <= 0) {
+    return splitTenders.map(() => 0)
+  }
+
+  const allocations = splitTenders.map((line) =>
+    Math.min(line.amountCents, Math.floor((line.amountCents * tipCents) / totalChargedCents))
+  )
+
+  let remaining = tipCents - allocations.reduce((sum, value) => sum + value, 0)
+  for (let i = 0; i < splitTenders.length && remaining > 0; i += 1) {
+    if (allocations[i] >= splitTenders[i].amountCents) continue
+    allocations[i] += 1
+    remaining -= 1
+    if (i === splitTenders.length - 1 && remaining > 0) {
+      i = -1
+    }
+  }
+
+  return allocations
 }
 
 function hasAgeRestrictedItems(items: NormalizedCheckoutItem[]) {
@@ -433,6 +590,7 @@ async function findExistingCheckoutResult(ctx: {
   idempotencyKey: string
   paymentMethod: PaymentMethod
   amountTenderedCents: number
+  splitTenders: NormalizedSplitTenderLine[] | null
 }): Promise<ExistingCheckoutResult | null> {
   const { data: payment } = await (ctx.supabase
     .from('commerce_payments' as any)
@@ -443,9 +601,22 @@ async function findExistingCheckoutResult(ctx: {
 
   if (!payment || !payment.sale_id) return null
 
-  if (!['captured', 'settled', 'authorized'].includes(String(payment.status ?? ''))) {
+  if (!FINALIZED_PAYMENT_STATUS_SET.has(String(payment.status ?? ''))) {
     throw new Error('Existing checkout is not finalized yet. Try again in a moment.')
   }
+
+  const { data: salePayments } = await (ctx.supabase
+    .from('commerce_payments' as any)
+    .select('id, amount_cents, tip_cents, status')
+    .eq('tenant_id', ctx.tenantId)
+    .eq('sale_id', payment.sale_id)
+    .order('created_at', { ascending: true }) as any)
+
+  const finalizedPayments =
+    salePayments?.filter((row: any) =>
+      FINALIZED_PAYMENT_STATUS_SET.has(String(row?.status ?? ''))
+    ) ?? []
+  const effectivePayments = finalizedPayments.length > 0 ? finalizedPayments : [payment]
 
   const { data: sale } = await (ctx.supabase
     .from('sales' as any)
@@ -482,17 +653,28 @@ async function findExistingCheckoutResult(ctx: {
     // Do not fail idempotent resume if applied-promotion snapshot query fails.
   }
 
-  const totalCents = (payment.amount_cents ?? 0) + (payment.tip_cents ?? 0)
+  const totalCents = effectivePayments.reduce(
+    (sum: number, row: any) => sum + Number(row?.amount_cents ?? 0) + Number(row?.tip_cents ?? 0),
+    0
+  )
+  const primaryPaymentId = String((effectivePayments[0] as any)?.id ?? payment.id)
+  const changeDueCents = ctx.splitTenders
+    ? computeSplitTenderChangeDueCents({
+        splitTenders: ctx.splitTenders,
+        totalChargedCents: totalCents,
+      })
+    : computeChangeDueCents({
+        paymentMethod: ctx.paymentMethod,
+        amountTenderedCents: ctx.amountTenderedCents,
+        totalChargedCents: totalCents,
+      })
+
   return {
     saleId: sale.id,
     saleNumber: sale.sale_number ?? 'Sale',
-    paymentId: payment.id,
+    paymentId: primaryPaymentId,
     totalCents,
-    changeDueCents: computeChangeDueCents({
-      paymentMethod: ctx.paymentMethod,
-      amountTenderedCents: ctx.amountTenderedCents,
-      totalChargedCents: totalCents,
-    }),
+    changeDueCents,
     appliedPromotion,
   }
 }
@@ -631,6 +813,15 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     user.tenantId!,
     input.idempotencyKey
   )
+  const saleChannel: SaleChannel = input.saleChannel ?? 'counter'
+  const cardEntryMode: 'terminal' | 'manual_keyed' =
+    input.cardEntryMode === 'manual_keyed' ? 'manual_keyed' : 'terminal'
+  const manualCardReference = String(input.manualCardReference ?? '').trim() || null
+  const normalizedSplitTenders = normalizeSplitTenders({
+    splitTenders: input.splitTenders,
+    defaultCardEntryMode: cardEntryMode,
+    defaultManualCardReference: manualCardReference,
+  })
 
   const existing = await findExistingCheckoutResult({
     supabase,
@@ -638,6 +829,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     idempotencyKey: paymentIdempotencyKey,
     paymentMethod: input.paymentMethod,
     amountTenderedCents: input.amountTenderedCents,
+    splitTenders: normalizedSplitTenders,
   })
   if (existing) {
     return existing
@@ -699,7 +891,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     .from('sales')
     .insert({
       tenant_id: user.tenantId!,
-      channel: 'counter',
+      channel: saleChannel,
       client_id: input.clientId ?? null,
       register_session_id: input.registerSessionId ?? null,
       tax_zip_code: input.taxZipCode ?? null,
@@ -1017,7 +1209,30 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   }
 
-  if (input.paymentMethod === 'cash' && input.amountTenderedCents < finalTotalCents + tipCents) {
+  const totalDueCents = finalTotalCents + tipCents
+
+  if (normalizedSplitTenders) {
+    const splitAllocatedCents = normalizedSplitTenders.reduce(
+      (sum, line) => sum + line.amountCents,
+      0
+    )
+    if (splitAllocatedCents !== totalDueCents) {
+      await markSaleAsCheckoutFailed({
+        supabase,
+        tenantId: user.tenantId!,
+        saleId: sale.id,
+        userId: user.id,
+        reason: 'split_tender_total_mismatch',
+      })
+      throw new Error('Split tender total must equal total due')
+    }
+  }
+
+  if (
+    !normalizedSplitTenders &&
+    input.paymentMethod === 'cash' &&
+    input.amountTenderedCents < totalDueCents
+  ) {
     await markSaleAsCheckoutFailed({
       supabase,
       tenantId: user.tenantId!,
@@ -1028,144 +1243,266 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     throw new Error('Amount tendered is less than total due')
   }
 
-  // 5. Record payment (captured immediately)
-  let processorType: string = 'manual'
-  let processorReferenceId: string | null = null
-  let paymentNotes: string | null = null
+  // 5. Record payment(s) (captured immediately)
+  const splitTipAllocations = normalizedSplitTenders
+    ? allocateTipAcrossSplitTenders({
+        splitTenders: normalizedSplitTenders,
+        tipCents,
+        totalChargedCents: totalDueCents,
+      })
+    : null
 
-  if (input.paymentMethod === 'card') {
-    const { getPaymentTerminalAdapter } = await import('./terminal')
-    const terminalAdapter = getPaymentTerminalAdapter()
-    const terminalHealth = await terminalAdapter.healthCheck()
-    if (!terminalHealth.healthy) {
+  const paymentPlans = normalizedSplitTenders
+    ? normalizedSplitTenders.map((line, index) => {
+        const tipAllocation = splitTipAllocations?.[index] ?? 0
+        return {
+          paymentMethod: line.paymentMethod,
+          amountExcludingTipCents: Math.max(0, line.amountCents - tipAllocation),
+          tipCents: tipAllocation,
+          amountTenderedCents: line.amountTenderedCents,
+          cardEntryMode: line.cardEntryMode,
+          manualCardReference: line.manualCardReference,
+          idempotencyKey:
+            index === normalizedSplitTenders.length - 1
+              ? paymentIdempotencyKey
+              : `${paymentIdempotencyKey}__${index}`,
+        }
+      })
+    : [
+        {
+          paymentMethod: input.paymentMethod,
+          amountExcludingTipCents: finalTotalCents,
+          tipCents,
+          amountTenderedCents: input.amountTenderedCents,
+          cardEntryMode,
+          manualCardReference: manualCardReference,
+          idempotencyKey: paymentIdempotencyKey,
+        },
+      ]
+
+  const recordedPayments: Array<{
+    id: string
+    paymentMethod: PaymentMethod
+    amountExcludingTipCents: number
+    tipCents: number
+    processorType: string
+    processorReferenceId: string | null
+    idempotencyKey: string
+  }> = []
+
+  let terminalAdapter: any = null
+  let terminalHealthChecked = false
+
+  for (const plan of paymentPlans) {
+    let processorType: string = 'manual'
+    let processorReferenceId: string | null = null
+    let paymentNotes: string | null = null
+
+    if (plan.paymentMethod === 'card') {
+      if (plan.cardEntryMode === 'manual_keyed') {
+        if (!plan.manualCardReference) {
+          await markSaleAsCheckoutFailed({
+            supabase,
+            tenantId: user.tenantId!,
+            saleId: sale.id,
+            userId: user.id,
+            reason: 'manual_keyed_reference_missing',
+          })
+          throw new Error('Manual keyed card reference is required')
+        }
+
+        processorType = 'manual_keyed'
+        processorReferenceId = plan.manualCardReference
+        paymentNotes = '[card_entry_mode:manual_keyed]'
+      } else {
+        const { getPaymentTerminalAdapter } = await import('./terminal')
+        if (!terminalAdapter) {
+          terminalAdapter = getPaymentTerminalAdapter()
+        }
+
+        if (!terminalHealthChecked) {
+          const terminalHealth = await terminalAdapter.healthCheck()
+          if (!terminalHealth.healthy) {
+            await markSaleAsCheckoutFailed({
+              supabase,
+              tenantId: user.tenantId!,
+              saleId: sale.id,
+              userId: user.id,
+              reason: `terminal_unhealthy:${terminalHealth.message}`,
+            })
+            await emitCheckoutAlert({
+              tenantId: user.tenantId!,
+              eventType: 'terminal_unhealthy',
+              severity: 'error',
+              message: terminalHealth.message || 'Card terminal health check failed',
+              dedupeKey: 'checkout_terminal_unhealthy',
+              context: {
+                sale_id: sale.id,
+                register_session_id: input.registerSessionId ?? null,
+                idempotency_key: paymentIdempotencyKey,
+              },
+            })
+            throw new Error(terminalHealth.message || 'Card terminal is unavailable')
+          }
+          terminalHealthChecked = true
+        }
+
+        const terminalResult = await terminalAdapter.beginCardPayment({
+          saleId: sale.id,
+          amountCents: plan.amountExcludingTipCents,
+          tipCents: plan.tipCents,
+          currency: 'usd',
+          idempotencyKey: plan.idempotencyKey,
+          metadata: {
+            register_session_id: input.registerSessionId ?? null,
+          },
+        })
+
+        if (terminalResult.status !== 'captured') {
+          await markSaleAsCheckoutFailed({
+            supabase,
+            tenantId: user.tenantId!,
+            saleId: sale.id,
+            userId: user.id,
+            reason:
+              terminalResult.errorCode ??
+              terminalResult.errorMessage ??
+              `terminal_status_${terminalResult.status}`,
+          })
+          await emitCheckoutAlert({
+            tenantId: user.tenantId!,
+            eventType: 'terminal_payment_failed',
+            severity: terminalResult.status === 'cancelled' ? 'warning' : 'error',
+            message:
+              terminalResult.errorMessage ??
+              `Terminal payment failed with status: ${terminalResult.status}`,
+            dedupeKey:
+              terminalResult.status === 'cancelled'
+                ? `checkout_terminal_cancelled_${sale.id}`
+                : 'checkout_terminal_payment_failed',
+            context: {
+              sale_id: sale.id,
+              register_session_id: input.registerSessionId ?? null,
+              idempotency_key: plan.idempotencyKey,
+              terminal_status: terminalResult.status,
+              terminal_error_code: terminalResult.errorCode ?? null,
+            },
+          })
+          throw new Error(terminalResult.errorMessage ?? 'Card terminal payment failed')
+        }
+
+        processorType = terminalAdapter.provider
+        processorReferenceId = terminalResult.providerReferenceId ?? null
+        paymentNotes = `[terminal:${terminalAdapter.provider}]`
+      }
+    }
+
+    const txnRef = `commerce_${plan.idempotencyKey}`
+
+    const { data: payment, error: payErr } = await (supabase
+      .from('commerce_payments')
+      .insert({
+        tenant_id: user.tenantId!,
+        sale_id: sale.id,
+        client_id: input.clientId ?? null,
+        amount_cents: plan.amountExcludingTipCents,
+        tip_cents: plan.tipCents,
+        payment_method: plan.paymentMethod,
+        status: 'captured',
+        processor_type: processorType,
+        processor_reference_id: processorReferenceId,
+        idempotency_key: plan.idempotencyKey,
+        transaction_reference: txnRef,
+        captured_at: new Date().toISOString(),
+        notes: paymentNotes,
+        created_by: user.id,
+      } as any)
+      .select('id')
+      .single() as any)
+
+    if (payErr || !payment) {
+      const idempotentRetry = await findExistingCheckoutResult({
+        supabase,
+        tenantId: user.tenantId!,
+        idempotencyKey: paymentIdempotencyKey,
+        paymentMethod: input.paymentMethod,
+        amountTenderedCents: input.amountTenderedCents,
+        splitTenders: normalizedSplitTenders,
+      })
+      if (idempotentRetry) {
+        return idempotentRetry
+      }
+
       await markSaleAsCheckoutFailed({
         supabase,
         tenantId: user.tenantId!,
         saleId: sale.id,
         userId: user.id,
-        reason: `terminal_unhealthy:${terminalHealth.message}`,
+        reason: payErr?.message ?? 'payment_insert_failed',
       })
       await emitCheckoutAlert({
         tenantId: user.tenantId!,
-        eventType: 'terminal_unhealthy',
-        severity: 'error',
-        message: terminalHealth.message || 'Card terminal health check failed',
-        dedupeKey: 'checkout_terminal_unhealthy',
+        eventType: 'payment_record_failed',
+        severity: 'critical',
+        message: `Checkout failed while recording payment: ${payErr?.message ?? 'unknown error'}`,
+        dedupeKey: 'checkout_payment_record_failed',
         context: {
           sale_id: sale.id,
           register_session_id: input.registerSessionId ?? null,
-          idempotency_key: paymentIdempotencyKey,
+          idempotency_key: plan.idempotencyKey,
+          payment_method: plan.paymentMethod,
         },
       })
-      throw new Error(terminalHealth.message || 'Card terminal is unavailable')
+      throw new Error(`Failed to record payment: ${payErr?.message ?? 'unknown error'}`)
     }
 
-    const terminalResult = await terminalAdapter.beginCardPayment({
-      saleId: sale.id,
-      amountCents: finalTotalCents,
-      tipCents,
-      currency: 'usd',
-      idempotencyKey: paymentIdempotencyKey,
-      metadata: {
-        register_session_id: input.registerSessionId ?? null,
-      },
+    recordedPayments.push({
+      id: payment.id,
+      paymentMethod: plan.paymentMethod,
+      amountExcludingTipCents: plan.amountExcludingTipCents,
+      tipCents: plan.tipCents,
+      processorType,
+      processorReferenceId,
+      idempotencyKey: plan.idempotencyKey,
     })
-
-    if (terminalResult.status !== 'captured') {
-      await markSaleAsCheckoutFailed({
-        supabase,
-        tenantId: user.tenantId!,
-        saleId: sale.id,
-        userId: user.id,
-        reason:
-          terminalResult.errorCode ??
-          terminalResult.errorMessage ??
-          `terminal_status_${terminalResult.status}`,
-      })
-      await emitCheckoutAlert({
-        tenantId: user.tenantId!,
-        eventType: 'terminal_payment_failed',
-        severity: terminalResult.status === 'cancelled' ? 'warning' : 'error',
-        message:
-          terminalResult.errorMessage ??
-          `Terminal payment failed with status: ${terminalResult.status}`,
-        dedupeKey:
-          terminalResult.status === 'cancelled'
-            ? `checkout_terminal_cancelled_${sale.id}`
-            : 'checkout_terminal_payment_failed',
-        context: {
-          sale_id: sale.id,
-          register_session_id: input.registerSessionId ?? null,
-          idempotency_key: paymentIdempotencyKey,
-          terminal_status: terminalResult.status,
-          terminal_error_code: terminalResult.errorCode ?? null,
-        },
-      })
-      throw new Error(terminalResult.errorMessage ?? 'Card terminal payment failed')
-    }
-
-    processorType = terminalAdapter.provider
-    processorReferenceId = terminalResult.providerReferenceId ?? null
-    paymentNotes = `[terminal:${terminalAdapter.provider}]`
   }
 
-  const txnRef = `commerce_${paymentIdempotencyKey}`
-
-  const { data: payment, error: payErr } = await (supabase
-    .from('commerce_payments')
-    .insert({
-      tenant_id: user.tenantId!,
-      sale_id: sale.id,
-      client_id: input.clientId ?? null,
-      amount_cents: finalTotalCents,
-      tip_cents: tipCents,
-      payment_method: input.paymentMethod,
-      status: 'captured',
-      processor_type: processorType,
-      processor_reference_id: processorReferenceId,
-      idempotency_key: paymentIdempotencyKey,
-      transaction_reference: txnRef,
-      captured_at: new Date().toISOString(),
-      notes: paymentNotes,
-      created_by: user.id,
-    } as any)
-    .select('id')
-    .single() as any)
-
-  if (payErr || !payment) {
-    const idempotentRetry = await findExistingCheckoutResult({
-      supabase,
-      tenantId: user.tenantId!,
-      idempotencyKey: paymentIdempotencyKey,
-      paymentMethod: input.paymentMethod,
-      amountTenderedCents: input.amountTenderedCents,
-    })
-    if (idempotentRetry) {
-      return idempotentRetry
-    }
-
+  const primaryPayment = recordedPayments[0]
+  if (!primaryPayment) {
     await markSaleAsCheckoutFailed({
       supabase,
       tenantId: user.tenantId!,
       saleId: sale.id,
       userId: user.id,
-      reason: payErr?.message ?? 'payment_insert_failed',
+      reason: 'payment_record_missing',
     })
-    await emitCheckoutAlert({
-      tenantId: user.tenantId!,
-      eventType: 'payment_record_failed',
-      severity: 'critical',
-      message: `Checkout failed while recording payment: ${payErr?.message ?? 'unknown error'}`,
-      dedupeKey: 'checkout_payment_record_failed',
-      context: {
-        sale_id: sale.id,
-        register_session_id: input.registerSessionId ?? null,
-        idempotency_key: paymentIdempotencyKey,
-        payment_method: input.paymentMethod,
-      },
-    })
-    throw new Error(`Failed to record payment: ${payErr?.message ?? 'unknown error'}`)
+    throw new Error('Checkout failed because no payment record was created')
   }
+
+  const totalTenderedCents = normalizedSplitTenders
+    ? normalizedSplitTenders.reduce((sum, line) => sum + line.amountTenderedCents, 0)
+    : input.amountTenderedCents
+  const changeDueCents = normalizedSplitTenders
+    ? computeSplitTenderChangeDueCents({
+        splitTenders: normalizedSplitTenders,
+        totalChargedCents: totalDueCents,
+      })
+    : computeChangeDueCents({
+        paymentMethod: input.paymentMethod,
+        amountTenderedCents: input.amountTenderedCents,
+        totalChargedCents: totalDueCents,
+      })
+  const processorTypes = Array.from(new Set(recordedPayments.map((line) => line.processorType)))
+  const splitTenderSummary = normalizedSplitTenders
+    ? normalizedSplitTenders.map((line, index) => ({
+        index,
+        payment_method: line.paymentMethod,
+        amount_cents: line.amountCents,
+        amount_tendered_cents: line.amountTenderedCents,
+        card_entry_mode: line.paymentMethod === 'card' ? line.cardEntryMode : null,
+        manual_card_reference: line.paymentMethod === 'card' ? line.manualCardReference : null,
+      }))
+    : null
 
   // 6. Update sale status to captured
   const { error: saleStatusErr } = await (supabase
@@ -1182,7 +1519,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       dedupeKey: 'checkout_sale_status_finalize_failed',
       context: {
         sale_id: sale.id,
-        payment_id: payment.id,
+        payment_id: primaryPayment.id,
         register_session_id: input.registerSessionId ?? null,
         idempotency_key: paymentIdempotencyKey,
       },
@@ -1209,7 +1546,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
         context: {
           sale_id: sale.id,
           register_session_id: input.registerSessionId,
-          payment_id: payment.id,
+          payment_id: primaryPayment.id,
         },
       })
     }
@@ -1230,13 +1567,6 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     console.error('[non-blocking] Product stock deduction failed:', err)
   }
 
-  // Compute change due for cash payments
-  const changeDueCents = computeChangeDueCents({
-    paymentMethod: input.paymentMethod,
-    amountTenderedCents: input.amountTenderedCents,
-    totalChargedCents: finalTotalCents + tipCents,
-  })
-
   try {
     await appendPosAuditLog({
       tenantId: user.tenantId!,
@@ -1247,11 +1577,17 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       summary: 'POS sale captured via counter checkout',
       afterValues: {
         sale_number: (sale as any).sale_number,
-        payment_id: payment.id,
-        payment_method: input.paymentMethod,
-        processor_type: processorType,
-        processor_reference_id: processorReferenceId,
-        total_cents: finalTotalCents + tipCents,
+        payment_id: primaryPayment.id,
+        payment_method: normalizedSplitTenders ? 'split_tender' : input.paymentMethod,
+        payment_methods: recordedPayments.map((line) => line.paymentMethod),
+        card_entry_mode:
+          !normalizedSplitTenders && input.paymentMethod === 'card' ? cardEntryMode : null,
+        sale_channel: saleChannel,
+        processor_type: processorTypes.length === 1 ? processorTypes[0] : 'mixed',
+        processor_reference_id: primaryPayment.processorReferenceId,
+        split_tenders: splitTenderSummary,
+        total_cents: totalDueCents,
+        total_tendered_cents: totalTenderedCents,
         tip_cents: tipCents,
         register_session_id: input.registerSessionId ?? null,
       },
@@ -1265,8 +1601,8 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   return {
     saleId: sale.id,
     saleNumber: (sale as any).sale_number,
-    paymentId: payment.id,
-    totalCents: finalTotalCents + tipCents,
+    paymentId: primaryPayment.id,
+    totalCents: totalDueCents,
     changeDueCents,
     appliedPromotion,
   }

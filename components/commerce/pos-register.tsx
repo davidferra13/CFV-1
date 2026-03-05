@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
@@ -38,7 +39,12 @@ import { toast } from 'sonner'
 import { Download } from 'lucide-react'
 import { PRODUCT_CATEGORY_LABELS } from '@/lib/commerce/constants'
 import type { ProductCategory, TaxClass } from '@/lib/commerce/constants'
-import { generateReceipt } from '@/lib/commerce/receipt-actions'
+import {
+  generateReceipt,
+  getReceiptDeliveryTargets,
+  sendReceiptByEmail,
+  sendReceiptBySms,
+} from '@/lib/commerce/receipt-actions'
 import {
   createQuickBarcodeProduct,
   snapshotProductFromRecipe,
@@ -235,6 +241,11 @@ export function PosRegister({
     totalCents: number
     changeDueCents: number
   } | null>(null)
+  const [receiptEmail, setReceiptEmail] = useState('')
+  const [receiptPhone, setReceiptPhone] = useState('')
+  const [isSendingReceiptEmail, setIsSendingReceiptEmail] = useState(false)
+  const [isSendingReceiptSms, setIsSendingReceiptSms] = useState(false)
+  const [isLoadingReceiptTargets, setIsLoadingReceiptTargets] = useState(false)
   const [recentTransactionSearch, setRecentTransactionSearch] = useState('')
   const [recentTransactionRows, setRecentTransactionRows] =
     useState<RecentTransaction[]>(recentTransactions)
@@ -253,6 +264,7 @@ export function PosRegister({
   // Tip + cash tender
   const [tipInput, setTipInput] = useState('0.00')
   const [cashTendered, setCashTendered] = useState('')
+  const [splitCardAmount, setSplitCardAmount] = useState('')
   const [promotionCode, setPromotionCode] = useState('')
   const [selectedDiningCheckId, setSelectedDiningCheckId] = useState('')
   const [ageVerified, setAgeVerified] = useState(false)
@@ -392,6 +404,17 @@ export function PosRegister({
   const totalDueCents = subtotalCents + estimatedTaxCents + tipCents
   const cashTenderedCents = useMemo(() => parseCurrencyToCents(cashTendered || '0'), [cashTendered])
   const insufficientCashTendered = totalDueCents > 0 && cashTenderedCents < totalDueCents
+  const splitCardAmountCents = useMemo(
+    () => parseCurrencyToCents(splitCardAmount || '0'),
+    [splitCardAmount]
+  )
+  const splitCashPortionCents = Math.max(0, totalDueCents - splitCardAmountCents)
+  const isSplitConfigurationActive = splitCardAmount.trim().length > 0
+  const isSplitAmountInvalid =
+    isSplitConfigurationActive &&
+    (splitCardAmountCents <= 0 || splitCardAmountCents >= totalDueCents)
+  const insufficientSplitCashTendered =
+    isSplitConfigurationActive && !isSplitAmountInvalid && cashTenderedCents < splitCashPortionCents
   const filteredRecentTransactions = useMemo(() => {
     const term = recentTransactionSearch.trim().toLowerCase()
     const rows = recentTransactionRows
@@ -705,6 +728,7 @@ export function PosRegister({
     setCart([])
     setTipInput('0.00')
     setCashTendered('')
+    setSplitCardAmount('')
     setLastSale(null)
     checkoutRequestKeyRef.current = null
     localStorage.removeItem(CART_STORAGE_KEY)
@@ -953,6 +977,68 @@ export function PosRegister({
     })
   }
 
+  const loadReceiptTargets = useCallback(async (saleId: string) => {
+    setIsLoadingReceiptTargets(true)
+    try {
+      const targets = await getReceiptDeliveryTargets(saleId)
+      setReceiptEmail(targets.suggestedEmail ?? '')
+      setReceiptPhone(targets.suggestedPhone ?? '')
+    } catch {
+      setReceiptEmail('')
+      setReceiptPhone('')
+    } finally {
+      setIsLoadingReceiptTargets(false)
+    }
+  }, [])
+
+  async function handleSendReceiptEmail() {
+    if (!lastSale?.saleId) return
+    if (!receiptEmail.trim()) {
+      toast.error('Enter an email address')
+      return
+    }
+
+    setIsSendingReceiptEmail(true)
+    try {
+      const result = await sendReceiptByEmail({
+        saleId: lastSale.saleId,
+        toEmail: receiptEmail.trim(),
+      })
+      toast.success(`Receipt emailed to ${result.toEmail}`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to send receipt email')
+    } finally {
+      setIsSendingReceiptEmail(false)
+    }
+  }
+
+  async function handleSendReceiptSms() {
+    if (!lastSale?.saleId) return
+    if (!receiptPhone.trim()) {
+      toast.error('Enter a phone number')
+      return
+    }
+
+    setIsSendingReceiptSms(true)
+    try {
+      const result = await sendReceiptBySms({
+        saleId: lastSale.saleId,
+        toPhone: receiptPhone.trim(),
+      })
+      if (result.status === 'sent') {
+        toast.success(`Receipt SMS sent to ${result.toPhone}`)
+      } else if (result.status === 'not_configured') {
+        toast.warning('SMS service is not configured')
+      } else {
+        toast.error('SMS delivery failed')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to send receipt SMS')
+    } finally {
+      setIsSendingReceiptSms(false)
+    }
+  }
+
   const enqueueReceiptPrintJob = useCallback(
     async (input: { saleId: string; saleNumber: string; totalCents: number }) => {
       if (!hardware.capabilities.printerEnabled) return
@@ -994,7 +1080,8 @@ export function PosRegister({
       saleId: string
       saleNumber: string
       totalCents: number
-      paymentMethod: 'cash' | 'card'
+      paymentMethod: 'cash' | 'card' | 'split'
+      openCashDrawer?: boolean
     }) => {
       const jobs: Promise<void>[] = []
 
@@ -1008,7 +1095,10 @@ export function PosRegister({
         )
       }
 
-      if (input.paymentMethod === 'cash' && hardware.capabilities.cashDrawerEnabled) {
+      const shouldOpenCashDrawer =
+        hardware.capabilities.cashDrawerEnabled &&
+        (input.paymentMethod === 'cash' || input.openCashDrawer === true)
+      if (shouldOpenCashDrawer) {
         jobs.push(
           (async () => {
             const result = await hardware.cashDrawer.open({
@@ -1027,7 +1117,7 @@ export function PosRegister({
     [hardware, registerSession?.id, enqueueReceiptPrintJob]
   )
 
-  function handleCheckout(paymentMethod: 'cash' | 'card') {
+  function handleCheckout(paymentMethod: 'cash' | 'card' | 'split') {
     if (cart.length === 0) return
     if (isCheckoutSubmitting) {
       toast.info('Checkout already in progress')
@@ -1037,7 +1127,11 @@ export function PosRegister({
       toast.error('Open register is required before checkout')
       return
     }
-    if (paymentMethod === 'card' && terminalHealth && !terminalHealth.healthy) {
+    if (
+      (paymentMethod === 'card' || paymentMethod === 'split') &&
+      terminalHealth &&
+      !terminalHealth.healthy
+    ) {
       toast.error(`Card terminal unavailable: ${terminalHealth.message}`)
       return
     }
@@ -1050,11 +1144,46 @@ export function PosRegister({
       return
     }
 
-    const amountTenderedCents = paymentMethod === 'cash' ? cashTenderedCents : totalDueCents
+    let checkoutPaymentMethod: 'cash' | 'card' = paymentMethod === 'cash' ? 'cash' : 'card'
+    let amountTenderedCents = paymentMethod === 'cash' ? cashTenderedCents : totalDueCents
+    let splitTenders:
+      | Array<{
+          paymentMethod: 'cash' | 'card'
+          amountCents: number
+          amountTenderedCents?: number
+        }>
+      | undefined
+    let openCashDrawerAfterCheckout = paymentMethod === 'cash'
 
     if (paymentMethod === 'cash' && amountTenderedCents < totalDueCents) {
       toast.error('Amount tendered must be at least the total due')
       return
+    }
+
+    if (paymentMethod === 'split') {
+      if (splitCardAmountCents <= 0 || splitCardAmountCents >= totalDueCents) {
+        toast.error('Split card amount must be greater than $0 and less than total due')
+        return
+      }
+      if (cashTenderedCents < splitCashPortionCents) {
+        toast.error('Cash tendered must cover the split cash portion')
+        return
+      }
+
+      checkoutPaymentMethod = 'card'
+      amountTenderedCents = splitCardAmountCents + cashTenderedCents
+      splitTenders = [
+        {
+          paymentMethod: 'card',
+          amountCents: splitCardAmountCents,
+        },
+        {
+          paymentMethod: 'cash',
+          amountCents: splitCashPortionCents,
+          amountTenderedCents: cashTenderedCents,
+        },
+      ]
+      openCashDrawerAfterCheckout = true
     }
 
     if (!checkoutRequestKeyRef.current) {
@@ -1079,8 +1208,9 @@ export function PosRegister({
             modifiersApplied: item.modifiersApplied,
             unitCostCents: item.product.cost_cents ?? undefined,
           })),
-          paymentMethod,
+          paymentMethod: checkoutPaymentMethod,
           amountTenderedCents,
+          splitTenders,
           tipCents,
           ageVerified,
           promotionCode: promotionCode.trim() || undefined,
@@ -1095,6 +1225,7 @@ export function PosRegister({
           totalCents: result.totalCents,
           changeDueCents: result.changeDueCents,
         })
+        void loadReceiptTargets(result.saleId)
         setRecentTransactionRows((prev) =>
           [
             {
@@ -1121,7 +1252,7 @@ export function PosRegister({
         try {
           await createOrderQueueEntry({ saleId: result.saleId })
         } catch {
-          // Non-blocking — order queue is optional
+          // Non-blocking â€” order queue is optional
         }
 
         if (selectedDiningCheck) {
@@ -1145,11 +1276,13 @@ export function PosRegister({
           saleNumber: result.saleNumber,
           totalCents: result.totalCents,
           paymentMethod,
+          openCashDrawer: openCashDrawerAfterCheckout,
         })
 
         setCart([])
         setTipInput('0.00')
         setCashTendered('')
+        setSplitCardAmount('')
         setAgeVerified(false)
         setSelectedDiningCheckId('')
         checkoutRequestKeyRef.current = null
@@ -1302,7 +1435,7 @@ export function PosRegister({
             <div>
               <p className="text-xs uppercase tracking-wide text-stone-500">Terminal</p>
               <p className="text-sm text-stone-200">
-                {terminalHealth?.provider ?? 'not_configured'} ·{' '}
+                {terminalHealth?.provider ?? 'not_configured'} -{' '}
                 <span className={terminalHealth?.healthy ? 'text-emerald-400' : 'text-amber-400'}>
                   {terminalHealth?.healthy ? 'healthy' : 'degraded'}
                 </span>
@@ -1314,8 +1447,8 @@ export function PosRegister({
             <div>
               <p className="text-xs uppercase tracking-wide text-stone-500">Hardware</p>
               <p className="text-sm text-stone-200">
-                Scanner {hardwareCapabilities?.scannerEnabled ? 'on' : 'off'} · Printer{' '}
-                {hardwareCapabilities?.printerEnabled ? 'on' : 'off'} · Drawer{' '}
+                Scanner {hardwareCapabilities?.scannerEnabled ? 'on' : 'off'} - Printer{' '}
+                {hardwareCapabilities?.printerEnabled ? 'on' : 'off'} - Drawer{' '}
                 {hardwareCapabilities?.cashDrawerEnabled ? 'on' : 'off'}
               </p>
               <p className="text-xs text-stone-500">
@@ -1387,7 +1520,7 @@ export function PosRegister({
                   {formatCurrency(drawerSummary.expectedCashCents)}
                 </p>
                 <p className="text-xs text-stone-500">
-                  Opening {formatCurrency(drawerSummary.openingCashCents)} · Net{' '}
+                  Opening {formatCurrency(drawerSummary.openingCashCents)} - Net{' '}
                   {formatCurrency(drawerSummary.movementNetCents)}
                 </p>
               </div>
@@ -1620,26 +1753,66 @@ export function PosRegister({
 
       {lastSale && (
         <Card>
-          <CardContent className="p-4 flex items-center justify-between bg-emerald-900/20 border border-emerald-800 rounded-lg">
-            <div>
-              <p className="text-emerald-400 font-medium">Sale {lastSale.saleNumber} completed</p>
-              <p className="text-stone-400 text-sm">
-                Total: {formatCurrency(lastSale.totalCents)}
-                {lastSale.changeDueCents > 0 &&
-                  ` · Change due: ${formatCurrency(lastSale.changeDueCents)}`}
-              </p>
+          <CardContent className="p-4 bg-emerald-900/20 border border-emerald-800 rounded-lg space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-emerald-400 font-medium">Sale {lastSale.saleNumber} completed</p>
+                <p className="text-stone-400 text-sm">
+                  Total: {formatCurrency(lastSale.totalCents)}
+                  {lastSale.changeDueCents > 0
+                    ? ` - Change due: ${formatCurrency(lastSale.changeDueCents)}`
+                    : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  onClick={() => downloadReceiptPdf(lastSale.saleId)}
+                  disabled={isPending}
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  Receipt
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setLastSale(null)
+                    setReceiptEmail('')
+                    setReceiptPhone('')
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
+
+            <div className="grid gap-2 md:grid-cols-[1fr_auto_1fr_auto]">
+              <Input
+                type="email"
+                value={receiptEmail}
+                onChange={(e) => setReceiptEmail(e.target.value)}
+                placeholder="Receipt email"
+                disabled={isLoadingReceiptTargets}
+              />
               <Button
-                variant="ghost"
-                onClick={() => downloadReceiptPdf(lastSale.saleId)}
-                disabled={isPending}
+                variant="secondary"
+                onClick={handleSendReceiptEmail}
+                disabled={isSendingReceiptEmail || isLoadingReceiptTargets}
               >
-                <Download className="w-4 h-4 mr-1" />
-                Receipt
+                {isSendingReceiptEmail ? 'Sending...' : 'Send Email'}
               </Button>
-              <Button variant="ghost" onClick={() => setLastSale(null)}>
-                <X className="w-4 h-4" />
+              <Input
+                value={receiptPhone}
+                onChange={(e) => setReceiptPhone(e.target.value)}
+                placeholder="Receipt SMS number"
+                disabled={isLoadingReceiptTargets}
+              />
+              <Button
+                variant="secondary"
+                onClick={handleSendReceiptSms}
+                disabled={isSendingReceiptSms || isLoadingReceiptTargets}
+              >
+                {isSendingReceiptSms ? 'Sending...' : 'Send SMS'}
               </Button>
             </div>
           </CardContent>
@@ -1670,8 +1843,8 @@ export function PosRegister({
                     <div>
                       <p className="text-sm font-medium text-stone-100">{row.saleNumber}</p>
                       <p className="text-xs text-stone-500">
-                        {formatTransactionTime(row.createdAt)} ·{' '}
-                        {row.paymentMethod ? row.paymentMethod.toUpperCase() : 'UNKNOWN'} ·{' '}
+                        {formatTransactionTime(row.createdAt)} -{' '}
+                        {row.paymentMethod ? row.paymentMethod.toUpperCase() : 'UNKNOWN'} -{' '}
                         {row.paymentStatus ?? row.status}
                       </p>
                     </div>
@@ -1951,7 +2124,7 @@ export function PosRegister({
                           <p className="text-stone-500 text-xs">
                             {item.modifiersApplied
                               .map((modifier) => `${modifier.name}: ${modifier.option}`)
-                              .join(' · ')}
+                              .join(' - ')}
                           </p>
                         )}
                       </div>
@@ -2015,6 +2188,28 @@ export function PosRegister({
                       />
                     </div>
                     <div>
+                      <label className="text-stone-400 text-xs">Split Card Amount ($)</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={splitCardAmount}
+                        onChange={(e) => setSplitCardAmount(e.target.value)}
+                        placeholder="Optional for card + cash split"
+                      />
+                      {isSplitConfigurationActive && (
+                        <p
+                          className={`mt-1 text-xs ${
+                            isSplitAmountInvalid ? 'text-amber-400' : 'text-stone-500'
+                          }`}
+                        >
+                          {isSplitAmountInvalid
+                            ? 'Split card amount must be greater than $0 and less than the total.'
+                            : `Split cash portion: ${formatCurrency(splitCashPortionCents)}`}
+                        </p>
+                      )}
+                    </div>
+                    <div>
                       <label className="text-stone-400 text-xs">Promotion Code</label>
                       <Input
                         value={promotionCode}
@@ -2064,7 +2259,7 @@ export function PosRegister({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="grid grid-cols-3 gap-2 pt-2">
                     <Button
                       variant="primary"
                       onClick={() => handleCheckout('cash')}
@@ -2080,6 +2275,25 @@ export function PosRegister({
                     >
                       <Banknote className="w-4 h-4" />
                       Cash
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleCheckout('split')}
+                      disabled={
+                        isPending ||
+                        isCheckoutSubmitting ||
+                        !isRegisterOpen ||
+                        !!taxBlockingMessage ||
+                        (cartHasAgeRestrictedItems && !ageVerified) ||
+                        !!cardTerminalBlockingMessage ||
+                        !isSplitConfigurationActive ||
+                        isSplitAmountInvalid ||
+                        insufficientSplitCashTendered
+                      }
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <Wallet className="w-4 h-4" />
+                      Split
                     </Button>
                     <Button
                       variant="secondary"
@@ -2117,9 +2331,19 @@ export function PosRegister({
                   {taxBlockingMessage && (
                     <p className="text-xs text-amber-400">{taxBlockingMessage}</p>
                   )}
-                  {insufficientCashTendered && (
+                  {insufficientCashTendered && !isSplitConfigurationActive && (
                     <p className="text-xs text-amber-400">
                       Cash tendered must be at least the total due.
+                    </p>
+                  )}
+                  {isSplitAmountInvalid && (
+                    <p className="text-xs text-amber-400">
+                      Split card amount must be between $0.01 and just under the total.
+                    </p>
+                  )}
+                  {insufficientSplitCashTendered && (
+                    <p className="text-xs text-amber-400">
+                      Cash tendered must cover the split cash portion.
                     </p>
                   )}
                   {cartHasAgeRestrictedItems && !ageVerified && (

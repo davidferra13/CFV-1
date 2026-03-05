@@ -1,8 +1,8 @@
 // Playwright E2E Test Configuration
 // Adapted from legacy BillyBob8 patterns for Next.js + Supabase
 //
-// CANONICAL RULE: Base URL is always http://localhost:3100
-// This matches package.json "dev": "next dev -p 3100"
+// Default base URL is http://localhost:3100.
+// Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when isolation is needed.
 //
 // Projects:
 //   smoke              — unauthenticated, no globalSetup dependency (tests/smoke/)
@@ -18,10 +18,22 @@
 
 import { defineConfig } from '@playwright/test'
 
-const BASE_URL = 'http://localhost:3100'
+function envFlag(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined) return fallback
+  const normalized = value.trim().toLowerCase()
+  return normalized === '1' || normalized === 'true' || normalized === 'yes'
+}
+
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
+const WEB_SERVER_COMMAND = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'npm run dev'
+const RUN_ID = process.env.PLAYWRIGHT_RUN_ID || `pw-${process.pid}-${Date.now()}`
+const OUTPUT_DIR = process.env.PLAYWRIGHT_OUTPUT_DIR || `test-results/${RUN_ID}`
+const DEV_DIST_DIR = process.env.NEXT_DIST_DIR || `.next-dev-${RUN_ID}`
+const REUSE_EXISTING_SERVER = envFlag(process.env.PLAYWRIGHT_REUSE_SERVER, true)
 
 export default defineConfig({
   testDir: './tests',
+  outputDir: OUTPUT_DIR,
   testMatch: ['**/*.spec.ts'],
   // Single worker — prevents state leaks between tenant-scoped tests
   workers: 1,
@@ -267,13 +279,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: WEB_SERVER_COMMAND,
     url: BASE_URL,
-    reuseExistingServer: true,
+    reuseExistingServer: REUSE_EXISTING_SERVER,
     timeout: 120_000,
     env: {
       ...process.env,
       DISABLE_AUTH_RATE_LIMIT_FOR_E2E: 'true',
+      NEXT_DIST_DIR: DEV_DIST_DIR,
     },
   },
 })

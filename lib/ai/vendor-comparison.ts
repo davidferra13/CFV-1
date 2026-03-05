@@ -7,7 +7,6 @@
 // Output is SUGGESTION ONLY — chef decides which vendor to use.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
 export interface VendorEntry {

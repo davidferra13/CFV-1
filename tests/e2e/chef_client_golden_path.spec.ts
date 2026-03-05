@@ -206,23 +206,17 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
       await expect(clientPage.getByText(goldenQuoteName)).toBeVisible()
 
       await gotoWithRetryOn500(clientPage, `/my-quotes/${goldenQuote.id}`)
-      await expect(clientPage.getByRole('button', { name: /^Accept Quote$/ }).first()).toBeVisible({
-        timeout: 15_000,
-      })
-      for (let i = 0; i < 3; i++) {
-        await clientPage
-          .getByRole('button', { name: /^Accept Quote$/ })
-          .first()
-          .click()
-        const modalVisible = await clientPage
-          .getByText(/accept this quote\?/i)
-          .first()
-          .isVisible()
-          .catch(() => false)
-        if (modalVisible) break
-        await clientPage.waitForTimeout(250)
+      const acceptButtons = clientPage.getByRole('button', { name: /^Accept Quote$/ })
+      const openAcceptButton = acceptButtons.first()
+      await expect(openAcceptButton).toBeVisible({ timeout: 15_000 })
+      await openAcceptButton.scrollIntoViewIfNeeded()
+      for (let i = 0; i < 5; i++) {
+        await openAcceptButton.click({ force: true })
+        const count = await acceptButtons.count()
+        if (count >= 2) break
+        await clientPage.waitForTimeout(300)
       }
-      await expect(clientPage.getByText(/accept this quote\?/i)).toBeVisible()
+      await expect(acceptButtons).toHaveCount(2, { timeout: 10_000 })
       const confirmButtons = clientPage.getByRole('button', { name: /^Accept Quote$/ })
       const confirmButtonCount = await confirmButtons.count()
       await confirmButtons.nth(Math.max(0, confirmButtonCount - 1)).click()

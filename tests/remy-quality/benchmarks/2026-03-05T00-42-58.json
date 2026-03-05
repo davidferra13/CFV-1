@@ -1,0 +1,2923 @@
+{
+  "runId": "7528ef3f-5d6c-4538-b92c-d15ce8c00553",
+  "timestamp": "2026-03-05T00:42:58.002Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 100,
+  "passed": 0,
+  "warned": 0,
+  "failed": 100,
+  "passRate": 0,
+  "durationMinutes": 11,
+  "averages": {
+    "classificationMs": null,
+    "firstTokenMs": null,
+    "totalMs": 644307,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6130918,
+      "avgMs": 613092
+    },
+    "client_management": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6476703,
+      "avgMs": 647670
+    },
+    "event_management": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6476975,
+      "avgMs": 647698
+    },
+    "financial": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6477210,
+      "avgMs": 647721
+    },
+    "calendar_scheduling": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6477517,
+      "avgMs": 647752
+    },
+    "email_drafts": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6477836,
+      "avgMs": 647784
+    },
+    "menu_recipes": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6478110,
+      "avgMs": 647811
+    },
+    "operations": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 6478292,
+      "avgMs": 647829
+    },
+    "memory": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 3239236,
+      "avgMs": 647847
+    },
+    "context_aware": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 3239277,
+      "avgMs": 647855
+    },
+    "analytics": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 3239310,
+      "avgMs": 647862
+    },
+    "conversational": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 3239343,
+      "avgMs": 647869
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 302443
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "terminated"
+        }
+      },
+      "timing": {
+        "totalMs": 647585
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647591
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647599
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647603
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647609
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647614
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647620
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647624
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647630
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-011",
+      "category": "client_management",
+      "prompt": "Find my client Sarah",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647635
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-012",
+      "category": "client_management",
+      "prompt": "Show me all my recent clients",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647654
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-013",
+      "category": "client_management",
+      "prompt": "Pull up the details for the Johnson family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647662
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-014",
+      "category": "client_management",
+      "prompt": "Do I have a client named Martinez?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647665
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-015",
+      "category": "client_management",
+      "prompt": "Who was my last client?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647672
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-016",
+      "category": "client_management",
+      "prompt": "Search for clients with the last name Williams",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647675
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-017",
+      "category": "client_management",
+      "prompt": "How many events has the Henderson family booked with me?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647680
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-018",
+      "category": "client_management",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647684
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-019",
+      "category": "client_management",
+      "prompt": "Check if any of my clients have nut allergies",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647687
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-020",
+      "category": "client_management",
+      "prompt": "What's the lifetime value of my client Thompson?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647689
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-021",
+      "category": "event_management",
+      "prompt": "Show me my upcoming events",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647691
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-022",
+      "category": "event_management",
+      "prompt": "What events do I have this weekend?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647692
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-023",
+      "category": "event_management",
+      "prompt": "List all my events in March",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647694
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-024",
+      "category": "event_management",
+      "prompt": "Show me events that are still in draft status",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647695
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-025",
+      "category": "event_management",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647696
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-026",
+      "category": "event_management",
+      "prompt": "Create a new event for a birthday dinner on March 20th, 12 guests",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647698
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-027",
+      "category": "event_management",
+      "prompt": "What are the details on my next event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647700
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-028",
+      "category": "event_management",
+      "prompt": "Show me completed events from last month",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647702
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-029",
+      "category": "event_management",
+      "prompt": "Do I have any cancelled events?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647703
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-030",
+      "category": "event_management",
+      "prompt": "How many events have I done this year?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647704
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-031",
+      "category": "financial",
+      "prompt": "What's my financial summary?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647711
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-032",
+      "category": "financial",
+      "prompt": "Show me my monthly revenue breakdown",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647714
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-033",
+      "category": "financial",
+      "prompt": "What are my total expenses?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647716
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-034",
+      "category": "financial",
+      "prompt": "What's my profit margin?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647717
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-035",
+      "category": "financial",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647719
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-036",
+      "category": "financial",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647722
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-037",
+      "category": "financial",
+      "prompt": "What's the food cost on my signature risotto?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647724
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-038",
+      "category": "financial",
+      "prompt": "Am I hitting my revenue target?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647727
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-039",
+      "category": "financial",
+      "prompt": "What's my net income for this quarter?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647729
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-040",
+      "category": "financial",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647731
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-041",
+      "category": "calendar_scheduling",
+      "prompt": "Am I free on March 15th?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647735
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-042",
+      "category": "calendar_scheduling",
+      "prompt": "What does my schedule look like next week?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647739
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-043",
+      "category": "calendar_scheduling",
+      "prompt": "When is my next available Saturday?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647742
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-044",
+      "category": "calendar_scheduling",
+      "prompt": "Is April open for a big event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647747
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-045",
+      "category": "calendar_scheduling",
+      "prompt": "What days am I blocked this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647750
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-046",
+      "category": "calendar_scheduling",
+      "prompt": "Check availability for the first two weekends in April",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647753
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-047",
+      "category": "calendar_scheduling",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647756
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-048",
+      "category": "calendar_scheduling",
+      "prompt": "How busy am I in March?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647760
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-049",
+      "category": "calendar_scheduling",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647765
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-050",
+      "category": "calendar_scheduling",
+      "prompt": "What's on my waitlist?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647770
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-051",
+      "category": "email_drafts",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647773
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-052",
+      "category": "email_drafts",
+      "prompt": "Write a thank-you note for my last event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647775
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-053",
+      "category": "email_drafts",
+      "prompt": "Send a referral request to the Hendersons",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647777
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-054",
+      "category": "email_drafts",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647779
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-055",
+      "category": "email_drafts",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647781
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-056",
+      "category": "email_drafts",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647785
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-057",
+      "category": "email_drafts",
+      "prompt": "Check my recent emails",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647788
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-058",
+      "category": "email_drafts",
+      "prompt": "Summarize my inbox",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647790
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-059",
+      "category": "email_drafts",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647792
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-060",
+      "category": "email_drafts",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647796
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-061",
+      "category": "menu_recipes",
+      "prompt": "Search my recipes for risotto",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647798
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-062",
+      "category": "menu_recipes",
+      "prompt": "Show me all my menus",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647801
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-063",
+      "category": "menu_recipes",
+      "prompt": "What recipes do I have that use salmon?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647803
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-064",
+      "category": "menu_recipes",
+      "prompt": "Do I have any dessert recipes?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647807
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-065",
+      "category": "menu_recipes",
+      "prompt": "What's on the menu I created for corporate events?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647811
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-066",
+      "category": "menu_recipes",
+      "prompt": "Explain my spring tasting menu to a client",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647814
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-067",
+      "category": "menu_recipes",
+      "prompt": "What's the food cost on my lamb dish?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647816
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-068",
+      "category": "menu_recipes",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647818
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-069",
+      "category": "menu_recipes",
+      "prompt": "How to cook a perfect steak",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647820
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-070",
+      "category": "menu_recipes",
+      "prompt": "Suggest a meal for a date night",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647822
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-071",
+      "category": "operations",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647823
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-072",
+      "category": "operations",
+      "prompt": "Create a packing list for my next event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647825
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-073",
+      "category": "operations",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647826
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-074",
+      "category": "operations",
+      "prompt": "Calculate portions for 25 guests",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647827
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-075",
+      "category": "operations",
+      "prompt": "What do I need to buy for Saturday?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647828
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-076",
+      "category": "operations",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647830
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-077",
+      "category": "operations",
+      "prompt": "What's on my to-do list?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647831
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-078",
+      "category": "operations",
+      "prompt": "Show me my nudges and reminders",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647832
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-079",
+      "category": "operations",
+      "prompt": "Draft a food safety incident report",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647834
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-080",
+      "category": "operations",
+      "prompt": "List my staff",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647836
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-081",
+      "category": "memory",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647843
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-082",
+      "category": "memory",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647846
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-083",
+      "category": "memory",
+      "prompt": "What do you remember about me?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647847
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-084",
+      "category": "memory",
+      "prompt": "Remember that I don't work on Sundays",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647849
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-085",
+      "category": "memory",
+      "prompt": "Do you remember what pricing model I use?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647851
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-086",
+      "category": "context_aware",
+      "prompt": "What am I looking at right now?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647852
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-087",
+      "category": "context_aware",
+      "prompt": "Help me with what I'm doing right now",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647854
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-088",
+      "category": "context_aware",
+      "prompt": "I just created a new event, what should I do next?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647856
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-089",
+      "category": "context_aware",
+      "prompt": "I keep getting an error on this page",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647857
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-090",
+      "category": "context_aware",
+      "prompt": "Take me to the recipes page",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647858
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-091",
+      "category": "analytics",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647859
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-092",
+      "category": "analytics",
+      "prompt": "Calculate the lifetime value of my top client",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647861
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-093",
+      "category": "analytics",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647862
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-094",
+      "category": "analytics",
+      "prompt": "What's my most profitable type of event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647863
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-095",
+      "category": "analytics",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647865
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-096",
+      "category": "conversational",
+      "prompt": "Hey Remy, what can you help me with?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647866
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-097",
+      "category": "conversational",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647867
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-098",
+      "category": "conversational",
+      "prompt": "Good morning Remy!",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647869
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-099",
+      "category": "conversational",
+      "prompt": "How's my week looking?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647870
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-100",
+      "category": "conversational",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 647871
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "terminated"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-011",
+      "prompt": "Find my client Sarah",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-012",
+      "prompt": "Show me all my recent clients",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-013",
+      "prompt": "Pull up the details for the Johnson family",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-014",
+      "prompt": "Do I have a client named Martinez?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-015",
+      "prompt": "Who was my last client?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-016",
+      "prompt": "Search for clients with the last name Williams",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-017",
+      "prompt": "How many events has the Henderson family booked with me?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-018",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-019",
+      "prompt": "Check if any of my clients have nut allergies",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-020",
+      "prompt": "What's the lifetime value of my client Thompson?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-021",
+      "prompt": "Show me my upcoming events",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-022",
+      "prompt": "What events do I have this weekend?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-023",
+      "prompt": "List all my events in March",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-024",
+      "prompt": "Show me events that are still in draft status",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-025",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-026",
+      "prompt": "Create a new event for a birthday dinner on March 20th, 12 guests",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-027",
+      "prompt": "What are the details on my next event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-028",
+      "prompt": "Show me completed events from last month",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-029",
+      "prompt": "Do I have any cancelled events?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-030",
+      "prompt": "How many events have I done this year?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-031",
+      "prompt": "What's my financial summary?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-032",
+      "prompt": "Show me my monthly revenue breakdown",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-033",
+      "prompt": "What are my total expenses?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-034",
+      "prompt": "What's my profit margin?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-035",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-036",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-037",
+      "prompt": "What's the food cost on my signature risotto?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-038",
+      "prompt": "Am I hitting my revenue target?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-039",
+      "prompt": "What's my net income for this quarter?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-040",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-041",
+      "prompt": "Am I free on March 15th?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-042",
+      "prompt": "What does my schedule look like next week?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-043",
+      "prompt": "When is my next available Saturday?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-044",
+      "prompt": "Is April open for a big event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-045",
+      "prompt": "What days am I blocked this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-046",
+      "prompt": "Check availability for the first two weekends in April",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-047",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-048",
+      "prompt": "How busy am I in March?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-049",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-050",
+      "prompt": "What's on my waitlist?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-051",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-052",
+      "prompt": "Write a thank-you note for my last event",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-053",
+      "prompt": "Send a referral request to the Hendersons",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-054",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-055",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-056",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-057",
+      "prompt": "Check my recent emails",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-058",
+      "prompt": "Summarize my inbox",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-059",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-060",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-061",
+      "prompt": "Search my recipes for risotto",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-062",
+      "prompt": "Show me all my menus",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-063",
+      "prompt": "What recipes do I have that use salmon?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-064",
+      "prompt": "Do I have any dessert recipes?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-065",
+      "prompt": "What's on the menu I created for corporate events?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-066",
+      "prompt": "Explain my spring tasting menu to a client",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-067",
+      "prompt": "What's the food cost on my lamb dish?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-068",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-069",
+      "prompt": "How to cook a perfect steak",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-070",
+      "prompt": "Suggest a meal for a date night",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-071",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-072",
+      "prompt": "Create a packing list for my next event",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-073",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-074",
+      "prompt": "Calculate portions for 25 guests",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-075",
+      "prompt": "What do I need to buy for Saturday?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-076",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-077",
+      "prompt": "What's on my to-do list?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-078",
+      "prompt": "Show me my nudges and reminders",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-079",
+      "prompt": "Draft a food safety incident report",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-080",
+      "prompt": "List my staff",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-081",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-082",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-083",
+      "prompt": "What do you remember about me?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-084",
+      "prompt": "Remember that I don't work on Sundays",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-085",
+      "prompt": "Do you remember what pricing model I use?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-086",
+      "prompt": "What am I looking at right now?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-087",
+      "prompt": "Help me with what I'm doing right now",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-088",
+      "prompt": "I just created a new event, what should I do next?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-089",
+      "prompt": "I keep getting an error on this page",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-090",
+      "prompt": "Take me to the recipes page",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-091",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-092",
+      "prompt": "Calculate the lifetime value of my top client",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-093",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-094",
+      "prompt": "What's my most profitable type of event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-095",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-096",
+      "prompt": "Hey Remy, what can you help me with?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-097",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-098",
+      "prompt": "Good morning Remy!",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-099",
+      "prompt": "How's my week looking?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-100",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    }
+  ]
+}

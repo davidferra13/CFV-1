@@ -20,6 +20,7 @@ import {
   normalizeWebsiteSignupErrorMessage,
   validateWebsiteSignupInput,
 } from '@/lib/auth/website-signup'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getInvitationByToken } from '@/lib/auth/invitations'
 import { Chrome } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -109,6 +110,12 @@ function SignUpForm() {
       return
     }
 
+    trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+      role: 'chef',
+      method: 'email',
+      source: isBetaReferral ? 'beta' : 'website',
+    })
+
     setLoading(true)
     try {
       await signUpChef({
@@ -144,6 +151,12 @@ function SignUpForm() {
       return
     }
 
+    trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+      role: 'client',
+      method: 'email',
+      source: token ? 'invitation' : 'website',
+    })
+
     setLoading(true)
     try {
       await signUpClient({
@@ -164,6 +177,11 @@ function SignUpForm() {
   const handleGoogleSignUp = async () => {
     if (isSubmitting) return
     setError(null)
+    trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
+      role: 'chef',
+      method: 'google',
+      source: isBetaReferral ? 'beta' : 'website',
+    })
     setGoogleLoading(true)
     try {
       await signInWithGoogle(

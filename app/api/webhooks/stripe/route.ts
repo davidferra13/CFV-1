@@ -29,6 +29,13 @@ export async function POST(req: Request) {
 
   if (!signature) {
     console.error('[Stripe Webhook] No signature header')
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: 'signature_missing',
+      status: 'failed',
+      errorText: 'Missing stripe-signature header',
+      payloadSizeBytes: body.length,
+    })
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
@@ -43,6 +50,13 @@ export async function POST(req: Request) {
   } catch (err) {
     const error = err as Error
     console.error('[Stripe Webhook] Signature verification failed')
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: 'signature_verification_failed',
+      status: 'failed',
+      errorText: error.message,
+      payloadSizeBytes: body.length,
+    })
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -86,6 +100,14 @@ export async function POST(req: Request) {
 
     if (existingEntry) {
       console.log('[Stripe Webhook] Event already processed (idempotent):', event.id)
+      await logWebhookEvent({
+        provider: 'stripe',
+        eventType: event.type,
+        providerEventId: event.id,
+        status: 'skipped',
+        result: { reason: 'duplicate_ledger_entry' },
+        payloadSizeBytes: body.length,
+      })
       return NextResponse.json({ received: true, cached: true })
     }
   }
@@ -165,10 +187,27 @@ export async function POST(req: Request) {
         console.log('[Stripe Webhook] Unhandled event type:', event.type)
     }
 
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: event.type,
+      providerEventId: event.id,
+      status: 'processed',
+      result: { ok: true },
+      payloadSizeBytes: body.length,
+    })
+
     return NextResponse.json({ received: true })
   } catch (error) {
     const err = error as Error
     console.error('[Stripe Webhook] Handler error:', err.message)
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: event.type,
+      providerEventId: event.id,
+      status: 'failed',
+      errorText: err.message,
+      payloadSizeBytes: body.length,
+    })
     // Return 500 so Stripe retries
     return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
   }

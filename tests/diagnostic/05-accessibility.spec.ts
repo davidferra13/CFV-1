@@ -3,9 +3,49 @@
 //        heading hierarchy, skip links, color contrast (visual check)
 //
 // These tests use Playwright's built-in accessibility features.
-// For comprehensive a11y auditing, consider adding @axe-core/playwright.
+// Includes strict @axe-core/playwright checks for WCAG A/AA tags.
 
+import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from '../helpers/fixtures'
+
+async function expectNoAxeViolations(page: Parameters<typeof AxeBuilder>[0]['page']) {
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .exclude('[data-sonner-toaster]')
+    .analyze()
+
+  const violationSummary = violations.map((violation) => ({
+    id: violation.id,
+    impact: violation.impact,
+    help: violation.help,
+    nodes: violation.nodes.length,
+  }))
+
+  expect(
+    violationSummary,
+    `axe-core violations:\n${JSON.stringify(violationSummary, null, 2)}`
+  ).toEqual([])
+}
+
+test.describe('Accessibility - Axe (Strict WCAG AA)', () => {
+  test('public home has zero axe violations', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+    await expectNoAxeViolations(page)
+  })
+
+  test('pricing page has zero axe violations', async ({ page }) => {
+    await page.goto('/pricing')
+    await page.waitForLoadState('networkidle')
+    await expectNoAxeViolations(page)
+  })
+
+  test('dashboard has zero axe violations', async ({ page }) => {
+    await page.goto('/dashboard')
+    await page.waitForLoadState('networkidle')
+    await expectNoAxeViolations(page)
+  })
+})
 
 // ─── Keyboard Navigation ───────────────────────────────────────────────────
 

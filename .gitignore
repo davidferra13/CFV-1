@@ -158,3 +158,10 @@ null
 /data/email-references/*.zip
 .next-dev/
 .next-staging/
+
+# Event ops generated packet output
+/docs/event-ops-kit/packets/*
+!/docs/event-ops-kit/packets/.gitkeep
+/docs/event-ops-kit/packets-migration-test/
+/docs/grazing-table-ops-kit/packets/*
+!/docs/grazing-table-ops-kit/packets/.gitkeep

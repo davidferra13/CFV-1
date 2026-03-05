@@ -15,6 +15,9 @@ type Props = {
   preferredEventDays: string[] | null
   budgetRangeMinCents: number | null
   budgetRangeMaxCents: number | null
+  recurringPricingModel: 'none' | 'flat_rate' | 'per_person' | null
+  recurringPriceCents: number | null
+  recurringPricingNotes: string | null
   cleanupExpectations: string | null
   leftoversPref: string | null
 }
@@ -36,6 +39,15 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
   const [budgetMax, setBudgetMax] = useState(
     initial.budgetRangeMaxCents ? String(initial.budgetRangeMaxCents / 100) : ''
   )
+  const [recurringPricingModel, setRecurringPricingModel] = useState(
+    initial.recurringPricingModel || 'none'
+  )
+  const [recurringPrice, setRecurringPrice] = useState(
+    initial.recurringPriceCents ? String(initial.recurringPriceCents / 100) : ''
+  )
+  const [recurringPricingNotes, setRecurringPricingNotes] = useState(
+    initial.recurringPricingNotes || ''
+  )
   const [cleanup, setCleanup] = useState(initial.cleanupExpectations || '')
   const [leftovers, setLeftovers] = useState(initial.leftoversPref || '')
 
@@ -48,6 +60,14 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
         preferred_event_days: days.length > 0 ? days : undefined,
         budget_range_min_cents: budgetMin ? Math.round(parseFloat(budgetMin) * 100) : null,
         budget_range_max_cents: budgetMax ? Math.round(parseFloat(budgetMax) * 100) : null,
+        recurring_pricing_model: recurringPricingModel || null,
+        recurring_price_cents:
+          recurringPricingModel === 'none' ||
+          !recurringPrice ||
+          !Number.isFinite(parseFloat(recurringPrice))
+            ? null
+            : Math.round(parseFloat(recurringPrice) * 100),
+        recurring_pricing_notes: recurringPricingNotes || null,
         cleanup_expectations: cleanup || undefined,
         leftovers_preference: leftovers || undefined,
       })
@@ -60,7 +80,16 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
   }
 
   const hasData =
-    serviceStyle || guestCount || days.length > 0 || budgetMin || budgetMax || cleanup || leftovers
+    serviceStyle ||
+    guestCount ||
+    days.length > 0 ||
+    budgetMin ||
+    budgetMax ||
+    (recurringPricingModel && recurringPricingModel !== 'none') ||
+    recurringPrice ||
+    recurringPricingNotes ||
+    cleanup ||
+    leftovers
 
   if (!editing) {
     return (
@@ -102,6 +131,26 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
                   {formatCents(initial.budgetRangeMinCents)} –{' '}
                   {formatCents(initial.budgetRangeMaxCents)}
                 </span>
+              </>
+            )}
+            {(recurringPricingModel !== 'none' || recurringPrice) && (
+              <>
+                <span className="text-stone-500">Recurring Default</span>
+                <span className="text-stone-200">
+                  {recurringPrice
+                    ? `${formatCents(Math.round(parseFloat(recurringPrice) * 100))} ${
+                        recurringPricingModel === 'per_person' ? 'per person' : 'flat rate'
+                      }`
+                    : recurringPricingModel === 'per_person'
+                      ? 'Per person'
+                      : 'Flat rate'}
+                </span>
+              </>
+            )}
+            {recurringPricingNotes && (
+              <>
+                <span className="text-stone-500">Recurring Notes</span>
+                <span className="text-stone-200">{recurringPricingNotes}</span>
               </>
             )}
             {cleanup && (
@@ -191,6 +240,30 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
             placeholder="2000"
           />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Select
+            label="Recurring Pricing Model"
+            value={recurringPricingModel}
+            onChange={(e) => setRecurringPricingModel(e.target.value as any)}
+          >
+            <option value="none">No default</option>
+            <option value="flat_rate">Flat rate (per service)</option>
+            <option value="per_person">Per person</option>
+          </Select>
+          <Input
+            label="Recurring Default Price ($)"
+            type="number"
+            value={recurringPrice}
+            onChange={(e) => setRecurringPrice(e.target.value)}
+            placeholder="350"
+          />
+        </div>
+        <Input
+          label="Recurring Pricing Notes"
+          value={recurringPricingNotes}
+          onChange={(e) => setRecurringPricingNotes(e.target.value)}
+          placeholder="Groceries billed separately, weekly Tuesday delivery"
+        />
         <Select
           label="Cleanup Expectations"
           value={cleanup}

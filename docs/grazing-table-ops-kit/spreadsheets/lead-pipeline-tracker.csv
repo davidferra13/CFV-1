@@ -1,0 +1,3 @@
+lead_id,inquiry_date,client_name,event_date,venue,guest_count_estimate,package_interest,budget_range,stage,next_action,next_action_due,owner,status,notes
+LEAD-001,2026-03-04,Sample Client,2026-06-22,Willow Manor,120,styled_setup,4000-6000,inquiry,send proposal,2026-03-06,Owner,open,Sample row
+

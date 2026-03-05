@@ -1,0 +1,3 @@
+event_id,event_date,client,package_type,guest_count,food_cost_per_guest,labor_hours,labor_rate,staff_count,staffed_service_hours,rentals_cost,decor_cost,delivery_cost,travel_surcharge,overhead_allocation,contingency_percent,tax_percent,subtotal,contingency_amount,tax_amount,total_quote,target_margin_percent,notes
+EVT-001,2026-03-20,Sample Client,styled_setup,100,18,20,30,3,4,350,250,120,0,300,8,7,0,0,0,0,35,Replace sample row with real data
+

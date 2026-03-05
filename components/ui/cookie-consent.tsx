@@ -23,6 +23,7 @@ export function CookieConsent() {
 
   function handleConsent(value: 'accepted' | 'declined') {
     setCookie('cookieConsent', value, 365)
+    window.dispatchEvent(new CustomEvent('cf:cookie-consent', { detail: value }))
     setVisible(false)
   }
 

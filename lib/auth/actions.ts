@@ -15,6 +15,7 @@ import { checkRateLimit } from '@/lib/rateLimit'
 import { markBetaSignupOnboardedByEmail } from '@/lib/beta/actions'
 import { sendEmail } from '@/lib/email/send'
 import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
+import { seedDefaultBudgetQualificationAutomations } from '@/lib/automations/seed'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -188,6 +189,15 @@ export async function signUpChef(input: ChefSignupInput) {
       throw new Error('Failed to initialize chef preferences')
     }
 
+    try {
+      await seedDefaultBudgetQualificationAutomations(chef.id)
+    } catch (seedError) {
+      log.auth.warn('Budget qualification automation seed failed (non-blocking)', {
+        error: seedError,
+        context: { tenantId: chef.id },
+      })
+    }
+
     const isBetaSignup = await syncBetaOnboarding(email, businessName, validated.signup_ref)
     const trialDays = resolveTrialDays(isBetaSignup)
 
@@ -300,6 +310,37 @@ export async function signUpClient(input: ClientSignupInput) {
     // Mark invitation as used when token flow is used
     if (invitationId) {
       await markInvitationUsed(invitationId)
+    }
+
+    // Notify chef when an invited client finishes account signup.
+    // Non-blocking: signup success must never depend on notification delivery.
+    if (tenantId) {
+      try {
+        const { createNotification, getChefAuthUserId } =
+          await import('@/lib/notifications/actions')
+        const chefUserId = await getChefAuthUserId(tenantId)
+
+        if (chefUserId) {
+          await createNotification({
+            tenantId,
+            recipientId: chefUserId,
+            category: 'client',
+            action: 'client_signup',
+            title: 'New client account created',
+            body: `${client.full_name} completed their client portal signup.`,
+            actionUrl: `/clients/${client.id}`,
+            clientId: client.id,
+            metadata: {
+              source: invitationId ? 'invitation_signup' : 'direct_signup',
+            },
+          })
+        }
+      } catch (notifyErr) {
+        log.auth.warn('Client signup notification failed (non-blocking)', {
+          error: notifyErr,
+          context: { tenantId, clientId: client.id },
+        })
+      }
     }
 
     // Auto-award welcome points for invitation-based signups.
@@ -618,6 +659,15 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
         tenant_id: chef.id,
       })
       if (prefError) throw prefError
+
+      try {
+        await seedDefaultBudgetQualificationAutomations(chef.id)
+      } catch (seedError) {
+        log.auth.warn('Budget qualification automation seed failed after role assignment', {
+          error: seedError,
+          context: { tenantId: chef.id },
+        })
+      }
 
       const isBetaSignup = await syncBetaOnboarding(email, businessName, context?.signup_ref)
       const trialDays = resolveTrialDays(isBetaSignup)

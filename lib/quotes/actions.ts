@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import type { Database, Json } from '@/types/database'
+import type { Database } from '@/types/database'
 import type { PricingInput } from '@/lib/pricing/compute'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
@@ -470,57 +470,39 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     )
   }
 
-  // Build update payload with status-specific timestamps
-  const updatePayload: Record<string, unknown> = { status: newStatus }
-
-  if (newStatus === 'sent') {
-    updatePayload.sent_at = new Date().toISOString()
+  // Client-owned decisions must come from client flow (atomic response RPC).
+  if (newStatus === 'accepted' || newStatus === 'rejected') {
+    throw new ValidationError(
+      'Clients must accept or reject quotes from the client portal. Use status "sent" or "expired" here.'
+    )
   }
 
-  if (newStatus === 'accepted') {
-    updatePayload.accepted_at = new Date().toISOString()
-    updatePayload.snapshot_frozen = true
-    updatePayload.pricing_snapshot = {
-      total_quoted_cents: quote.total_quoted_cents,
-      price_per_person_cents: quote.price_per_person_cents,
-      guest_count_estimated: quote.guest_count_estimated,
-      pricing_model: quote.pricing_model,
-      deposit_amount_cents: quote.deposit_amount_cents,
-      deposit_percentage: quote.deposit_percentage,
-      deposit_required: quote.deposit_required,
-      frozen_at: new Date().toISOString(),
-    } as unknown as Json
+  const { data: rpcResponse, error: rpcError } = await supabase.rpc('transition_quote_atomic', {
+    p_quote_id: id,
+    p_tenant_id: user.tenantId!,
+    p_actor_id: user.id,
+    p_to_status: newStatus,
+    p_reason: null,
+    p_metadata: { source: 'chef_portal' },
+  })
+
+  if (rpcError || !rpcResponse) {
+    console.error('[transitionQuote] RPC error:', rpcError)
+    throw new UnknownAppError(rpcError?.message || 'Failed to transition quote')
   }
 
-  if (newStatus === 'rejected') {
-    updatePayload.rejected_at = new Date().toISOString()
-  }
-
-  if (newStatus === 'expired') {
-    updatePayload.expired_at = new Date().toISOString()
-  }
-
-  const runUpdate = async (withSoftDeleteFilter: boolean) => {
-    let query = supabase
-      .from('quotes')
-      .update(updatePayload)
-      .eq('id', id)
-      .eq('tenant_id', user.tenantId!)
-    if (withSoftDeleteFilter) {
-      query = query.is('deleted_at' as any, null)
-    }
-    return query.select().single()
-  }
-
-  let updateResponse = await runUpdate(true)
-  if (isMissingSoftDeleteColumn(updateResponse.error)) {
-    updateResponse = await runUpdate(false)
-  }
-  const { data: updated, error } = updateResponse
-
-  if (error) {
-    console.error('[transitionQuote] Error:', error)
-    throw new UnknownAppError('Failed to transition quote')
+  const updated = rpcResponse as {
+    quote_id: string
+    status: QuoteStatus
+    tenant_id: string
+    client_id: string
+    inquiry_id: string | null
+    event_id: string | null
+    quote_name: string | null
+    total_quoted_cents: number
+    deposit_required: boolean
+    deposit_amount_cents: number | null
+    valid_until: string | null
   }
 
   // Send quote-sent email to client (non-blocking)
@@ -626,12 +608,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   // Zapier/Make webhook dispatch (non-blocking)
   try {
     const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
-    const zapierEvent =
-      newStatus === 'sent'
-        ? ('quote.sent' as const)
-        : newStatus === 'accepted'
-          ? ('quote.accepted' as const)
-          : null
+    const zapierEvent = newStatus === 'sent' ? ('quote.sent' as const) : null
     if (zapierEvent) {
       await dispatchWebhookEvent(user.tenantId!, zapierEvent, {
         quote_id: id,

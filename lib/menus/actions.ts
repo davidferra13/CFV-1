@@ -148,26 +148,6 @@ export type UpdateComponentInput = z.infer<typeof UpdateComponentSchema>
 export type { ComponentCategory, TransportCategory } from './constants'
 // COMPONENT_CATEGORIES and TRANSPORT_CATEGORIES are in lib/menus/constants.ts
 
-async function getMenuCourseCountForEventSync(supabase: any, menuId: string, tenantId: string) {
-  const { data: dishRows, error: dishError } = await (supabase
-    .from('dishes' as any)
-    .select('course_number')
-    .eq('menu_id', menuId)
-    .eq('tenant_id', tenantId) as any)
-
-  if (dishError) {
-    throw new UnknownAppError('Failed to calculate menu course count')
-  }
-
-  const courseNumbers = new Set<number>(
-    ((dishRows ?? []) as any[])
-      .map((dish) => Number(dish?.course_number ?? NaN))
-      .filter((value) => Number.isFinite(value) && value > 0)
-  )
-
-  return Math.max(courseNumbers.size, 1)
-}
-
 // ============================================
 // MENU CRUD
 // ============================================
@@ -601,58 +581,16 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Verify event belongs to tenant
-  const { data: event } = await supabase
-    .from('events')
-    .select('tenant_id')
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-    .single()
-
-  if (!event) {
-    throw new UnknownAppError('Event not found')
-  }
-
-  const { data: menu } = await supabase
-    .from('menus')
-    .select('id')
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-    .maybeSingle()
-
-  if (!menu) {
-    throw new UnknownAppError('Menu not found')
-  }
-
-  const menuCourseCount = await getMenuCourseCountForEventSync(supabase, menuId, user.tenantId!)
-
-  // Update menu to attach to event
-  const { error } = await supabase
-    .from('menus')
-    .update({ event_id: eventId, updated_by: user.id })
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
+  const { error } = await supabase.rpc('attach_menu_to_event_atomic', {
+    p_event_id: eventId,
+    p_menu_id: menuId,
+    p_tenant_id: user.tenantId!,
+    p_actor_id: user.id,
+  })
 
   if (error) {
-    console.error('[attachMenuToEvent] Error:', error)
-    throw new UnknownAppError('Failed to attach menu to event')
-  }
-
-  const { error: eventUpdateError } = await (supabase
-    .from('events' as any)
-    .update({
-      menu_id: menuId,
-      course_count: menuCourseCount,
-      updated_by: user.id,
-    })
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!) as any)
-
-  if (eventUpdateError) {
-    throw new UnknownAppError('Menu attached, but event menu link failed')
+    console.error('[attachMenuToEvent] RPC error:', error)
+    throw new UnknownAppError(error.message || 'Failed to attach menu to event')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -667,41 +605,21 @@ export async function detachMenuFromEvent(menuId: string) {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Get current event_id for revalidation
-  const { data: menu } = await supabase
-    .from('menus')
-    .select('event_id')
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-    .single()
-
-  const { error } = await supabase
-    .from('menus')
-    .update({ event_id: null, updated_by: user.id })
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
+  const { data, error } = await supabase.rpc('detach_menu_from_event_atomic', {
+    p_menu_id: menuId,
+    p_tenant_id: user.tenantId!,
+    p_actor_id: user.id,
+  })
 
   if (error) {
-    console.error('[detachMenuFromEvent] Error:', error)
-    throw new UnknownAppError('Failed to detach menu from event')
+    console.error('[detachMenuFromEvent] RPC error:', error)
+    throw new UnknownAppError(error.message || 'Failed to detach menu from event')
   }
 
-  if (menu?.event_id) {
-    await (supabase
-      .from('events' as any)
-      .update({
-        menu_id: null,
-        updated_by: user.id,
-      })
-      .eq('id', menu.event_id)
-      .eq('tenant_id', user.tenantId!)
-      .eq('menu_id', menuId) as any)
-  }
+  const detached = data as { event_id: string | null } | null
 
-  if (menu?.event_id) {
-    revalidatePath(`/events/${menu.event_id}`)
+  if (detached?.event_id) {
+    revalidatePath(`/events/${detached.event_id}`)
   }
   revalidatePath(`/menus/${menuId}`)
   return { success: true }

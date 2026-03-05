@@ -1,0 +1,3 @@
+vendor_id,vendor_name,category,contact_name,phone,email,minimum_order,lead_time_days,delivery_days,backup_vendor,payment_terms,notes
+VEN-001,Artisan Cheese House,cheese,Sample Rep,555-0100,rep@example.com,250,3,Mon Wed Fri,Backup Cheese Co,Net 15,Sample row
+

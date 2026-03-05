@@ -3,6 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getQolMetricsSummary, getSystemHealthStats } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Activity, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react'
 
 export default async function AdminSystemPage() {
@@ -56,6 +57,16 @@ export default async function AdminSystemPage() {
           {error}
         </div>
       )}
+
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">Operational Checks</h2>
+        <Link
+          href="/admin/system/payments"
+          className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all"
+        >
+          Open Payments Health
+        </Link>
+      </div>
 
       {health && (
         <>

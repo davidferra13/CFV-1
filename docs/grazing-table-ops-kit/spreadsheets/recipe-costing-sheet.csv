@@ -1,0 +1,3 @@
+item_id,item_name,portion_size,unit,planned_servings,ingredient,ingredient_qty,ingredient_unit,ingredient_unit_cost,ingredient_ext_cost,yield_percent,usable_cost,total_recipe_cost,cost_per_portion,allergens,notes
+ITEM-001,Brie Wedge,1.5,oz,100,Brie Cheese,12,lb,6.5,78,100,78,78,0.78,milk,Sample row
+

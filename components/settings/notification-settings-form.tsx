@@ -15,7 +15,11 @@ import {
   type SmsSettings,
 } from '@/lib/notifications/settings-actions'
 import { TIER_CHANNEL_DEFAULTS, DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
-import { type NotificationCategory, CATEGORY_LABELS } from '@/lib/notifications/types'
+import {
+  type NotificationCategory,
+  type NotificationAction,
+  CATEGORY_LABELS,
+} from '@/lib/notifications/types'
 
 // Chef-facing categories only (omit client-facing)
 const CHEF_CATEGORIES: NotificationCategory[] = [
@@ -25,18 +29,31 @@ const CHEF_CATEGORIES: NotificationCategory[] = [
   'payment',
   'chat',
   'client',
+  'loyalty',
+  'goals',
+  'lead',
+  'protection',
+  'wellbeing',
+  'review',
+  'ops',
   'system',
 ]
 
 // Representative action for each category (used to compute tier default)
-const CATEGORY_REPRESENTATIVE_ACTION: Partial<Record<NotificationCategory, string>> = {
+const CATEGORY_REPRESENTATIVE_ACTION: Record<NotificationCategory, NotificationAction> = {
   inquiry: 'new_inquiry',
   quote: 'quote_accepted',
   event: 'event_paid',
   payment: 'payment_received',
   chat: 'new_message',
   client: 'client_signup',
-  loyalty: 'gift_card_purchased',
+  loyalty: 'reward_redeemed_by_client',
+  goals: 'goal_nudge',
+  lead: 'new_guest_lead',
+  protection: 'insurance_expiring_7d',
+  wellbeing: 'burnout_risk_high',
+  review: 'review_submitted',
+  ops: 'task_assigned',
   system: 'system_alert',
 }
 
@@ -45,7 +62,7 @@ function getTierDefault(category: NotificationCategory): {
   push: boolean
   sms: boolean
 } {
-  const action = CATEGORY_REPRESENTATIVE_ACTION[category] as keyof typeof DEFAULT_TIER_MAP
+  const action = CATEGORY_REPRESENTATIVE_ACTION[category]
   const tier = DEFAULT_TIER_MAP[action]
   return TIER_CHANNEL_DEFAULTS[tier]
 }

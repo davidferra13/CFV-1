@@ -13,6 +13,18 @@ import {
 import type { RevenueGoalSnapshot } from '@/lib/revenue-goals/types'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
+const GOAL_MILESTONE_THRESHOLDS = [25, 50, 75, 100]
+const GOAL_MILESTONE_SYSTEM_KEY = 'goal_milestone'
+const GOAL_WEEKLY_DIGEST_SYSTEM_KEY = 'goal_weekly_digest'
+
+function getUtcWeekStart(date: Date): string {
+  const day = date.getUTCDay()
+  const offset = day === 0 ? 6 : day - 1 // Monday start
+  const monday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
+  monday.setUTCDate(monday.getUTCDate() - offset)
+  return monday.toISOString().slice(0, 10)
+}
+
 async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
@@ -50,12 +62,19 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
 
   let notified = 0
   let skipped = 0
+  let milestoneNotified = 0
+  let weeklyDigestNotified = 0
+  let goalSignalSkipped = 0
   const errors: string[] = []
 
   for (const tenantId of tenantIds) {
     try {
       // ── 2. Write goal snapshots for new-style chef_goals ─────────────────────
       await writeGoalSnapshotsForTenant(supabase, tenantId, now, today)
+      const goalSignalResult = await emitGoalSignalNotifications(supabase, tenantId, now, today)
+      milestoneNotified += goalSignalResult.milestoneNotified
+      weeklyDigestNotified += goalSignalResult.weeklyDigestNotified
+      goalSignalSkipped += goalSignalResult.skipped
 
       // ── 3. Legacy revenue-goal snapshot + notification ────────────────────────
       const snapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase)
@@ -73,7 +92,7 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
         .from('notifications')
         .select('id')
         .eq('tenant_id', tenantId)
-        .eq('action', 'system_alert')
+        .eq('action', 'goal_nudge')
         .gte('created_at', `${today}T00:00:00.000Z`)
         .contains('metadata', { system_key: 'revenue_goal_nudge' })
         .limit(1)
@@ -93,8 +112,8 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
       await createNotification({
         tenantId,
         recipientId,
-        category: 'system',
-        action: 'system_alert',
+        category: 'goals',
+        action: 'goal_nudge',
         title: top.title,
         body: top.description,
         actionUrl: '/goals',
@@ -111,7 +130,15 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  const result = { processed: tenantIds.length, notified, skipped, errors }
+  const result = {
+    processed: tenantIds.length,
+    notified,
+    skipped,
+    milestoneNotified,
+    weeklyDigestNotified,
+    goalSignalSkipped,
+    errors,
+  }
   await recordCronHeartbeat('revenue-goals', result)
   return NextResponse.json(result)
 }
@@ -228,4 +255,163 @@ async function writeGoalSnapshotsForTenant(
       // Non-fatal: snapshot failure for one goal should not abort the rest
     }
   }
+}
+
+async function emitGoalSignalNotifications(
+  supabase: any,
+  tenantId: string,
+  now: Date,
+  today: string
+): Promise<{ milestoneNotified: number; weeklyDigestNotified: number; skipped: number }> {
+  const { data: activeGoals } = await supabase
+    .from('chef_goals')
+    .select('id, label')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'active')
+
+  const goals = (activeGoals ?? []) as Array<{ id: string; label: string | null }>
+  if (goals.length === 0) {
+    return { milestoneNotified: 0, weeklyDigestNotified: 0, skipped: 0 }
+  }
+
+  const goalIds = goals.map((goal) => goal.id)
+  const goalLabelById = new Map(goals.map((goal) => [goal.id, goal.label ?? 'Goal']))
+  const lookbackStart = new Date(now.getTime() - 35 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10)
+  const weekStart = getUtcWeekStart(now)
+
+  const { data: snapshots } = await supabase
+    .from('goal_snapshots')
+    .select('goal_id, snapshot_date, progress_percent')
+    .eq('tenant_id', tenantId)
+    .in('goal_id', goalIds)
+    .gte('snapshot_date', lookbackStart)
+    .lte('snapshot_date', today)
+    .order('snapshot_date', { ascending: false })
+
+  const rows = (snapshots ?? []) as Array<{
+    goal_id: string
+    snapshot_date: string
+    progress_percent: number
+  }>
+  if (rows.length === 0) {
+    return { milestoneNotified: 0, weeklyDigestNotified: 0, skipped: 0 }
+  }
+
+  const todayRows = rows.filter((row) => row.snapshot_date === today)
+  if (todayRows.length === 0) {
+    return { milestoneNotified: 0, weeklyDigestNotified: 0, skipped: 0 }
+  }
+
+  const byGoal = new Map<string, Array<{ snapshot_date: string; progress_percent: number }>>()
+  for (const row of rows) {
+    const list = byGoal.get(row.goal_id) ?? []
+    list.push({
+      snapshot_date: row.snapshot_date,
+      progress_percent: Number(row.progress_percent ?? 0),
+    })
+    byGoal.set(row.goal_id, list)
+  }
+
+  const recipientId = await getChefAuthUserId(tenantId)
+  if (!recipientId) {
+    return { milestoneNotified: 0, weeklyDigestNotified: 0, skipped: todayRows.length + 1 }
+  }
+
+  let milestoneNotified = 0
+  let weeklyDigestNotified = 0
+  let skipped = 0
+
+  for (const row of todayRows) {
+    const history = byGoal.get(row.goal_id) ?? []
+    const previousSnapshot = history.find((item) => item.snapshot_date < today)
+    const previousProgress = previousSnapshot ? Number(previousSnapshot.progress_percent ?? 0) : 0
+    const currentProgress = Number(row.progress_percent ?? 0)
+
+    const crossedMilestones = GOAL_MILESTONE_THRESHOLDS.filter(
+      (threshold) => previousProgress < threshold && currentProgress >= threshold
+    )
+    if (crossedMilestones.length === 0) continue
+
+    const milestone = crossedMilestones[crossedMilestones.length - 1]
+    const { data: existingMilestone } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('action', 'goal_milestone')
+      .contains('metadata', {
+        system_key: GOAL_MILESTONE_SYSTEM_KEY,
+        goal_id: row.goal_id,
+        milestone,
+      })
+      .limit(1)
+
+    if ((existingMilestone?.length ?? 0) > 0) {
+      skipped += 1
+      continue
+    }
+
+    const goalLabel = goalLabelById.get(row.goal_id) ?? 'Goal'
+    await createNotification({
+      tenantId,
+      recipientId,
+      category: 'goals',
+      action: 'goal_milestone',
+      title: `Goal milestone reached: ${milestone}%`,
+      body: `${goalLabel} is now at ${Math.round(currentProgress)}% progress.`,
+      actionUrl: '/goals',
+      metadata: {
+        system_key: GOAL_MILESTONE_SYSTEM_KEY,
+        goal_id: row.goal_id,
+        milestone,
+        previous_progress_percent: Math.round(previousProgress),
+        current_progress_percent: Math.round(currentProgress),
+        snapshot_date: today,
+      },
+    })
+    milestoneNotified += 1
+  }
+
+  const { data: existingDigest } = await supabase
+    .from('notifications')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('action', 'goal_weekly_digest')
+    .contains('metadata', {
+      system_key: GOAL_WEEKLY_DIGEST_SYSTEM_KEY,
+      week_start: weekStart,
+    })
+    .limit(1)
+
+  if ((existingDigest?.length ?? 0) === 0) {
+    const averageProgress = Math.round(
+      todayRows.reduce((sum, row) => sum + Number(row.progress_percent ?? 0), 0) / todayRows.length
+    )
+    const goalsAtOrAbove75 = todayRows.filter(
+      (row) => Number(row.progress_percent ?? 0) >= 75
+    ).length
+
+    await createNotification({
+      tenantId,
+      recipientId,
+      category: 'goals',
+      action: 'goal_weekly_digest',
+      title: 'Weekly goals digest',
+      body: `${todayRows.length} active goals tracked. ${goalsAtOrAbove75} goals are at 75%+ progress. Avg progress: ${averageProgress}%.`,
+      actionUrl: '/goals',
+      metadata: {
+        system_key: GOAL_WEEKLY_DIGEST_SYSTEM_KEY,
+        week_start: weekStart,
+        goals_tracked: todayRows.length,
+        goals_at_or_above_75_percent: goalsAtOrAbove75,
+        average_progress_percent: averageProgress,
+      },
+    })
+    weeklyDigestNotified = 1
+  } else {
+    skipped += 1
+  }
+
+  return { milestoneNotified, weeklyDigestNotified, skipped }
 }

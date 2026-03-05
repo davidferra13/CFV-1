@@ -4,6 +4,9 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+const CONVERTING_QUOTE_SELECT =
+  'id, guest_count_estimated, total_quoted_cents, pricing_model, deposit_amount_cents, status, valid_until, created_at'
+
 export async function acknowledgeScopeDrift(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
@@ -43,22 +46,37 @@ export async function getConvertingQuote(eventId: string) {
   }
 
   if (!event.converting_quote_id) {
-    // Fallback: find a quote linked to this event by event_id
-    const { data: quote } = await supabase
+    // Fallback: prefer an accepted quote linked to the event.
+    const { data: acceptedQuote } = await supabase
       .from('quotes')
-      .select('id, guest_count, total_cents, service_hours, event_type')
+      .select(CONVERTING_QUOTE_SELECT)
       .eq('event_id', eventId)
       .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: true })
+      .eq('status', 'accepted')
+      .order('accepted_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
-    return quote ?? null
+    if (acceptedQuote) {
+      return acceptedQuote
+    }
+
+    // Otherwise return the latest linked quote.
+    const { data: latestQuote } = await supabase
+      .from('quotes')
+      .select(CONVERTING_QUOTE_SELECT)
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    return latestQuote ?? null
   }
 
   const { data: quote } = await supabase
     .from('quotes')
-    .select('id, guest_count, total_cents, service_hours, event_type')
+    .select(CONVERTING_QUOTE_SELECT)
     .eq('id', event.converting_quote_id)
     .eq('tenant_id', tenantId)
     .maybeSingle()

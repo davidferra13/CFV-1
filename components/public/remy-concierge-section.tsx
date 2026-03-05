@@ -8,7 +8,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Send, Loader2, MessageCircle, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints, CHEFFLOW_FEATURE_MAP } from '@/lib/ai/chefflow-feature-map'
+import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
 
 interface Message {
   id: string
@@ -39,6 +41,10 @@ export function RemyConciergeSection() {
       const trimmed = (text ?? input).trim()
       if (!trimmed || isStreaming) return
 
+      trackEvent(ANALYTICS_EVENTS.REMY_MESSAGE_SENT, {
+        source: 'landing_section',
+        message_length: trimmed.length,
+      })
       setError(null)
 
       const userMsg: Message = {
@@ -160,15 +166,21 @@ export function RemyConciergeSection() {
                 className="overflow-hidden rounded-xl border border-stone-700 bg-stone-900 transition-shadow hover:shadow-sm"
               >
                 <button
-                  onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
+                  onClick={
+                    NO_CLICK_FIRST_PUBLIC_ENABLED
+                      ? undefined
+                      : () => setExpandedFaq(expandedFaq === i ? null : i)
+                  }
                   className="flex w-full items-center justify-between px-5 py-4 text-left"
                 >
                   <span className="text-sm font-medium text-stone-200">{feature.painPoint}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${expandedFaq === i ? 'rotate-180' : ''}`}
-                  />
+                  {!NO_CLICK_FIRST_PUBLIC_ENABLED && (
+                    <ChevronDown
+                      className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${expandedFaq === i ? 'rotate-180' : ''}`}
+                    />
+                  )}
                 </button>
-                {expandedFaq === i && (
+                {(NO_CLICK_FIRST_PUBLIC_ENABLED || expandedFaq === i) && (
                   <div className="border-t border-stone-800 bg-stone-800 px-5 py-4">
                     <p className="text-sm leading-relaxed text-stone-400">{feature.solution}</p>
                     <p className="mt-3 text-xs font-medium text-brand-400">

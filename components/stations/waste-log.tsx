@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
-// Waste Log — Waste tracking panel for a station
+// Waste Log â€” Waste tracking panel for a station
 // Table of waste entries with reason badges and summary totals.
 
 import { useState, useEffect } from 'react'

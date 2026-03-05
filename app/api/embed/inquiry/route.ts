@@ -31,7 +31,10 @@ const EmbedInquirySchema = z.object({
   // Optional
   phone: z.string().max(50).optional().or(z.literal('')),
   address: z.string().max(500).optional().or(z.literal('')),
-  budget_range: z.enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000']).optional(),
+  budget_cents: z.number().int().nonnegative().nullable().optional(),
+  budget_range: z
+    .enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000', 'not_sure'])
+    .optional(),
   allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
   allergies_food_restrictions: z.string().max(2000).optional().or(z.literal('')),
   favorite_ingredients_dislikes: z.string().max(2000).optional().or(z.literal('')),
@@ -45,14 +48,6 @@ const EmbedInquirySchema = z.object({
   // Cloudflare Turnstile CAPTCHA token (optional — graceful bypass when not configured)
   turnstile_token: z.string().max(4096).optional().or(z.literal('')),
 })
-
-const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
-  under_500: 25000,
-  '500_1500': 100000,
-  '1500_3000': 225000,
-  '3000_5000': 400000,
-  over_5000: 600000,
-}
 
 // ── CORS preflight ──
 export async function OPTIONS() {
@@ -186,6 +181,11 @@ export async function POST(request: NextRequest) {
       `Source: Embedded widget`,
       `Serving Time: ${data.serve_time.trim()}`,
       data.address?.trim() ? `Address: ${data.address.trim()}` : null,
+      data.budget_cents != null
+        ? `Exact Budget: $${(data.budget_cents / 100).toFixed(2)}`
+        : data.budget_range
+          ? `Budget Range: ${data.budget_range}`
+          : null,
       data.favorite_ingredients_dislikes?.trim()
         ? `Favorites/Dislikes: ${data.favorite_ingredients_dislikes.trim()}`
         : null,
@@ -196,10 +196,18 @@ export async function POST(request: NextRequest) {
     ].filter(Boolean)
     const sourceMessage = sourceParts.join('\n')
 
-    // Derive budget in cents from range
-    const budgetCents = data.budget_range
-      ? (BUDGET_RANGE_MIDPOINTS[data.budget_range] ?? null)
-      : null
+    // Only persist exact cents when explicitly provided.
+    const budgetCents = data.budget_cents ?? null
+    const budgetMode: 'exact' | 'range' | 'not_sure' | 'unset' =
+      budgetCents != null
+        ? 'exact'
+        : data.budget_range === 'not_sure'
+          ? 'not_sure'
+          : data.budget_range
+            ? 'range'
+            : 'unset'
+    const budgetRange = data.budget_range ?? null
+    const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
 
     // Parse dietary restrictions
     const allergiesList = data.allergies_food_restrictions
@@ -230,7 +238,9 @@ export async function POST(request: NextRequest) {
           address: data.address?.trim() || null,
           serve_time: data.serve_time.trim(),
           allergy_flag: data.allergy_flag ?? null,
+          budget_mode: budgetMode,
           budget_range: data.budget_range ?? null,
+          budget_exact_cents: budgetCents,
           favorite_ingredients_dislikes: data.favorite_ingredients_dislikes?.trim() || null,
           allergies_food_restrictions: data.allergies_food_restrictions?.trim() || null,
           additional_notes: data.additional_notes?.trim() || null,
@@ -307,7 +317,28 @@ export async function POST(request: NextRequest) {
       console.error('[embed-inquiry] Acknowledgment email failed (non-blocking):', emailErr)
     }
 
-    // 7. Enqueue Remy AI lead scoring (non-blocking)
+    // 7. Fire automations (non-blocking)
+    try {
+      const { evaluateAutomations } = await import('@/lib/automations/engine')
+      await evaluateAutomations(tenantId, 'inquiry_created', {
+        entityId: inquiry.id,
+        entityType: 'inquiry',
+        fields: {
+          channel: 'website',
+          client_name: clientName,
+          occasion: data.occasion || null,
+          guest_count: data.guest_count ?? null,
+          budget_mode: budgetMode,
+          budget_known: budgetKnown,
+          budget_range: budgetRange,
+          budget_cents: budgetCents,
+        },
+      })
+    } catch (automationErr) {
+      console.error('[embed-inquiry] Automation evaluation failed (non-blocking):', automationErr)
+    }
+
+    // 8. Enqueue Remy AI lead scoring (non-blocking)
     try {
       const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
       await onInquiryCreated(tenantId, inquiry.id, clientId, {
@@ -315,6 +346,8 @@ export async function POST(request: NextRequest) {
         clientName,
         occasion: data.occasion ?? undefined,
         budgetCents: budgetCents ?? undefined,
+        budgetMode,
+        budgetRange: budgetRange ?? undefined,
         guestCount: data.guest_count ?? undefined,
       })
     } catch (aiErr) {

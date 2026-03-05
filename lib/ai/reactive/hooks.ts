@@ -104,6 +104,8 @@ export async function onInquiryCreated(
     clientName?: string
     occasion?: string
     budgetCents?: number
+    budgetMode?: 'exact' | 'range' | 'not_sure' | 'unset'
+    budgetRange?: string
     guestCount?: number
   }
 ): Promise<void> {
@@ -118,6 +120,8 @@ export async function onInquiryCreated(
         clientName: metadata?.clientName,
         occasion: metadata?.occasion,
         budgetCents: metadata?.budgetCents,
+        budgetMode: metadata?.budgetMode,
+        budgetRange: metadata?.budgetRange,
         guestCount: metadata?.guestCount,
       },
       priority: AI_PRIORITY.REACTIVE,

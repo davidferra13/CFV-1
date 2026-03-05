@@ -15,6 +15,7 @@ import { format } from 'date-fns'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { createClientNotification } from '@/lib/notifications/client-actions'
 import { sendMenuApprovedChefEmail, sendMenuRevisionChefEmail } from '@/lib/email/notifications'
+import { pushToDLQ } from '@/lib/resilience/retry'
 
 // ============================================
 // SCHEMAS
@@ -91,40 +92,26 @@ export async function sendMenuForApproval(eventId: string) {
     }
   })
 
-  const now = new Date().toISOString()
+  const { data: rpcResponse, error: rpcError } = await supabase.rpc(
+    'send_menu_for_approval_atomic',
+    {
+      p_event_id: eventId,
+      p_chef_id: user.tenantId!,
+      p_menu_snapshot: menuSnapshot,
+      p_actor_id: user.id,
+    }
+  )
 
-  // Create approval request record
-  const { data: request, error: insertError } = await supabase
-    .from('menu_approval_requests')
-    .insert({
-      event_id: eventId,
-      chef_id: user.tenantId!,
-      client_id: client.id,
-      menu_snapshot: menuSnapshot,
-      sent_at: now,
-      status: 'sent',
-    })
-    .select('id')
-    .single()
-
-  if (insertError || !request) {
-    console.error('[sendMenuForApproval] Insert error:', insertError)
-    throw new Error('Failed to create approval request')
+  if (rpcError || !rpcResponse) {
+    console.error('[sendMenuForApproval] RPC error:', rpcError)
+    throw new Error('Failed to send menu for approval')
   }
 
-  // Update event approval status
-  await supabase
-    .from('events')
-    .update({
-      menu_approval_status: 'sent',
-      menu_sent_at: now,
-    })
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
+  const request = rpcResponse as { request_id: string }
 
   // Email the client
   if (client.email) {
-    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/my-events/${eventId}/approve-menu?req=${request.id}`
+    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/my-events/${eventId}/approve-menu?req=${request.request_id}`
     await sendEmail({
       to: client.email,
       subject: `Menu ready for review â€” ${event.occasion ?? 'your event'}`,
@@ -150,14 +137,22 @@ export async function sendMenuForApproval(eventId: string) {
       action: 'event_proposed_to_client',
       title: 'Menu ready for your review',
       body: `Review and approve the menu for ${event.occasion ?? 'your event'}`,
-      actionUrl: `/my-events/${eventId}/approve-menu?req=${request.id}`,
+      actionUrl: `/my-events/${eventId}/approve-menu?req=${request.request_id}`,
       eventId,
     })
   } catch (err) {
     console.error('[sendMenuForApproval] Non-blocking client notification failed:', err)
+    await pushToDLQ(createServerClient({ admin: true }) as any, {
+      tenantId: user.tenantId!,
+      jobType: 'menu.approval.notify_client',
+      jobId: eventId,
+      payload: { event_id: eventId, client_id: client.id },
+      errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
+      attempts: 1,
+    })
   }
 
-  return { success: true, requestId: request.id }
+  return { success: true, requestId: request.request_id }
 }
 
 /**
@@ -197,40 +192,22 @@ export async function approveMenu(requestId: string) {
   const user = await requireClient()
   const supabase: any = createServerClient()
 
-  const { data: request } = await supabase
-    .from('menu_approval_requests')
-    .select('id, event_id, chef_id, status')
-    .eq('id', requestId)
-    .eq('client_id', user.entityId)
-    .single()
+  const { data: rpcResponse, error: rpcError } = await supabase.rpc(
+    'respond_menu_approval_atomic',
+    {
+      p_request_id: requestId,
+      p_client_id: user.entityId,
+      p_new_status: 'approved',
+      p_revision_notes: null,
+      p_actor_id: user.id,
+    }
+  )
 
-  if (!request) throw new Error('Approval request not found')
-  if (request.status !== 'sent') throw new Error('This request is no longer pending')
-
-  const now = new Date().toISOString()
-
-  // Update the request (optimistic lock: only update if still 'sent')
-  const { data: updatedRequest, error: updateError } = await supabase
-    .from('menu_approval_requests')
-    .update({ status: 'approved', responded_at: now })
-    .eq('id', requestId)
-    .eq('client_id', user.entityId)
-    .eq('status', 'sent')
-    .select('id')
-
-  if (updateError || !updatedRequest || updatedRequest.length === 0) {
-    throw new Error('This request has already been responded to')
+  if (rpcError || !rpcResponse) {
+    throw new Error(rpcError?.message || 'This request has already been responded to')
   }
 
-  // Update the event
-  await supabase
-    .from('events')
-    .update({
-      menu_approval_status: 'approved',
-      menu_approved_at: now,
-      menu_revision_notes: null,
-    })
-    .eq('id', request.event_id)
+  const request = rpcResponse as { event_id: string; chef_id: string }
 
   revalidatePath(`/my-events/${request.event_id}`)
   revalidatePath(`/events/${request.event_id}`)
@@ -271,6 +248,14 @@ export async function approveMenu(requestId: string) {
     }
   } catch (err) {
     console.error('[approveMenu] Non-blocking chef notification failed:', err)
+    await pushToDLQ(createServerClient({ admin: true }) as any, {
+      tenantId: request.chef_id,
+      jobType: 'menu.approval.notify_chef',
+      jobId: requestId,
+      payload: { request_id: requestId, event_id: request.event_id, client_id: user.entityId },
+      errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
+      attempts: 1,
+    })
   }
 
   return { success: true }
@@ -284,42 +269,22 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
   const validated = RequestRevisionSchema.parse(input)
   const supabase: any = createServerClient()
 
-  const { data: request } = await supabase
-    .from('menu_approval_requests')
-    .select('id, event_id, status, chef_id')
-    .eq('id', validated.request_id)
-    .eq('client_id', user.entityId)
-    .single()
+  const { data: rpcResponse, error: rpcError } = await supabase.rpc(
+    'respond_menu_approval_atomic',
+    {
+      p_request_id: validated.request_id,
+      p_client_id: user.entityId,
+      p_new_status: 'revision_requested',
+      p_revision_notes: validated.notes,
+      p_actor_id: user.id,
+    }
+  )
 
-  if (!request) throw new Error('Approval request not found')
-  if (request.status !== 'sent') throw new Error('This request is no longer pending')
-
-  const now = new Date().toISOString()
-
-  // Optimistic lock: only update if still 'sent'
-  const { data: updatedRevision, error: revisionError } = await supabase
-    .from('menu_approval_requests')
-    .update({
-      status: 'revision_requested',
-      responded_at: now,
-      revision_notes: validated.notes,
-    })
-    .eq('id', validated.request_id)
-    .eq('client_id', user.entityId)
-    .eq('status', 'sent')
-    .select('id')
-
-  if (revisionError || !updatedRevision || updatedRevision.length === 0) {
-    throw new Error('This request has already been responded to')
+  if (rpcError || !rpcResponse) {
+    throw new Error(rpcError?.message || 'This request has already been responded to')
   }
 
-  await supabase
-    .from('events')
-    .update({
-      menu_approval_status: 'revision_requested',
-      menu_revision_notes: validated.notes,
-    })
-    .eq('id', request.event_id)
+  const request = rpcResponse as { event_id: string; chef_id: string }
 
   revalidatePath(`/my-events/${request.event_id}`)
   revalidatePath(`/events/${request.event_id}`)
@@ -360,6 +325,18 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
     }
   } catch (err) {
     console.error('[requestMenuRevision] Non-blocking chef notification failed:', err)
+    await pushToDLQ(createServerClient({ admin: true }) as any, {
+      tenantId: request.chef_id,
+      jobType: 'menu.revision.notify_chef',
+      jobId: validated.request_id,
+      payload: {
+        request_id: validated.request_id,
+        event_id: request.event_id,
+        client_id: user.entityId,
+      },
+      errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
+      attempts: 1,
+    })
   }
 
   return { success: true }

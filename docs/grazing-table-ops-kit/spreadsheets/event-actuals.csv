@@ -1,0 +1,3 @@
+event_id,event_date,actual_food_cost,actual_labor_cost_override,actual_rentals_disposables_cost,actual_transport_cost,actual_overhead_allocated,actual_misc_cost,notes
+EVT-001,2026-03-20,1650,,430,140,300,60,Sample row
+

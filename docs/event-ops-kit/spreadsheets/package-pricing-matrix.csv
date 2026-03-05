@@ -1,0 +1,5 @@
+package_type,guest_min,guest_max,included_staff,included_setup_hours,includes_decor,includes_florals,base_price_per_guest,minimum_event_price,travel_included_miles,extra_mile_fee,notes
+drop_off,25,300,0,0,no,no,16,900,15,2.5,Food delivery only
+styled_setup,40,300,2,3,yes,optional,24,1800,20,2.5,Styled install with labels and utensils
+staffed_service,50,400,3,6,yes,optional,32,3000,25,2.5,Setup plus staffed service window
+

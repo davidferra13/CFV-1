@@ -1,4 +1,5 @@
-﻿'use client'
+/* eslint-disable @next/next/no-img-element */
+'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Minus, Plus, CreditCard, Banknote, Wallet, X } from 'lucide-react'

@@ -1,0 +1,4 @@
+item_id,item_name,category,current_qty,unit,par_level,reorder_point,reorder_qty,preferred_vendor,last_price,last_order_date,notes
+INV-001,Mini tongs,utensil,120,ea,100,60,100,Restaurant Supply Co,1.2,2026-02-20,Sample row
+ING-001,Crackers,misc,40,box,35,20,25,Wholesale Foods,4.5,2026-03-01,Sample row
+

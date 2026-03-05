@@ -38,6 +38,9 @@ jobs:
       - name: ESLint
         run: npx next lint --max-warnings 0
 
+      - name: Notification audit (strict required actions)
+        run: npm run audit:notifications:strict
+
   # ─────────────────────────────────────────────────────────────────────────────
   # Job 2a: Critical Tests (financial, FSM, auth — must always pass)
   # ─────────────────────────────────────────────────────────────────────────────

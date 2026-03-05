@@ -5,7 +5,7 @@
 
 CREATE TABLE IF NOT EXISTS email_sender_reputation (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   sender_domain TEXT NOT NULL,
   sender_email TEXT,
   reputation TEXT NOT NULL DEFAULT 'unknown'
@@ -29,5 +29,11 @@ ALTER TABLE email_sender_reputation ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Tenant isolation for sender reputation"
   ON email_sender_reputation
   FOR ALL
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
-  WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid);
+  USING (
+    auth.role() = 'service_role'
+    OR tenant_id = get_current_tenant_id()
+  )
+  WITH CHECK (
+    auth.role() = 'service_role'
+    OR tenant_id = get_current_tenant_id()
+  );

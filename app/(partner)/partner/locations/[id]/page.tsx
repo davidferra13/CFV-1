@@ -1,6 +1,7 @@
-// Partner Portal — Location Detail
+/* eslint-disable @next/next/no-img-element */
+// Partner Portal â€” Location Detail
 // Shows full detail for a single location: photos, description, event history.
-// No client PII is shown — events display only occasion, date, guest count, status.
+// No client PII is shown â€” events display only occasion, date, guest count, status.
 
 import { getPartnerPortalData, getPartnerLocationEvents } from '@/lib/partners/portal-actions'
 import { notFound } from 'next/navigation'
@@ -27,7 +28,7 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
     <div className="space-y-8">
       {/* Back nav */}
       <Link href="/partner/locations" className="text-sm text-stone-500 hover:text-stone-200">
-        ← All Locations
+        â† All Locations
       </Link>
 
       {/* Header */}
@@ -118,9 +119,9 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
                     <td className="px-4 py-3 text-stone-300">
                       {format(new Date(evt.event_date), 'MMM d, yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '—'}</td>
+                    <td className="px-4 py-3 text-stone-300">{evt.occasion ?? 'â€”'}</td>
                     <td className="px-4 py-3 text-right text-stone-300">
-                      {evt.guest_count ?? '—'}
+                      {evt.guest_count ?? 'â€”'}
                     </td>
                   </tr>
                 ))}

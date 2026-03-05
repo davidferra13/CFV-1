@@ -557,7 +557,7 @@ export async function voidContract(contractId: string, reason?: string) {
         tenantId: user.tenantId!,
         clientId: eventData.client_id,
         category: 'event',
-        action: 'contract_signed',
+        action: 'contract_voided',
         title: 'Contract voided',
         body: `The contract for ${eventData.occasion || 'your event'} has been voided. Your chef will send an updated contract.`,
         actionUrl: `/my-events/${contract.event_id}`,

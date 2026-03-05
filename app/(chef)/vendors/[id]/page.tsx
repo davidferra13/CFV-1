@@ -10,6 +10,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { VendorForm } from '@/components/vendors/vendor-form'
 import { VendorPriceList } from '@/components/vendors/vendor-price-list'
+import { VendorCatalogReviewQueue } from '@/components/vendors/vendor-catalog-review-queue'
+import { listVendorCatalogQueue } from '@/lib/vendors/catalog-import-actions'
+import { VendorDocumentIntake } from '@/components/vendors/vendor-document-intake'
+import { listVendorDocumentUploads } from '@/lib/vendors/document-intake-actions'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import Link from 'next/link'
 
@@ -32,6 +36,8 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
   const vendor = await getVendor(id)
   const invoices = await listInvoices(id)
   const allVendors = await listVendors()
+  const pendingCatalogRows = await listVendorCatalogQueue(vendor.id, 'pending')
+  const vendorUploads = await listVendorDocumentUploads(vendor.id, 30)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -126,6 +132,12 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
 
       {/* Price list */}
       <VendorPriceList vendorId={vendor.id} items={vendor.items ?? []} />
+
+      {/* Supplier file intake */}
+      <VendorDocumentIntake vendorId={vendor.id} uploads={vendorUploads} />
+
+      {/* Catalog review queue */}
+      <VendorCatalogReviewQueue vendorId={vendor.id} rows={pendingCatalogRows} />
 
       {/* Invoice history */}
       <Card>

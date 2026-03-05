@@ -66,6 +66,39 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     },
   },
   {
+    label: 'Budget not sure → qualify quickly',
+    description: 'Create a task to confirm target spend when a new lead selects not sure.',
+    rule: {
+      name: 'Budget not sure qualification task',
+      description:
+        "Creates a same-day follow-up task when a new inquiry doesn't include a clear budget.",
+      trigger_event: 'inquiry_created',
+      conditions: [{ field: 'budget_mode', op: 'eq', value: 'not_sure' }],
+      action_type: 'create_follow_up_task',
+      action_config: {
+        description:
+          'Send budget-guidance follow-up to {{client_name}} for {{occasion}} ({{guest_count}} guests).',
+        due_hours: '2',
+      },
+    },
+  },
+  {
+    label: 'Budget missing → capture target spend',
+    description: 'Create a task when a new lead submits without any budget signal.',
+    rule: {
+      name: 'Missing budget follow-up task',
+      description:
+        'Creates a same-day follow-up task when a new inquiry has no budget selected or entered.',
+      trigger_event: 'inquiry_created',
+      conditions: [{ field: 'budget_mode', op: 'eq', value: 'unset' }],
+      action_type: 'create_follow_up_task',
+      action_config: {
+        description: 'Ask {{client_name}} for a target budget range before quoting {{occasion}}.',
+        due_hours: '2',
+      },
+    },
+  },
+  {
     label: 'Event is 24h away → prep reminder',
     description: 'Remind yourself to do a final check the day before an event.',
     rule: {

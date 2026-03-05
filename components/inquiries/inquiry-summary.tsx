@@ -51,6 +51,7 @@ export type InquirySummaryData = {
   confirmed_guest_count: number | null
   confirmed_location: string | null
   confirmed_budget_cents: number | null // pass null to suppress (client variant)
+  submitted_budget_label?: string | null
   confirmed_dietary_restrictions: string[] | null
   confirmed_service_expectations: string | null
   source_message: string | null
@@ -231,6 +232,17 @@ export function InquirySummary({ data, variant }: Props) {
               }
               icon={<DollarSign className="w-3.5 h-3.5" />}
               empty={!data.confirmed_budget_cents}
+            />
+          )}
+          {variant === 'client' && (
+            <FactItem
+              label="Budget"
+              value={
+                data.submitted_budget_label ||
+                (data.confirmed_budget_cents ? formatCurrency(data.confirmed_budget_cents) : 'TBD')
+              }
+              icon={<DollarSign className="w-3.5 h-3.5" />}
+              empty={!data.submitted_budget_label && !data.confirmed_budget_cents}
             />
           )}
         </div>

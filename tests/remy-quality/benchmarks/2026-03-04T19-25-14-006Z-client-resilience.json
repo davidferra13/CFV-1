@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "timestamp": "2026-03-04T19:25:14.006Z",
+    "suite": "client-resilience"
+  },
+  "summary": {
+    "total": 5,
+    "pass": 2,
+    "fail": 3
+  },
+  "tests": [
+    {
+      "name": "Bad Auth",
+      "pass": true,
+      "checks": [
+        {
+          "name": "No cookie at all",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        },
+        {
+          "name": "Garbage cookie",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        },
+        {
+          "name": "Expired session structure",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        },
+        {
+          "name": "Chef cookie (wrong role)",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        }
+      ]
+    },
+    {
+      "name": "NAV_SUGGESTIONS Validation",
+      "pass": true,
+      "checks": [
+        {
+          "name": "nav_suggestions_present",
+          "pass": true,
+          "detail": "1/8 responses included NAV_SUGGESTIONS"
+        },
+        {
+          "name": "no_malformed_json",
+          "pass": true,
+          "detail": "All NAV_SUGGESTIONS had valid JSON"
+        },
+        {
+          "name": "all_routes_valid",
+          "pass": true,
+          "detail": "All 1 suggested routes are valid client portal paths"
+        }
+      ]
+    },
+    {
+      "name": "Max History Capacity",
+      "pass": false,
+      "checks": [
+        {
+          "name": "no_crash",
+          "pass": false,
+          "detail": "Crashed: HTTP 401"
+        },
+        {
+          "name": "simple_q_with_big_history",
+          "pass": false,
+          "detail": "Failed: HTTP 401"
+        }
+      ]
+    },
+    {
+      "name": "Cold Model Load",
+      "pass": false,
+      "checks": [
+        {
+          "name": "cold_start_succeeds",
+          "pass": false,
+          "detail": "Failed: HTTP 401"
+        },
+        {
+          "name": "cold_start_timing",
+          "pass": true,
+          "detail": "Warm: 185ms, Cold: 9953ms, Slowdown: 53.8x"
+        },
+        {
+          "name": "within_timeout",
+          "pass": true,
+          "detail": "9953ms < 180000ms timeout"
+        }
+      ]
+    },
+    {
+      "name": "Rate Limit Exhaustion",
+      "pass": false,
+      "checks": [
+        {
+          "name": "rate_limit_triggered",
+          "pass": false,
+          "detail": "Rate limit NEVER triggered — 15 messages went through!",
+          "severity": "critical"
+        },
+        {
+          "name": "no_premature_blocking",
+          "pass": true,
+          "detail": "First 12 messages were not rate-limited"
+        }
+      ]
+    }
+  ]
+}

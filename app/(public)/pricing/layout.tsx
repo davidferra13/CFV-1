@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import { BreadcrumbJsonLd, FAQPageJsonLd, JsonLd } from '@/components/seo/json-ld'
 import { PRO_PRICE_MONTHLY, PRO_TRIAL_DAYS } from '@/lib/billing/constants'
 import { PRICING_FAQS } from '@/lib/billing/pricing-catalog'
+import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const IS_PUBLIC_LAUNCH = LAUNCH_MODE === 'public'
 
 export const metadata: Metadata = {
   title: 'Pricing - ChefFlow | Free, Pro, and Scale',
@@ -18,7 +20,9 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ChefFlow Pricing | Free + Pro',
-    description: `Start free. Pro is $${PRO_PRICE_MONTHLY}/month with a ${PRO_TRIAL_DAYS}-day free trial.`,
+    description: IS_PUBLIC_LAUNCH
+      ? `Start free. Pro is $${PRO_PRICE_MONTHLY}/month with a ${PRO_TRIAL_DAYS}-day free trial.`
+      : 'Pricing preview for closed beta chefs. Join the waitlist for early access.',
   },
   alternates: {
     canonical: `${BASE_URL}/pricing`,
@@ -49,7 +53,9 @@ const PRICING_APPLICATION_JSON_LD = {
       price: String(PRO_PRICE_MONTHLY),
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
-      description: `Automation, AI, and growth workflows with a ${PRO_TRIAL_DAYS}-day free trial.`,
+      description: IS_PUBLIC_LAUNCH
+        ? `Automation, AI, and growth workflows with a ${PRO_TRIAL_DAYS}-day free trial.`
+        : 'Automation, AI, and growth workflows available during beta onboarding.',
     },
   ],
 }

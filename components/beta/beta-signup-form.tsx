@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { submitBetaSignup } from '@/lib/beta/actions'
 
 export function BetaSignupForm() {
@@ -34,6 +35,9 @@ export function BetaSignupForm() {
       const result = await submitBetaSignup(formData)
 
       if (result.success) {
+        trackEvent(ANALYTICS_EVENTS.BETA_SIGNUP_SUBMITTED, {
+          referral_source: formData.referralSource || 'unknown',
+        })
         router.push('/beta/thank-you')
       } else {
         setStatus('error')

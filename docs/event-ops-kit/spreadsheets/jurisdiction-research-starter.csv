@@ -1,0 +1,6 @@
+state,county_or_city,agency_name,agency_type,license_or_permit,required_for,application_url,phone,email,last_verified,status,notes
+New York,Albany County,County Health Department,health,Food Service Establishment Permit,off-site catering,,,,,pending,Sample row
+New York,New York City,NYC Dept of Health,health,Food Service Establishment Permit,off-site catering,,,,,pending,Sample row
+New Jersey,Bergen County,County Health Department,health,Catering Permit,off-site catering,,,,,pending,Sample row
+Connecticut,Fairfield County,Local Health Department,health,Food Service License,off-site catering,,,,,pending,Sample row
+

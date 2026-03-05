@@ -111,7 +111,102 @@ export async function getDashboardQuoteStats() {
 }
 
 // ============================================
-// 3. Event Counts — this month + YTD
+// 3. Inquiry Budget Mix — recent lead quality signal
+// ============================================
+
+export type DashboardInquiryBudgetMix = {
+  exact: number
+  range: number
+  notSure: number
+  unset: number
+  known: number
+  knownPercent: number
+  total: number
+  windowDays: number
+}
+
+export async function getDashboardInquiryBudgetMix(windowDays = 90) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const safeWindowDays = Number.isFinite(windowDays) && windowDays > 0 ? Math.floor(windowDays) : 90
+  const cutoff = new Date(Date.now() - safeWindowDays * 24 * 60 * 60 * 1000).toISOString()
+
+  const { data: inquiries, error } = await supabase
+    .from('inquiries')
+    .select('confirmed_budget_cents, unknown_fields, created_at')
+    .eq('tenant_id', user.tenantId!)
+    .gte('created_at', cutoff)
+
+  if (error) {
+    console.error('[getDashboardInquiryBudgetMix] Error:', error)
+    return {
+      exact: 0,
+      range: 0,
+      notSure: 0,
+      unset: 0,
+      known: 0,
+      knownPercent: 0,
+      total: 0,
+      windowDays: safeWindowDays,
+    } as DashboardInquiryBudgetMix
+  }
+
+  let exact = 0
+  let range = 0
+  let notSure = 0
+  let unset = 0
+
+  for (const inquiry of inquiries || []) {
+    const exactCents = inquiry.confirmed_budget_cents
+    const fields =
+      inquiry.unknown_fields && typeof inquiry.unknown_fields === 'object'
+        ? (inquiry.unknown_fields as Record<string, unknown>)
+        : null
+
+    const modeRaw = fields?.budget_mode
+    const mode = typeof modeRaw === 'string' ? modeRaw : null
+    const rangeRaw = fields?.budget_range
+    const budgetRange = typeof rangeRaw === 'string' ? rangeRaw : null
+    const unknownExactRaw = fields?.budget_exact_cents
+    const unknownExactCents =
+      typeof unknownExactRaw === 'number'
+        ? unknownExactRaw
+        : typeof unknownExactRaw === 'string'
+          ? Number.parseInt(unknownExactRaw, 10)
+          : NaN
+
+    if (
+      (typeof exactCents === 'number' && exactCents > 0) ||
+      (Number.isFinite(unknownExactCents) && unknownExactCents > 0) ||
+      mode === 'exact'
+    ) {
+      exact++
+      continue
+    }
+
+    if (mode === 'not_sure' || budgetRange === 'not_sure') {
+      notSure++
+      continue
+    }
+
+    if (mode === 'range' || (budgetRange && budgetRange.trim().length > 0)) {
+      range++
+      continue
+    }
+
+    unset++
+  }
+
+  const total = exact + range + notSure + unset
+  const known = exact + range
+  const knownPercent = total > 0 ? Math.round((known / total) * 100) : 0
+
+  return { exact, range, notSure, unset, known, knownPercent, total, windowDays: safeWindowDays }
+}
+
+// ============================================
+// 4. Event Counts — this month + YTD
 // ============================================
 
 export async function getDashboardEventCounts() {

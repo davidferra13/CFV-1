@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
 
 const STEPS = [
   {
@@ -39,6 +40,7 @@ export function WorkflowSteps() {
   const [hasEntered, setHasEntered] = useState(false)
   const [activeStep, setActiveStep] = useState<number | null>(null)
   const [entranceStep, setEntranceStep] = useState(-1)
+  const interactiveDetails = !NO_CLICK_FIRST_PUBLIC_ENABLED
 
   // Fire the entrance animation once when the section scrolls into view
   useEffect(() => {
@@ -78,7 +80,7 @@ export function WorkflowSteps() {
       <div className="flex items-start justify-center gap-0">
         {STEPS.map((step, i) => {
           const revealed = entranceStep >= i
-          const isActive = activeStep === i
+          const isActive = interactiveDetails && activeStep === i
 
           return (
             <div key={step.label} className="flex items-center">
@@ -86,10 +88,10 @@ export function WorkflowSteps() {
               <Link
                 href={step.href}
                 className="group relative flex flex-col items-center gap-2 rounded-lg px-3 py-2 no-underline outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                onMouseEnter={() => setActiveStep(i)}
-                onMouseLeave={() => setActiveStep(null)}
-                onFocus={() => setActiveStep(i)}
-                onBlur={() => setActiveStep(null)}
+                onMouseEnter={interactiveDetails ? () => setActiveStep(i) : undefined}
+                onMouseLeave={interactiveDetails ? () => setActiveStep(null) : undefined}
+                onFocus={interactiveDetails ? () => setActiveStep(i) : undefined}
+                onBlur={interactiveDetails ? () => setActiveStep(null) : undefined}
                 style={{
                   opacity: revealed ? 1 : 0,
                   transform: revealed ? 'translateY(0)' : 'translateY(12px)',
@@ -140,31 +142,51 @@ export function WorkflowSteps() {
         })}
       </div>
 
-      {/* Blurb area - shows on hover/focus */}
-      <div className="relative mt-8 flex min-h-[100px] items-start justify-center">
-        {activeStep !== null ? (
-          <div
-            key={activeStep}
-            className="flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-2 duration-200"
-          >
-            <div className="text-lg font-bold text-stone-100">{STEPS[activeStep].title}</div>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-300">
-              {STEPS[activeStep].description}
+      {NO_CLICK_FIRST_PUBLIC_ENABLED ? (
+        <div
+          className={`mt-8 grid gap-3 sm:grid-cols-2 transition-opacity duration-500 ${
+            entranceStep >= STEPS.length - 1 ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          {STEPS.map((step) => (
+            <Link
+              key={step.label}
+              href={step.href}
+              className="rounded-xl border border-stone-700 bg-stone-900 px-4 py-3 text-left transition-colors hover:border-brand-700"
+            >
+              <p className="text-sm font-semibold text-stone-100">{step.title}</p>
+              <p className="mt-1 text-xs leading-relaxed text-stone-300">{step.description}</p>
+              <p className="mt-2 text-xs font-medium text-brand-500">Sign up &rarr;</p>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        // Blurb area - shows on hover/focus
+        <div className="relative mt-8 flex min-h-[100px] items-start justify-center">
+          {activeStep !== null ? (
+            <div
+              key={activeStep}
+              className="flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-2 duration-200"
+            >
+              <div className="text-lg font-bold text-stone-100">{STEPS[activeStep].title}</div>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-300">
+                {STEPS[activeStep].description}
+              </p>
+              <span className="mt-3 text-xs font-medium text-brand-600 group-hover:underline">
+                Sign up &rarr;
+              </span>
+            </div>
+          ) : (
+            <p
+              className={`text-sm text-stone-300 italic transition-opacity duration-500 ${
+                entranceStep >= STEPS.length - 1 ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              Hover each step for details
             </p>
-            <span className="mt-3 text-xs font-medium text-brand-600 group-hover:underline">
-              Sign up &rarr;
-            </span>
-          </div>
-        ) : (
-          <p
-            className={`text-sm text-stone-300 italic transition-opacity duration-500 ${
-              entranceStep >= STEPS.length - 1 ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            Hover each step for details
-          </p>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

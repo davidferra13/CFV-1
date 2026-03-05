@@ -1,6 +1,6 @@
 // Price Comparison Page
 // Compare ingredient prices across all vendors side-by-side.
-// Formula: sort by unit_price_cents ASC — no AI needed.
+// Lowest price is highlighted and best-value guidance is generated automatically.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ import { getPriceComparisonAll } from '@/lib/vendors/vendor-item-actions'
 import { PriceComparison } from '@/components/vendors/price-comparison'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Price Comparison — ChefFlow' }
+export const metadata: Metadata = { title: 'Price Comparison - ChefFlow' }
 
 export default async function PriceComparisonPage() {
   await requireChef()
@@ -25,8 +25,8 @@ export default async function PriceComparisonPage() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Price Comparison</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Compare prices across vendors for the same ingredients. Best price highlighted
-            automatically — pure math, no AI.
+            Compare prices across vendors for the same ingredients. Best price is highlighted
+            automatically, with best-value guidance generated when enough pricing data is available.
           </p>
         </div>
         <Link href="/food-cost">

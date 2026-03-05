@@ -44,6 +44,16 @@ export async function routeNotification(input: RouteInput): Promise<void> {
   const { notificationId, tenantId, recipientId, action, title, body, actionUrl } = input
 
   try {
+    const outboundEnabled = process.env.NOTIFICATIONS_OUTBOUND_ENABLED !== 'false'
+    if (!outboundEnabled) {
+      await Promise.allSettled([
+        logDelivery(notificationId, tenantId, 'email', 'skipped', 'Outbound disabled by env'),
+        logDelivery(notificationId, tenantId, 'push', 'skipped', 'Outbound disabled by env'),
+        logDelivery(notificationId, tenantId, 'sms', 'skipped', 'Outbound disabled by env'),
+      ])
+      return
+    }
+
     const channels = await resolveChannels(tenantId, recipientId, action)
 
     // Fire all enabled channels in parallel, log each result

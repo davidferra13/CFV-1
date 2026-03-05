@@ -11,12 +11,14 @@ import { getAARStats } from '@/lib/aar/actions'
 import { getClientsApproachingRewards } from '@/lib/loyalty/actions'
 import {
   getDashboardQuoteStats,
+  getDashboardInquiryBudgetMix,
   getDashboardEventCounts,
   getMonthOverMonthRevenue,
   getCurrentMonthExpenseSummary,
   getDashboardHoursSnapshot,
   getTopEventsByProfit,
   getMonthlyAvgHourlyRate,
+  type DashboardInquiryBudgetMix,
   type DashboardHoursCategoryEntry,
   type TopProfitEvent,
 } from '@/lib/dashboard/actions'
@@ -111,6 +113,16 @@ const emptyInquiryStats = {
   confirmed: 0,
   declined: 0,
   expired: 0,
+}
+const emptyInquiryBudgetMix: DashboardInquiryBudgetMix = {
+  exact: 0,
+  range: 0,
+  notSure: 0,
+  unset: 0,
+  known: 0,
+  knownPercent: 0,
+  total: 0,
+  windowDays: 90,
 }
 const emptyQuoteStats = {
   draft: 0,
@@ -285,6 +297,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
     clients,
     financials,
     inquiryStats,
+    inquiryBudgetMix,
     aarStats,
     quoteStats,
     eventCounts,
@@ -321,6 +334,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
     safe('clients', getClients, []),
     safe('financials', getTenantFinancialSummary, emptyFinancials),
     safe('inquiryStats', getInquiryStats, emptyInquiryStats),
+    safe('inquiryBudgetMix', () => getDashboardInquiryBudgetMix(90), emptyInquiryBudgetMix),
     safe('aarStats', getAARStats, null),
     safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats),
     safe('eventCounts', getDashboardEventCounts, emptyEventCounts),
@@ -365,6 +379,16 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
     inquiryStats.awaiting_chef +
     inquiryStats.quoted
   const totalInquiryCount = Object.values(inquiryStats).reduce((sum, value) => sum + value, 0)
+  const inquiryBudgetRows = [
+    { key: 'exact', label: 'Exact', count: inquiryBudgetMix.exact, color: 'bg-emerald-500' },
+    { key: 'range', label: 'Range', count: inquiryBudgetMix.range, color: 'bg-sky-500' },
+    { key: 'not_sure', label: 'Not sure', count: inquiryBudgetMix.notSure, color: 'bg-amber-500' },
+    { key: 'unset', label: 'Unset', count: inquiryBudgetMix.unset, color: 'bg-stone-500' },
+  ]
+  const inquiryBudgetNeedsAttention =
+    inquiryBudgetMix.total >= 5 && inquiryBudgetMix.knownPercent < 70
+  const inquiryBudgetMainGap =
+    inquiryBudgetMix.notSure >= inquiryBudgetMix.unset ? 'not sure' : 'unset'
   const shouldShowOnboardingAccelerator =
     eventCounts.ytd === 0 && (clients.length <= 10 || totalInquiryCount <= 10)
 
@@ -783,6 +807,84 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
                         </div>
                       )}
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Inquiry Budget Mix */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Budget Clarity</CardTitle>
+                      <Link
+                        href="/inquiries"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
+                      >
+                        Last {inquiryBudgetMix.windowDays}d <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {inquiryBudgetMix.total > 0 ? (
+                      <>
+                        <div className="text-3xl font-bold text-stone-100">
+                          {inquiryBudgetMix.knownPercent}%
+                        </div>
+                        <p className="text-sm text-stone-500 mt-1">
+                          with a known budget ({inquiryBudgetMix.known}/{inquiryBudgetMix.total})
+                        </p>
+                        <div className="mt-2 h-2 rounded-full bg-stone-800 overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500"
+                            style={{ width: `${inquiryBudgetMix.knownPercent}%` }}
+                          />
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-stone-800 space-y-1.5">
+                          {inquiryBudgetRows.map((row) => {
+                            const percent =
+                              inquiryBudgetMix.total > 0
+                                ? Math.round((row.count / inquiryBudgetMix.total) * 100)
+                                : 0
+                            return (
+                              <div
+                                key={row.key}
+                                className="flex items-center justify-between text-sm"
+                              >
+                                <span className="flex items-center gap-2 text-stone-300">
+                                  <span className={`h-2 w-2 rounded-full ${row.color}`} />
+                                  {row.label}
+                                </span>
+                                <span className="text-stone-500">
+                                  {row.count} ({percent}%)
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {inquiryBudgetNeedsAttention && (
+                          <div className="mt-3 rounded-md border border-amber-200 bg-amber-950 px-3 py-2 text-xs text-amber-700">
+                            Lead budget clarity is low. Most unknown-budget inquiries are marked as{' '}
+                            <span className="font-semibold">{inquiryBudgetMainGap}</span>. Consider
+                            enabling the budget qualification quick-start in{' '}
+                            <Link
+                              href="/settings/automations"
+                              className="font-medium text-brand-600 hover:text-brand-400"
+                            >
+                              Automations
+                            </Link>
+                            .
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-lg font-semibold text-stone-100">
+                          No inquiry data yet
+                        </div>
+                        <p className="text-sm text-stone-500 mt-1">
+                          Budget mix appears once inquiries come in.
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 

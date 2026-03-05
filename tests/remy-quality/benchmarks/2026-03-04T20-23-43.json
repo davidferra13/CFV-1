@@ -1,0 +1,3343 @@
+{
+  "runId": "ebc14eaa-7f03-4506-95c2-fa6638d3cb94",
+  "timestamp": "2026-03-04T20:23:43.381Z",
+  "suite": "data-accuracy",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 25,
+  "passed": 0,
+  "warned": 1,
+  "failed": 24,
+  "passRate": 0,
+  "durationMinutes": 15,
+  "averages": {
+    "classificationMs": 17622,
+    "firstTokenMs": 27375,
+    "totalMs": 37034,
+    "tokensPerSec": 12
+  },
+  "categoryBreakdown": {
+    "client_allergies": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 142215,
+      "avgMs": 28443
+    },
+    "client_details": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 233419,
+      "avgMs": 46684
+    },
+    "event_details": {
+      "total": 4,
+      "passed": 0,
+      "warned": 0,
+      "failed": 4,
+      "totalMs": 204037,
+      "avgMs": 51009
+    },
+    "financial_accuracy": {
+      "total": 4,
+      "passed": 0,
+      "warned": 1,
+      "failed": 3,
+      "totalMs": 142894,
+      "avgMs": 35724
+    },
+    "recipe_accuracy": {
+      "total": 3,
+      "passed": 0,
+      "warned": 0,
+      "failed": 3,
+      "totalMs": 73735,
+      "avgMs": 24578
+    },
+    "menu_accuracy": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 81426,
+      "avgMs": 40713
+    },
+    "inquiry_accuracy": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 48118,
+      "avgMs": 24059
+    }
+  },
+  "results": [
+    {
+      "promptId": "data-001",
+      "category": "client_allergies",
+      "prompt": "What allergies does Sarah Chen have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": ["dietary.check"],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["pescatarian"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6226,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 6226,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 330,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["pescatarian"],
+              "notes": "Sarah Chen's dietary restriction from demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 6226,
+        "intentEventMs": 6226,
+        "firstTokenMs": 6226,
+        "totalMs": 6226,
+        "tokenCount": 1,
+        "approxTokens": 17,
+        "tokensPerSec": 17
+      },
+      "responseLength": 68,
+      "tasks": 1
+    },
+    {
+      "promptId": "data-002",
+      "category": "client_allergies",
+      "prompt": "Does Emily Nakamura have any dietary restrictions?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.search", "client.details"],
+          "matched": ["client.search", "client.details"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 40141,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 40141,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 326,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["gluten-free", "gluten free", "wheat", "barley"],
+              "notes": "Emily Nakamura is gluten-free (wheat/barley) in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 40141,
+        "intentEventMs": 40141,
+        "firstTokenMs": 40141,
+        "totalMs": 40141,
+        "tokenCount": 1,
+        "approxTokens": 17,
+        "tokensPerSec": 17
+      },
+      "responseLength": 68,
+      "tasks": 2
+    },
+    {
+      "promptId": "data-003",
+      "category": "client_allergies",
+      "prompt": "What are the Park family's food allergies?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.search", "client.details"],
+          "matched": ["client.search", "client.details"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 40568,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 40568,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 323,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["peanut"],
+              "notes": "David & Kim Park have peanut allergy in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 40568,
+        "intentEventMs": 40568,
+        "firstTokenMs": 40568,
+        "totalMs": 40568,
+        "tokenCount": 1,
+        "approxTokens": 17,
+        "tokensPerSec": 17
+      },
+      "responseLength": 68,
+      "tasks": 2
+    },
+    {
+      "promptId": "data-004",
+      "category": "client_allergies",
+      "prompt": "Check dietary needs for the Whitfield family",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": ["dietary.check"],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 7530,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 7530,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 327,
+          "tokenChars": 67,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["shellfish"],
+              "notes": "James & Patricia Whitfield have shellfish allergy in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 7530,
+        "intentEventMs": 7530,
+        "firstTokenMs": 7530,
+        "totalMs": 7530,
+        "tokenCount": 1,
+        "approxTokens": 17,
+        "tokensPerSec": 17
+      },
+      "responseLength": 67,
+      "tasks": 1
+    },
+    {
+      "promptId": "data-005",
+      "category": "client_allergies",
+      "prompt": "Is Sofia Reyes allergic to anything?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.search", "client.details"],
+          "matched": ["client.search", "client.details"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 47750,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 47750,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 323,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["dairy"],
+              "notes": "Sofia & Alejandro Reyes have dairy allergy in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 47750,
+        "intentEventMs": 47750,
+        "firstTokenMs": 47750,
+        "totalMs": 47750,
+        "tokenCount": 1,
+        "approxTokens": 17,
+        "tokensPerSec": 17
+      },
+      "responseLength": 68,
+      "tasks": 2
+    },
+    {
+      "promptId": "data-006",
+      "category": "client_details",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 36178,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 53225,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 91,
+          "tokenChars": 91,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: client_count",
+          "dataResults": [
+            {
+              "field": "client_count",
+              "pass": false,
+              "mustMatch": ["10", "ten"],
+              "notes": "Demo data has exactly 10 clients"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 36178,
+        "intentEventMs": 36178,
+        "firstTokenMs": 50076,
+        "totalMs": 53225,
+        "tokenCount": 26,
+        "approxTokens": 23,
+        "tokensPerSec": 7.3
+      },
+      "responseLength": 91,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-007",
+      "category": "client_details",
+      "prompt": "Tell me about Anika Patel",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 19697,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 40318,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 310,
+          "tokenChars": 310,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: dietary_restriction, event_type",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["vegetarian"],
+              "notes": "Anika Patel is vegetarian with tree nut allergy"
+            },
+            {
+              "field": "event_type",
+              "pass": false,
+              "mustMatch": ["corporate", "team"],
+              "notes": "Anika Patel books corporate team dinners (15-25 guests)"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 19697,
+        "intentEventMs": 19697,
+        "firstTokenMs": 33287,
+        "totalMs": 40318,
+        "tokenCount": 73,
+        "approxTokens": 78,
+        "tokensPerSec": 11.1
+      },
+      "responseLength": 310,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-008",
+      "category": "client_details",
+      "prompt": "What's Dr. Marcus Washington's dietary preference?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.details"],
+          "matched": ["client.details"],
+          "missed": ["client.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 63438,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 63438,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 194,
+          "tokenChars": 40,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["keto"],
+              "notes": "Dr. Marcus Washington follows keto diet"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 63438,
+        "intentEventMs": 63438,
+        "firstTokenMs": 63438,
+        "totalMs": 63438,
+        "tokenCount": 1,
+        "approxTokens": 10,
+        "tokensPerSec": 10
+      },
+      "responseLength": 40,
+      "tasks": 1
+    },
+    {
+      "promptId": "data-009",
+      "category": "client_details",
+      "prompt": "Is Claire Beaumont still an active client?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 8022,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 35031,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 508,
+          "tokenChars": 508,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: status",
+          "dataResults": [
+            {
+              "field": "status",
+              "pass": false,
+              "mustMatch": ["dormant", "inactive"],
+              "notes": "Claire Beaumont is dormant — had one event last year"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 8022,
+        "intentEventMs": 8022,
+        "firstTokenMs": 21178,
+        "totalMs": 35031,
+        "tokenCount": 135,
+        "approxTokens": 127,
+        "tokensPerSec": 9.2
+      },
+      "responseLength": 508,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-010",
+      "category": "client_details",
+      "prompt": "What's the Chen family's lifetime value?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details", "analytics.client_ltv"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details", "analytics.client_ltv"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 8317,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41407,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 717,
+          "tokenChars": 717,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: lifetime_value",
+          "dataResults": [
+            {
+              "field": "lifetime_value",
+              "pass": false,
+              "mustMatch": ["4,200", "4200", "$4,200", "$4200"],
+              "notes": "Sarah & Michael Chen have $4,200 lifetime value in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 8317,
+        "intentEventMs": 8317,
+        "firstTokenMs": 21287,
+        "totalMs": 41407,
+        "tokenCount": 190,
+        "approxTokens": 179,
+        "tokensPerSec": 8.9
+      },
+      "responseLength": 717,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-011",
+      "category": "event_details",
+      "prompt": "How many upcoming events do I have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.list_upcoming"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.list_upcoming"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 26035,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 63968,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 723,
+          "tokenChars": 723,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 26035,
+        "intentEventMs": 26035,
+        "firstTokenMs": 39897,
+        "totalMs": 63968,
+        "tokenCount": 225,
+        "approxTokens": 181,
+        "tokensPerSec": 7.5
+      },
+      "responseLength": 723,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-012",
+      "category": "event_details",
+      "prompt": "Tell me about the engagement party",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 26515,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 60518,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 791,
+          "tokenChars": 791,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: client, guest_count",
+          "dataResults": [
+            {
+              "field": "client",
+              "pass": false,
+              "mustMatch": ["reyes"],
+              "notes": "Engagement Party is for Sofia & Alejandro Reyes"
+            },
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["16"],
+              "notes": "Engagement Party has 16 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 26515,
+        "intentEventMs": 26515,
+        "firstTokenMs": 41007,
+        "totalMs": 60518,
+        "tokenCount": 186,
+        "approxTokens": 198,
+        "tokensPerSec": 10.1
+      },
+      "responseLength": 791,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-013",
+      "category": "event_details",
+      "prompt": "What's the guest count for the Book Club Birthday Dinner?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6599,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 25212,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 188,
+          "tokenChars": 188,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Book Club Birthday Dinner (Nakamura) has 10 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 6599,
+        "intentEventMs": 6599,
+        "firstTokenMs": 19269,
+        "totalMs": 25212,
+        "tokenCount": 45,
+        "approxTokens": 47,
+        "tokensPerSec": 7.9
+      },
+      "responseLength": 188,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-014",
+      "category": "event_details",
+      "prompt": "How many guests for the Summer BBQ?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 39106,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 54339,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 94,
+          "tokenChars": 94,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["35"],
+              "notes": "Summer BBQ Bash (O'Brien) has 35 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 39106,
+        "intentEventMs": 39106,
+        "firstTokenMs": 52034,
+        "totalMs": 54339,
+        "tokenCount": 27,
+        "approxTokens": 24,
+        "tokensPerSec": 10.4
+      },
+      "responseLength": 94,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-015",
+      "category": "financial_accuracy",
+      "prompt": "How much did we charge for the Winter Dinner Party?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 11615,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 36562,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 531,
+          "tokenChars": 531,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: total_amount",
+          "dataResults": [
+            {
+              "field": "total_amount",
+              "pass": false,
+              "mustMatch": ["2,400", "2400", "$2,400", "$2400", "1,500", "1500"],
+              "notes": "Chen Winter Dinner: deposit $500 + payment $1,500 + tip $400 = $2,400 total (or $1,500 payment without tip)"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 11615,
+        "intentEventMs": 11615,
+        "firstTokenMs": 24032,
+        "totalMs": 36562,
+        "tokenCount": 124,
+        "approxTokens": 133,
+        "tokensPerSec": 10.6
+      },
+      "responseLength": 531,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-016",
+      "category": "financial_accuracy",
+      "prompt": "What deposit did the Reyes family pay?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5458,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 57218,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1330,
+          "tokenChars": 1330,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["875", "$875"],
+              "notes": "Reyes paid $875 deposit (from demo fixtures)"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5458,
+        "intentEventMs": 5458,
+        "firstTokenMs": 18199,
+        "totalMs": 57218,
+        "tokenCount": 386,
+        "approxTokens": 333,
+        "tokensPerSec": 8.5
+      },
+      "responseLength": 1330,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-017",
+      "category": "financial_accuracy",
+      "prompt": "How much did I spend on groceries for the Winter Dinner Party?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5262,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 26317,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 391,
+          "tokenChars": 391,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: grocery_expense",
+          "dataResults": [
+            {
+              "field": "grocery_expense",
+              "pass": false,
+              "mustMatch": ["420", "$420"],
+              "notes": "Winter Dinner Party (Chen): Whole Foods groceries $420"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5262,
+        "intentEventMs": 5262,
+        "firstTokenMs": 17635,
+        "totalMs": 26317,
+        "tokenCount": 96,
+        "approxTokens": 98,
+        "tokensPerSec": 11.3
+      },
+      "responseLength": 391,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-018",
+      "category": "financial_accuracy",
+      "prompt": "How much was the Nakamura deposit?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5283,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 22797,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 198,
+          "tokenChars": 198,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["500", "$500"],
+              "notes": "Emily Nakamura's event deposit is $500"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5283,
+        "intentEventMs": 5283,
+        "firstTokenMs": 17798,
+        "totalMs": 22797,
+        "tokenCount": 59,
+        "approxTokens": 50,
+        "tokensPerSec": 10
+      },
+      "responseLength": 198,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-019",
+      "category": "recipe_accuracy",
+      "prompt": "How much does the Seared Scallops recipe cost?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": true,
+          "matched": ["scallop"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5065,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 24563,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 375,
+          "tokenChars": 375,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["36", "$36"],
+              "notes": "Seared Dayboat Scallops cost $36 in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5065,
+        "intentEventMs": 5065,
+        "firstTokenMs": 17331,
+        "totalMs": 24563,
+        "tokenCount": 82,
+        "approxTokens": 94,
+        "tokensPerSec": 13
+      },
+      "responseLength": 375,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-020",
+      "category": "recipe_accuracy",
+      "prompt": "What's the cost of the Herb-Crusted Lamb Rack recipe?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": true,
+          "matched": ["lamb"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5397,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 28781,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 593,
+          "tokenChars": 593,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["56", "$56"],
+              "notes": "Herb-Crusted Lamb Rack costs $56 in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5397,
+        "intentEventMs": 5397,
+        "firstTokenMs": 17600,
+        "totalMs": 28781,
+        "tokenCount": 124,
+        "approxTokens": 148,
+        "tokensPerSec": 13.2
+      },
+      "responseLength": 593,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-021",
+      "category": "recipe_accuracy",
+      "prompt": "How much does the A5 Wagyu recipe cost in ingredients?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": true,
+          "matched": ["wagyu"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5331,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 20391,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 152,
+          "tokenChars": 152,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: ingredient_cost",
+          "dataResults": [
+            {
+              "field": "ingredient_cost",
+              "pass": false,
+              "mustMatch": ["120", "$120"],
+              "notes": "A5 Wagyu ingredient cost is $120 in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5331,
+        "intentEventMs": 5331,
+        "firstTokenMs": 17485,
+        "totalMs": 20391,
+        "tokenCount": 36,
+        "approxTokens": 38,
+        "tokensPerSec": 13.1
+      },
+      "responseLength": 152,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-022",
+      "category": "menu_accuracy",
+      "prompt": "What courses are on the New England Spring Tasting menu?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list", "recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list", "recipe.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5017,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 29317,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 563,
+          "tokenChars": 563,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dish_name",
+          "dataResults": [
+            {
+              "field": "dish_name",
+              "pass": false,
+              "mustMatch": ["scallop", "lamb", "pea soup", "lemon olive oil cake"],
+              "notes": "NE Spring Tasting has: Chilled Pea Soup, Seared Scallops, Herb-Crusted Lamb Rack, Cheese Selection, Lemon Olive Oil Cake"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5017,
+        "intentEventMs": 5017,
+        "firstTokenMs": 17291,
+        "totalMs": 29317,
+        "tokenCount": 132,
+        "approxTokens": 141,
+        "tokensPerSec": 11.7
+      },
+      "responseLength": 563,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-023",
+      "category": "menu_accuracy",
+      "prompt": "How many guests does the Vegan Plant-Forward Feast serve?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5368,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 52109,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1194,
+          "tokenChars": 1194,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Vegan Plant-Forward Feast serves 10 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5368,
+        "intentEventMs": 5368,
+        "firstTokenMs": 17872,
+        "totalMs": 52109,
+        "tokenCount": 325,
+        "approxTokens": 299,
+        "tokensPerSec": 8.7
+      },
+      "responseLength": 1194,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-024",
+      "category": "inquiry_accuracy",
+      "prompt": "What's the budget for the Reyes engagement inquiry?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "inquiry.list_open"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "inquiry.list_open"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5225,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 26815,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 478,
+          "tokenChars": 478,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["3,500", "3500", "$3,500", "$3500"],
+              "notes": "Reyes engagement inquiry budget is $3,500"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5225,
+        "intentEventMs": 5225,
+        "firstTokenMs": 17703,
+        "totalMs": 26815,
+        "tokenCount": 97,
+        "approxTokens": 120,
+        "tokensPerSec": 13.2
+      },
+      "responseLength": 478,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-025",
+      "category": "inquiry_accuracy",
+      "prompt": "Why was the Beaumont inquiry declined?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "client.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "client.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5402,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 21303,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 174,
+          "tokenChars": 174,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["200", "$200"],
+              "notes": "Beaumont garden party inquiry was $200 — too low budget"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 5402,
+        "intentEventMs": 5402,
+        "firstTokenMs": 17729,
+        "totalMs": 21303,
+        "tokenCount": 43,
+        "approxTokens": 44,
+        "tokensPerSec": 12.3
+      },
+      "responseLength": 174,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "data-001",
+      "prompt": "What allergies does Sarah Chen have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": ["dietary.check"],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["pescatarian"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6226,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 6226,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 330,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["pescatarian"],
+              "notes": "Sarah Chen's dietary restriction from demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-002",
+      "prompt": "Does Emily Nakamura have any dietary restrictions?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.search", "client.details"],
+          "matched": ["client.search", "client.details"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 40141,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 40141,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 326,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["gluten-free", "gluten free", "wheat", "barley"],
+              "notes": "Emily Nakamura is gluten-free (wheat/barley) in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-003",
+      "prompt": "What are the Park family's food allergies?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.search", "client.details"],
+          "matched": ["client.search", "client.details"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 40568,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 40568,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 323,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["peanut"],
+              "notes": "David & Kim Park have peanut allergy in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-004",
+      "prompt": "Check dietary needs for the Whitfield family",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": ["dietary.check"],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 7530,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 7530,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 327,
+          "tokenChars": 67,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["shellfish"],
+              "notes": "James & Patricia Whitfield have shellfish allergy in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-005",
+      "prompt": "Is Sofia Reyes allergic to anything?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.search", "client.details"],
+          "matched": ["client.search", "client.details"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 47750,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 47750,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 323,
+          "tokenChars": 68,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["dairy"],
+              "notes": "Sofia & Alejandro Reyes have dairy allergy in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-006",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 36178,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 53225,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 91,
+          "tokenChars": 91,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: client_count",
+          "dataResults": [
+            {
+              "field": "client_count",
+              "pass": false,
+              "mustMatch": ["10", "ten"],
+              "notes": "Demo data has exactly 10 clients"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-007",
+      "prompt": "Tell me about Anika Patel",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 19697,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 40318,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 310,
+          "tokenChars": 310,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: dietary_restriction, event_type",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["vegetarian"],
+              "notes": "Anika Patel is vegetarian with tree nut allergy"
+            },
+            {
+              "field": "event_type",
+              "pass": false,
+              "mustMatch": ["corporate", "team"],
+              "notes": "Anika Patel books corporate team dinners (15-25 guests)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-008",
+      "prompt": "What's Dr. Marcus Washington's dietary preference?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": ["client.details"],
+          "matched": ["client.details"],
+          "missed": ["client.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 63438,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 63438,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 194,
+          "tokenChars": 40,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["keto"],
+              "notes": "Dr. Marcus Washington follows keto diet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-009",
+      "prompt": "Is Claire Beaumont still an active client?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 8022,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 35031,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 508,
+          "tokenChars": 508,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: status",
+          "dataResults": [
+            {
+              "field": "status",
+              "pass": false,
+              "mustMatch": ["dormant", "inactive"],
+              "notes": "Claire Beaumont is dormant — had one event last year"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-010",
+      "prompt": "What's the Chen family's lifetime value?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details", "analytics.client_ltv"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details", "analytics.client_ltv"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 8317,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41407,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 717,
+          "tokenChars": 717,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: lifetime_value",
+          "dataResults": [
+            {
+              "field": "lifetime_value",
+              "pass": false,
+              "mustMatch": ["4,200", "4200", "$4,200", "$4200"],
+              "notes": "Sarah & Michael Chen have $4,200 lifetime value in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-011",
+      "prompt": "How many upcoming events do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.list_upcoming"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.list_upcoming"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 26035,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 63968,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 723,
+          "tokenChars": 723,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "data-012",
+      "prompt": "Tell me about the engagement party",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 26515,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 60518,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 791,
+          "tokenChars": 791,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: client, guest_count",
+          "dataResults": [
+            {
+              "field": "client",
+              "pass": false,
+              "mustMatch": ["reyes"],
+              "notes": "Engagement Party is for Sofia & Alejandro Reyes"
+            },
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["16"],
+              "notes": "Engagement Party has 16 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-013",
+      "prompt": "What's the guest count for the Book Club Birthday Dinner?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6599,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 25212,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 188,
+          "tokenChars": 188,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Book Club Birthday Dinner (Nakamura) has 10 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-014",
+      "prompt": "How many guests for the Summer BBQ?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 39106,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 54339,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 94,
+          "tokenChars": 94,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["35"],
+              "notes": "Summer BBQ Bash (O'Brien) has 35 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-015",
+      "prompt": "How much did we charge for the Winter Dinner Party?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 11615,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 36562,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 531,
+          "tokenChars": 531,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: total_amount",
+          "dataResults": [
+            {
+              "field": "total_amount",
+              "pass": false,
+              "mustMatch": ["2,400", "2400", "$2,400", "$2400", "1,500", "1500"],
+              "notes": "Chen Winter Dinner: deposit $500 + payment $1,500 + tip $400 = $2,400 total (or $1,500 payment without tip)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-016",
+      "prompt": "What deposit did the Reyes family pay?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5458,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 57218,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1330,
+          "tokenChars": 1330,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["875", "$875"],
+              "notes": "Reyes paid $875 deposit (from demo fixtures)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-018",
+      "prompt": "How much was the Nakamura deposit?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5283,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 22797,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 198,
+          "tokenChars": 198,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["500", "$500"],
+              "notes": "Emily Nakamura's event deposit is $500"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-019",
+      "prompt": "How much does the Seared Scallops recipe cost?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": true,
+          "matched": ["scallop"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5065,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 24563,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 375,
+          "tokenChars": 375,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["36", "$36"],
+              "notes": "Seared Dayboat Scallops cost $36 in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-020",
+      "prompt": "What's the cost of the Herb-Crusted Lamb Rack recipe?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": true,
+          "matched": ["lamb"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5397,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 28781,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 593,
+          "tokenChars": 593,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["56", "$56"],
+              "notes": "Herb-Crusted Lamb Rack costs $56 in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-021",
+      "prompt": "How much does the A5 Wagyu recipe cost in ingredients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": true,
+          "matched": ["wagyu"],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5331,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 20391,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 152,
+          "tokenChars": 152,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: ingredient_cost",
+          "dataResults": [
+            {
+              "field": "ingredient_cost",
+              "pass": false,
+              "mustMatch": ["120", "$120"],
+              "notes": "A5 Wagyu ingredient cost is $120 in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-022",
+      "prompt": "What courses are on the New England Spring Tasting menu?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list", "recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list", "recipe.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5017,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 29317,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 563,
+          "tokenChars": 563,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dish_name",
+          "dataResults": [
+            {
+              "field": "dish_name",
+              "pass": false,
+              "mustMatch": ["scallop", "lamb", "pea soup", "lemon olive oil cake"],
+              "notes": "NE Spring Tasting has: Chilled Pea Soup, Seared Scallops, Herb-Crusted Lamb Rack, Cheese Selection, Lemon Olive Oil Cake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-023",
+      "prompt": "How many guests does the Vegan Plant-Forward Feast serve?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5368,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 52109,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1194,
+          "tokenChars": 1194,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Vegan Plant-Forward Feast serves 10 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-024",
+      "prompt": "What's the budget for the Reyes engagement inquiry?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "inquiry.list_open"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "inquiry.list_open"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5225,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 26815,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 478,
+          "tokenChars": 478,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["3,500", "3500", "$3,500", "$3500"],
+              "notes": "Reyes engagement inquiry budget is $3,500"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-025",
+      "prompt": "Why was the Beaumont inquiry declined?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "client.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "client.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5402,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 21303,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 174,
+          "tokenChars": 174,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["200", "$200"],
+              "notes": "Beaumont garden party inquiry was $200 — too low budget"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

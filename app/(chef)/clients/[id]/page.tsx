@@ -730,6 +730,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         preferredEventDays={(client as any).preferred_event_days ?? null}
         budgetRangeMinCents={(client as any).budget_range_min_cents ?? null}
         budgetRangeMaxCents={(client as any).budget_range_max_cents ?? null}
+        recurringPricingModel={(client as any).recurring_pricing_model ?? null}
+        recurringPriceCents={(client as any).recurring_price_cents ?? null}
+        recurringPricingNotes={(client as any).recurring_pricing_notes ?? null}
         cleanupExpectations={(client as any).cleanup_expectations ?? null}
         leftoversPref={(client as any).leftovers_preference ?? null}
       />

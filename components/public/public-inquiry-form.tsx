@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 
 interface Props {
   chefSlug: string
@@ -26,10 +27,12 @@ interface FormData {
   guest_count: string
   occasion: string
   budget_range: string
+  budget_exact_amount: string
   allergy_flag: string
   favorite_ingredients_dislikes: string
   allergies_food_restrictions: string
   additional_notes: string
+  website_url: string
 }
 
 interface FormErrors {
@@ -44,6 +47,7 @@ interface FormErrors {
   guest_count?: string
   occasion?: string
   budget_range?: string
+  budget_exact_amount?: string
   allergy_flag?: string
   allergies_food_restrictions?: string
 }
@@ -69,6 +73,7 @@ const BUDGET_RANGE_OPTIONS = [
   { value: '1500_3000', label: '$1,500 – $3,000' },
   { value: '3000_5000', label: '$3,000 – $5,000' },
   { value: 'over_5000', label: '$5,000+' },
+  { value: 'not_sure', label: 'Not sure yet' },
 ]
 
 const ALLERGY_FLAG_OPTIONS = [
@@ -93,6 +98,16 @@ const GUEST_COUNT_OPTIONS = [
   { value: '20', label: '20+ Guests' },
 ]
 
+function getBudgetMode(
+  budgetRange: string,
+  budgetExactAmount: string
+): 'exact' | 'range' | 'not_sure' | 'unset' {
+  if (budgetExactAmount.trim()) return 'exact'
+  if (budgetRange === 'not_sure') return 'not_sure'
+  if (budgetRange) return 'range'
+  return 'unset'
+}
+
 export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
   const [formData, setFormData] = useState<FormData>({
     full_name: '',
@@ -106,10 +121,12 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     guest_count: '',
     occasion: '',
     budget_range: '',
+    budget_exact_amount: '',
     allergy_flag: '',
     favorite_ingredients_dislikes: '',
     allergies_food_restrictions: '',
     additional_notes: '',
+    website_url: '',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -192,6 +209,13 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       newErrors.budget_range = 'Budget range is required'
     }
 
+    if (formData.budget_exact_amount.trim()) {
+      const parsedBudget = Number(formData.budget_exact_amount)
+      if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
+        newErrors.budget_exact_amount = 'Enter a valid amount'
+      }
+    }
+
     if (!formData.allergy_flag) {
       newErrors.allergy_flag = 'Please indicate allergy status'
     }
@@ -218,6 +242,10 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       const year = Number(formData.year)
       const eventDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const guestCount = parseInt(formData.guest_count, 10)
+      const budgetCents = formData.budget_exact_amount.trim()
+        ? Math.round(Number(formData.budget_exact_amount) * 100)
+        : null
+      const budgetMode = getBudgetMode(formData.budget_range, formData.budget_exact_amount)
 
       await submitPublicInquiry({
         chef_slug: chefSlug,
@@ -229,6 +257,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         phone: formData.phone.trim(),
         guest_count: guestCount,
         occasion: formData.occasion.trim(),
+        budget_cents: budgetCents,
         budget_range:
           (formData.budget_range as
             | 'under_500'
@@ -236,12 +265,22 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             | '1500_3000'
             | '3000_5000'
             | 'over_5000'
+            | 'not_sure'
             | undefined) || undefined,
         allergy_flag:
           (formData.allergy_flag as 'none' | 'yes' | 'unknown' | undefined) || undefined,
         favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
         allergies_food_restrictions: formData.allergies_food_restrictions.trim(),
         additional_notes: formData.additional_notes.trim(),
+        website_url: formData.website_url,
+      })
+
+      trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
+        source: 'public_profile',
+        budget_mode: budgetMode,
+        budget_range: formData.budget_range || null,
+        budget_exact_entered: budgetCents != null,
+        guest_count: guestCount,
       })
 
       setShowSuccess(true)
@@ -257,10 +296,12 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         guest_count: '',
         occasion: '',
         budget_range: '',
+        budget_exact_amount: '',
         allergy_flag: '',
         favorite_ingredients_dislikes: '',
         allergies_food_restrictions: '',
         additional_notes: '',
+        website_url: '',
       })
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -325,7 +366,17 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="relative space-y-6">
+          <div className="absolute opacity-0 -z-10 pointer-events-none" aria-hidden="true">
+            <input
+              type="text"
+              name="website_url"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.website_url}
+              onChange={handleChange}
+            />
+          </div>
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-stone-100">Send inquiry</h2>
             <p className="text-base text-stone-500 mt-2">
@@ -440,12 +491,24 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           />
 
           <Select
-            label="Budget range *"
+            label="Target investment (estimate) *"
             name="budget_range"
             value={formData.budget_range}
             onChange={handleChange}
             error={errors.budget_range}
             options={BUDGET_RANGE_OPTIONS}
+          />
+          <Input
+            label="Exact budget (optional)"
+            name="budget_exact_amount"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.budget_exact_amount}
+            onChange={handleChange}
+            error={errors.budget_exact_amount}
+            placeholder="e.g. 1800"
+            helperText="If known, enter an exact total budget."
           />
 
           <Textarea

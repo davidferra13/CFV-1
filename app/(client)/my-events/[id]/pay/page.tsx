@@ -34,6 +34,14 @@ export default async function PaymentPage({ params }: { params: { id: string } }
 
   // Determine payment amount (deposit or full balance)
   const depositAmountCents = event.deposit_amount_cents ?? 0
+  if (
+    quotedPriceCents <= 0 ||
+    depositAmountCents < 0 ||
+    (quotedPriceCents > 0 && depositAmountCents > quotedPriceCents)
+  ) {
+    redirect(`/my-events/${params.id}`)
+  }
+
   const hasDeposit = depositAmountCents > 0
   const paymentAmount =
     hasDeposit && totalPaidCents === 0 ? depositAmountCents : outstandingBalanceCents

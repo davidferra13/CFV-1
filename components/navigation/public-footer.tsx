@@ -1,18 +1,22 @@
 import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 const FOOTER_LINKS = {
   product: [
     { href: '/', label: 'Home' },
+    { href: '/compare', label: 'Compare' },
+    { href: '/customers', label: 'Customer Stories' },
     { href: '/chefs', label: 'Find a Chef' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/contact', label: 'Contact' },
   ],
   resources: [
     { href: '/blog', label: 'Blog' },
+    { href: '/faq', label: 'FAQ' },
+    { href: '/trust', label: 'Trust Center' },
     { href: '/partner-signup', label: 'Become a Partner' },
-    { href: '/auth/signup', label: 'Sign up' },
   ],
   legal: [
     { href: '/privacy', label: 'Privacy Policy' },
@@ -22,6 +26,11 @@ const FOOTER_LINKS = {
 
 export function PublicFooter() {
   const year = new Date().getFullYear()
+  const isBeta = LAUNCH_MODE === 'beta'
+  const resourcesLinks = [
+    ...FOOTER_LINKS.resources,
+    { href: PRIMARY_SIGNUP_HREF, label: isBeta ? 'Join Beta' : 'Sign up' },
+  ]
 
   return (
     <footer className="border-t border-stone-700/50 bg-stone-950/60 backdrop-blur-sm">
@@ -59,7 +68,7 @@ export function PublicFooter() {
         <div>
           <p className="text-sm font-semibold text-stone-100">Resources</p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_LINKS.resources.map((link) => (
+            {resourcesLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

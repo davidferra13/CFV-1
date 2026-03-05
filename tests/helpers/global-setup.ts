@@ -18,7 +18,7 @@ import { seedE2EData } from './e2e-seed'
 
 dotenv.config({ path: '.env.local' })
 
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
 const PUBLIC_ONLY_PROJECTS = new Set([
   'smoke',
   'public',

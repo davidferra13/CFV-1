@@ -4,19 +4,13 @@
 
 'use server'
 
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { z } from 'zod'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = 'davidferra13@gmail.com'
-
-const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
-  under_500: 25000,
-  '500_1500': 100000,
-  '1500_3000': 225000,
-  '3000_5000': 400000,
-  over_5000: 600000,
-}
 
 const PublicInquirySchema = z.object({
   chef_slug: z.string().optional(),
@@ -31,11 +25,14 @@ const PublicInquirySchema = z.object({
   // Optional
   phone: z.string().optional().or(z.literal('')),
   budget_cents: z.number().int().nonnegative().nullable().optional(),
-  budget_range: z.enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000']).optional(),
+  budget_range: z
+    .enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000', 'not_sure'])
+    .optional(),
   allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
   favorite_ingredients_dislikes: z.string().optional().or(z.literal('')),
   allergies_food_restrictions: z.string().optional().or(z.literal('')),
   additional_notes: z.string().optional().or(z.literal('')),
+  website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
 })
 
 export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
@@ -49,6 +46,21 @@ export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
  */
 export async function submitPublicInquiry(input: PublicInquiryInput) {
   const validated = PublicInquirySchema.parse(input)
+
+  if (validated.website_url?.trim()) {
+    // Honeypot filled by bots; return success to avoid retries.
+    return { success: true, inquiryCreated: false, eventCreated: false }
+  }
+
+  const hdrs = await headers()
+  const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  await checkRateLimit(`public-inquiry:ip:${ip}`, 8, 5 * 60_000)
+  await checkRateLimit(
+    `public-inquiry:email:${validated.email.toLowerCase().trim()}`,
+    4,
+    60 * 60_000
+  )
+
   const supabase = createServerClient({ admin: true })
   const allergiesList = validated.allergies_food_restrictions
     ? validated.allergies_food_restrictions
@@ -59,6 +71,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   const sourceParts = [
     `Serving Time: ${validated.serve_time.trim()}`,
+    validated.budget_cents != null
+      ? `Exact Budget: $${(validated.budget_cents / 100).toFixed(2)}`
+      : validated.budget_range
+        ? `Budget Range: ${validated.budget_range}`
+        : null,
     validated.favorite_ingredients_dislikes?.trim()
       ? `Favorites/Dislikes: ${validated.favorite_ingredients_dislikes.trim()}`
       : null,
@@ -97,11 +114,18 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     source: 'website',
   })
 
-  // Derive budget in cents: explicit value > range midpoint > null
-  const budgetCents =
-    validated.budget_cents ??
-    (validated.budget_range ? (BUDGET_RANGE_MIDPOINTS[validated.budget_range] ?? null) : null) ??
-    null
+  // Only persist exact budget cents when explicitly provided.
+  const budgetCents = validated.budget_cents ?? null
+  const budgetMode: 'exact' | 'range' | 'not_sure' | 'unset' =
+    budgetCents != null
+      ? 'exact'
+      : validated.budget_range === 'not_sure'
+        ? 'not_sure'
+        : validated.budget_range
+          ? 'range'
+          : 'unset'
+  const budgetRange = validated.budget_range ?? null
+  const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
 
   // 3. Create inquiry record linked to client
   const { data: inquiry, error: inquiryError } = await supabase
@@ -123,7 +147,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),
         allergy_flag: validated.allergy_flag ?? null,
+        budget_mode: budgetMode,
         budget_range: validated.budget_range ?? null,
+        budget_exact_cents: budgetCents,
         favorite_ingredients_dislikes: validated.favorite_ingredients_dislikes?.trim() || null,
         allergies_food_restrictions: validated.allergies_food_restrictions?.trim() || null,
         additional_notes: validated.additional_notes?.trim() || null,
@@ -166,7 +192,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       location_city: 'TBD',
       location_zip: 'TBD',
       occasion: validated.occasion.trim(),
-      quoted_price_cents: validated.budget_cents ?? null,
+      quoted_price_cents: budgetCents,
       special_requests: sourceMessage || null,
     })
     .select('id')
@@ -193,12 +219,34 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   // 7. Enqueue Remy reactive AI task — auto-score lead (non-blocking)
   try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine')
+    await evaluateAutomations(tenantId, 'inquiry_created', {
+      entityId: inquiry.id,
+      entityType: 'inquiry',
+      fields: {
+        channel: 'website',
+        client_name: validated.full_name,
+        occasion: validated.occasion || null,
+        guest_count: validated.guest_count ?? null,
+        budget_mode: budgetMode,
+        budget_known: budgetKnown,
+        budget_range: budgetRange,
+        budget_cents: budgetCents,
+      },
+    })
+  } catch (err) {
+    console.error('[submitPublicInquiry] Automation evaluation failed (non-blocking):', err)
+  }
+
+  try {
     const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
     await onInquiryCreated(tenantId, inquiry.id, client.id, {
       channel: 'website',
       clientName: validated.full_name,
       occasion: validated.occasion ?? undefined,
       budgetCents: validated.budget_cents ?? undefined,
+      budgetMode,
+      budgetRange: budgetRange ?? undefined,
       guestCount: validated.guest_count ?? undefined,
     })
   } catch (err) {

@@ -339,6 +339,49 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     throw new ValidationError('Cannot update event after it has been accepted')
   }
 
+  const pricingFields = ['pricing_model', 'quoted_price_cents', 'deposit_amount_cents'] as const
+  const isPricingFieldUpdate = pricingFields.some((field) =>
+    Object.prototype.hasOwnProperty.call(updateFields, field)
+  )
+
+  if (isPricingFieldUpdate) {
+    const convertingQuoteId = (currentEvent as any).converting_quote_id as string | null
+    let acceptedQuoteExists = false
+
+    if (convertingQuoteId) {
+      const { data: acceptedConvertingQuote } = await supabase
+        .from('quotes')
+        .select('id')
+        .eq('id', convertingQuoteId)
+        .eq('tenant_id', user.tenantId!)
+        .eq('status', 'accepted')
+        .is('deleted_at' as any, null)
+        .maybeSingle()
+
+      acceptedQuoteExists = !!acceptedConvertingQuote
+    }
+
+    if (!acceptedQuoteExists) {
+      const { data: acceptedLinkedQuote } = await supabase
+        .from('quotes')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('tenant_id', user.tenantId!)
+        .eq('status', 'accepted')
+        .is('deleted_at' as any, null)
+        .limit(1)
+        .maybeSingle()
+
+      acceptedQuoteExists = !!acceptedLinkedQuote
+    }
+
+    if (acceptedQuoteExists) {
+      throw new ValidationError(
+        'Pricing is locked to the accepted quote. Revise and resend a new quote to change pricing.'
+      )
+    }
+  }
+
   if (expected_updated_at && currentEvent.updated_at !== expected_updated_at) {
     throw createConflictError('This record changed elsewhere.', currentEvent.updated_at)
   }
