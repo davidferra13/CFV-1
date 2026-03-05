@@ -30,11 +30,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChefFlow — Private Chef Business Software',
+    default: 'ChefFlow - Private Chef Business Software',
     template: '%s | ChefFlow',
   },
   description:
-    'Ops for Artists — The business operating system built by a chef, for chefs. Manage events, clients, menus, and payments from one calm workspace.',
+    'Ops for Artists - The business operating system built by a chef, for chefs. Manage events, clients, menus, and payments from one calm workspace.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -48,17 +48,20 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'ChefFlow',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
   openGraph: {
-    title: 'ChefFlow — Private Chef Business Software',
-    description: 'Ops for Artists — The business operating system built by a chef, for chefs.',
+    title: 'ChefFlow - Private Chef Business Software',
+    description: 'Ops for Artists - The business operating system built by a chef, for chefs.',
     siteName: 'ChefFlow',
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow — Private Chef Business Software',
-    description: 'Ops for Artists — The business OS built by a chef, for chefs.',
+    title: 'ChefFlow - Private Chef Business Software',
+    description: 'Ops for Artists - The business OS built by a chef, for chefs.',
   },
   robots: {
     index: true,

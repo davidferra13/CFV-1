@@ -116,7 +116,10 @@ function createMockSupabase(resolve: (ctx: QueryContext) => QueryResult, tracker
   }
 }
 
-function loadSaleActionsWithMocks(resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
+function loadRefundActionsWithMocks(
+  resolve: (ctx: QueryContext) => QueryResult,
+  tracker: Tracker
+) {
   const react = require('react')
   react.cache = react.cache || ((fn: unknown) => fn)
 
@@ -125,7 +128,7 @@ function loadSaleActionsWithMocks(resolve: (ctx: QueryContext) => QueryResult, t
   const supabasePath = require.resolve('../../lib/supabase/server.ts')
   const cachePath = require.resolve('next/cache')
   const auditPath = require.resolve('../../lib/commerce/pos-audit-log.ts')
-  const actionsPath = require.resolve('../../lib/commerce/sale-actions.ts')
+  const actionsPath = require.resolve('../../lib/commerce/refund-actions.ts')
 
   require(authPath)
   require(proPath)
@@ -168,14 +171,14 @@ function loadSaleActionsWithMocks(resolve: (ctx: QueryContext) => QueryResult, t
   return { actions, restore }
 }
 
-test('createSale blocks when POS role matrix is enabled and actor lacks cashier access', async () => {
+test('createRefund blocks when manager approval is required and actor is not manager', async () => {
   const tracker: Tracker = { queries: [] }
-  const previousRoleMatrix = process.env.POS_ENFORCE_ROLE_MATRIX
-  process.env.POS_ENFORCE_ROLE_MATRIX = 'true'
+  const previousManagerApproval = process.env.POS_ENFORCE_MANAGER_APPROVAL
+  process.env.POS_ENFORCE_MANAGER_APPROVAL = 'true'
 
-  const { actions, restore } = loadSaleActionsWithMocks((ctx) => {
+  const { actions, restore } = loadRefundActionsWithMocks((ctx) => {
     if (ctx.table === 'chef_team_members' && ctx.action === 'select') {
-      return { data: { role: 'guest' }, error: null }
+      return { data: { role: 'cashier' }, error: null }
     }
     throw new Error(`Unexpected query: ${ctx.table} ${ctx.action}`)
   }, tracker)
@@ -183,39 +186,66 @@ test('createSale blocks when POS role matrix is enabled and actor lacks cashier 
   try {
     await assert.rejects(
       async () =>
-        actions.createSale({
-          channel: 'counter',
+        actions.createRefund({
+          paymentId: 'pay-1',
+          saleId: 'sale-1',
+          amountCents: 500,
+          reason: 'Customer requested cancellation',
+          idempotencyKey: 'refund-manager-gate-1',
         }),
-      /Cashier role required/i
+      /Manager role required/i
     )
 
-    const salesInsert = tracker.queries.find(
-      (query) => query.table === 'sales' && query.action === 'insert'
+    const refundInsert = tracker.queries.find(
+      (query) => query.table === 'commerce_refunds' && query.action === 'insert'
     )
-    assert.equal(salesInsert, undefined)
+    assert.equal(refundInsert, undefined)
   } finally {
-    if (previousRoleMatrix == null) {
-      delete process.env.POS_ENFORCE_ROLE_MATRIX
+    if (previousManagerApproval == null) {
+      delete process.env.POS_ENFORCE_MANAGER_APPROVAL
     } else {
-      process.env.POS_ENFORCE_ROLE_MATRIX = previousRoleMatrix
+      process.env.POS_ENFORCE_MANAGER_APPROVAL = previousManagerApproval
     }
     restore()
   }
 })
 
-test('voidSale requires a non-empty reason before mutating sale state', async () => {
+test('createRefund enforces reason validation before querying payment state', async () => {
   const tracker: Tracker = { queries: [] }
   const previousManagerApproval = process.env.POS_ENFORCE_MANAGER_APPROVAL
   const previousRoleMatrix = process.env.POS_ENFORCE_ROLE_MATRIX
   process.env.POS_ENFORCE_MANAGER_APPROVAL = 'false'
   process.env.POS_ENFORCE_ROLE_MATRIX = 'false'
 
-  const { actions, restore } = loadSaleActionsWithMocks(() => {
+  const { actions, restore } = loadRefundActionsWithMocks(() => {
     throw new Error('No query should run when reason validation fails')
   }, tracker)
 
   try {
-    await assert.rejects(async () => actions.voidSale('sale-1', '   '), /Void reason is required/i)
+    await assert.rejects(
+      async () =>
+        actions.createRefund({
+          paymentId: 'pay-1',
+          saleId: 'sale-1',
+          amountCents: 500,
+          reason: '  ',
+          idempotencyKey: 'refund-reason-required-1',
+        }),
+      /Refund reason is required/i
+    )
+
+    await assert.rejects(
+      async () =>
+        actions.createRefund({
+          paymentId: 'pay-1',
+          saleId: 'sale-1',
+          amountCents: 500,
+          reason: 'ok',
+          idempotencyKey: 'refund-reason-too-short-1',
+        }),
+      /Refund reason must be at least/i
+    )
+
     assert.equal(tracker.queries.length, 0)
   } finally {
     if (previousManagerApproval == null) {
@@ -227,38 +257,6 @@ test('voidSale requires a non-empty reason before mutating sale state', async ()
       delete process.env.POS_ENFORCE_ROLE_MATRIX
     } else {
       process.env.POS_ENFORCE_ROLE_MATRIX = previousRoleMatrix
-    }
-    restore()
-  }
-})
-
-test('voidSale blocks when manager approval is required and actor is not manager', async () => {
-  const tracker: Tracker = { queries: [] }
-  const previousManagerApproval = process.env.POS_ENFORCE_MANAGER_APPROVAL
-  process.env.POS_ENFORCE_MANAGER_APPROVAL = 'true'
-
-  const { actions, restore } = loadSaleActionsWithMocks((ctx) => {
-    if (ctx.table === 'chef_team_members' && ctx.action === 'select') {
-      return { data: { role: 'cashier' }, error: null }
-    }
-    throw new Error(`Unexpected query: ${ctx.table} ${ctx.action}`)
-  }, tracker)
-
-  try {
-    await assert.rejects(
-      async () => actions.voidSale('sale-1', 'Entered incorrect order'),
-      /Manager role required/i
-    )
-
-    const salesUpdate = tracker.queries.find(
-      (query) => query.table === 'sales' && query.action === 'update'
-    )
-    assert.equal(salesUpdate, undefined)
-  } finally {
-    if (previousManagerApproval == null) {
-      delete process.env.POS_ENFORCE_MANAGER_APPROVAL
-    } else {
-      process.env.POS_ENFORCE_MANAGER_APPROVAL = previousManagerApproval
     }
     restore()
   }

@@ -107,6 +107,16 @@ function isMissingColumn(error: any, column: string): boolean {
   return message.includes(`could not find the '${column.toLowerCase()}' column`)
 }
 
+function isImmutableEventPricingError(error: any): boolean {
+  const message = String(error?.message || '').toLowerCase()
+  return (
+    message.includes('pricing is immutable once accepted') ||
+    (message.includes('quoted_price_cents') &&
+      message.includes('cannot be changed') &&
+      message.includes('status is paid'))
+  )
+}
+
 // ─── Auth User ────────────────────────────────────────────────────────────────
 
 async function ensureAuthUser(
@@ -383,6 +393,9 @@ async function ensureEvent(
   daysOut: number,
   inquiryId?: string
 ): Promise<string> {
+  const quotedPriceCents = 120000
+  const depositAmountCents = 30000
+
   const { data: existing } = await admin
     .from('events')
     .select('id')
@@ -408,6 +421,9 @@ async function ensureEvent(
       dietary_restrictions: [],
       allergies: [],
       special_requests: 'TEST - Automated E2E test event. Safe to ignore.',
+      quoted_price_cents: quotedPriceCents,
+      pricing_model: 'flat_rate',
+      deposit_amount_cents: depositAmountCents,
       deleted_at: null,
       deleted_by: null,
     }
@@ -423,6 +439,15 @@ async function ensureEvent(
         .from('events')
         .update(eventPayload)
         .eq('id', existing.id))
+    }
+
+    if (updateError && isImmutableEventPricingError(updateError)) {
+      // Some environments enforce immutable pricing once events are payable.
+      // Keep the existing seeded row as-is rather than failing global setup.
+      console.warn(
+        `[e2e-seed] Warning: Skipping immutable pricing update for event '${occasion}' (${existing.id}).`
+      )
+      return existing.id as string
     }
 
     if (updateError) {
@@ -451,6 +476,9 @@ async function ensureEvent(
       dietary_restrictions: [],
       allergies: [],
       special_requests: 'TEST - Automated E2E test event. Safe to ignore.',
+      quoted_price_cents: quotedPriceCents,
+      pricing_model: 'flat_rate',
+      deposit_amount_cents: depositAmountCents,
     })
     .select('id')
     .single()

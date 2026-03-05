@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 
@@ -71,6 +72,7 @@ export default function FaqPage() {
 
   return (
     <div>
+      <PublicPageView pageName="faq" properties={{ section: 'public_growth' }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}

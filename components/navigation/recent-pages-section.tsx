@@ -75,34 +75,33 @@ export function RecentPagesSection() {
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={toggleCollapsed}
-        aria-expanded={!collapsed}
-        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 group"
-      >
-        <Clock className="w-4 h-4 text-stone-500" />
-        <span className="flex-1 text-left">Recent</span>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-expanded={!collapsed}
+          className="group flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+        >
+          <Clock className="w-4 h-4 text-stone-500" />
+          <span className="flex-1 text-left">Recent</span>
+          {collapsed ? (
+            <ChevronUp className="w-4 h-4 text-stone-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-stone-400" />
+          )}
+        </button>
         {!collapsed && recentPages.length > 0 && (
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              clearHistory()
-            }}
-            className="opacity-0 group-hover:opacity-100 text-stone-500 hover:text-stone-300 transition-opacity p-0.5 rounded"
+            onClick={clearHistory}
+            className="text-stone-500 hover:text-stone-300 transition-colors p-1 rounded-md"
             title="Clear recent pages"
             aria-label="Clear recent pages"
           >
             <X className="w-3 h-3" />
           </button>
         )}
-        {collapsed ? (
-          <ChevronUp className="w-4 h-4 text-stone-400" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-stone-400" />
-        )}
-      </button>
+      </div>
 
       <div
         className={`overflow-hidden transition-all duration-200 ${

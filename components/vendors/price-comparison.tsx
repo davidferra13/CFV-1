@@ -1,11 +1,10 @@
 'use client'
 
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
-  compareVendors,
-  type VendorComparisonResult,
-  type VendorEntry,
-} from '@/lib/ai/vendor-comparison'
+  buildVendorRecommendation,
+  type VendorComparisonRecommendation,
+} from '@/lib/vendors/deterministic-comparison'
 import {
   deriveComparableUnitPrice,
   normalizeIngredientName,
@@ -48,7 +47,6 @@ interface PreparedGroup {
   ingredientName: string
   normalizedIngredientName: string
   vendorPriceMap: Map<string, ComputedVendorOption>
-  vendorEntries: VendorEntry[]
   vendorCount: number
   cheapestCents: number | null
   secondCheapestCents: number | null
@@ -56,7 +54,7 @@ interface PreparedGroup {
   bestVendor: string | null
   savingsVsSecondCents: number | null
   savingsVsHighestCents: number | null
-  signature: string
+  recommendation: VendorComparisonRecommendation | null
 }
 
 function formatMoney(cents: number | null): string {
@@ -117,21 +115,6 @@ function buildPreparedGroup(group: ComparisonGroup): PreparedGroup {
 
   const vendorRows = Array.from(vendorPriceMap.entries()).sort(([a], [b]) => a.localeCompare(b))
 
-  const vendorEntries: VendorEntry[] = vendorRows.map(([vendorName, option]) => {
-    const unit = option.comparable.displayUnit
-    const item = option.item
-
-    return {
-      vendorName,
-      itemDescription: item.vendor_item_name,
-      priceCents: Math.round(option.comparable.comparableCents),
-      unit,
-      quality: 'unknown',
-      notes: item.notes ?? null,
-      lastPurchased: item.updated_at ?? null,
-    }
-  })
-
   const sortedPrices = vendorRows
     .map(([vendorName, option]) => ({ vendorName, cents: option.comparable.comparableCents }))
     .sort((a, b) => a.cents - b.cents)
@@ -142,20 +125,19 @@ function buildPreparedGroup(group: ComparisonGroup): PreparedGroup {
 
   const ingredientName = group.items[0]?.vendor_item_name ?? 'Unknown'
   const normalizedIngredientName = normalizeIngredientName(ingredientName)
-
-  const signature = vendorRows
-    .map(
-      ([vendorName, option]) =>
-        `${vendorName}|${option.item.vendor_item_name}|${option.item.unit_price_cents}|${option.item.unit_size ?? ''}|${option.item.unit_measure ?? ''}|${option.item.updated_at ?? ''}`
-    )
-    .join('||')
+  const recommendation = buildVendorRecommendation(
+    vendorRows.map(([vendorName, option]) => ({
+      vendorName,
+      priceCents: Math.round(option.comparable.comparableCents),
+      unit: option.comparable.displayUnit,
+    }))
+  )
 
   return {
     ingredientId: group.ingredientId,
     ingredientName,
     normalizedIngredientName,
     vendorPriceMap,
-    vendorEntries,
     vendorCount: vendorRows.length,
     cheapestCents: cheapest?.cents ?? null,
     secondCheapestCents: secondCheapest?.cents ?? null,
@@ -164,7 +146,7 @@ function buildPreparedGroup(group: ComparisonGroup): PreparedGroup {
     savingsVsSecondCents:
       cheapest && secondCheapest ? Math.max(0, secondCheapest.cents - cheapest.cents) : null,
     savingsVsHighestCents: cheapest && highest ? Math.max(0, highest.cents - cheapest.cents) : null,
-    signature,
+    recommendation,
   }
 }
 
@@ -193,82 +175,11 @@ function sortGroups(groups: PreparedGroup[], sortMode: SortMode): PreparedGroup[
   return sorted
 }
 
-async function runBatched<T>(items: T[], batchSize: number, worker: (item: T) => Promise<void>) {
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize)
-    await Promise.all(batch.map(worker))
-  }
-}
-
 export function PriceComparison({ data }: PriceComparisonProps) {
-  const [recommendations, setRecommendations] = useState<Record<string, VendorComparisonResult>>({})
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [loadingByIngredient, setLoadingByIngredient] = useState<Record<string, boolean>>({})
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('savings_desc')
-  const processedSignatureByIngredient = useRef<Record<string, string>>({})
 
   const preparedGroups = useMemo(() => data.map(buildPreparedGroup), [data])
-
-  useEffect(() => {
-    let cancelled = false
-
-    const runAutoComparisons = async () => {
-      const tasks = preparedGroups.filter(
-        (group) =>
-          group.vendorEntries.length >= 2 &&
-          processedSignatureByIngredient.current[group.ingredientId] !== group.signature
-      )
-
-      if (tasks.length === 0) return
-
-      setLoadingByIngredient((prev) => {
-        const next = { ...prev }
-        for (const group of tasks) {
-          next[group.ingredientId] = true
-        }
-        return next
-      })
-
-      await runBatched(tasks, 4, async (group) => {
-        const ingredientId = group.ingredientId
-
-        try {
-          const result = await compareVendors(group.vendorEntries, group.ingredientName)
-          if (cancelled) return
-
-          setRecommendations((prev) => ({ ...prev, [ingredientId]: result }))
-          setErrors((prev) => {
-            const next = { ...prev }
-            delete next[ingredientId]
-            return next
-          })
-        } catch (err) {
-          if (cancelled) return
-
-          setErrors((prev) => ({
-            ...prev,
-            [ingredientId]: err instanceof Error ? err.message : 'Could not compare vendors',
-          }))
-        } finally {
-          processedSignatureByIngredient.current[ingredientId] = group.signature
-          if (cancelled) return
-
-          setLoadingByIngredient((prev) => {
-            const next = { ...prev }
-            delete next[ingredientId]
-            return next
-          })
-        }
-      })
-    }
-
-    runAutoComparisons()
-
-    return () => {
-      cancelled = true
-    }
-  }, [preparedGroups])
 
   const normalizedQuery = query.trim().toLowerCase()
 
@@ -407,9 +318,7 @@ export function PriceComparison({ data }: PriceComparisonProps) {
             </thead>
             <tbody>
               {filteredAndSortedGroups.map((group) => {
-                const recommendation = recommendations[group.ingredientId]
-                const error = errors[group.ingredientId]
-                const isComparing = Boolean(loadingByIngredient[group.ingredientId])
+                const recommendation = group.recommendation
 
                 return (
                   <Fragment key={group.ingredientId}>
@@ -436,11 +345,6 @@ export function PriceComparison({ data }: PriceComparisonProps) {
                                 highest
                               </p>
                             )}
-                          {isComparing && (
-                            <p className="text-[11px] text-stone-500">
-                              Comparing vendor options...
-                            </p>
-                          )}
                           {group.vendorCount < 2 && (
                             <p className="text-[11px] text-stone-500">
                               Need at least 2 vendor prices to compare.
@@ -482,16 +386,6 @@ export function PriceComparison({ data }: PriceComparisonProps) {
                         )
                       })}
                     </tr>
-
-                    {error && (
-                      <tr className="border-b border-stone-800">
-                        <td colSpan={vendors.length + 1} className="py-2 pr-4">
-                          <div className="rounded-lg border border-red-800 bg-red-950 px-3 py-2 text-xs text-red-300">
-                            {error}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
 
                     {recommendation && (
                       <tr className="border-b border-stone-800">

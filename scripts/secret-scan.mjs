@@ -78,6 +78,7 @@ const SAFE_CONTEXT_MARKERS = [
 function listGitFiles() {
   const out = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
     encoding: 'buffer',
+    maxBuffer: 64 * 1024 * 1024,
   })
   return out
     .toString('utf8')
@@ -87,6 +88,8 @@ function listGitFiles() {
 }
 
 function shouldSkipPath(filePath) {
+  // Skip all Next.js build output variants: .next/, .next-dev/, .next-verify-*, etc.
+  if (filePath.startsWith('.next')) return true
   if (SKIP_PATH_PREFIXES.some((prefix) => filePath.startsWith(prefix))) return true
   return SKIP_EXTENSIONS.has(extname(filePath).toLowerCase())
 }

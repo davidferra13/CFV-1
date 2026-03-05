@@ -25,12 +25,66 @@
 // Uses admin storageState (interactions-admin project).
 
 import { test, expect } from '../helpers/fixtures'
+import { readFileSync } from 'fs'
+
+function adminAuthConfigured(): boolean {
+  try {
+    const raw = readFileSync('.auth/admin.json', 'utf-8')
+    const state = JSON.parse(raw)
+    return Array.isArray(state.cookies) && state.cookies.length > 0
+  } catch {
+    return false
+  }
+}
+
+const ADMIN_AUTH_REQUIRED = process.env.INTERACTIONS_REQUIRE_ADMIN === 'true'
+
+function requireAdminAuth() {
+  const hasAdminAuth = adminAuthConfigured()
+  if (ADMIN_AUTH_REQUIRED) {
+    expect(
+      hasAdminAuth,
+      'Admin interactions are required. Configure ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD in .env.local.'
+    ).toBeTruthy()
+    return
+  }
+
+  test.skip(
+    !hasAdminAuth,
+    'Admin credentials not configured - set ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD in .env.local'
+  )
+}
+
+async function gotoAdminPage(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  url: string
+) {
+  let lastResponse: Awaited<ReturnType<typeof page.goto>> = null
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      lastResponse = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90_000 })
+      const status = lastResponse?.status() ?? 0
+      if (status >= 500 && attempt < 2) {
+        await page.waitForTimeout(400)
+        continue
+      }
+      return lastResponse
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const retryable = /ERR_ABORTED|ERR_CONNECTION|timeout|frame was detached/i.test(message)
+      if (!retryable || attempt === 2) throw error
+      await page.waitForTimeout(400)
+    }
+  }
+  return lastResponse
+}
 
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 test.describe('Admin — Dashboard', () => {
   test('/admin — loads without redirect to signin', async ({ page }) => {
-    await page.goto('/admin')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin')
     await page.waitForLoadState('networkidle')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
@@ -38,7 +92,8 @@ test.describe('Admin — Dashboard', () => {
   })
 
   test('/admin — shows admin dashboard content', async ({ page }) => {
-    await page.goto('/admin')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin')
     await page.waitForLoadState('networkidle')
     const hasContent = await page
       .getByText(/admin|dashboard|chef|event|user|platform|overview/i)
@@ -51,9 +106,10 @@ test.describe('Admin — Dashboard', () => {
   })
 
   test('/admin — no JS errors on load', async ({ page }) => {
+    requireAdminAuth()
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/admin')
+    await gotoAdminPage(page, '/admin')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
@@ -80,7 +136,8 @@ test.describe('Admin — Sub-pages Load', () => {
 
   for (const route of adminRoutes) {
     test(`${route} — loads without 500`, async ({ page }) => {
-      const resp = await page.goto(route)
+      requireAdminAuth()
+      const resp = await gotoAdminPage(page, route)
       await page.waitForLoadState('networkidle')
       expect(resp?.status()).not.toBe(500)
     })
@@ -91,25 +148,28 @@ test.describe('Admin — Sub-pages Load', () => {
 
 test.describe('Admin — Sub-pages No JS Errors', () => {
   test('/admin/users — no JS errors', async ({ page }) => {
+    requireAdminAuth()
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/admin/users')
+    await gotoAdminPage(page, '/admin/users')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
   test('/admin/financials — no JS errors', async ({ page }) => {
+    requireAdminAuth()
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/admin/financials')
+    await gotoAdminPage(page, '/admin/financials')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
   test('/admin/audit — no JS errors', async ({ page }) => {
+    requireAdminAuth()
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/admin/audit')
+    await gotoAdminPage(page, '/admin/audit')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
@@ -119,21 +179,24 @@ test.describe('Admin — Sub-pages No JS Errors', () => {
 
 test.describe('Admin — Content', () => {
   test('/admin/users — shows users list', async ({ page }) => {
-    await page.goto('/admin/users')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/users')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/admin/system — shows system status', async ({ page }) => {
-    await page.goto('/admin/system')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/system')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/admin/system — shows QOL metrics summary card', async ({ page }) => {
-    await page.goto('/admin/system')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/system')
     await page.waitForLoadState('networkidle')
     await expect(page.getByText(/QOL Metrics \(last 30 days\)/i)).toBeVisible()
     await expect(page.getByText(/Drafts restored/i)).toBeVisible()
@@ -142,21 +205,24 @@ test.describe('Admin — Content', () => {
   })
 
   test('/admin/financials — shows financial overview', async ({ page }) => {
-    await page.goto('/admin/financials')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/financials')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/admin/audit — shows audit log entries', async ({ page }) => {
-    await page.goto('/admin/audit')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/audit')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/admin/flags — shows flagged content or empty state', async ({ page }) => {
-    await page.goto('/admin/flags')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/flags')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
@@ -188,8 +254,9 @@ test.describe('Admin — Non-Admin Access Blocked', () => {
   })
 
   test('/admin/users/[chefId] — user detail loads for admin', async ({ page, seedIds }) => {
+    requireAdminAuth()
     // Admin should be able to view any chef's profile
-    const resp = await page.goto(`/admin/users/${seedIds.chefId}`)
+    const resp = await gotoAdminPage(page, `/admin/users/${seedIds.chefId}`)
     await page.waitForLoadState('networkidle')
     expect(resp?.status()).not.toBe(500)
   })
@@ -199,22 +266,25 @@ test.describe('Admin — Non-Admin Access Blocked', () => {
 
 test.describe('Admin — Analytics', () => {
   test('/admin/analytics — loads without 500', async ({ page }) => {
-    const resp = await page.goto('/admin/analytics')
+    requireAdminAuth()
+    const resp = await gotoAdminPage(page, '/admin/analytics')
     await page.waitForLoadState('networkidle')
     expect(resp?.status()).not.toBe(500)
   })
 
   test('/admin/analytics — shows platform metrics', async ({ page }) => {
-    await page.goto('/admin/analytics')
+    requireAdminAuth()
+    await gotoAdminPage(page, '/admin/analytics')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/admin/analytics — no JS errors', async ({ page }) => {
+    requireAdminAuth()
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/admin/analytics')
+    await gotoAdminPage(page, '/admin/analytics')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })

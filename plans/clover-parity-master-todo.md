@@ -24,6 +24,13 @@ Scope note: Clover App Market changes constantly. This backlog targets Clover's 
 - [x] `CLV-104-A` Added split-tender backend capture path in `counterCheckout` (multi-payment recording).
 - [x] `CLV-104-B` Added split-tender idempotent resume aggregation for existing checkout retries.
 - [x] `CLV-104-C` Added POS UI flow for `card + cash` split payments.
+- [x] `CLV-103-A` Added automatic cash drawer sale movement logging on checkout-captured cash intake.
+- [x] `CLV-106-A` Hardened refund/void controls with required explicit reasons and manager-gated action tests.
+- [x] `CLV-003-A` Added Clover parity dashboard page with weighted completion by module (`/commerce/parity`).
+- [x] `CLV-601-A` Added payment mix and tender breakdown reporting in Commerce Reports.
+- [x] `CLV-605-A` Added explicit X report (current register) and Z report (closed shift) CSV/PDF exports.
+- [x] `CLV-1200-A` Defined POS SLO contract and surfaced it in Observability.
+- [x] `CLV-701-A` Added hosted invoice payment link generation action and sent-invoice payment status tracking.
 
 ## Everything still to do
 
@@ -31,10 +38,13 @@ Scope note: Clover App Market changes constantly. This backlog targets Clover's 
 
 ## 0) Parity Program Setup
 
-- [ ] `CLV-000` Define parity target by segment (`retail`, `quick service`, `table service`).
-- [ ] `CLV-001` Freeze MVP parity contract (what must match Clover before pilot launch).
-- [ ] `CLV-002` Create Clover parity acceptance suite (scripted UAT list).
-- [ ] `CLV-003` Create parity dashboard with `% complete` by module.
+- [x] `CLV-000` Define parity target by segment (`retail`, `quick service`, `table service`).
+  - [x] 2026-03-05: Locked pilot parity segment to `quick service`.
+- [x] `CLV-001` Freeze MVP parity contract (what must match Clover before pilot launch).
+  - [x] 2026-03-05: Added frozen contract at `plans/clover-parity-mvp-contract.md`.
+- [x] `CLV-002` Create Clover parity acceptance suite (scripted UAT list).
+  - [x] 2026-03-05: Added scripted UAT suite at `plans/clover-parity-acceptance-suite.json` and verifier `scripts/verify-clover-parity-acceptance.mjs` (`npm run verify:clover-parity`).
+- [x] `CLV-003` Create parity dashboard with `% complete` by module.
 - [ ] `CLV-004` Establish merchant advisory group for parity validation.
 
 ## 1) Payments and Checkout (Core POS)
@@ -44,12 +54,14 @@ Scope note: Clover App Market changes constantly. This backlog targets Clover's 
   - [x] 2026-03-05: Added virtual-terminal manual keyed reference path (`cardEntryMode=manual_keyed`) and channel-aware checkout.
   - [ ] Add CNP risk controls (AVS/CVV/velocity hooks, dispute evidence linkage).
 - [ ] `CLV-102` Wallet payments: Apple Pay/Google Pay contactless support.
-- [ ] `CLV-103` Cash tender workflow: amount tendered, change due, drawer events.
+- [x] `CLV-103` Cash tender workflow: amount tendered, change due, drawer events.
+  - [x] 2026-03-05: Added automatic `sale_payment` drawer movement writes from checkout cash intake (including split-tender cash component), with non-blocking alerting on movement log failure.
 - [~] `CLV-104` Split tenders across payment methods in one ticket.
   - [x] 2026-03-05: Added split-tender backend capture path in `counterCheckout` with idempotent resume aggregation and POS UI support for `card + cash` split payments.
   - [ ] Expand split tenders beyond `card + cash` UI presets and add broader QA coverage.
 - [ ] `CLV-105` Tip workflows: fixed/percentage/custom, pre/post payment mode.
-- [ ] `CLV-106` Refunds and voids with role-based controls and reason capture.
+- [x] `CLV-106` Refunds and voids with role-based controls and reason capture.
+  - [x] 2026-03-05: Enforced required manual reason validation in `voidSale` and `createRefund`, updated sale-detail UI to require a void reason, and added role/reason unit coverage for refund+void paths.
 - [ ] `CLV-107` Pre-auth/adjust/close flow for bar tabs and table checks.
 - [ ] `CLV-108` Offline payment queue with idempotent replay + conflict handling.
 - [ ] `CLV-109` Surcharge/cash-discount configuration and legal guardrails by location.
@@ -135,11 +147,11 @@ Acceptance gates:
 ## 6) Reports, Reconciliation, and Back Office
 
 - [ ] `CLV-600` Sales dashboard by day/week/month and channel.
-- [ ] `CLV-601` Payment mix and tender breakdown reporting.
+- [x] `CLV-601` Payment mix and tender breakdown reporting.
 - [ ] `CLV-602` Tax reporting and export-ready summaries.
 - [ ] `CLV-603` Tip reporting by employee and shift.
 - [ ] `CLV-604` Refund/void/discount anomaly reports.
-- [ ] `CLV-605` X and Z report generation + CSV/PDF exports.
+- [x] `CLV-605` X and Z report generation + CSV/PDF exports.
 - [ ] `CLV-606` Daily reconciliation workflow with variance management.
 - [ ] `CLV-607` Multi-location roll-up analytics for HQ operators.
 - [ ] `CLV-608` Scheduled report delivery (email or storage destination).
@@ -153,7 +165,9 @@ Acceptance gates:
 
 - [x] `CLV-700` Virtual terminal in dashboard for keyed payments.
   - [x] 2026-03-05: Added `/commerce/virtual-terminal` UI, action pipeline, and navigation links.
-- [ ] `CLV-701` Invoicing with hosted payment links and status tracking.
+- [~] `CLV-701` Invoicing with hosted payment links and status tracking.
+  - [x] 2026-03-05: Added hosted invoice payment link generation and payment status/outstanding tracking on sent invoices.
+  - [ ] Extend hosted link workflow from event invoices into full commerce invoice lifecycle primitives.
 - [ ] `CLV-702` Online ordering storefront with pickup options.
 - [ ] `CLV-703` Delivery mode integration hooks (internal dispatch or partner API).
 - [ ] `CLV-704` Unified order timeline across in-store and online channels.
@@ -230,7 +244,7 @@ Acceptance gates:
 
 ## 12) Reliability, Observability, and Operations
 
-- [ ] `CLV-1200` POS SLOs defined (availability, latency, capture success, replay lag).
+- [x] `CLV-1200` POS SLOs defined (availability, latency, capture success, replay lag).
 - [ ] `CLV-1201` Alerting for checkout failures, terminal health, reconciliation anomalies.
 - [ ] `CLV-1202` Operational dashboards for on-call and store managers.
 - [ ] `CLV-1203` Feature flags for safe rollout/rollback by tenant and location.

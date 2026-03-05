@@ -1,0 +1,224 @@
+{
+  "suiteVersion": "2026-03-05",
+  "targetSegment": "quick service",
+  "cases": [
+    {
+      "id": "UAT-001",
+      "title": "Program Contract and Parity Dashboard Integrity",
+      "clvIds": ["CLV-000", "CLV-001", "CLV-003", "CLV-1200", "CLV-1300"],
+      "preconditions": [
+        "Pilot tenant has commerce module enabled.",
+        "Parity master to-do and MVP contract files are present.",
+        "Observability dashboard is available for the tenant."
+      ],
+      "steps": [
+        "Open /commerce/parity and capture overall completion and MVP completion values.",
+        "Confirm target segment renders as quick service.",
+        "Verify MVP unresolved IDs list matches unchecked/in-progress CLV IDs in master to-do.",
+        "Open /commerce/observability and verify POS SLO targets are visible.",
+        "Confirm schema terms used in UI align to canonical order/payment/tender terminology."
+      ],
+      "expected": [
+        "Parity dashboard loads without errors and calculates weighted completion correctly.",
+        "MVP contract metadata is visible and consistent with contract file.",
+        "MVP unresolved list contains no unknown IDs.",
+        "POS SLO contract is visible to operators."
+      ],
+      "evidence": ["screenshot:/commerce/parity", "screenshot:/commerce/observability"]
+    },
+    {
+      "id": "UAT-002",
+      "title": "Register Access Control and Session Lifecycle",
+      "clvIds": ["CLV-200", "CLV-500", "CLV-501"],
+      "preconditions": [
+        "Two test users exist: cashier role and manager role.",
+        "No active register session on target register."
+      ],
+      "steps": [
+        "Sign in as cashier and open a register session.",
+        "Attempt restricted register action that requires elevated role.",
+        "Escalate to manager and approve override where permitted.",
+        "Suspend register session and resume it.",
+        "Close register session and record close summary."
+      ],
+      "expected": [
+        "Role policy prevents unauthorized action attempts.",
+        "Open, suspend, resume, and close transitions succeed with audit trail.",
+        "Only one active session exists for register identity."
+      ],
+      "evidence": ["screenshot:/commerce/register", "export:register-session-summary"]
+    },
+    {
+      "id": "UAT-003",
+      "title": "Counter Service Ring Flow with Catalog and Inventory",
+      "clvIds": ["CLV-201", "CLV-203", "CLV-300", "CLV-301", "CLV-304", "CLV-305"],
+      "preconditions": [
+        "Catalog includes at least five items across two categories.",
+        "One item is configured with modifiers and low-stock threshold."
+      ],
+      "steps": [
+        "Start counter order and add items from two categories.",
+        "Apply required and optional modifiers to one line item.",
+        "Send order, hold order, and then resume order for completion.",
+        "Complete payment to move order through fulfillment state transitions.",
+        "Check inventory decrement and low-stock behavior after sale."
+      ],
+      "expected": [
+        "Modifiers enforce required rules and pricing is applied correctly.",
+        "Order state transitions are auditable and deterministic.",
+        "Inventory decrements on sale and low-stock indicator appears when threshold is crossed."
+      ],
+      "evidence": ["screenshot:/commerce/orders", "screenshot:/commerce/products"]
+    },
+    {
+      "id": "UAT-004",
+      "title": "Tender Workflows: Keyed, Cash, Split, and Receipt Delivery",
+      "clvIds": ["CLV-101", "CLV-103", "CLV-104", "CLV-111", "CLV-700"],
+      "preconditions": [
+        "Virtual terminal route is enabled.",
+        "Register supports cash and card tenders."
+      ],
+      "steps": [
+        "Run one keyed CNP payment in virtual terminal.",
+        "Run one cash sale with amount tendered greater than due.",
+        "Run one split tender sale using card plus cash.",
+        "Issue receipt by email and SMS for one completed sale.",
+        "Reprint receipt from transaction history."
+      ],
+      "expected": [
+        "Manual keyed flow succeeds and persists manual entry mode metadata.",
+        "Cash flow calculates change due correctly and records drawer event.",
+        "Split tender records both tenders under one sale without duplication.",
+        "Receipt delivery and reprint paths complete successfully."
+      ],
+      "evidence": ["screenshot:/commerce/virtual-terminal", "screenshot:/commerce/sales"]
+    },
+    {
+      "id": "UAT-005",
+      "title": "Refund/Void Controls, Idempotency, and Immutable Audit",
+      "clvIds": ["CLV-106", "CLV-505", "CLV-1103", "CLV-1303"],
+      "preconditions": [
+        "Completed sale exists from prior UAT case.",
+        "Cashier and manager roles are both available."
+      ],
+      "steps": [
+        "Attempt refund as cashier and confirm restriction if policy requires manager.",
+        "Perform manager-approved refund or void with required reason code.",
+        "Retry the same refund mutation with same idempotency key.",
+        "Inspect audit log entries for refund/void action.",
+        "Attempt direct mutation of immutable audit data path."
+      ],
+      "expected": [
+        "Role policy and reason capture are enforced.",
+        "Idempotency blocks duplicate financial mutation.",
+        "Audit trail is append-only and tamper resistant."
+      ],
+      "evidence": ["screenshot:/commerce/sales/[id]", "log:audit-sensitive-actions"]
+    },
+    {
+      "id": "UAT-006",
+      "title": "Invoicing and Hosted Link Payment Lifecycle",
+      "clvIds": ["CLV-701", "CLV-203"],
+      "preconditions": [
+        "Invoice-capable customer exists with email.",
+        "Hosted payment link generation action is enabled."
+      ],
+      "steps": [
+        "Create invoice and generate hosted payment link.",
+        "Send invoice to customer contact channel.",
+        "Pay invoice through hosted link in test mode.",
+        "Verify invoice status and outstanding balance updates.",
+        "Confirm order timeline reflects invoice settlement state."
+      ],
+      "expected": [
+        "Hosted link is generated and resolves to payable checkout experience.",
+        "Invoice status transitions are tracked and queryable."
+      ],
+      "evidence": ["screenshot:/commerce/invoices", "log:invoice-status-transition"]
+    },
+    {
+      "id": "UAT-007",
+      "title": "Hardware Abstraction and Device Failure Handling",
+      "clvIds": ["CLV-800", "CLV-802", "CLV-803", "CLV-103"],
+      "preconditions": [
+        "Hardware adapters are configured for terminal, scanner, printer, and drawer.",
+        "Test environment can simulate printer failure."
+      ],
+      "steps": [
+        "Run sale with printer available and verify receipt print queue success.",
+        "Simulate printer outage and run another sale.",
+        "Verify print retry/backoff behavior and visible failure surfacing.",
+        "Run cash sale and verify drawer open policy rules for allowed and blocked actions."
+      ],
+      "expected": [
+        "Hardware operations go through abstraction layer rather than direct vendor calls.",
+        "Printer failures are retried and surfaced without duplicate charge side effects.",
+        "Drawer policy is enforced with auditable no-sale behavior."
+      ],
+      "evidence": ["log:printer-queue-retries", "log:drawer-policy-events"]
+    },
+    {
+      "id": "UAT-008",
+      "title": "Reports and Daily Reconciliation",
+      "clvIds": ["CLV-600", "CLV-601", "CLV-605", "CLV-606"],
+      "preconditions": [
+        "At least one completed shift exists with mixed tender transactions.",
+        "Reporting permissions granted to test user."
+      ],
+      "steps": [
+        "Open commerce reports and verify day/week/month sales aggregates.",
+        "Review payment mix report and confirm tender breakdown totals.",
+        "Generate and export X report and Z report files.",
+        "Run daily reconciliation and capture close variance result."
+      ],
+      "expected": [
+        "Report totals match ledger-backed sales aggregates.",
+        "X/Z exports are generated in expected formats.",
+        "Reconciliation workflow records variance and resolution state."
+      ],
+      "evidence": ["screenshot:/commerce/reports", "export:x-z-report", "screenshot:/commerce/reconciliation"]
+    },
+    {
+      "id": "UAT-009",
+      "title": "Operational Alerting Coverage",
+      "clvIds": ["CLV-1201", "CLV-600"],
+      "preconditions": [
+        "Alerting system is connected to commerce metrics.",
+        "Synthetic failure trigger is available."
+      ],
+      "steps": [
+        "Trigger checkout failure threshold breach in test environment.",
+        "Trigger reconciliation anomaly condition.",
+        "Verify alert appears in operational dashboard and notification channel.",
+        "Acknowledge alert and capture response timestamp."
+      ],
+      "expected": [
+        "Checkout and reconciliation alert pathways fire for configured thresholds.",
+        "Alert metadata includes tenant, location, severity, and correlation id."
+      ],
+      "evidence": ["screenshot:/commerce/observability", "log:alert-events"]
+    },
+    {
+      "id": "UAT-010",
+      "title": "Pilot Go/No-Go Financial Correctness Pack",
+      "clvIds": ["CLV-1400", "CLV-1404", "CLV-1406", "CLV-1300"],
+      "preconditions": [
+        "All prior UAT cases have evidence artifacts attached.",
+        "Pilot decision worksheet is prepared."
+      ],
+      "steps": [
+        "Run end-to-end open-register to close-register scenario.",
+        "Run rounding, tax, and refund edge-case assertions.",
+        "Compile test evidence and unresolved defect list.",
+        "Evaluate go/no-go thresholds from MVP contract exit gates.",
+        "Record final pilot recommendation with owner sign-off."
+      ],
+      "expected": [
+        "End-to-end path is reproducible with no duplicate capture events.",
+        "Financial correctness assertions pass for configured edge cases.",
+        "Go/no-go decision artifact is complete and reviewable."
+      ],
+      "evidence": ["artifact:go-no-go-checklist", "artifact:financial-edge-case-report"]
+    }
+  ]
+}

@@ -15,7 +15,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'ChefFlow | Private Chef Business Software — Ops for Artists',
+  title: 'ChefFlow | Private Chef Business Software - Ops for Artists',
   description:
     'Run your private chef business in one place. Manage inquiries, events, menus, and payments with less admin and more clarity.',
   keywords: [
@@ -64,13 +64,13 @@ const FEATURES = [
     icon: CalendarDays,
     title: 'Events & Scheduling',
     description:
-      'Every inquiry, proposal, and event — organized in one place. No more juggling apps.',
+      'Every inquiry, proposal, and event - organized in one place. No more juggling apps.',
   },
   {
     icon: UsersRound,
     title: 'Client Experience',
     description:
-      'Clients review proposals, approve menus, and pay — all through a polished portal.',
+      'Clients review proposals, approve menus, and pay - all through a polished portal.',
   },
   {
     icon: CreditCard,
@@ -99,7 +99,7 @@ export default function Home() {
           <p className="mt-4 rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Built by chefs for chefs
           </p>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
+          <p className="mt-6 max-w-2xl text-[1.0625rem] leading-8 text-stone-300 md:text-lg">
             Manage inquiries, events, menus, recipes, and payments in one clean workspace.
             Professional, fast, and built for solo chefs and growing teams.
           </p>
@@ -124,7 +124,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+      <section className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
         <div className="cq-shell">
           <div className="cq-grid-two">
             {FEATURES.map((feature) => {
@@ -138,7 +138,7 @@ export default function Home() {
                     <Icon className="h-5 w-5" />
                   </div>
                   <h2 className="text-xl font-semibold text-stone-100">{feature.title}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-stone-300">
+                  <p className="mt-2 text-[0.95rem] leading-7 text-stone-300">
                     {feature.description}
                   </p>
                 </article>
@@ -158,7 +158,7 @@ export default function Home() {
               <h2 className="mt-2 text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
                 Compare ChefFlow before you switch.
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-300 md:text-base">
+              <p className="mt-2 max-w-2xl text-[0.95rem] leading-7 text-stone-300 md:text-base">
                 See direct breakdowns against spreadsheets and generalized CRM stacks, plus quick
                 answers to common implementation questions.
               </p>
@@ -186,7 +186,7 @@ export default function Home() {
       </section>
 
       <section className="relative border-y border-stone-700/50 bg-stone-900/40 backdrop-blur-sm">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
           <div className="mb-10 flex flex-col items-center justify-between gap-5 text-center md:flex-row md:text-left">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
@@ -195,7 +195,7 @@ export default function Home() {
               <h2 className="mt-2 fluid-display-lg font-display tracking-tight text-stone-100">
                 Operators are seeing measurable gains.
               </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-300">
+              <p className="mt-3 max-w-2xl text-[0.95rem] leading-7 text-stone-300 md:text-base">
                 These snapshots show what changed after replacing scattered tools with one operating
                 flow.
               </p>
@@ -210,11 +210,11 @@ export default function Home() {
             </TrackedLink>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {CUSTOMER_STORIES.map((story) => (
               <article
                 key={story.slug}
-                className="rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-[var(--shadow-card)]"
+                className="rounded-xl border border-stone-700 bg-stone-900 p-6 shadow-[var(--shadow-card)]"
               >
                 <p className="text-xs text-muted-soft">
                   {story.chefName} - {story.location}
@@ -246,12 +246,12 @@ export default function Home() {
       </section>
 
       <section className="relative border-y border-stone-700/50 bg-stone-900/40 backdrop-blur-sm">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
           <div className="mb-10 text-center">
             <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
               From inquiry to payout in one flow.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
+            <p className="mx-auto mt-4 max-w-xl text-[1.02rem] leading-8 text-stone-300">
               Keep the full client journey in one system with less back-and-forth.
             </p>
           </div>
@@ -263,44 +263,21 @@ export default function Home() {
 
       <HowItWorksSection />
 
-      {isBeta && (
-        <section className="relative border-y border-stone-700/50 overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-900/20 via-transparent to-brand-800/10" />
-          <div className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
-            <div className="flex flex-col items-center text-center">
-              <p className="rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300 mb-4">
-                Closed Beta
-              </p>
-              <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
-                Be one of the first.
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
-                We&apos;re onboarding a small group of private chefs to shape ChefFlow before public
-                launch. Spots are limited.
-              </p>
-              <TrackedLink
-                href="/beta"
-                analyticsName="home_beta_request_access"
-                analyticsProps={{ section: 'beta_cta' }}
-                className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
-              >
-                Request early access
-              </TrackedLink>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="relative mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
+      <section className="relative mx-auto w-full max-w-6xl px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-800/20 blur-[50px]" />
+        {isBeta && (
+          <p className="relative mx-auto mb-4 inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
+            Closed Beta
+          </p>
+        )}
         <h2 className="relative fluid-display-lg font-display tracking-tight text-stone-100">
           {isBeta
             ? 'Ready to shape ChefFlow before public launch?'
             : 'Ready to run your business, not chase it.'}
         </h2>
-        <p className="relative mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
+        <p className="relative mx-auto mt-4 max-w-xl text-[1.02rem] leading-8 text-stone-300">
           {isBeta
-            ? 'Join the closed beta waitlist. Spots are limited.'
+            ? "We're onboarding a small group of private chefs. Spots are limited."
             : '14-day free trial. No credit card required.'}
         </p>
         <TrackedLink
@@ -315,3 +292,4 @@ export default function Home() {
     </div>
   )
 }
+

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
@@ -39,6 +40,7 @@ export default function CompareIndexPage() {
 
   return (
     <div>
+      <PublicPageView pageName="compare_index" properties={{ section: 'public_growth' }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(compareStructuredData) }}

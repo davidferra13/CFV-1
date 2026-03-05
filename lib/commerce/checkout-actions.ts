@@ -261,6 +261,25 @@ function computeSplitTenderChangeDueCents(input: {
   return Math.max(0, totalTenderedCents - input.totalChargedCents)
 }
 
+function computeCashDrawerSaleMovementCents(input: {
+  paymentMethod: PaymentMethod
+  splitTenders: NormalizedSplitTenderLine[] | null
+  totalChargedCents: number
+}) {
+  if (input.splitTenders) {
+    return input.splitTenders.reduce(
+      (sum, line) => sum + (line.paymentMethod === 'cash' ? line.amountCents : 0),
+      0
+    )
+  }
+
+  if (input.paymentMethod === 'cash') {
+    return input.totalChargedCents
+  }
+
+  return 0
+}
+
 function normalizeSplitTenders(input: {
   splitTenders?: SplitTenderInput[]
   defaultCardEntryMode: 'terminal' | 'manual_keyed'
@@ -1527,6 +1546,49 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     throw new Error(`Failed to finalize sale status: ${saleStatusErr.message}`)
   }
 
+  const cashDrawerSaleMovementCents = computeCashDrawerSaleMovementCents({
+    paymentMethod: input.paymentMethod,
+    splitTenders: normalizedSplitTenders,
+    totalChargedCents: totalDueCents,
+  })
+
+  if (input.registerSessionId && cashDrawerSaleMovementCents > 0) {
+    try {
+      await (supabase.from('cash_drawer_movements').insert({
+        tenant_id: user.tenantId!,
+        register_session_id: input.registerSessionId,
+        movement_type: 'sale_payment',
+        amount_cents: cashDrawerSaleMovementCents,
+        notes: changeDueCents > 0 ? 'cash_change_given' : null,
+        metadata: {
+          source: 'checkout',
+          sale_id: sale.id,
+          payment_id: primaryPayment.id,
+          payment_idempotency_key: paymentIdempotencyKey,
+          total_tendered_cents: totalTenderedCents,
+          change_due_cents: changeDueCents,
+          payment_method: normalizedSplitTenders ? 'split_tender' : input.paymentMethod,
+        },
+        created_by: user.id,
+      } as any) as any)
+    } catch (err) {
+      console.error('[non-blocking] Failed to record cash drawer sale movement:', err)
+      await emitCheckoutAlert({
+        tenantId: user.tenantId!,
+        eventType: 'cash_drawer_sale_movement_failed',
+        severity: 'warning',
+        message: 'Checkout succeeded but cash drawer movement logging failed',
+        dedupeKey: `checkout_cash_drawer_movement_failed_${input.registerSessionId}`,
+        context: {
+          sale_id: sale.id,
+          payment_id: primaryPayment.id,
+          register_session_id: input.registerSessionId,
+          movement_amount_cents: cashDrawerSaleMovementCents,
+        },
+      })
+    }
+  }
+
   // 7. Keep register counters synchronized if linked
   if (input.registerSessionId) {
     try {
@@ -1588,6 +1650,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
         split_tenders: splitTenderSummary,
         total_cents: totalDueCents,
         total_tendered_cents: totalTenderedCents,
+        change_due_cents: changeDueCents,
         tip_cents: tipCents,
         register_session_id: input.registerSessionId ?? null,
       },

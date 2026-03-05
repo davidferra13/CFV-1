@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { COMPARE_PAGES, getComparePage } from '@/lib/marketing/compare-pages'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
@@ -64,6 +65,10 @@ export default function CompareDetailPage({ params }: Props) {
 
   return (
     <article>
+      <PublicPageView
+        pageName="compare_detail"
+        properties={{ section: 'public_growth', compare_slug: page.slug }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(compareStructuredData) }}

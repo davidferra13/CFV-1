@@ -172,6 +172,8 @@ async function loginAndSaveState(
       const msg = String(err)
       const isRetryable =
         msg.includes('ECONNRESET') ||
+        msg.includes('ECONNREFUSED') ||
+        msg.includes('ERR_CONNECTION_REFUSED') ||
         msg.includes('Timeout') ||
         msg.includes('timeout') ||
         msg.includes('disposed')
@@ -179,6 +181,7 @@ async function loginAndSaveState(
       console.log(
         `[globalSetup] ${label} attempt ${attempt}/${maxRetries} failed (retryable). Waiting 8s...`
       )
+      await waitForServerReady(10)
       await sleep(8_000)
     }
   }
@@ -271,7 +274,9 @@ export default async function globalSetup(config: FullConfig) {
       adminPassword,
       /\/admin/,
       '.auth/admin.json',
-      'Admin'
+      'Admin',
+      3,
+      '/admin'
     )
   } else {
     console.log(

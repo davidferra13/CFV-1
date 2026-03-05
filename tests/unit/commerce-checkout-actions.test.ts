@@ -588,6 +588,9 @@ test('counterCheckout returns success even when register sync and audit logging 
       if (ctx.table === 'sales' && ctx.action === 'update') {
         return { data: { id: 'sale-3' }, error: null }
       }
+      if (ctx.table === 'cash_drawer_movements' && ctx.action === 'insert') {
+        return { data: { id: 'drawer-move-1' }, error: null }
+      }
       if (ctx.table === 'register_sessions' && ctx.action === 'update') {
         throw new Error('sync unavailable')
       }
@@ -613,6 +616,15 @@ test('counterCheckout returns success even when register sync and audit logging 
 
     assert.equal(result.saleId, 'sale-3')
     assert.equal(result.paymentId, 'pay-3')
+
+    const drawerMovementInsert = tracker.queries.find(
+      (query) => query.table === 'cash_drawer_movements' && query.action === 'insert'
+    )
+    assert.ok(drawerMovementInsert)
+    assert.equal((drawerMovementInsert!.payload as any).movement_type, 'sale_payment')
+    assert.equal((drawerMovementInsert!.payload as any).amount_cents, 550)
+    assert.equal((drawerMovementInsert!.payload as any).register_session_id, 'rs-2')
+
     assert.deepEqual(tracker.revalidatePaths, ['/commerce'])
   } finally {
     restore()

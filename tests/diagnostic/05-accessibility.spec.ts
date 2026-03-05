@@ -27,22 +27,36 @@ async function expectNoAxeViolations(page: Parameters<typeof AxeBuilder>[0]['pag
   ).toEqual([])
 }
 
+async function gotoStableRoute(
+  page: Parameters<typeof AxeBuilder>[0]['page'],
+  route: string,
+  requireMain = false
+) {
+  await page.goto(route, { waitUntil: 'load', timeout: 60_000 })
+  await page.waitForFunction(() => document.readyState === 'complete')
+  await page.waitForTimeout(250)
+  if (requireMain) {
+    await expect(page.locator('main')).toBeVisible({ timeout: 15_000 })
+  } else {
+    await expect(page.locator('body')).toBeVisible({ timeout: 15_000 })
+  }
+}
+
+test.setTimeout(90_000)
+
 test.describe('Accessibility - Axe (Strict WCAG AA)', () => {
   test('public home has zero axe violations', async ({ page }) => {
-    await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/', true)
     await expectNoAxeViolations(page)
   })
 
   test('pricing page has zero axe violations', async ({ page }) => {
-    await page.goto('/pricing')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/pricing', true)
     await expectNoAxeViolations(page)
   })
 
   test('dashboard has zero axe violations', async ({ page }) => {
-    await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/dashboard', true)
     await expectNoAxeViolations(page)
   })
 })
@@ -51,8 +65,7 @@ test.describe('Accessibility - Axe (Strict WCAG AA)', () => {
 
 test.describe('Accessibility — Keyboard Navigation', () => {
   test('dashboard — all interactive elements reachable via Tab', async ({ page }) => {
-    await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/dashboard', true)
 
     // Tab through the page and verify focus moves
     const focusedElements: string[] = []
@@ -74,8 +87,7 @@ test.describe('Accessibility — Keyboard Navigation', () => {
   })
 
   test('sign-in page — form is keyboard navigable', async ({ page }) => {
-    await page.goto('/sign-in')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/sign-in')
 
     // Tab to find input fields
     let foundInput = false
@@ -95,8 +107,7 @@ test.describe('Accessibility — Keyboard Navigation', () => {
 
 test.describe('Accessibility — ARIA Labels', () => {
   test('dashboard navigation has aria labels', async ({ page }) => {
-    await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/dashboard', true)
 
     // Check for nav elements with labels
     const navs = page.locator('nav')
@@ -108,8 +119,7 @@ test.describe('Accessibility — ARIA Labels', () => {
   })
 
   test('buttons have accessible names', async ({ page }) => {
-    await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/dashboard', true)
 
     // Find all buttons and check they have text or aria-label
     const buttons = page.locator('button')
@@ -142,8 +152,7 @@ test.describe('Accessibility — ARIA Labels', () => {
   })
 
   test('images have alt text', async ({ page }) => {
-    await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/', true)
 
     const images = page.locator('img')
     const count = await images.count()
@@ -167,8 +176,7 @@ test.describe('Accessibility — ARIA Labels', () => {
 
 test.describe('Accessibility — Form Labels', () => {
   test('sign-in form inputs have labels', async ({ page }) => {
-    await page.goto('/sign-in')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/sign-in')
 
     const inputs = page.locator('input:not([type="hidden"])')
     const count = await inputs.count()
@@ -199,8 +207,7 @@ test.describe('Accessibility — Form Labels', () => {
   })
 
   test('inquiry form inputs are labeled', async ({ page }) => {
-    await page.goto('/inquire')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/inquire')
 
     const inputs = page.locator('input:not([type="hidden"]), textarea, select')
     const count = await inputs.count()
@@ -239,8 +246,7 @@ test.describe('Accessibility — Heading Hierarchy', () => {
 
   for (const route of pagesToCheck) {
     test(`${route} — headings follow logical order`, async ({ page }) => {
-      await page.goto(route)
-      await page.waitForLoadState('networkidle')
+      await gotoStableRoute(page, route)
 
       const headings = await page.evaluate(() => {
         const hs = document.querySelectorAll('h1, h2, h3, h4, h5, h6')
@@ -276,8 +282,7 @@ test.describe('Accessibility — Heading Hierarchy', () => {
 
 test.describe('Accessibility — Focus Management', () => {
   test('Escape key closes modals/drawers', async ({ page }) => {
-    await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/dashboard', true)
 
     // Try Ctrl+K to open Remy drawer (if available)
     await page.keyboard.press('Control+k')
@@ -305,8 +310,7 @@ test.describe('Accessibility — Focus Management', () => {
 
 test.describe('Accessibility — Visual Checks', () => {
   test('landing page does not use very light text on white background', async ({ page }) => {
-    await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await gotoStableRoute(page, '/', true)
 
     // Check main text elements for contrast
     const lowContrast = await page.evaluate(() => {

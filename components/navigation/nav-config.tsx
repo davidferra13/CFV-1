@@ -109,6 +109,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/commerce/table-service', label: 'Table Service', icon: MapPin },
   { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
   { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
+  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3 },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
@@ -427,6 +428,11 @@ export const navGroups: NavGroup[] = [
         href: '/commerce/observability',
         label: 'Observability',
         icon: AlertTriangle,
+      },
+      {
+        href: '/commerce/parity',
+        label: 'Clover Parity',
+        icon: BarChart3,
       },
       {
         href: '/commerce/reconciliation',
@@ -881,6 +887,26 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
+  // Tools (utilities)
+  {
+    id: 'tools',
+    label: 'Tools',
+    icon: ListChecks,
+    module: 'more',
+    items: [
+      {
+        href: '/inbox/history-scan',
+        label: 'Inbox Tools',
+        icon: MessageCircle,
+        children: [{ href: '/inbox/triage', label: 'Sort Messages' }],
+      },
+      {
+        href: '/help',
+        label: 'Help Center',
+        icon: MessageCircle,
+      },
+    ],
+  },
   // Admin (platform controls)
   {
     id: 'admin',
@@ -921,26 +947,6 @@ export const navGroups: NavGroup[] = [
       },
       { href: '/admin/directory', label: 'Directory', icon: Compass, adminOnly: true },
       { href: '/admin/reconciliation', label: 'Reconciliation', icon: Landmark, adminOnly: true },
-    ],
-  },
-  // Tools (utilities)
-  {
-    id: 'tools',
-    label: 'Tools',
-    icon: ListChecks,
-    module: 'more',
-    items: [
-      {
-        href: '/inbox/history-scan',
-        label: 'Inbox Tools',
-        icon: MessageCircle,
-        children: [{ href: '/inbox/triage', label: 'Sort Messages' }],
-      },
-      {
-        href: '/help',
-        label: 'Help Center',
-        icon: MessageCircle,
-      },
     ],
   },
 ]

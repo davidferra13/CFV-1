@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   CreditCard,
   MapPin,
+  BarChart3,
 } from 'lucide-react'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
@@ -180,6 +181,14 @@ export default async function CommerceDashboardPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-brand-500" />
               <span className="text-stone-200 font-medium">Observability</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/parity">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <BarChart3 className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Clover Parity</span>
             </CardContent>
           </Card>
         </Link>

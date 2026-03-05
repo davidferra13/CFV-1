@@ -1,20 +1,23 @@
-// Shift Reports Page — closed register session summaries
+// Shift Reports Page - closed register session summaries
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ArrowLeft, Download } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { getRegisterSessionHistory } from '@/lib/commerce/register-actions'
+import { getCurrentRegisterSession, getRegisterSessionHistory } from '@/lib/commerce/register-actions'
 import { ShiftReport } from '@/components/commerce/shift-report'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 
-export const metadata: Metadata = { title: 'Shift Reports — ChefFlow' }
+export const metadata: Metadata = { title: 'Shift Reports - ChefFlow' }
 
 export default async function ShiftReportsPage() {
   await requireChef()
   await requirePro('commerce')
 
-  const { sessions } = await getRegisterSessionHistory({ status: 'closed', limit: 30 })
+  const [{ sessions }, currentSession] = await Promise.all([
+    getRegisterSessionHistory({ status: 'closed', limit: 30 }),
+    getCurrentRegisterSession(),
+  ])
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -28,8 +31,40 @@ export default async function ShiftReportsPage() {
         </Link>
       </div>
       <p className="text-stone-400 text-sm">
-        Summary of closed register sessions — sales count, revenue, tips, and cash variance.
+        Summary of closed register sessions with explicit X and Z report exports.
       </p>
+
+      {currentSession?.id && (
+        <div className="rounded-lg border border-stone-800 bg-stone-900/40 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-stone-100 font-medium">Current X Report</p>
+              <p className="text-xs text-stone-500">
+                Export interim register totals before close for audit checks.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a href="/api/documents/commerce-shift-report/current?format=csv">
+                <Button variant="ghost" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  X CSV
+                </Button>
+              </a>
+              <a
+                href="/api/documents/commerce-shift-report/current?format=pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="secondary" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  X PDF
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ShiftReport sessions={sessions as any} />
     </div>
   )

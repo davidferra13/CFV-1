@@ -168,7 +168,8 @@ export default defineConfig({
         '**/interactions/40-core-flow-completions.spec.ts',
         // Phase 6 — remaining routes not yet reached by files 01-40
         '**/interactions/41-remaining-routes.spec.ts',
-        // Phase 7 — POS concurrency integrity
+        // Phase 7 — inquiry filters + POS concurrency integrity
+        '**/interactions/42-inquiry-pipeline-filters.spec.ts',
         '**/interactions/42-pos-register-concurrency.spec.ts',
       ],
       use: { storageState: '.auth/chef.json' },

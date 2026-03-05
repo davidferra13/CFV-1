@@ -49,11 +49,10 @@ export function TestAccountBanner() {
         lineHeight: '28px',
         textAlign: 'center',
         font: 'bold 13px/28px Inter, system-ui, sans-serif',
-        color: '#fff',
+        color: '#111827',
         background: `${info.color}cc`,
         pointerEvents: 'none',
         letterSpacing: '0.5px',
-        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
       }}
     >
       {info.label} &mdash; {info.email}

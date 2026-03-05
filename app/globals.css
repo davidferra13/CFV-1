@@ -34,9 +34,9 @@
   --duration-exit: 150ms;
 
   /* Brand colors (for non-Tailwind contexts like FullCalendar) */
-  --brand-400: #eda86b;
-  --brand-500: #e88f47;
-  --brand-600: #d47530;
+  --brand-400: #f3c596;
+  --brand-500: #eda86b;
+  --brand-600: #b15c26;
   --brand-50: #fef9f3;
   --brand-950: #3e200f;
   --text-muted: #d6d3d1;
@@ -76,10 +76,36 @@ html {
 @layer base {
   /* Fix placeholder contrast — same issue, placeholders must pass 4.5:1 */
   ::placeholder {
-    color: var(
-      --text-placeholder
-    ) !important; /* stone-400 original = 3.85:1 on stone-950,
+    color: var(--text-placeholder) !important; /* stone-400 original = 3.85:1 on stone-950,
                                   but 5.8:1 on stone-800 (input bg) — passes on input bg */
+  }
+
+  .text-stone-500 {
+    color: #a8a29e;
+  }
+  .text-red-600 {
+    color: #f87171;
+  }
+  .text-amber-900 {
+    color: #fde68a;
+  }
+  .text-amber-800 {
+    color: #fcd34d;
+  }
+  .text-amber-700 {
+    color: #fbbf24;
+  }
+  .text-green-900 {
+    color: #86efac;
+  }
+  .text-green-800 {
+    color: #4ade80;
+  }
+  .text-emerald-700 {
+    color: #34d399;
+  }
+  .text-emerald-800 {
+    color: #6ee7b7;
   }
 
   body {
@@ -1507,13 +1533,6 @@ html {
    Used by variant audit to verify accessibility.
 */
 @layer components {
-  .text-muted {
-    color: var(--text-muted);
-  }
-
-  .text-muted-soft {
-    color: var(--text-muted-soft);
-  }
   /* All interactive elements must have visible focus indicators */
   button:focus-visible,
   a:focus-visible,
@@ -1546,3 +1565,4 @@ html {
     outline-offset: 1px;
   }
 }
+
