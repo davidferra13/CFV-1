@@ -76,8 +76,24 @@ export function WorkflowSteps() {
 
   return (
     <div ref={sectionRef} className="mx-auto max-w-2xl">
+      <div className="grid grid-cols-2 gap-3 sm:hidden">
+        {STEPS.map((step) => (
+          <Link
+            key={`mobile-${step.label}`}
+            href={step.href}
+            className="rounded-xl border border-stone-700 bg-stone-900 px-4 py-3 text-left transition-colors hover:border-brand-700"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-brand-300">
+              {step.label}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-stone-100">{step.title}</p>
+            <p className="mt-1 text-xs leading-relaxed text-stone-300">{step.description}</p>
+          </Link>
+        ))}
+      </div>
+
       {/* Timeline row */}
-      <div className="flex items-start justify-center gap-0">
+      <div className="hidden items-start justify-center gap-0 sm:flex">
         {STEPS.map((step, i) => {
           const revealed = entranceStep >= i
           const isActive = interactiveDetails && activeStep === i
@@ -144,7 +160,7 @@ export function WorkflowSteps() {
 
       {NO_CLICK_FIRST_PUBLIC_ENABLED ? (
         <div
-          className={`mt-8 grid gap-3 sm:grid-cols-2 transition-opacity duration-500 ${
+          className={`mt-8 hidden gap-3 sm:grid sm:grid-cols-2 transition-opacity duration-500 ${
             entranceStep >= STEPS.length - 1 ? 'opacity-100' : 'opacity-0'
           }`}
         >
@@ -162,7 +178,7 @@ export function WorkflowSteps() {
         </div>
       ) : (
         // Blurb area - shows on hover/focus
-        <div className="relative mt-8 flex min-h-[100px] items-start justify-center">
+        <div className="relative mt-8 hidden min-h-[100px] items-start justify-center sm:flex">
           {activeStep !== null ? (
             <div
               key={activeStep}

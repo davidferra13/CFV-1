@@ -30,6 +30,7 @@ import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
+import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import {
   getCachedCannabisAccess,
@@ -39,6 +40,7 @@ import {
 } from '@/lib/chef/layout-data-cache'
 import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
 import { AdminPreviewToggle } from '@/components/admin/admin-preview-toggle'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 
@@ -144,6 +146,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
         <SidebarProvider>
           <NotificationProvider userId={user.id}>
             <ToastProvider />
+            <TestAccountBanner />
             <KeyboardShortcutsWrapper>
               <div
                 className="min-h-screen"
@@ -229,6 +232,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                 {/* Analytics identity -- associates events with logged-in user */}
                 <AnalyticsIdentify userId={user.id} email={user.email} role={user.role} />
+
+                {/* Presence beacon -- authenticated user presence for live admin visibility */}
+                <PresenceBeacon />
               </div>
             </KeyboardShortcutsWrapper>
           </NotificationProvider>

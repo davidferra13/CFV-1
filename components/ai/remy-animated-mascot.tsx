@@ -307,7 +307,9 @@ export function RemyAnimatedMascot({
   return (
     <div
       ref={containerRef}
-      className={size !== undefined ? 'relative' : 'relative w-full h-full'}
+      className={
+        size !== undefined ? 'relative remy-line-boil' : 'relative w-full h-full remy-line-boil'
+      }
       style={containerStyle}
     >
       {/* === LAYER 1: BODY (with crossfade) === */}

@@ -13,6 +13,8 @@ import { NotificationProvider } from '@/components/notifications/notification-pr
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { RemyClientChat } from '@/components/ai/remy-client-chat'
 import { PageInfoButton } from '@/components/ui/page-info'
+import { PresenceBeacon } from '@/components/admin/presence-beacon'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 
@@ -28,6 +30,7 @@ export default async function ClientLayout({ children }: { children: React.React
     <ClientSidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
+        <TestAccountBanner />
         <div className="min-h-screen bg-stone-800">
           <a
             href="#main-content"
@@ -44,6 +47,7 @@ export default async function ClientLayout({ children }: { children: React.React
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>{children}</ClientMainContent>
           <RemyClientChat />
+          <PresenceBeacon />
           <PageInfoButton />
         </div>
       </NotificationProvider>

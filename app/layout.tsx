@@ -1,11 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, DM_Serif_Display } from 'next/font/google'
 import { CookieConsent } from '@/components/ui/cookie-consent'
-import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { SwRegister } from '@/components/pwa/sw-register'
-import { HolidayOverlay } from '@/components/ui/holiday-overlay'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
-import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import './globals.css'
 
 const inter = Inter({
@@ -109,12 +106,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
 
-        <TestAccountBanner />
         <PostHogProvider>{children}</PostHogProvider>
         <CookieConsent />
-        <PresenceBeacon />
         <SwRegister />
-        <HolidayOverlay />
       </body>
     </html>
   )

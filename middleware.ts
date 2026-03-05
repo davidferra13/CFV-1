@@ -79,6 +79,10 @@ const skipAuthPaths = [
 ]
 // Admin paths — require authentication but not a specific role (email check is in layout)
 const adminPaths = ['/admin']
+const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean)
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -267,6 +271,39 @@ export async function middleware(request: NextRequest) {
 
   // Get user role — served from cookie cache when fresh, DB otherwise
   let roleData: { role: string } | null = null
+
+  // Admin paths — defense-in-depth: check admin email list in middleware AND layout
+  const isAdminRoute = adminPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
+  if (isAdminRoute) {
+    if (
+      adminEmails.length === 0 ||
+      !user.email ||
+      !adminEmails.includes(user.email.toLowerCase())
+    ) {
+      return redirectWithCookies(new URL('/unauthorized', request.url), response)
+    }
+    response.headers.set('x-request-id', requestId)
+    return response
+  }
+
+  // Enforce role-based routing using actual URL paths
+  const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  const isClientRoute = clientPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
+  const isStaffRoute = staffPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
+
+  // Most authenticated routes are protected by server layouts already.
+  // Only perform middleware role lookups where we want immediate redirects.
+  if (!isChefRoute && !isClientRoute && !isStaffRoute) {
+    response.headers.set('x-request-id', requestId)
+    return response
+  }
+
   if (roleIsKnown) {
     roleData = { role: cachedRole }
   } else {
@@ -280,38 +317,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!roleData) {
-    // No role found for an authenticated user.
-    // Redirect them to the role selection page, unless they are already there.
-    if (pathname !== '/auth/role-selection') {
-      return redirectWithCookies(new URL('/auth/role-selection', request.url), response)
-    }
-    return response
+    return redirectWithCookies(new URL('/auth/role-selection', request.url), response)
   }
-
-  // Admin paths — defense-in-depth: check admin email list in middleware AND layout
-  const isAdminRoute = adminPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  )
-  if (isAdminRoute) {
-    const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean)
-    if (
-      adminEmails.length === 0 ||
-      !user.email ||
-      !adminEmails.includes(user.email.toLowerCase())
-    ) {
-      return redirectWithCookies(new URL('/unauthorized', request.url), response)
-    }
-    return response
-  }
-
-  // Enforce role-based routing using actual URL paths
-  const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
-  const isClientRoute = clientPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  )
 
   if (isChefRoute && roleData.role !== 'chef') {
     return redirectWithCookies(new URL('/my-events', request.url), response)
@@ -320,11 +327,6 @@ export async function middleware(request: NextRequest) {
   if (isClientRoute && roleData.role !== 'client') {
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
-
-  // Enforce staff-only routes
-  const isStaffRoute = staffPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  )
 
   if (isStaffRoute && roleData.role !== 'staff') {
     // Non-staff users trying to access staff pages get redirected to their home

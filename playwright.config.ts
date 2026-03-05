@@ -79,6 +79,18 @@ export default defineConfig({
       name: 'public',
       testMatch: ['**/e2e/15-*.spec.ts'],
     },
+    // Whole-site mobile audit — route harvest + visual/layout checks.
+    // Modes:
+    //   quick (default): core viewport set + capped routes/role
+    //   full: all harvested routes + full viewport matrix
+    // Scope:
+    //   all (default): public + chef + client + admin
+    //   public: public routes only
+    {
+      name: 'mobile-audit',
+      testMatch: ['**/mobile/mobile-visual-audit.spec.ts'],
+      timeout: 120_000,
+    },
     // ── Coverage Layer ────────────────────────────────────────────────────────
     // Visits every single URL for every role. Read-only GET requests only.
     // Run: npm run test:coverage

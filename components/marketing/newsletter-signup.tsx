@@ -54,7 +54,7 @@ export function NewsletterSignup() {
           onChange={(e) => setWebsite(e.target.value)}
         />
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           id="newsletter-email"
           name="email"
@@ -62,13 +62,13 @@ export function NewsletterSignup() {
           placeholder="your@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 rounded-md border border-stone-700 bg-stone-900 px-3 py-1.5 text-sm text-stone-200 placeholder-stone-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+          className="min-w-0 flex-1 rounded-md border border-stone-700 bg-stone-900 px-3 py-1.5 text-sm text-stone-200 placeholder-stone-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
           aria-label="Email address"
         />
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="rounded-md bg-brand-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
+          className="w-full rounded-md bg-brand-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-50 sm:w-auto"
         >
           {status === 'loading' ? '...' : 'Subscribe'}
         </button>

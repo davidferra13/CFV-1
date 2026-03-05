@@ -84,7 +84,7 @@ export default function Home() {
   const isBeta = LAUNCH_MODE === 'beta'
 
   return (
-    <div>
+    <div className="overflow-x-clip">
       {/* Structured data for Google rich results */}
       <OrganizationJsonLd />
       <WebSiteJsonLd />
@@ -292,4 +292,3 @@ export default function Home() {
     </div>
   )
 }
-

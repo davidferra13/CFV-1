@@ -10,6 +10,8 @@ import { NotificationProvider } from '@/components/notifications/notification-pr
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { OfflineProvider } from '@/components/offline/offline-provider'
 import { PageInfoButton } from '@/components/ui/page-info'
+import { PresenceBeacon } from '@/components/admin/presence-beacon'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
 
 export const metadata = {
   title: 'Admin — ChefFlow',
@@ -28,10 +30,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <SidebarProvider>
         <NotificationProvider userId={admin.id}>
           <ToastProvider />
+          <TestAccountBanner />
           <div className="min-h-screen bg-stone-900">
             <ChefSidebar isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMobileNav isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMainContent>{children}</ChefMainContent>
+            <PresenceBeacon />
             <PageInfoButton />
           </div>
         </NotificationProvider>

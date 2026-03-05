@@ -76,7 +76,9 @@ html {
 @layer base {
   /* Fix placeholder contrast — same issue, placeholders must pass 4.5:1 */
   ::placeholder {
-    color: var(--text-placeholder) !important; /* stone-400 original = 3.85:1 on stone-950,
+    color: var(
+      --text-placeholder
+    ) !important; /* stone-400 original = 3.85:1 on stone-950,
                                   but 5.8:1 on stone-800 (input bg) — passes on input bg */
   }
 
@@ -1093,6 +1095,39 @@ html {
    ============================================ */
 
 /* Reduced motion — disables motion-heavy animations and transitions */
+/* Subtle always-on "line boil" for Remy's outline (hand-drawn wobble feel). */
+@keyframes remy-line-boil-outline {
+  0% {
+    filter: drop-shadow(0.75px 0 rgba(65, 47, 34, 0.48))
+      drop-shadow(-0.6px 0.35px 0 rgba(65, 47, 34, 0.34))
+      drop-shadow(0 -0.65px 0 rgba(65, 47, 34, 0.32));
+  }
+  23% {
+    filter: drop-shadow(0.45px -0.65px 0 rgba(65, 47, 34, 0.5))
+      drop-shadow(-0.75px 0.2px 0 rgba(65, 47, 34, 0.34))
+      drop-shadow(0.25px 0.55px 0 rgba(65, 47, 34, 0.32));
+  }
+  47% {
+    filter: drop-shadow(0.7px 0.35px 0 rgba(65, 47, 34, 0.48))
+      drop-shadow(-0.5px -0.55px 0 rgba(65, 47, 34, 0.34))
+      drop-shadow(-0.2px 0.75px 0 rgba(65, 47, 34, 0.32));
+  }
+  71% {
+    filter: drop-shadow(0.35px 0.7px 0 rgba(65, 47, 34, 0.5))
+      drop-shadow(-0.8px -0.2px 0 rgba(65, 47, 34, 0.35))
+      drop-shadow(0.35px -0.55px 0 rgba(65, 47, 34, 0.32));
+  }
+  100% {
+    filter: drop-shadow(0.75px 0 rgba(65, 47, 34, 0.48))
+      drop-shadow(-0.6px 0.35px 0 rgba(65, 47, 34, 0.34))
+      drop-shadow(0 -0.65px 0 rgba(65, 47, 34, 0.32));
+  }
+}
+
+.remy-line-boil {
+  animation: remy-line-boil-outline 1.15s steps(2, end) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -1113,6 +1148,11 @@ html {
   .backdrop-blur-\[2px\] {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+  }
+
+  .remy-line-boil {
+    animation: none !important;
+    filter: none !important;
   }
 }
 
@@ -1565,4 +1605,3 @@ html {
     outline-offset: 1px;
   }
 }
-

@@ -28,6 +28,10 @@ const PUBLIC_ONLY_PROJECTS = new Set([
 ])
 
 function needsAuthBootstrap(config: FullConfig): boolean {
+  if (process.env.PLAYWRIGHT_SKIP_AUTH_BOOTSTRAP === 'true') {
+    return false
+  }
+
   const selectedProjects: string[] = []
   for (let i = 0; i < process.argv.length; i += 1) {
     const arg = process.argv[i]

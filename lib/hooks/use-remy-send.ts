@@ -281,7 +281,28 @@ export function useRemySend(config: UseRemySendConfig) {
           signal: controller.signal,
         })
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        if (!response.ok) {
+          let errorMessage = `HTTP ${response.status}`
+          try {
+            const raw = await response.text()
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw) as { error?: string; message?: string }
+                errorMessage = parsed.error ?? parsed.message ?? raw
+              } catch {
+                const sseMatch = raw.match(/"data":"([^"]+)"/)
+                if (sseMatch?.[1]) {
+                  errorMessage = sseMatch[1]
+                } else {
+                  errorMessage = raw
+                }
+              }
+            }
+          } catch {
+            // keep default status message
+          }
+          throw new Error(errorMessage)
+        }
 
         reader = response.body?.getReader()
         if (!reader) throw new Error('No response body')
