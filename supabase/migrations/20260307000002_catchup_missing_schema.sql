@@ -117,7 +117,7 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION WHEN duplicate_object THEN NULL;
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
@@ -129,7 +129,7 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION WHEN duplicate_object THEN NULL;
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
@@ -141,7 +141,7 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION WHEN duplicate_object THEN NULL;
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
@@ -149,5 +149,5 @@ DO $$ BEGIN
   ON storage.objects FOR SELECT
   TO public
   USING (bucket_id = 'dish-photos');
-EXCEPTION WHEN duplicate_object THEN NULL;
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;

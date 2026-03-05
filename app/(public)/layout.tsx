@@ -3,7 +3,6 @@
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
 import { PageInfoButton } from '@/components/ui/page-info'
-import { RemyConciergeWidget } from '@/components/public/remy-concierge-widget'
 import { HolidayOverlay } from '@/components/ui/holiday-overlay'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -22,7 +21,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </main>
       <PublicFooter />
       <PageInfoButton />
-      <RemyConciergeWidget />
       <HolidayOverlay />
     </div>
   )

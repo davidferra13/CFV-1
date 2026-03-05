@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/admin'
 import { RemyHubDashboard } from '@/components/ai/remy-hub-dashboard'
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function CommandsPage() {
-  await requireChef()
+  await requireAdmin()
 
   return (
     <div className="container max-w-4xl py-8">

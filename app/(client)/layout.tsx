@@ -11,7 +11,6 @@ import {
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
-import { RemyClientChat } from '@/components/ai/remy-client-chat'
 import { PageInfoButton } from '@/components/ui/page-info'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
@@ -46,7 +45,6 @@ export default async function ClientLayout({ children }: { children: React.React
           <ClientMobileNav userEmail={user.email} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>{children}</ClientMainContent>
-          <RemyClientChat />
           <PresenceBeacon />
           <PageInfoButton />
         </div>

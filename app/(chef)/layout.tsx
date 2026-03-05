@@ -165,9 +165,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
-  const remyAllowedByPrefs = aiPreferences.remy_enabled && aiPreferences.onboarding_completed
+  // Remy is temporarily admin-portal-only while development is in progress.
   const shouldRenderRemy =
-    (tierStatus.tier === 'pro' || userIsAdmin) && (userIsAdmin || remyAllowedByPrefs)
+    false &&
+    (tierStatus.tier === 'pro' || userIsAdmin) &&
+    (userIsAdmin || (aiPreferences.remy_enabled && aiPreferences.onboarding_completed))
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>

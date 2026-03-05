@@ -77,45 +77,62 @@ SET
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
-DROP POLICY IF EXISTS event_documents_chef_upload ON storage.objects;
-CREATE POLICY event_documents_chef_upload
-  ON storage.objects FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    bucket_id = 'event-documents'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text
-      FROM user_roles
-      WHERE auth_user_id = auth.uid() AND role = 'chef'
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  DROP POLICY IF EXISTS event_documents_chef_upload ON storage.objects;
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY event_documents_chef_upload
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      bucket_id = 'event-documents'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 
-DROP POLICY IF EXISTS event_documents_chef_read ON storage.objects;
-CREATE POLICY event_documents_chef_read
-  ON storage.objects FOR SELECT
-  TO authenticated
-  USING (
-    bucket_id = 'event-documents'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text
-      FROM user_roles
-      WHERE auth_user_id = auth.uid() AND role = 'chef'
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  DROP POLICY IF EXISTS event_documents_chef_read ON storage.objects;
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY event_documents_chef_read
+    ON storage.objects FOR SELECT
+    TO authenticated
+    USING (
+      bucket_id = 'event-documents'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 
-DROP POLICY IF EXISTS event_documents_chef_delete ON storage.objects;
-CREATE POLICY event_documents_chef_delete
-  ON storage.objects FOR DELETE
-  TO authenticated
-  USING (
-    bucket_id = 'event-documents'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text
-      FROM user_roles
-      WHERE auth_user_id = auth.uid() AND role = 'chef'
-      LIMIT 1
-    )
-  );
-
+DO $$ BEGIN
+  DROP POLICY IF EXISTS event_documents_chef_delete ON storage.objects;
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY event_documents_chef_delete
+    ON storage.objects FOR DELETE
+    TO authenticated
+    USING (
+      bucket_id = 'event-documents'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;

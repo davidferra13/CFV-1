@@ -5,7 +5,8 @@ import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
 import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
-import { getAdminNotificationRecipients } from '@/lib/platform/owner-account'
+import { getAdminNotificationRecipients, resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { createNotification } from '@/lib/notifications/actions'
 
 export interface BetaSignupInput {
   name: string
@@ -140,6 +141,29 @@ export async function submitBetaSignup(
         })
       } catch (err) {
         console.error('[beta-signup] Admin notification failed:', err)
+      }
+
+      // 3. Founder in-app alert (owner control plane feed)
+      try {
+        const owner = await resolveOwnerIdentity(supabase)
+        if (owner.ownerChefId && owner.ownerAuthUserId) {
+          await createNotification({
+            tenantId: owner.ownerChefId,
+            recipientId: owner.ownerAuthUserId,
+            category: 'system',
+            action: 'system_alert',
+            title: `New beta signup: ${name}`,
+            body: `${email} joined the beta waitlist.`,
+            actionUrl: '/admin/beta',
+            metadata: {
+              kind: 'beta_signup_received',
+              signup_name: name,
+              signup_email: email,
+            },
+          })
+        }
+      } catch (err) {
+        console.error('[beta-signup] Founder in-app alert failed:', err)
       }
     }
 

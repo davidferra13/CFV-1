@@ -105,19 +105,28 @@ ON CONFLICT (id) DO UPDATE SET
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- Storage RLS for inquiry-note-attachments
-CREATE POLICY "inquiry_note_attachments_insert"
-  ON storage.objects
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (bucket_id = 'inquiry-note-attachments');
+DO $$ BEGIN
+  CREATE POLICY "inquiry_note_attachments_insert"
+    ON storage.objects
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (bucket_id = 'inquiry-note-attachments');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 
-CREATE POLICY "inquiry_note_attachments_select"
-  ON storage.objects
-  FOR SELECT
-  USING (bucket_id = 'inquiry-note-attachments');
+DO $$ BEGIN
+  CREATE POLICY "inquiry_note_attachments_select"
+    ON storage.objects
+    FOR SELECT
+    USING (bucket_id = 'inquiry-note-attachments');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 
-CREATE POLICY "inquiry_note_attachments_delete"
-  ON storage.objects
-  FOR DELETE
-  TO authenticated
-  USING (bucket_id = 'inquiry-note-attachments');
+DO $$ BEGIN
+  CREATE POLICY "inquiry_note_attachments_delete"
+    ON storage.objects
+    FOR DELETE
+    TO authenticated
+    USING (bucket_id = 'inquiry-note-attachments');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;

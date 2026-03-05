@@ -8,7 +8,7 @@ import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
-import { FOUNDER_EMAIL } from '@/lib/platform/owner-account'
+import { FOUNDER_EMAIL, resolveOwnerChefId } from '@/lib/platform/owner-account'
 import { z } from 'zod'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
@@ -90,15 +90,39 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const sourceMessage = sourceParts.join('\n')
 
   // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
-  let chefQuery = supabase.from('chefs').select('id, business_name')
+  let chef: { id: string; business_name: string | null } | null = null
+  let chefError: { message?: string } | null = null
 
   if (validated.chef_slug) {
-    chefQuery = chefQuery.eq('booking_slug', validated.chef_slug)
+    const lookup = await supabase
+      .from('chefs')
+      .select('id, business_name')
+      .eq('booking_slug', validated.chef_slug)
+      .single()
+    chef = lookup.data as { id: string; business_name: string | null } | null
+    chefError = lookup.error
   } else {
-    chefQuery = chefQuery.ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
-  }
+    const ownerChefId = await resolveOwnerChefId(supabase)
+    if (ownerChefId) {
+      const lookup = await supabase
+        .from('chefs')
+        .select('id, business_name')
+        .eq('id', ownerChefId)
+        .single()
+      chef = lookup.data as { id: string; business_name: string | null } | null
+      chefError = lookup.error
+    }
 
-  const { data: chef, error: chefError } = await chefQuery.single()
+    if (!chef) {
+      const founderLookup = await supabase
+        .from('chefs')
+        .select('id, business_name')
+        .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
+        .single()
+      chef = founderLookup.data as { id: string; business_name: string | null } | null
+      chefError = founderLookup.error
+    }
+  }
 
   if (chefError || !chef) {
     throw new Error('Chef not found')

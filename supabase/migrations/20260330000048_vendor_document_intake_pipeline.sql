@@ -79,41 +79,59 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
-DROP POLICY IF EXISTS vendor_documents_chef_upload ON storage.objects;
-CREATE POLICY vendor_documents_chef_upload ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'vendor-documents'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text
-      FROM user_roles
-      WHERE auth_user_id = auth.uid() AND role = 'chef'
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_documents_chef_upload ON storage.objects;
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY vendor_documents_chef_upload ON storage.objects
+    FOR INSERT TO authenticated
+    WITH CHECK (
+      bucket_id = 'vendor-documents'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 
-DROP POLICY IF EXISTS vendor_documents_chef_read ON storage.objects;
-CREATE POLICY vendor_documents_chef_read ON storage.objects
-  FOR SELECT TO authenticated
-  USING (
-    bucket_id = 'vendor-documents'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text
-      FROM user_roles
-      WHERE auth_user_id = auth.uid() AND role = 'chef'
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_documents_chef_read ON storage.objects;
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY vendor_documents_chef_read ON storage.objects
+    FOR SELECT TO authenticated
+    USING (
+      bucket_id = 'vendor-documents'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 
-DROP POLICY IF EXISTS vendor_documents_chef_delete ON storage.objects;
-CREATE POLICY vendor_documents_chef_delete ON storage.objects
-  FOR DELETE TO authenticated
-  USING (
-    bucket_id = 'vendor-documents'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text
-      FROM user_roles
-      WHERE auth_user_id = auth.uid() AND role = 'chef'
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_documents_chef_delete ON storage.objects;
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY vendor_documents_chef_delete ON storage.objects
+    FOR DELETE TO authenticated
+    USING (
+      bucket_id = 'vendor-documents'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;

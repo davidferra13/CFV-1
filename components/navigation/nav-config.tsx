@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   BarChart3,
   Bot,
+  BellRing,
   CalendarDays,
   ChefHat,
   ClipboardCheck,
@@ -85,7 +86,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // adminOnly items are always hidden for non-admins regardless of Focus Mode.
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
-  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true },
+  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true, adminOnly: true },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
   { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
@@ -125,12 +126,14 @@ export const navGroups: NavGroup[] = [
         href: '/commands',
         label: 'Ask Remy',
         icon: Bot,
+        adminOnly: true,
         children: [{ href: '/remy', label: 'Conversation History' }],
       },
       {
         href: '/settings/ai-privacy',
         label: 'AI Privacy & Settings',
         icon: ShieldCheck,
+        adminOnly: true,
       },
     ],
   },
@@ -914,6 +917,26 @@ export const navGroups: NavGroup[] = [
     icon: ShieldAlert,
     items: [
       { href: '/admin', label: 'Overview', icon: LayoutDashboard, adminOnly: true },
+      {
+        href: '/admin/command-center',
+        label: 'Command Center',
+        icon: Activity,
+        adminOnly: true,
+      },
+      {
+        href: '/admin/conversations',
+        label: 'Conversations',
+        icon: MessageCircle,
+        adminOnly: true,
+      },
+      { href: '/admin/social', label: 'Social Feed', icon: MessagesSquare, adminOnly: true },
+      { href: '/admin/hub', label: 'Hub Groups', icon: Users, adminOnly: true },
+      {
+        href: '/admin/notifications',
+        label: 'Notifications',
+        icon: BellRing,
+        adminOnly: true,
+      },
       { href: '/admin/presence', label: 'Live Presence', icon: Activity, adminOnly: true },
       { href: '/admin/users', label: 'Chefs', icon: Users, adminOnly: true },
       { href: '/admin/clients', label: 'Clients', icon: Contact, adminOnly: true },

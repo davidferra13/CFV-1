@@ -1,12 +1,13 @@
 // Contact Form Server Actions
 // Stores public contact form submissions for admin review.
-// If PLATFORM_OWNER_CHEF_ID is set, auto-assigns to the platform owner.
+// Auto-assigns to the resolved platform owner account when available.
 
 'use server'
 
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
+import { resolveOwnerChefId } from '@/lib/platform/owner-account'
 
 interface ContactFormData {
   name: string
@@ -62,8 +63,8 @@ export async function submitContactForm(data: ContactFormData) {
     throw new Error('Failed to submit message. Please try again.')
   }
 
-  // Auto-assign to platform owner if configured
-  const ownerChefId = process.env.PLATFORM_OWNER_CHEF_ID
+  // Auto-assign to resolved owner account.
+  const ownerChefId = await resolveOwnerChefId(supabase)
   if (ownerChefId && submission?.id) {
     try {
       await autoAssignToOwner(supabase, submission.id, ownerChefId, {

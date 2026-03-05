@@ -10,7 +10,7 @@ import type { Json } from '@/types/database'
 import type { NotificationCategory, NotificationAction, Notification } from './types'
 import { routeNotification } from './channel-router'
 import { DEFAULT_TIER_MAP } from './tier-config'
-import { FOUNDER_EMAIL } from '@/lib/platform/owner-account'
+import { resolveOwnerAuthUserId } from '@/lib/platform/owner-account'
 
 let founderRecipientCache: { recipientId: string | null; expiresAt: number } | null = null
 const FOUNDER_CACHE_TTL_MS = 60_000
@@ -21,25 +21,7 @@ async function getFounderNotificationRecipientId(supabase: any): Promise<string 
     return founderRecipientCache.recipientId
   }
 
-  const { data: founderChef } = await supabase
-    .from('chefs')
-    .select('id')
-    .ilike('email', FOUNDER_EMAIL)
-    .maybeSingle()
-
-  if (!founderChef?.id) {
-    founderRecipientCache = { recipientId: null, expiresAt: now + FOUNDER_CACHE_TTL_MS }
-    return null
-  }
-
-  const { data: founderRole } = await supabase
-    .from('user_roles')
-    .select('auth_user_id')
-    .eq('entity_id', founderChef.id)
-    .eq('role', 'chef')
-    .maybeSingle()
-
-  const recipientId = founderRole?.auth_user_id ?? null
+  const recipientId = await resolveOwnerAuthUserId(supabase)
   founderRecipientCache = { recipientId, expiresAt: now + FOUNDER_CACHE_TTL_MS }
   return recipientId
 }

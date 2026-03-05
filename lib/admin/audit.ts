@@ -24,6 +24,9 @@ export type AuditActionType =
   | 'cannabis_tier_revoked'
   | 'cannabis_invite_approved'
   | 'cannabis_invite_rejected'
+  | 'admin_moderated_chat_message'
+  | 'admin_moderated_social_post'
+  | 'admin_moderated_hub_group'
 
 export async function logAdminAction({
   actorEmail,

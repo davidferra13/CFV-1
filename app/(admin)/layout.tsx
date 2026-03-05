@@ -4,6 +4,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { SidebarProvider, ChefSidebar, ChefMobileNav } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
@@ -16,6 +17,11 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 export const metadata = {
   title: 'Admin — ChefFlow',
 }
+
+const RemyWrapper = dynamic(
+  () => import('@/components/ai/remy-wrapper').then((m) => m.RemyWrapper),
+  { ssr: false }
+)
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   let admin
@@ -35,6 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <ChefSidebar isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMobileNav isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMainContent>{children}</ChefMainContent>
+            <RemyWrapper />
             <PresenceBeacon />
             <PageInfoButton />
           </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/admin'
 import {
   listRemyApprovalPolicies,
   listRemyApprovalPolicyTargets,
@@ -15,7 +15,7 @@ import { RemyControlClient } from './remy-control-client'
 export const metadata: Metadata = { title: 'Remy Control Center - ChefFlow' }
 
 export default async function RemySettingsPage() {
-  await requireChef()
+  await requireAdmin()
 
   const [targets, policies, auditRows, summary, aiPrefs] = await Promise.all([
     listRemyApprovalPolicyTargets().catch(() => []),

@@ -6,6 +6,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { evaluateProductionSafetyEnv } from '@/lib/environment/production-safety'
+import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 
 export type PlatformOverviewStats = {
   totalChefs: number
@@ -69,6 +70,7 @@ export type SystemHealthStats = {
   oldestUnreadMessage: string | null
   zombieEventCount: number
   orphanedClientCount: number
+  warnings: string[]
 }
 
 export type QolMetricsSummary = {
@@ -502,6 +504,8 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     .order('created_at', { ascending: true })
     .limit(1)
 
+  const ownerIdentity = await resolveOwnerIdentity(supabase)
+
   return {
     tableRowCounts: {
       chefs: chefCount.count ?? 0,
@@ -514,6 +518,7 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     oldestUnreadMessage: oldestMsg?.[0]?.created_at ?? null,
     zombieEventCount: zombieEvents.count ?? 0,
     orphanedClientCount: orphanedClients.count ?? 0,
+    warnings: Array.from(new Set(ownerIdentity.warnings)),
   }
 }
 
@@ -612,7 +617,8 @@ export async function getPaymentHealthStats(timeframeHours = 24): Promise<Paymen
     if (!lastWebhookFailedAt && row.status === 'failed') lastWebhookFailedAt = row.received_at
   }
 
-  const platformChefId = process.env.PLATFORM_OWNER_CHEF_ID ?? null
+  const ownerIdentity = await resolveOwnerIdentity(supabase)
+  const platformChefId = ownerIdentity.ownerChefId
   let platformChefConnect: PaymentHealthStats['platformChefConnect'] = null
   if (platformChefId) {
     const { data: chef } = await supabase
@@ -644,9 +650,10 @@ export async function getPaymentHealthStats(timeframeHours = 24): Promise<Paymen
   const envReport = evaluateProductionSafetyEnv()
   blockers.push(...envReport.errors)
   warnings.push(...envReport.warnings)
+  warnings.push(...ownerIdentity.warnings)
 
   if (!platformChefConnect) {
-    warnings.push('PLATFORM_OWNER_CHEF_ID is not configured or does not resolve to a chef')
+    warnings.push('Resolved platform owner chef is missing or does not resolve')
   } else {
     if (!platformChefConnect.hasStripeAccount) {
       blockers.push('Platform owner chef has no Stripe connected account')

@@ -184,6 +184,24 @@ export default async function AdminSystemPage() {
               </div>
             </div>
           </div>
+
+          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+            <h2 className="text-sm font-semibold text-slate-700 mb-4">Owner Identity Warnings</h2>
+            {health.warnings.length > 0 ? (
+              <ul className="space-y-2">
+                {health.warnings.map((warning) => (
+                  <li
+                    key={warning}
+                    className="text-sm text-amber-700 bg-amber-950 rounded-lg px-3 py-2"
+                  >
+                    {warning}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-400">No owner identity warnings detected.</p>
+            )}
+          </div>
         </>
       )}
 
