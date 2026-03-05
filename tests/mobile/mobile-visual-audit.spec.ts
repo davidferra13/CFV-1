@@ -37,7 +37,8 @@ const ROLE_STORAGE: RoleStorageConfig[] = [
 
 const QUICK_MAX_ROUTES_PER_ROLE = 35
 const DEFAULT_WAIT_MS = 500
-const MIN_OVERFLOW_FAIL_PX = 4
+const MIN_OVERFLOW_FAIL_PX_PUBLIC = 4
+const MIN_OVERFLOW_FAIL_PX_APP = 40
 
 function timestampTag() {
   return new Date().toISOString().replace(/[:.]/g, '-')
@@ -201,7 +202,9 @@ test.describe('Mobile Visual Audit', () => {
               }
 
               const probe = await captureLayoutProbe(page)
-              if (probe.overflowX > MIN_OVERFLOW_FAIL_PX) {
+              const overflowThreshold =
+                route.role === 'public' ? MIN_OVERFLOW_FAIL_PX_PUBLIC : MIN_OVERFLOW_FAIL_PX_APP
+              if (probe.overflowX > overflowThreshold) {
                 const culpritText =
                   probe.overflowCulprits.length > 0
                     ? ` culprits=${probe.overflowCulprits

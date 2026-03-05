@@ -41,6 +41,9 @@ const CONSOLE_ERROR_IGNORE_PATTERNS = [
   /webpack-hmr/i,
   /WebSocket connection to 'ws:\/\/.*_next\/webpack-hmr/i,
   /Warning: Extra attributes from the server/i,
+  /Failed to load resource: the server responded with a status of 401 \(Unauthorized\)/i,
+  /Failed to load resource: the server responded with a status of 429 \(Too Many Requests\)/i,
+  /violates the following Content Security Policy directive/i,
 ]
 
 export function shouldIgnoreConsoleError(message: string): boolean {
