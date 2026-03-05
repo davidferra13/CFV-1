@@ -4,7 +4,16 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { addDays, addWeeks, format, isAfter, isBefore, parseISO, startOfWeek, subDays } from 'date-fns'
+import {
+  addDays,
+  addWeeks,
+  format,
+  isAfter,
+  isBefore,
+  parseISO,
+  startOfWeek,
+  subDays,
+} from 'date-fns'
 import { SERVICE_TYPE_LABELS } from '@/lib/recurring/constants'
 import {
   buildMenuSuggestionBundle,
@@ -301,7 +310,9 @@ export async function getRecurringPlanningSnapshot(clientId: string, horizonWeek
   const favoriteDishes = Array.isArray(client?.favorite_dishes)
     ? client.favorite_dishes.filter((dish: unknown): dish is string => typeof dish === 'string')
     : []
-  const menuSignals = buildMenuSuggestionBundle(history ?? [], favoriteDishes, { recommendationCount: 5 })
+  const menuSignals = buildMenuSuggestionBundle(history ?? [], favoriteDishes, {
+    recommendationCount: 5,
+  })
   const clientName = client?.full_name || 'there'
 
   const serviceForecasts: RecurringServiceForecast[] = (services ?? []).map((service: any) => {

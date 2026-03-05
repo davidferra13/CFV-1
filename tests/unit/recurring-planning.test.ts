@@ -80,4 +80,3 @@ test('service day formatter handles explicit and fallback schedules', () => {
   assert.equal(formatServiceDays([1, 5], '2026-03-01'), 'Mon, Fri')
   assert.equal(formatServiceDays([], '2026-03-03'), 'Tue')
 })
-

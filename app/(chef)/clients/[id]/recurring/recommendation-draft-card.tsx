@@ -37,4 +37,3 @@ export function RecommendationDraftCard({ draft, sendDate }: RecommendationDraft
     </div>
   )
 }
-

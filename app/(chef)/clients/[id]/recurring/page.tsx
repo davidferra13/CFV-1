@@ -49,7 +49,8 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
           </Link>
         </div>
         <p className="mt-1 text-sm text-stone-500">
-          Run multi-service engagements with forecast visibility and week-ahead menu recommendations.
+          Run multi-service engagements with forecast visibility and week-ahead menu
+          recommendations.
         </p>
       </div>
 
@@ -121,7 +122,10 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
           </CardHeader>
           <CardContent className="space-y-4">
             {planning.serviceForecasts.map((service) => (
-              <div key={service.serviceId} className="rounded-lg border border-stone-800 p-4 space-y-3">
+              <div
+                key={service.serviceId}
+                className="rounded-lg border border-stone-800 p-4 space-y-3"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-stone-100">{service.serviceLabel}</p>
