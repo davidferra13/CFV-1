@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { Bot } from 'lucide-react'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
 import { requireAdmin } from '@/lib/auth/admin'
+import { redirect } from 'next/navigation'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata = {
   title: 'Remy History',
@@ -9,7 +11,10 @@ export const metadata = {
 }
 
 export default async function RemyHistoryPage() {
-  await requireAdmin()
+  const admin = await requireAdmin()
+  if (!isFounderEmail(admin.email)) {
+    redirect('/unauthorized')
+  }
 
   return (
     <div className="container max-w-4xl py-8 space-y-6">

@@ -13,6 +13,7 @@ import { OfflineProvider } from '@/components/offline/offline-provider'
 import { PageInfoButton } from '@/components/ui/page-info'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata = {
   title: 'Admin — ChefFlow',
@@ -41,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <ChefSidebar isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMobileNav isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMainContent>{children}</ChefMainContent>
-            <RemyWrapper />
+            {isFounderEmail(admin.email) && <RemyWrapper />}
             <PresenceBeacon />
             <PageInfoButton />
           </div>

@@ -19,12 +19,11 @@ import { OfflineProvider } from '@/components/offline/offline-provider'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
-import { getTierForChef } from '@/lib/billing/tier'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
-import { getAiPreferences } from '@/lib/ai/privacy-actions'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 import {
   getCachedCannabisAccess,
   getCachedChefArchetype,
@@ -97,23 +96,15 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const [
     layoutData,
     announcement,
-    tierStatus,
     _unusedCannabisTier,
     userIsAdmin,
     chefArchetype,
     deletionStatus,
-    aiPreferences,
   ] = await Promise.all([
     // Cached for 60s — slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
     // Platform announcement (non-fatal — fail open)
     getAnnouncement().catch(() => null),
-    // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
-    getTierForChef(user.entityId).catch(() => ({
-      tier: 'pro' as const,
-      isGrandfathered: true,
-      subscriptionStatus: 'grandfathered',
-    })),
     // Cannabis tier check — kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
     getCachedCannabisAccess(user.id, user.email ?? '').catch(() => false),
     // Admin check — cached 60s, env-based (no DB call)
@@ -127,17 +118,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       daysRemaining: null,
       requestedAt: null,
       reason: null,
-    })),
-    // Remy runtime preference gate — fail closed to avoid forcing UI on users.
-    getAiPreferences().catch(() => ({
-      remy_enabled: false,
-      onboarding_completed: false,
-      onboarding_completed_at: null,
-      data_retention_days: null,
-      allow_memory: true,
-      allow_suggestions: true,
-      allow_document_drafts: true,
-      remy_archetype: null,
     })),
   ])
   // Archetype gate — new chefs pick their persona before seeing the portal.
@@ -165,11 +145,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
-  // Remy is temporarily admin-portal-only while development is in progress.
-  const shouldRenderRemy =
-    false &&
-    (tierStatus.tier === 'pro' || userIsAdmin) &&
-    (userIsAdmin || (aiPreferences.remy_enabled && aiPreferences.onboarding_completed))
+  // Remy is founder-only while development is in progress.
+  const shouldRenderRemy = isFounderEmail(user.email)
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
