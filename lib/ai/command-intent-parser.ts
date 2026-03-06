@@ -332,7 +332,271 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       ],
     }),
   },
+  // "If [date] is free, [action]" — conditional command chaining
+  {
+    pattern: /^if\s+(.+?)\s+(?:is\s+)?(?:free|available|open)[,.]?\s+(?:then\s+)?(.+)/i,
+    build: (match, raw) => {
+      const dateStr = match[1].trim()
+      const actionStr = match[2].trim()
+
+      // Parse the action part to determine what to do if the date is free
+      // Default to event creation if the action mentions "create", "book", "schedule"
+      let actionTask: { taskType: string; inputs: Record<string, unknown> } = {
+        taskType: 'agent.create_event',
+        inputs: { description: actionStr },
+      }
+
+      // Try to detect specific action types from the conditional action
+      if (/^(?:draft|write)\s+/i.test(actionStr)) {
+        actionTask = { taskType: 'email.followup', inputs: { description: actionStr } }
+      } else if (/^(?:remind|set a reminder)/i.test(actionStr)) {
+        actionTask = { taskType: 'agent.create_todo', inputs: { title: actionStr } }
+      }
+
+      return {
+        rawInput: raw,
+        overallConfidence: 0.9,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'calendar.check',
+            tier: 1,
+            confidence: 0.95,
+            inputs: { date: dateStr },
+            dependsOn: [],
+          },
+          {
+            id: 't2',
+            taskType: actionTask.taskType,
+            tier: 2,
+            confidence: 0.9,
+            inputs: actionTask.inputs,
+            dependsOn: ['t1'],
+            holdReason: `Waiting to confirm ${dateStr} is available`,
+          },
+        ],
+      }
+    },
+  },
+  // "Show my inbox" / "Check emails" / "Inbox summary"
+  {
+    pattern: /^(?:show|check|summarize|read)\s+(?:my\s+)?(?:inbox|emails?|mail)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'email.inbox_summary',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Show my profile" / "My culinary profile"
+  {
+    pattern: /^(?:show|view|display)\s+(?:my\s+)?(?:culinary\s+)?profile/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'profile.culinary',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Show my favorite chefs" / "Who are my culinary heroes"
+  {
+    pattern: /^(?:show|list|who are)\s+(?:my\s+)?(?:favorite|fav|culinary)\s+(?:chefs|heroes)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'profile.favorite_chefs',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "What's [name]'s lifetime value" / "LTV for [name]"
+  {
+    pattern: /^(?:what'?s|calculate|show)\s+(.+?)(?:'s)?\s+(?:lifetime value|ltv|total spend)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'analytics.client_ltv',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { clientName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Prep timeline for [event/name]"
+  {
+    pattern: /^(?:generate|create|make|show)\s+(?:a\s+)?(?:prep\s+)?timeline\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'ops.prep_timeline',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { eventDescription: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
 ]
+
+// ─── Smart Relative Date Resolver (Formula > AI) ───────────────────────────
+// Resolves "next Tuesday", "this weekend", "in 2 weeks" to actual dates
+// so both deterministic patterns and Ollama get concrete dates.
+
+function resolveRelativeDates(input: string): string {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+  let result = input
+
+  // "next [day]" → actual date
+  result = result.replace(
+    /\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi,
+    (_match, dayName: string) => {
+      const targetDay = dayNames.indexOf(dayName.toLowerCase())
+      const currentDay = today.getDay()
+      let daysAhead = targetDay - currentDay
+      if (daysAhead <= 0) daysAhead += 7 // Always next week
+      const target = new Date(today)
+      target.setDate(today.getDate() + daysAhead)
+      return target.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    }
+  )
+
+  // "this [day]" → this week's occurrence (or today if it matches)
+  result = result.replace(
+    /\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi,
+    (_match, dayName: string) => {
+      const targetDay = dayNames.indexOf(dayName.toLowerCase())
+      const currentDay = today.getDay()
+      let daysAhead = targetDay - currentDay
+      if (daysAhead < 0) daysAhead += 7
+      const target = new Date(today)
+      target.setDate(today.getDate() + daysAhead)
+      return target.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    }
+  )
+
+  // "this weekend" → next Saturday
+  result = result.replace(/\bthis\s+weekend\b/gi, () => {
+    const currentDay = today.getDay()
+    let daysToSat = 6 - currentDay
+    if (daysToSat <= 0) daysToSat += 7
+    const sat = new Date(today)
+    sat.setDate(today.getDate() + daysToSat)
+    return sat.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  })
+
+  // "tomorrow"
+  result = result.replace(/\btomorrow\b/gi, () => {
+    const tmrw = new Date(today)
+    tmrw.setDate(today.getDate() + 1)
+    return tmrw.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  })
+
+  // "today"
+  result = result.replace(/\btoday\b/gi, () => {
+    return today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  })
+
+  // "in [N] days/weeks/months"
+  result = result.replace(
+    /\bin\s+(\d+)\s+(day|days|week|weeks|month|months)\b/gi,
+    (_match, num: string, unit: string) => {
+      const n = parseInt(num)
+      const target = new Date(today)
+      if (unit.startsWith('day')) target.setDate(today.getDate() + n)
+      else if (unit.startsWith('week')) target.setDate(today.getDate() + n * 7)
+      else if (unit.startsWith('month')) target.setMonth(today.getMonth() + n)
+      return target.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    }
+  )
+
+  // "next week" → next Monday
+  result = result.replace(/\bnext\s+week\b/gi, () => {
+    const currentDay = today.getDay()
+    const daysToMon = currentDay === 0 ? 1 : 8 - currentDay
+    const mon = new Date(today)
+    mon.setDate(today.getDate() + daysToMon)
+    return mon.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  })
+
+  // "next month" → 1st of next month
+  result = result.replace(/\bnext\s+month\b/gi, () => {
+    const target = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+    return target.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  })
+
+  return result
+}
+
+// ─── Natural Language Quantity Resolver (Formula > AI) ──────────────────────
+// Converts "a dozen", "half a pound", "a couple" → actual numbers.
+
+function resolveNaturalQuantities(input: string): string {
+  let result = input
+
+  const quantityMap: Array<{ pattern: RegExp; replacement: string }> = [
+    { pattern: /\ba dozen\b/gi, replacement: '12' },
+    { pattern: /\bhalf a dozen\b/gi, replacement: '6' },
+    { pattern: /\btwo dozen\b/gi, replacement: '24' },
+    { pattern: /\bthree dozen\b/gi, replacement: '36' },
+    { pattern: /\ba couple\b/gi, replacement: '2' },
+    { pattern: /\ba few\b/gi, replacement: '3' },
+    { pattern: /\bseveral\b/gi, replacement: '5' },
+    { pattern: /\bhalf\s+a\s+pound\b/gi, replacement: '0.5 lb' },
+    { pattern: /\ba\s+quarter\s+pound\b/gi, replacement: '0.25 lb' },
+    { pattern: /\ba\s+pound\b/gi, replacement: '1 lb' },
+    { pattern: /\bhalf\s+a\s+cup\b/gi, replacement: '0.5 cup' },
+    { pattern: /\ba\s+quarter\s+cup\b/gi, replacement: '0.25 cup' },
+    { pattern: /\ba\s+pinch\b/gi, replacement: '0.125 tsp' },
+    { pattern: /\ba\s+dash\b/gi, replacement: '0.125 tsp' },
+    { pattern: /\btwenty\b/gi, replacement: '20' },
+    { pattern: /\bthirty\b/gi, replacement: '30' },
+    { pattern: /\bforty\b/gi, replacement: '40' },
+    { pattern: /\bfifty\b/gi, replacement: '50' },
+    { pattern: /\bhundred\b/gi, replacement: '100' },
+  ]
+
+  for (const { pattern, replacement } of quantityMap) {
+    result = result.replace(pattern, replacement)
+  }
+
+  return result
+}
 
 function tryDeterministicParse(rawInput: string): CommandPlan | null {
   const trimmed = rawInput.trim()
@@ -349,12 +613,16 @@ function tryDeterministicParse(rawInput: string): CommandPlan | null {
 // ─── Public Server Action ─────────────────────────────────────────────────────
 
 export async function parseCommandIntent(rawInput: string): Promise<CommandPlan> {
+  // Pre-process: resolve relative dates + natural quantities (Formula > AI)
+  const withDates = resolveRelativeDates(rawInput)
+  const resolved = resolveNaturalQuantities(withDates)
+
   // Try deterministic parse first (instant, free, no LLM)
-  const deterministic = tryDeterministicParse(rawInput)
-  if (deterministic) return deterministic
+  const deterministic = tryDeterministicParse(resolved)
+  if (deterministic) return { ...deterministic, rawInput }
 
   const systemPrompt = buildSystemPrompt()
-  const userContent = `Chef command: "${rawInput}"\n\nDecompose this into tasks.`
+  const userContent = `Chef command: "${resolved}"\n\nDecompose this into tasks.`
 
   try {
     const parsed = await parseWithOllama(systemPrompt, userContent, CommandPlanSchema, {

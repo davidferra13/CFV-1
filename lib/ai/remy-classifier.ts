@@ -109,6 +109,16 @@ const COMMAND_PATTERNS: RegExp[] = [
   /^(here'?s a (transcript|brain dump|dump|list|note)|i (just )?got off the phone|i talked to)\b/i,
   // Attached file
   /^\[attached:/i,
+  // Update/modify actions
+  /^(update|change|modify|edit|rename|move|delete|remove|cancel)\b/i,
+  // Financial commands
+  /^(invoice|charge|refund|pay|bill|calculate|price|quote)\b/i,
+  // Calendar/booking commands
+  /^(book|reserve|block off|free up|mark|unblock)\b/i,
+  // Communication commands
+  /^(call|contact|reach out|follow up|ping|nudge|remind)\b/i,
+  // List/report commands
+  /^(list|print|export|download|report|pull)\b/i,
 ]
 
 const QUESTION_PATTERNS: RegExp[] = [
@@ -122,6 +132,14 @@ const QUESTION_PATTERNS: RegExp[] = [
   /^(thanks|thank you|got it|ok|okay|sure|sounds good|perfect|great|awesome|nice)\b/i,
   // Opinion / analysis
   /^(analyze|compare|explain|describe|summarize|break down|walk me through)\b/i,
+  // Greetings
+  /^(hi|hey|hello|good morning|good afternoon|good evening|morning|afternoon|yo|sup)\b/i,
+  // Business questions
+  /^(am i|is my|are my|is there|are there|do i have|have i)\b/i,
+  // Single-word confirmations
+  /^(yes|no|yep|nope|nah|yeah|yea)\b$/i,
+  // Feeling/mood
+  /^(i'?m feeling|i feel|i'?m (stressed|tired|excited|overwhelmed|worried))\b/i,
 ]
 
 // Commands that look like questions but are actually action requests
@@ -131,6 +149,10 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^how much has\b/i, // "How much has the Johnson family spent?"
   /^what do i need to pack/i, // "What do I need to pack for Saturday?"
   /^can you (draft|create|make|find|check|search|write)/i, // "Can you draft a..."
+  /^(could you|would you|will you|please) (draft|create|make|find|check|search|write|send)/i,
+  /^is\s+\w+\s+(available|free|open|blocked)/i, // "Is March 15 available?"
+  /^what('?s| are) (the )?(dietary|allerg)/i, // "What are the dietary restrictions for..."
+  /^(do i have|are there) any (upcoming|pending|overdue|open)/i, // "Do I have any upcoming events?"
 ]
 
 function tryDeterministicClassify(message: string): ClassificationResult | null {
@@ -155,6 +177,21 @@ function tryDeterministicClassify(message: string): ClassificationResult | null 
     if (pattern.test(trimmed)) {
       return { intent: 'question', confidence: 0.95 }
     }
+  }
+
+  // Mixed detection — message contains both question and command signals
+  const hasQuestion = /\?/.test(trimmed)
+  const hasCommandVerb =
+    /\b(draft|write|create|send|find|check|search|make|generate|book|schedule|import)\b/i.test(
+      trimmed
+    )
+  if (hasQuestion && hasCommandVerb && trimmed.length > 40) {
+    return { intent: 'mixed', confidence: 0.85 }
+  }
+
+  // Short messages (< 4 words) without clear patterns — likely conversational (question)
+  if (trimmed.split(/\s+/).length <= 3 && !hasCommandVerb) {
+    return { intent: 'question', confidence: 0.8 }
   }
 
   // No confident match → fall through to Ollama
