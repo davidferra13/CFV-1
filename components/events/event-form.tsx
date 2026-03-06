@@ -26,6 +26,7 @@ import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/c
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { setActiveForm } from '@/lib/ai/remy-activity-tracker'
+import { PrepTimeEstimateHint } from '@/components/intelligence/prep-time-estimate-hint'
 
 type Client = {
   id: string
@@ -746,6 +747,11 @@ export function EventForm({
               value={guestCount}
               onChange={(e) => setGuestCount(e.target.value)}
             />
+
+            {/* Prep time estimate — appears when guest count is entered */}
+            {parseInt(guestCount) > 0 && (
+              <PrepTimeEstimateHint guestCount={parseInt(guestCount)} occasion={occasion || null} />
+            )}
 
             <AddressAutocomplete
               label="Address"

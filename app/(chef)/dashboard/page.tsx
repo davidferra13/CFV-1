@@ -8,7 +8,9 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { getChefPreferences } from '@/lib/chef/actions'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { DEFAULT_PREFERENCES, type DashboardWidgetId } from '@/lib/scheduling/types'
+import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import type { PriorityQueue } from '@/lib/queue/types'
@@ -28,6 +30,7 @@ import { ArrowRight } from 'lucide-react'
 import { ScheduleSection } from './_sections/schedule-section'
 import { AlertsSection } from './_sections/alerts-section'
 import { BusinessSection } from './_sections/business-section'
+import { IntelligenceSection } from './_sections/intelligence-section'
 
 // Section skeletons for Suspense fallbacks
 import {
@@ -35,6 +38,7 @@ import {
   AlertsSkeleton,
   QueueSkeleton,
   BusinessSkeleton,
+  IntelligenceSkeleton,
 } from './_sections/section-skeletons'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
@@ -81,14 +85,16 @@ export default async function ChefDashboard() {
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
   // Only fetch what's needed for the header + priority banner (renders instantly)
-  const [preferences, queue] = await Promise.all([
+  const [preferences, queue, archetype] = await Promise.all([
     safe('preferences', getChefPreferences, {
       id: '',
       chef_id: user.entityId,
       ...DEFAULT_PREFERENCES,
     }),
     safe('queue', getPriorityQueue, emptyQueue),
+    safe('archetype', () => getCachedChefArchetype(user.entityId), null),
   ])
+  const primaryAction = getDashboardPrimaryAction(archetype)
 
   const widgetPreferences = preferences.dashboard_widgets?.length
     ? preferences.dashboard_widgets
@@ -129,11 +135,11 @@ export default async function ChefDashboard() {
               Full Queue
             </Link>
             <Link
-              href="/events/new"
+              href={primaryAction.href}
               className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium text-sm"
             >
               <Plus className="h-4 w-4" />
-              New Event
+              {primaryAction.label}
             </Link>
           </div>
         </div>
@@ -242,6 +248,16 @@ export default async function ChefDashboard() {
         {/* ============================================ */}
         <Suspense fallback={<AlertsSkeleton />}>
           <AlertsSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
+        </Suspense>
+
+        {/* ============================================ */}
+        {/* INTELLIGENCE — streams in (~500-1000ms)      */}
+        {/* ============================================ */}
+        <Suspense fallback={<IntelligenceSkeleton />}>
+          <IntelligenceSection
+            widgetEnabled={widgetEnabledRecord}
+            widgetOrder={widgetOrderRecord}
+          />
         </Suspense>
 
         {/* ============================================ */}

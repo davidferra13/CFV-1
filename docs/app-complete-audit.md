@@ -267,6 +267,17 @@
 - Results: health score, per-domain insight cards with recommendations
 - "Refresh" button to re-run
 
+#### Business Intelligence (Suspense-streamed)
+
+- **Widget ID:** `business_health`
+- Health score circle (0-100, color-coded green/amber/red) with 4-dimension breakdown (Revenue, Clients, Ops, Growth)
+- Critical alerts: red cards with icon, title, detail, action link (overdue payments, unanswered inquiries, missing event info)
+- Warning alerts: amber cards (churn risk, unpaid events, capacity concerns)
+- Opportunities: brand-colored cards (price increase headroom, stale client re-engagement)
+- Key Insights: bullet list of top 5 plain-English insights from 25 engines
+- "Full Intelligence Hub →" link → `/intelligence`
+- Data: `getBusinessHealthSummary()` + `getProactiveAlerts()` — zero Ollama dependency
+
 #### System Health (System Nerve Center)
 
 - **Widget ID:** `system_nerve_center`
@@ -385,24 +396,24 @@
 
 ### 2.3 Event Sub-Pages
 
-| Route                        | Key Elements                                                                                                                                                                                                       |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/events/[id]/edit`          | Full event form (draft/proposed only)                                                                                                                                                                              |
-| `/events/[id]/schedule`      | Day-of timeline + DOP checklist with toggleable completions                                                                                                                                                        |
-| `/events/[id]/pack`          | 5-section packing checklist with tap-to-check items, progress bar, "Mark Car Packed" button, "Reset checklist" button, departure callout, "Print PDF" button                                                       |
-| `/events/[id]/travel`        | Travel legs with add/edit forms, route stops, ingredient sourcing status dropdowns, start/complete/cancel/delete buttons per leg                                                                                   |
-| `/events/[id]/grocery-quote` | Multi-vendor price comparison table (USDA/Spoonacular/Kroger/MealMe), budget check, "Open in Instacart →" button, "Save Prices to Recipe Book" button                                                              |
-| `/events/[id]/invoice`       | Print-format invoice with service details, payment history, balance summary, "Download PDF" + "Print" buttons                                                                                                      |
-| `/events/[id]/aar`           | AAR form: calm/prep/execution ratings (1-5), what went well/wrong textareas, forgotten items tag input, submit button                                                                                              |
-| `/events/[id]/debrief`       | 4 collapsible sections: Dish Gallery (photo upload), Recipe Notes (per-recipe fields), Client Insights (milestones, dietary, vibe), How Did It Go (star rating + AI auto-draft + notes). "Complete Debrief" button |
-| `/events/[id]/close-out`     | 5-step wizard: Tip → Receipts → Mileage → Reflection (Quick AAR) → Close Out. Final celebration screen with confetti, profit display, "Go to Dashboard" button                                                     |
-| `/events/[id]/financial`     | 7-section financial summary with revenue, costs, margins, time investment, mileage input, historical comparison. "Mark Financially Closed" button                                                                  |
-| `/events/[id]/receipts`      | Per-receipt: thumbnail, OCR-extracted line items with category/tag dropdowns, "Auto-Extract" button, "Approve → Add to Expenses" button                                                                            |
-| `/events/[id]/split-billing` | Divide event cost across multiple payers                                                                                                                                                                           |
-| `/events/[id]/kds`           | Kitchen Display System: live course tracking with fire → plating → served progression                                                                                                                              |
-| `/events/[id]/dop/mobile`    | Full-screen mobile DOP with large tap targets                                                                                                                                                                      |
-| `/events/[id]/guest-card`    | Printable QR card for dinner tables                                                                                                                                                                                |
-| `/events/[id]/interactive`   | Interactive tappable version of any of 9 document types                                                                                                                                                            |
+| Route                        | Key Elements                                                                                                                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/events/[id]/edit`          | Full event form (draft/proposed only). **Prep Time Estimate** bar appears below guest count input — shows phase breakdown (Shopping/Prep/Service/Travel/Reset) with color-coded proportional bar and hover tooltips |
+| `/events/[id]/schedule`      | Day-of timeline + DOP checklist with toggleable completions                                                                                                                                                         |
+| `/events/[id]/pack`          | 5-section packing checklist with tap-to-check items, progress bar, "Mark Car Packed" button, "Reset checklist" button, departure callout, "Print PDF" button                                                        |
+| `/events/[id]/travel`        | Travel legs with add/edit forms, route stops, ingredient sourcing status dropdowns, start/complete/cancel/delete buttons per leg                                                                                    |
+| `/events/[id]/grocery-quote` | Multi-vendor price comparison table (USDA/Spoonacular/Kroger/MealMe), budget check, "Open in Instacart →" button, "Save Prices to Recipe Book" button                                                               |
+| `/events/[id]/invoice`       | Print-format invoice with service details, payment history, balance summary, "Download PDF" + "Print" buttons                                                                                                       |
+| `/events/[id]/aar`           | AAR form: calm/prep/execution ratings (1-5), what went well/wrong textareas, forgotten items tag input, submit button                                                                                               |
+| `/events/[id]/debrief`       | 4 collapsible sections: Dish Gallery (photo upload), Recipe Notes (per-recipe fields), Client Insights (milestones, dietary, vibe), How Did It Go (star rating + AI auto-draft + notes). "Complete Debrief" button  |
+| `/events/[id]/close-out`     | 5-step wizard: Tip → Receipts → Mileage → Reflection (Quick AAR) → Close Out. Final celebration screen with confetti, profit display, "Go to Dashboard" button                                                      |
+| `/events/[id]/financial`     | 7-section financial summary with revenue, costs, margins, time investment, mileage input, historical comparison. "Mark Financially Closed" button                                                                   |
+| `/events/[id]/receipts`      | Per-receipt: thumbnail, OCR-extracted line items with category/tag dropdowns, "Auto-Extract" button, "Approve → Add to Expenses" button                                                                             |
+| `/events/[id]/split-billing` | Divide event cost across multiple payers                                                                                                                                                                            |
+| `/events/[id]/kds`           | Kitchen Display System: live course tracking with fire → plating → served progression                                                                                                                               |
+| `/events/[id]/dop/mobile`    | Full-screen mobile DOP with large tap targets                                                                                                                                                                       |
+| `/events/[id]/guest-card`    | Printable QR card for dinner tables                                                                                                                                                                                 |
+| `/events/[id]/interactive`   | Interactive tappable version of any of 9 document types                                                                                                                                                             |
 
 ---
 
@@ -524,7 +535,7 @@
 - Quote acceptance insights panel (analytics)
 - Per row: client, status/pricing model badges, total amount
 
-**`/quotes/new` — Form:** Client pricing history panel, AI pricing suggestions, price calculator (collapsible with service type/courses/date/distance/weekend premium, "Use This Price →" button), main form (client, quote name, pricing model, amount, deposit, valid until, notes). Submit creates quote.
+**`/quotes/new` — Form:** Client pricing history panel, AI pricing suggestions, **Smart Pricing Hint** (intelligence-driven per-guest suggestion with confidence level, acceptance rate, historical range, and "Use" button to auto-fill), price calculator (collapsible with service type/courses/date/distance/weekend premium, "Use This Price →" button), main form (client, quote name, pricing model, amount, deposit, valid until, notes). Submit creates quote.
 
 **`/quotes/[id]` — Detail:** Pricing card, deposit/validity card, linked resources, transition buttons (Send/Accept/Reject/Expire/Revise/Edit/Delete), notes, status history.
 

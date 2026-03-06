@@ -124,3 +124,18 @@ export type {
   ReferralChain,
   ReferralSourceROI,
 } from './referral-chain-mapping'
+
+// ─── Cross-Engine Systems ─────────────────────────────────────────────────────
+
+export { getBusinessHealthSummary } from './business-health-summary'
+export type {
+  BusinessHealthSummary,
+  BusinessAlert,
+  BusinessHealthScore,
+} from './business-health-summary'
+
+export { getProactiveAlerts } from './proactive-alerts'
+export type { ProactiveAlertsResult, ProactiveAlert } from './proactive-alerts'
+
+export { getSmartQuoteSuggestion } from './smart-quote-suggestions'
+export type { QuotePricingSuggestion } from './smart-quote-suggestions'

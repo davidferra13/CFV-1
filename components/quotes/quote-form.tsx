@@ -25,6 +25,7 @@ import {
   type PricingBreakdown,
 } from '@/lib/pricing/compute'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
+import { SmartPricingHint } from '@/components/intelligence/smart-pricing-hint'
 import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
@@ -713,6 +714,12 @@ export function QuoteForm({
       <PricingSuggestionPanel
         suggestion={pricingSuggestion ?? null}
         benchmarkHint={benchmarkHint}
+      />
+
+      {/* ── Smart Pricing (Intelligence Engine) ──────────────────────────── */}
+      <SmartPricingHint
+        guestCount={parseInt(guestCount) || 0}
+        onSuggestedPrice={(totalCents) => setTotalAmount((totalCents / 100).toFixed(2))}
       />
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}

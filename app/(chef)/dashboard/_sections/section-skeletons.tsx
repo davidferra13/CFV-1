@@ -114,3 +114,25 @@ export function AlertsSkeleton() {
     </div>
   )
 }
+
+export function IntelligenceSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Bone className="h-5 w-48" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center gap-4">
+          <Bone className="w-12 h-12 rounded-full" />
+          <div className="flex-1 grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Bone key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        </div>
+        <Bone className="h-14 w-full rounded-lg" />
+        <Bone className="h-14 w-full rounded-lg" />
+      </CardContent>
+    </Card>
+  )
+}

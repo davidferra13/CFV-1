@@ -272,3 +272,51 @@ All 25 modules work with existing tables — no migrations needed. They read fro
 - `client_reviews` (review completion)
 - `menus` / `menu_items` / `ingredients` / `recipes` (ingredient consolidation, seasonal menu)
 - `backup_chefs` (network)
+
+## Cross-Engine Intelligence Systems (2026-03-06)
+
+Beyond the 25 individual engines, three cross-engine systems synthesize and deliver intelligence:
+
+### Business Health Summary (`lib/intelligence/business-health-summary.ts`)
+
+Runs 13 key engines in parallel and synthesizes a unified health score (0-100) across four dimensions:
+
+- **Revenue** (30% weight): Cash flow trend, profit margins, price elasticity headroom
+- **Clients** (30% weight): Churn risk, lifecycle stages, rebooking pipeline
+- **Operations** (20% weight): Capacity utilization, scheduling conflicts, vendor alerts
+- **Growth** (20% weight): Demand forecast, pipeline urgency, pricing opportunities
+
+Outputs: `BusinessHealthScore`, `BusinessAlert[]`, `topInsights[]`, and a condensed `remyContext` string.
+
+### Proactive Alerts (`lib/intelligence/proactive-alerts.ts`)
+
+Lightweight, fast queries (no heavy engine calls) for the most actionable items:
+
+- Overdue payments (with days past due)
+- Unanswered inquiries (>48h old)
+- Upcoming events missing key info (menu, guest count, location)
+- Stale clients (90+ days no booking)
+- Completed events with no payment collected
+
+Surfaced on the dashboard intelligence widget.
+
+### Smart Quote Suggestions (`lib/intelligence/smart-quote-suggestions.ts`)
+
+Real-time pricing suggestions when creating quotes, based on:
+
+- Guest count similarity (40% weight)
+- Occasion match (30% weight)
+- Service style match (15% weight)
+- Current season match (10% weight)
+
+Returns weighted per-guest price, confidence level, historical range, and acceptance rate.
+
+## Integration Points
+
+Intelligence is wired into four surfaces:
+
+1. **Intelligence Hub** (`/intelligence`) — Full 25-engine dashboard with card-per-engine layout
+2. **Remy AI Concierge** — Business health summary injected into Remy's system prompt via `remyContext` field. Remy can reference scores, alerts, and insights when discussing business health
+3. **Chef Dashboard** — Intelligence section streams in via Suspense with health scores, proactive alerts, and key insights
+4. **Quote Form** — Smart pricing hint appears below guest count with "Use" button to apply suggested price
+5. **Event Form** — Prep time estimate bar appears when guest count is entered, showing phase breakdown
