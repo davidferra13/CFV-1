@@ -79,6 +79,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'hours',
   'activity',
   'todo_list',
+  'intelligence_hub',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -163,6 +164,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   hours: 'Hours',
   activity: 'Activity',
   todo_list: 'To Do List',
+  intelligence_hub: 'Intelligence Hub',
 }
 
 // Legacy alias kept for compatibility with older code paths.

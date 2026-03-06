@@ -855,6 +855,12 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/intelligence',
+        label: 'Intelligence Hub',
+        icon: Compass,
+        children: [{ href: '/intelligence', label: 'Full Dashboard' }],
+      },
+      {
         href: '/goals/setup',
         label: 'Goals',
         icon: Target,

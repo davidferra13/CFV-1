@@ -172,6 +172,14 @@ export const PRO_FEATURES: ProFeature[] = [
     description: 'POS register, counter sales, product catalog, order-ahead, payment processing',
     category: 'commerce',
   },
+  // Intelligence
+  {
+    slug: 'intelligence-hub',
+    label: 'Intelligence Hub',
+    description:
+      'Seasonal forecasting, rebooking predictions, cash flow projections, smart scheduling, inquiry triage, post-event triggers, price anomaly detection, dietary trends, ingredient consolidation, network intelligence',
+    category: 'analytics',
+  },
   {
     slug: 'social-hub',
     label: 'Social Event Hub',
