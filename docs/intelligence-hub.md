@@ -1,8 +1,8 @@
-# Intelligence Hub — 25 Deterministic Intelligence Engines
+# Intelligence Hub — 28 Deterministic Intelligence Engines
 
 **Branch:** `feature/risk-gap-closure`
 **Date:** 2026-03-06
-**Status:** Implemented (server actions + UI + nav)
+**Status:** Implemented (server actions + UI + nav + deep integration)
 
 ## Philosophy
 
@@ -12,7 +12,7 @@ Every feature follows the core principle: **Formula > AI**. All 25 modules are p
 
 ```
 lib/intelligence/
-  index.ts                         — Central re-exports for all 25 engines
+  index.ts                         — Central re-exports for all 28 engines
 
   # Tier 1 — Core Intelligence (10 engines)
   seasonal-demand.ts               — Seasonal demand forecasting
@@ -311,12 +311,49 @@ Real-time pricing suggestions when creating quotes, based on:
 
 Returns weighted per-guest price, confidence level, historical range, and acceptance rate.
 
+### Per-Entity Intelligence Contexts (2026-03-06)
+
+Three targeted intelligence modules provide deep per-entity analysis:
+
+#### Inquiry Conversion Context (`lib/intelligence/inquiry-conversion-context.ts`)
+
+When viewing a specific inquiry, computes:
+
+- **Conversion likelihood** (0-100%) based on similar historical inquiries
+- **Pricing benchmark** (median per-guest, range) from converted events with similar profiles
+- **Pipeline position** (rank among all open inquiries by value/recency)
+- **Average days to convert** for similar inquiry types
+- **Similarity scoring**: channel (20), guest count (30), occasion (25), budget (15)
+
+#### Event Intelligence Context (`lib/intelligence/event-context.ts`)
+
+When viewing a specific event, computes:
+
+- **Profitability projection** — expected margin % from similar completed events
+- **Price comparison** — how this event's per-guest price compares to your average (above/below %)
+- **Post-event action checklist** — payment collection, AAR, feedback request, rebooking
+- **Timing insights** — final prep window, client confirmation reminders
+
+#### Client Intelligence Context (`lib/intelligence/client-intelligence-context.ts`)
+
+When viewing a specific client, computes:
+
+- **Churn risk** — 4-factor score (recency 0-40, interval deviation 0-30, frequency decline 0-20, value decline 0-10)
+- **Rebooking prediction** — estimated days until next booking, seasonal pattern, preferred occasion
+- **Revenue trajectory** — growing/stable/declining trend, events per year, avg event value
+
 ## Integration Points
 
-Intelligence is wired into four surfaces:
+Intelligence is wired into **11 surfaces**:
 
 1. **Intelligence Hub** (`/intelligence`) — Full 25-engine dashboard with card-per-engine layout
-2. **Remy AI Concierge** — Business health summary injected into Remy's system prompt via `remyContext` field. Remy can reference scores, alerts, and insights when discussing business health
-3. **Chef Dashboard** — Intelligence section streams in via Suspense with health scores, proactive alerts, and key insights
-4. **Quote Form** — Smart pricing hint appears below guest count with "Use" button to apply suggested price
-5. **Event Form** — Prep time estimate bar appears when guest count is entered, showing phase breakdown
+2. **Remy AI (global)** — Business health summary injected into Remy's system prompt
+3. **Remy AI (per-inquiry)** — Conversion likelihood, pricing benchmark, pipeline position
+4. **Remy AI (per-event)** — Profitability projection, price comparison, insights
+5. **Remy AI (per-client)** — Churn risk, rebooking prediction, seasonal patterns, revenue trend
+6. **Chef Dashboard** — Intelligence section streams via Suspense: health scores, proactive alerts, key insights
+7. **Quote Form** — Smart pricing hint with "Use" button to apply suggested price
+8. **Event Form** — Prep time estimate bar with phase breakdown
+9. **Inquiry Detail** — Conversion intelligence panel: likelihood %, pipeline rank, pricing benchmark
+10. **Event Detail** — Event intelligence panel: expected margin, price vs average, post-event actions
+11. **Client Profile** — Relationship intelligence panel: churn risk, rebooking forecast, revenue trajectory
