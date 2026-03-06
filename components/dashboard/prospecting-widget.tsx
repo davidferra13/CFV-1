@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { Crosshair, Phone, Users, ArrowRight, TrendingUp } from 'lucide-react'
+import { Crosshair, Phone, Users, ArrowRight, TrendingUp } from '@/components/ui/icons'
 import type { ProspectStats } from '@/lib/prospecting/types'
 
 interface ProspectingWidgetProps {

@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Trash2, Edit2, X, ExternalLink, Share2, Copy, Check } from 'lucide-react'
+import { Plus, Trash2, Edit2, X, ExternalLink, Share2, Copy, Check } from '@/components/ui/icons'
 import {
   createFavoriteChef,
   updateFavoriteChef,

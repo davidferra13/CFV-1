@@ -1,7 +1,7 @@
 'use client'
 
 import { formatDistanceToNow } from 'date-fns'
-import { AlertCircle, CheckCircle2, Clock3, CloudUpload, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Clock3, CloudUpload, Loader2 } from '@/components/ui/icons'
 import type { SaveState } from '@/lib/save-state/model'
 import { Button } from '@/components/ui/button'
 

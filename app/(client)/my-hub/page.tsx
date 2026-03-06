@@ -10,7 +10,7 @@ import { getHubTotalUnreadCount } from '@/lib/hub/notification-actions'
 import { HubGroupCard } from '@/components/hub/hub-group-card'
 import { Button } from '@/components/ui/button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
-import { Bell, CalendarPlus, Users, Utensils, Share2 } from 'lucide-react'
+import { Bell, CalendarPlus, Users, Utensils, Share2 } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'My Dinner Circle - ChefFlow' }
 

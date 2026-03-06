@@ -1,7 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardCheck, Loader2, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react'
+import {
+  ClipboardCheck,
+  Loader2,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle,
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {

@@ -8,7 +8,7 @@ import { QueueList } from '@/components/queue/queue-list'
 import { QueueSummaryBar } from '@/components/queue/queue-summary'
 import { QueueEmpty } from '@/components/queue/queue-empty'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export default async function QueuePage() {
   await requireChef()

@@ -3,7 +3,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react'
+import { ExternalLink, MapPin, Users, ChevronDown, ChevronUp } from '@/components/ui/icons'
 
 type Image = {
   id: string

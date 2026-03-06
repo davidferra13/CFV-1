@@ -9,7 +9,7 @@ import {
   type Form1099NEC,
   type FilingSummary,
 } from '@/lib/finance/1099-actions'
-import { AlertTriangle, Download, FileText, CheckCircle } from 'lucide-react'
+import { AlertTriangle, Download, FileText, CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

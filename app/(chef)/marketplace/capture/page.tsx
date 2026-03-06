@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
 import { TakeAChefCaptureTool } from '@/components/marketplace/take-a-chef-capture-tool'
 

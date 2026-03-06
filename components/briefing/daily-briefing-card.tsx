@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { generateDailyBriefing } from '@/lib/briefing/daily-actions'
 import type { BriefingContent } from '@/lib/briefing/daily-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Sun, Calendar, CheckSquare, DollarSign, Clock, RefreshCw } from 'lucide-react'
+import { Sun, Calendar, CheckSquare, DollarSign, Clock, RefreshCw } from '@/components/ui/icons'
 
 type Props = {
   briefing: {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Check, X } from 'lucide-react'
+import { Check, X } from '@/components/ui/icons'
 import type { GoalCategory, NudgeLevel } from '@/lib/goals/types'
 import { GOAL_CATEGORY_META } from '@/lib/goals/types'
 import { updateCategorySettings } from '@/lib/goals/actions'

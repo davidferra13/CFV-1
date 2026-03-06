@@ -1,4 +1,11 @@
-import { ArrowRight, CheckCircle2, MinusCircle, ShieldCheck, Sparkles, XCircle } from 'lucide-react'
+import {
+  ArrowRight,
+  CheckCircle2,
+  MinusCircle,
+  ShieldCheck,
+  Sparkles,
+  XCircle,
+} from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

@@ -1,7 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { CheckCircle2, Circle, Users, Star, BookOpen, Users2, User, ArrowRight } from 'lucide-react'
+import {
+  CheckCircle2,
+  Circle,
+  Users,
+  Star,
+  BookOpen,
+  Users2,
+  User,
+  ArrowRight,
+} from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'

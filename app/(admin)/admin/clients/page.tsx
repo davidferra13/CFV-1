@@ -3,7 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformClientList, type PlatformClientRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { UserCheck, AlertCircle } from 'lucide-react'
+import { UserCheck, AlertCircle } from '@/components/ui/icons'
 
 function formatCents(cents: number): string {
   if (cents === 0) return '$0'

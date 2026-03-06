@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Bot } from 'lucide-react'
+import { Bot } from '@/components/ui/icons'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
 import { requireAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'

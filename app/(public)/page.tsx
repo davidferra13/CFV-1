@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
+import { CalendarDays, CreditCard, UsersRound } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { ARCHETYPES } from '@/lib/archetypes/presets'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'

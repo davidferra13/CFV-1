@@ -1,7 +1,7 @@
 // Centralized navigation configuration (single source of truth)
 // Organized by what a chef actually does: Sell → Plan → Cook → Stock → Money → Grow
 // Rule: nothing hidden. If it's built, it's findable within 1-2 clicks.
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from '@/components/ui/icons'
 import {
   Activity,
   AlertTriangle,
@@ -52,7 +52,7 @@ import {
   Upload,
   Warehouse,
   HeartHandshake,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 type NavItem = {
   href: string

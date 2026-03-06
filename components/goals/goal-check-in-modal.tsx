@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { X } from 'lucide-react'
+import { X } from '@/components/ui/icons'
 import type { ChefGoal } from '@/lib/goals/types'
 import { formatGoalValue, formatGoalUnit } from '@/lib/goals/engine'
 import { logGoalCheckIn } from '@/lib/goals/check-in-actions'

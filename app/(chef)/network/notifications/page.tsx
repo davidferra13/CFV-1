@@ -7,7 +7,7 @@ import {
   markSocialNotificationsRead,
 } from '@/lib/social/chef-social-actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ArrowLeft, Bell } from 'lucide-react'
+import { ArrowLeft, Bell } from '@/components/ui/icons'
 import { MarkAllReadButton } from './mark-all-read-button'
 
 export const metadata: Metadata = { title: 'Notifications — Chef Community' }

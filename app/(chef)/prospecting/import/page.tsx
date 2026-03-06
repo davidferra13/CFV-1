@@ -6,7 +6,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { CSVImportForm } from '@/components/prospecting/csv-import-form'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Import Prospects - ChefFlow' }
 

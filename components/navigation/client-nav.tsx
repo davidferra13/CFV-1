@@ -20,7 +20,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 

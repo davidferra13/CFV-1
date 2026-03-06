@@ -5,7 +5,7 @@
 // Platform-level concierge: no tenantId, hits /api/remy/landing endpoint.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
+import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from '@/components/ui/icons'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'

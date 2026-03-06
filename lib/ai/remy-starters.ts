@@ -1,5 +1,14 @@
-import { CalendarDays, TrendingUp, Mail, Brain, ChefHat, Globe, Search, Users } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import {
+  CalendarDays,
+  TrendingUp,
+  Mail,
+  Brain,
+  ChefHat,
+  Globe,
+  Search,
+  Users,
+} from '@/components/ui/icons'
+import type { LucideIcon } from '@/components/ui/icons'
 
 export interface StarterPrompt {
   text: string

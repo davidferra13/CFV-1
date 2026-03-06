@@ -3,7 +3,7 @@
 
 import { useRouter } from 'next/navigation'
 import { differenceInDays, format } from 'date-fns'
-import { Calendar, Users, Tag, Clock, DollarSign } from 'lucide-react'
+import { Calendar, Users, Tag, Clock, DollarSign } from '@/components/ui/icons'
 
 export interface KanbanCardInquiry {
   id: string

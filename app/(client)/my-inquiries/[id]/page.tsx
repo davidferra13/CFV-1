@@ -11,7 +11,7 @@ import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/
 import type { InquiryStatus } from '@/components/inquiries/inquiry-status-badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft } from '@/components/ui/icons'
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
 import { formatCurrency } from '@/lib/utils/currency'

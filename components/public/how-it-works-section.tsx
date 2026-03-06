@@ -1,7 +1,7 @@
 // Why ChefFlow — Selling section
 // Confident, outward-facing. No tech internals. Closes the deal.
 
-import { Flame, Clock, TrendingUp, Heart } from 'lucide-react'
+import { Flame, Clock, TrendingUp, Heart } from '@/components/ui/icons'
 
 const REASONS = [
   {

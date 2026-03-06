@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from '@/components/ui/icons'
 import {
   BookOpen,
   ChefHat,
@@ -10,7 +10,7 @@ import {
   Target,
   TrendingUp,
   Users,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 export const GOAL_CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   DollarSign,

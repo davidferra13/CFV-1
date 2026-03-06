@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { exportProspectsToCSV } from '@/lib/prospecting/pipeline-actions'
-import { Download, Loader2 } from 'lucide-react'
+import { Download, Loader2 } from '@/components/ui/icons'
 
 export function ExportCSVButton() {
   const [isPending, startTransition] = useTransition()

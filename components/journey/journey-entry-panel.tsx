@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState, useTransition } from 'react'
-import { BookOpen, Link2, MapPin, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { BookOpen, Link2, MapPin, Pencil, Plus, Sparkles, Trash2 } from '@/components/ui/icons'
 import {
   createChefJourneyEntry,
   deleteChefJourneyEntry,

@@ -1,5 +1,5 @@
 import type { SocialPost } from '@/lib/social/types'
-import { CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
+import { CheckCircle, AlertCircle, ChevronDown } from '@/components/ui/icons'
 
 type Props = {
   post: SocialPost

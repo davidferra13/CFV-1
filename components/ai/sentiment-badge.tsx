@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MessageSquare, Loader2, TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { MessageSquare, Loader2, TrendingDown, TrendingUp, Minus } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { analyzeClientSentiment, type SentimentAnalysis } from '@/lib/ai/sentiment-analysis'

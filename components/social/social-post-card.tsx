@@ -15,7 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Repeat2,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import type { SocialPost, ReactionType, SocialComment } from '@/lib/social/chef-social-actions'
 import {
   togglePostReaction,

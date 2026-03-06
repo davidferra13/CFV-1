@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, DM_Serif_Display } from 'next/font/google'
+import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import { Suspense } from 'react'
 import { CookieConsent } from '@/components/ui/cookie-consent'
+import { IconProvider } from '@/components/ui/icon-provider'
 import { SwRegister } from '@/components/pwa/sw-register'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
 import './globals.css'
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
@@ -98,7 +99,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <body className="font-sans">
         {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
         <a
@@ -108,12 +109,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
 
-        <PostHogProvider>
-          <Suspense fallback={null}>
-            <PerformanceTelemetry />
-          </Suspense>
-          {children}
-        </PostHogProvider>
+        <IconProvider>
+          <PostHogProvider>
+            <Suspense fallback={null}>
+              <PerformanceTelemetry />
+            </Suspense>
+            {children}
+          </PostHogProvider>
+        </IconProvider>
         <CookieConsent />
         <SwRegister />
       </body>

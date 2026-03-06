@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { NonprofitBadge } from './nonprofit-badge'
 import { deleteCharityHours } from '@/lib/charity/hours-actions'
 import type { CharityHourEntry } from '@/lib/charity/hours-types'
-import { Trash2, Pencil, Download } from 'lucide-react'
+import { Trash2, Pencil, Download } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 function formatDate(dateStr: string): string {

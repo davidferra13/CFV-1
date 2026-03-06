@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
-import { FileText, Link2, Unlink, AlertTriangle, Check } from 'lucide-react'
+import { FileText, Link2, Unlink, AlertTriangle, Check } from '@/components/ui/icons'
 import { matchInvoiceItems } from '@/lib/inventory/vendor-invoice-actions'
 import { toast } from 'sonner'
 

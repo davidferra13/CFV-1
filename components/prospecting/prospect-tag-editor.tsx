@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { updateProspectTags } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, Plus, X, Tag } from 'lucide-react'
+import { Loader2, Plus, X, Tag } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 interface ProspectTagEditorProps {

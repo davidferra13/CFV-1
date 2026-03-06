@@ -8,7 +8,7 @@
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, ShoppingCart, ChevronDown, ChevronRight, Package } from 'lucide-react'
+import { MapPin, ShoppingCart, ChevronDown, ChevronRight, Package } from '@/components/ui/icons'
 
 type StoreItem = {
   name: string

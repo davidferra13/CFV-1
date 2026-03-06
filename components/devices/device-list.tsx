@@ -14,7 +14,7 @@ import { PairingDisplay } from './pairing-display'
 import { DeviceEventLog } from './device-event-log'
 import { toast } from 'sonner'
 import type { DeviceWithOnlineStatus } from '@/lib/devices/types'
-import { Tablet, Monitor, Smartphone, Plus } from 'lucide-react'
+import { Tablet, Monitor, Smartphone, Plus } from '@/components/ui/icons'
 
 interface DeviceListProps {
   initialDevices: DeviceWithOnlineStatus[]

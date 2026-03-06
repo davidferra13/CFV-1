@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { createFollowUpReminders } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, Bell } from 'lucide-react'
+import { Loader2, Bell } from '@/components/ui/icons'
 
 export function FollowUpReminderButton() {
   const [isPending, startTransition] = useTransition()

@@ -3,7 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformAuditLog } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { ScrollText } from 'lucide-react'
+import { ScrollText } from '@/components/ui/icons'
 
 export default async function AdminAuditPage() {
   try {

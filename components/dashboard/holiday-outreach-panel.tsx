@@ -14,7 +14,7 @@ import {
   Send,
   Tag,
   X,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { type HolidayOutreachSuggestion } from '@/lib/holidays/outreach-types'
 import {
   sendHolidayOutreachToClient,

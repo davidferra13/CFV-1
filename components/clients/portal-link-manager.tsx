@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { generateClientPortalToken, revokeClientPortalToken } from '@/lib/client-portal/actions'
-import { Link2, RefreshCw, Trash2, Copy, Check } from 'lucide-react'
+import { Link2, RefreshCw, Trash2, Copy, Check } from '@/components/ui/icons'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
 

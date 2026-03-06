@@ -5,7 +5,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw } from '@/components/ui/icons'
 import { PlanLane } from './plan-lane'
 import { RemySummary } from './remy-summary'
 import { CompletionCelebration } from './completion-celebration'

@@ -6,7 +6,7 @@
 
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
-import { MapPin, CalendarDays, Users, Image, Heart } from 'lucide-react'
+import { MapPin, CalendarDays, Users, Image, Heart } from '@/components/ui/icons'
 import Link from 'next/link'
 
 function StatCard({

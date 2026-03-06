@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowDown, TrendingUp } from 'lucide-react'
+import { ArrowDown, TrendingUp } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

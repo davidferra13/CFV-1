@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { generateAnnualSocialPlan, upsertSocialQueueSettings } from '@/lib/social/actions'
 import type { SocialQueueSettings } from '@/lib/social/types'
-import { Plus, Trash2, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, AlertCircle } from '@/components/ui/icons'
 
 const DAY_LABELS = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const TIMEZONES = [

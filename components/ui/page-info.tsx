@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
-import { Info, X } from 'lucide-react'
+import { Info, X } from '@/components/ui/icons'
 import { type PageInfoEntry, type PageAnnotation } from '@/lib/help/page-info-registry'
 
 type PageInfoRegistry = Record<string, PageInfoEntry>

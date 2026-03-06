@@ -4,7 +4,7 @@
 // Dismissable per session (stored in sessionStorage).
 
 import { useState, useEffect } from 'react'
-import { X, Info, AlertTriangle, AlertOctagon } from 'lucide-react'
+import { X, Info, AlertTriangle, AlertOctagon } from '@/components/ui/icons'
 import type { AnnouncementType } from '@/lib/admin/platform-actions'
 
 type Props = {

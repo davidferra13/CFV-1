@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSavedPosts } from '@/lib/social/chef-social-actions'
 import { SocialPostCard } from '@/components/social/social-post-card'
-import { ArrowLeft, Bookmark } from 'lucide-react'
+import { ArrowLeft, Bookmark } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Saved Posts — Chef Community' }
 

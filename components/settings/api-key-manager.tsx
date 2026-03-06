@@ -3,7 +3,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Copy, Plus, Trash2 } from 'lucide-react'
+import { Copy, Plus, Trash2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { createApiKey, revokeApiKey } from '@/lib/api/key-actions'
 

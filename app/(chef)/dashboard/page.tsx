@@ -12,7 +12,7 @@ import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { DEFAULT_PREFERENCES, type DashboardWidgetId } from '@/lib/scheduling/types'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus } from '@/components/ui/icons'
 import type { PriorityQueue } from '@/lib/queue/types'
 import {
   DashboardCollapseProvider,
@@ -24,7 +24,7 @@ import { QueueList } from '@/components/queue/queue-list'
 import { QueueSummaryBar } from '@/components/queue/queue-summary'
 import { QueueEmpty } from '@/components/queue/queue-empty'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/components/ui/icons'
 
 // Async section components (each fetches its own data)
 import { ScheduleSection } from './_sections/schedule-section'

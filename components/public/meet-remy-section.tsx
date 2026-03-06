@@ -1,4 +1,4 @@
-import { Bot, Mail, TrendingUp, Heart, BookOpen } from 'lucide-react'
+import { Bot, Mail, TrendingUp, Heart, BookOpen } from '@/components/ui/icons'
 
 const AI_FEATURES = [
   {

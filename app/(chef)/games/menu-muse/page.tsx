@@ -21,7 +21,7 @@ import {
   Star,
   Sparkles,
   Utensils,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { getMuseData, type MuseData } from '@/lib/games/menu-muse-actions'
 
 // ---------------------------------------------------------------------------

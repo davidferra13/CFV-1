@@ -2,7 +2,15 @@
 // Displayed on the client detail page under the header.
 
 import Link from 'next/link'
-import { ArrowRight, MessageCircle, Calendar, RefreshCw, Gift, Sparkles, Heart } from 'lucide-react'
+import {
+  ArrowRight,
+  MessageCircle,
+  Calendar,
+  RefreshCw,
+  Gift,
+  Sparkles,
+  Heart,
+} from '@/components/ui/icons'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 
 const ACTION_ICONS: Record<

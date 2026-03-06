@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertTriangle, ShieldAlert, MessageSquareWarning } from 'lucide-react'
+import { AlertTriangle, ShieldAlert, MessageSquareWarning } from '@/components/ui/icons'
 
 const PLAYBOOKS = [
   {

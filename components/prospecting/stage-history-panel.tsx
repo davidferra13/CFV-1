@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PIPELINE_STAGE_LABELS, PIPELINE_STAGE_COLORS } from '@/lib/prospecting/constants'
 import type { PipelineStage } from '@/lib/prospecting/constants'
 import type { StageHistoryEntry } from '@/lib/prospecting/types'
-import { GitBranch, ArrowRight } from 'lucide-react'
+import { GitBranch, ArrowRight } from '@/components/ui/icons'
 import { format } from 'date-fns'
 
 interface StageHistoryPanelProps {

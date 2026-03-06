@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { suggestPhotoTags, confirmPhotoTag } from '@/lib/events/photo-tagging-actions'
-import { Image, Sparkles, Check, X, Tag } from 'lucide-react'
+import { Image, Sparkles, Check, X, Tag } from '@/components/ui/icons'
 
 type Photo = {
   id: string

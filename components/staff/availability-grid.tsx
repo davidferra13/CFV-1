@@ -7,7 +7,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Users } from '@/components/ui/icons'
 import { setAvailability } from '@/lib/staff/availability-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

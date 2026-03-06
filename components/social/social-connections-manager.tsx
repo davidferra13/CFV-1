@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, CheckCircle2, AlertCircle, RefreshCw, Unlink } from 'lucide-react'
+import { ExternalLink, CheckCircle2, AlertCircle, RefreshCw, Unlink } from '@/components/ui/icons'
 import type { SocialConnectionStatus } from '@/lib/social/oauth-actions'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 

@@ -14,7 +14,7 @@ import {
   type HealthInsurancePremium,
 } from '@/lib/tax/retirement-actions'
 import { ACCOUNT_TYPE_LABELS, PREMIUM_TYPE_LABELS } from '@/lib/tax/retirement-constants'
-import { PiggyBank, Heart, Plus, Trash2, Info } from 'lucide-react'
+import { PiggyBank, Heart, Plus, Trash2, Info } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

@@ -1,6 +1,6 @@
 // Stuck Events Widget — shows events that haven't progressed past their expected threshold.
 import Link from 'next/link'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 import { Card } from '@/components/ui/card'
 import type { StuckEvent } from '@/lib/pipeline/stuck-events'
 

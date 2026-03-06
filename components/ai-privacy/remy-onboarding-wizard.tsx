@@ -26,7 +26,7 @@ import {
   Lock,
   Eye,
   HardDrive,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { DataFlowAnimated } from './data-flow-animated'
 import { completeOnboarding } from '@/lib/ai/privacy-actions'
 

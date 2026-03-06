@@ -4,7 +4,7 @@ import { getCommunityTemplates } from '@/lib/community/template-sharing'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Download, Globe } from 'lucide-react'
+import { Download, Globe } from '@/components/ui/icons'
 import { CommunityTemplateImport } from '@/components/community/community-template-import'
 
 export const metadata: Metadata = { title: 'Community Templates - ChefFlow' }

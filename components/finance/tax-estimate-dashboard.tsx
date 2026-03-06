@@ -10,7 +10,7 @@ import {
   recordQuarterlyPayment,
   type TaxYearSummary,
 } from '@/lib/finance/tax-estimate-actions'
-import { Calculator, DollarSign } from 'lucide-react'
+import { Calculator, DollarSign } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

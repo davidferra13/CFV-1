@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus } from '@/components/ui/icons'
 import Link from 'next/link'
 import type { GoalView, GoalCategory, GoalCheckIn } from '@/lib/goals/types'
 import { GOAL_CATEGORY_META } from '@/lib/goals/types'

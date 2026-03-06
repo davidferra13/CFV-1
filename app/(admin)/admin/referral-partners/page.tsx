@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Handshake, Globe, ExternalLink } from 'lucide-react'
+import { Handshake, Globe, ExternalLink } from '@/components/ui/icons'
 
 const PARTNER_TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',

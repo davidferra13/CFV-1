@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { DollarSign, Crown, Users } from 'lucide-react'
+import { DollarSign, Crown, Users } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

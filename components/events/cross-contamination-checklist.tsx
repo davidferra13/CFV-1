@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, CheckCircle, Circle, ShieldAlert } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Circle, ShieldAlert } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { toggleCrossContaminationItem } from '@/lib/events/cross-contamination-actions'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ListOrdered, Loader2, Sparkles, AlertCircle } from 'lucide-react'
+import { ListOrdered, Loader2, Sparkles, AlertCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generatePrepTimeline, type PrepTimeline } from '@/lib/ai/prep-timeline'

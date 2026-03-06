@@ -16,7 +16,7 @@ import {
   RefreshCw,
   Shield,
   Zap,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import type {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Printer, Copy, Loader2, Sparkles } from 'lucide-react'
+import { Users, Printer, Copy, Loader2, Sparkles } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAIStaffBriefing, type AIStaffBriefing } from '@/lib/ai/staff-briefing-ai'

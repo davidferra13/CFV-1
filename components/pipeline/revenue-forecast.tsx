@@ -1,7 +1,7 @@
 // PipelineRevenueForecast — Dashboard widget showing expected + best-case revenue
 // from open inquiries and active events, weighted by stage probability.
 import Link from 'next/link'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp } from '@/components/ui/icons'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import type { PipelineRevenueForecast as ForecastData } from '@/lib/pipeline/forecast'

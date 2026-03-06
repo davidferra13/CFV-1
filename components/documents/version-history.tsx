@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { RotateCcw, Clock, User } from 'lucide-react'
+import { RotateCcw, Clock, User } from '@/components/ui/icons'
 import { revertToVersion } from '@/lib/operations/document-version-actions'
 import { toast } from 'sonner'
 

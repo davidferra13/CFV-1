@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { getRecipes } from '@/lib/recipes/actions'
 import { RecipeEntryForm } from '@/components/onboarding/recipe-entry-form'
 

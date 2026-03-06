@@ -19,7 +19,7 @@ import {
   TrendingUp,
   TrendingDown,
   Globe,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 const SystemArchitecturePlayer = dynamic(
   () =>

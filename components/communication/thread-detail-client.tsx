@@ -3,12 +3,12 @@
 import { useState, useTransition, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Star, ArrowLeft } from 'lucide-react'
+import { Star, ArrowLeft } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SourceBadge } from '@/components/communication/source-badge'
 import { FormattedCommunicationContent } from '@/components/communication/message-content'
-import { Send, ArrowRight } from 'lucide-react'
+import { Send, ArrowRight } from '@/components/ui/icons'
 import {
   markCommunicationResolved,
   reopenCommunication,

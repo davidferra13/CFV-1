@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { getEventsWithoutAAR } from '@/lib/aar/actions'
 import { format } from 'date-fns'
-import { ClipboardCheck } from 'lucide-react'
+import { ClipboardCheck } from '@/components/ui/icons'
 
 type EventWithClient = {
   id: string

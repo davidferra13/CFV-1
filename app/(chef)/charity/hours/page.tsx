@@ -11,7 +11,7 @@ import { getWfpNews } from '@/lib/charity/wfp-actions'
 import { CharityHoursSummaryCards } from '@/components/charity/charity-hours-summary'
 import { CharityHoursClient } from '@/components/charity/charity-hours-client'
 import { WfpFeed } from '@/components/charity/wfp-feed'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Charity Hours - ChefFlow' }
 

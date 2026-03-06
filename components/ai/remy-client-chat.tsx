@@ -5,7 +5,7 @@
 // no commands, no tasks, no memory management. Just conversational Q&A.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, Loader2, ChevronDown, Minus } from 'lucide-react'
+import { X, Send, Loader2, ChevronDown, Minus } from '@/components/ui/icons'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'

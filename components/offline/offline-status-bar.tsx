@@ -4,7 +4,7 @@
 // Shows nothing when online. When offline, shows a compact bar with queue count.
 // During sync, shows progress. On reconnection, shows brief success.
 
-import { WifiOff, Wifi, CloudUpload, Loader2 } from 'lucide-react'
+import { WifiOff, Wifi, CloudUpload, Loader2 } from '@/components/ui/icons'
 import { useOffline } from './offline-provider'
 
 export function OfflineStatusBar() {

@@ -16,7 +16,7 @@ import { Alert } from '@/components/ui/alert'
 import { createRecipe, addIngredientToRecipe, linkRecipeToComponent } from '@/lib/recipes/actions'
 import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedIngredient } from '@/lib/ai/parse-recipe'
-import { BookOpen, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { BookOpen, AlertCircle, ChevronDown, ChevronUp } from '@/components/ui/icons'
 
 type UnrecordedComponent = {
   id: string

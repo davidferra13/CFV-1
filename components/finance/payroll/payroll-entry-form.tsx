@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { recordPayroll } from '@/lib/finance/payroll-actions'
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { computePayrollTaxes } from '@/lib/finance/payroll-constants'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {

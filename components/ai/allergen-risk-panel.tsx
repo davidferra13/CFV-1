@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ShieldAlert, CheckCircle, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
+import { ShieldAlert, CheckCircle, AlertTriangle, Loader2, Sparkles } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getEventAllergenRisk, type AllergenRiskResult } from '@/lib/ai/allergen-risk'

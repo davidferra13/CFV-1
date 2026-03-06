@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createEventStub } from '@/lib/event-stubs/actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarPlus, Loader2 } from 'lucide-react'
+import { CalendarPlus, Loader2 } from '@/components/ui/icons'
 
 const OCCASIONS = [
   'Dinner Party',

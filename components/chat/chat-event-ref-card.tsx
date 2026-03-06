@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { UtensilsCrossed, Users, Calendar } from 'lucide-react'
+import { UtensilsCrossed, Users, Calendar } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 
 interface ChatEventRefCardProps {

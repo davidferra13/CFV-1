@@ -17,7 +17,7 @@ import {
   X,
   Wallet,
   ScanLine,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { counterCheckout } from '@/lib/commerce/checkout-actions'
 import { createOrderQueueEntry } from '@/lib/commerce/order-queue-actions'
 import {
@@ -36,7 +36,7 @@ import {
 } from '@/lib/commerce/cash-drawer-actions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Download } from 'lucide-react'
+import { Download } from '@/components/ui/icons'
 import { PRODUCT_CATEGORY_LABELS } from '@/lib/commerce/constants'
 import type { ProductCategory, TaxClass } from '@/lib/commerce/constants'
 import {

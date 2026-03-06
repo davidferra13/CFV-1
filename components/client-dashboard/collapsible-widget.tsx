@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight } from '@/components/ui/icons'
 import { useClientDashboardCollapseContext } from '@/components/client-dashboard/collapse-controls'
 
 export function ClientCollapsibleWidget({

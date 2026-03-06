@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { EmbedCodePanel } from '@/components/settings/embed-code-panel'
 
 export const metadata: Metadata = { title: 'Website Widget - ChefFlow' }

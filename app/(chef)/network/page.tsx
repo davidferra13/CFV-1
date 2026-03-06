@@ -50,7 +50,7 @@ import {
   Bell,
   Bookmark,
   Handshake,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Suspense } from 'react'
 import { NetworkReferralBar } from '@/components/intelligence/network-referral-bar'
 

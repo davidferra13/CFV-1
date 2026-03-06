@@ -10,7 +10,7 @@ import { EmployeeForm } from '@/components/finance/payroll/employee-form'
 import { listEmployees, terminateEmployee } from '@/lib/finance/payroll-actions'
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { EMPLOYEE_STATUS_LABELS, PAY_TYPE_LABELS } from '@/lib/finance/payroll-constants'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {

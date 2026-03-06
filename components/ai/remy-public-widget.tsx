@@ -5,7 +5,7 @@
 // Compact design: floating button → expandable card (not a full drawer).
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, Loader2, Minus } from 'lucide-react'
+import { X, Send, Loader2, Minus } from '@/components/ui/icons'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'

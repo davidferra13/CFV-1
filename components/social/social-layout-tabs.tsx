@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, Image, Link2, Settings } from 'lucide-react'
+import { Calendar, Image, Link2, Settings } from '@/components/ui/icons'
 
 const TABS = [
   { href: '/social/planner', label: 'Planner', icon: Calendar },

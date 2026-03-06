@@ -3,7 +3,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Plus, Phone } from 'lucide-react'
+import { Plus, Phone } from '@/components/ui/icons'
 import { getCalls, type CallType } from '@/lib/calls/actions'
 import { CallCard } from '@/components/calls/call-card'
 

@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StatCard } from '@/components/ui/stat-card'
-import { ExternalLink, Link2, MessageSquare, Star } from 'lucide-react'
+import { ExternalLink, Link2, MessageSquare, Star } from '@/components/ui/icons'
 import { format } from 'date-fns'
 import type { UnifiedChefReviewItem } from '@/lib/reviews/actions'
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CreditCard } from 'lucide-react'
+import { CreditCard } from '@/components/ui/icons'
 import { updatePaymentMethodSettings } from '@/lib/integrations/payments/payment-method-settings'
 import { toast } from 'sonner'
 

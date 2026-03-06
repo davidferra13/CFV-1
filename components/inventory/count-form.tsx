@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { ClipboardCheck, Package, AlertTriangle } from 'lucide-react'
+import { ClipboardCheck, Package, AlertTriangle } from '@/components/ui/icons'
 import { updateInventoryCount } from '@/lib/inventory/count-actions'
 import { toast } from 'sonner'
 

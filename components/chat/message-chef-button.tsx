@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MessageCircle, Loader2 } from 'lucide-react'
+import { MessageCircle, Loader2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { clientGetOrCreateConversation } from '@/lib/chat/actions'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote, ExternalLink } from 'lucide-react'
+import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote, ExternalLink } from '@/components/ui/icons'
 import {
   addInquiryNote,
   updateInquiryNote,

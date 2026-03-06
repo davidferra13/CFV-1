@@ -8,7 +8,16 @@
 // Uses existing API: GET /api/ai/health for polling status
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Power, RefreshCw, Loader2, Wifi, Cpu, Server, RotateCcw, Stethoscope } from 'lucide-react'
+import {
+  Power,
+  RefreshCw,
+  Loader2,
+  Wifi,
+  Cpu,
+  Server,
+  RotateCcw,
+  Stethoscope,
+} from '@/components/ui/icons'
 
 // ── Types ────────────────────────────────────────────────────
 

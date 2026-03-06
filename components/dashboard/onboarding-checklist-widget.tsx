@@ -3,7 +3,7 @@
 // Drives the chef to /onboarding to complete any missing steps.
 
 import Link from 'next/link'
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Circle, ArrowRight } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'
 

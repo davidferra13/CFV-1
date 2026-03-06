@@ -1,7 +1,7 @@
 // Shift Reports Page - closed register session summaries
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import {

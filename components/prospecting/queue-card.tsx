@@ -4,7 +4,15 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Phone, ChevronDown, ChevronUp, MapPin, Clock, User, Building2 } from 'lucide-react'
+import {
+  Phone,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Clock,
+  User,
+  Building2,
+} from '@/components/ui/icons'
 import type { Prospect } from '@/lib/prospecting/types'
 import { logProspectCall } from '@/lib/prospecting/queue-actions'
 import { CALL_OUTCOMES, PROSPECT_CATEGORY_LABELS } from '@/lib/prospecting/constants'

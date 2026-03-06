@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink, Search } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Search } from '@/components/ui/icons'
 import { ChatPresenceDot } from './chat-presence-dot'
 import type { Conversation } from '@/lib/chat/types'
 

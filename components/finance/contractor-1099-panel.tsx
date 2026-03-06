@@ -10,7 +10,7 @@ import {
   type ContractorPayment,
   type Contractor1099Summary,
 } from '@/lib/finance/contractor-actions'
-import { Users, AlertTriangle, Plus } from 'lucide-react'
+import { Users, AlertTriangle, Plus } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type StaffMember = { id: string; name: string; contractorType: string | null }

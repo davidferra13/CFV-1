@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AlertTriangle, CheckCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle } from '@/components/ui/icons'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPaymentHealthStats } from '@/lib/admin/platform-stats'
 

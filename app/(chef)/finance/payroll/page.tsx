@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listEmployees, getPayrollRecords } from '@/lib/finance/payroll-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, DollarSign, FileText, FileCheck } from 'lucide-react'
+import { Users, DollarSign, FileText, FileCheck } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Payroll — ChefFlow' }
 

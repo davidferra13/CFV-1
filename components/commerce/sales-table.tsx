@@ -12,7 +12,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table'
-import { Search } from 'lucide-react'
+import { Search } from '@/components/ui/icons'
 import Link from 'next/link'
 import {
   SALE_STATUS_LABELS,

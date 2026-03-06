@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/components/ui/icons'
 import { formatCurrency } from '@/lib/utils/currency'
 import { QueueIcon } from './queue-icon'
 import type { QueueItem, QueueUrgency } from '@/lib/queue/types'

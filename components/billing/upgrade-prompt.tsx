@@ -5,7 +5,7 @@
 // Links to /settings/billing for checkout.
 
 import Link from 'next/link'
-import { Sparkles } from 'lucide-react'
+import { Sparkles } from '@/components/ui/icons'
 
 type Props = {
   label?: string | null

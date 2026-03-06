@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, ChevronUp, Clock, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Clock, X } from '@/components/ui/icons'
 import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
 
 const COLLAPSED_KEY = 'cf:recent-collapsed'

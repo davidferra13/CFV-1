@@ -124,7 +124,8 @@ html {
   }
 
   /* Display typeface for page headings — editorial culinary feel */
-  h1 {
+  h1,
+  h2 {
     font-family: var(--font-display), Georgia, 'Times New Roman', serif;
   }
 

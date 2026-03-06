@@ -1,7 +1,7 @@
 // Chef Card - Reusable profile card for network discovery and friends list
 'use client'
 
-import { MapPin } from 'lucide-react'
+import { MapPin } from '@/components/ui/icons'
 import type { ReactNode } from 'react'
 
 interface ChefCardProps {

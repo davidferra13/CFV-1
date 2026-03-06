@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ChefHat, Save, CheckCircle } from 'lucide-react'
+import { ChefHat, Save, CheckCircle } from '@/components/ui/icons'
 import { getCulinaryProfile, saveCulinaryProfileBulk } from '@/lib/ai/chef-profile-actions'
 import type { CulinaryProfileAnswer } from '@/lib/ai/chef-profile-constants'
 

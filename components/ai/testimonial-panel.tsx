@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Quote, Loader2, Sparkles, Copy, Star } from 'lucide-react'
+import { Quote, Loader2, Sparkles, Copy, Star } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useMemo, useTransition } from 'react'
-import { Search, UserMinus } from 'lucide-react'
+import { Search, UserMinus } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { ChefCard } from '@/components/network/chef-card'
 import { removeConnection } from '@/lib/network/actions'

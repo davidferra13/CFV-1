@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getQolMetricsSummary, getSystemHealthStats } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Activity, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react'
+import { Activity, AlertTriangle, CheckCircle, ExternalLink } from '@/components/ui/icons'
 
 export default async function AdminSystemPage() {
   try {

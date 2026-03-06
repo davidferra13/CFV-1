@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { AlertTriangle, CheckCircle, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle, X } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { dismissRecall } from '@/lib/safety/recall-actions'

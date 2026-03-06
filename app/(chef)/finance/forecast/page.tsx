@@ -17,7 +17,7 @@ const ForecastChart = dynamic(
 )
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Revenue Forecast - ChefFlow' }
 

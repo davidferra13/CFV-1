@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, ArrowRight } from 'lucide-react'
+import { AlertTriangle, ArrowRight } from '@/components/ui/icons'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { ScopeDriftResult } from '@/lib/events/scope-drift'

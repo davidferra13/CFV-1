@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { AlertCircle, MessageCircle, ExternalLink } from 'lucide-react'
+import { AlertCircle, MessageCircle, ExternalLink } from '@/components/ui/icons'
 import type { FirstContactInquiry } from '@/lib/inquiries/actions'
 
 interface NeedsFirstContactProps {

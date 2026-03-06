@@ -4,7 +4,7 @@
 
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays } from '@/components/ui/icons'
 
 const STATUS_LABELS: Record<string, string> = {
   confirmed: 'Confirmed',

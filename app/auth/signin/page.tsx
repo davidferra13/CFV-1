@@ -10,7 +10,7 @@ import {
   isGoogleAuthButtonEnabled,
   normalizeGoogleOAuthErrorMessage,
 } from '@/lib/auth/google-oauth-errors'
-import { Chrome } from 'lucide-react'
+import { Chrome } from '@/components/ui/icons'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'

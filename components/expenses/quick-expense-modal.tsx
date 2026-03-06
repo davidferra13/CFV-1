@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { createExpense, type CreateExpenseInput } from '@/lib/expenses/actions'
 import { EXPENSE_CATEGORY_OPTIONS, type ExpenseCategory } from '@/lib/constants/expense-categories'

@@ -35,7 +35,7 @@ import {
   InquiriesBulkTable,
   type SerializedInquiry,
 } from '@/components/inquiries/inquiries-bulk-table'
-import { AlertTriangle, Clock, TrendingUp, BarChart3 } from 'lucide-react'
+import { AlertTriangle, Clock, TrendingUp, BarChart3 } from '@/components/ui/icons'
 import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-bar'
 import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
 

@@ -1,6 +1,6 @@
 // RemySummary — Remy's conversational daily summary at the top of the Daily Ops page.
 
-import { Bot } from 'lucide-react'
+import { Bot } from '@/components/ui/icons'
 
 type Props = {
   summary: string

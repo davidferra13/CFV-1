@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getGeoClusters } from '@/lib/prospecting/pipeline-actions'
 import { GeoClusterView } from '@/components/prospecting/geo-cluster-view'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Prospect Clusters - ChefFlow' }
 

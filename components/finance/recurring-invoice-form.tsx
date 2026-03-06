@@ -10,7 +10,7 @@ import {
   pauseRecurringInvoice,
   type RecurringInvoice,
 } from '@/lib/finance/recurring-invoice-actions'
-import { RefreshCw, Plus, Pause } from 'lucide-react'
+import { RefreshCw, Plus, Pause } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Client = { id: string; full_name: string }

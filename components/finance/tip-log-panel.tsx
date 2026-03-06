@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { addTip, deleteTip } from '@/lib/finance/tip-actions'
 import type { TipEntry } from '@/lib/finance/tip-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Trash2, Plus, DollarSign } from 'lucide-react'
+import { Trash2, Plus, DollarSign } from '@/components/ui/icons'
 
 const TIP_METHODS = ['cash', 'venmo', 'zelle', 'paypal', 'other']
 

@@ -4,7 +4,7 @@
 // Green dot when online, red dot + "Offline" when offline,
 // animated sync icon when syncing, pending count when queued.
 
-import { CloudUpload, Loader2 } from 'lucide-react'
+import { CloudUpload, Loader2 } from '@/components/ui/icons'
 import { useOffline } from './offline-provider'
 
 export function OfflineNavIndicator() {

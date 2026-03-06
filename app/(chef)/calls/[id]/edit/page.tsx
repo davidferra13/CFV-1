@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft } from '@/components/ui/icons'
 import { getCall } from '@/lib/calls/actions'
 import { CallForm } from '@/components/calls/call-form'
 

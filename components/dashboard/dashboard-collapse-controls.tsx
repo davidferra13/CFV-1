@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext } from 'react'
-import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
+import { ChevronsDownUp, ChevronsUpDown } from '@/components/ui/icons'
 import { useCollapsedWidgets } from '@/hooks/use-collapsed-widgets'
 import { DASHBOARD_WIDGET_IDS } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'

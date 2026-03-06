@@ -5,7 +5,7 @@
 
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import Link from 'next/link'
-import { MapPin, ChevronRight } from 'lucide-react'
+import { MapPin, ChevronRight } from '@/components/ui/icons'
 
 export default async function PartnerLocationsPage() {
   const { locations, recentEvents } = await getPartnerPortalData()

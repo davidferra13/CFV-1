@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, Image } from 'lucide-react'
+import { Check, Image } from '@/components/ui/icons'
 
 type Template = {
   id: string

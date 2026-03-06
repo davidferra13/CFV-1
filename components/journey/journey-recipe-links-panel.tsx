@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState, useTransition } from 'react'
-import { CheckCircle2, Pencil, Plus, Repeat, Star, Trash2 } from 'lucide-react'
+import { CheckCircle2, Pencil, Plus, Repeat, Star, Trash2 } from '@/components/ui/icons'
 import {
   createChefJourneyRecipeLink,
   deleteChefJourneyRecipeLink,

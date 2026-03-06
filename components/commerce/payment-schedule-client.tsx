@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle } from '@/components/ui/icons'
 import { markInstallmentPaid, waiveInstallment } from '@/lib/commerce/schedule-actions'
 
 type Installment = {

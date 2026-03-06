@@ -18,7 +18,7 @@ import {
   CreditCard,
   MapPin,
   BarChart3,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'

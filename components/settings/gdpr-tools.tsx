@@ -2,7 +2,7 @@
 import { useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Shield, AlertTriangle } from 'lucide-react'
+import { Download, Shield, AlertTriangle } from '@/components/ui/icons'
 import { exportMyData } from '@/lib/compliance/data-export'
 import { toast } from 'sonner'
 import Link from 'next/link'

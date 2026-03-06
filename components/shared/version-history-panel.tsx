@@ -1,6 +1,6 @@
 'use client'
 import { useState, useTransition } from 'react'
-import { History, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react'
+import { History, ChevronDown, ChevronUp, RotateCcw } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {

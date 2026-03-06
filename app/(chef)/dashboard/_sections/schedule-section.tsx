@@ -17,7 +17,7 @@ import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/components/ui/icons'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
 
 // Safe wrapper

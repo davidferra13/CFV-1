@@ -3,7 +3,7 @@
 // PlanLane — A single swim lane in the daily plan.
 // Renders a header with time estimate and a list of items.
 
-import { Zap, ChefHat, Palette, Users } from 'lucide-react'
+import { Zap, ChefHat, Palette, Users } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlanItem } from './plan-item'
 import type { PlanLaneData } from '@/lib/daily-ops/types'

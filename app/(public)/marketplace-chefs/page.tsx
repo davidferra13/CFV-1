@@ -6,7 +6,7 @@ import {
   Repeat,
   ShieldCheck,
   Users,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'

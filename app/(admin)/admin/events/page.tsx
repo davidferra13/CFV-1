@@ -3,7 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAllPlatformEvents, type PlatformEventRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { CalendarRange } from 'lucide-react'
+import { CalendarRange } from '@/components/ui/icons'
 
 function formatCents(cents: number | null): string {
   if (!cents) return '—'

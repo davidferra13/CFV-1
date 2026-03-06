@@ -1,7 +1,7 @@
 'use client'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Send, X, ChevronDown } from 'lucide-react'
+import { Send, X, ChevronDown } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 interface EmailComposerProps {

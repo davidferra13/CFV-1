@@ -13,7 +13,7 @@ import {
 import { sendConnectionRequest } from '@/lib/network/actions'
 import { SocialPostCard } from '@/components/social/social-post-card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ArrowLeft, MapPin, Grid3X3 } from 'lucide-react'
+import { ArrowLeft, MapPin, Grid3X3 } from '@/components/ui/icons'
 import { ChefProfileActions } from './chef-profile-actions'
 
 export async function generateMetadata({

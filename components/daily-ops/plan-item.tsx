@@ -6,7 +6,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Check, X, ChevronDown, ChevronUp, ExternalLink, Clock } from 'lucide-react'
+import { Check, X, ChevronDown, ChevronUp, ExternalLink, Clock } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { completeDailyPlanItem, dismissDailyPlanItem } from '@/lib/daily-ops/actions'
 import type { PlanItem as PlanItemType } from '@/lib/daily-ops/types'

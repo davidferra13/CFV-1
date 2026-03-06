@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-import { TrendingUp, DollarSign, Percent, Users, Clock } from 'lucide-react'
+import { TrendingUp, DollarSign, Percent, Users, Clock } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

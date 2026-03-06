@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, X } from 'lucide-react'
+import { AlertTriangle, X } from '@/components/ui/icons'
 import { mark86 } from '@/lib/operations/kds-actions'
 import { toast } from 'sonner'
 

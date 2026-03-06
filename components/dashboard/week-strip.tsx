@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowRight, AlertTriangle } from 'lucide-react'
+import { ArrowRight, AlertTriangle } from '@/components/ui/icons'
 import type { WeekSchedule, DayType } from '@/lib/scheduling/types'
 
 const DAY_STYLES: Record<DayType, string> = {

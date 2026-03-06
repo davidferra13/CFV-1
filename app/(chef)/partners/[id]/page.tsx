@@ -18,7 +18,7 @@ import { PartnerDetailClient } from '@/components/partners/partner-detail-client
 import { BulkAssignEvents } from '@/components/partners/bulk-assign-events'
 import { SharePartnerReportButton } from '@/components/partners/share-partner-report-button'
 import { PartnerInviteButton } from '@/components/partners/partner-invite-button'
-import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from 'lucide-react'
+import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from '@/components/ui/icons'
 
 const TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',

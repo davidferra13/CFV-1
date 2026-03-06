@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card'
 import type { WfpStory } from '@/lib/charity/wfp-actions'
-import { Globe, ExternalLink } from 'lucide-react'
+import { Globe, ExternalLink } from '@/components/ui/icons'
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''

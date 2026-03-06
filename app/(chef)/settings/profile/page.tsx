@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getChefProfile } from '@/lib/network/actions'
 import { ProfileForm } from './profile-form'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Network Profile - ChefFlow' }
 

@@ -1,6 +1,6 @@
 'use client'
 import { useRef } from 'react'
-import { Bold, Italic, List, Link as LinkIcon } from 'lucide-react'
+import { Bold, Italic, List, Link as LinkIcon } from '@/components/ui/icons'
 
 interface RichNoteEditorProps {
   value: string

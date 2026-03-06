@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp } from '@/components/ui/icons'
 import { updateClientDashboardPreferences } from '@/lib/client-dashboard/actions'
 import type {
   ClientDashboardWidgetId,

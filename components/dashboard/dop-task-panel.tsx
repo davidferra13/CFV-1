@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DOPTaskCheckbox } from '@/components/scheduling/dop-task-checkbox'
 import type { DOPTaskDigest, DigestTask } from '@/lib/scheduling/task-digest'
 import type { InlineWeather } from '@/lib/weather/open-meteo'
-import { ArrowRight, ClipboardList } from 'lucide-react'
+import { ArrowRight, ClipboardList } from '@/components/ui/icons'
 
 // ============================================
 // CATEGORY ICONS

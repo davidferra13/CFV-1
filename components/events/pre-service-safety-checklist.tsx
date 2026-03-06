@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { CheckCircle, Circle, ShieldCheck } from 'lucide-react'
+import { CheckCircle, Circle, ShieldCheck } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleSafetyItem, completeSafetyChecklist } from '@/lib/events/safety-checklist-actions'

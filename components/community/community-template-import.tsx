@@ -1,7 +1,7 @@
 'use client'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, Check } from 'lucide-react'
+import { Download, Check } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import type { CommunityTemplate } from '@/lib/community/template-sharing'
 

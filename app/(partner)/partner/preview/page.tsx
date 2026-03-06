@@ -5,7 +5,7 @@
 
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { Eye, EyeOff, ExternalLink } from 'lucide-react'
+import { Eye, EyeOff, ExternalLink } from '@/components/ui/icons'
 
 export default async function PartnerPreviewPage() {
   const user = await requirePartner()

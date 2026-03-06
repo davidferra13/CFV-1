@@ -3,7 +3,7 @@
 // Appears on the dashboard when debt > 0 — daily habit trigger.
 
 import Link from 'next/link'
-import { BookOpen, ArrowRight, AlertCircle } from 'lucide-react'
+import { BookOpen, ArrowRight, AlertCircle } from '@/components/ui/icons'
 import type { RecipeDebt } from '@/lib/recipes/actions'
 
 type Props = {

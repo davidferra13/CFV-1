@@ -8,7 +8,15 @@ import {
 } from '@/lib/campaigns/push-dinner-actions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Copy, ExternalLink, Users, Mail, CheckCircle, Calendar } from 'lucide-react'
+import {
+  ChevronLeft,
+  Copy,
+  ExternalLink,
+  Users,
+  Mail,
+  CheckCircle,
+  Calendar,
+} from '@/components/ui/icons'
 import { CampaignDetailClient } from './campaign-detail-client'
 
 type Props = { params: { id: string } }

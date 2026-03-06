@@ -14,7 +14,7 @@ import {
   DollarSign,
   MessageSquare,
   Heart,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { acceptInsight, dismissInsight } from '@/lib/insights/actions'
 import type { ChatInsight, InsightType } from '@/lib/insights/actions'
 

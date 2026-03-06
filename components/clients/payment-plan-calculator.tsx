@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { DollarSign, Calendar } from 'lucide-react'
+import { DollarSign, Calendar } from '@/components/ui/icons'
 
 type InstallmentPlan = {
   numberOfPayments: number

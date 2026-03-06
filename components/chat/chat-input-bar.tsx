@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Send, Paperclip, X } from 'lucide-react'
+import { Send, Paperclip, X } from '@/components/ui/icons'
 import { useDebouncedCallback } from '@/lib/hooks/use-debounce'
 
 interface ChatInputBarProps {

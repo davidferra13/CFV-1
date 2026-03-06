@@ -69,7 +69,7 @@ import SystemNerveCenter from '@/components/dashboard/system-nerve-center'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { ArrowRight, TrendingUp, TrendingDown, Minus, Calendar, Gift } from 'lucide-react'
+import { ArrowRight, TrendingUp, TrendingDown, Minus, Calendar, Gift } from '@/components/ui/icons'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
 
 // Safe wrapper

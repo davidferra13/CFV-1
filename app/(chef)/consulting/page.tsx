@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Target,
   TrendingUp,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

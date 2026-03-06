@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,7 +57,9 @@ export default async function CommerceParityDashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="py-4 text-center">
-            <p className="text-2xl font-bold text-stone-100">{dashboard.overall.completionPercent}%</p>
+            <p className="text-2xl font-bold text-stone-100">
+              {dashboard.overall.completionPercent}%
+            </p>
             <p className="text-xs text-stone-500 mt-1">Overall Completion</p>
           </CardContent>
         </Card>
@@ -129,13 +131,17 @@ export default async function CommerceParityDashboardPage() {
                     className="flex items-center justify-between rounded border border-stone-800 bg-stone-900/30 px-3 py-2"
                   >
                     <p className="text-sm text-stone-100 font-mono">{item.id}</p>
-                    <Badge className={mvpStatusBadgeClass(item.status)}>{mvpStatusLabel(item.status)}</Badge>
+                    <Badge className={mvpStatusBadgeClass(item.status)}>
+                      {mvpStatusLabel(item.status)}
+                    </Badge>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <p className="text-sm text-emerald-300">All MVP contract IDs are marked done in the master plan.</p>
+            <p className="text-sm text-emerald-300">
+              All MVP contract IDs are marked done in the master plan.
+            </p>
           )}
         </CardContent>
       </Card>
@@ -156,7 +162,8 @@ export default async function CommerceParityDashboardPage() {
                     {section.sectionId}) {section.title}
                   </p>
                   <p className="text-xs text-stone-500">
-                    {section.done} done / {section.inProgress} in progress / {section.notStarted} not started
+                    {section.done} done / {section.inProgress} in progress / {section.notStarted}{' '}
+                    not started
                   </p>
                 </div>
                 <Badge variant="default">{section.completionPercent}%</Badge>

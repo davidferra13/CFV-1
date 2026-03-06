@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { saveW9Data } from '@/lib/finance/contractor-actions'
-import { CheckCircle, AlertTriangle, FileText } from 'lucide-react'
+import { CheckCircle, AlertTriangle, FileText } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type W9Data = {

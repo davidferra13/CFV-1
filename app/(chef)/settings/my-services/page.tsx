@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Settings2, Save, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react'
+import { Settings2, Save, CheckCircle, ChevronDown, ChevronRight } from '@/components/ui/icons'
 import Link from 'next/link'
 import {
   getServiceConfig,

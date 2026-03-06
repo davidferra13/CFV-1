@@ -6,7 +6,7 @@
 // Falls back to a static FAQ accordion if Ollama is offline.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Send, Loader2, MessageCircle, ChevronDown } from 'lucide-react'
+import { Send, Loader2, MessageCircle, ChevronDown } from '@/components/ui/icons'
 import Link from 'next/link'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints, CHEFFLOW_FEATURE_MAP } from '@/lib/ai/chefflow-feature-map'

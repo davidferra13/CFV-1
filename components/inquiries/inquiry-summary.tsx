@@ -22,7 +22,7 @@ import {
   ChevronRight,
   Utensils,
   MessageSquare,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 

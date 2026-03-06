@@ -8,7 +8,7 @@ import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 import { computeChefHealthScore, CHEF_TIER_LABELS } from '@/lib/chefs/health-score'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from 'lucide-react'
+import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from '@/components/ui/icons'
 
 function formatCents(cents: number): string {
   return (

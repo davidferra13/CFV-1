@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Users, MessageSquare } from 'lucide-react'
+import { Users, MessageSquare } from '@/components/ui/icons'
 import type { SocialChannel } from '@/lib/social/chef-social-actions'
 import { joinChannel, leaveChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'

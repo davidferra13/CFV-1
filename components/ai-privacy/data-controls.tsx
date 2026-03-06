@@ -17,7 +17,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Power,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import type { AiDataSummary, AiPreferences } from '@/lib/ai/privacy-actions'
 import {
   deleteAllConversations,

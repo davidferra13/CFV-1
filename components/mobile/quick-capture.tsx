@@ -10,7 +10,7 @@
 // date defaults to today. These can be edited from the full Expenses page.
 
 import { useState, useRef, useTransition } from 'react'
-import { Plus, Camera, DollarSign, X, Loader2 } from 'lucide-react'
+import { Plus, Camera, DollarSign, X, Loader2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { createExpense } from '@/lib/expenses/actions'
 

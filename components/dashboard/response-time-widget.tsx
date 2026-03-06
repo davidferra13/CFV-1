@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Clock, AlertTriangle, CheckCircle } from '@/components/ui/icons'
 import type { ResponseTimeSummary } from '@/lib/analytics/response-time-actions'
 
 interface ResponseTimeWidgetProps {

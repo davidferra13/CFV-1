@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Brain, TrendingUp } from 'lucide-react'
+import { Brain, TrendingUp } from '@/components/ui/icons'
 
 type PatternData = {
   patternType: string

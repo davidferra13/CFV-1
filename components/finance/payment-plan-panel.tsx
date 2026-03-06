@@ -12,7 +12,7 @@ import {
 } from '@/lib/finance/payment-plan-actions'
 import type { PaymentPlanInstallment } from '@/lib/finance/payment-plan-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { CheckCircle, Trash2, Plus } from 'lucide-react'
+import { CheckCircle, Trash2, Plus } from '@/components/ui/icons'
 
 interface Props {
   eventId: string

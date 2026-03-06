@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-import { Mail, MousePointerClick, DollarSign, Send } from 'lucide-react'
+import { Mail, MousePointerClick, DollarSign, Send } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

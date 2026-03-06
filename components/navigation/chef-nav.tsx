@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react'
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from '@/components/ui/icons'
 import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavSubItem, NavItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
@@ -36,7 +36,7 @@ import {
   Plus,
   Lock,
   Sparkles,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 type SidebarContextType = {

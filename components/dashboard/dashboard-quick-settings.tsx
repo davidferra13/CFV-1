@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Settings2, ArrowUp, ArrowDown } from 'lucide-react'
+import { Settings2, ArrowUp, ArrowDown } from '@/components/ui/icons'
 import { updateChefPreferences } from '@/lib/chef/actions'
 import type { DashboardWidgetPreference } from '@/lib/scheduling/types'
 import { DASHBOARD_WIDGET_LABELS } from '@/lib/scheduling/types'

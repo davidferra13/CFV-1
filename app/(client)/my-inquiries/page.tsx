@@ -8,7 +8,7 @@ import { getClientInquiries, type ClientInquiryListItem } from '@/lib/inquiries/
 import { Card } from '@/components/ui/card'
 import { InquiryStatusBadge } from '@/components/inquiries/inquiry-status-badge'
 import { format } from 'date-fns'
-import { ChevronRight, ClipboardList } from 'lucide-react'
+import { ChevronRight, ClipboardList } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'My Inquiries - ChefFlow',

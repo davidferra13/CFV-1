@@ -14,7 +14,7 @@ import {
   IRS_USEFUL_LIFE_DEFAULTS,
   DEPRECIATION_METHOD_LABELS,
 } from '@/lib/equipment/depreciation-constants'
-import { CheckCircle, Settings, Wrench } from 'lucide-react'
+import { CheckCircle, Settings, Wrench } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

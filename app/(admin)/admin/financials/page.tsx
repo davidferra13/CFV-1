@@ -3,7 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { DollarSign } from 'lucide-react'
+import { DollarSign } from '@/components/ui/icons'
 import { ProfitAndLossReport } from '@/components/finance/ProfitAndLossReport'
 import {
   getDefaultProfitLossWindow,

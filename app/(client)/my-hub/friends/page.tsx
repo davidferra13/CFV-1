@@ -7,7 +7,7 @@ import { getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions'
 import { FriendsList } from '@/components/hub/friends-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Dinner Circle - ChefFlow' }
 

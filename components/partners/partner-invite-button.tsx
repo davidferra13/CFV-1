@@ -7,7 +7,7 @@
 import { useState } from 'react'
 import { generatePartnerInvite } from '@/lib/partners/invite-actions'
 import { Button } from '@/components/ui/button'
-import { Send, Copy, Check, AlertCircle } from 'lucide-react'
+import { Send, Copy, Check, AlertCircle } from '@/components/ui/icons'
 
 type Props = {
   partnerId: string

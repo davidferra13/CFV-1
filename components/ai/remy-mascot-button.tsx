@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare } from '@/components/ui/icons'
 import { RemyAnimatedMascot } from '@/components/ai/remy-animated-mascot'
 import type { BodyState } from '@/lib/ai/remy-body-state'
 import type { EyeState } from '@/lib/ai/remy-eye-blink'

@@ -39,7 +39,7 @@ import {
   RotateCcw,
   ThumbsUp,
   ThumbsDown,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
 import { RemyCapabilitiesPanel } from '@/components/ai/remy-capabilities-panel'

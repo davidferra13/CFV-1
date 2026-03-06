@@ -10,7 +10,7 @@ import {
   FileText,
   HandCoins,
   Scale,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
