@@ -66,7 +66,7 @@ export function TakeAChefCaptureTool() {
   }, [])
 
   useEffect(() => {
-    if (searchParams.get('source') !== 'bookmarklet') return
+    if (!searchParams || searchParams.get('source') !== 'bookmarklet') return
     try {
       const parsed = JSON.parse(window.name || 'null')
       if (!isBookmarkletPayload(parsed)) return

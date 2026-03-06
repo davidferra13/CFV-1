@@ -71,7 +71,7 @@ export async function getEventsFinancialSummary(): Promise<EventsFinancialSummar
       // Financial summaries for this month's events
       supabase
         .from('event_financial_summary')
-        .select('event_id, profit_margin_percent')
+        .select('event_id, profit_margin')
         .eq('tenant_id', tenantId),
       // All events in last 12 months for avg per month
       supabase
@@ -97,11 +97,15 @@ export async function getEventsFinancialSummary(): Promise<EventsFinancialSummar
 
   // Month revenue + margin
   const monthRevenueCents = month.reduce((s: number, e: any) => s + (e.quoted_price_cents || 0), 0)
-  const financialMap = new Map((financialsRes.data || []).map((f: any) => [f.event_id, f]))
+  const financials = (financialsRes.data || []) as Array<{
+    event_id: string | null
+    profit_margin: number | null
+  }>
+  const financialMap = new Map(financials.map((f) => [f.event_id, f]))
   const monthMargins = month
     .map((e: any) => {
       const fin = financialMap.get(e.id)
-      return fin?.profit_margin_percent != null ? fin.profit_margin_percent : null
+      return fin?.profit_margin != null ? fin.profit_margin : null
     })
     .filter((m: number | null): m is number => m !== null)
   const monthAvgMargin =

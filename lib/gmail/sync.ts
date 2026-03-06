@@ -1422,26 +1422,26 @@ async function handleTacBookingConfirmed(
     const { data: existingInquiry } = await supabase
       .from('inquiries')
       .select(
-        'id, client_id, referral_partner_id, partner_location_id, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_service_expectations, confirmed_dietary_restrictions, confirmed_cannabis_preference, source_message, service_mode, schedule_request_jsonb, converted_to_event_id, external_link, unknown_fields'
+        'id, client_id, referral_partner_id, partner_location_id, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_service_expectations, confirmed_dietary_restrictions, confirmed_cannabis_preference, source_message, converted_to_event_id, external_link, unknown_fields'
       )
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
+
+    // Extract service_mode and schedule_request from unknown_fields
+    const uf = (existingInquiry?.unknown_fields ?? {}) as Record<string, unknown>
+    const existingServiceMode = (uf.service_mode as string) || null
+    const existingScheduleRequest = (uf.schedule_request_jsonb as Json) || null
 
     // Store the Order ID for future matching (customer info, payment)
     await supabase
       .from('inquiries')
       .update({
         status: 'confirmed',
-        service_mode: existingInquiry?.service_mode || booking.serviceMode,
         external_inquiry_id: booking.orderId || null,
         external_link: booking.ctaLink || existingInquiry?.external_link || null,
         confirmed_budget_cents: booking.amountCents,
         confirmed_location: booking.address,
-        schedule_request_jsonb:
-          existingInquiry?.schedule_request_jsonb ||
-          (booking.scheduleRequest as unknown as Json) ||
-          null,
         unknown_fields: mergePlatformIdentityKeys(
           asUnknownFieldsRecord(existingInquiry?.unknown_fields as Json | null),
           booking.identityKeys,
@@ -1451,6 +1451,9 @@ async function handleTacBookingConfirmed(
             tac_cta_uri_token: booking.ctaUriToken,
             tac_service_dates: booking.serviceDates,
             tac_request_type: booking.requestType,
+            service_mode: existingServiceMode || booking.serviceMode,
+            schedule_request_jsonb:
+              existingScheduleRequest || (booking.scheduleRequest as unknown as Json) || null,
           }
         ) as unknown as Json,
         next_action_required: 'TakeAChef booking confirmed — prepare for event',
@@ -1461,7 +1464,7 @@ async function handleTacBookingConfirmed(
 
     if (
       existingInquiry &&
-      (existingInquiry.service_mode === 'multi_day' ||
+      (existingServiceMode === 'multi_day' ||
         booking.serviceMode === 'multi_day' ||
         Boolean(
           booking.scheduleRequest?.sessions?.length && booking.scheduleRequest.sessions.length > 1
@@ -1472,7 +1475,10 @@ async function handleTacBookingConfirmed(
         tenantId,
         inquiryId,
         booking,
-        existingInquiry,
+        existingInquiry: {
+          ...existingInquiry,
+          schedule_request_jsonb: existingScheduleRequest,
+        },
       })
 
       if (eventId) {

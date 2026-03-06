@@ -142,7 +142,7 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
         isStale: inquiry.status === 'new' && ageHours > 24,
       } satisfies TakeAChefCommandCenterLead
     })
-    .sort((a, b) => b.ageHours - a.ageHours)
+    .sort((a: TakeAChefCommandCenterLead, b: TakeAChefCommandCenterLead) => b.ageHours - a.ageHours)
 
   const proposalFollowUps = allInquiries
     .map((inquiry: any) => {
@@ -173,8 +173,12 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
         externalLink: inquiry.external_link ?? null,
       } satisfies TakeAChefCommandCenterWorkflowItem
     })
-    .filter((item): item is TakeAChefCommandCenterWorkflowItem => item != null)
-    .sort((a, b) => {
+    .filter(
+      (
+        item: TakeAChefCommandCenterWorkflowItem | null
+      ): item is TakeAChefCommandCenterWorkflowItem => item != null
+    )
+    .sort((a: TakeAChefCommandCenterWorkflowItem, b: TakeAChefCommandCenterWorkflowItem) => {
       const aTime = a.capturedAt ? new Date(a.capturedAt).getTime() : 0
       const bTime = b.capturedAt ? new Date(b.capturedAt).getTime() : 0
       return bTime - aTime
@@ -204,8 +208,12 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
         externalLink: inquiry.external_link ?? null,
       } satisfies TakeAChefCommandCenterWorkflowItem
     })
-    .filter((item): item is TakeAChefCommandCenterWorkflowItem => item != null)
-    .sort((a, b) => {
+    .filter(
+      (
+        item: TakeAChefCommandCenterWorkflowItem | null
+      ): item is TakeAChefCommandCenterWorkflowItem => item != null
+    )
+    .sort((a: TakeAChefCommandCenterWorkflowItem, b: TakeAChefCommandCenterWorkflowItem) => {
       const aTime = a.capturedAt ? new Date(a.capturedAt).getTime() : 0
       const bTime = b.capturedAt ? new Date(b.capturedAt).getTime() : 0
       return bTime - aTime
@@ -223,9 +231,13 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
   if (linkedEventIds.length === 0) {
     return {
       summary: {
-        untouchedLeadCount: leads.filter((lead) => lead.status === 'new').length,
-        awaitingChefCount: leads.filter((lead) => lead.status === 'awaiting_chef').length,
-        staleLeadCount: leads.filter((lead) => lead.isStale).length,
+        untouchedLeadCount: leads.filter(
+          (lead: TakeAChefCommandCenterLead) => lead.status === 'new'
+        ).length,
+        awaitingChefCount: leads.filter(
+          (lead: TakeAChefCommandCenterLead) => lead.status === 'awaiting_chef'
+        ).length,
+        staleLeadCount: leads.filter((lead: TakeAChefCommandCenterLead) => lead.isStale).length,
         proposalFollowUpCount: proposalFollowUps.length,
         menuFollowUpCount: menuFollowUps.length,
         upcomingBookingCount: 0,
@@ -308,12 +320,16 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
         externalLink: inquiry?.external_link ?? null,
       } satisfies TakeAChefCommandCenterBooking
     })
-    .sort((a, b) => a.eventDate.localeCompare(b.eventDate))
+    .sort((a: TakeAChefCommandCenterBooking, b: TakeAChefCommandCenterBooking) =>
+      a.eventDate.localeCompare(b.eventDate)
+    )
 
-  const upcomingBookings = bookings.filter((booking) => booking.eventDate >= today).slice(0, 10)
+  const upcomingBookings = bookings
+    .filter((booking: TakeAChefCommandCenterBooking) => booking.eventDate >= today)
+    .slice(0, 10)
   const payoutWatchlist = bookings
     .filter(
-      (booking) =>
+      (booking: TakeAChefCommandCenterBooking) =>
         booking.payoutStatus !== 'paid' ||
         booking.commissionState === 'missing' ||
         booking.commissionState === 'mismatch'
@@ -322,15 +338,18 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
 
   return {
     summary: {
-      untouchedLeadCount: leads.filter((lead) => lead.status === 'new').length,
-      awaitingChefCount: leads.filter((lead) => lead.status === 'awaiting_chef').length,
-      staleLeadCount: leads.filter((lead) => lead.isStale).length,
+      untouchedLeadCount: leads.filter((lead: TakeAChefCommandCenterLead) => lead.status === 'new')
+        .length,
+      awaitingChefCount: leads.filter(
+        (lead: TakeAChefCommandCenterLead) => lead.status === 'awaiting_chef'
+      ).length,
+      staleLeadCount: leads.filter((lead: TakeAChefCommandCenterLead) => lead.isStale).length,
       proposalFollowUpCount: proposalFollowUps.length,
       menuFollowUpCount: menuFollowUps.length,
       upcomingBookingCount: upcomingBookings.length,
       payoutWatchCount: payoutWatchlist.length,
       commissionMismatchCount: payoutWatchlist.filter(
-        (booking) => booking.commissionState === 'mismatch'
+        (booking: TakeAChefCommandCenterBooking) => booking.commissionState === 'mismatch'
       ).length,
     },
     leads,
