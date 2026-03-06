@@ -71,6 +71,7 @@ import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
 import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
+import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -255,6 +256,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA && clientNBA.actionType !== 'none' && <NextBestActionCard action={clientNBA} />}
+
+      {/* Relationship Intelligence */}
+      <Suspense fallback={null}>
+        <ClientIntelligencePanel clientId={client.id} />
+      </Suspense>
 
       {/* Profile Completeness Meter */}
       {(() => {

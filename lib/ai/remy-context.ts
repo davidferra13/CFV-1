@@ -11,6 +11,9 @@ import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
 import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
+import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
+import { getClientIntelligenceContext } from '@/lib/intelligence/client-intelligence-context'
+import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -1386,6 +1389,33 @@ async function loadEventEntity(
     }
   }
 
+  // Intelligence context (non-blocking)
+  const eventIntel = await getEventIntelligenceContext({
+    eventId,
+    guestCount: (data.guest_count as number) ?? null,
+    occasion: (data.occasion as string) ?? null,
+    quotedPriceCents: (data.quoted_price_cents as number) ?? null,
+    status: data.status as string,
+    eventDate: (data.event_date as string) ?? null,
+  }).catch(() => null)
+
+  if (eventIntel) {
+    if (eventIntel.profitabilityProjection) {
+      lines.push(
+        `\nPROFITABILITY PROJECTION: Expected ${eventIntel.profitabilityProjection.expectedMarginPercent}% margin (range: ${eventIntel.profitabilityProjection.worstMarginPercent}%-${eventIntel.profitabilityProjection.bestMarginPercent}%, based on ${eventIntel.profitabilityProjection.similarEventsCount} similar events)`
+      )
+    }
+    if (eventIntel.priceComparison) {
+      const dir = eventIntel.priceComparison.isAboveAverage ? 'above' : 'below'
+      lines.push(
+        `PRICE CONTEXT: ${Math.abs(eventIntel.priceComparison.percentFromAvg)}% ${dir} your average per-guest rate`
+      )
+    }
+    if (eventIntel.insights.length > 0) {
+      lines.push(`INSIGHTS: ${eventIntel.insights.join('. ')}`)
+    }
+  }
+
   return { type: 'event', summary: lines.join('\n') }
 }
 
@@ -1632,6 +1662,34 @@ async function loadClientEntity(
     }
   }
 
+  // Intelligence context (non-blocking)
+  const clientIntel = await getClientIntelligenceContext(clientId).catch(() => null)
+
+  if (clientIntel) {
+    lines.push(`\nRELATIONSHIP INTELLIGENCE:`)
+    lines.push(
+      `Churn risk: ${clientIntel.churnRisk.level} (score: ${clientIntel.churnRisk.score}/100)`
+    )
+    if (clientIntel.churnRisk.factors.length > 0) {
+      lines.push(`Risk factors: ${clientIntel.churnRisk.factors.join(', ')}`)
+    }
+    if (clientIntel.rebookingPrediction.predictedNextBookingDays !== null) {
+      lines.push(
+        `Predicted next booking: ~${clientIntel.rebookingPrediction.predictedNextBookingDays} days`
+      )
+    }
+    if (clientIntel.rebookingPrediction.seasonalPattern) {
+      lines.push(`Seasonal pattern: ${clientIntel.rebookingPrediction.seasonalPattern}`)
+    }
+    if (clientIntel.rebookingPrediction.preferredOccasion) {
+      lines.push(`Preferred event type: ${clientIntel.rebookingPrediction.preferredOccasion}`)
+    }
+    lines.push(`Revenue trend: ${clientIntel.revenueTrajectory.trend}`)
+    if (clientIntel.insights.length > 0) {
+      lines.push(`Insights: ${clientIntel.insights.join('. ')}`)
+    }
+  }
+
   return { type: 'client', summary: lines.join('\n') }
 }
 
@@ -1806,6 +1864,40 @@ async function loadInquiryEntity(
         : ''
       const status = msg.status === 'draft' ? ' (DRAFT)' : ''
       lines.push(`- ${dir}${ch} ${date}${subj}${status}:${body}`)
+    }
+  }
+
+  // Intelligence context (non-blocking)
+  const inquiryIntel = await getInquiryConversionContext({
+    inquiryId,
+    guestCount: (data.confirmed_guest_count as number) ?? null,
+    occasion: (data.confirmed_occasion as string) ?? null,
+    budgetCents: (data.confirmed_budget_cents as number) ?? null,
+    channel: (data.channel as string) ?? 'unknown',
+    createdAt: (data.first_contact_at as string) ?? new Date().toISOString(),
+  }).catch(() => null)
+
+  if (inquiryIntel) {
+    lines.push(`\nCONVERSION INTELLIGENCE:`)
+    lines.push(
+      `Conversion likelihood: ${inquiryIntel.conversionLikelihood}% (${inquiryIntel.conversionLabel})`
+    )
+    lines.push(
+      `Based on ${inquiryIntel.similarConvertedCount}/${inquiryIntel.similarInquiriesCount} similar inquiries that converted`
+    )
+    if (inquiryIntel.avgDaysToConvert) {
+      lines.push(`Avg time to convert: ${inquiryIntel.avgDaysToConvert} days`)
+    }
+    if (inquiryIntel.pricingBenchmark) {
+      lines.push(
+        `Pricing benchmark: $${Math.round(inquiryIntel.pricingBenchmark.medianPerGuestCents / 100)}/guest (range $${Math.round(inquiryIntel.pricingBenchmark.rangeLowCents / 100)}-$${Math.round(inquiryIntel.pricingBenchmark.rangeHighCents / 100)})`
+      )
+    }
+    lines.push(
+      `Pipeline position: #${inquiryIntel.pipelinePosition.thisRank} of ${inquiryIntel.pipelinePosition.totalOpen} open`
+    )
+    if (inquiryIntel.factors.length > 0) {
+      lines.push(`Factors: ${inquiryIntel.factors.join(', ')}`)
     }
   }
 

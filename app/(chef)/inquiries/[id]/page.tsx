@@ -54,6 +54,8 @@ import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
+import { Suspense } from 'react'
+import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -311,6 +313,18 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Inquiry Summary — visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
+
+      {/* Conversion Intelligence */}
+      <Suspense fallback={null}>
+        <InquiryIntelligencePanel
+          inquiryId={inquiry.id}
+          guestCount={inquiry.confirmed_guest_count ?? null}
+          occasion={inquiry.confirmed_occasion ?? null}
+          budgetCents={inquiry.confirmed_budget_cents ?? null}
+          channel={inquiry.channel}
+          createdAt={inquiry.created_at}
+        />
+      </Suspense>
 
       {(inquiry as any).service_mode === 'multi_day' && (
         <Card className="p-6">

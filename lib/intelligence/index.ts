@@ -139,3 +139,14 @@ export type { ProactiveAlertsResult, ProactiveAlert } from './proactive-alerts'
 
 export { getSmartQuoteSuggestion } from './smart-quote-suggestions'
 export type { QuotePricingSuggestion } from './smart-quote-suggestions'
+
+// ─── Per-Entity Intelligence Contexts ────────────────────────────────────────
+
+export { getInquiryConversionContext } from './inquiry-conversion-context'
+export type { InquiryConversionContext } from './inquiry-conversion-context'
+
+export { getEventIntelligenceContext } from './event-context'
+export type { EventIntelligenceContext } from './event-context'
+
+export { getClientIntelligenceContext } from './client-intelligence-context'
+export type { ClientIntelligenceContext } from './client-intelligence-context'

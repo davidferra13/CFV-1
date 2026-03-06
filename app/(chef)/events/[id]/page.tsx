@@ -117,6 +117,8 @@ import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
 import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
 import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
+import { Suspense } from 'react'
+import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase: any = createServerClient()
@@ -513,6 +515,18 @@ export default async function EventDetailPage({
           completedAt={(event as any).service_completed_at ?? event.updated_at}
         />
       )}
+
+      {/* Event Intelligence */}
+      <Suspense fallback={null}>
+        <EventIntelligencePanel
+          eventId={params.id}
+          guestCount={event.guest_count ?? null}
+          occasion={event.occasion ?? null}
+          quotedPriceCents={(event as any).quoted_price_cents ?? null}
+          status={event.status}
+          eventDate={event.event_date ?? null}
+        />
+      </Suspense>
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (
