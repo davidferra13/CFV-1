@@ -58,6 +58,28 @@ Similarly, `CLAUDE.md` gets misheard as `cloud MD`, `cloud folder`, `clawed`, et
 
 **Rule: Parse for intent, not for grammar. The meaning is always there — the punctuation isn't.**
 
+### NO EM DASHES (ABSOLUTE RULE — ZERO TOLERANCE)
+
+**Never use em dashes (—) anywhere. Not in code, not in UI text, not in emails, not in AI responses, not in comments, not in docs that users see. NOWHERE.**
+
+Em dashes are the #1 tell that text was written by AI. Using them destroys credibility instantly. Real people don't write with em dashes. AI does. We are not going to look like AI.
+
+**What to use instead:**
+
+- A comma, period, or semicolon (restructure the sentence)
+- Parentheses (for asides)
+- A colon (for explanations)
+- Two separate sentences
+- A hyphen with spaces ( - ) if you absolutely need a break
+
+**Enforcement:**
+
+- Every piece of text Claude generates (UI copy, emails, Remy responses, notifications, error messages) must be em-dash-free
+- When editing existing files, replace any em dashes you encounter
+- This applies to ALL agent output: Claude Code, Remy, Gustav, any AI in the system
+
+**This is not a style preference. This is a hard rule. Em dashes = instant credibility loss.**
+
 ### Brand Names — What Things Are Currently Called
 
 Different names are used in different places. This is intentional — don't "fix" one to match another.

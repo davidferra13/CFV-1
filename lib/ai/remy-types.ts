@@ -353,6 +353,8 @@ export interface RemyContext {
   }
   /** Business intelligence summary — cross-engine synthesized insights */
   businessIntelligence?: string
+  /** Chef service configuration — what services/policies/extras the chef offers */
+  serviceConfigPrompt?: string
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

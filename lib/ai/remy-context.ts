@@ -14,6 +14,10 @@ import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-sum
 import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
 import { getClientIntelligenceContext } from '@/lib/intelligence/client-intelligence-context'
 import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
+import {
+  getServiceConfigForTenant,
+  formatServiceConfigForPrompt,
+} from '@/lib/chef-services/service-config-actions'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -31,6 +35,7 @@ interface CachedContext {
     | 'mentionedEntities'
     | 'dailyPlan'
     | 'emailDigest'
+    | 'serviceConfigPrompt'
   >
   expiresAt: number
 }
@@ -45,14 +50,15 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
 
-  // Tier 1: Always fresh (cheap count queries + chef profile + daily plan)
-  const [chefProfile, counts, dailyPlan, healthSummary] = await Promise.all([
+  // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
+  const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig] = await Promise.all([
     loadChefProfile(supabase, tenantId),
     loadQuickCounts(supabase, tenantId),
     getDailyPlanStats().catch(() => null),
     getBusinessHealthSummary()
       .then((s) => s.remyContext)
       .catch(() => null),
+    getServiceConfigForTenant(tenantId).catch(() => null),
   ])
 
   // Tier 2: Cached for 5 minutes
@@ -114,6 +120,8 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     revenuePattern: detailed.revenuePattern,
     // Business intelligence (cross-engine synthesis)
     businessIntelligence: healthSummary ?? undefined,
+    // Service configuration (what this chef offers/doesn't offer)
+    serviceConfigPrompt: serviceConfig ? formatServiceConfigForPrompt(serviceConfig) : undefined,
   }
 }
 

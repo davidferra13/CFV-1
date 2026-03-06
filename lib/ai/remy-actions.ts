@@ -476,6 +476,11 @@ Use seasonal awareness naturally — mention what's in season, upcoming holidays
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
 
+  // Service configuration (what this chef offers and doesn't offer)
+  if (context.serviceConfigPrompt) {
+    parts.push(`\n${context.serviceConfigPrompt}`)
+  }
+
   // Upcoming events detail
   if (context.upcomingEvents && context.upcomingEvents.length > 0) {
     parts.push(`\nUPCOMING EVENTS:
