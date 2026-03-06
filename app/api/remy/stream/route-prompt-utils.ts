@@ -755,6 +755,13 @@ When the chef asks about profitability, margins, or "am I charging enough?", use
 When the chef asks about a quote amount, compare it to this range: below 25th = low end, above 75th = premium, near median = typical. Help them understand if they're undercharging or if it's a premium gig.`)
   }
 
+  // Business intelligence summary (cross-engine synthesis from 30 analytics engines)
+  if (context.businessIntelligence) {
+    parts.push(`\nBUSINESS INTELLIGENCE (synthesized from 30 analytics engines — use when discussing business health, pricing, growth, or client retention):
+${context.businessIntelligence}
+Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
+  }
+
   // Response length calibration (deterministic — word count analysis)
   if (userMessage) {
     const lengthInstruction = calibrateResponseLength(userMessage)
