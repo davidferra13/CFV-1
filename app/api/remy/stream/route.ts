@@ -219,10 +219,10 @@ export async function POST(req: NextRequest) {
           const eventHint = message
             .match(/for\s+(.+?)(?:\s*event|\s*dinner|\s*party|$)/i)?.[1]
             ?.trim()
-          responseText = formatReceiptForConfirmation(receiptData, eventHint || undefined)
+          responseText = await formatReceiptForConfirmation(receiptData, eventHint || undefined)
         } else {
           const dishData = await analyzeDishPhoto(imageBase64)
-          responseText = formatDishPhotoResponse(dishData)
+          responseText = await formatDishPhotoResponse(dishData)
         }
 
         const body =
@@ -410,7 +410,7 @@ export async function POST(req: NextRequest) {
       try {
         const { getWeatherAlerts, formatWeatherAlerts } = await import('@/lib/ai/remy-weather')
         const alerts = await getWeatherAlerts(user.tenantId!)
-        const text = formatWeatherAlerts(alerts)
+        const text = await formatWeatherAlerts(alerts)
         const body =
           encodeSSE({ type: 'intent', data: 'question' }) +
           encodeSSE({ type: 'token', data: text }) +
@@ -437,7 +437,7 @@ export async function POST(req: NextRequest) {
         const { getTravelEstimates, formatTravelEstimates } =
           await import('@/lib/ai/remy-travel-time')
         const estimates = await getTravelEstimates(user.tenantId!)
-        const text = formatTravelEstimates(estimates)
+        const text = await formatTravelEstimates(estimates)
         const body =
           encodeSSE({ type: 'intent', data: 'question' }) +
           encodeSSE({ type: 'token', data: text }) +
@@ -454,6 +454,71 @@ export async function POST(req: NextRequest) {
           encodeSSE({ type: 'done', data: null })
         return new Response(body, { headers: sseHeaders() })
       }
+    }
+
+    //  GREETING FAST-PATH: skip Ollama entirely for simple greetings
+    // "hi", "hey", "hello", etc. don't need classification, memories, archetype,
+    // culinary profile, or any LLM call. Only needs lightweight context for the
+    // proactive snapshot (events, payments, inquiries). Context is cached (5 min TTL).
+    const GREETING_REGEX =
+      /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i
+    if (GREETING_REGEX.test(message.trim())) {
+      const ctx = await loadRemyContext(currentPage)
+      const hour = new Date().getHours()
+      const greetWord = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
+      const lines: string[] = [`${greetWord}, chef! 👨‍🍳`]
+
+      const nuggets: string[] = []
+      if (ctx.upcomingEvents && ctx.upcomingEvents.length > 0) {
+        const today = ctx.upcomingEvents.filter((e) => {
+          if (!e.date) return false
+          return new Date(e.date).toDateString() === new Date().toDateString()
+        })
+        if (today.length > 0) {
+          nuggets.push(
+            `You've got **${today.length} event${today.length !== 1 ? 's' : ''} today** - game time 🔥`
+          )
+        } else {
+          const next = ctx.upcomingEvents[0]
+          if (next.date) {
+            const daysUntil = Math.ceil(
+              (new Date(next.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+            )
+            if (daysUntil <= 3) {
+              nuggets.push(
+                `Next event in **${daysUntil} day${daysUntil !== 1 ? 's' : ''}**: ${next.occasion ?? 'Event'} for ${next.clientName}`
+              )
+            }
+          }
+        }
+      }
+      if (ctx.overduePayments && ctx.overduePayments.length > 0) {
+        nuggets.push(
+          `${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} need attention`
+        )
+      }
+      if (ctx.staleInquiries && ctx.staleInquiries.length > 0) {
+        nuggets.push(
+          `${ctx.staleInquiries.length} inquir${ctx.staleInquiries.length !== 1 ? 'ies' : 'y'} waiting for a response`
+        )
+      }
+
+      if (nuggets.length > 0) {
+        lines.push('')
+        lines.push('Quick snapshot:')
+        for (const n of nuggets) lines.push(`- ${n}`)
+        lines.push('')
+        lines.push("What's on your mind?")
+      } else {
+        lines.push("What's cooking today?")
+      }
+
+      const greetingText = lines.join('\n')
+      const body =
+        encodeSSE({ type: 'intent', data: 'question' }) +
+        encodeSSE({ type: 'token', data: greetingText }) +
+        encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
     }
 
     //  INTERACTIVE LOCK: pause background worker while Remy is streaming
