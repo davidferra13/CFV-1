@@ -86,6 +86,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // adminOnly items are always hidden for non-admins regardless of Focus Mode.
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
+  { href: '/briefing', label: 'Briefing', icon: ClipboardCheck, coreFeature: true },
   { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true, adminOnly: true },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
@@ -560,6 +561,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/clock', label: 'Clock In/Out' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
+          { href: '/staff/live', label: 'Live Activity' },
         ],
       },
       {

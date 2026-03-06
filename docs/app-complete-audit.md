@@ -920,11 +920,131 @@
 
 ## 11. DAILY OPS
 
-**Route:** `/daily` — Remy-generated daily plan with 4 swim lanes (Quick Admin, Event Prep, Creative, Relationship).
+**Route:** `/daily` - Remy-generated daily plan with 4 swim lanes (Quick Admin, Event Prep, Creative, Relationship).
 
 Per lane: icon, label, item count badge, time estimate. Per item: checkbox (calls `completeDailyPlanItem`), title (strikethrough when done), time badge, description. Draft preview expandable with "Approve" button. Dismiss button (hover-only, calls `dismissDailyPlanItem`).
 
 Protected time reminder (purple callout). Completion celebration when all done.
+
+---
+
+## 11A. MORNING BRIEFING
+
+**Route:** `/briefing` - Single-page morning overview for the business owner. Mobile-first, designed to be read in 60 seconds.
+
+| Section                 | Content                                                                                                                                                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Alerts**              | Top of page. Clickable cards linking to relevant pages. Color-coded by severity (critical/red, high/amber, medium/stone). Shows overdue tasks, unanswered inquiries (24h+), stale follow-ups (3d+). Green "all clear" banner when empty. |
+| **Yesterday's Recap**   | Auto-generated. Events completed, tasks done/missed, new inquiries, expenses logged. Grid of metric cards. Event names listed.                                                                                                           |
+| **Shift Handoff Notes** | Pinned notes from previous days, yesterday's closing notes, today's notes. "+ Add Note" form with shift selector (Opening/Mid/Closing) and text area. Pin/delete per note.                                                               |
+| **Today's Events**      | Timeline of today's events. Per event: title, status badge, client name, time, guests, venue, staff count. Dietary notes shown as amber warning card. Click navigates to event detail.                                                   |
+| **Prep Timers**         | Active prep timers completing today. Per timer: title, countdown ("Xh Ym remaining"), station name, "Ready now" / "Soon" badges. "Done" button for ready timers.                                                                         |
+| **Today's Tasks**       | Carried-over tasks (amber section with overdue badge, days overdue count). Today's pending tasks with staff name, due time, priority/status badge. Completion count.                                                                     |
+| **Staff on Duty**       | Grid of staff with tasks today. Per person: name, role, tasks done/assigned, mini progress bar.                                                                                                                                          |
+| **Quick Links**         | Task Board, Station Ops, Priority Queue, Calendar, Inquiries.                                                                                                                                                                            |
+
+**Nav:** Added to `standaloneTop` as "Briefing" (between Dashboard and Remy), `coreFeature: true`.
+
+---
+
+## 11B. SHIFT HANDOFF NOTES
+
+**Table:** `shift_handoff_notes` (Phase 2 migration `20260330000058`)
+
+| Column      | Type    | Description                                  |
+| ----------- | ------- | -------------------------------------------- |
+| shift       | text    | `opening` / `mid` / `closing`                |
+| date        | date    | Note date                                    |
+| content     | text    | Free-form note text                          |
+| pinned      | boolean | Persists across days until manually unpinned |
+| author_name | text    | Who wrote it                                 |
+
+**UI locations:**
+
+- Morning Briefing (`/briefing`) - full section with form
+- Daily Ops Command Center (`/stations/daily-ops`) - compact section with form
+- Note cards: color-coded by shift (sky/amber/violet). Pin/delete buttons. Time/date display.
+
+---
+
+## 11C. PREP TIMELINE
+
+**Table:** `prep_timeline` (Phase 5 migration `20260330000058`)
+
+| Column               | Type        | Description                                    |
+| -------------------- | ----------- | ---------------------------------------------- |
+| title                | text        | What's being prepped                           |
+| start_at             | timestamptz | When prep started                              |
+| end_at               | timestamptz | When prep should complete                      |
+| station_id           | uuid        | Optional link to station                       |
+| event_id             | uuid        | Optional link to event                         |
+| status               | text        | `active` / `completed` / `missed`              |
+| alert_before_minutes | integer     | Alert N minutes before completion (default 30) |
+
+**UI locations:**
+
+- Morning Briefing (`/briefing`) - timers completing today with countdowns
+- Daily Ops Command Center (`/stations/daily-ops`) - all active timers with countdown
+- "+ Start Timed Prep" form on Daily Ops: title, notes, quick duration buttons (30m to 48h) or custom end date/time
+
+---
+
+## 11D. TASK CARRY-FORWARD
+
+Tasks from previous days with status `pending` or `in_progress` automatically appear on today's task board in a "Carried Over" section (amber card, top of board). Shows days overdue badge per task. Complete button inline. Dashboard shows overdue badge count.
+
+**UI locations:**
+
+- Tasks page (`/tasks`) - "Carried Over" section above today's tasks (only when viewing today)
+- Morning Briefing (`/briefing`) - carried-over tasks section with overdue badges
+- Dashboard header - overdue task count badge
+
+---
+
+## 11E. PRE-SERVICE CHECKLIST
+
+Auto-generated checklist shown on event detail page for events happening today or tomorrow.
+
+| Category                 | Items Generated From                                                                |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| Safety & Dietary (FIRST) | Client dietary restrictions, allergies, event dietary notes, headcount verification |
+| Prep                     | Menu items with serving counts                                                      |
+| Venue & Logistics        | Venue access confirmation, arrival time planning                                    |
+| Staff                    | Staff confirmation with names and roles                                             |
+| Service                  | Plating review, service timeline confirmation                                       |
+
+Completion state stored in localStorage per event. Progress bar. Critical items highlighted with red badge.
+
+**UI locations:**
+
+- Event detail page (`/events/[id]`) - full checklist with all categories, checkboxes, progress bar
+- Morning Briefing - compact view showing progress bar + unchecked critical items only
+
+---
+
+## 11F. QUICK-ASSIGN
+
+2-tap task assignment for unassigned tasks. Tap "Assign" button on any unassigned task card, dropdown shows all active staff members with role labels. Tap staff member to assign. Unassign option for already-assigned tasks.
+
+**UI locations:**
+
+- Task board (`/tasks`) - "Assign" button on unassigned task cards in the action area
+
+---
+
+## 11G. STAFF ACTIVITY BOARD
+
+**Route:** `/staff/live` - Real-time staff activity view. Auto-refreshes every 30 seconds.
+
+| Element          | Details                                                                                                                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Header           | Active count (green dot, pulsing), idle count (amber dot)                                                                                                                          |
+| Staff cards      | Sorted: active first, then idle, then offline. Per card: name, role, status badge + dot, current task (sky card), tasks done/assigned with progress bar, last activity time + type |
+| Status logic     | Active: activity within 15min. Idle: 15-60min. Offline: 60min+.                                                                                                                    |
+| Activity sources | Task completions, clipboard updates, ops log entries                                                                                                                               |
+| Auto-refresh     | `StaffBoardRefresher` component triggers `router.refresh()` every 30s                                                                                                              |
+
+**Nav:** Added under Staff children as "Live Activity" in Operations nav group.
 
 ---
 

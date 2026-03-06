@@ -130,6 +130,12 @@ export default async function ChefDashboard() {
             <DashboardCollapseControls />
             <DashboardQuickSettings initialWidgets={widgetPreferences} />
             <Link
+              href="/briefing"
+              className="inline-flex items-center justify-center px-4 py-2 border border-brand-600 text-brand-400 rounded-lg hover:bg-brand-950 transition-colors font-medium text-sm"
+            >
+              Briefing
+            </Link>
+            <Link
               href="/queue"
               className="inline-flex items-center justify-center px-4 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
             >

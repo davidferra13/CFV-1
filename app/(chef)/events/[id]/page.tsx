@@ -58,6 +58,7 @@ import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { EventStaffPanel } from '@/components/events/event-staff-panel'
 import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
 import { MenuLibraryPicker } from '@/components/events/menu-library-picker'
+import { PreServiceChecklistSection } from '@/components/events/pre-service-checklist-section'
 import { getMenuLibraryForEvent } from '@/lib/menus/showcase-actions'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
 import { PrepBlockNudgeBanner } from '@/components/events/prep-block-nudge'
@@ -119,6 +120,17 @@ import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
 import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
 import { Suspense } from 'react'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
+
+function isEventSoon(eventDate: string): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const dayAfter = new Date(today)
+  dayAfter.setDate(dayAfter.getDate() + 2)
+  const evDate = new Date(eventDate + 'T00:00:00')
+  return evDate >= today && evDate < dayAfter
+}
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase: any = createServerClient()
@@ -582,7 +594,11 @@ export default async function EventDetailPage({
         </Card>
       )}
 
-      {/* Prep Block Nudge â€” confirmed events with no prep blocks scheduled */}
+      {/* Pre-Service Checklist (Phase 4) - shown for today/tomorrow events */}
+      {['confirmed', 'paid', 'in_progress', 'accepted'].includes(event.status) &&
+        isEventSoon(event.event_date) && <PreServiceChecklistSection eventId={event.id} />}
+
+      {/* Prep Block Nudge - confirmed events with no prep blocks scheduled */}
       {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
         <PrepBlockNudgeBanner eventId={event.id} />
       )}

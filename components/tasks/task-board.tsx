@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { updateTask, completeTask, reopenTask, deleteTask, type Task } from '@/lib/tasks/actions'
+import { QuickAssign } from './quick-assign'
 
 // ============================================
 // CONSTANTS
@@ -62,18 +63,29 @@ const ROLE_LABELS: Record<string, string> = {
 
 type GroupedTasks = Record<string, { staffName: string; staffRole: string; tasks: Task[] }>
 
+type StaffOption = { id: string; name: string; role: string }
+
 type Props = {
   grouped: GroupedTasks
   unassigned: Task[]
   selectedDate: string
   onEditTask?: (task: Task) => void
+  staff?: StaffOption[]
 }
 
 // ============================================
 // TASK CARD COMPONENT
 // ============================================
 
-function TaskCard({ task, onEditTask }: { task: Task; onEditTask?: (task: Task) => void }) {
+function TaskCard({
+  task,
+  onEditTask,
+  staff,
+}: {
+  task: Task
+  onEditTask?: (task: Task) => void
+  staff?: StaffOption[]
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -175,7 +187,11 @@ function TaskCard({ task, onEditTask }: { task: Task; onEditTask?: (task: Task) 
         </div>
 
         {/* Actions */}
-        <div className="flex-shrink-0 flex gap-1">
+        <div className="flex-shrink-0 flex items-center gap-1">
+          {/* Quick-assign (Phase 7) - shown for unassigned tasks when staff list available */}
+          {!task.assigned_to && staff && staff.length > 0 && (
+            <QuickAssign taskId={task.id} currentAssignee={task.assigned_to} staff={staff} />
+          )}
           {onEditTask && (
             <button
               type="button"
@@ -203,7 +219,7 @@ function TaskCard({ task, onEditTask }: { task: Task; onEditTask?: (task: Task) 
 // TASK BOARD COMPONENT
 // ============================================
 
-export function TaskBoard({ grouped, unassigned, selectedDate, onEditTask }: Props) {
+export function TaskBoard({ grouped, unassigned, selectedDate, onEditTask, staff }: Props) {
   const staffIds = Object.keys(grouped)
   const hasAnyTasks = staffIds.length > 0 || unassigned.length > 0
 
@@ -250,7 +266,7 @@ export function TaskBoard({ grouped, unassigned, selectedDate, onEditTask }: Pro
             </CardHeader>
             <CardContent className="space-y-2 pt-2 pb-3">
               {group.tasks.map((task) => (
-                <TaskCard key={task.id} task={task} onEditTask={onEditTask} />
+                <TaskCard key={task.id} task={task} onEditTask={onEditTask} staff={staff} />
               ))}
             </CardContent>
           </Card>
@@ -270,7 +286,7 @@ export function TaskBoard({ grouped, unassigned, selectedDate, onEditTask }: Pro
           </CardHeader>
           <CardContent className="space-y-2 pt-2 pb-3">
             {unassigned.map((task) => (
-              <TaskCard key={task.id} task={task} onEditTask={onEditTask} />
+              <TaskCard key={task.id} task={task} onEditTask={onEditTask} staff={staff} />
             ))}
           </CardContent>
         </Card>
