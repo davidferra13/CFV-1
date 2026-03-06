@@ -220,6 +220,35 @@ export { X } from '@phosphor-icons/react'
 export { XCircle } from '@phosphor-icons/react'
 export { Lightning as Zap } from '@phosphor-icons/react'
 
+// Distinct icons for navigation differentiation (batch 3 - icon overhaul)
+export { ChatTeardropText } from '@phosphor-icons/react' // Inquiries (not Tray/Inbox)
+export { Funnel } from '@phosphor-icons/react' // Sales pipeline
+export { IdentificationBadge } from '@phosphor-icons/react' // Staff
+export { PenNib } from '@phosphor-icons/react' // Content creation
+export { Notepad } from '@phosphor-icons/react' // Station clipboards
+export { Toolbox } from '@phosphor-icons/react' // Tools group
+export { ChartLineUp } from '@phosphor-icons/react' // Client insights / trends
+export { Coins } from '@phosphor-icons/react' // Expenses
+export { Invoice } from '@phosphor-icons/react' // Invoices
+export { Notebook as NotebookIcon } from '@phosphor-icons/react' // Ledger
+export { CurrencyCircleDollar } from '@phosphor-icons/react' // Payments
+export { Scales } from '@phosphor-icons/react' // Reconciliation
+export { SlidersHorizontal as Sliders } from '@phosphor-icons/react' // Preferences
+export { Strategy } from '@phosphor-icons/react' // Priority queue
+export { ClipboardText as ClipboardTextIcon } from '@phosphor-icons/react' // Inventory counts
+export { MagnifyingGlassPlus } from '@phosphor-icons/react' // Audits
+export { Exam } from '@phosphor-icons/react' // Event reviews / AAR
+export { WifiHigh } from '@phosphor-icons/react' // Live presence
+export { Broadcast } from '@phosphor-icons/react' // Command center
+export { FlagBanner } from '@phosphor-icons/react' // Feature flags
+export { ChatDots } from '@phosphor-icons/react' // Admin conversations
+export { Megaphone as MegaphoneIcon } from '@phosphor-icons/react' // Marketing group (re-export)
+export { Chalkboard } from '@phosphor-icons/react' // Culinary board
+export { Flower } from '@phosphor-icons/react' // Seasonal palettes
+export { TreeStructure } from '@phosphor-icons/react' // Directory
+export { HandArrowDown } from '@phosphor-icons/react' // Procurement
+export { SealCheck } from '@phosphor-icons/react' // Certifications
+
 // Additional icons used across the codebase (batch 2)
 export { ArrowsLeftRight as ArrowRightLeft } from '@phosphor-icons/react'
 export { ArrowCircleRight as ArrowRightCircle } from '@phosphor-icons/react'
