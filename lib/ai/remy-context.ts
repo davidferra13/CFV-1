@@ -1531,6 +1531,28 @@ async function loadEventEntity(
     }
   }
 
+  // Event profitability summary (deterministic — revenue vs expenses)
+  if (ledger.length > 0 || expenses.length > 0) {
+    const totalPaidForProfit = ledger.reduce(
+      (s: any, e: any) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+      0
+    )
+    const totalExpensesForProfit = expenses.reduce(
+      (s: any, e: any) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+      0
+    )
+    const profit = totalPaidForProfit - totalExpensesForProfit
+    const margin = totalPaidForProfit > 0 ? Math.round((profit / totalPaidForProfit) * 100) : 0
+    if (totalPaidForProfit > 0) {
+      const guestCount = (data.guest_count as number) ?? 0
+      const perGuest =
+        guestCount > 0 ? ` ($${Math.round(totalPaidForProfit / guestCount / 100)}/guest)` : ''
+      lines.push(
+        `\nEVENT PROFITABILITY: Revenue $${(totalPaidForProfit / 100).toFixed(0)} - Expenses $${(totalExpensesForProfit / 100).toFixed(0)} = Profit $${(profit / 100).toFixed(0)} (${margin}% margin)${perGuest}`
+      )
+    }
+  }
+
   // Staff assignments
   const staff = staffResult.data ?? []
   if (staff.length > 0) {
@@ -2077,6 +2099,33 @@ async function loadRecipeEntity(
     }
   }
 
+  // Recipe intelligence — allergen awareness and usage frequency
+  const allergens = new Set<string>()
+  for (const ing of ingredients) {
+    const ingData = ing.ingredient as Record<string, unknown> | null
+    const flags = ingData?.allergen_flags as string[] | null
+    if (flags) {
+      for (const f of flags) allergens.add(f.toLowerCase())
+    }
+  }
+  if (allergens.size > 0) {
+    lines.push(
+      `\n[SAFETY] ALLERGENS IN THIS RECIPE: ${Array.from(allergens).join(', ').toUpperCase()}. Always flag when planning this for clients with allergies.`
+    )
+  }
+
+  // Cooking frequency insight
+  if (data.times_cooked && data.last_cooked_at) {
+    const daysSinceLast = Math.floor(
+      (Date.now() - new Date(data.last_cooked_at as string).getTime()) / (1000 * 60 * 60 * 24)
+    )
+    if (daysSinceLast > 90 && data.times_cooked >= 3) {
+      lines.push(
+        `\nThis recipe hasn't been cooked in ${daysSinceLast} days despite being a ${data.times_cooked}-time favorite — consider featuring it in an upcoming event.`
+      )
+    }
+  }
+
   return { type: 'recipe', summary: lines.join('\n') }
 }
 
@@ -2230,6 +2279,51 @@ async function loadInquiryEntity(
     }
   }
 
+  // Smart follow-up suggestions for inquiries
+  const inquirySuggestions: string[] = []
+  const inqStatus = data.status as string
+  const followUpDue = data.follow_up_due_at ? new Date(data.follow_up_due_at as string) : null
+  const inqNow = Date.now()
+
+  if (inqStatus === 'new') {
+    inquirySuggestions.push('Send first response — this inquiry has not been replied to yet')
+  } else if (inqStatus === 'awaiting_chef') {
+    inquirySuggestions.push('The ball is in your court — the client is waiting for your response')
+  } else if (inqStatus === 'awaiting_client') {
+    if (followUpDue && followUpDue.getTime() < inqNow) {
+      inquirySuggestions.push('Follow-up is overdue — send a gentle nudge')
+    } else if (followUpDue && followUpDue.getTime() - inqNow < 24 * 60 * 60 * 1000) {
+      inquirySuggestions.push('Follow-up due within 24 hours')
+    }
+  }
+
+  // Budget comparison against historical data
+  if (data.confirmed_budget_cents && data.confirmed_guest_count) {
+    const budgetPerGuest = Math.round(
+      (data.confirmed_budget_cents as number) / (data.confirmed_guest_count as number)
+    )
+    inquirySuggestions.push(
+      `Budget: $${budgetPerGuest}/guest — ${budgetPerGuest >= 150 ? 'premium range' : budgetPerGuest >= 75 ? 'standard range' : 'budget-conscious — consider a simpler menu'}`
+    )
+  }
+
+  // Missing info nudge
+  const missingFields: string[] = []
+  if (!data.confirmed_date) missingFields.push('event date')
+  if (!data.confirmed_guest_count) missingFields.push('guest count')
+  if (!data.confirmed_location) missingFields.push('location')
+  if (!data.confirmed_budget_cents) missingFields.push('budget')
+  if (missingFields.length > 0 && inqStatus !== 'converted' && inqStatus !== 'closed') {
+    inquirySuggestions.push(`Missing info: ${missingFields.join(', ')} — ask in your next response`)
+  }
+
+  if (inquirySuggestions.length > 0) {
+    lines.push(`\nSUGGESTED NEXT ACTIONS:`)
+    for (const s of inquirySuggestions) {
+      lines.push(`- ${s}`)
+    }
+  }
+
   return { type: 'inquiry', summary: lines.join('\n') }
 }
 
@@ -2290,6 +2384,28 @@ async function loadMenuEntity(
         const recipeName = recipe?.name ? ` (recipe: ${recipe.name})` : ''
         lines.push(`  - ${comp.name}${recipeName}`)
       }
+    }
+  }
+
+  // Menu intelligence — allergen consolidation and dietary coverage
+  if (dishes.length > 0) {
+    const menuAllergens = new Set<string>()
+    const menuDietaryTags = new Set<string>()
+    for (const dish of dishes) {
+      const flags = dish.allergen_flags as string[] | null
+      const tags = dish.dietary_tags as string[] | null
+      if (flags) for (const f of flags) menuAllergens.add(f.toLowerCase())
+      if (tags) for (const t of tags) menuDietaryTags.add(t.toLowerCase())
+    }
+    if (menuAllergens.size > 0) {
+      lines.push(
+        `\n[SAFETY] ALLERGENS IN THIS MENU: ${Array.from(menuAllergens).join(', ').toUpperCase()}. Cross-reference with client allergies before sending for approval.`
+      )
+    }
+    if (menuDietaryTags.size > 0) {
+      lines.push(
+        `\nDietary coverage: ${Array.from(menuDietaryTags).join(', ')}. Check if all client dietary needs are met.`
+      )
     }
   }
 
