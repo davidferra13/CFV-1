@@ -468,6 +468,279 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       ],
     }),
   },
+  // "Import [clients/list/contacts]" / "Bulk import"
+  {
+    pattern:
+      /^(?:import|bulk import)\s+(?:my\s+)?(?:client\s+list|clients?|contacts?|list)\s*(?::\s*)?(.+)?/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.intake',
+          tier: 2,
+          confidence: 0.92,
+          inputs: { description: match[1]?.trim() ?? raw },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Log/add expense [amount] for [event/category]"
+  {
+    pattern:
+      /^(?:log|add|record)\s+(?:an?\s+)?expense\s+(?:of\s+)?\$?(\d+(?:\.\d+)?)\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_expense',
+          tier: 2,
+          confidence: 0.95,
+          inputs: {
+            amountCents: Math.round(parseFloat(match[1]) * 100),
+            description: match[2].trim(),
+          },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Log/add expense for [event]" (no amount)
+  {
+    pattern: /^(?:log|add|record)\s+(?:an?\s+)?expense\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_expense',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Add/create client [name]"
+  {
+    pattern: /^(?:add|create|new)\s+(?:a\s+)?client\s+(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_client',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { name: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Send/draft invoice for [name/event]"
+  {
+    pattern: /^(?:send|draft|create|generate)\s+(?:an?\s+)?invoice\s+(?:for|to)\s+(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'client.search',
+          tier: 1,
+          confidence: 0.92,
+          inputs: { query: match[1].trim() },
+          dependsOn: [],
+        },
+        {
+          id: 't2',
+          taskType: 'agent.create_invoice',
+          tier: 2,
+          confidence: 0.92,
+          inputs: { clientName: match[1].trim() },
+          dependsOn: ['t1'],
+        },
+      ],
+    }),
+  },
+  // "Food safety incident" / "Write up incident"
+  {
+    pattern:
+      /^(?:write up|log|record|report)\s+(?:a\s+|the\s+)?(?:food\s+)?(?:safety\s+)?incident\s*(?:from\s+)?(.+)?/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'ops.incident_report',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { description: match[1]?.trim() ?? raw },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Cross contamination check for [event/client]"
+  {
+    pattern:
+      /^(?:check|run)\s+(?:a\s+)?(?:cross[- ]?contamination|allergen|allergy)\s+(?:check|risk|analysis)\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'dietary.cross_contamination',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { eventDescription: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Cost optimization for [recipe]" / "Optimize costs for [recipe]"
+  {
+    pattern: /^(?:cost\s+)?optimi[sz](?:e|ation)\s+(?:costs?\s+)?(?:for\s+)?(?:my\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'analytics.cost_optimization',
+          tier: 1,
+          confidence: 0.92,
+          inputs: { recipeName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Recap [event/name]" / "Event recap"
+  {
+    pattern: /^(?:recap|debrief|review)\s+(?:the\s+)?(.+?)(?:\s+event|\s+dinner|\s+service)?$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'analytics.event_recap',
+          tier: 1,
+          confidence: 0.92,
+          inputs: { eventDescription: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Block off [date]" / "Block [date]"
+  {
+    pattern: /^(?:block|block off|hold|reserve)\s+(.+?)(?:\s+(?:for\s+)?(.+))?$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'calendar.block',
+          tier: 2,
+          confidence: 0.92,
+          inputs: { date: match[1].trim(), reason: match[2]?.trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Show/list my events" / "Upcoming events" / "What events do I have"
+  {
+    pattern: /^(?:show|list|display|what)\s+(?:are\s+)?(?:my\s+)?(?:upcoming\s+)?events/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'event.list',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Show/list my clients" / "Client list"
+  {
+    pattern: /^(?:show|list|display)\s+(?:my\s+)?(?:all\s+)?clients/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'client.list',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Navigate/go to [page]"
+  {
+    pattern: /^(?:go to|navigate to|take me to|open)\s+(?:the\s+)?(.+)/i,
+    build: (match, raw) => {
+      const dest = match[1].trim().toLowerCase()
+      const routeMap: Record<string, string> = {
+        dashboard: '/dashboard',
+        events: '/events',
+        clients: '/clients',
+        inquiries: '/inquiries',
+        quotes: '/quotes',
+        schedule: '/schedule',
+        calendar: '/calendar',
+        recipes: '/recipes',
+        menus: '/menus',
+        financials: '/financials',
+        expenses: '/expenses',
+        staff: '/staff',
+        settings: '/settings',
+        analytics: '/analytics',
+        goals: '/goals',
+        reviews: '/reviews',
+        loyalty: '/loyalty',
+      }
+      const route = routeMap[dest]
+      if (!route) return null as any
+      return {
+        rawInput: raw,
+        overallConfidence: 0.98,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'navigation.goto',
+            tier: 1,
+            confidence: 0.98,
+            inputs: { route },
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
 ]
 
 // ─── Smart Relative Date Resolver (Formula > AI) ───────────────────────────

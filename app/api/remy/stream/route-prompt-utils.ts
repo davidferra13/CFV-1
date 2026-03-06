@@ -1149,8 +1149,6 @@ function buildPageIntelligence(context: RemyContext): string | null {
   }
 
   if (page.startsWith('/dashboard')) {
-    // Dashboard gets everything — the business intelligence block handles this
-    // Just add a note that this is a dashboard context
     if (context.overduePayments && context.overduePayments.length > 0) {
       lines.push(`${context.overduePayments.length} overdue payments need attention`)
     }
@@ -1159,6 +1157,96 @@ function buildPageIntelligence(context: RemyContext): string | null {
     }
     if (context.clientReengagement && context.clientReengagement.length > 0) {
       lines.push(`${context.clientReengagement.length} clients overdue for rebooking`)
+    }
+  }
+
+  if (page.startsWith('/staff')) {
+    if (context.staffRoster && context.staffRoster.length > 0) {
+      lines.push(`${context.staffRoster.length} staff members`)
+      const busy = context.staffRoster.filter((s) => s.activeAssignments > 0)
+      const available = context.staffRoster.filter((s) => s.activeAssignments === 0)
+      if (busy.length > 0) {
+        lines.push(
+          `Assigned: ${busy.map((s) => `${s.name} (${s.activeAssignments} events)`).join(', ')}`
+        )
+      }
+      if (available.length > 0) {
+        lines.push(`Available: ${available.map((s) => s.name).join(', ')}`)
+      }
+    }
+  }
+
+  if (page.startsWith('/loyalty')) {
+    if (context.repeatClientRatio) {
+      lines.push(
+        `Repeat client ratio: ${context.repeatClientRatio.ratio}% (${context.repeatClientRatio.repeatClients} of ${context.repeatClientRatio.totalClients})`
+      )
+    }
+    if (context.yearlyStats && context.yearlyStats.topClients.length > 0) {
+      lines.push(
+        `Top clients by revenue: ${context.yearlyStats.topClients
+          .slice(0, 5)
+          .map(
+            (c) => `${c.name} ($${(c.revenueCents / 100).toLocaleString()}, ${c.eventCount} events)`
+          )
+          .join('; ')}`
+      )
+    }
+  }
+
+  if (page.startsWith('/analytics') || page.startsWith('/reports')) {
+    if (context.conversionRate) {
+      lines.push(
+        `Conversion rate: ${context.conversionRate.rate}% (${context.conversionRate.converted}/${context.conversionRate.total})`
+      )
+    }
+    if (context.profitabilityStats) {
+      lines.push(
+        `Avg margin: ${context.profitabilityStats.avgMargin}% | Best: ${context.profitabilityStats.bestMargin}% | Worst: ${context.profitabilityStats.worstMargin}%`
+      )
+    }
+    if (context.repeatClientRatio) {
+      lines.push(`Repeat clients: ${context.repeatClientRatio.ratio}%`)
+    }
+    if (context.avgLeadTime) {
+      lines.push(`Booking lead time: avg ${context.avgLeadTime.avgDays}d`)
+    }
+    if (context.guestCountTrend) {
+      lines.push(
+        `Guest count: ${context.guestCountTrend.direction} (avg ${context.guestCountTrend.recentAvg})`
+      )
+    }
+  }
+
+  if (page.startsWith('/goals')) {
+    if (context.activeGoals && context.activeGoals.length > 0) {
+      for (const g of context.activeGoals) {
+        lines.push(
+          `${g.title}: ${g.progress !== null ? `${g.progress}%` : 'no progress tracked'} [${g.status}]${g.targetDate ? ` due ${g.targetDate}` : ''}`
+        )
+      }
+    }
+    if (context.yearlyStats) {
+      lines.push(
+        `YTD: $${(context.yearlyStats.yearRevenueCents / 100).toLocaleString()} revenue, ${context.yearlyStats.totalEventsThisYear} events`
+      )
+    }
+  }
+
+  if (page.startsWith('/aar') || page.startsWith('/reviews')) {
+    if (context.recentAARInsights && context.recentAARInsights.length > 0) {
+      const withRating = context.recentAARInsights.filter((a) => a.rating !== null)
+      const avgRating =
+        withRating.length > 0
+          ? withRating.reduce((s, a) => s + (a.rating ?? 0), 0) / withRating.length
+          : 0
+      lines.push(
+        `${context.recentAARInsights.length} recent after-action reviews${avgRating > 0 ? ` (avg rating: ${avgRating.toFixed(1)}/5)` : ''}`
+      )
+      const improvements = context.recentAARInsights.filter((a) => a.toImprove).slice(0, 3)
+      if (improvements.length > 0) {
+        lines.push(`Areas to improve: ${improvements.map((a) => a.toImprove).join('; ')}`)
+      }
     }
   }
 

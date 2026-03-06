@@ -153,6 +153,12 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^is\s+\w+\s+(available|free|open|blocked)/i, // "Is March 15 available?"
   /^what('?s| are) (the )?(dietary|allerg)/i, // "What are the dietary restrictions for..."
   /^(do i have|are there) any (upcoming|pending|overdue|open)/i, // "Do I have any upcoming events?"
+  /^what'?s?\s+\w+'?s?\s+(payment|balance|outstanding|owed)/i, // "What's Sarah's balance?"
+  /^who\s+(hasn'?t|has not)\s+(paid|booked|responded|replied)/i, // "Who hasn't paid?"
+  /^when\s+(is|was)\s+\w+'?s?\s+(last|next)\s+(event|booking|dinner)/i, // "When is Sarah's next event?"
+  /^(where|how)\s+do\s+i\s+(add|create|find|set up|log|import)/i, // "How do I add a client?"
+  /^what('?s| is)\s+(my|the)\s+(margin|profit|revenue|conversion|cost)/i, // "What's my profit margin?"
+  /^how\s+(many|much)\s+(clients?|events?|inquir)/i, // "How many events do I have?"
 ]
 
 function tryDeterministicClassify(message: string): ClassificationResult | null {
