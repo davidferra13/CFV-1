@@ -45,3 +45,82 @@ export type {
   ReferralSourcePerformance,
   ClientReferralCandidate,
 } from './network-referrals'
+
+// ─── Tier 2 ──────────────────────────────────────────────────────────────────
+
+export { estimatePrepTime, getPrepTimeIntelligence } from './prep-time-estimator'
+export type { PrepTimeEstimate, PrepTimeIntelligence, PhaseAverage } from './prep-time-estimator'
+
+export { getCommunicationCadence } from './client-communication-cadence'
+export type {
+  CommunicationCadenceResult,
+  ClientCommunicationProfile,
+} from './client-communication-cadence'
+
+export { getVendorPriceIntelligence } from './vendor-price-tracking'
+export type {
+  VendorPriceIntelligence,
+  VendorPriceTrend,
+  VendorPriceAlert,
+} from './vendor-price-tracking'
+
+export { getEventProfitability } from './event-profitability'
+export type {
+  EventProfitabilityResult,
+  EventProfitability,
+  ProfitabilityByDimension,
+} from './event-profitability'
+
+export { getQuoteConfidence, getQuoteIntelligence } from './quote-confidence'
+export type { QuoteConfidenceScore, QuoteConfidenceIntelligence } from './quote-confidence'
+
+// ─── Tier 3 ──────────────────────────────────────────────────────────────────
+
+export { getUntappedMarkets } from './untapped-markets'
+export type { UntappedMarketsResult, UntappedOccasion, ServiceStyleGap } from './untapped-markets'
+
+export { getGeographicIntelligence } from './geographic-hotspots'
+export type {
+  GeographicIntelligence,
+  GeographicHotspot,
+  TravelEfficiency,
+} from './geographic-hotspots'
+
+export { getRevenuePerGuest } from './revenue-per-guest'
+export type {
+  RevenuePerGuestResult,
+  GuestRevenueByOccasion,
+  OptimalGuestRange,
+} from './revenue-per-guest'
+
+export { getSeasonalMenuCorrelation } from './seasonal-menu-correlation'
+export type {
+  SeasonalMenuResult,
+  SeasonalMenuPattern,
+  DishSeasonalityScore,
+} from './seasonal-menu-correlation'
+
+export { getClientLifetimeJourneys } from './client-lifetime-journey'
+export type { ClientLifetimeResult, ClientJourney, CohortAnalysis } from './client-lifetime-journey'
+
+// ─── Tier 4 ──────────────────────────────────────────────────────────────────
+
+export { getChurnPreventionTriggers } from './churn-prevention-triggers'
+export type {
+  ChurnPreventionResult,
+  ChurnRiskClient,
+  ChurnTrigger,
+} from './churn-prevention-triggers'
+
+export { getCapacityCeiling } from './capacity-ceiling'
+export type { CapacityCeilingResult, CapacityBottleneck, WeeklyLoad } from './capacity-ceiling'
+
+export { getPriceElasticity } from './price-elasticity'
+export type { PriceElasticityResult, PriceBand, ElasticityByOccasion } from './price-elasticity'
+
+export { getReferralChainMapping } from './referral-chain-mapping'
+export type {
+  ReferralChainResult,
+  ReferralChain,
+  ReferralSourceROI,
+} from './referral-chain-mapping'
