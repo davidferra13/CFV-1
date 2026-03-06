@@ -88,6 +88,27 @@ interface DeterministicPattern {
   build: (match: RegExpMatchArray, raw: string) => CommandPlan
 }
 
+// Helper to reduce boilerplate for simple single-task patterns
+function makeSimpleBuild(
+  taskType: string,
+  inputsFn?: (match: RegExpMatchArray) => Record<string, unknown>
+): DeterministicPattern['build'] {
+  return (match, raw) => ({
+    rawInput: raw,
+    overallConfidence: 0.95,
+    tasks: [
+      {
+        id: 't1',
+        taskType,
+        tier: 1,
+        confidence: 0.95,
+        inputs: inputsFn ? inputsFn(match) : {},
+        dependsOn: [],
+      },
+    ],
+  })
+}
+
 const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
   // "Draft/write a [type] for [name]"
   {
@@ -1130,6 +1151,372 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
         },
       ],
     }),
+  },
+
+  // ─── Batch 2: Complete Domain Coverage ─────────────────────────────────────
+
+  // Client Intelligence
+  {
+    pattern: /^(client|customer)\s+spending/i,
+    build: makeSimpleBuild('client.spending'),
+  },
+  {
+    pattern: /^(churn|at.risk|losing)\s+(clients?|customers?)/i,
+    build: makeSimpleBuild('client.churn_risk'),
+  },
+  {
+    pattern: /^(who.?s?\s+at\s+risk|churn\s+risk)/i,
+    build: makeSimpleBuild('client.churn_risk'),
+  },
+  {
+    pattern: /^(upcoming\s+)?birthdays?/i,
+    build: makeSimpleBuild('client.birthdays'),
+  },
+  {
+    pattern: /^(next\s+best\s+action|what\s+should\s+i\s+do\s+next|nba)/i,
+    build: makeSimpleBuild('client.next_best_action'),
+  },
+  {
+    pattern: /^(cooling|dormant|inactive|going\s+cold)\s+(clients?|customers?)/i,
+    build: makeSimpleBuild('client.cooling'),
+  },
+  {
+    pattern: /^(who.?s?\s+going\s+cold|who\s+haven.?t\s+i\s+seen)/i,
+    build: makeSimpleBuild('client.cooling'),
+  },
+  {
+    pattern: /^(ltv|lifetime\s+value)\s+(trajectory|trend|projection)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('client.ltv_trajectory', (m) => ({ clientName: m[3].trim() })),
+  },
+  {
+    pattern: /^what\s+has\s+(.+)\s+been\s+served/i,
+    build: makeSimpleBuild('client.menu_history', (m) => ({ clientName: m[1].trim() })),
+  },
+  {
+    pattern: /^(menu\s+history|dish\s+history)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('client.menu_history', (m) => ({ clientName: m[2].trim() })),
+  },
+  {
+    pattern: /^referral\s+(health|pipeline|stats)/i,
+    build: makeSimpleBuild('client.referral_health'),
+  },
+  {
+    pattern: /^(nda|non.?disclosure)\s+(status|list)/i,
+    build: makeSimpleBuild('client.nda_status'),
+  },
+  {
+    pattern: /^(who\s+refers|top\s+referrers)/i,
+    build: makeSimpleBuild('client.referral_health'),
+  },
+
+  // Event Intelligence
+  {
+    pattern: /^(dietary|allergen)\s+(conflict|check|clash)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('event.dietary_conflicts', (m) => ({ eventName: m[3].trim() })),
+  },
+  {
+    pattern: /^debrief\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('event.debrief', (m) => ({ eventName: m[1].trim() })),
+  },
+  {
+    pattern: /^(countdown|days?\s+until)\s+(?:for\s+|to\s+)?(.+)/i,
+    build: makeSimpleBuild('event.countdown', (m) => ({ eventName: m[2].trim() })),
+  },
+  {
+    pattern: /^(how\s+many\s+days?\s+until|when\s+is)\s+(.+)/i,
+    build: makeSimpleBuild('event.countdown', (m) => ({ eventName: m[2].trim() })),
+  },
+  {
+    pattern: /^(show|get|pull\s+up)\s+(the\s+)?invoice\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('event.invoice', (m) => ({ eventName: m[3].trim() })),
+  },
+  {
+    pattern: /^invoice\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('event.invoice', (m) => ({ eventName: m[1].trim() })),
+  },
+
+  // Inquiry Intelligence
+  {
+    pattern: /^(stale|cold|overdue)\s+(inquir|lead)/i,
+    build: makeSimpleBuild('inquiry.follow_ups'),
+  },
+  {
+    pattern: /^(follow.?ups?|who\s+needs?\s+follow.?up)/i,
+    build: makeSimpleBuild('inquiry.follow_ups'),
+  },
+  {
+    pattern: /^(inquiry|lead)\s+(likelihood|probability|scoring|rank)/i,
+    build: makeSimpleBuild('inquiry.likelihood'),
+  },
+
+  // Menu Intelligence
+  {
+    pattern: /^(food\s+cost|menu\s+cost|cost\s+per\s+guest)/i,
+    build: makeSimpleBuild('menu.food_cost'),
+  },
+  {
+    pattern: /^(what.?s?\s+my\s+food\s+cost)/i,
+    build: makeSimpleBuild('menu.food_cost'),
+  },
+  {
+    pattern: /^(dish\s+index|all\s+dishes|search\s+dishes)/i,
+    build: makeSimpleBuild('menu.dish_index'),
+  },
+  {
+    pattern: /^(menu\s+templates?|showcase\s+menus?)/i,
+    build: makeSimpleBuild('menu.showcase'),
+  },
+
+  // Recipe Intelligence
+  {
+    pattern: /^(recipe\s+)?allergens?(\s+list)?$/i,
+    build: makeSimpleBuild('recipe.allergens'),
+  },
+  {
+    pattern: /^nutrition\s+(?:for\s+|info\s+)?(.+)/i,
+    build: makeSimpleBuild('recipe.nutrition', (m) => ({ recipeName: m[1].trim() })),
+  },
+  {
+    pattern: /^production\s+(logs?|history)/i,
+    build: makeSimpleBuild('recipe.production_logs'),
+  },
+
+  // Finance Intelligence
+  {
+    pattern: /^cash\s*flow(\s+(forecast|projection))?/i,
+    build: makeSimpleBuild('finance.cash_flow'),
+  },
+  {
+    pattern: /^mileage(\s+(summary|total|ytd))?/i,
+    build: makeSimpleBuild('finance.mileage'),
+  },
+  {
+    pattern: /^(how\s+many\s+miles|total\s+mileage)/i,
+    build: makeSimpleBuild('finance.mileage'),
+  },
+  {
+    pattern: /^tips?(\s+(summary|total|ytd))?$/i,
+    build: makeSimpleBuild('finance.tips'),
+  },
+  {
+    pattern: /^(1099|contractor)\s+(summary|payments?|report)/i,
+    build: makeSimpleBuild('finance.contractors'),
+  },
+  {
+    pattern: /^(disputes?|chargebacks?)/i,
+    build: makeSimpleBuild('finance.disputes'),
+  },
+  {
+    pattern: /^(payment\s+plan)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('finance.payment_plan', (m) => ({ eventName: m[2].trim() })),
+  },
+  {
+    pattern: /^recurring\s+(invoice|billing)/i,
+    build: makeSimpleBuild('finance.recurring_invoices'),
+  },
+  {
+    pattern: /^tax\s+(package|prep|year.?end)/i,
+    build: makeSimpleBuild('finance.tax_package'),
+  },
+  {
+    pattern: /^payroll(\s+(summary|report))?/i,
+    build: makeSimpleBuild('finance.payroll'),
+  },
+
+  // Vendor Intelligence
+  {
+    pattern: /^(vendor|supplier)\s+invoices?/i,
+    build: makeSimpleBuild('vendor.invoices'),
+  },
+  {
+    pattern: /^(what\s+do\s+i\s+owe|outstanding\s+vendor)/i,
+    build: makeSimpleBuild('vendor.invoices'),
+  },
+  {
+    pattern: /^(vendor|supplier)\s+price\s+(insights?|trends?|analysis)/i,
+    build: makeSimpleBuild('vendor.price_insights'),
+  },
+  {
+    pattern: /^(vendor|supplier)\s+(payment\s+)?aging/i,
+    build: makeSimpleBuild('vendor.payment_aging'),
+  },
+
+  // Equipment Intelligence
+  {
+    pattern: /^(equipment\s+)?rentals?(\s+(costs?|summary))?/i,
+    build: makeSimpleBuild('equipment.rentals'),
+  },
+
+  // Staff Intelligence
+  {
+    pattern: /^(who.?s?\s+available|staff\s+availability)\s*(on\s+)?(.+)?/i,
+    build: makeSimpleBuild('staff.availability', (m) => ({ date: m[3]?.trim() ?? '' })),
+  },
+  {
+    pattern: /^staff\s+briefing\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('staff.briefing', (m) => ({ eventName: m[1].trim() })),
+  },
+  {
+    pattern: /^(hours?\s+worked|time\s+clock|clock\s+summary)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('staff.clock_summary', (m) => ({ eventName: m[2].trim() })),
+  },
+  {
+    pattern: /^staff\s+(performance|scoreboard|ratings?)/i,
+    build: makeSimpleBuild('staff.performance'),
+  },
+  {
+    pattern: /^labor\s+(dashboard|costs?|breakdown)/i,
+    build: makeSimpleBuild('staff.labor_dashboard'),
+  },
+
+  // Scheduling Intelligence
+  {
+    pattern: /^(capacity|how\s+booked\s+am\s+i|am\s+i\s+overbooked)/i,
+    build: makeSimpleBuild('scheduling.capacity'),
+  },
+  {
+    pattern: /^prep\s+(blocks?|schedule|time)/i,
+    build: makeSimpleBuild('scheduling.prep_blocks'),
+  },
+  {
+    pattern: /^(protected|blocked|personal)\s+(time|blocks?)/i,
+    build: makeSimpleBuild('scheduling.protected_time'),
+  },
+  {
+    pattern: /^scheduling\s+(gaps?|conflicts?)/i,
+    build: makeSimpleBuild('scheduling.gaps'),
+  },
+
+  // Analytics Intelligence
+  {
+    pattern: /^(pipeline|funnel|conversion)\s+(analytics|stats|metrics)/i,
+    build: makeSimpleBuild('analytics.pipeline'),
+  },
+  {
+    pattern: /^(inquiry|lead)\s+funnel/i,
+    build: makeSimpleBuild('analytics.pipeline'),
+  },
+  {
+    pattern: /^(year.?over.?year|yoy|compared?\s+to\s+last\s+year)/i,
+    build: makeSimpleBuild('analytics.yoy'),
+  },
+  {
+    pattern: /^(demand\s+forecast|seasonal\s+heatmap|busy\s+months)/i,
+    build: makeSimpleBuild('analytics.demand_forecast'),
+  },
+  {
+    pattern: /^(benchmarks?|how\s+am\s+i\s+doing)/i,
+    build: makeSimpleBuild('analytics.benchmarks'),
+  },
+  {
+    pattern: /^(pricing\s+suggest|what\s+should\s+i\s+charge)/i,
+    build: makeSimpleBuild('analytics.pricing_suggestions'),
+  },
+  {
+    pattern: /^(response\s+time|how\s+fast\s+do\s+i\s+respond)/i,
+    build: makeSimpleBuild('analytics.response_time'),
+  },
+  {
+    pattern: /^(food\s+cost\s+trend|cost\s+trend)/i,
+    build: makeSimpleBuild('analytics.cost_trends'),
+  },
+  {
+    pattern: /^referral\s+(analytics|stats|data)/i,
+    build: makeSimpleBuild('analytics.referrals'),
+  },
+  {
+    pattern: /^(quote\s+loss|why\s+do\s+quotes?\s+(get\s+)?(declined|rejected|lost))/i,
+    build: makeSimpleBuild('analytics.quote_loss'),
+  },
+  {
+    pattern: /^(revenue\s+by\s+service|service\s+mix|service\s+type\s+breakdown)/i,
+    build: makeSimpleBuild('analytics.service_mix'),
+  },
+
+  // Protection & Compliance
+  {
+    pattern: /^(certification|cert)\s+(status|expir|list)/i,
+    build: makeSimpleBuild('protection.certifications'),
+  },
+  {
+    pattern: /^(food\s+handler|servsafe|health\s+permit)/i,
+    build: makeSimpleBuild('protection.certifications'),
+  },
+  {
+    pattern: /^(business\s+health|health\s+score|health\s+check)/i,
+    build: makeSimpleBuild('protection.business_health'),
+  },
+
+  // Loyalty Intelligence
+  {
+    pattern: /^(loyalty\s+)?redemptions?/i,
+    build: makeSimpleBuild('loyalty.redemptions'),
+  },
+  {
+    pattern: /^gift\s+cards?(\s+(status|balance|list))?/i,
+    build: makeSimpleBuild('loyalty.gift_cards'),
+  },
+
+  // Inventory Intelligence
+  {
+    pattern: /^inventory(\s+(status|levels?|stock))?/i,
+    build: makeSimpleBuild('inventory.status'),
+  },
+  {
+    pattern: /^(low\s+stock|reorder|what\s+do\s+i\s+need\s+to\s+order)/i,
+    build: makeSimpleBuild('inventory.status'),
+  },
+  {
+    pattern: /^purchase\s+orders?/i,
+    build: makeSimpleBuild('inventory.purchase_orders'),
+  },
+
+  // Commerce Intelligence
+  {
+    pattern: /^(sales?\s+summary|today.?s\s+sales?|pos\s+summary)/i,
+    build: makeSimpleBuild('commerce.sales_summary'),
+  },
+
+  // Guest Intelligence
+  {
+    pattern: /^guest\s+list\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('guest.list', (m) => ({ eventName: m[1].trim() })),
+  },
+  {
+    pattern: /^(who.?s?\s+coming\s+to|guests?\s+for)\s+(.+)/i,
+    build: makeSimpleBuild('guest.list', (m) => ({ eventName: m[2].trim() })),
+  },
+
+  // Marketing Intelligence
+  {
+    pattern: /^(marketing\s+)?campaigns?(\s+(status|list|performance))?/i,
+    build: makeSimpleBuild('marketing.campaigns'),
+  },
+  {
+    pattern: /^newsletters?(\s+(status|performance|list))?/i,
+    build: makeSimpleBuild('marketing.newsletters'),
+  },
+
+  // Review Intelligence
+  {
+    pattern: /^(reviews?|ratings?|feedback)(\s+(summary|list|status))?/i,
+    build: makeSimpleBuild('reviews.summary'),
+  },
+  {
+    pattern: /^(what\s+are\s+my\s+reviews?|how\s+am\s+i\s+rated)/i,
+    build: makeSimpleBuild('reviews.summary'),
+  },
+
+  // Gmail Intelligence
+  {
+    pattern: /^(sender|email)\s+reputation/i,
+    build: makeSimpleBuild('gmail.sender_reputation'),
+  },
+
+  // Notification Intelligence
+  {
+    pattern: /^notification\s+(preferences?|settings?)/i,
+    build: makeSimpleBuild('notifications.preferences'),
   },
 ]
 

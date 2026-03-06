@@ -91,6 +91,78 @@ import {
   executePostEventSequence,
   executeIngredientSubstitution,
 } from '@/lib/ai/remy-intelligence-actions'
+import {
+  executeClientSpending,
+  executeClientChurnRisk,
+  executeClientBirthdays,
+  executeClientNextBestActions,
+  executeClientCooling,
+  executeClientLTVTrajectory,
+  executeClientMenuHistory,
+  executeClientReferralHealth,
+  executeClientNDAStatus,
+  executeClientPaymentPlans,
+  executeEventDietaryConflicts,
+  executeEventDebrief,
+  executeEventCountdown,
+  executeInvoiceLookup,
+  executeInquiryFollowUps,
+  executeInquiryLikelihood,
+  executeMenuFoodCost,
+  executeMenuDishIndex,
+  executeMenuShowcase,
+  executeRecipeAllergens,
+  executeRecipeNutrition,
+  executeRecipeProductionLogs,
+  executeCashFlowForecast,
+  executeMileageSummary,
+  executeTipSummary,
+  executeContractorSummary,
+  executeDisputes,
+  executePaymentPlanLookup,
+  executeRecurringInvoices,
+  executeTaxPackage,
+  executePayrollSummary,
+  executeVendorInvoices,
+  executeVendorPriceInsights,
+  executeVendorPaymentAging,
+  executeEquipmentRentals,
+  executeStaffAvailability,
+  executeStaffBriefing,
+  executeStaffClockSummary,
+  executeStaffPerformance,
+  executeStaffLaborDashboard,
+  executeCapacityCheck,
+  executePrepBlocks,
+  executeProtectedTime,
+  executeSchedulingGaps,
+  executePipelineAnalytics,
+  executeYearOverYear,
+  executeDemandForecast,
+  executeBenchmarks,
+  executePricingSuggestions,
+  executeResponseTimeMetrics,
+  executeCostTrends,
+  executeReferralAnalytics,
+  executeQuoteLossAnalysis,
+  executeRevenueByServiceType,
+  executeGoalHistory,
+  executeGoalCheckIns,
+  executeCertificationStatus,
+  executeBusinessHealthScore,
+  executeLoyaltyRedemptions,
+  executeLoyaltyGiftCards,
+  executeInventoryStatus,
+  executePurchaseOrders,
+  executeCommerceSalesSummary,
+  executeGuestList,
+  executeMarketingCampaigns,
+  executeNewsletterStatus,
+  executeReviewsSummary,
+  executeGmailSenderReputation,
+  executeNotificationPreferences,
+  executeDocumentSnapshots,
+} from '@/lib/ai/remy-intelligence-actions-2'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -1480,6 +1552,262 @@ async function executeSingleTask(
       // ─── Phase 8-9: Operational intelligence ──────────────────────────────
       case 'ops.ingredient_sub':
         data = executeIngredientSubstitution(task.inputs)
+        break
+
+      // ─── Batch 2: Complete Domain Coverage ────────────────────────────────
+
+      // Client Intelligence
+      case 'client.spending':
+        data = await executeClientSpending()
+        break
+      case 'client.churn_risk':
+        data = await executeClientChurnRisk()
+        break
+      case 'client.birthdays':
+        data = await executeClientBirthdays()
+        break
+      case 'client.next_best_action':
+        data = await executeClientNextBestActions()
+        break
+      case 'client.cooling':
+        data = await executeClientCooling()
+        break
+      case 'client.ltv_trajectory':
+        data = await executeClientLTVTrajectory(task.inputs)
+        break
+      case 'client.menu_history':
+        data = await executeClientMenuHistory(task.inputs)
+        break
+      case 'client.referral_health':
+        data = await executeClientReferralHealth()
+        break
+      case 'client.nda_status':
+        data = await executeClientNDAStatus()
+        break
+      case 'client.payment_plans':
+        data = await executeClientPaymentPlans(task.inputs)
+        break
+
+      // Event Intelligence
+      case 'event.dietary_conflicts':
+        data = await executeEventDietaryConflicts(task.inputs)
+        break
+      case 'event.debrief':
+        data = await executeEventDebrief(task.inputs)
+        break
+      case 'event.countdown':
+        data = await executeEventCountdown(task.inputs)
+        break
+      case 'event.invoice':
+        data = await executeInvoiceLookup(task.inputs)
+        break
+
+      // Inquiry Intelligence
+      case 'inquiry.follow_ups':
+        data = await executeInquiryFollowUps()
+        break
+      case 'inquiry.likelihood':
+        data = await executeInquiryLikelihood()
+        break
+
+      // Menu Intelligence
+      case 'menu.food_cost':
+        data = await executeMenuFoodCost()
+        break
+      case 'menu.dish_index':
+        data = await executeMenuDishIndex()
+        break
+      case 'menu.showcase':
+        data = await executeMenuShowcase()
+        break
+
+      // Recipe Intelligence
+      case 'recipe.allergens':
+        data = await executeRecipeAllergens()
+        break
+      case 'recipe.nutrition':
+        data = await executeRecipeNutrition(task.inputs)
+        break
+      case 'recipe.production_logs':
+        data = await executeRecipeProductionLogs()
+        break
+
+      // Finance Intelligence
+      case 'finance.cash_flow':
+        data = await executeCashFlowForecast()
+        break
+      case 'finance.mileage':
+        data = await executeMileageSummary()
+        break
+      case 'finance.tips':
+        data = await executeTipSummary()
+        break
+      case 'finance.contractors':
+        data = await executeContractorSummary()
+        break
+      case 'finance.disputes':
+        data = await executeDisputes()
+        break
+      case 'finance.payment_plan':
+        data = await executePaymentPlanLookup(task.inputs)
+        break
+      case 'finance.recurring_invoices':
+        data = await executeRecurringInvoices()
+        break
+      case 'finance.tax_package':
+        data = await executeTaxPackage()
+        break
+      case 'finance.payroll':
+        data = await executePayrollSummary()
+        break
+
+      // Vendor Intelligence
+      case 'vendor.invoices':
+        data = await executeVendorInvoices(task.inputs)
+        break
+      case 'vendor.price_insights':
+        data = await executeVendorPriceInsights()
+        break
+      case 'vendor.payment_aging':
+        data = await executeVendorPaymentAging()
+        break
+
+      // Equipment Intelligence
+      case 'equipment.rentals':
+        data = await executeEquipmentRentals(task.inputs)
+        break
+
+      // Staff Intelligence
+      case 'staff.availability':
+        data = await executeStaffAvailability(task.inputs)
+        break
+      case 'staff.briefing':
+        data = await executeStaffBriefing(task.inputs)
+        break
+      case 'staff.clock_summary':
+        data = await executeStaffClockSummary(task.inputs)
+        break
+      case 'staff.performance':
+        data = await executeStaffPerformance()
+        break
+      case 'staff.labor_dashboard':
+        data = await executeStaffLaborDashboard(task.inputs)
+        break
+
+      // Scheduling Intelligence
+      case 'scheduling.capacity':
+        data = await executeCapacityCheck(task.inputs)
+        break
+      case 'scheduling.prep_blocks':
+        data = await executePrepBlocks(task.inputs)
+        break
+      case 'scheduling.protected_time':
+        data = await executeProtectedTime()
+        break
+      case 'scheduling.gaps':
+        data = await executeSchedulingGaps()
+        break
+
+      // Analytics Intelligence
+      case 'analytics.pipeline':
+        data = await executePipelineAnalytics()
+        break
+      case 'analytics.yoy':
+        data = await executeYearOverYear()
+        break
+      case 'analytics.demand_forecast':
+        data = await executeDemandForecast()
+        break
+      case 'analytics.benchmarks':
+        data = await executeBenchmarks()
+        break
+      case 'analytics.pricing_suggestions':
+        data = await executePricingSuggestions(task.inputs)
+        break
+      case 'analytics.response_time':
+        data = await executeResponseTimeMetrics()
+        break
+      case 'analytics.cost_trends':
+        data = await executeCostTrends()
+        break
+      case 'analytics.referrals':
+        data = await executeReferralAnalytics()
+        break
+      case 'analytics.quote_loss':
+        data = await executeQuoteLossAnalysis()
+        break
+      case 'analytics.service_mix':
+        data = await executeRevenueByServiceType()
+        break
+
+      // Goal Intelligence
+      case 'goals.history':
+        data = await executeGoalHistory(task.inputs)
+        break
+      case 'goals.check_ins':
+        data = await executeGoalCheckIns(task.inputs)
+        break
+
+      // Protection & Compliance
+      case 'protection.certifications':
+        data = await executeCertificationStatus()
+        break
+      case 'protection.business_health':
+        data = await executeBusinessHealthScore()
+        break
+
+      // Loyalty Intelligence
+      case 'loyalty.redemptions':
+        data = await executeLoyaltyRedemptions()
+        break
+      case 'loyalty.gift_cards':
+        data = await executeLoyaltyGiftCards()
+        break
+
+      // Inventory Intelligence
+      case 'inventory.status':
+        data = await executeInventoryStatus()
+        break
+      case 'inventory.purchase_orders':
+        data = await executePurchaseOrders()
+        break
+
+      // Commerce Intelligence
+      case 'commerce.sales_summary':
+        data = await executeCommerceSalesSummary()
+        break
+
+      // Guest Intelligence
+      case 'guest.list':
+        data = await executeGuestList(task.inputs)
+        break
+
+      // Marketing Intelligence
+      case 'marketing.campaigns':
+        data = await executeMarketingCampaigns()
+        break
+      case 'marketing.newsletters':
+        data = await executeNewsletterStatus()
+        break
+
+      // Review Intelligence
+      case 'reviews.summary':
+        data = await executeReviewsSummary()
+        break
+
+      // Gmail Intelligence
+      case 'gmail.sender_reputation':
+        data = await executeGmailSenderReputation()
+        break
+
+      // Notification Intelligence
+      case 'notifications.preferences':
+        data = await executeNotificationPreferences()
+        break
+
+      // Document Intelligence
+      case 'document.snapshots':
+        data = await executeDocumentSnapshots(task.inputs)
         break
 
       default:

@@ -167,6 +167,17 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^(what'?s|show)\s+in\s+season/i, // Seasonal produce
   /^(dormant|re-?engage|acquisition|conversion)\s+(clients?|funnel|rate|scoring)/i, // Relationship intelligence
   /^(compare|contingency|contract)\s/i, // Multi-event, contingency, contract commands
+  /^who.?s?\s+(at\s+risk|going\s+cold|cooling|churning)/i, // Churn risk queries
+  /^(what.?s?\s+my\s+)?cash\s*flow/i, // Cash flow forecast
+  /^(what.?s?\s+my\s+)?(food\s+cost|mileage|payroll)/i, // Finance queries
+  /^(how\s+am\s+i\s+(doing|rated)|how.?s?\s+my\s+business)/i, // Benchmarks/health
+  /^(who.?s?\s+available|staff\s+availability)/i, // Staff availability
+  /^(what.?s?\s+(in\s+)?inventory|low\s+stock)/i, // Inventory check
+  /^(guest\s+list|who.?s?\s+coming)/i, // Guest list
+  /^(what\s+are\s+my\s+reviews?|how\s+am\s+i\s+rated)/i, // Reviews
+  /^(how\s+fast\s+do\s+i\s+respond|response\s+time)/i, // Response time
+  /^(what\s+should\s+i\s+charge|pricing\s+suggest)/i, // Pricing suggestions
+  /^(year.?over.?year|yoy|compared?\s+to\s+last\s+year)/i, // YoY comparison
 ]
 
 function tryDeterministicClassify(message: string): ClassificationResult | null {

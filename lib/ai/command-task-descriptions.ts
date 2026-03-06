@@ -696,6 +696,551 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
       'Find allergy-safe substitutions for an ingredient. Returns alternatives with reasons (e.g., dairy-free, nut-free, vegan). Use when the chef asks "what can I use instead of X?"',
     inputSchema: '{ "ingredient": "string — ingredient to find substitutions for" }',
   },
+
+  // ─── Batch 2: Complete Domain Coverage ─────────────────────────────────────
+
+  // Client Intelligence
+  {
+    type: 'client.spending',
+    tier: 1,
+    name: 'Client Spending Analysis',
+    description: 'Show spending summary across all clients — top spenders, average spend, trends.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.churn_risk',
+    tier: 1,
+    name: 'Client Churn Risk',
+    description: 'Identify clients at risk of churning based on booking frequency and engagement.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.birthdays',
+    tier: 1,
+    name: 'Upcoming Client Birthdays',
+    description: 'Show client birthdays and milestones coming up in the next 30 days.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.next_best_action',
+    tier: 1,
+    name: 'Next Best Actions',
+    description:
+      'AI-suggested next actions for each client — follow up, upsell, re-engage, celebrate.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.cooling',
+    tier: 1,
+    name: 'Cooling Clients',
+    description: 'Show clients going dormant — no recent bookings, declining engagement.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.ltv_trajectory',
+    tier: 1,
+    name: 'Client LTV Trajectory',
+    description: 'Show lifetime value projection and spending trajectory for a specific client.',
+    inputSchema: '{ "clientName": "string — client name to look up" }',
+  },
+  {
+    type: 'client.menu_history',
+    tier: 1,
+    name: 'Client Menu History',
+    description: 'Show what menus/dishes a client has been served — avoid repeats, spot favorites.',
+    inputSchema: '{ "clientName": "string — client name to look up" }',
+  },
+  {
+    type: 'client.referral_health',
+    tier: 1,
+    name: 'Referral Health',
+    description: 'Referral pipeline health — who refers, conversion rate, top referrers.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.nda_status',
+    tier: 1,
+    name: 'NDA Status',
+    description: 'Show NDA status for clients — signed, expiring, missing.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'client.payment_plans',
+    tier: 1,
+    name: 'Client Payment Plans',
+    description: 'Show payment plan installments for a specific event.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+
+  // Event Intelligence
+  {
+    type: 'event.dietary_conflicts',
+    tier: 1,
+    name: 'Dietary Conflict Check',
+    description: 'Check for allergen/dietary conflicts between guests and the event menu.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'event.debrief',
+    tier: 1,
+    name: 'Event Debrief',
+    description: 'Get the post-event debrief form/blanks for an event.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'event.countdown',
+    tier: 1,
+    name: 'Event Countdown',
+    description:
+      'Show countdown timer and days until a specific event, or all upcoming countdowns.',
+    inputSchema:
+      '{ "eventName": "string — optional, event name. If omitted shows all countdowns" }',
+  },
+  {
+    type: 'event.invoice',
+    tier: 1,
+    name: 'Invoice Lookup',
+    description: 'Look up the invoice for an event — line items, payments, balance due.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+
+  // Inquiry Intelligence
+  {
+    type: 'inquiry.follow_ups',
+    tier: 1,
+    name: 'Stale Inquiries',
+    description: 'Show inquiries that need follow-up — going cold, no response in 3+ days.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'inquiry.likelihood',
+    tier: 1,
+    name: 'Inquiry Likelihood',
+    description: 'Rank open inquiries by booking likelihood score.',
+    inputSchema: '{}',
+  },
+
+  // Menu Intelligence
+  {
+    type: 'menu.food_cost',
+    tier: 1,
+    name: 'Menu Food Cost',
+    description:
+      'Show food cost analysis — cost per guest, food cost %, recipe costs across menus.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'menu.dish_index',
+    tier: 1,
+    name: 'Dish Index',
+    description: 'Search all dishes across all menus — find which menu has a specific dish.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'menu.showcase',
+    tier: 1,
+    name: 'Menu Templates',
+    description: 'Show saved menu templates and showcase menus.',
+    inputSchema: '{}',
+  },
+
+  // Recipe Intelligence
+  {
+    type: 'recipe.allergens',
+    tier: 1,
+    name: 'Recipe Allergens',
+    description: 'Show allergen information tracked across all recipes.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'recipe.nutrition',
+    tier: 1,
+    name: 'Recipe Nutrition',
+    description: 'Look up nutritional information for a specific recipe.',
+    inputSchema: '{ "recipeName": "string — recipe name to look up" }',
+  },
+  {
+    type: 'recipe.production_logs',
+    tier: 1,
+    name: 'Production Logs',
+    description: 'Show recent production/batch logs for recipe tracking.',
+    inputSchema: '{}',
+  },
+
+  // Finance Intelligence
+  {
+    type: 'finance.cash_flow',
+    tier: 1,
+    name: 'Cash Flow Forecast',
+    description: 'Project cash flow for the next 90 days — inflows, outflows, net position.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.mileage',
+    tier: 1,
+    name: 'Mileage Summary',
+    description: 'Year-to-date mileage tracking summary for tax deduction.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.tips',
+    tier: 1,
+    name: 'Tip Summary',
+    description: 'Year-to-date tip income summary.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.contractors',
+    tier: 1,
+    name: '1099 Contractor Summary',
+    description: 'Contractor payment summary for 1099 reporting.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.disputes',
+    tier: 1,
+    name: 'Payment Disputes',
+    description: 'Show active payment disputes and chargebacks.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.payment_plan',
+    tier: 1,
+    name: 'Payment Plan Lookup',
+    description: 'Show payment plan installments for an event.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'finance.recurring_invoices',
+    tier: 1,
+    name: 'Recurring Invoices',
+    description: 'Show all active recurring invoice schedules.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.tax_package',
+    tier: 1,
+    name: 'Tax Package',
+    description:
+      'Year-end tax package — deductible expenses, income categories, quarterly breakdown.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.payroll',
+    tier: 1,
+    name: 'Payroll Summary',
+    description: 'Employee list and quarterly payroll tax (941) summaries.',
+    inputSchema: '{}',
+  },
+
+  // Vendor Intelligence
+  {
+    type: 'vendor.invoices',
+    tier: 1,
+    name: 'Vendor Invoices',
+    description: 'Show vendor invoices — what you owe suppliers.',
+    inputSchema: '{ "vendorId": "string — optional, filter by vendor" }',
+  },
+  {
+    type: 'vendor.price_insights',
+    tier: 1,
+    name: 'Vendor Price Insights',
+    description: 'Price trend analysis across vendors — inflation, savings opportunities.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'vendor.payment_aging',
+    tier: 1,
+    name: 'Vendor Payment Aging',
+    description: 'Show outstanding vendor payments by age — current, 30, 60, 90+ days.',
+    inputSchema: '{}',
+  },
+
+  // Equipment Intelligence
+  {
+    type: 'equipment.rentals',
+    tier: 1,
+    name: 'Equipment Rentals',
+    description: 'Show equipment rental history and costs, optionally for a specific event.',
+    inputSchema: '{ "eventId": "string — optional, event name to filter by" }',
+  },
+
+  // Staff Intelligence
+  {
+    type: 'staff.availability',
+    tier: 1,
+    name: 'Staff Availability',
+    description: 'Show which staff are available on a specific date.',
+    inputSchema: '{ "date": "string — YYYY-MM-DD format, defaults to today" }',
+  },
+  {
+    type: 'staff.briefing',
+    tier: 1,
+    name: 'Staff Briefing',
+    description: 'Generate a staff briefing for an event — roles, timing, menu, guest notes.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'staff.clock_summary',
+    tier: 1,
+    name: 'Staff Clock Summary',
+    description: 'Show time clock entries and hours worked for an event.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'staff.performance',
+    tier: 1,
+    name: 'Staff Performance',
+    description:
+      'Performance scoreboard — reliability, quality, professionalism scores by staff member.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'staff.labor_dashboard',
+    tier: 1,
+    name: 'Labor Dashboard',
+    description: 'Monthly labor cost breakdown — hours, wages, labor-to-revenue ratio.',
+    inputSchema: '{ "month": "number — optional, 1-12", "year": "number — optional" }',
+  },
+
+  // Scheduling Intelligence
+  {
+    type: 'scheduling.capacity',
+    tier: 1,
+    name: 'Capacity Check',
+    description: 'Check booking capacity for a date, or show overall capacity settings.',
+    inputSchema: '{ "date": "string — optional, YYYY-MM-DD to check specific date" }',
+  },
+  {
+    type: 'scheduling.prep_blocks',
+    tier: 1,
+    name: 'Prep Blocks',
+    description: 'Show prep time blocks for the week, or for a specific event.',
+    inputSchema: '{ "eventId": "string — optional, event name to filter by" }',
+  },
+  {
+    type: 'scheduling.protected_time',
+    tier: 1,
+    name: 'Protected Time',
+    description: 'Show blocked-off personal/protected time periods.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'scheduling.gaps',
+    tier: 1,
+    name: 'Scheduling Gaps',
+    description: 'Find gaps and conflicts in your scheduling — missed prep, overlapping events.',
+    inputSchema: '{}',
+  },
+
+  // Analytics Intelligence
+  {
+    type: 'analytics.pipeline',
+    tier: 1,
+    name: 'Pipeline Analytics',
+    description: 'Inquiry funnel, quote acceptance rate, ghost rate, lead time stats.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.yoy',
+    tier: 1,
+    name: 'Year-over-Year Comparison',
+    description: 'Compare revenue, events, clients year-over-year.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.demand_forecast',
+    tier: 1,
+    name: 'Demand Forecast',
+    description: 'Seasonal demand heatmap — predict busy months based on historical data.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.benchmarks',
+    tier: 1,
+    name: 'Business Benchmarks',
+    description: 'Key business benchmarks and conversion funnel metrics.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.pricing_suggestions',
+    tier: 1,
+    name: 'Pricing Suggestions',
+    description: 'Data-driven pricing suggestion based on guest count and event type.',
+    inputSchema:
+      '{ "guestCount": "number — number of guests", "pricingModel": "string — per_person, flat_rate, or custom", "occasion": "string — optional, e.g. dinner, brunch, wedding" }',
+  },
+  {
+    type: 'analytics.response_time',
+    tier: 1,
+    name: 'Response Time Metrics',
+    description: 'How fast you respond to inquiries — average, median, trends.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.cost_trends',
+    tier: 1,
+    name: 'Food Cost Trends',
+    description: 'Food cost percentage trend over the last 6 months.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.referrals',
+    tier: 1,
+    name: 'Referral Analytics',
+    description:
+      'Full referral analytics — funnel, top referrers, acquisition by source, time series.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.quote_loss',
+    tier: 1,
+    name: 'Quote Loss Analysis',
+    description: 'Why quotes get declined — reason breakdown and trends.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'analytics.service_mix',
+    tier: 1,
+    name: 'Revenue by Service Type',
+    description: 'Revenue breakdown by service type (dinner party, brunch, wedding, etc.).',
+    inputSchema: '{}',
+  },
+
+  // Goal Intelligence
+  {
+    type: 'goals.history',
+    tier: 1,
+    name: 'Goal History',
+    description: 'Show progress snapshots for a specific goal over time.',
+    inputSchema: '{ "goalId": "string — goal ID" }',
+  },
+  {
+    type: 'goals.check_ins',
+    tier: 1,
+    name: 'Goal Check-ins',
+    description: 'Show recent check-in entries for a specific goal.',
+    inputSchema: '{ "goalId": "string — goal ID" }',
+  },
+
+  // Protection & Compliance
+  {
+    type: 'protection.certifications',
+    tier: 1,
+    name: 'Certification Status',
+    description: 'Show food safety certifications — active, expiring soon, missing.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'protection.business_health',
+    tier: 1,
+    name: 'Business Health Score',
+    description:
+      'Overall business health score and checklist — insurance, certs, contracts, compliance.',
+    inputSchema: '{}',
+  },
+
+  // Loyalty Intelligence
+  {
+    type: 'loyalty.redemptions',
+    tier: 1,
+    name: 'Loyalty Redemptions',
+    description: 'Show recent loyalty point redemptions and rewards claimed.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'loyalty.gift_cards',
+    tier: 1,
+    name: 'Gift Cards',
+    description: 'Show gift card inventory — balances, status, purchasers.',
+    inputSchema: '{}',
+  },
+
+  // Inventory Intelligence
+  {
+    type: 'inventory.status',
+    tier: 1,
+    name: 'Inventory Status',
+    description: 'Show inventory levels — items on hand, low stock alerts, reorder points.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'inventory.purchase_orders',
+    tier: 1,
+    name: 'Purchase Orders',
+    description: 'Show recent purchase orders — status, vendor, totals.',
+    inputSchema: '{}',
+  },
+
+  // Commerce Intelligence
+  {
+    type: 'commerce.sales_summary',
+    tier: 1,
+    name: 'Sales Summary',
+    description: "Show today's point-of-sale transactions and totals.",
+    inputSchema: '{}',
+  },
+
+  // Guest Intelligence
+  {
+    type: 'guest.list',
+    tier: 1,
+    name: 'Guest List',
+    description: 'Show guest list for an event — names, dietary restrictions, RSVP status.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+
+  // Marketing Intelligence
+  {
+    type: 'marketing.campaigns',
+    tier: 1,
+    name: 'Campaign Status',
+    description: 'Show marketing campaigns — send counts, open rates, click rates.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'marketing.newsletters',
+    tier: 1,
+    name: 'Newsletter Status',
+    description: 'Show sent newsletters and their performance.',
+    inputSchema: '{}',
+  },
+
+  // Review Intelligence
+  {
+    type: 'reviews.summary',
+    tier: 1,
+    name: 'Reviews Summary',
+    description: 'Show client reviews — ratings, comments, average score.',
+    inputSchema: '{}',
+  },
+
+  // Gmail Intelligence
+  {
+    type: 'gmail.sender_reputation',
+    tier: 1,
+    name: 'Sender Reputation',
+    description: 'Show email sender reputation scores — who sends important vs spam emails.',
+    inputSchema: '{}',
+  },
+
+  // Notification Intelligence
+  {
+    type: 'notifications.preferences',
+    tier: 1,
+    name: 'Notification Preferences',
+    description: 'Show current notification settings and preferences.',
+    inputSchema: '{}',
+  },
+
+  // Document Intelligence
+  {
+    type: 'document.snapshots',
+    tier: 1,
+    name: 'Document Versions',
+    description: 'Show version history/snapshots for a specific document.',
+    inputSchema: '{ "documentId": "string — document ID" }',
+  },
 ]
 
 export function buildTaskListForPrompt(): string {
