@@ -17,6 +17,7 @@ import { StatCard } from '@/components/ui/stat-card'
 import { getTakeAChefCommandCenter } from '@/lib/gmail/take-a-chef-command-center'
 import { getMarketplaceCommandCenter } from '@/lib/marketplace/command-center-actions'
 import { getMarketplaceROI } from '@/lib/marketplace/roi-actions'
+import { getMarketplaceScorecard } from '@/lib/marketplace/scorecard-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = {
@@ -78,10 +79,11 @@ function formatCapturedAt(value: string | null): string {
 }
 
 export default async function MarketplacePage() {
-  const [data, allPlatforms, roi] = await Promise.all([
+  const [data, allPlatforms, roi, scorecard] = await Promise.all([
     getTakeAChefCommandCenter(),
     getMarketplaceCommandCenter(),
     getMarketplaceROI(),
+    getMarketplaceScorecard(),
   ])
   const isEmpty =
     data.leads.length === 0 &&
@@ -194,6 +196,140 @@ export default async function MarketplacePage() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Marketplace Scorecard */}
+      {scorecard.totalInquiries > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Marketplace Scorecard</CardTitle>
+            <p className="mt-1 text-sm text-stone-400">
+              How fast you respond, how often you convert, and where the money comes from.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-lg bg-stone-950/60 p-3">
+                <p className="text-xs uppercase tracking-wide text-stone-500">Response Time</p>
+                <p className="mt-1 text-xl font-bold text-stone-100">
+                  {scorecard.medianResponseHours != null
+                    ? scorecard.medianResponseHours < 1
+                      ? `${Math.round(scorecard.medianResponseHours * 60)}m`
+                      : `${scorecard.medianResponseHours}h`
+                    : 'N/A'}
+                </p>
+                <p className="text-xs text-stone-500">median</p>
+              </div>
+              <div className="rounded-lg bg-stone-950/60 p-3">
+                <p className="text-xs uppercase tracking-wide text-stone-500">Within 24h</p>
+                <p className="mt-1 text-xl font-bold text-stone-100">
+                  {scorecard.respondedWithin24hPercent != null
+                    ? `${scorecard.respondedWithin24hPercent}%`
+                    : 'N/A'}
+                </p>
+                <p className="text-xs text-stone-500">of responses</p>
+              </div>
+              <div className="rounded-lg bg-stone-950/60 p-3">
+                <p className="text-xs uppercase tracking-wide text-stone-500">Proposal Rate</p>
+                <p className="mt-1 text-xl font-bold text-stone-100">
+                  {scorecard.proposalSentPercent != null
+                    ? `${scorecard.proposalSentPercent}%`
+                    : 'N/A'}
+                </p>
+                <p className="text-xs text-stone-500">
+                  {scorecard.proposalSentCount} of {scorecard.totalInquiries}
+                </p>
+              </div>
+              <div className="rounded-lg bg-stone-950/60 p-3">
+                <p className="text-xs uppercase tracking-wide text-stone-500">Conversion</p>
+                <p className="mt-1 text-xl font-bold text-stone-100">
+                  {scorecard.conversionPercent != null ? `${scorecard.conversionPercent}%` : 'N/A'}
+                </p>
+                <p className="text-xs text-stone-500">
+                  {scorecard.bookedCount} booked of {scorecard.totalInquiries}
+                </p>
+              </div>
+              <div className="rounded-lg bg-stone-950/60 p-3">
+                <p className="text-xs uppercase tracking-wide text-stone-500">Gross Booked</p>
+                <p className="mt-1 text-xl font-bold text-stone-100">
+                  {formatCurrency(scorecard.grossBookedCents)}
+                </p>
+                <p className="text-xs text-stone-500">
+                  avg{' '}
+                  {scorecard.avgBookingCents != null
+                    ? formatCurrency(scorecard.avgBookingCents)
+                    : '-'}{' '}
+                  / booking
+                </p>
+              </div>
+              <div className="rounded-lg bg-stone-950/60 p-3">
+                <p className="text-xs uppercase tracking-wide text-stone-500">Est. Commission</p>
+                <p className="mt-1 text-xl font-bold text-amber-400">
+                  {formatCurrency(scorecard.estimatedCommissionCents)}
+                </p>
+                <p className="text-xs text-stone-500">paid to platforms</p>
+              </div>
+            </div>
+
+            {/* Direct conversion metric */}
+            {scorecard.totalMarketplaceClients > 0 && (
+              <div className="mt-4 flex items-center gap-4 rounded-lg border border-stone-800 p-3">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-stone-300">Direct Conversion Rate</p>
+                  <p className="text-xs text-stone-500">
+                    {scorecard.directConvertedClients} of {scorecard.totalMarketplaceClients}{' '}
+                    marketplace clients rebooked direct (no commission)
+                  </p>
+                </div>
+                <p className="text-2xl font-bold text-emerald-400">
+                  {scorecard.directConversionPercent != null
+                    ? `${scorecard.directConversionPercent}%`
+                    : '0%'}
+                </p>
+              </div>
+            )}
+
+            {/* Per-platform breakdown */}
+            {scorecard.platformScores.length > 1 && (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-stone-800 text-left text-xs uppercase tracking-wide text-stone-500">
+                      <th className="pb-2 pr-4">Platform</th>
+                      <th className="pb-2 pr-4 text-right">Inquiries</th>
+                      <th className="pb-2 pr-4 text-right">Booked</th>
+                      <th className="pb-2 pr-4 text-right">Conv %</th>
+                      <th className="pb-2 pr-4 text-right">Response</th>
+                      <th className="pb-2 text-right">Gross</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scorecard.platformScores.map((p) => (
+                      <tr key={p.channel} className="border-b border-stone-800/50">
+                        <td className="py-2 pr-4 font-medium text-stone-200">{p.label}</td>
+                        <td className="py-2 pr-4 text-right text-stone-300">{p.inquiries}</td>
+                        <td className="py-2 pr-4 text-right text-stone-300">{p.booked}</td>
+                        <td className="py-2 pr-4 text-right text-stone-300">
+                          {p.conversionPercent != null ? `${p.conversionPercent}%` : '-'}
+                        </td>
+                        <td className="py-2 pr-4 text-right text-stone-300">
+                          {p.medianResponseHours != null
+                            ? p.medianResponseHours < 1
+                              ? `${Math.round(p.medianResponseHours * 60)}m`
+                              : `${p.medianResponseHours}h`
+                            : '-'}
+                        </td>
+                        <td className="py-2 text-right text-stone-300">
+                          {formatCurrency(p.grossBookedCents)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </CardContent>

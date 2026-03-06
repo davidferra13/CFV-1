@@ -139,6 +139,39 @@ The marketplaces become lead sources that feed INTO ChefFlow. The chef stops bei
 - Other platforms show leads and upcoming bookings
 - Actions: `lib/marketplace/command-center-actions.ts`
 
+### 9. Marketplace Scorecard - BUILT 2026-03-06
+
+- Shows on the Marketplace Command Center page
+- Response time metrics: median response hours, % within 24h
+- Funnel metrics: proposal-sent rate, request-to-book conversion, declined count
+- Financial metrics: gross booked, estimated commission paid, avg booking value
+- Direct conversion rate (marketplace clients who rebooked without commission)
+- Per-platform breakdown table with all metrics
+- Actions: `lib/marketplace/scorecard-actions.ts`
+
+### 10. Payout Reconciliation - BUILT 2026-03-06
+
+- Take a Chef payment emails now parsed for real financial data
+- Extracts: order ID, gross, commission, net payout, commission %, payout date, method, currency
+- Auto-matches to existing inquiry by order ID
+- Stores payout records in inquiry's `unknown_fields.take_a_chef_payouts` (idempotent)
+- Chef notification includes specific amounts and links to matched inquiry
+- Parser: `lib/gmail/take-a-chef-parser.ts` (`parsePaymentEmail`)
+- Handler: `lib/gmail/sync.ts` (`handleTacPayment`)
+
+### 11. Fuzzy Name Matching - BUILT 2026-03-06
+
+- Platform dedup now handles accents, first/last name swaps, partial name matches
+- "Maria Garcia" matches "Maria Elena Garcia" or "Dr. Maria Garcia"
+- "Smith John" matches "John Smith"
+- File: `lib/gmail/platform-dedup.ts`
+
+### 12. Generalized Page Capture Bookmarklet - BUILT 2026-03-06
+
+- Bookmarklet now captures links from ALL marketplace platforms (not just TAC/PCM)
+- Supports: TAC, Yhangry, Cozymeal, Bark, Thumbtack, GigSalad, The Knot, WeddingWire
+- File: `lib/integrations/take-a-chef-page-capture.ts`
+
 ---
 
 ## Why This Works for Everyone

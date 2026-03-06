@@ -1752,19 +1752,78 @@ async function handleTacPayment(
   tenantId: string,
   result: SyncResult
 ) {
-  // Payment email parsing is TBD (no sample email yet).
-  // For now, log it and notify the chef so they can manually close the loop.
+  const payment = parsed.payment
+
+  // Try to match the payment to an existing inquiry by order ID
+  let matchedInquiryId: string | null = null
+  if (payment?.orderId) {
+    const { data: match } = await supabase
+      .from('inquiries')
+      .select('id, converted_to_event_id, unknown_fields')
+      .eq('tenant_id', tenantId)
+      .eq('external_platform', 'take_a_chef')
+      .eq('external_inquiry_id', payment.orderId)
+      .limit(1)
+      .maybeSingle()
+
+    matchedInquiryId = match?.id ?? null
+
+    // Store payout details on the inquiry's unknown_fields
+    if (match) {
+      const existingFields = (match.unknown_fields as Record<string, unknown>) ?? {}
+      const existingPayouts = Array.isArray(existingFields.take_a_chef_payouts)
+        ? (existingFields.take_a_chef_payouts as Record<string, unknown>[])
+        : []
+
+      // Check if this payout email was already recorded (idempotency)
+      const alreadyRecorded = existingPayouts.some((p) => p.email_message_id === email.messageId)
+
+      if (!alreadyRecorded) {
+        const payoutRecord = {
+          email_message_id: email.messageId,
+          recorded_at: new Date().toISOString(),
+          gross_amount_cents: payment.grossAmountCents,
+          commission_cents: payment.commissionCents,
+          net_payout_cents: payment.netPayoutCents,
+          commission_percent: payment.commissionPercent,
+          payout_date: payment.payoutDate,
+          payout_method: payment.payoutMethod,
+          currency: payment.currency,
+        }
+
+        await supabase
+          .from('inquiries')
+          .update({
+            unknown_fields: {
+              ...existingFields,
+              take_a_chef_payouts: [...existingPayouts, payoutRecord],
+              last_payout_recorded_at: new Date().toISOString(),
+            },
+          })
+          .eq('id', match.id)
+          .eq('tenant_id', tenantId)
+      }
+    }
+  }
+
+  // Notify chef with specifics if we have them
   try {
     const chefUserId = await getChefAuthUserId(tenantId)
     if (chefUserId) {
+      const amountText = payment?.netPayoutCents
+        ? ` - Payout: $${(payment.netPayoutCents / 100).toFixed(2)}`
+        : ''
+      const orderText = payment?.orderId ? ` (Order #${payment.orderId})` : ''
+      const matchText = matchedInquiryId ? '' : ' (could not match to an inquiry)'
+
       await createNotification({
         tenantId,
         recipientId: chefUserId,
         category: 'inquiry',
         action: 'inquiry_reply',
-        title: 'TakeAChef payment notification received',
-        body: `Check your TakeAChef account for payment details — ${email.subject}`,
-        actionUrl: '/inquiries?channel=take_a_chef',
+        title: `TakeAChef payment received${orderText}`,
+        body: `Payment notification processed${amountText}${matchText}`,
+        actionUrl: matchedInquiryId ? `/inquiries/${matchedInquiryId}` : '/marketplace',
       })
     }
   } catch (notifErr) {
@@ -1774,7 +1833,7 @@ async function handleTacPayment(
   await logSyncEntry(supabase, tenantId, email, {
     classification: 'personal',
     confidence: 'high',
-    action_taken: 'payment_logged',
+    action_taken: matchedInquiryId ? 'payment_reconciled' : 'payment_logged',
     platform_email_type: 'tac_payment',
   })
 

@@ -85,12 +85,26 @@ export interface TacParsedMessage {
   identityKeys: string[]
 }
 
+export interface TacParsedPayment {
+  orderId: string | null
+  grossAmountCents: number | null
+  commissionCents: number | null
+  netPayoutCents: number | null
+  commissionPercent: number | null
+  payoutDate: string | null
+  payoutMethod: string | null
+  currency: string | null
+  clientName: string | null
+  identityKeys: string[]
+}
+
 export interface TacParseResult {
   emailType: TacEmailType
   inquiry?: TacParsedInquiry
   booking?: TacParsedBooking
   customerInfo?: TacParsedCustomerInfo
   message?: TacParsedMessage
+  payment?: TacParsedPayment
   rawSubject: string
   rawBody: string
   parseWarnings: string[]
@@ -659,6 +673,110 @@ function parseMessageEmail(
   }
 }
 
+// ─── Field Extraction — Payment / Payout ─────────────────────────────────
+
+function parsePaymentEmail(
+  subject: string,
+  body: string
+): { data: TacParsedPayment; warnings: string[] } {
+  const warnings: string[] = []
+  const combined = `${subject}\n${body}`
+
+  // Order ID from subject or body: "Order ID: 7714634" or "order #7714634"
+  const orderMatch = combined.match(/Order\s*(?:ID|#)\s*:?\s*(\d{4,})/i)
+  const orderId = orderMatch?.[1] || null
+
+  // Gross amount: "Amount: 1000 USD" or "Total: $1,200.00" or "Gross: 850 USD"
+  const grossMatch = combined.match(
+    /(?:Amount|Total|Gross|Booking amount)\s*:?\s*\$?([\d,.]+)\s*(?:USD|EUR|GBP)?/i
+  )
+  const grossRaw = grossMatch?.[1]?.replace(/,/g, '') || null
+  const grossAmountCents =
+    grossRaw && Number.isFinite(Number(grossRaw)) ? Math.round(Number(grossRaw) * 100) : null
+
+  // Commission: "Commission: 180 USD" or "Service fee: $200.00" or "Platform fee: 25%"
+  const commissionAmountMatch = combined.match(
+    /(?:Commission|Service fee|Platform fee|Our fee)\s*:?\s*\$?([\d,.]+)\s*(?:USD|EUR|GBP)?/i
+  )
+  const commissionRaw = commissionAmountMatch?.[1]?.replace(/,/g, '') || null
+  const commissionCents =
+    commissionRaw && Number.isFinite(Number(commissionRaw))
+      ? Math.round(Number(commissionRaw) * 100)
+      : null
+
+  // Commission percentage: "18% commission" or "Commission: 18%"
+  const commissionPctMatch = combined.match(/(?:Commission|fee)\s*:?\s*(\d{1,2}(?:\.\d+)?)\s*%/i)
+  let commissionPercent = commissionPctMatch ? Number(commissionPctMatch[1]) : null
+
+  // If we have gross and commission amounts but no percentage, calculate it
+  if (!commissionPercent && grossAmountCents && commissionCents && grossAmountCents > 0) {
+    commissionPercent = Math.round((commissionCents / grossAmountCents) * 100)
+  }
+
+  // Net payout: "Your payout: 820 USD" or "Net: $680.00" or "Transfer amount: 700"
+  const netMatch = combined.match(
+    /(?:Your payout|Net|Transfer amount|Payout amount|You(?:'ll)? receive)\s*:?\s*\$?([\d,.]+)\s*(?:USD|EUR|GBP)?/i
+  )
+  const netRaw = netMatch?.[1]?.replace(/,/g, '') || null
+  let netPayoutCents =
+    netRaw && Number.isFinite(Number(netRaw)) ? Math.round(Number(netRaw) * 100) : null
+
+  // If we have gross and commission but no net, calculate it
+  if (!netPayoutCents && grossAmountCents && commissionCents) {
+    netPayoutCents = grossAmountCents - commissionCents
+  }
+  // If we have gross and commission percentage but no net, calculate it
+  if (!netPayoutCents && grossAmountCents && commissionPercent) {
+    const calcCommission = Math.round(grossAmountCents * (commissionPercent / 100))
+    netPayoutCents = grossAmountCents - calcCommission
+  }
+
+  // Payout date: "Payout date: March 15, 2026" or "Transfer on: 2026-03-15"
+  const payoutDateMatch = combined.match(
+    /(?:Payout|Transfer|Payment)\s*(?:date|on|scheduled)\s*:?\s*(.+?)(?:\n|$)/i
+  )
+  const payoutDate = payoutDateMatch?.[1]?.trim() || null
+
+  // Payment method: "via Stripe" or "Bank transfer" or "PayPal"
+  const methodMatch = combined.match(
+    /(?:via|through|by)\s+(Stripe|PayPal|bank\s*transfer|wire|direct\s*deposit)/i
+  )
+  const payoutMethod = methodMatch?.[1]?.trim() || null
+
+  // Currency
+  const currencyMatch = combined.match(/\b(USD|EUR|GBP|CAD|AUD)\b/i)
+  const currency = currencyMatch?.[1]?.toUpperCase() || null
+
+  // Client name (often in payment emails)
+  const clientMatch = combined.match(
+    /(?:Guest|Client|Customer|Booking for)\s*:?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/
+  )
+  const clientName = clientMatch?.[1]?.trim() || null
+
+  if (!grossAmountCents && !netPayoutCents) {
+    warnings.push('Could not extract any financial amounts from payment email')
+  }
+  if (!orderId) {
+    warnings.push('Could not extract Order ID from payment email')
+  }
+
+  return {
+    data: {
+      orderId,
+      grossAmountCents,
+      commissionCents,
+      netPayoutCents,
+      commissionPercent,
+      payoutDate,
+      payoutMethod,
+      currency,
+      clientName,
+      identityKeys: orderId ? [orderId] : [],
+    },
+    warnings,
+  }
+}
+
 // ─── Main Parse Function ────────────────────────────────────────────────
 
 /**
@@ -699,9 +817,14 @@ export function parseTakeAChefEmail(email: ParsedEmail): TacParseResult {
       result.parseWarnings = warnings
       break
     }
-    case 'tac_payment':
+    case 'tac_payment': {
+      const { data, warnings } = parsePaymentEmail(email.subject, email.body)
+      result.payment = data
+      result.parseWarnings = warnings
+      break
+    }
     case 'tac_administrative':
-      // No structured extraction needed — just log the type
+      // No structured extraction needed - just log the type
       break
   }
 

@@ -130,9 +130,9 @@ export function TakeAChefCaptureTool() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="info" title="How this works">
-            Open the request or booking inside Private Chef Manager or Take a Chef, click the
-            bookmarklet, then review the captured page here before saving it onto the matching
-            inquiry in ChefFlow.
+            Open the request or booking inside any marketplace (Private Chef Manager, Take a Chef,
+            Yhangry, Cozymeal, Bark, etc.), click the bookmarklet, then review the captured page
+            here before saving it onto the matching inquiry in ChefFlow.
           </Alert>
           <div className="flex flex-wrap items-center gap-3">
             <a

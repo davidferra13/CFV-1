@@ -25,8 +25,9 @@ export default async function MarketplaceCapturePage() {
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Marketplace Capture</h1>
             <p className="mt-1 max-w-3xl text-sm text-stone-400">
-              Capture the live Private Chef Manager or Take a Chef page, then save that context into
-              ChefFlow without retyping the whole request.
+              Capture a live page from any marketplace (Private Chef Manager, Take a Chef, Yhangry,
+              Cozymeal, Bark, Thumbtack, and more), then save that context into ChefFlow without
+              retyping the whole request.
             </p>
           </div>
           <Link

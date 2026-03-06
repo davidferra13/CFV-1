@@ -46,6 +46,10 @@ export type TakeAChefPageCaptureParseResult = {
 const TAC_CAPTURE_LINK_PATTERN =
   /https?:\/\/(?:www\.)?(?:privatechefmanager|takeachef)\.com\/[^\s"'<>]+/gi
 
+// Broader pattern: captures links from any known marketplace platform
+const MARKETPLACE_CAPTURE_LINK_PATTERN =
+  /https?:\/\/(?:www\.)?(?:privatechefmanager|takeachef|yhangry|cozymeal|bark|thumbtack|gigsalad|theknot|weddingwire)\.com\/[^\s"'<>]+/gi
+
 const TAC_MONTH_TRANSLATIONS: Record<string, string> = {
   enero: 'January',
   febrero: 'February',
@@ -165,7 +169,7 @@ export function parseTakeAChefPageCapture(input: {
   const cleanTitle = input.pageTitle?.trim() || null
   const cleanText = normalizeWhitespace(input.pageText || '')
   const combined = [cleanTitle, cleanText].filter(Boolean).join('\n')
-  const extractedTextLinks = combined.match(TAC_CAPTURE_LINK_PATTERN) ?? []
+  const extractedTextLinks = combined.match(MARKETPLACE_CAPTURE_LINK_PATTERN) ?? []
   const candidateLinks = dedupeIdentityKeys([
     input.pageUrl,
     ...(input.pageLinks ?? []),
@@ -279,7 +283,7 @@ export function parseTakeAChefPageCapture(input: {
 
 export function buildTakeAChefCaptureBookmarklet(appUrl: string): string {
   const targetUrl = new URL('/marketplace/capture?source=bookmarklet', appUrl).toString()
-  const code = `(function(){try{var text=(document.body&&document.body.innerText||'').slice(0,15000);var links=Array.prototype.slice.call(document.querySelectorAll('a[href]')).map(function(a){return a.href;}).filter(function(h){return /privatechefmanager|takeachef/i.test(h);}).slice(0,25);window.name=JSON.stringify({__chefFlowMarketplaceCapture:true,version:1,url:location.href,title:document.title,text:text,links:links,capturedAt:new Date().toISOString()});location.href=${JSON.stringify(targetUrl)};}catch(e){alert('ChefFlow capture failed.');}})();`
+  const code = `(function(){try{var text=(document.body&&document.body.innerText||'').slice(0,15000);var links=Array.prototype.slice.call(document.querySelectorAll('a[href]')).map(function(a){return a.href;}).filter(function(h){return /privatechefmanager|takeachef|yhangry|cozymeal|bark|thumbtack|gigsalad|theknot|weddingwire/i.test(h);}).slice(0,25);window.name=JSON.stringify({__chefFlowMarketplaceCapture:true,version:1,url:location.href,title:document.title,text:text,links:links,capturedAt:new Date().toISOString()});location.href=${JSON.stringify(targetUrl)};}catch(e){alert('ChefFlow capture failed.');}})();`
   return `javascript:${code}`
 }
 
