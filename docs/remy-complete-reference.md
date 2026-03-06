@@ -1,7 +1,7 @@
 # Remy AI Concierge — Complete Reference
 
 > **This is the single source of truth for everything Remy can do, how it works, and where the code lives.**
-> Updated: 2026-02-28. Agents: read this instead of re-scanning the codebase.
+> Updated: 2026-03-06. Agents: read this instead of re-scanning the codebase.
 
 ---
 
@@ -96,6 +96,70 @@ All drafts are **proposals only** — chef reviews and sends manually. Remy neve
 | `web.read`   | Fetch and extract content from a URL             |
 
 **Implementation:** `lib/ai/remy-web-actions.ts`
+
+### Intelligence Commands (20+ Capabilities — No LLM Required)
+
+All intelligence commands are **deterministic** — pure database queries and math. Zero Ollama dependency. Instant results.
+
+#### Financial Intelligence
+
+| Command               | What It Does                                          | Tier | File                                  |
+| --------------------- | ----------------------------------------------------- | ---- | ------------------------------------- |
+| `finance.forecast`    | 3-month revenue forecast from historical data         | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `finance.pnl`         | Profit & loss report (revenue, expenses, net, margin) | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `finance.tax_summary` | Tax year summary with quarterly breakdown             | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `finance.pricing`     | Pricing analysis (avg per guest, range, trends)       | 1    | `lib/ai/remy-intelligence-actions.ts` |
+
+#### Capacity & Operations
+
+| Command                | What It Does                                                              | Tier | File                                  |
+| ---------------------- | ------------------------------------------------------------------------- | ---- | ------------------------------------- |
+| `capacity.utilization` | Monthly utilization rate, busiest months, availability                    | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `seasonal.produce`     | What's in season now (grouped by category)                                | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `ops.ingredient_sub`   | Ingredient substitution lookup (12 common allergens covered)              | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `briefing.morning`     | Morning briefing: today's events, overdue payments, open inquiries, goals | 1    | `lib/ai/remy-intelligence-actions.ts` |
+
+#### Relationship Intelligence
+
+| Command                     | What It Does                                                   | Tier | File                                  |
+| --------------------------- | -------------------------------------------------------------- | ---- | ------------------------------------- |
+| `relationship.milestones`   | Client milestones (anniversaries, 10th event, big spenders)    | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `relationship.reengagement` | Dormant client scoring (days since last event, lifetime value) | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `relationship.acquisition`  | Acquisition funnel: inquiries → events conversion rate         | 1    | `lib/ai/remy-intelligence-actions.ts` |
+
+#### Business Management
+
+| Command                 | What It Does                               | Tier | File                                  |
+| ----------------------- | ------------------------------------------ | ---- | ------------------------------------- |
+| `goals.dashboard`       | Active goals with progress tracking        | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `equipment.list`        | Equipment inventory with depreciation      | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `equipment.maintenance` | Equipment needing maintenance (age-based)  | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `vendors.list`          | Vendor directory (preferred vendors first) | 1    | `lib/ai/remy-intelligence-actions.ts` |
+
+#### Analytics & Comparison
+
+| Command                    | What It Does                                            | Tier | File                                  |
+| -------------------------- | ------------------------------------------------------- | ---- | ------------------------------------- |
+| `analytics.compare_events` | Side-by-side event comparison (revenue, guests, margin) | 1    | `lib/ai/remy-intelligence-actions.ts` |
+
+#### Workflow Chains
+
+| Command                        | What It Does                                                   | Tier | File                                  |
+| ------------------------------ | -------------------------------------------------------------- | ---- | ------------------------------------- |
+| `workflow.cancellation_impact` | Financial impact of cancelling an event (lost revenue, refund) | 1    | `lib/ai/remy-intelligence-actions.ts` |
+| `workflow.post_event`          | Post-event checklist (AAR, thank-you, testimonial, invoice)    | 1    | `lib/ai/remy-intelligence-actions.ts` |
+
+#### LLM-Powered Intelligence (Requires Ollama)
+
+| Command               | What It Does                                               | Tier | File                                                                      |
+| --------------------- | ---------------------------------------------------------- | ---- | ------------------------------------------------------------------------- |
+| `contract.generate`   | Generate event contract (uses existing contract generator) | 2    | `lib/ai/remy-intelligence-actions.ts` → `lib/ai/contract-generator.ts`    |
+| `contingency.plan`    | Generate contingency plans for event risks                 | 2    | `lib/ai/remy-intelligence-actions.ts` → `lib/ai/contingency-ai.ts`        |
+| `grocery.consolidate` | Consolidate grocery list by store section                  | 2    | `lib/ai/remy-intelligence-actions.ts` → `lib/ai/grocery-consolidation.ts` |
+
+**Deterministic Intent Patterns:** All intelligence commands have regex patterns in `lib/ai/command-intent-parser.ts` that skip Ollama entirely. Natural language like "good morning", "revenue forecast", "what's in season", "who hasn't booked lately" routes directly to the right executor.
+
+**Implementation:** `lib/ai/remy-intelligence-actions.ts`, `lib/ai/command-intent-parser.ts`
 
 ---
 
@@ -461,6 +525,7 @@ ADMIN_EMAILS=admin@example.com
 | Analytics actions        | `lib/ai/analytics-actions.ts`                 |
 | Client-facing actions    | `lib/ai/client-facing-actions.ts`             |
 | Web actions              | `lib/ai/remy-web-actions.ts`                  |
+| Intelligence actions     | `lib/ai/remy-intelligence-actions.ts`         |
 | Artifact actions         | `lib/ai/remy-artifact-actions.ts`             |
 | Context loader           | `lib/ai/remy-context.ts`                      |
 | Client context           | `lib/ai/remy-client-context.ts`               |
@@ -498,4 +563,4 @@ ADMIN_EMAILS=admin@example.com
 
 ---
 
-_Last updated: 2026-02-28 by Claude Code. Update this file whenever Remy's capabilities change._
+_Last updated: 2026-03-06 by Claude Code. Update this file whenever Remy's capabilities change._
