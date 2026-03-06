@@ -1272,6 +1272,16 @@ function buildPageIntelligence(context: RemyContext): string | null {
   return lines.length > 0 ? lines.join('\n') : null
 }
 
+//  Context Scope (planned — currently returns 'full' for all requests)
+
+export type ContextScope = 'full' | 'minimal' | 'focused'
+
+export function determineContextScope(_message: string, _intent: string): ContextScope {
+  // Future: reduce prompt size for focused queries by scoping context.
+  // For now, always return full context.
+  return 'full'
+}
+
 //  Conversation History Formatter
 
 export function formatConversationHistory(history: RemyMessage[]): string {

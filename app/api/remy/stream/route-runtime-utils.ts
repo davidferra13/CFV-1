@@ -684,6 +684,57 @@ export const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min - 30b MoE model on 6GB 
  */
 export const OLLAMA_STREAM_MAX_TOKENS = 2048
 
+/**
+ * Filters out <think>...</think> blocks from qwen3 streaming output.
+ * Accumulates partial tokens until a complete think block can be stripped.
+ */
+export class ThinkingBlockFilter {
+  private buffer = ''
+  private inThinkBlock = false
+
+  process(token: string): string {
+    this.buffer += token
+
+    // Check for opening <think> tag
+    if (!this.inThinkBlock) {
+      const openIdx = this.buffer.indexOf('<think>')
+      if (openIdx !== -1) {
+        const before = this.buffer.substring(0, openIdx)
+        this.buffer = this.buffer.substring(openIdx)
+        this.inThinkBlock = true
+        // Check if closing tag is already in buffer
+        const closeIdx = this.buffer.indexOf('</think>')
+        if (closeIdx !== -1) {
+          this.buffer = this.buffer.substring(closeIdx + '</think>'.length)
+          this.inThinkBlock = false
+          return before + this.process('')
+        }
+        return before || ''
+      }
+      // No think tag — might be partial "<thi" at end
+      if (this.buffer.length > 7 && !this.buffer.endsWith('<')) {
+        const safe = this.buffer.includes('<')
+          ? this.buffer.substring(0, this.buffer.lastIndexOf('<'))
+          : this.buffer
+        this.buffer = this.buffer.substring(safe.length)
+        return safe
+      }
+      const out = this.buffer
+      this.buffer = ''
+      return out
+    }
+
+    // Inside think block — look for closing tag
+    const closeIdx = this.buffer.indexOf('</think>')
+    if (closeIdx !== -1) {
+      this.buffer = this.buffer.substring(closeIdx + '</think>'.length)
+      this.inThinkBlock = false
+      return this.process('')
+    }
+    return ''
+  }
+}
+
 export function extractNavSuggestions(
   text: string
 ): Array<{ label: string; href: string; description?: string }> {
