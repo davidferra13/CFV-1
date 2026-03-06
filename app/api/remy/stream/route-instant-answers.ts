@@ -344,7 +344,476 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
     },
   },
+  // "How many staff do I have?" / "Who's on my team?"
+  {
+    pattern:
+      /^(?:how\s+many\s+staff|who'?s?\s+on\s+my\s+(?:team|staff|crew)|(?:show|list)\s+(?:my\s+)?staff|my\s+team)/i,
+    answer: (ctx) => {
+      if (!ctx.staffRoster || ctx.staffRoster.length === 0) {
+        return {
+          text: "No staff members on your roster yet. Head to Staff to add your first team member — even if it's just you. 🧑‍🍳",
+          navSuggestions: [{ label: 'Staff', href: '/staff' }],
+        }
+      }
+      const byRole = new Map<string, number>()
+      for (const s of ctx.staffRoster) {
+        const role = s.role || 'Unassigned'
+        byRole.set(role, (byRole.get(role) ?? 0) + 1)
+      }
+      const roleBreakdown = Array.from(byRole.entries())
+        .map(([role, count]) => `${role}: ${count}`)
+        .join(', ')
+      return {
+        text: `You have **${ctx.staffRoster.length} active staff member${ctx.staffRoster.length !== 1 ? 's' : ''}**.\n\nRoles: ${roleBreakdown}\n\nTeam: ${ctx.staffRoster.map((s) => s.name).join(', ')}`,
+        navSuggestions: [{ label: 'Staff', href: '/staff' }],
+      }
+    },
+  },
+  // "How many recipes do I have?" / "What's in my recipe book?"
+  {
+    pattern:
+      /^(?:how\s+many\s+recipes?|what'?s?\s+in\s+my\s+recipe\s+(?:book|library)|(?:show|list)\s+(?:my\s+)?recipes?|recipe\s+(?:count|stats))/i,
+    answer: (ctx) => {
+      if (!ctx.recipeStats || ctx.recipeStats.totalRecipes === 0) {
+        return {
+          text: 'Your recipe library is empty. Head to Recipes → New Recipe to start building your collection. 📖',
+          navSuggestions: [
+            { label: 'Recipes', href: '/recipes' },
+            { label: 'New Recipe', href: '/recipes/new' },
+          ],
+        }
+      }
+      return {
+        text: `You have **${ctx.recipeStats.totalRecipes} recipe${ctx.recipeStats.totalRecipes !== 1 ? 's' : ''}** in your library${ctx.recipeStats.categories.length > 0 ? ` across ${ctx.recipeStats.categories.length} categor${ctx.recipeStats.categories.length !== 1 ? 'ies' : 'y'}: ${ctx.recipeStats.categories.join(', ')}` : ''}.`,
+        navSuggestions: [{ label: 'Recipes', href: '/recipes' }],
+      }
+    },
+  },
+  // "What are my goals?" / "How are my goals going?"
+  {
+    pattern:
+      /^(?:what\s+are\s+my\s+goals?|how\s+are\s+my\s+goals?\s+(?:going|doing|progressing)|(?:show|list)\s+(?:my\s+)?goals?|goal\s+(?:progress|status))/i,
+    answer: (ctx) => {
+      if (!ctx.activeGoals || ctx.activeGoals.length === 0) {
+        return {
+          text: 'No active goals set. Having clear targets keeps you focused — head to Goals to set your first one. 🎯',
+          navSuggestions: [{ label: 'Goals', href: '/goals' }],
+        }
+      }
+      const lines = [
+        `**${ctx.activeGoals.length} active goal${ctx.activeGoals.length !== 1 ? 's' : ''}:**\n`,
+      ]
+      for (const g of ctx.activeGoals) {
+        const progress = g.progress != null ? ` — ${g.progress}%` : ''
+        const deadline = g.targetDate
+          ? ` (due ${new Date(g.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
+          : ''
+        lines.push(`- **${g.title}**${progress}${deadline}`)
+      }
+      const avgProgress =
+        ctx.activeGoals.filter((g) => g.progress != null).length > 0
+          ? Math.round(
+              ctx.activeGoals.reduce((s, g) => s + (g.progress ?? 0), 0) /
+                ctx.activeGoals.filter((g) => g.progress != null).length
+            )
+          : null
+      if (avgProgress !== null) {
+        lines.push(
+          `\nAverage progress: **${avgProgress}%** ${avgProgress >= 75 ? '🔥' : avgProgress >= 50 ? '💪' : '📈'}`
+        )
+      }
+      return {
+        text: lines.join('\n'),
+        navSuggestions: [{ label: 'Goals', href: '/goals' }],
+      }
+    },
+  },
+  // "What's on my todo list?" / "Any tasks due today?"
+  {
+    pattern:
+      /^(?:what'?s?\s+on\s+my\s+(?:todo|to-do|task)\s*(?:list)?|(?:any|what)\s+tasks?\s+(?:due\s+)?(?:today|pending)|(?:show|list)\s+(?:my\s+)?(?:todos?|tasks?)|my\s+todo\s*list)/i,
+    answer: (ctx) => {
+      if (!ctx.activeTodos || ctx.activeTodos.length === 0) {
+        return {
+          text: 'Your task list is clear — nothing pending. 🙌 Focus on what matters most today.',
+        }
+      }
+      const today = new Date().toISOString().split('T')[0]
+      const overdue = ctx.activeTodos.filter((t) => t.dueDate && t.dueDate < today)
+      const dueToday = ctx.activeTodos.filter((t) => t.dueDate === today)
+      const upcoming = ctx.activeTodos.filter((t) => !t.dueDate || t.dueDate > today)
+      const lines: string[] = [
+        `**${ctx.activeTodos.length} pending task${ctx.activeTodos.length !== 1 ? 's' : ''}:**\n`,
+      ]
+      if (overdue.length > 0) {
+        lines.push(`⚠️ **Overdue (${overdue.length}):**`)
+        for (const t of overdue) lines.push(`- ${t.title} (due ${t.dueDate})`)
+      }
+      if (dueToday.length > 0) {
+        lines.push(`📌 **Due today (${dueToday.length}):**`)
+        for (const t of dueToday) lines.push(`- ${t.title}`)
+      }
+      if (upcoming.length > 0 && lines.length < 10) {
+        lines.push(`📋 **Upcoming (${upcoming.length}):**`)
+        for (const t of upcoming.slice(0, 3))
+          lines.push(`- ${t.title}${t.dueDate ? ` (due ${t.dueDate})` : ''}`)
+        if (upcoming.length > 3) lines.push(`  ...and ${upcoming.length - 3} more`)
+      }
+      return { text: lines.join('\n') }
+    },
+  },
+  // "Any payments coming due?" / "Payment deadlines"
+  {
+    pattern:
+      /^(?:any\s+payments?\s+(?:coming\s+)?due|payment\s+deadlines?|(?:upcoming|pending)\s+payments?|who\s+(?:needs?\s+to|owes?\s+me)\s+pay)/i,
+    answer: (ctx) => {
+      const items: string[] = []
+      if (ctx.overduePayments && ctx.overduePayments.length > 0) {
+        items.push(`⚠️ **${ctx.overduePayments.length} overdue:**`)
+        for (const p of ctx.overduePayments) {
+          items.push(
+            `- ${p.clientName}: $${(p.amountCents / 100).toLocaleString()} (${p.daysOverdue}d overdue)`
+          )
+        }
+      }
+      if (ctx.upcomingPaymentDeadlines && ctx.upcomingPaymentDeadlines.length > 0) {
+        items.push(`📅 **${ctx.upcomingPaymentDeadlines.length} due this week:**`)
+        for (const p of ctx.upcomingPaymentDeadlines) {
+          items.push(
+            `- ${p.clientName} — ${p.occasion}: $${(p.amountCents / 100).toLocaleString()} (${p.daysUntilDue === 0 ? 'today' : `in ${p.daysUntilDue}d`})`
+          )
+        }
+      }
+      if (items.length === 0) {
+        return {
+          text: 'No payment deadlines coming up — all clear on the money front. 💰',
+          navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        }
+      }
+      return {
+        text: items.join('\n'),
+        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+      }
+    },
+  },
+  // "Any quotes expiring?" / "Expiring quotes"
+  {
+    pattern:
+      /^(?:any\s+quotes?\s+expir|expiring\s+quotes?|quotes?\s+(?:about\s+to\s+)?expire|pending\s+quotes?)/i,
+    answer: (ctx) => {
+      if (!ctx.expiringQuotes || ctx.expiringQuotes.length === 0) {
+        const pending = ctx.pendingQuoteCount ?? 0
+        return {
+          text:
+            pending > 0
+              ? `No quotes expiring soon. You have **${pending} pending quote${pending !== 1 ? 's' : ''}** out there.`
+              : 'No expiring or pending quotes. 📄',
+          navSuggestions: [{ label: 'Quotes', href: '/quotes' }],
+        }
+      }
+      const lines = [
+        `**${ctx.expiringQuotes.length} quote${ctx.expiringQuotes.length !== 1 ? 's' : ''} expiring soon:**\n`,
+      ]
+      for (const q of ctx.expiringQuotes) {
+        lines.push(
+          `- **${q.clientName}** — ${q.occasion}: $${(q.totalCents / 100).toLocaleString()} (expires ${q.daysUntilExpiry === 0 ? 'today ⚠️' : `in ${q.daysUntilExpiry}d`})`
+        )
+      }
+      lines.push('\nFollow up before they expire — a quick nudge can close the deal. 🎯')
+      return {
+        text: lines.join('\n'),
+        navSuggestions: [{ label: 'Quotes', href: '/quotes' }],
+      }
+    },
+  },
+  // "What equipment do I have?" / "Equipment list"
+  {
+    pattern:
+      /^(?:what\s+equipment|(?:show|list)\s+(?:my\s+)?equipment|equipment\s+(?:list|inventory|summary)|my\s+equipment)/i,
+    answer: (ctx) => {
+      if (!ctx.equipmentSummary || ctx.equipmentSummary.totalItems === 0) {
+        return {
+          text: 'No equipment tracked yet. Log your gear on the Equipment page for depreciation tracking and event prep planning. 🔧',
+        }
+      }
+      return {
+        text: `**${ctx.equipmentSummary.totalItems} equipment item${ctx.equipmentSummary.totalItems !== 1 ? 's' : ''}** tracked${ctx.equipmentSummary.categories.length > 0 ? ` across ${ctx.equipmentSummary.categories.length} categor${ctx.equipmentSummary.categories.length !== 1 ? 'ies' : 'y'}: ${ctx.equipmentSummary.categories.join(', ')}` : ''}.`,
+      }
+    },
+  },
+  // "Any clients I should re-engage?" / "Who haven't I talked to?"
+  {
+    pattern:
+      /^(?:any\s+clients?\s+(?:i\s+should\s+)?(?:re-?engage|reach\s+out\s+to|follow\s+up\s+with)|who\s+(?:haven'?t\s+i|should\s+i)\s+(?:talked?\s+to|contacted?|reached?\s+out)|dormant\s+clients?|inactive\s+clients?)/i,
+    answer: (ctx) => {
+      if (!ctx.clientReengagement || ctx.clientReengagement.length === 0) {
+        return {
+          text: "All your clients are within their normal booking patterns — no one's overdue for a touchpoint. 👍",
+          navSuggestions: [{ label: 'Clients', href: '/clients' }],
+        }
+      }
+      const lines = [
+        `**${ctx.clientReengagement.length} client${ctx.clientReengagement.length !== 1 ? 's' : ''} overdue for a booking:**\n`,
+      ]
+      for (const c of ctx.clientReengagement.slice(0, 5)) {
+        lines.push(
+          `- **${c.clientName}** — usually books every ~${c.avgIntervalDays}d, last booked ${c.daysSinceLastBooking}d ago (${c.eventCount} events total)`
+        )
+      }
+      lines.push(
+        '\nA quick check-in can reignite the relationship. Try: "Draft a re-engagement for [name]" 📬'
+      )
+      return {
+        text: lines.join('\n'),
+        navSuggestions: [{ label: 'Clients', href: '/clients' }],
+      }
+    },
+  },
+  // "How many documents?" / "Document count"
+  {
+    pattern:
+      /^(?:how\s+many\s+(?:documents?|docs?|files?)|document\s+(?:count|summary|stats)|(?:show|list)\s+(?:my\s+)?(?:documents?|docs?))/i,
+    answer: (ctx) => {
+      if (!ctx.documentSummary) return null
+      const d = ctx.documentSummary
+      if (d.totalDocuments === 0) {
+        return {
+          text: 'No documents uploaded yet. Use the Documents page to store contracts, menus, and important files. 📁',
+        }
+      }
+      return {
+        text: `**${d.totalDocuments} document${d.totalDocuments !== 1 ? 's' : ''}** stored${d.totalFolders > 0 ? ` in ${d.totalFolders} folder${d.totalFolders !== 1 ? 's' : ''}` : ''}.`,
+      }
+    },
+  },
+  // "What's my dietary profile?" / "Common dietary restrictions"
+  {
+    pattern:
+      /^(?:what'?s?\s+(?:my\s+)?(?:dietary|allergy)\s+(?:profile|breakdown|summary)|common\s+(?:dietary|allergy|restriction)|what\s+(?:dietary|allergies?)\s+(?:do|are)\s+(?:my\s+)?clients?\s+have)/i,
+    answer: (ctx) => {
+      if (!ctx.dietaryProfile) return null
+      const dp = ctx.dietaryProfile
+      const lines: string[] = ['**Your client dietary landscape:**\n']
+      if (dp.topDietary.length > 0) {
+        lines.push('Dietary restrictions:')
+        for (const d of dp.topDietary.slice(0, 5)) {
+          lines.push(`- **${d.name}**: ${d.count} event${d.count !== 1 ? 's' : ''}`)
+        }
+      }
+      if (dp.topAllergies.length > 0) {
+        lines.push('\nAllergies (safety-critical ⚠️):')
+        for (const a of dp.topAllergies.slice(0, 5)) {
+          lines.push(`- **${a.name}**: ${a.count} event${a.count !== 1 ? 's' : ''}`)
+        }
+      }
+      if (dp.topDietary.length === 0 && dp.topAllergies.length === 0) return null
+      lines.push('\nUse this for menu planning and cross-contamination awareness.')
+      return { text: lines.join('\n') }
+    },
+  },
+  // "What service styles do I do?" / "Service style breakdown"
+  {
+    pattern:
+      /^(?:what\s+(?:service\s+)?styles?\s+do\s+i|service\s+style\s+(?:breakdown|distribution|split)|my\s+service\s+styles?)/i,
+    answer: (ctx) => {
+      if (!ctx.serviceStyles || ctx.serviceStyles.length === 0) return null
+      const lines = ['**Your service style breakdown:**\n']
+      for (const s of ctx.serviceStyles) {
+        lines.push(`- **${s.style}**: ${s.count} event${s.count !== 1 ? 's' : ''} (${s.pct}%)`)
+      }
+      return { text: lines.join('\n') }
+    },
+  },
+  // "Any upcoming calls?" / "Scheduled calls"
+  {
+    pattern:
+      /^(?:any\s+(?:upcoming\s+)?calls?|scheduled\s+calls?|(?:show|list)\s+(?:my\s+)?calls?|do\s+i\s+have\s+(?:any\s+)?calls?)/i,
+    answer: (ctx) => {
+      if (!ctx.upcomingCalls || ctx.upcomingCalls.length === 0) {
+        return { text: 'No scheduled calls coming up. 📞' }
+      }
+      const lines = [
+        `**${ctx.upcomingCalls.length} upcoming call${ctx.upcomingCalls.length !== 1 ? 's' : ''}:**\n`,
+      ]
+      for (const c of ctx.upcomingCalls) {
+        const when = new Date(c.scheduledAt).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        })
+        lines.push(`- **${c.clientName}** — ${c.purpose ?? 'call'} (${when})`)
+      }
+      return { text: lines.join('\n') }
+    },
+  },
+  // "What's my YTD?" / "Year to date stats" / "How's my year going?"
+  {
+    pattern:
+      /^(?:what'?s?\s+(?:my\s+)?(?:ytd|year\s+to\s+date)|how'?s?\s+my\s+year\s+(?:going|looking|so\s+far)|year\s+(?:summary|stats|recap))/i,
+    answer: (ctx) => {
+      if (!ctx.yearlyStats) return null
+      const ys = ctx.yearlyStats
+      const rev = (ys.yearRevenueCents / 100).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      })
+      const exp = (ys.yearExpenseCents / 100).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      })
+      const profit = ((ys.yearRevenueCents - ys.yearExpenseCents) / 100).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      })
+      const margin =
+        ys.yearRevenueCents > 0
+          ? Math.round(((ys.yearRevenueCents - ys.yearExpenseCents) / ys.yearRevenueCents) * 100)
+          : 0
+      const avgEvent =
+        ys.totalEventsThisYear > 0
+          ? (ys.avgEventRevenueCents / 100).toLocaleString('en-US', {
+              style: 'currency',
+              currency: 'USD',
+            })
+          : '$0'
+      return {
+        text: `**${new Date().getFullYear()} Year-to-Date:**\n\n- Revenue: **${rev}**\n- Expenses: ${exp}\n- Profit: **${profit}** (${margin}% margin)\n- Events: ${ys.totalEventsThisYear} total (${ys.completedEventsThisYear} completed)\n- Avg revenue/event: ${avgEvent}\n\n${margin >= 50 ? 'Strong margins — your year is on track. 🔥' : margin >= 30 ? 'Decent margins. Keep an eye on expenses.' : 'Margins are tight — worth reviewing your cost structure.'}`,
+        navSuggestions: [
+          { label: 'Financials', href: '/financials' },
+          { label: 'Analytics', href: '/analytics' },
+        ],
+      }
+    },
+  },
+  // "How's my cash flow?" / "Expected income"
+  {
+    pattern:
+      /^(?:how'?s?\s+(?:my\s+)?cash\s*flow|expected\s+(?:income|revenue)|cash\s*flow\s+(?:projection|forecast|outlook)|what'?s?\s+coming\s+in)/i,
+    answer: (ctx) => {
+      if (!ctx.cashFlowProjection) return null
+      const cf = ctx.cashFlowProjection
+      if (cf.eventCount === 0) {
+        return {
+          text: 'No upcoming events with projected revenue. Pipeline is empty — time for some outreach. 📬',
+          navSuggestions: [{ label: 'Inquiries', href: '/inquiries' }],
+        }
+      }
+      return {
+        text: `**Cash flow outlook:** ${(cf.expectedCents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} expected from **${cf.eventCount} upcoming event${cf.eventCount !== 1 ? 's' : ''}**.\n\n${ctx.overduePayments && ctx.overduePayments.length > 0 ? `⚠️ Plus ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} outstanding.` : 'No overdue payments — clean pipeline. ✅'}`,
+        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+      }
+    },
+  },
+  // "Repeat clients" / "How many repeat clients?"
+  {
+    pattern:
+      /^(?:(?:how\s+many\s+)?repeat\s+clients?|client\s+retention|returning\s+clients?|loyal\s+clients?)/i,
+    answer: (ctx) => {
+      if (!ctx.repeatClientRatio) return null
+      const rc = ctx.repeatClientRatio
+      return {
+        text: `**${rc.repeatClients}** of your **${rc.totalClients}** clients are repeat bookers (**${rc.ratio}%**).\n\n${rc.ratio >= 40 ? 'Excellent retention — your clients love you. Keep nurturing those relationships. 💛' : rc.ratio >= 20 ? "Solid foundation of repeats. Focus on re-engagement for clients who've gone quiet." : 'Low repeat rate — consider a post-event follow-up sequence to bring clients back.'}`,
+        navSuggestions: [
+          { label: 'Clients', href: '/clients' },
+          { label: 'Loyalty', href: '/loyalty' },
+        ],
+      }
+    },
+  },
 ]
+
+/**
+ * Try to answer a question deterministically from loaded context.
+ * Returns an InstantAnswer if the question can be answered without Ollama,
+ * or null if Ollama is needed.
+ *
+ * This function runs AFTER context is loaded but BEFORE the Ollama call.
+ * It only handles simple factual questions — anything requiring analysis,
+ * judgment, or multi-step reasoning still goes to the LLM.
+ */
+// ─── Contextual Follow-Up Intelligence ──────────────────────────────────────
+// After answering a factual question, Remy proactively suggests the most
+// relevant next action based on the chef's current state. This turns every
+// instant answer into a mini-consultation — one nugget, max, to avoid noise.
+
+function buildContextualFollowUp(ctx: RemyContext, answeredTopic: string): string | null {
+  // Don't suggest follow-ups for greetings/thanks — those already have proactive context
+  if (answeredTopic === 'greeting' || answeredTopic === 'thanks') return null
+
+  // Priority 1: Urgent items the chef might not know about
+  if (answeredTopic !== 'payments' && ctx.overduePayments && ctx.overduePayments.length > 0) {
+    return `\n\n💡 *Heads up:* ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} need attention — ask me "payment deadlines" for details.`
+  }
+
+  if (
+    answeredTopic !== 'inquiries' &&
+    ctx.staleInquiries &&
+    ctx.staleInquiries.some((i) => i.leadScore >= 60)
+  ) {
+    const hot = ctx.staleInquiries.filter((i) => i.leadScore >= 60)
+    return `\n\n💡 *Quick note:* ${hot.length} high-value lead${hot.length !== 1 ? 's' : ''} going cold — ask me about stale inquiries.`
+  }
+
+  // Priority 2: Contextual nudges based on what they asked about
+  if (answeredTopic === 'revenue' && ctx.conversionRate && ctx.conversionRate.rate < 25) {
+    return `\n\n💡 *Tip:* Your conversion rate is ${ctx.conversionRate.rate}% — faster follow-ups on new inquiries could boost revenue.`
+  }
+
+  if (answeredTopic === 'clients' && ctx.clientReengagement && ctx.clientReengagement.length > 0) {
+    return `\n\n💡 *Tip:* ${ctx.clientReengagement.length} client${ctx.clientReengagement.length !== 1 ? 's are' : ' is'} overdue for a booking — ask me "who should I re-engage?"`
+  }
+
+  if (answeredTopic === 'events' && ctx.expiringQuotes && ctx.expiringQuotes.length > 0) {
+    return `\n\n💡 *Tip:* ${ctx.expiringQuotes.length} quote${ctx.expiringQuotes.length !== 1 ? 's are' : ' is'} expiring soon — follow up before they lapse.`
+  }
+
+  if (answeredTopic === 'schedule' && ctx.upcomingCalls && ctx.upcomingCalls.length > 0) {
+    const nextCall = ctx.upcomingCalls[0]
+    return `\n\n💡 *Also:* You have a call with ${nextCall.clientName} coming up — ask me "upcoming calls" for the full list.`
+  }
+
+  return null
+}
+
+// Map patterns to topic names for follow-up intelligence
+function getAnswerTopic(pattern: RegExp): string {
+  const src = pattern.source
+  if (/client/.test(src) && /many|count/.test(src)) return 'clients'
+  if (/event/.test(src) && /many|upcoming/.test(src)) return 'events'
+  if (/inquir/.test(src)) return 'inquiries'
+  if (/revenue|made/.test(src)) return 'revenue'
+  if (/schedule|week|plate/.test(src)) return 'schedule'
+  if (/conversion|close/.test(src)) return 'conversion'
+  if (/margin/.test(src)) return 'margins'
+  if (/top.*client|best.*client/.test(src)) return 'clients'
+  if (/weather/.test(src)) return 'smalltalk'
+  if (/can.*you.*do|help|capabilit/.test(src)) return 'help'
+  if (/morning|afternoon|evening|hey|hi|hello/.test(src)) return 'greeting'
+  if (/thanks|thank|thx|cheers|awesome/.test(src)) return 'thanks'
+  if (/busiest/.test(src)) return 'schedule'
+  if (/expense|money.*going/.test(src)) return 'expenses'
+  if (/referral|finding/.test(src)) return 'referrals'
+  if (/guest.*count/.test(src)) return 'events'
+  if (/lead.*time|far.*ahead/.test(src)) return 'booking'
+  if (/staff|team|crew/.test(src)) return 'staff'
+  if (/recipe/.test(src)) return 'recipes'
+  if (/goal/.test(src)) return 'goals'
+  if (/todo|task/.test(src)) return 'todos'
+  if (/payment/.test(src)) return 'payments'
+  if (/quote.*expir/.test(src)) return 'quotes'
+  if (/equipment/.test(src)) return 'equipment'
+  if (/re-?engage|dormant|inactive/.test(src)) return 'reengagement'
+  if (/document|docs|files/.test(src)) return 'documents'
+  if (/dietary|allergy/.test(src)) return 'dietary'
+  if (/service.*style/.test(src)) return 'servicestyles'
+  if (/call/.test(src)) return 'calls'
+  if (/ytd|year/.test(src)) return 'revenue'
+  if (/cash.*flow|expected.*income/.test(src)) return 'cashflow'
+  if (/repeat.*client|retention|loyal/.test(src)) return 'clients'
+  return 'general'
+}
 
 /**
  * Try to answer a question deterministically from loaded context.
@@ -362,7 +831,15 @@ export function tryInstantAnswer(message: string, context: RemyContext): Instant
     const match = trimmed.match(pattern)
     if (match) {
       const result = answer(context, match)
-      if (result) return result
+      if (result) {
+        // Enrich with contextual follow-up intelligence
+        const topic = getAnswerTopic(pattern)
+        const followUp = buildContextualFollowUp(context, topic)
+        if (followUp) {
+          return { ...result, text: result.text + followUp }
+        }
+        return result
+      }
     }
   }
 

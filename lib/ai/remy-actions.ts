@@ -13,6 +13,7 @@ import { loadRemyContext } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
+import { tryInstantAnswer } from '@/app/api/remy/stream/route-instant-answers'
 import {
   REMY_PERSONALITY,
   REMY_FEW_SHOT_EXAMPLES,
@@ -926,30 +927,57 @@ async function handleMemoryAdd(message: string): Promise<RemyResponse> {
     }
   }
 
-  // Simple category detection from the fact
+  // Enhanced category detection from the fact (synced with streaming path)
   let category: MemoryCategory = 'chef_preference'
   const lower = fact.toLowerCase()
+  // Client-related: names, pronouns, dietary info, relationship details
   if (
-    /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten)\b/i.test(
+    /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten|lactose|nut|shellfish|celiac|kosher|halal|family|couple|husband|wife|daughter|son|likes|prefers|hates|loves|favorite|anniversary|birthday)\b/i.test(
       lower
     )
   ) {
     category = 'client_insight'
-  } else if (/\b(price|charge|cost|rate|per\s+person|margin|quote)\b/i.test(lower)) {
-    category = 'pricing_pattern'
+    // Pricing: rates, costs, margins, financial patterns
   } else if (
-    /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|day\s+before)\b/i.test(
+    /\b(price|charge|cost|rate|per\s+person|per\s+head|margin|quote|minimum|deposit|flat\s+fee|hourly|tip|gratuity|markup|food\s+cost|overhead)\b/i.test(
+      lower
+    )
+  ) {
+    category = 'pricing_pattern'
+    // Scheduling: days, times, availability, booking patterns
+  } else if (
+    /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|afternoon|night|day\s+before|day\s+of|lead\s+time|advance|last\s+minute|buffer|travel\s+time|off\s+day|vacation|blackout)\b/i.test(
       lower
     )
   ) {
     category = 'scheduling_pattern'
-  } else if (/\b(email|draft|message|write|tone|formal|casual)\b/i.test(lower)) {
+    // Communication: how they write, email style, preferences
+  } else if (
+    /\b(email|draft|message|write|tone|formal|casual|text|call|phone|respond|reply|follow\s+up|signature|sign\s+off|greeting|close)\b/i.test(
+      lower
+    )
+  ) {
     category = 'communication_style'
-  } else if (/\b(never|always|rule|policy|require)\b/i.test(lower)) {
+    // Business rules: hard constraints, policies, never/always rules
+  } else if (
+    /\b(never|always|rule|policy|require|must|won'?t|don'?t|refuse|only|no\s+exceptions|non-?negotiable|standard|guarantee|insurance|liability|contract)\b/i.test(
+      lower
+    )
+  ) {
     category = 'business_rule'
-  } else if (/\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu)\b/i.test(lower)) {
+    // Culinary: food preferences, techniques, ingredients, kitchen
+  } else if (
+    /\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu|plating|garnish|seasoning|spice|herb|wine|pairing|ferment|smoke|cure|sous\s+vide|grill|bake|roast|fry|local|farm|seasonal|forage|butcher|fishmonger|purveyor|vendor|supplier)\b/i.test(
+      lower
+    )
+  ) {
     category = 'culinary_note'
-  } else if (/\b(workflow|prep|shop|process|order|system)\b/i.test(lower)) {
+    // Workflow: operational patterns, processes, routines
+  } else if (
+    /\b(workflow|prep|shop|process|order|system|routine|checklist|setup|breakdown|cleanup|station|equipment|kit|cooler|transport|pack|label|store|freeze|thaw|batch|mise\s+en\s+place)\b/i.test(
+      lower
+    )
+  ) {
     category = 'workflow_preference'
   }
 
@@ -1101,6 +1129,18 @@ export async function sendRemyMessage(
         intent: 'mixed',
         tasks,
         navSuggestions: conversationalResult.navSuggestions ?? undefined,
+      }
+    }
+
+    // ─── INSTANT ANSWER path (Formula > AI — skip Ollama for simple facts) ──
+    if (classification.intent === 'question') {
+      const instant = tryInstantAnswer(userMessage, context)
+      if (instant) {
+        return {
+          text: instant.text,
+          intent: 'question',
+          navSuggestions: instant.navSuggestions ?? undefined,
+        }
       }
     }
 
