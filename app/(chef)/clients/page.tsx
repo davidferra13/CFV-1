@@ -16,6 +16,8 @@ import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
 import { getClientHealthScores } from '@/lib/clients/health-score'
+import { getChurnPreventionTriggers } from '@/lib/intelligence/churn-prevention-triggers'
+import { RebookingBar } from '@/components/intelligence/rebooking-bar'
 
 export default async function ClientsPage() {
   await requireChef()
@@ -40,6 +42,11 @@ export default async function ClientsPage() {
           <Button href="/clients/new">+ Add Client</Button>
         </div>
       </div>
+
+      {/* Rebooking Intelligence */}
+      <Suspense fallback={null}>
+        <RebookingBar />
+      </Suspense>
 
       {/* Invitation Section */}
       <Card id="invite">
@@ -88,12 +95,14 @@ async function PendingInvitationsContent() {
 }
 
 async function ClientsListContent() {
-  const [clients, healthSummary] = await Promise.all([
+  const [clients, healthSummary, churnResult] = await Promise.all([
     getClientsWithStats(),
     getClientHealthScores().catch(() => ({ scores: [], medianLtv: 0, avgEventsPerYear: 0 })),
+    getChurnPreventionTriggers().catch(() => null),
   ])
 
   const healthMap = new Map(healthSummary.scores.map((s) => [s.clientId, s]))
+  const churnMap = new Map((churnResult?.atRiskClients || []).map((c) => [c.clientId, c]))
 
   if (clients.length === 0) {
     return (
@@ -106,5 +115,5 @@ async function ClientsListContent() {
     )
   }
 
-  return <ClientsTable clients={clients} healthMap={healthMap} />
+  return <ClientsTable clients={clients} healthMap={healthMap} churnMap={churnMap} />
 }

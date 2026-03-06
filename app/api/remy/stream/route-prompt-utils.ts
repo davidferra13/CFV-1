@@ -9,7 +9,7 @@ import {
 } from '@/lib/ai/remy-personality'
 import { getArchetype } from '@/lib/ai/remy-archetypes'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
-import type { RemyMessage } from '@/lib/ai/remy-types'
+import type { RemyMessage, RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 
 //  Navigation Route Map
@@ -601,6 +601,17 @@ You can reference this context naturally if relevant - don't force it or repeat 
     parts.push(
       `\nThe chef is currently on the ${context.currentPage} page. Consider this when making suggestions.`
     )
+
+    // Page-level intelligence: when the chef is on a list/aggregate page (no entity),
+    // surface the most relevant context fields prominently so Remy can be page-aware.
+    if (!context.pageEntity) {
+      const pageIntel = buildPageIntelligence(context)
+      if (pageIntel) {
+        parts.push(`\nPAGE-SPECIFIC INTELLIGENCE (for ${context.currentPage}):
+${pageIntel}
+Use these insights to give informed, specific answers about what the chef sees on this page.`)
+      }
+    }
   }
 
   if (context.pageEntity) {
@@ -890,6 +901,268 @@ Only include nav suggestions when genuinely helpful.
 Present all suggestions as drafts. Never claim to have taken autonomous actions.`)
 
   return parts.join('\n')
+}
+
+// ─── Page-Level Intelligence Builder ─────────────────────────────────────────
+// For non-entity pages (lists, dashboards, aggregate views), extracts the most
+// relevant context fields and surfaces them prominently in the prompt.
+
+function buildPageIntelligence(context: RemyContext): string | null {
+  const page = context.currentPage ?? ''
+  const lines: string[] = []
+
+  if (page.startsWith('/finance') || page.startsWith('/expenses')) {
+    if (context.yearlyStats) {
+      lines.push(
+        `YTD Revenue: $${(context.yearlyStats.yearRevenueCents / 100).toLocaleString()} | Expenses: $${(context.yearlyStats.yearExpenseCents / 100).toLocaleString()} | Events: ${context.yearlyStats.totalEventsThisYear} (${context.yearlyStats.completedEventsThisYear} completed)`
+      )
+      if (context.yearlyStats.avgEventRevenueCents > 0) {
+        lines.push(
+          `Avg revenue/event: $${(context.yearlyStats.avgEventRevenueCents / 100).toLocaleString()}`
+        )
+      }
+    }
+    if (context.profitabilityStats) {
+      lines.push(
+        `Margins: avg ${context.profitabilityStats.avgMargin}% | best ${context.profitabilityStats.bestMargin}% | worst ${context.profitabilityStats.worstMargin}% (across ${context.profitabilityStats.eventCount} events)`
+      )
+    }
+    if (context.cashFlowProjection && context.cashFlowProjection.expectedCents > 0) {
+      lines.push(
+        `Projected incoming: $${(context.cashFlowProjection.expectedCents / 100).toLocaleString()} from ${context.cashFlowProjection.eventCount} upcoming events`
+      )
+    }
+    if (context.expenseBreakdown && context.expenseBreakdown.length > 0) {
+      const top3 = context.expenseBreakdown
+        .slice(0, 3)
+        .map((e) => `${e.category}: $${(e.totalCents / 100).toLocaleString()}`)
+        .join(', ')
+      lines.push(`Top expense categories: ${top3}`)
+    }
+    if (context.revenuePattern) {
+      lines.push(
+        `Busiest month: ${context.revenuePattern.busiestMonth} | Slowest: ${context.revenuePattern.slowestMonth} | Monthly avg: $${(context.revenuePattern.monthlyAvgCents / 100).toLocaleString()}`
+      )
+    }
+  }
+
+  if (page.startsWith('/inquiries')) {
+    if (context.conversionRate) {
+      lines.push(
+        `Conversion rate: ${context.conversionRate.rate}% (${context.conversionRate.converted}/${context.conversionRate.total})`
+      )
+      if (context.conversionRate.byChannel.length > 0) {
+        const top = context.conversionRate.byChannel
+          .slice(0, 3)
+          .map((c) => `${c.channel}: ${c.rate}%`)
+          .join(', ')
+        lines.push(`By channel: ${top}`)
+      }
+    }
+    if (context.inquiryVelocity) {
+      const trend =
+        context.inquiryVelocity.thisWeek > context.inquiryVelocity.lastWeek
+          ? 'up'
+          : context.inquiryVelocity.thisWeek < context.inquiryVelocity.lastWeek
+            ? 'down'
+            : 'stable'
+      lines.push(
+        `This week: ${context.inquiryVelocity.thisWeek} inquiries (${trend} from ${context.inquiryVelocity.lastWeek} last week)`
+      )
+    }
+    if (context.staleInquiries && context.staleInquiries.length > 0) {
+      lines.push(
+        `${context.staleInquiries.length} stale inquiries need follow-up (top: ${context.staleInquiries
+          .slice(0, 3)
+          .map((i) => `${i.leadName} — ${i.daysSinceContact}d`)
+          .join(', ')})`
+      )
+    }
+    if (context.avgLeadTime) {
+      lines.push(
+        `Avg booking lead time: ${context.avgLeadTime.avgDays}d (median ${context.avgLeadTime.medianDays}d)`
+      )
+    }
+  }
+
+  if (page.startsWith('/events') && !page.includes('/')) {
+    // Events list page (not /events/{id})
+    if (context.upcomingEvents && context.upcomingEvents.length > 0) {
+      lines.push(`${context.upcomingEvents.length} upcoming events`)
+      const notReady = context.upcomingEvents.filter(
+        (e) => !e.prepReady || !e.groceryReady || !e.timelineReady
+      )
+      if (notReady.length > 0) {
+        lines.push(
+          `${notReady.length} events with incomplete prep (check prep lists, grocery lists, timelines)`
+        )
+      }
+    }
+    if (context.dayOfWeekPattern) {
+      lines.push(
+        `Busiest day: ${context.dayOfWeekPattern.busiestDay} | Slowest: ${context.dayOfWeekPattern.slowestDay}`
+      )
+    }
+    if (context.serviceStyles && context.serviceStyles.length > 0) {
+      lines.push(
+        `Service mix: ${context.serviceStyles
+          .slice(0, 4)
+          .map((s) => `${s.style} ${s.pct}%`)
+          .join(', ')}`
+      )
+    }
+    if (context.guestCountTrend) {
+      lines.push(
+        `Guest count trend: ${context.guestCountTrend.direction} (recent avg ${context.guestCountTrend.recentAvg} vs previous ${context.guestCountTrend.previousAvg})`
+      )
+    }
+  }
+
+  if (page.startsWith('/clients') && !page.match(/\/clients\/[^/]/)) {
+    // Client list page
+    if (context.repeatClientRatio) {
+      lines.push(
+        `Repeat clients: ${context.repeatClientRatio.repeatClients}/${context.repeatClientRatio.totalClients} (${context.repeatClientRatio.ratio}%)`
+      )
+    }
+    if (context.clientReengagement && context.clientReengagement.length > 0) {
+      lines.push(`${context.clientReengagement.length} clients overdue for a booking:`)
+      for (const c of context.clientReengagement.slice(0, 5)) {
+        lines.push(
+          `  - ${c.clientName}: usually every ${c.avgIntervalDays}d, last booked ${c.daysSinceLastBooking}d ago`
+        )
+      }
+    }
+    if (context.referralSources && context.referralSources.length > 0) {
+      lines.push(
+        `Top referral sources: ${context.referralSources
+          .slice(0, 3)
+          .map((r) => `${r.source} (${r.pct}%)`)
+          .join(', ')}`
+      )
+    }
+  }
+
+  if (page.startsWith('/calendar') || page.startsWith('/schedule')) {
+    if (context.calendarSummary) {
+      const blocked = context.calendarSummary.blockedDates.length
+      const entries = context.calendarSummary.calendarEntries.length
+      const waitlist = context.calendarSummary.waitlistEntries.length
+      lines.push(
+        `Next 30 days: ${entries} calendar entries, ${blocked} blocked dates${waitlist > 0 ? `, ${waitlist} waitlist` : ''}`
+      )
+    }
+    if (context.dayOfWeekPattern) {
+      lines.push(
+        `Busiest day: ${context.dayOfWeekPattern.busiestDay} | Slowest: ${context.dayOfWeekPattern.slowestDay}`
+      )
+    }
+    if (context.avgLeadTime) {
+      lines.push(
+        `Booking lead time: avg ${context.avgLeadTime.avgDays}d, median ${context.avgLeadTime.medianDays}d`
+      )
+    }
+  }
+
+  if (page.startsWith('/menus') && !page.match(/\/menus\/[^/]/)) {
+    if (context.dietaryProfile) {
+      if (context.dietaryProfile.topDietary.length > 0) {
+        lines.push(
+          `Top dietary restrictions: ${context.dietaryProfile.topDietary
+            .slice(0, 5)
+            .map((d) => `${d.name} (${d.count})`)
+            .join(', ')}`
+        )
+      }
+      if (context.dietaryProfile.topAllergies.length > 0) {
+        lines.push(
+          `Top allergies: ${context.dietaryProfile.topAllergies
+            .slice(0, 5)
+            .map((a) => `${a.name} (${a.count})`)
+            .join(', ')}`
+        )
+      }
+    }
+    if (context.menuApprovalStats) {
+      lines.push(
+        `Menu approval turnaround: avg ${context.menuApprovalStats.avgDays}d (median ${context.menuApprovalStats.medianDays}d, fastest ${context.menuApprovalStats.fastestDays}d)`
+      )
+    }
+    if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
+      lines.push(`${context.pendingMenuApprovals.length} menus awaiting client approval`)
+    }
+  }
+
+  if (page.startsWith('/quotes')) {
+    if (context.quoteDistribution) {
+      const q = context.quoteDistribution
+      lines.push(
+        `Quote range: $${(q.minCents / 100).toLocaleString()} – $${(q.maxCents / 100).toLocaleString()} (median $${(q.medianCents / 100).toLocaleString()}) across ${q.count} quotes`
+      )
+      lines.push(
+        `25th–75th percentile: $${(q.p25Cents / 100).toLocaleString()} – $${(q.p75Cents / 100).toLocaleString()}`
+      )
+    }
+    if (context.expiringQuotes && context.expiringQuotes.length > 0) {
+      lines.push(`${context.expiringQuotes.length} quotes expiring soon:`)
+      for (const q of context.expiringQuotes.slice(0, 3)) {
+        lines.push(
+          `  - ${q.clientName}: $${(q.totalCents / 100).toLocaleString()} expires in ${q.daysUntilExpiry}d`
+        )
+      }
+    }
+    if (context.conversionRate) {
+      lines.push(`Quote-to-event conversion: ${context.conversionRate.rate}%`)
+    }
+  }
+
+  if (page.startsWith('/recipes') && !page.match(/\/recipes\/[^/]/)) {
+    if (context.recipeStats) {
+      lines.push(
+        `Recipe library: ${context.recipeStats.totalRecipes} recipes across ${context.recipeStats.categories.length} categories`
+      )
+      if (context.recipeStats.categories.length > 0) {
+        lines.push(`Categories: ${context.recipeStats.categories.slice(0, 8).join(', ')}`)
+      }
+    }
+    if (context.dietaryProfile && context.dietaryProfile.topDietary.length > 0) {
+      lines.push(
+        `Most common client dietary needs: ${context.dietaryProfile.topDietary
+          .slice(0, 5)
+          .map((d) => d.name)
+          .join(', ')}`
+      )
+    }
+  }
+
+  if (page.startsWith('/network')) {
+    if (context.referralSources && context.referralSources.length > 0) {
+      lines.push(
+        `Referral sources: ${context.referralSources.map((r) => `${r.source} (${r.pct}%)`).join(', ')}`
+      )
+    }
+    if (context.repeatClientRatio) {
+      lines.push(
+        `Repeat client ratio: ${context.repeatClientRatio.ratio}% (${context.repeatClientRatio.repeatClients} of ${context.repeatClientRatio.totalClients})`
+      )
+    }
+  }
+
+  if (page.startsWith('/dashboard')) {
+    // Dashboard gets everything — the business intelligence block handles this
+    // Just add a note that this is a dashboard context
+    if (context.overduePayments && context.overduePayments.length > 0) {
+      lines.push(`${context.overduePayments.length} overdue payments need attention`)
+    }
+    if (context.staleInquiries && context.staleInquiries.length > 0) {
+      lines.push(`${context.staleInquiries.length} inquiries need follow-up`)
+    }
+    if (context.clientReengagement && context.clientReengagement.length > 0) {
+      lines.push(`${context.clientReengagement.length} clients overdue for rebooking`)
+    }
+  }
+
+  return lines.length > 0 ? lines.join('\n') : null
 }
 
 //  Conversation History Formatter

@@ -19,6 +19,7 @@ import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 import { getWeatherForEvents } from '@/lib/weather/weather-actions'
 import { EventsFinancialBar } from '@/components/intelligence/events-financial-bar'
+import { GeographicBar } from '@/components/intelligence/geographic-bar'
 
 type EventStatus =
   | 'all'
@@ -131,6 +132,11 @@ export default async function EventsPage({
       {/* Financial Intelligence Summary */}
       <Suspense fallback={null}>
         <EventsFinancialBar />
+      </Suspense>
+
+      {/* Geographic Intelligence */}
+      <Suspense fallback={null}>
+        <GeographicBar />
       </Suspense>
 
       <Card className="p-4">
