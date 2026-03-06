@@ -49,7 +49,7 @@ export async function executeContingencyPlanning(inputs: Record<string, unknown>
   }
 }
 
-export function executeSeasonalProduce() {
+export async function executeSeasonalProduce() {
   const month = new Date().getMonth() + 1
   const data = getSeasonalProduceGrouped(month)
 
@@ -1178,7 +1178,7 @@ const SUBSTITUTION_DB: Record<string, { sub: string; reason: string }[]> = {
   ],
 }
 
-export function executeIngredientSubstitution(inputs: Record<string, unknown>) {
+export async function executeIngredientSubstitution(inputs: Record<string, unknown>) {
   const ingredient = String(inputs.ingredient ?? '')
     .toLowerCase()
     .trim()

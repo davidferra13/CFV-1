@@ -1221,80 +1221,22 @@ async function executeSingleTask(
       }
     }
 
-    // ─── Legacy task types (read-only + existing drafts) ────────────────
-    // Fail-fast: If taskType is not explicitly supported, return error immediately
-    const supportedTaskTypes = new Set([
-      'client.search',
-      'calendar.availability',
-      'event.list_upcoming',
-      'finance.summary',
-      'email.followup',
-      'email.recent',
-      'email.search',
-      'email.thread',
-      'email.inbox_summary',
-      'email.draft_reply',
-      'event.create_draft',
-      'client.list_recent',
-      'client.details',
-      'event.details',
-      'event.list_by_status',
-      'inquiry.list_open',
-      'inquiry.details',
-      'finance.monthly_snapshot',
-      'recipe.search',
-      'menu.list',
-      'scheduling.next_available',
-      'web.search',
-      'web.read',
-      'dietary.check',
-      'chef.favorite_chefs',
-      'chef.culinary_profile',
-      'prep.timeline',
-      'nudge.list',
-      'grocery.quick_add',
-      'document.search',
-      'document.list_folders',
-      'document.create_folder',
-      'email.generic',
-      'draft.thank_you',
-      'draft.referral_request',
-      'draft.testimonial_request',
-      'draft.quote_cover_letter',
-      'draft.decline_response',
-      'draft.cancellation_response',
-      'draft.payment_reminder',
-      'draft.re_engagement',
-      'draft.milestone_recognition',
-      'draft.food_safety_incident',
-      'ops.portion_calc',
-      'ops.packing_list',
-      'ops.cross_contamination',
-      'analytics.break_even',
-      'analytics.client_ltv',
-      'analytics.recipe_cost',
-      'client.event_recap',
-      'client.menu_explanation',
-      'nav.go',
-      'loyalty.status',
-      'safety.event_allergens',
-      'waitlist.list',
-      'draft.confirmation',
-    ])
-    if (!supportedTaskTypes.has(task.taskType)) {
+    // ─── Security guardrail: block dangerous/injection task types ────────────
+    // The switch statement below handles all supported tasks; unknown types hit default.
+    // This check blocks explicitly dangerous patterns before they reach the switch.
+    if (
+      task.taskType.includes('system') ||
+      task.taskType.includes('prompt') ||
+      task.taskType.includes('delete') ||
+      task.taskType.includes('agent.')
+    ) {
       return {
         taskId: task.id,
         taskType: task.taskType,
         tier: 3,
         name: task.taskType,
         status: 'error',
-        error:
-          task.taskType.includes('system') ||
-          task.taskType.includes('prompt') ||
-          task.taskType.includes('delete') ||
-          task.taskType.includes('agent.')
-            ? 'That request is outside the scope of what I can help with.'
-            : `Task type "${task.taskType}" is not supported. No further attempts will be made.`,
+        error: 'That request is outside the scope of what I can help with.',
       }
     }
 
