@@ -23,6 +23,8 @@ import { RemyClientChat } from '@/components/ai/remy-client-chat'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { TrackedActivityLink } from '@/components/activity/tracked-activity-link'
 import { PostEventBanner } from '@/components/client/post-event-banner'
+import { BetaOnboardingChecklist } from '@/components/beta/beta-onboarding-checklist'
+import { getMyBetaChecklist, syncBetaChecklistProgress } from '@/lib/beta/onboarding-actions'
 import { ClientDashboardWidgetShell } from '@/components/client-dashboard/widget-shell'
 import { ClientDashboardWidgetGrid } from '@/components/client-dashboard/widget-grid'
 import { ClientDashboardEmptyState } from '@/components/client-dashboard/empty-state'
@@ -252,10 +254,14 @@ function ComingSoonWidget({ id }: { id: ClientDashboardWidgetId }) {
 }
 
 export default async function MyEventsPage() {
-  const [data, preferences] = await Promise.all([
+  const [data, preferences, betaData] = await Promise.all([
     getClientDashboardData(),
     getClientDashboardPreferences(),
+    syncBetaChecklistProgress().catch(() => null),
   ])
+
+  // Also fetch full beta checklist info for the component
+  const betaChecklist = await getMyBetaChecklist().catch(() => null)
 
   const {
     eventsResult,
@@ -1534,6 +1540,19 @@ export default async function MyEventsPage() {
           <p className="mt-2 text-stone-400">Manage your upcoming events and view past bookings</p>
         </div>
       </div>
+
+      {/* Beta Onboarding Checklist - shown to beta testers */}
+      {betaChecklist?.isBetaTester && (
+        <div className="mb-6">
+          <BetaOnboardingChecklist
+            discountPercent={betaChecklist.discountPercent}
+            checklist={betaChecklist.checklist}
+            stepsCompleted={betaChecklist.stepsCompleted}
+            totalSteps={betaChecklist.totalSteps}
+            chefName={chefDisplayName}
+          />
+        </div>
+      )}
 
       <ClientDashboardCollapseProvider>
         <div className="mb-4 flex items-center justify-between">

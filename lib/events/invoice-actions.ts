@@ -17,6 +17,7 @@ import {
   type LoyaltyInvoiceAdjustmentSummary,
   type LoyaltyInvoiceRedemption,
 } from '@/lib/loyalty/invoice-adjustments'
+import { computeBetaDiscount, type BetaDiscountResult } from '@/lib/beta/onboarding-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -90,6 +91,8 @@ export type InvoiceData = {
     nextTierName: string | null
     pointsToNextTier: number
   } | null
+  // Beta tester discount (applied after loyalty, before tax)
+  betaDiscount?: BetaDiscountResult | null
 }
 
 // ─── generateInvoiceNumber ────────────────────────────────────────────────────
@@ -210,10 +213,38 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
       baseServiceCents,
     }),
   ])
-  const taxableSubtotalCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
-  // Sales tax lookup is non-blocking and reflects loyalty-adjusted subtotal.
+  // Beta discount (applied after loyalty)
+  const afterLoyaltyCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
+  let betaResult: BetaDiscountResult | null = null
+  if (clientData?.id) {
+    const { data: clientBeta } = await supabase
+      .from('clients')
+      .select('is_beta_tester, beta_discount_percent')
+      .eq('id', clientData.id)
+      .single()
+    if (clientBeta?.is_beta_tester) {
+      betaResult = await computeBetaDiscount(
+        afterLoyaltyCents,
+        true,
+        clientBeta.beta_discount_percent ?? 30
+      )
+    }
+  }
+
+  const taxableSubtotalCents = betaResult?.applied
+    ? betaResult.adjustedServiceCents
+    : (loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents)
+  // Sales tax lookup is non-blocking and reflects loyalty+beta-adjusted subtotal.
   const taxCalc = await lookupSalesTax(taxableSubtotalCents, event.location_zip ?? null)
-  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty, loyaltyAdjustments)
+  return buildInvoiceData(
+    event,
+    chef,
+    ledgerEntries ?? [],
+    taxCalc,
+    loyalty,
+    loyaltyAdjustments,
+    betaResult
+  )
 }
 
 // ─── getInvoiceDataForClient ──────────────────────────────────────────────────
@@ -277,10 +308,38 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
       baseServiceCents,
     }),
   ])
-  const taxableSubtotalCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
-  // Sales tax lookup is non-blocking and reflects loyalty-adjusted subtotal.
+  // Beta discount (applied after loyalty)
+  const afterLoyaltyCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
+  let betaResult: BetaDiscountResult | null = null
+  if (clientData?.id) {
+    const { data: clientBeta } = await supabase
+      .from('clients')
+      .select('is_beta_tester, beta_discount_percent')
+      .eq('id', clientData.id)
+      .single()
+    if (clientBeta?.is_beta_tester) {
+      betaResult = await computeBetaDiscount(
+        afterLoyaltyCents,
+        true,
+        clientBeta.beta_discount_percent ?? 30
+      )
+    }
+  }
+
+  const taxableSubtotalCents = betaResult?.applied
+    ? betaResult.adjustedServiceCents
+    : (loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents)
+  // Sales tax lookup is non-blocking and reflects loyalty+beta-adjusted subtotal.
   const taxCalc = await lookupSalesTax(taxableSubtotalCents, event.location_zip ?? null)
-  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty, loyaltyAdjustments)
+  return buildInvoiceData(
+    event,
+    chef,
+    ledgerEntries ?? [],
+    taxCalc,
+    loyalty,
+    loyaltyAdjustments,
+    betaResult
+  )
 }
 
 // ─── buildInvoiceData ─────────────────────────────────────────────────────────
@@ -517,7 +576,8 @@ function buildInvoiceData(
   entries: RawLedgerEntry[],
   salesTax: SalesTaxInfo | null = null,
   loyaltySnapshot: Awaited<ReturnType<typeof getClientLoyaltySnapshotByTenant>> | null = null,
-  loyaltyAdjustmentSummary: LoyaltyInvoiceAdjustmentSummary | null = null
+  loyaltyAdjustmentSummary: LoyaltyInvoiceAdjustmentSummary | null = null,
+  betaDiscount: BetaDiscountResult | null = null
 ): InvoiceData {
   const clientData = event.client as { id: string; full_name: string; email: string } | null
 
@@ -548,7 +608,11 @@ function buildInvoiceData(
 
   const quotedPriceCents = event.quoted_price_cents ?? 0
   const loyaltyDiscountCents = loyaltyAdjustmentSummary?.totalDiscountCents ?? 0
-  const serviceSubtotalCents = loyaltyAdjustmentSummary?.adjustedServiceCents ?? quotedPriceCents
+  const afterLoyalty = loyaltyAdjustmentSummary?.adjustedServiceCents ?? quotedPriceCents
+  const betaDiscountCents = betaDiscount?.discountCents ?? 0
+  const serviceSubtotalCents = betaDiscount?.applied
+    ? betaDiscount.adjustedServiceCents
+    : afterLoyalty
   const taxAmountCents = salesTax?.taxAmountCents ?? 0
   const servicePaid = entries
     .filter((e) => !e.is_refund && e.entry_type !== 'tip')
@@ -609,5 +673,6 @@ function buildInvoiceData(
           pointsToNextTier: loyaltySnapshot.pointsToNextTier,
         }
       : null,
+    betaDiscount,
   }
 }

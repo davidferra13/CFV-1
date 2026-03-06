@@ -17,6 +17,7 @@ const CreateGroupSchema = z.object({
   event_stub_id: z.string().uuid().optional().nullable(),
   tenant_id: z.string().uuid().optional().nullable(),
   created_by_profile_id: z.string().uuid(),
+  group_type: z.enum(['circle', 'dinner_club', 'planning']).optional(),
 })
 
 /**
@@ -173,6 +174,36 @@ export async function joinHubGroup(input: {
     })
   } catch {
     // Non-blocking
+  }
+
+  // Referral tracking: record first group + who created it (non-blocking)
+  try {
+    const { data: currentProfile } = await supabase
+      .from('hub_guest_profiles')
+      .select('first_group_id')
+      .eq('id', input.profileId)
+      .single()
+
+    if (currentProfile && !currentProfile.first_group_id) {
+      // Find group creator for referral attribution
+      const { data: creator } = await supabase
+        .from('hub_group_members')
+        .select('profile_id')
+        .eq('group_id', group.id)
+        .eq('role', 'owner')
+        .single()
+
+      await supabase
+        .from('hub_guest_profiles')
+        .update({
+          first_group_id: group.id,
+          referred_by_profile_id: creator?.profile_id ?? null,
+        })
+        .eq('id', input.profileId)
+        .is('first_group_id', null)
+    }
+  } catch {
+    // Non-blocking referral tracking
   }
 
   return member as HubGroupMember
