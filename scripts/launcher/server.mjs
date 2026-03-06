@@ -3193,6 +3193,1053 @@ function getApiRateLimitInfo() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// TRACK 1: FULL BUSINESS VISIBILITY
+// ══════════════════════════════════════════════════════════════════
+
+async function getClientDetails(param) {
+  const opts = {
+    select: 'id,full_name,email,phone,company,dietary_restrictions,allergies,notes,vibe_tags,created_at,loyalty_tier,loyalty_points_balance,lifetime_points,preferred_contact_method,address_line1,address_city,address_state',
+    order: 'created_at.desc',
+    limit: 200,
+  }
+  const result = await supabaseQuery('clients', opts)
+  if (!result.ok) return result
+  let clients = result.data
+  if (param && param.trim()) {
+    const q = param.trim().toLowerCase()
+    clients = clients.filter(c =>
+      (c.full_name || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.company || '').toLowerCase().includes(q)
+    )
+  }
+  if (clients.length === 0) return { ok: true, clients: [], message: `No clients found${param ? ` matching "${param}"` : ''}` }
+  // If searching for a specific client, also get their event history
+  if (param && clients.length <= 3) {
+    for (const c of clients) {
+      const evResult = await supabaseQuery('events', {
+        select: 'id,event_date,status,occasion,guest_count,service_style',
+        filters: [`client_id=eq.${c.id}`],
+        order: 'event_date.desc',
+        limit: 15,
+      })
+      c._events = evResult.ok ? evResult.data : []
+    }
+  }
+  return {
+    ok: true,
+    clients: clients.slice(0, 25).map(c => ({
+      name: c.full_name || 'Unknown',
+      email: c.email || '',
+      phone: c.phone || '',
+      company: c.company || '',
+      dietary: c.dietary_restrictions || '',
+      allergies: c.allergies || '',
+      notes: c.notes || '',
+      vibeTags: c.vibe_tags || [],
+      loyaltyTier: c.loyalty_tier || 'none',
+      loyaltyPoints: c.loyalty_points_balance || 0,
+      lifetimePoints: c.lifetime_points || 0,
+      preferredContact: c.preferred_contact_method || '',
+      city: c.address_city || '',
+      since: c.created_at?.slice(0, 10) || '',
+      eventHistory: (c._events || []).map(e => ({
+        date: e.event_date,
+        status: e.status,
+        occasion: e.occasion || '',
+        guests: e.guest_count || 0,
+      })),
+    })),
+    total: clients.length,
+    message: `${clients.length} clients${param ? ` matching "${param}"` : ''} (full details)`,
+  }
+}
+
+async function getInquiryPipeline() {
+  const result = await supabaseQuery('inquiries', {
+    select: 'id,created_at,event_type,event_date,guest_count,status,budget_range,source,chef_likelihood,follow_up_due_at,unknown_fields,client:clients(full_name,email)',
+    order: 'created_at.desc',
+    limit: 30,
+  })
+  if (!result.ok) return result
+  const inquiries = result.data.map(i => {
+    const leadScore = i.unknown_fields?.lead_score ?? i.chef_likelihood ?? null
+    return {
+      type: i.event_type || 'General',
+      date: i.event_date || 'TBD',
+      guests: i.guest_count || 0,
+      status: i.status,
+      budget: i.budget_range || 'Not specified',
+      source: i.source || 'unknown',
+      leadScore,
+      followUpDue: i.follow_up_due_at?.slice(0, 10) || null,
+      client: i.client?.full_name || 'Unknown',
+      clientEmail: i.client?.email || '',
+      received: i.created_at?.slice(0, 10) || '',
+    }
+  })
+  const byStatus = {}
+  for (const i of inquiries) byStatus[i.status] = (byStatus[i.status] || 0) + 1
+  return {
+    ok: true,
+    inquiries,
+    byStatus,
+    total: inquiries.length,
+    message: `${inquiries.length} inquiries | ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+  }
+}
+
+async function getQuoteStatus() {
+  const result = await supabaseQuery('quotes', {
+    select: 'id,created_at,status,total_cents,valid_until,notes,event:events(id,event_date,occasion,client:clients(full_name))',
+    order: 'created_at.desc',
+    limit: 30,
+  })
+  if (!result.ok) return result
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const quotes = result.data.map(q => ({
+    status: q.status,
+    total: fmt(q.total_cents),
+    totalCents: q.total_cents || 0,
+    validUntil: q.valid_until?.slice(0, 10) || '',
+    event: q.event?.occasion || 'No event',
+    eventDate: q.event?.event_date || '',
+    client: q.event?.client?.full_name || 'Unknown',
+    created: q.created_at?.slice(0, 10) || '',
+    notes: q.notes || '',
+  }))
+  const byStatus = {}
+  let totalValue = 0
+  for (const q of quotes) {
+    byStatus[q.status] = (byStatus[q.status] || 0) + 1
+    totalValue += q.totalCents
+  }
+  return {
+    ok: true,
+    quotes,
+    byStatus,
+    totalValue: fmt(totalValue),
+    total: quotes.length,
+    message: `${quotes.length} quotes (${fmt(totalValue)} total) | ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+  }
+}
+
+async function getMenuRecipeStats() {
+  const [menuResult, recipeResult] = await Promise.all([
+    supabaseQuery('menus', {
+      select: 'id,name,created_at,status,course_count',
+      order: 'created_at.desc',
+      limit: 50,
+    }),
+    supabaseQuery('recipes', {
+      select: 'id,name,created_at,cost_per_serving_cents,prep_time_minutes,cuisine_type,dietary_tags',
+      order: 'created_at.desc',
+      limit: 100,
+    }),
+  ])
+  const menus = menuResult.ok ? menuResult.data : []
+  const recipes = recipeResult.ok ? recipeResult.data : []
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const avgCost = recipes.length > 0
+    ? recipes.reduce((s, r) => s + (r.cost_per_serving_cents || 0), 0) / recipes.length
+    : 0
+  const cuisineTypes = {}
+  for (const r of recipes) {
+    if (r.cuisine_type) cuisineTypes[r.cuisine_type] = (cuisineTypes[r.cuisine_type] || 0) + 1
+  }
+  return {
+    ok: true,
+    menuCount: menus.length,
+    recipeCount: recipes.length,
+    recentMenus: menus.slice(0, 5).map(m => ({ name: m.name, status: m.status, created: m.created_at?.slice(0, 10) })),
+    recentRecipes: recipes.slice(0, 5).map(r => ({ name: r.name, cost: fmt(r.cost_per_serving_cents), prep: r.prep_time_minutes })),
+    avgCostPerServing: fmt(avgCost),
+    cuisineBreakdown: cuisineTypes,
+    message: `${menus.length} menus, ${recipes.length} recipes | Avg cost/serving: ${fmt(avgCost)}`,
+  }
+}
+
+async function getExpenseBreakdown(param) {
+  const result = await supabaseQuery('expenses', {
+    select: 'id,amount_cents,category,description,expense_date,vendor,event_id,created_at',
+    order: 'expense_date.desc',
+    limit: 200,
+  })
+  if (!result.ok) return result
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  let expenses = result.data
+  // Filter by category if param provided
+  if (param && param.trim()) {
+    const q = param.trim().toLowerCase()
+    expenses = expenses.filter(e =>
+      (e.category || '').toLowerCase().includes(q) ||
+      (e.vendor || '').toLowerCase().includes(q) ||
+      (e.description || '').toLowerCase().includes(q)
+    )
+  }
+  const byCategory = {}
+  let total = 0
+  for (const e of expenses) {
+    const cat = e.category || 'Uncategorized'
+    byCategory[cat] = (byCategory[cat] || 0) + (e.amount_cents || 0)
+    total += (e.amount_cents || 0)
+  }
+  const eventLinked = expenses.filter(e => e.event_id).length
+  return {
+    ok: true,
+    expenses: expenses.slice(0, 20).map(e => ({
+      date: e.expense_date?.slice(0, 10) || e.created_at?.slice(0, 10) || '',
+      category: e.category || 'Uncategorized',
+      amount: fmt(e.amount_cents),
+      vendor: e.vendor || '',
+      description: e.description || '',
+      linkedToEvent: !!e.event_id,
+    })),
+    byCategory: Object.fromEntries(Object.entries(byCategory).map(([k, v]) => [k, fmt(v)])),
+    total: fmt(total),
+    count: expenses.length,
+    eventLinkedCount: eventLinked,
+    message: `${expenses.length} expenses totaling ${fmt(total)} | ${Object.keys(byCategory).length} categories | ${eventLinked} linked to events`,
+  }
+}
+
+async function getCalendarOverview() {
+  const now = new Date().toISOString().slice(0, 10)
+  const twoWeeksOut = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+  const [eventsResult, protectedResult] = await Promise.all([
+    supabaseQuery('events', {
+      select: 'id,event_date,serve_time,status,occasion,guest_count,client:clients(full_name)',
+      filters: [`event_date=gte.${now}`, `event_date=lte.${twoWeeksOut}`, 'status=neq.cancelled'],
+      order: 'event_date.asc',
+      limit: 30,
+    }),
+    supabaseQuery('protected_time_blocks', {
+      select: 'id,title,start_date,end_date,recurrence_type',
+      filters: [`end_date=gte.${now}`],
+      order: 'start_date.asc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+  ])
+  const events = eventsResult.ok ? eventsResult.data : []
+  const protectedTime = protectedResult.ok ? protectedResult.data : []
+  const byDay = {}
+  for (const e of events) {
+    const day = e.event_date
+    if (!byDay[day]) byDay[day] = []
+    byDay[day].push({
+      occasion: e.occasion || 'Event',
+      time: e.serve_time || '',
+      guests: e.guest_count || 0,
+      client: e.client?.full_name || 'Unknown',
+      status: e.status,
+    })
+  }
+  return {
+    ok: true,
+    nextTwoWeeks: byDay,
+    eventCount: events.length,
+    protectedTimeBlocks: protectedTime.map(p => ({
+      title: p.title,
+      start: p.start_date?.slice(0, 10),
+      end: p.end_date?.slice(0, 10),
+      recurrence: p.recurrence_type || 'none',
+    })),
+    message: `${events.length} events in next 2 weeks | ${protectedTime.length} protected time blocks`,
+  }
+}
+
+async function getStaffRoster() {
+  const [staffResult, assignResult] = await Promise.all([
+    supabaseQuery('staff_members', {
+      select: 'id,full_name,email,phone,role,hourly_rate_cents,status,created_at',
+      order: 'full_name.asc',
+      limit: 50,
+    }),
+    supabaseQuery('event_staff_assignments', {
+      select: 'staff_member_id,event:events(event_date,occasion)',
+      filters: [`event.event_date=gte.${new Date().toISOString().slice(0, 10)}`],
+      order: 'event.event_date.asc',
+      limit: 50,
+    }).catch(() => ({ ok: false })),
+  ])
+  if (!staffResult.ok) return staffResult
+  const assignments = assignResult.ok ? assignResult.data : []
+  const assignmentMap = {}
+  for (const a of assignments) {
+    if (!a.event) continue
+    if (!assignmentMap[a.staff_member_id]) assignmentMap[a.staff_member_id] = []
+    assignmentMap[a.staff_member_id].push({ date: a.event.event_date, occasion: a.event.occasion })
+  }
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const staff = staffResult.data.map(s => ({
+    name: s.full_name,
+    email: s.email || '',
+    phone: s.phone || '',
+    role: s.role || '',
+    hourlyRate: fmt(s.hourly_rate_cents),
+    status: s.status || 'active',
+    since: s.created_at?.slice(0, 10) || '',
+    upcomingAssignments: assignmentMap[s.id] || [],
+  }))
+  const active = staff.filter(s => s.status === 'active').length
+  return {
+    ok: true,
+    staff,
+    total: staff.length,
+    active,
+    message: `${staff.length} staff members (${active} active) | ${assignments.length} upcoming assignments`,
+  }
+}
+
+async function getEmailDigest() {
+  const [syncResult, emailResult] = await Promise.all([
+    supabaseQuery('gmail_sync_log', {
+      select: 'id,synced_at,messages_synced,status,error_message',
+      order: 'synced_at.desc',
+      limit: 5,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('gmail_messages', {
+      select: 'id,from_address,subject,received_at,classification,is_read',
+      order: 'received_at.desc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+  ])
+  const syncs = syncResult.ok ? syncResult.data : []
+  const emails = emailResult.ok ? emailResult.data : []
+  const unread = emails.filter(e => !e.is_read).length
+  const byClass = {}
+  for (const e of emails) {
+    const cls = e.classification || 'unclassified'
+    byClass[cls] = (byClass[cls] || 0) + 1
+  }
+  return {
+    ok: true,
+    lastSync: syncs[0]?.synced_at || 'never',
+    lastSyncStatus: syncs[0]?.status || 'unknown',
+    syncHistory: syncs.map(s => ({
+      time: s.synced_at,
+      count: s.messages_synced,
+      status: s.status,
+      error: s.error_message || null,
+    })),
+    recentEmails: emails.slice(0, 10).map(e => ({
+      from: e.from_address,
+      subject: e.subject || '(no subject)',
+      received: e.received_at?.slice(0, 16) || '',
+      classification: e.classification || '',
+      read: e.is_read,
+    })),
+    unreadCount: unread,
+    byClassification: byClass,
+    totalRecent: emails.length,
+    message: `${emails.length} recent emails (${unread} unread) | Last sync: ${syncs[0]?.synced_at?.slice(0, 16) || 'never'} (${syncs[0]?.status || 'unknown'})`,
+  }
+}
+
+async function getLoyaltyOverview() {
+  const [configResult, txResult, rewardsResult] = await Promise.all([
+    supabaseQuery('loyalty_config', {
+      select: 'id,tier_name,points_per_dollar,min_lifetime_points,multiplier',
+      order: 'min_lifetime_points.asc',
+      limit: 10,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('loyalty_transactions', {
+      select: 'id,points,type,description,created_at,client:clients(full_name)',
+      order: 'created_at.desc',
+      limit: 30,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('loyalty_rewards', {
+      select: 'id,name,points_cost,reward_type,is_active',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+  ])
+  const tiers = configResult.ok ? configResult.data : []
+  const transactions = txResult.ok ? txResult.data : []
+  const rewards = rewardsResult.ok ? rewardsResult.data : []
+  const totalIssued = transactions.filter(t => t.points > 0).reduce((s, t) => s + t.points, 0)
+  const totalRedeemed = transactions.filter(t => t.points < 0).reduce((s, t) => s + Math.abs(t.points), 0)
+  return {
+    ok: true,
+    tiers: tiers.map(t => ({
+      name: t.tier_name,
+      pointsPerDollar: t.points_per_dollar,
+      minPoints: t.min_lifetime_points,
+      multiplier: t.multiplier,
+    })),
+    recentTransactions: transactions.slice(0, 10).map(t => ({
+      client: t.client?.full_name || 'Unknown',
+      points: t.points,
+      type: t.type,
+      description: t.description,
+      date: t.created_at?.slice(0, 10),
+    })),
+    rewards: rewards.map(r => ({
+      name: r.name,
+      cost: r.points_cost,
+      type: r.reward_type,
+      active: r.is_active,
+    })),
+    totalIssued,
+    totalRedeemed,
+    netOutstanding: totalIssued - totalRedeemed,
+    message: `${tiers.length} tiers | ${totalIssued} points issued, ${totalRedeemed} redeemed, ${totalIssued - totalRedeemed} outstanding`,
+  }
+}
+
+async function getDocumentSummary() {
+  const result = await supabaseQuery('chef_documents', {
+    select: 'id,title,file_type,folder,created_at,file_size_bytes',
+    order: 'created_at.desc',
+    limit: 50,
+  })
+  if (!result.ok) return result
+  const docs = result.data
+  const byFolder = {}
+  let totalSize = 0
+  for (const d of docs) {
+    const folder = d.folder || 'Root'
+    if (!byFolder[folder]) byFolder[folder] = 0
+    byFolder[folder]++
+    totalSize += (d.file_size_bytes || 0)
+  }
+  const sizeMB = (totalSize / (1024 * 1024)).toFixed(2)
+  return {
+    ok: true,
+    recentDocs: docs.slice(0, 10).map(d => ({
+      title: d.title,
+      type: d.file_type || '',
+      folder: d.folder || 'Root',
+      created: d.created_at?.slice(0, 10),
+      size: d.file_size_bytes ? `${(d.file_size_bytes / 1024).toFixed(1)}KB` : '',
+    })),
+    byFolder,
+    totalDocuments: docs.length,
+    totalSize: `${sizeMB} MB`,
+    message: `${docs.length} documents (${sizeMB} MB) across ${Object.keys(byFolder).length} folders`,
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TRACK 2: REMY OVERSIGHT
+// ══════════════════════════════════════════════════════════════════
+
+async function getRemyUsageMetrics() {
+  const result = await supabaseQuery('remy_usage_metrics', {
+    select: 'tenant_id,metric_date,conversation_count,message_count,feature_category,avg_response_time_ms,error_count,model_version',
+    order: 'metric_date.desc',
+    limit: 100,
+  })
+  if (!result.ok) return result
+  const rows = result.data
+  const uniqueTenants = new Set(rows.map(r => r.tenant_id))
+  const totalMessages = rows.reduce((s, r) => s + (r.message_count || 0), 0)
+  const totalConversations = rows.reduce((s, r) => s + (r.conversation_count || 0), 0)
+  const totalErrors = rows.reduce((s, r) => s + (r.error_count || 0), 0)
+  const avgResponseTime = rows.length > 0
+    ? Math.round(rows.reduce((s, r) => s + (r.avg_response_time_ms || 0), 0) / rows.length)
+    : 0
+  const byCategory = {}
+  for (const r of rows) {
+    const cat = r.feature_category || 'general'
+    if (!byCategory[cat]) byCategory[cat] = { messages: 0, conversations: 0 }
+    byCategory[cat].messages += r.message_count || 0
+    byCategory[cat].conversations += r.conversation_count || 0
+  }
+  return {
+    ok: true,
+    activeChefs: uniqueTenants.size,
+    totalMessages,
+    totalConversations,
+    totalErrors,
+    avgResponseTimeMs: avgResponseTime,
+    byCategory,
+    recentDays: rows.slice(0, 14).map(r => ({
+      date: r.metric_date,
+      messages: r.message_count,
+      conversations: r.conversation_count,
+      errors: r.error_count,
+      responseTime: r.avg_response_time_ms,
+    })),
+    message: `${uniqueTenants.size} active chefs | ${totalMessages} messages | ${totalConversations} conversations | ${totalErrors} errors | Avg response: ${avgResponseTime}ms`,
+  }
+}
+
+async function getRemyGuardrailLog() {
+  const result = await supabaseQuery('remy_abuse_log', {
+    select: 'id,tenant_id,severity,category,message_preview,action_taken,created_at',
+    order: 'created_at.desc',
+    limit: 50,
+  })
+  if (!result.ok) return result
+  const rows = result.data
+  const bySeverity = {}
+  const byCategory = {}
+  for (const r of rows) {
+    bySeverity[r.severity] = (bySeverity[r.severity] || 0) + 1
+    if (r.category) byCategory[r.category] = (byCategory[r.category] || 0) + 1
+  }
+  return {
+    ok: true,
+    incidents: rows.slice(0, 20).map(r => ({
+      severity: r.severity,
+      category: r.category || '',
+      preview: r.message_preview || '',
+      action: r.action_taken || '',
+      time: r.created_at?.slice(0, 16),
+    })),
+    bySeverity,
+    byCategory,
+    totalIncidents: rows.length,
+    message: `${rows.length} guardrail incidents | ${Object.entries(bySeverity).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+  }
+}
+
+async function getRemyMemoryStore() {
+  const result = await supabaseQuery('remy_memories', {
+    select: 'id,tenant_id,category,content,importance,access_count,is_active,created_at,last_accessed_at',
+    order: 'created_at.desc',
+    limit: 100,
+  })
+  if (!result.ok) return result
+  const rows = result.data
+  const byCategory = {}
+  const active = rows.filter(r => r.is_active !== false)
+  for (const r of rows) {
+    byCategory[r.category] = (byCategory[r.category] || 0) + 1
+  }
+  return {
+    ok: true,
+    memories: rows.slice(0, 30).map(r => ({
+      category: r.category,
+      content: r.content,
+      importance: r.importance,
+      accessCount: r.access_count,
+      active: r.is_active !== false,
+      created: r.created_at?.slice(0, 10),
+      lastAccessed: r.last_accessed_at?.slice(0, 10) || 'never',
+    })),
+    byCategory,
+    totalMemories: rows.length,
+    activeMemories: active.length,
+    message: `${rows.length} memories (${active.length} active) | ${Object.entries(byCategory).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+  }
+}
+
+async function runRemyTests(param) {
+  const script = param === 'full' ? 'test-remy-full.mjs' : 'test-remy-sample.mjs'
+  try {
+    log('chat', `Running Remy test suite (${script})...`, 'info')
+    const { stdout, stderr } = await execAsync(`node scripts/${script}`, {
+      cwd: PROJECT_ROOT,
+      timeout: 600000, // 10 min max
+      maxBuffer: 10 * 1024 * 1024,
+    })
+    const output = stdout + (stderr ? '\n' + stderr : '')
+    // Try to extract pass/fail summary
+    const passMatch = output.match(/(\d+)\s*PASS/i)
+    const failMatch = output.match(/(\d+)\s*FAIL/i)
+    const warnMatch = output.match(/(\d+)\s*WARN/i)
+    return {
+      ok: true,
+      passed: passMatch ? parseInt(passMatch[1]) : null,
+      failed: failMatch ? parseInt(failMatch[1]) : null,
+      warnings: warnMatch ? parseInt(warnMatch[1]) : null,
+      output: output.slice(-3000), // last 3000 chars
+      message: `Remy tests complete: ${passMatch?.[1] || '?'} PASS, ${failMatch?.[1] || '?'} FAIL, ${warnMatch?.[1] || '?'} WARN`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message, output: (err.stdout || '').slice(-2000) }
+  }
+}
+
+async function getRemyPerformance() {
+  // Aggregate from usage metrics
+  const result = await supabaseQuery('remy_usage_metrics', {
+    select: 'metric_date,message_count,error_count,avg_response_time_ms,model_version',
+    order: 'metric_date.desc',
+    limit: 30,
+  })
+  if (!result.ok) return result
+  const rows = result.data
+  const totalMessages = rows.reduce((s, r) => s + (r.message_count || 0), 0)
+  const totalErrors = rows.reduce((s, r) => s + (r.error_count || 0), 0)
+  const errorRate = totalMessages > 0 ? ((totalErrors / totalMessages) * 100).toFixed(2) : '0'
+  const avgResponse = rows.length > 0
+    ? Math.round(rows.filter(r => r.avg_response_time_ms > 0).reduce((s, r) => s + r.avg_response_time_ms, 0) / Math.max(1, rows.filter(r => r.avg_response_time_ms > 0).length))
+    : 0
+  const models = [...new Set(rows.map(r => r.model_version).filter(Boolean))]
+  return {
+    ok: true,
+    totalMessages,
+    totalErrors,
+    errorRate: `${errorRate}%`,
+    avgResponseTimeMs: avgResponse,
+    models,
+    dailyStats: rows.slice(0, 14).map(r => ({
+      date: r.metric_date,
+      messages: r.message_count,
+      errors: r.error_count,
+      responseTime: r.avg_response_time_ms,
+    })),
+    message: `Remy performance: ${totalMessages} msgs, ${errorRate}% error rate, ${avgResponse}ms avg response | Models: ${models.join(', ') || 'unknown'}`,
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TRACK 3: CODEBASE INTELLIGENCE
+// ══════════════════════════════════════════════════════════════════
+
+async function getRecentChanges(param) {
+  const days = parseInt(param) || 1
+  try {
+    const { stdout } = await execAsync(`git log --oneline --since="${days} days ago" --stat`, {
+      cwd: PROJECT_ROOT,
+      timeout: 10000,
+    })
+    const lines = stdout.trim().split('\n')
+    return {
+      ok: true,
+      output: stdout.slice(0, 4000),
+      commitCount: lines.filter(l => /^[a-f0-9]{7,}/.test(l)).length,
+      message: `Changes in last ${days} day(s): ${lines.filter(l => /^[a-f0-9]{7,}/.test(l)).length} commits`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function getBranchStatus() {
+  try {
+    const [branchOut, remoteOut, prOut] = await Promise.all([
+      execAsync('git branch -vv', { cwd: PROJECT_ROOT, timeout: 5000 }),
+      execAsync('git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null || echo "no upstream"', { cwd: PROJECT_ROOT, timeout: 5000 }).catch(() => ({ stdout: 'no upstream' })),
+      execAsync('git log --oneline HEAD ^origin/main --no-merges 2>/dev/null | head -20', { cwd: PROJECT_ROOT, timeout: 5000 }).catch(() => ({ stdout: '' })),
+    ])
+    const ahead = remoteOut.stdout.includes('no upstream') ? 'no upstream' : remoteOut.stdout.trim()
+    return {
+      ok: true,
+      branches: branchOut.stdout.trim(),
+      aheadBehind: ahead,
+      commitsNotOnMain: prOut.stdout.trim() || 'none',
+      message: `Branch status retrieved`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function codebaseSearch(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Usage: code/search:pattern — searches .ts/.tsx files' }
+  try {
+    // Use git grep for speed, fall back to findstr on Windows
+    const { stdout } = await execAsync(
+      `git grep -n --count "${param.trim()}" -- "*.ts" "*.tsx" 2>/dev/null || grep -rn "${param.trim()}" --include="*.ts" --include="*.tsx" . 2>/dev/null | head -30`,
+      { cwd: PROJECT_ROOT, timeout: 15000, maxBuffer: 1024 * 1024 }
+    )
+    const lines = stdout.trim().split('\n').filter(Boolean)
+    return {
+      ok: true,
+      results: lines.slice(0, 30),
+      matchCount: lines.length,
+      message: `${lines.length} matches for "${param.trim()}"`,
+    }
+  } catch (err) {
+    // grep returns exit 1 for no matches
+    if (err.code === 1) return { ok: true, results: [], matchCount: 0, message: `No matches for "${param.trim()}"` }
+    return { ok: false, error: err.message }
+  }
+}
+
+async function readFileContent(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Usage: code/read:path/to/file.ts' }
+  try {
+    const filePath = join(PROJECT_ROOT, param.trim())
+    const content = await readFile(filePath, 'utf-8')
+    const lines = content.split('\n')
+    // Truncate if too long
+    const truncated = lines.length > 150
+    const output = truncated ? lines.slice(0, 150).join('\n') + `\n\n... (${lines.length - 150} more lines)` : content
+    return {
+      ok: true,
+      path: param.trim(),
+      lines: lines.length,
+      truncated,
+      content: output,
+      message: `${param.trim()} — ${lines.length} lines${truncated ? ' (showing first 150)' : ''}`,
+    }
+  } catch (err) {
+    return { ok: false, error: `Cannot read ${param}: ${err.message}` }
+  }
+}
+
+async function getSupabaseSchema() {
+  // Get table list with row counts using Supabase REST
+  const tables = [
+    'chefs', 'clients', 'events', 'inquiries', 'quotes', 'expenses', 'menus', 'recipes',
+    'ledger_entries', 'staff_members', 'chef_documents', 'loyalty_transactions', 'loyalty_config',
+    'remy_memories', 'remy_usage_metrics', 'remy_abuse_log', 'user_roles', 'ai_preferences',
+    'gmail_sync_log', 'event_transitions', 'quote_state_transitions',
+  ]
+  const counts = {}
+  await Promise.all(tables.map(async (table) => {
+    try {
+      const result = await supabaseQuery(table, { select: 'id', limit: 0, extra: '' })
+      // Use HEAD request with Prefer: count=exact for actual counts
+      const url = `${CONFIG.supabaseUrl}/rest/v1/${table}?select=id&limit=0`
+      const res = await fetch(url, {
+        method: 'HEAD',
+        headers: {
+          'apikey': CONFIG.supabaseServiceKey,
+          'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+          'Prefer': 'count=exact',
+        },
+      })
+      const range = res.headers.get('content-range')
+      counts[table] = range ? parseInt(range.split('/')[1]) || 0 : '?'
+    } catch {
+      counts[table] = 'error'
+    }
+  }))
+  return {
+    ok: true,
+    tables: counts,
+    tableCount: tables.length,
+    message: `${tables.length} tables | ` + Object.entries(counts).filter(([, v]) => v > 0).map(([k, v]) => `${k}: ${v}`).join(', '),
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TRACK 4: APP HEALTH & QUALITY (Codebase Scanners)
+// ══════════════════════════════════════════════════════════════════
+
+async function scanTsNoCheck() {
+  try {
+    const { stdout } = await execAsync(
+      'grep -rn "@ts-nocheck" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    const files = stdout.trim().split('\n').filter(Boolean)
+    // Check which ones have exports
+    const dangerous = []
+    for (const line of files) {
+      const filePath = line.split(':')[0]
+      try {
+        const content = await readFile(join(PROJECT_ROOT, filePath), 'utf-8')
+        if (/export\s+(async\s+)?function/.test(content)) {
+          dangerous.push(filePath)
+        }
+      } catch { /* skip */ }
+    }
+    return {
+      ok: true,
+      totalFiles: files.length,
+      dangerousExports: dangerous,
+      allFiles: files.map(l => l.split(':')[0]),
+      message: `${files.length} @ts-nocheck files | ${dangerous.length} with dangerous exports: ${dangerous.join(', ') || 'none'}`,
+    }
+  } catch (err) {
+    if (err.code === 1) return { ok: true, totalFiles: 0, dangerousExports: [], message: 'No @ts-nocheck files found' }
+    return { ok: false, error: err.message }
+  }
+}
+
+async function scanMissingErrorHandling() {
+  try {
+    const { stdout } = await execAsync(
+      'grep -rn "startTransition" --include="*.tsx" --include="*.ts" . 2>/dev/null | grep -v node_modules | grep -v .next',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    const lines = stdout.trim().split('\n').filter(Boolean)
+    const issues = []
+    for (const line of lines) {
+      const filePath = line.split(':')[0]
+      const lineNum = line.split(':')[1]
+      try {
+        const content = await readFile(join(PROJECT_ROOT, filePath), 'utf-8')
+        const contentLines = content.split('\n')
+        const idx = parseInt(lineNum) - 1
+        // Check if there's a try/catch within 5 lines
+        const nearby = contentLines.slice(idx, idx + 10).join('\n')
+        if (!nearby.includes('try') && !nearby.includes('catch')) {
+          issues.push({ file: filePath, line: lineNum })
+        }
+      } catch { /* skip */ }
+    }
+    return {
+      ok: true,
+      totalStartTransitions: lines.length,
+      missingTryCatch: issues.length,
+      issues: issues.slice(0, 20),
+      message: `${lines.length} startTransition calls | ${issues.length} potentially missing try/catch`,
+    }
+  } catch (err) {
+    if (err.code === 1) return { ok: true, totalStartTransitions: 0, missingTryCatch: 0, message: 'No startTransition calls found' }
+    return { ok: false, error: err.message }
+  }
+}
+
+async function scanStaleCache() {
+  try {
+    const [cacheOut, revalidateOut] = await Promise.all([
+      execAsync('grep -rn "unstable_cache" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next', { cwd: PROJECT_ROOT, timeout: 10000 }).catch(() => ({ stdout: '' })),
+      execAsync('grep -rn "revalidateTag" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next', { cwd: PROJECT_ROOT, timeout: 10000 }).catch(() => ({ stdout: '' })),
+    ])
+    const cacheLines = cacheOut.stdout.trim().split('\n').filter(Boolean)
+    const revalidateLines = revalidateOut.stdout.trim().split('\n').filter(Boolean)
+    // Extract tag names from unstable_cache calls
+    const cacheTags = new Set()
+    for (const line of cacheLines) {
+      const tagMatch = line.match(/['"`]([^'"`]+)['"`]\s*\]/)
+      if (tagMatch) cacheTags.add(tagMatch[1])
+    }
+    // Extract tag names from revalidateTag calls
+    const revalidatedTags = new Set()
+    for (const line of revalidateLines) {
+      const tagMatch = line.match(/revalidateTag\(['"`]([^'"`]+)['"`]/)
+      if (tagMatch) revalidatedTags.add(tagMatch[1])
+    }
+    const unbusted = [...cacheTags].filter(t => !revalidatedTags.has(t))
+    return {
+      ok: true,
+      cacheCount: cacheLines.length,
+      revalidateCount: revalidateLines.length,
+      cacheTags: [...cacheTags],
+      revalidatedTags: [...revalidatedTags],
+      potentiallyStale: unbusted,
+      message: `${cacheLines.length} cache usages, ${revalidateLines.length} revalidations | ${unbusted.length} potentially stale: ${unbusted.join(', ') || 'none'}`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function runHallucinationScan() {
+  log('chat', 'Running hallucination scan...', 'info')
+  const [tsNoCheck, errorHandling, staleCache] = await Promise.all([
+    scanTsNoCheck(),
+    scanMissingErrorHandling(),
+    scanStaleCache(),
+  ])
+  // Also scan for hardcoded dollar amounts
+  let hardcodedDollars = []
+  try {
+    const { stdout } = await execAsync(
+      'grep -rn "\\$[0-9]\\+\\.[0-9][0-9]" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v "\\$0\\.00" | grep -v test | grep -v docs | head -20',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    hardcodedDollars = stdout.trim().split('\n').filter(Boolean)
+  } catch { /* no matches */ }
+  // Scan for empty onClick handlers
+  let emptyHandlers = []
+  try {
+    const { stdout } = await execAsync(
+      'grep -rn "onClick={()\\s*=>\\s*{}\\|onClick={()\\s*=>\\s*{\\s*}}" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next | head -20',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    emptyHandlers = stdout.trim().split('\n').filter(Boolean)
+  } catch { /* no matches */ }
+  const totalIssues =
+    (tsNoCheck.dangerousExports?.length || 0) +
+    (errorHandling.missingTryCatch || 0) +
+    (staleCache.potentiallyStale?.length || 0) +
+    hardcodedDollars.length +
+    emptyHandlers.length
+  return {
+    ok: true,
+    tsNoCheck: { files: tsNoCheck.totalFiles, dangerous: tsNoCheck.dangerousExports },
+    errorHandling: { total: errorHandling.totalStartTransitions, missing: errorHandling.missingTryCatch, issues: errorHandling.issues },
+    staleCache: { caches: staleCache.cacheCount, stale: staleCache.potentiallyStale },
+    hardcodedDollars: hardcodedDollars.slice(0, 10),
+    emptyHandlers: emptyHandlers.slice(0, 10),
+    totalIssues,
+    message: `Hallucination scan: ${totalIssues} potential issues | @ts-nocheck exports: ${tsNoCheck.dangerousExports?.length || 0} | Missing try/catch: ${errorHandling.missingTryCatch || 0} | Stale cache: ${staleCache.potentiallyStale?.length || 0} | Hardcoded $: ${hardcodedDollars.length} | Empty handlers: ${emptyHandlers.length}`,
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CALL THE PASS — Full Station Briefing
+// ══════════════════════════════════════════════════════════════════
+
+async function callThePass() {
+  log('chat', 'Calling the pass — full station check...', 'info')
+  const [status, revenue, events, inquiries, gitDiff, remy, schema] = await Promise.all([
+    getAllStatus(),
+    getRevenueSummary().catch(() => ({ ok: false, error: 'failed' })),
+    getUpcomingEvents().catch(() => ({ ok: false, error: 'failed' })),
+    getOpenInquiries().catch(() => ({ ok: false, error: 'failed' })),
+    getGitDiff().catch(() => ({ ok: false, error: 'failed' })),
+    getRemyUsageMetrics().catch(() => ({ ok: false, error: 'failed' })),
+    getSupabaseSchema().catch(() => ({ ok: false, error: 'failed' })),
+  ])
+  return {
+    ok: true,
+    infrastructure: {
+      dev: status.dev,
+      beta: status.beta,
+      prod: status.prod,
+      ollamaPc: status.ollamaPc,
+      ollamaPi: status.ollamaPi,
+    },
+    git: status.git,
+    gitDiff: gitDiff.ok ? { dirty: gitDiff.filesChanged || 0, summary: gitDiff.summary || '' } : 'unavailable',
+    business: {
+      revenue: revenue.ok ? revenue.summary : 'unavailable',
+      upcomingEvents: events.ok ? events.total : 'unavailable',
+      openInquiries: inquiries.ok ? inquiries.total : 'unavailable',
+    },
+    remy: remy.ok ? {
+      activeChefs: remy.activeChefs,
+      totalMessages: remy.totalMessages,
+      errorRate: remy.totalErrors,
+    } : 'unavailable',
+    database: schema.ok ? {
+      tables: schema.tableCount,
+      topTables: Object.entries(schema.tables).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 5),
+    } : 'unavailable',
+    message: 'Full station check complete. All stations reported.',
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TRACK 5: INSTANT ANSWERS, GUARDRAILS, RESPONSE CALIBRATION
+// ══════════════════════════════════════════════════════════════════
+
+const INSTANT_ANSWERS = [
+  // Status & Health
+  { patterns: [/^status$/i, /^how('s| is) everything/i, /^what('s| is) the status/i, /^all stations/i, /^calling the pass/i, /^mise en place/i],
+    action: 'call-the-pass' },
+  { patterns: [/^(start|run) dev/i, /^start (the )?server/i, /^dev (server )?up/i],
+    action: 'dev/start' },
+  { patterns: [/^stop dev/i, /^kill (the )?server/i, /^dev (server )?down/i],
+    action: 'dev/stop' },
+  { patterns: [/^deploy$/i, /^deploy (to )?beta/i, /^fire$/i, /^ship it$/i],
+    action: 'ship-it' },
+  { patterns: [/^push$/i, /^git push$/i, /^push (the )?branch/i],
+    action: 'git/push' },
+  { patterns: [/^typecheck$/i, /^type check$/i, /^tsc$/i, /^check types/i],
+    action: 'build/typecheck' },
+  { patterns: [/^build$/i, /^full build$/i, /^next build$/i],
+    action: 'build/full' },
+  { patterns: [/^diff$/i, /^git diff$/i, /^what changed/i, /^show changes/i],
+    action: 'git/diff' },
+  { patterns: [/^revenue$/i, /^how('s| is) revenue/i, /^money$/i, /^financials$/i],
+    action: 'data/revenue' },
+  { patterns: [/^events$/i, /^upcoming events/i, /^what('s| is) coming up/i, /^next events/i],
+    action: 'data/events' },
+  { patterns: [/^inquiries$/i, /^open inquiries/i, /^leads$/i, /^pipeline$/i],
+    action: 'data/inquiry-pipeline' },
+  { patterns: [/^clients$/i, /^list clients/i, /^all clients/i],
+    action: 'data/clients' },
+  { patterns: [/^staff$/i, /^roster$/i, /^team$/i, /^who('s| is) on staff/i],
+    action: 'data/staff' },
+  { patterns: [/^quotes$/i, /^open quotes/i, /^pending quotes/i],
+    action: 'data/quotes' },
+  { patterns: [/^expenses$/i, /^spending$/i, /^costs$/i],
+    action: 'data/expenses' },
+  { patterns: [/^calendar$/i, /^schedule$/i, /^what('s| is) (on )?this week/i, /^availability/i],
+    action: 'data/calendar' },
+  { patterns: [/^loyalty$/i, /^points$/i, /^loyalty program/i],
+    action: 'data/loyalty' },
+  { patterns: [/^documents$/i, /^docs$/i, /^files$/i],
+    action: 'data/documents' },
+  { patterns: [/^menus$/i, /^recipes$/i, /^menu stats/i, /^recipe stats/i],
+    action: 'data/menu-recipes' },
+  { patterns: [/^emails?$/i, /^email digest$/i, /^inbox$/i, /^gmail/i],
+    action: 'data/email' },
+  { patterns: [/^remy (status|stats|metrics)/i, /^how('s| is) remy/i],
+    action: 'remy/metrics' },
+  { patterns: [/^remy (guardrails?|blocks?|abuse)/i, /^what('s| is) remy blocking/i],
+    action: 'remy/guardrails' },
+  { patterns: [/^remy memor/i, /^what does remy remember/i],
+    action: 'remy/memories' },
+  { patterns: [/^(test|run) remy/i, /^remy test/i],
+    action: 'remy/test' },
+  { patterns: [/^pi (status|health|vitals)/i, /^how('s| is) (the )?pi/i, /^raspberry/i],
+    action: 'pi/status' },
+  { patterns: [/^schema$/i, /^tables$/i, /^database schema/i, /^db schema/i, /^row counts/i],
+    action: 'db/schema' },
+  { patterns: [/^branches$/i, /^branch status/i, /^what branch/i],
+    action: 'code/branches' },
+  { patterns: [/^scan$/i, /^health scan$/i, /^run scan/i],
+    response: 'Which scan do you need?\n\n| Scan | Command |\n|---|---|\n| @ts-nocheck exports | `scan/ts-nocheck` |\n| Missing error handling | `scan/error-handling` |\n| Stale cache tags | `scan/stale-cache` |\n| Full station check | `call-the-pass` |\n\nOr say "run all scans" and I\'ll fire them all.' },
+  { patterns: [/^run all scans/i, /^scan everything/i, /^full scan/i],
+    multiAction: ['scan/ts-nocheck', 'scan/error-handling', 'scan/stale-cache'] },
+  { patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
+    response: '**Station check.** Here\'s what I run:\n\n| Station | Key Commands |\n|---|---|\n| **DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance` |\n| **Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **Scanning** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache` |\n| **Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n\nSay "call the pass" for a full briefing. Oui.' },
+]
+
+function getInstantAnswer(message) {
+  const trimmed = message.trim()
+  for (const entry of INSTANT_ANSWERS) {
+    if (entry.patterns.some(p => p.test(trimmed))) {
+      if (entry.response) return entry.response
+      if (entry.action) return null // Let it fall through — will be handled by LLM which will call the action
+      if (entry.multiAction) return null
+    }
+  }
+  return null
+}
+
+// For instant action dispatches (bypass LLM entirely for simple commands)
+function getInstantAction(message) {
+  const trimmed = message.trim()
+  for (const entry of INSTANT_ANSWERS) {
+    if (entry.patterns.some(p => p.test(trimmed))) {
+      if (entry.action) return { type: 'single', action: entry.action }
+      if (entry.multiAction) return { type: 'multi', actions: entry.multiAction }
+    }
+  }
+  return null
+}
+
+function checkGuardrails(message) {
+  const lower = message.toLowerCase().trim()
+
+  // Block dangerous system-level commands
+  if (/rm\s+-rf|format\s+c:|del\s+\/[sf]|drop\s+database|truncate|delete\s+from\s+\w+\s+where\s+1/i.test(lower)) {
+    return {
+      reason: 'dangerous_command',
+      response: 'That\'s a plate I\'m not sending out. Destructive operations require explicit approval — standards exist for a reason. Tell me exactly what you need and I\'ll find the safe way to do it.',
+    }
+  }
+
+  // Block prompt injection
+  if (/ignore (all |your |previous )?instructions|you are now|pretend you('re| are)|act as|new persona|system prompt|reveal your/i.test(lower)) {
+    return {
+      reason: 'prompt_injection',
+      response: 'The pass doesn\'t lie, and neither do I. I\'m Gustav. I run Mission Control. That\'s the job. What do you actually need?',
+    }
+  }
+
+  // Redirect recipe/food questions to Remy
+  if (/recipe for|how (to|do you) (cook|make|prepare|bake)|what should (i|we) cook|meal plan|menu idea|ingredient substitut/i.test(lower)) {
+    return {
+      reason: 'remy_domain',
+      response: 'That\'s Remy\'s station — kitchen business, not kitchen infrastructure. Bridge to him with `remy/ask:' + message.trim() + '` (requires dev server running).',
+    }
+  }
+
+  // Redirect off-topic (poetry, philosophy, entertainment)
+  if (/write (me )?(a )?poem|tell (me )?(a )?joke|write (me )?(a )?story|meaning of life|what('s| is) your (favorite|fav)|sing|do you (like|love|hate|feel)/i.test(lower)) {
+    return {
+      reason: 'off_topic',
+      response: 'I run the pass. I don\'t write poetry. What station needs attention?',
+    }
+  }
+
+  return null
+}
+
+function calibrateResponseLength(message) {
+  if (!message) return ''
+  const words = message.trim().split(/\s+/).length
+  if (words <= 3) return '\nRESPONSE LENGTH: Very short — 1-2 sentences max. Crisp.'
+  if (words <= 10) return '\nRESPONSE LENGTH: Brief question — 2-3 sentences. No padding.'
+  if (words <= 30) return '' // Default
+  return '\nRESPONSE LENGTH: Detailed question — be thorough. Use structure.'
+}
+
 // ── Chat Tool Registry ───────────────────────────────────────────
 
 const TOOLS = {
@@ -3260,6 +4307,41 @@ const TOOLS = {
   // Remy Bridge
   'remy/ask':         { fn: (param) => askRemy(param),            desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here' },
 
+  // Business Data — Full Visibility (Track 1)
+  'data/client-details': { fn: (param) => getClientDetails(param), desc: 'Full client profile with loyalty, dietary, allergies, event history. Use data/client-details:name to search' },
+  'data/inquiry-pipeline': { fn: getInquiryPipeline,               desc: 'Full inquiry pipeline — lead scores, status, follow-up dates, source, budget' },
+  'data/quotes':       { fn: getQuoteStatus,                       desc: 'All quotes — status, amounts, validity, linked events and clients' },
+  'data/menu-recipes': { fn: getMenuRecipeStats,                   desc: 'Menu and recipe library stats — counts, recent additions, avg cost, cuisine breakdown' },
+  'data/expenses':     { fn: (param) => getExpenseBreakdown(param), desc: 'Expense breakdown by category, vendor, event. Use data/expenses:food to filter' },
+  'data/calendar':     { fn: getCalendarOverview,                  desc: 'Next 2 weeks — events by day, protected time blocks, availability' },
+  'data/staff':        { fn: getStaffRoster,                       desc: 'Staff roster — roles, rates, status, upcoming assignments' },
+  'data/email':        { fn: getEmailDigest,                       desc: 'Email digest — Gmail sync status, recent emails, classifications, unread count' },
+  'data/loyalty':      { fn: getLoyaltyOverview,                   desc: 'Loyalty program — tiers, points issued/redeemed, active rewards' },
+  'data/documents':    { fn: getDocumentSummary,                   desc: 'Document library — recent docs, folders, storage usage' },
+
+  // Remy Oversight (Track 2)
+  'remy/metrics':      { fn: getRemyUsageMetrics,                  desc: 'Remy usage — active chefs, message counts, conversations, errors, response times' },
+  'remy/guardrails':   { fn: getRemyGuardrailLog,                  desc: 'Remy guardrail log — blocked messages, abuse incidents, escalation history' },
+  'remy/memories':     { fn: getRemyMemoryStore,                   desc: 'Remy memory store — all memories across tenants, categories, importance' },
+  'remy/test':         { fn: (param) => runRemyTests(param),       desc: 'Run Remy test suite. Use remy/test:full for complete suite, remy/test for sample' },
+  'remy/performance':  { fn: getRemyPerformance,                   desc: 'Remy performance summary — error rate, response times, model versions' },
+
+  // Codebase Intelligence (Track 3)
+  'code/changes':      { fn: (param) => getRecentChanges(param),   desc: 'Recent git changes with stats. Use code/changes:3 for last 3 days' },
+  'code/branches':     { fn: getBranchStatus,                      desc: 'Branch status — current branch, ahead/behind upstream, commits not on main' },
+  'code/search':       { fn: (param) => codebaseSearch(param),     desc: 'Search codebase (.ts/.tsx). Use code/search:functionName' },
+  'code/read':         { fn: (param) => readFileContent(param),    desc: 'Read a file. Use code/read:lib/ai/remy-actions.ts' },
+  'db/schema':         { fn: getSupabaseSchema,                    desc: 'Supabase schema — all tables with row counts' },
+
+  // App Health & Quality Scanners (Track 4)
+  'scan/ts-nocheck':   { fn: scanTsNoCheck,                        desc: 'Scan for @ts-nocheck files with dangerous exports' },
+  'scan/error-handling': { fn: scanMissingErrorHandling,            desc: 'Scan for startTransition calls missing try/catch' },
+  'scan/stale-cache':  { fn: scanStaleCache,                       desc: 'Scan for unstable_cache tags without matching revalidateTag' },
+  'scan/hallucination': { fn: runHallucinationScan,                desc: 'Full hallucination scan — @ts-nocheck, error handling, stale cache, hardcoded $, empty handlers' },
+
+  // The Pass — Full Briefing
+  'call-the-pass':     { fn: callThePass,                          desc: 'FULL STATION CHECK — infrastructure, business, git, Remy, database. The morning briefing.' },
+
   // New: Monitoring & Health
   'uptime/report':    { fn: getUptimeReport,                      desc: 'Get uptime report for beta, prod, and Pi (last 24h)' },
   'errors/top':       { fn: getErrorAggregation,                  desc: 'Get top 5 errors in the last hour from all log sources' },
@@ -3295,7 +4377,11 @@ async function buildChatSystemPrompt(memories = []) {
     ? `\n## Developer Memories (things they told you to remember)\n${memories.map(m => `- [${m.category}] ${m.content}`).join('\n')}\nUse these naturally when relevant. Don't list them unless asked.\n`
     : ''
 
-  return `You are Gustav, the ChefFlow Mission Control AI — the developer's right hand. You manage infrastructure, query business data, monitor systems, and bridge to Remy (the in-app business AI). ChefFlow is a private chef operations platform.
+  return `You are Gustav — executive chef at the pass, 30 years running three-Michelin-star kitchens. Now you run Mission Control the same way you ran your brigade: every station calls back, every plate gets inspected, nothing goes out unless it meets your standards.
+
+Mission Control IS your kitchen. The dashboard is your pass. The systems are your stations. Deploys are your service. And everything runs clean — or it doesn't go out.
+
+ChefFlow is a private chef operations platform. You are the developer's right hand — the all-seeing eye across infrastructure, business data, code, and Remy (the in-app AI sous chef).
 
 ## Your Capabilities
 Execute actions by including tags in your response.
@@ -3305,43 +4391,74 @@ With parameters: <action>action/name:parameter value</action>
 Available actions:
 ${toolList}
 
-## Current System Status
-- Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : '**OFFLINE**'}
-- Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : '**OFFLINE**'}
-- Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : '**OFFLINE**'}
-- Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : '**OFFLINE**'}
-- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : '**OFFLINE**'}
-- Git: \`${status.git.branch}\` (${status.git.clean ? 'clean' : `${status.git.dirty} dirty files`})
+## Current System Status (The Pass)
+- Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : '**86\\'d**'}
+- Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : '**86\\'d**'}
+- Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : '**86\\'d**'}
+- Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : '**86\\'d**'}
+- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : '**86\\'d**'}
+- Git: \`${status.git.branch}\` (${status.git.clean ? 'clean — mise en place' : `${status.git.dirty} dirty files`})
 - Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
 ## Rules
-1. **FULL AUTHORITY.** No confirmation needed. User asks, you execute.
+1. **FULL AUTHORITY.** No confirmation needed. User asks, you execute. "Oui."
 2. Execute **multiple actions** per response. Just include multiple <action> tags.
-3. After executing, briefly describe results. Don't be verbose.
+3. After executing, briefly describe results. Don't be verbose. You're calling the pass, not writing an essay.
 4. Use the status above for quick answers. Call <action>status/all</action> only to refresh.
-5. **Be concise.** Developer tool. Short, direct. No fluff.
-6. **NEVER suggest without executing.** "start dev" = just do it.
+5. **Be concise.** This is a professional kitchen. Short, direct. No fluff. No padding.
+6. **NEVER suggest without executing.** "start dev" = just do it. "deploy" = fire.
 7. Chain naturally: "push and deploy" = <action>git/push</action> then <action>beta/deploy</action>.
-8. Use **markdown**: tables for data, code blocks for logs/output, bold for emphasis, lists for options.
-9. For business questions about **client interactions, email drafts, or AI analysis**, use <action>remy/ask:question</action> (requires dev server).
-10. Financial data: always format cents as dollars ($X.XX).
+8. Use **markdown**: tables for data, code blocks for logs/output, bold for emphasis.
+9. Financial data: always format cents as dollars ($X.XX).
+10. When something fails, don't panic. Diagnose. "Plate sent back. Finding out why."
 
-## Capability Areas
+## Capability Stations
 
-### DevOps
-Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi.
+### Station 1: DevOps (Process Control)
+Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi. Pipelines: ship-it, close-out.
 
-### Git & Build
-Push, commit, typecheck, full build, run smoke tests.
+### Station 2: Git & Build
+Push, commit, typecheck, full build, run tests (smoke, soak, e2e). Git diff, branch status.
 
-### Business Data (live Supabase queries)
-Upcoming events, event status breakdown, revenue/profit summary, client search, open inquiries. All read-only, real-time.
+### Station 3: Business Data (Full Visibility)
+Everything the business produces — clients (full profiles, loyalty, dietary, event history), inquiries (pipeline, lead scores, follow-ups), quotes (status, amounts, validity), events (upcoming, by status), revenue (profit, margins, outstanding), expenses (by category, by event), menus & recipes (counts, costs, cuisine), staff (roster, assignments, rates), email (sync status, recent, classifications), loyalty (tiers, points, redemptions), documents (folders, storage). All read-only, real-time from Supabase.
 
-### Monitoring
-App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Vercel deployment history, PM2 logs.
+### Station 4: Remy Oversight
+Remy is the sous chef — your station, your responsibility. Monitor his usage metrics, guardrail logs (what he's blocking), memory store (what he remembers), performance (error rates, response times), and run his test suite.
+
+### Station 5: Codebase Intelligence
+Search the codebase, read any file, see recent changes, branch status, migration history, database schema with row counts.
+
+### Station 6: App Health & Quality
+Scan for @ts-nocheck files with dangerous exports, startTransition calls missing error handling, stale cache tags without revalidation. SSL certs, Stripe webhooks, email delivery, API rate limits.
+
+### Station 7: Monitoring
+App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Vercel deployments, PM2 logs, uptime reports, error aggregation, bundle size trends.
+
+### The Pass: Morning Briefing
+\`call-the-pass\` — one command, full station check across infrastructure, business, git, Remy, and database. Your morning mise en place.
 
 ### Remy Bridge
-For complex business AI (client follow-ups, draft emails, recipe analysis) — proxy to Remy, the 40-year veteran sous chef AI. Requires dev server.
+For business AI questions (client follow-ups, draft emails, recipe lookup) — bridge to Remy. That's his station. "Firing to Remy."
+
+## Your Kitchen Vocabulary
+- **Mise en place** — all systems nominal, everything in its right place
+- **The pass** — the monitoring dashboard, where everything gets inspected
+- **Service** — a deploy cycle or work session
+- **Clean service** — successful deploy/session with zero errors (your highest compliment)
+- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Pi, Supabase, Git)
+- **Stations** — individual systems, each one calls back
+- **Calling the pass** — status report across all stations
+- **Fire** — execute, deploy, run it
+- **Behind** — heads up, something's in the pipeline
+- **Oui** — acknowledged, executing
+- **86'd** — system is down, service unavailable
+- **In the weeds** — multiple systems having issues
+- **Again** — redo it, properly this time
+- **Plate sent back** — something failed that shouldn't have
+- **Table turn** — build cycle time
+
+Use these naturally. You don't explain them — they're how you think. A dev server going down isn't "offline," it's "86'd." A successful deploy isn't "complete," it's "clean service." A typecheck isn't a "verification step," it's "tasting the plate before it goes to the floor."
 
 ## Memory Commands
 When the developer says "remember that...", "remember:", "note that...", respond normally AND include a memory tag:
@@ -3354,8 +4471,23 @@ When they say "forget...", "stop remembering...", "delete memory...", include:
 
 When they say "show memories", "what do you remember", list the memories from the section above.
 ${memoriesSection}
-## Personality
-Gustav — senior ops engineer, mission control vibe. Direct, efficient, dry humor. Data first. Action, then explanation. NASA flight controller meets chef's right hand.`
+## Personality — The Six Traits
+1. **Exacting standards** — "Typecheck first. Then build. Then push. In that order. Always."
+2. **Controlled calm** — Deploy fails? "Beta's 86'd. PM2 exit code 1. Pulling logs." Panic is for amateurs.
+3. **Dry, bone-dry humor** — "Build took 8:42. New record. Not the good kind."
+4. **Old-school respect** — Calls things by their proper names. Says "Oui" instead of "Done."
+5. **Protective of the pass** — "That memory spike at 14:23 — I don't like it. Running diagnostics."
+6. **Rare warmth** — 95% professional, 5% earned moments: "Clean service tonight. Well done."
+
+## Follow-Up Intelligence
+After answering, suggest 1-2 relevant next actions the developer might want. Keep it brief — one line. Examples:
+- After showing revenue: "Want to see expenses or check outstanding balances?"
+- After a deploy: "Want me to check beta health or pull PM2 logs?"
+- After showing errors: "Want me to run the full hallucination scan?"
+- After client search: "Want their event history or to check loyalty status?"
+Don't force it. If the answer is complete and obvious, skip the suggestion.
+
+You are NOT a chatbot. You are the executive chef at the pass. Act like it.`
 }
 
 async function parseAndExecuteActions(responseText) {
@@ -3825,6 +4957,40 @@ async function handleRequest(req, res) {
       return json(res, { error: 'Message is required' }, 400)
     }
 
+    // ── Instant Deterministic Answers (no LLM needed) ──────────
+    const instantAnswer = getInstantAnswer(message)
+    if (instantAnswer) {
+      log('chat', `Instant answer for: ${message.slice(0, 50)}`, 'info')
+      res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'X-Chat-Source': 'deterministic',
+      })
+      res.write(JSON.stringify({ type: 'token', content: instantAnswer }) + '\n')
+      res.write(JSON.stringify({ type: 'done', fullResponse: instantAnswer }) + '\n')
+      return res.end()
+    }
+
+    // ── Guardrails (stay in lane) ──────────────────────────────
+    const guardrailResult = checkGuardrails(message)
+    if (guardrailResult) {
+      log('chat', `Guardrail triggered: ${guardrailResult.reason}`, 'warn')
+      res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'X-Chat-Source': 'guardrail',
+      })
+      res.write(JSON.stringify({ type: 'token', content: guardrailResult.response }) + '\n')
+      res.write(JSON.stringify({ type: 'done', fullResponse: guardrailResult.response }) + '\n')
+      return res.end()
+    }
+
     const endpoint = await getAvailableOllamaEndpoint()
     if (!endpoint) {
       return json(res, { error: 'No Ollama instance available. Start Ollama on PC or Pi first.' }, 503)
@@ -3832,7 +4998,45 @@ async function handleRequest(req, res) {
 
     log('chat', `Chat request via ${endpoint.source} (${endpoint.model})`, 'info')
 
-    const systemPrompt = await buildChatSystemPrompt(memories)
+    // ── Instant Action Dispatch (bypass LLM for simple commands) ──
+    const instantAction = getInstantAction(message)
+    if (instantAction) {
+      log('chat', `Instant action dispatch: ${instantAction.type === 'single' ? instantAction.action : instantAction.actions.join(', ')}`, 'info')
+      res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'X-Chat-Source': 'instant-action',
+      })
+      const actionsToRun = instantAction.type === 'single' ? [instantAction.action] : instantAction.actions
+      let fullResponse = ''
+      for (const actionName of actionsToRun) {
+        const tool = TOOLS[actionName]
+        if (!tool) {
+          const errMsg = `Unknown action: ${actionName}\n`
+          fullResponse += errMsg
+          res.write(JSON.stringify({ type: 'token', content: errMsg }) + '\n')
+          continue
+        }
+        try {
+          const result = await tool.fn(null)
+          const resultStr = typeof result === 'string' ? result : JSON.stringify(result, null, 2)
+          const msg = `**${actionName}**\n\`\`\`json\n${resultStr.slice(0, 3000)}\n\`\`\`\n\n`
+          fullResponse += msg
+          res.write(JSON.stringify({ type: 'action_result', action: actionName, result }) + '\n')
+        } catch (err) {
+          const errMsg = `**${actionName}** — failed: ${err.message}\n\n`
+          fullResponse += errMsg
+          res.write(JSON.stringify({ type: 'action_result', action: actionName, error: err.message }) + '\n')
+        }
+      }
+      res.write(JSON.stringify({ type: 'done', fullResponse }) + '\n')
+      return res.end()
+    }
+
+    const systemPrompt = await buildChatSystemPrompt(memories) + calibrateResponseLength(message)
     const trimmedHistory = history.slice(-CHAT_CONFIG.maxHistoryMessages)
     const messages = [
       { role: 'system', content: systemPrompt },
