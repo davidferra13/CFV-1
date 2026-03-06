@@ -67,7 +67,8 @@ import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { getEventReadiness } from '@/lib/events/readiness'
 import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
 import { getTakeAChefEventFinance } from '@/lib/integrations/take-a-chef-finance-actions'
-import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
+import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actions'
+import { MarketplaceConvertBanner } from '@/components/events/marketplace-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
 import { ContractSection } from '@/components/contracts/contract-section'
@@ -303,6 +304,7 @@ export default async function EventDetailPage({
   const [
     refundRecommendationData,
     tacConversion,
+    marketplaceConversion,
     guestShares,
     guestList,
     rsvpSummary,
@@ -332,9 +334,13 @@ export default async function EventDetailPage({
     event.status === 'cancelled' && totalPaid > 0
       ? getCancellationRefundRecommendation(params.id).catch(() => null)
       : Promise.resolve(null),
-    // Take a Chef conversion â€” only for completed events
+    // Take a Chef conversion (legacy) â€” only for completed events
     event.status === 'completed'
       ? getTakeAChefConversionData(params.id).catch(() => null)
+      : Promise.resolve(null),
+    // Generalized marketplace conversion â€” any platform, completed events
+    event.status === 'completed'
+      ? getMarketplaceConversionData(params.id).catch(() => null)
       : Promise.resolve(null),
     // Guest & sharing data
     getEventShares(params.id),
@@ -511,11 +517,13 @@ export default async function EventDetailPage({
         )}
 
       {/* Take a Chef â†’ Direct Conversion Banner */}
-      {tacConversion?.isTakeAChef && tacConversion.directBookingUrl && (
-        <TakeAChefConvertBanner
-          clientName={tacConversion.clientName}
-          directBookingUrl={tacConversion.directBookingUrl}
+      {/* Marketplace Convert Banner â€" works for all platforms (TAC, Yhangry, Cozymeal, etc.) */}
+      {marketplaceConversion?.isMarketplace && marketplaceConversion.directBookingUrl && (
+        <MarketplaceConvertBanner
+          clientName={marketplaceConversion.clientName}
+          directBookingUrl={marketplaceConversion.directBookingUrl}
           eventId={params.id}
+          platformLabel={marketplaceConversion.platformLabel!}
         />
       )}
 

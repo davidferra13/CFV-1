@@ -24,6 +24,7 @@ import { getEventMapUrl } from '@/lib/maps/mapbox'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -261,6 +262,18 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
             Share this QR code or link so your client can view their event portal.
           </p>
           <ClientPortalQR eventId={event.id} />
+          <div className="mt-4 pt-4 border-t border-stone-800">
+            <p className="text-sm text-stone-500 mb-3">
+              Send a pre-dinner worksheet for your client to fill out their preferences, allergies,
+              and details.
+            </p>
+            <SendWorksheetButton
+              eventId={event.id}
+              clientId={event.client_id}
+              eventDate={event.event_date}
+              occasion={event.occasion}
+            />
+          </div>
         </Card>
       )}
 

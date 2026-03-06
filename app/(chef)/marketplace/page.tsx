@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
 import { getTakeAChefCommandCenter } from '@/lib/gmail/take-a-chef-command-center'
+import { getMarketplaceCommandCenter } from '@/lib/marketplace/command-center-actions'
+import { getMarketplaceROI } from '@/lib/marketplace/roi-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = {
@@ -76,7 +78,11 @@ function formatCapturedAt(value: string | null): string {
 }
 
 export default async function MarketplacePage() {
-  const data = await getTakeAChefCommandCenter()
+  const [data, allPlatforms, roi] = await Promise.all([
+    getTakeAChefCommandCenter(),
+    getMarketplaceCommandCenter(),
+    getMarketplaceROI(),
+  ])
   const isEmpty =
     data.leads.length === 0 &&
     data.proposalFollowUps.length === 0 &&
@@ -84,7 +90,15 @@ export default async function MarketplacePage() {
     data.upcomingBookings.length === 0 &&
     data.payoutWatchlist.length === 0 &&
     data.summary.untouchedLeadCount === 0 &&
-    data.summary.awaitingChefCount === 0
+    data.summary.awaitingChefCount === 0 &&
+    allPlatforms.leads.length === 0 &&
+    allPlatforms.upcomingBookings.length === 0
+
+  // Non-TAC leads (Yhangry, Cozymeal, Bark, etc.)
+  const otherPlatformLeads = allPlatforms.leads.filter((l) => l.channel !== 'take_a_chef')
+  const otherPlatformBookings = allPlatforms.upcomingBookings.filter(
+    (b) => b.channel !== 'take_a_chef'
+  )
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
@@ -100,8 +114,8 @@ export default async function MarketplacePage() {
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Marketplace Command Center</h1>
             <p className="mt-1 max-w-3xl text-sm text-stone-400">
-              One operating surface for Take a Chef demand: new leads, upcoming bookings, and payout
-              problems that still need attention.
+              All your marketplace leads in one place: Take a Chef, Yhangry, Cozymeal, Bark,
+              Thumbtack, and more. Capture, convert, keep the client.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -133,6 +147,58 @@ export default async function MarketplacePage() {
           </div>
         </div>
       </div>
+
+      {/* Marketplace ROI - Commission Savings */}
+      {(roi.directRebookingCount > 0 || roi.totalMarketplaceClients > 0) && (
+        <Card>
+          <CardContent className="py-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-sm font-medium text-stone-400">Direct Rebooking Savings</p>
+                <p className="mt-1 text-3xl font-bold text-emerald-400">
+                  {formatCurrency(roi.estimatedCommissionSavedCents)}
+                </p>
+                <p className="mt-0.5 text-xs text-stone-500">
+                  estimated commission saved across {roi.directRebookingCount} direct rebooking
+                  {roi.directRebookingCount !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-6 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-stone-100">{roi.totalMarketplaceClients}</p>
+                  <p className="text-xs text-stone-500">marketplace clients</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-stone-100">{roi.clientsWhoRebooked}</p>
+                  <p className="text-xs text-stone-500">converted to direct</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-stone-100">
+                    {formatCurrency(roi.directRebookingRevenueCents)}
+                  </p>
+                  <p className="text-xs text-stone-500">direct rebooking revenue</p>
+                </div>
+              </div>
+            </div>
+            {roi.platformBreakdown.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-3 border-t border-stone-800 pt-3">
+                {roi.platformBreakdown.map((p) => (
+                  <div key={p.channel} className="text-xs text-stone-400">
+                    <span className="font-medium text-stone-300">{p.label}:</span> {p.firstBookings}{' '}
+                    clients, {p.directRebookings} direct rebookings
+                    {p.estimatedSavedCents > 0 && (
+                      <span className="text-emerald-400">
+                        {' '}
+                        ({formatCurrency(p.estimatedSavedCents)} saved)
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {isEmpty ? (
         <Card>
@@ -572,6 +638,138 @@ export default async function MarketplacePage() {
             </CardContent>
           </Card>
         </>
+      )}
+
+      {/* Other Marketplace Platforms (Yhangry, Cozymeal, Bark, etc.) */}
+      {(otherPlatformLeads.length > 0 || otherPlatformBookings.length > 0) && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-stone-800" />
+            <span className="text-sm font-medium text-stone-400">Other Platforms</span>
+            <div className="h-px flex-1 bg-stone-800" />
+          </div>
+
+          {/* Platform breakdown badges */}
+          {allPlatforms.summary.platformBreakdown.filter((p) => p.channel !== 'take_a_chef')
+            .length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {allPlatforms.summary.platformBreakdown
+                .filter((p) => p.channel !== 'take_a_chef')
+                .map((p) => (
+                  <Badge key={p.channel} variant="default">
+                    {p.label}: {p.count} active
+                  </Badge>
+                ))}
+            </div>
+          )}
+
+          {/* Other platform leads */}
+          {otherPlatformLeads.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Marketplace Leads</CardTitle>
+                <p className="mt-1 text-sm text-stone-400">
+                  Open leads from Yhangry, Cozymeal, Bark, Thumbtack, and other platforms.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {otherPlatformLeads.map((lead) => (
+                  <div
+                    key={lead.inquiryId}
+                    className="rounded-xl border border-stone-800 bg-stone-900/70 p-4"
+                  >
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-base font-semibold text-stone-100">
+                            {lead.clientName}
+                          </p>
+                          <Badge variant="info">{lead.platformLabel}</Badge>
+                          <Badge variant={lead.status === 'new' ? 'warning' : 'default'}>
+                            {lead.status === 'new' ? 'New' : 'Awaiting chef'}
+                          </Badge>
+                          {lead.isStale && <Badge variant="error">Stale</Badge>}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-400">
+                          <span>
+                            {lead.ageHours < 24
+                              ? `${lead.ageHours}h old`
+                              : `${Math.floor(lead.ageHours / 24)}d old`}
+                          </span>
+                          {lead.date && (
+                            <span>
+                              {new Date(`${lead.date}T12:00:00`).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </span>
+                          )}
+                          {lead.guestCount != null && <span>{lead.guestCount} guests</span>}
+                          {lead.location && <span>{lead.location}</span>}
+                        </div>
+                      </div>
+                      <Link
+                        href={`/inquiries/${lead.inquiryId}`}
+                        className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+                      >
+                        Open inquiry
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Other platform upcoming bookings */}
+          {otherPlatformBookings.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Upcoming Marketplace Bookings</CardTitle>
+                <p className="mt-1 text-sm text-stone-400">
+                  Events from other marketplace platforms.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {otherPlatformBookings.map((booking) => (
+                  <div
+                    key={booking.eventId}
+                    className="rounded-xl border border-stone-800 bg-stone-900/70 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-stone-100">{booking.clientName}</p>
+                          <Badge variant="info">{booking.platformLabel}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-stone-400">
+                          {new Date(`${booking.eventDate}T12:00:00`).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                          {booking.occasion ? ` - ${booking.occasion}` : ''}
+                        </p>
+                        {booking.quotedPriceCents != null && (
+                          <p className="mt-1 text-sm text-stone-300">
+                            {formatCurrency(booking.quotedPriceCents)}
+                          </p>
+                        )}
+                      </div>
+                      <Link
+                        href={`/events/${booking.eventId}`}
+                        className="text-sm font-medium text-brand-500 hover:text-brand-400"
+                      >
+                        Open event
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   )

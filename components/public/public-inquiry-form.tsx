@@ -133,6 +133,40 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [returningClient, setReturningClient] = useState(false)
+  const [lookupDone, setLookupDone] = useState(false)
+
+  // Client lookup on email blur - pre-fill returning client preferences
+  const handleEmailBlur = async () => {
+    const email = formData.email.trim()
+    if (!email || lookupDone) return
+    try {
+      const res = await fetch('/api/public/client-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, chefSlug }),
+      })
+      const data = await res.json()
+      if (data.found && data.prefill) {
+        setReturningClient(true)
+        setFormData((prev) => ({
+          ...prev,
+          full_name: prev.full_name || data.prefill.full_name,
+          phone: prev.phone || data.prefill.phone,
+          allergies_food_restrictions:
+            prev.allergies_food_restrictions ||
+            data.prefill.allergies ||
+            data.prefill.dietary_restrictions,
+          allergy_flag:
+            prev.allergy_flag ||
+            (data.prefill.allergies || data.prefill.dietary_restrictions ? 'yes' : ''),
+        }))
+      }
+      setLookupDone(true)
+    } catch {
+      // Non-critical, ignore
+    }
+  }
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -456,10 +490,16 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             type="email"
             value={formData.email}
             onChange={handleChange}
+            onBlur={handleEmailBlur}
             error={errors.email}
             required
             placeholder="Email"
           />
+          {returningClient && (
+            <p className="text-xs text-emerald-500 -mt-3">
+              Welcome back! We pre-filled your details from your last booking.
+            </p>
+          )}
 
           <Input
             label="Phone"
