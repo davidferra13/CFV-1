@@ -212,7 +212,7 @@ export async function saveServiceConfig(
 
 // ─── Format for Remy System Prompt ──────────────────────────────────────────
 
-export function formatServiceConfigForPrompt(config: ChefServiceConfig): string {
+export async function formatServiceConfigForPrompt(config: ChefServiceConfig): Promise<string> {
   const lines: string[] = ['SERVICE CONFIGURATION (what this chef offers and how they operate):']
 
   // Services

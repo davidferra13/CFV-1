@@ -198,7 +198,7 @@ function evaluateWeather(forecast: WeatherForecast): {
  * Queries events within the next 7 days, geocodes their locations,
  * fetches forecasts, and returns alerts for concerning weather.
  */
-export function getWeatherAlerts(tenantId: string): Promise<EventWeatherAlert[]> {
+export async function getWeatherAlerts(tenantId: string): Promise<EventWeatherAlert[]> {
   // Import dynamically to avoid circular deps in server actions
   const { createClient } = await import('@supabase/supabase-js')
   const supabase = createClient(
@@ -265,7 +265,7 @@ export function getWeatherAlerts(tenantId: string): Promise<EventWeatherAlert[]>
 /**
  * Format weather alerts as a Remy response.
  */
-export function formatWeatherAlerts(alerts: EventWeatherAlert[]): string {
+export async function formatWeatherAlerts(alerts: EventWeatherAlert[]): Promise<string> {
   if (alerts.length === 0) {
     return 'No weather concerns for your upcoming events this week. Clear skies ahead!'
   }

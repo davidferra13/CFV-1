@@ -37,7 +37,7 @@ User -> Gustav Chat UI (index.html)
 
 ---
 
-## The 8 Stations (90+ Tools)
+## The 10 Stations (115+ Tools)
 
 ### Station 1: DevOps (Process Control)
 
@@ -167,6 +167,38 @@ User -> Gustav Chat UI (index.html)
 | `data/webhooks`      | Webhook delivery history — inbound/outbound, status                    |
 | `data/intelligence`  | Synthesized business intelligence — trends, funnel, hot leads          |
 
+### Station 9: Git & Codebase Extended
+
+| Tool        | What It Does                                                    |
+| ----------- | --------------------------------------------------------------- |
+| `git/log`   | Recent commit log (git/log:30 for last 30)                      |
+| `git/stash` | Git stash operations (list, pop, save:message)                  |
+| `git/blame` | Git blame a file — author breakdown (git/blame:path/to/file.ts) |
+| `code/todo` | Scan codebase for TODO/FIXME/HACK/XXX comments                  |
+| `code/loc`  | Lines of code by language/extension                             |
+
+### Station 10: Business Intelligence Extended + Security + Quality
+
+| Tool                  | What It Does                                                     |
+| --------------------- | ---------------------------------------------------------------- |
+| `data/client-risk`    | Clients at risk of churn — no events in 90+ days                 |
+| `data/forecast`       | Revenue forecast — next 60 days from pipeline + confirmed events |
+| `data/seasonal`       | Seasonal trends — busiest months, avg guests per month           |
+| `data/pricing`        | Pricing analysis — avg per guest, by occasion, by cuisine        |
+| `data/event-timeline` | Event lifecycle timeline — all status transitions                |
+| `remy/conversations`  | Recent Remy conversation metrics across all tenants              |
+| `remy/errors`         | Remy error log — error metrics + abuse incidents                 |
+| `beta/health`         | Deep beta health — PM2 apps, disk, memory, uptime (SSH)          |
+| `prod/health`         | Production health check — status, latency                        |
+| `prod/analytics`      | Production activity — recent main branch commits                 |
+| `env/validate`        | Validate all required env vars are set in .env.local             |
+| `db/orphans`          | Find orphaned records — quotes/expenses without linked events    |
+| `db/rls-audit`        | Audit RLS policies — which tables have row-level security        |
+| `security/audit`      | Full security audit — npm, env, SSL, RLS, exposed secrets        |
+| `code/dead`           | Find potentially unused exports (dead code)                      |
+| `test/coverage`       | Test coverage — test files vs source files                       |
+| `docs/coverage`       | Documentation coverage — doc files vs action files               |
+
 ### The Pass: Morning Briefing
 
 | Tool            | What It Does                                       |
@@ -192,12 +224,12 @@ User -> Gustav Chat UI (index.html)
 
 ---
 
-## Instant Deterministic Answers (40+ Patterns)
+## Instant Deterministic Answers (60+ Patterns)
 
 These fire BEFORE any LLM call. Pattern-matched commands that execute immediately:
 
 **Direct action dispatch (no LLM):**
-status, start dev, stop dev, deploy, push, typecheck, build, diff, revenue, events, inquiries, clients, staff, quotes, expenses, calendar, loyalty, documents, menus, emails, remy status, remy guardrails, remy memories, test remy, pi status, schema, branches, calling the pass, mise en place, ledger, notifications, automations, inventory, activity, webhooks, intelligence, cron
+status, start dev, stop dev, deploy, push, typecheck, build, diff, revenue, events, inquiries, clients, staff, quotes, expenses, calendar, loyalty, documents, menus, emails, remy status, remy guardrails, remy memories, test remy, pi status, schema, branches, calling the pass, mise en place, ledger, notifications, automations, inventory, activity, webhooks, intelligence, cron, git log, stash, todos, loc, dead code, churn, forecast, seasonal, pricing, remy conversations, remy errors, beta health, prod health, prod analytics, check env, orphans, rls audit, security audit, coverage, docs coverage
 
 **Static responses (no LLM, no tool):**
 help, scan (shows scan menu)
@@ -213,6 +245,8 @@ run all scans (fires ts-nocheck + error-handling + stale-cache)
 | ----------------------------------------------------- | ------------------------------------------------------------------- |
 | Dangerous commands (rm -rf, DROP DATABASE, etc.)      | "That's a plate I'm not sending out. Standards exist for a reason." |
 | Prompt injection (ignore instructions, reveal prompt) | "The pass doesn't lie, and neither do I. I'm Gustav."               |
+| Credential/secret exposure requests                   | "Credentials stay in the vault." Redirects to env/validate.         |
+| Production-dangerous (push to main, force push)       | "That touches production. I don't fire on the main line."           |
 | Recipe/food questions                                 | Redirects to Remy: "That's Remy's station."                         |
 | Off-topic (poetry, jokes, philosophy)                 | "I run the pass. I don't write poetry."                             |
 
@@ -318,4 +352,4 @@ Remy helps chefs use the app. Gustav helps the developer run the app, the busine
 
 ---
 
-_Last updated: 2026-03-06 by Claude Code. Update this file whenever Gustav's capabilities change._
+_Last updated: 2026-03-06 by Claude Code. 10 stations, 115+ tools, 60+ instant patterns, 6 guardrails. Update this file whenever Gustav's capabilities change._

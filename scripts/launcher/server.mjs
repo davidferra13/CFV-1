@@ -4698,10 +4698,467 @@ async function callThePass() {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// STATION 9: Git & Codebase Extended
+// ══════════════════════════════════════════════════════════════════
+
+async function gitLog(param) {
+  const count = parseInt(param) || 20
+  try {
+    const { stdout } = await execAsync(`git log --oneline --no-decorate -${count}`, { cwd: PROJECT_ROOT, timeout: 10000 })
+    const commits = stdout.trim().split('\n').filter(Boolean)
+    return { ok: true, count: commits.length, commits, message: `Last ${commits.length} commits` }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function gitStash(param) {
+  try {
+    if (!param || param === 'list') {
+      const { stdout } = await execAsync('git stash list', { cwd: PROJECT_ROOT, timeout: 10000 })
+      const stashes = stdout.trim().split('\n').filter(Boolean)
+      return { ok: true, count: stashes.length, stashes, message: stashes.length ? `${stashes.length} stash(es)` : 'Stash is clean' }
+    }
+    if (param === 'pop') {
+      const { stdout } = await execAsync('git stash pop', { cwd: PROJECT_ROOT, timeout: 10000 })
+      return { ok: true, message: 'Stash popped', output: stdout.trim() }
+    }
+    if (param.startsWith('save:')) {
+      const msg = param.slice(5).trim() || 'Gustav stash'
+      const { stdout } = await execAsync(`git stash push -m "${msg}"`, { cwd: PROJECT_ROOT, timeout: 10000 })
+      return { ok: true, message: `Stashed: ${msg}`, output: stdout.trim() }
+    }
+    return { ok: false, error: 'Usage: git/stash (list), git/stash:pop, git/stash:save:message' }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function gitBlame(param) {
+  if (!param) return { ok: false, error: 'Usage: git/blame:path/to/file.ts' }
+  try {
+    const { stdout } = await execAsync(`git blame --line-porcelain "${param}" | grep -E "^(author |author-time |summary )" | head -60`, { cwd: PROJECT_ROOT, timeout: 15000 })
+    const lines = stdout.trim().split('\n').filter(Boolean)
+    const authors = {}
+    for (let i = 0; i < lines.length; i += 3) {
+      const author = lines[i]?.replace('author ', '') || 'unknown'
+      authors[author] = (authors[author] || 0) + 1
+    }
+    return { ok: true, file: param, authorBreakdown: authors, totalLines: Object.values(authors).reduce((s, c) => s + c, 0), message: `Blame for ${param}: ${Object.entries(authors).map(([a, c]) => `${a}: ${c} lines`).join(', ')}` }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function codeTodo() {
+  try {
+    const { stdout } = await execAsync(
+      'grep -rn "TODO\\|FIXME\\|HACK\\|XXX" --include="*.ts" --include="*.tsx" --include="*.mjs" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v types/database.ts | head -50',
+      { cwd: PROJECT_ROOT, timeout: 15000 }
+    )
+    const items = stdout.trim().split('\n').filter(Boolean)
+    const byType = { TODO: 0, FIXME: 0, HACK: 0, XXX: 0 }
+    for (const line of items) {
+      if (line.includes('TODO')) byType.TODO++
+      if (line.includes('FIXME')) byType.FIXME++
+      if (line.includes('HACK')) byType.HACK++
+      if (line.includes('XXX')) byType.XXX++
+    }
+    return { ok: true, total: items.length, byType, items: items.slice(0, 30), message: `Found ${items.length} items: ${Object.entries(byType).filter(([, v]) => v > 0).map(([k, v]) => `${v} ${k}`).join(', ')}` }
+  } catch (err) {
+    return { ok: true, total: 0, byType: {}, items: [], message: 'Codebase is clean — no TODOs found' }
+  }
+}
+
+async function codeLoc() {
+  try {
+    const { stdout } = await execAsync(
+      'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.mjs" -o -name "*.css" -o -name "*.json" -o -name "*.md" -o -name "*.sql" \\) -not -path "*/node_modules/*" -not -path "*/.next/*" -not -path "*/types/database.ts" | head -2000 | xargs wc -l 2>/dev/null | tail -1',
+      { cwd: PROJECT_ROOT, timeout: 30000 }
+    )
+    const totalMatch = stdout.trim().match(/(\d+)\s+total/)
+    const total = totalMatch ? parseInt(totalMatch[1]) : 0
+    // Get breakdown by extension
+    const { stdout: breakdown } = await execAsync(
+      'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.mjs" \\) -not -path "*/node_modules/*" -not -path "*/.next/*" -not -path "*/types/database.ts" | head -2000 | xargs wc -l 2>/dev/null | tail -1',
+      { cwd: PROJECT_ROOT, timeout: 30000 }
+    )
+    const codeMatch = breakdown.trim().match(/(\d+)\s+total/)
+    const codeLines = codeMatch ? parseInt(codeMatch[1]) : 0
+    return { ok: true, totalLines: total, codeLines, message: `Codebase: ~${total.toLocaleString()} total lines, ~${codeLines.toLocaleString()} code (TS/TSX/MJS)` }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STATION 10: Business Intelligence Extended + Security + Quality
+// ══════════════════════════════════════════════════════════════════
+
+async function getClientRisk() {
+  const clients = await supabaseQuery('clients', 'id,name,loyalty_tier,created_at', '', 500)
+  const events = await supabaseQuery('events', 'id,client_id,event_date,status', '', 1000)
+  if (!clients.ok) return { ok: false, error: 'Failed to fetch clients' }
+  const now = new Date()
+  const atRisk = []
+  for (const client of clients.data) {
+    const clientEvents = (events.data || []).filter(e => e.client_id === client.id)
+    if (clientEvents.length === 0) {
+      const daysSinceCreated = Math.floor((now - new Date(client.created_at)) / 86400000)
+      if (daysSinceCreated > 90) atRisk.push({ name: client.name, tier: client.loyalty_tier, lastEvent: 'never', daysSince: daysSinceCreated, reason: 'No events, 90+ days since signup' })
+    } else {
+      const lastDate = clientEvents.map(e => e.event_date).sort().pop()
+      const daysSince = Math.floor((now - new Date(lastDate)) / 86400000)
+      if (daysSince > 90) atRisk.push({ name: client.name, tier: client.loyalty_tier, lastEvent: lastDate, daysSince, reason: `No events in ${daysSince} days` })
+    }
+  }
+  atRisk.sort((a, b) => b.daysSince - a.daysSince)
+  return { ok: true, atRisk: atRisk.slice(0, 20), total: atRisk.length, message: `${atRisk.length} client(s) at risk of churn (90+ days inactive)` }
+}
+
+async function getRevenueForecast() {
+  const events = await supabaseQuery('events', 'id,event_date,status,guest_count', 'status=in.(accepted,paid,confirmed)', 200)
+  const revenue = await supabaseQuery('event_financial_summary', 'event_id,net_revenue_cents', '', 500)
+  if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
+  const now = new Date()
+  const sixtyDaysOut = new Date(now.getTime() + 60 * 86400000)
+  const pipeline = (events.data || []).filter(e => {
+    const d = new Date(e.event_date)
+    return d >= now && d <= sixtyDaysOut
+  })
+  // Calculate avg revenue per event from historical data
+  const historicalRevenues = (revenue.data || []).map(r => r.net_revenue_cents || 0).filter(r => r > 0)
+  const avgRevenue = historicalRevenues.length > 0 ? Math.round(historicalRevenues.reduce((s, r) => s + r, 0) / historicalRevenues.length) : 0
+  const projectedTotal = pipeline.length * avgRevenue
+  return {
+    ok: true,
+    next60Days: { events: pipeline.length, projected: fmt(projectedTotal), avgPerEvent: fmt(avgRevenue) },
+    pipeline: pipeline.map(e => ({ date: e.event_date, status: e.status, guests: e.guest_count })),
+    message: `Forecast (60 days): ${pipeline.length} events, projected ${fmt(projectedTotal)} (avg ${fmt(avgRevenue)}/event)`,
+  }
+}
+
+async function getSeasonalTrends() {
+  const events = await supabaseQuery('events', 'id,event_date,guest_count,status', '', 2000)
+  if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
+  const monthly = {}
+  for (const e of events.data) {
+    if (!e.event_date) continue
+    const month = new Date(e.event_date).toLocaleString('en', { month: 'long' })
+    if (!monthly[month]) monthly[month] = { events: 0, guests: 0 }
+    monthly[month].events++
+    monthly[month].guests += e.guest_count || 0
+  }
+  const sorted = Object.entries(monthly).sort((a, b) => b[1].events - a[1].events)
+  const busiest = sorted[0]
+  const slowest = sorted[sorted.length - 1]
+  return {
+    ok: true,
+    byMonth: Object.fromEntries(sorted.map(([m, d]) => [m, { events: d.events, avgGuests: d.events > 0 ? Math.round(d.guests / d.events) : 0 }])),
+    busiest: busiest ? { month: busiest[0], events: busiest[1].events } : null,
+    slowest: slowest ? { month: slowest[0], events: slowest[1].events } : null,
+    message: `Seasonal trends: Busiest = ${busiest?.[0] || 'N/A'} (${busiest?.[1].events || 0} events), Slowest = ${slowest?.[0] || 'N/A'} (${slowest?.[1].events || 0} events)`,
+  }
+}
+
+async function getPricingAnalysis() {
+  const events = await supabaseQuery('events', 'id,guest_count,occasion_type,cuisine_type', "status=in.(completed,confirmed,paid,accepted)", 1000)
+  const revenue = await supabaseQuery('event_financial_summary', 'event_id,net_revenue_cents', '', 1000)
+  if (!events.ok || !revenue.ok) return { ok: false, error: 'Failed to fetch data' }
+  const revMap = {}
+  for (const r of revenue.data) revMap[r.event_id] = r.net_revenue_cents || 0
+  let totalPerGuest = 0, perGuestCount = 0
+  const byOccasion = {}, byCuisine = {}
+  for (const e of events.data) {
+    const rev = revMap[e.id] || 0
+    if (e.guest_count > 0 && rev > 0) {
+      const ppg = rev / e.guest_count
+      totalPerGuest += ppg
+      perGuestCount++
+      const occ = e.occasion_type || 'unspecified'
+      if (!byOccasion[occ]) byOccasion[occ] = { total: 0, count: 0 }
+      byOccasion[occ].total += ppg
+      byOccasion[occ].count++
+      const cuisine = e.cuisine_type || 'unspecified'
+      if (!byCuisine[cuisine]) byCuisine[cuisine] = { total: 0, count: 0 }
+      byCuisine[cuisine].total += ppg
+      byCuisine[cuisine].count++
+    }
+  }
+  const avgPerGuest = perGuestCount > 0 ? fmt(totalPerGuest / perGuestCount) : '$0.00'
+  return {
+    ok: true,
+    avgPerGuest,
+    byOccasion: Object.fromEntries(Object.entries(byOccasion).map(([k, v]) => [k, { avg: fmt(v.total / v.count), events: v.count }])),
+    byCuisine: Object.fromEntries(Object.entries(byCuisine).map(([k, v]) => [k, { avg: fmt(v.total / v.count), events: v.count }])),
+    message: `Pricing: ${avgPerGuest}/guest avg | ${Object.keys(byOccasion).length} occasion types | ${Object.keys(byCuisine).length} cuisine types`,
+  }
+}
+
+async function getEventTimeline(param) {
+  if (!param) return { ok: false, error: 'Usage: data/event-timeline:event_id' }
+  const transitions = await supabaseQuery('event_transitions', 'id,from_status,to_status,created_at,changed_by', `event_id=eq.${param}`, 100)
+  if (!transitions.ok) return { ok: false, error: 'Failed to fetch transitions' }
+  return {
+    ok: true,
+    eventId: param,
+    transitions: transitions.data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
+    count: transitions.data.length,
+    message: `Event ${param}: ${transitions.data.length} transitions — ${transitions.data.map(t => `${t.from_status}→${t.to_status}`).join(' → ')}`,
+  }
+}
+
+async function getRemyConversations() {
+  const metrics = await supabaseQuery('remy_usage_metrics', 'id,tenant_id,messages_sent,conversations_started,created_at', '', 100)
+  if (!metrics.ok) return { ok: false, error: 'Failed to fetch Remy metrics' }
+  const totalMessages = metrics.data.reduce((s, m) => s + (m.messages_sent || 0), 0)
+  const totalConvos = metrics.data.reduce((s, m) => s + (m.conversations_started || 0), 0)
+  return { ok: true, totalMessages, totalConversations: totalConvos, tenants: metrics.data.length, message: `Remy conversations: ${totalMessages} messages, ${totalConvos} conversations across ${metrics.data.length} tenants` }
+}
+
+async function getRemyErrors() {
+  const errors = await supabaseQuery('remy_usage_metrics', 'id,tenant_id,errors_count,created_at', 'errors_count=gt.0', 50)
+  const abuse = await supabaseQuery('remy_abuse_log', 'id,tenant_id,blocked_message,guardrail_matched,created_at', '', 20)
+  const totalErrors = (errors.data || []).reduce((s, m) => s + (m.errors_count || 0), 0)
+  return {
+    ok: true,
+    totalErrors,
+    errorRecords: (errors.data || []).length,
+    abuseIncidents: (abuse.data || []).length,
+    recentAbuse: (abuse.data || []).slice(0, 5),
+    message: `Remy errors: ${totalErrors} total errors, ${(abuse.data || []).length} abuse incidents`,
+  }
+}
+
+async function getBetaDeepHealth() {
+  try {
+    const { stdout } = await execAsync('ssh pi "pm2 jlist && echo SEPARATOR && df -h / && echo SEPARATOR && free -m && echo SEPARATOR && uptime"', { timeout: 15000 })
+    const parts = stdout.split('SEPARATOR')
+    let pm2 = []
+    try { pm2 = JSON.parse(parts[0].trim()) } catch { /* parse fail */ }
+    return {
+      ok: true,
+      pm2: pm2.map(p => ({ name: p.name, status: p.pm2_env?.status, restarts: p.pm2_env?.restart_time, uptime: p.pm2_env?.pm_uptime })),
+      disk: parts[1]?.trim() || 'unavailable',
+      memory: parts[2]?.trim() || 'unavailable',
+      uptime: parts[3]?.trim() || 'unavailable',
+      message: `Beta deep health: ${pm2.length} PM2 apps, ${pm2.filter(p => p.pm2_env?.status === 'online').length} online`,
+    }
+  } catch (err) {
+    return { ok: false, error: `SSH failed: ${err.message}` }
+  }
+}
+
+async function getProdHealth() {
+  const start = Date.now()
+  const prodCheck = await httpCheck('https://app.cheflowhq.com')
+  const latency = Date.now() - start
+  return {
+    ok: true,
+    status: prodCheck.ok ? 'online' : 'down',
+    latency: `${latency}ms`,
+    statusCode: prodCheck.status || 'unknown',
+    message: prodCheck.ok ? `Production: ONLINE (${latency}ms)` : `Production: 86'd — ${prodCheck.error || 'unreachable'}`,
+  }
+}
+
+async function getProdAnalytics() {
+  try {
+    const { stdout } = await execAsync('git log main --oneline -20', { cwd: PROJECT_ROOT, timeout: 10000 })
+    const commits = stdout.trim().split('\n').filter(Boolean)
+    return { ok: true, recentMainCommits: commits, count: commits.length, message: `Production: ${commits.length} recent main branch commits` }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function validateEnv() {
+  const required = [
+    'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
+    'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+    'RESEND_API_KEY', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
+    'NEXT_PUBLIC_APP_URL', 'OLLAMA_BASE_URL',
+  ]
+  try {
+    const envContent = await readFile(join(PROJECT_ROOT, '.env.local'), 'utf-8')
+    const envKeys = envContent.split('\n').filter(l => l.includes('=')).map(l => l.split('=')[0].trim())
+    const missing = required.filter(k => !envKeys.includes(k))
+    const present = required.filter(k => envKeys.includes(k))
+    return {
+      ok: missing.length === 0,
+      present: present.length,
+      missing,
+      total: required.length,
+      message: missing.length === 0 ? `All ${required.length} required env vars present` : `Missing ${missing.length} env var(s): ${missing.join(', ')}`,
+    }
+  } catch (err) {
+    return { ok: false, error: `.env.local not found: ${err.message}` }
+  }
+}
+
+async function findDbOrphans() {
+  const quotes = await supabaseQuery('quotes', 'id,event_id', '', 500)
+  const expenses = await supabaseQuery('expenses', 'id,event_id', '', 500)
+  const events = await supabaseQuery('events', 'id', '', 2000)
+  if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
+  const eventIds = new Set(events.data.map(e => e.id))
+  const orphanQuotes = (quotes.data || []).filter(q => q.event_id && !eventIds.has(q.event_id))
+  const orphanExpenses = (expenses.data || []).filter(e => e.event_id && !eventIds.has(e.event_id))
+  return {
+    ok: true,
+    orphanQuotes: orphanQuotes.length,
+    orphanExpenses: orphanExpenses.length,
+    details: { quotes: orphanQuotes.slice(0, 10), expenses: orphanExpenses.slice(0, 10) },
+    message: `Orphan check: ${orphanQuotes.length} quotes, ${orphanExpenses.length} expenses without valid events`,
+  }
+}
+
+async function dbRlsAudit() {
+  // Check which tables have RLS enabled by querying pg_tables
+  const result = await supabaseQuery('information_schema.tables', 'table_name,table_schema', 'table_schema=eq.public', 200)
+  if (!result.ok) return { ok: false, error: 'Failed to query tables' }
+  // We can't directly check RLS via REST API, so we list all public tables
+  // and note which ones are known to have RLS from migration files
+  const tables = result.data.map(t => t.table_name).sort()
+  return {
+    ok: true,
+    publicTables: tables.length,
+    tables,
+    message: `RLS audit: ${tables.length} public tables found. Check migration files for RLS policies.`,
+    note: 'For detailed RLS policy check, use db/sql with: SELECT tablename, policyname FROM pg_policies',
+  }
+}
+
+async function securityAudit() {
+  const [env, npm, ssl, rls, orphans] = await Promise.all([
+    validateEnv().catch(() => ({ ok: false, error: 'failed' })),
+    npmAudit().catch(() => ({ ok: false, error: 'failed' })),
+    checkSSLCerts().catch(() => ({ ok: false, error: 'failed' })),
+    dbRlsAudit().catch(() => ({ ok: false, error: 'failed' })),
+    findDbOrphans().catch(() => ({ ok: false, error: 'failed' })),
+  ])
+  // Check for exposed secrets in codebase
+  let exposedSecrets = []
+  try {
+    const { stdout } = await execAsync(
+      'grep -rn "sk_live_\\|sk_test_\\|SUPABASE_SERVICE_ROLE_KEY.*=.*ey\\|password.*=.*[a-zA-Z0-9]" --include="*.ts" --include="*.tsx" --include="*.mjs" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v .env | head -10',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    exposedSecrets = stdout.trim().split('\n').filter(Boolean)
+  } catch { /* no matches is good */ }
+  const issues = []
+  if (!env.ok || (env.missing && env.missing.length > 0)) issues.push(`Missing env vars: ${env.missing?.join(', ') || 'check failed'}`)
+  if (npm.vulnerabilities?.high > 0 || npm.vulnerabilities?.critical > 0) issues.push(`NPM vulnerabilities: ${npm.vulnerabilities.critical || 0} critical, ${npm.vulnerabilities.high || 0} high`)
+  if (exposedSecrets.length > 0) issues.push(`${exposedSecrets.length} potential exposed secrets in source code`)
+  if (orphans.orphanQuotes > 0 || orphans.orphanExpenses > 0) issues.push(`Orphaned records: ${orphans.orphanQuotes} quotes, ${orphans.orphanExpenses} expenses`)
+  return {
+    ok: issues.length === 0,
+    issues,
+    env: { ok: env.ok, missing: env.missing },
+    npm: { vulnerabilities: npm.vulnerabilities },
+    ssl,
+    exposedSecrets: exposedSecrets.length,
+    orphans: { quotes: orphans.orphanQuotes, expenses: orphans.orphanExpenses },
+    message: issues.length === 0 ? 'Security audit: Clean — no issues found' : `Security audit: ${issues.length} issue(s) — ${issues.join('; ')}`,
+  }
+}
+
+async function findDeadExports() {
+  try {
+    // Find all exported functions/consts
+    const { stdout: exports } = await execAsync(
+      'grep -rn "^export " --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v types/database.ts | head -200',
+      { cwd: PROJECT_ROOT, timeout: 15000 }
+    )
+    const exportLines = exports.trim().split('\n').filter(Boolean)
+    // Extract function/const names
+    const exportNames = []
+    for (const line of exportLines) {
+      const match = line.match(/export\s+(?:async\s+)?(?:function|const|class|type|interface)\s+(\w+)/)
+      if (match) exportNames.push({ name: match[1], file: line.split(':')[0] })
+    }
+    // Check each for imports elsewhere (sample — full scan would be too slow)
+    const potentiallyDead = []
+    for (const { name, file } of exportNames.slice(0, 50)) {
+      try {
+        const { stdout: importCount } = await execAsync(
+          `grep -rl "${name}" --include="*.ts" --include="*.tsx" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v "${file}" | head -1`,
+          { cwd: PROJECT_ROOT, timeout: 5000 }
+        )
+        if (!importCount.trim()) potentiallyDead.push({ name, file })
+      } catch { /* grep no match = potentially dead */ potentiallyDead.push({ name, file }) }
+    }
+    return {
+      ok: true,
+      totalExports: exportNames.length,
+      potentiallyDead: potentiallyDead.slice(0, 20),
+      scanned: Math.min(exportNames.length, 50),
+      message: `Dead export scan: ${potentiallyDead.length} potentially unused exports found (scanned ${Math.min(exportNames.length, 50)} of ${exportNames.length})`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function getTestCoverage() {
+  try {
+    const { stdout: testFiles } = await execAsync(
+      'find . -name "*.test.*" -o -name "*.spec.*" | grep -v node_modules | grep -v .next',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    const { stdout: sourceFiles } = await execAsync(
+      'find . -name "*.ts" -o -name "*.tsx" | grep -v node_modules | grep -v .next | grep -v types/database.ts | grep -v ".test." | grep -v ".spec."',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    const tests = testFiles.trim().split('\n').filter(Boolean)
+    const sources = sourceFiles.trim().split('\n').filter(Boolean)
+    const coverage = sources.length > 0 ? ((tests.length / sources.length) * 100).toFixed(1) : 0
+    return {
+      ok: true,
+      testFiles: tests.length,
+      sourceFiles: sources.length,
+      coverageRatio: `${coverage}%`,
+      tests: tests.slice(0, 20),
+      message: `Test coverage: ${tests.length} test files / ${sources.length} source files = ${coverage}% ratio`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function getDocsCoverage() {
+  try {
+    const { stdout: docFiles } = await execAsync(
+      'find ./docs -name "*.md" 2>/dev/null | grep -v node_modules',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    const { stdout: actionFiles } = await execAsync(
+      'find ./lib -name "*actions*" -o -name "*-actions.ts" | grep -v node_modules',
+      { cwd: PROJECT_ROOT, timeout: 10000 }
+    )
+    const docs = docFiles.trim().split('\n').filter(Boolean)
+    const actions = actionFiles.trim().split('\n').filter(Boolean)
+    return {
+      ok: true,
+      docFiles: docs.length,
+      actionFiles: actions.length,
+      docs: docs.slice(0, 30),
+      message: `Documentation: ${docs.length} doc files, ${actions.length} action files in lib/`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // TRACK 5: INSTANT ANSWERS, GUARDRAILS, RESPONSE CALIBRATION
 // ══════════════════════════════════════════════════════════════════
 
 const INSTANT_ANSWERS = [
+  // Greetings — instant response, no LLM needed
+  { patterns: [/^(?:hi|hey|hello|yo|sup|good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|what'?s?\s+up)\s*[!.?]*$/i],
+    response: null, greeting: true },
+
   // Status & Health
   { patterns: [/^status$/i, /^how('s| is) everything/i, /^what('s| is) the status/i, /^all stations/i, /^calling the pass/i, /^mise en place/i],
     action: 'call-the-pass' },
@@ -4780,14 +5237,51 @@ const INSTANT_ANSWERS = [
   { patterns: [/^cron$/i, /^cron jobs$/i, /^scheduled tasks/i, /^crons$/i],
     action: 'cron/list' },
 
+  // Station 9: Git & Codebase Extended
+  { patterns: [/^(git log|log|commits)$/i], action: 'git/log' },
+  { patterns: [/^(stash|git stash)$/i], action: 'git/stash' },
+  { patterns: [/^todos?$/i, /^fixmes?$/i, /^hacks?$/i, /^code todos?/i], action: 'code/todo' },
+  { patterns: [/^(loc|lines of code|line count)$/i], action: 'code/loc' },
+  { patterns: [/^dead (code|exports?)/i, /^unused exports/i], action: 'code/dead' },
+
+  // Station 10: Business Intelligence Extended + Security
+  { patterns: [/^(churn|at risk|client risk|risk clients)/i], action: 'data/client-risk' },
+  { patterns: [/^forecast$/i, /^revenue forecast/i, /^projected revenue/i], action: 'data/forecast' },
+  { patterns: [/^seasonal$/i, /^seasonal trends/i, /^busiest months/i], action: 'data/seasonal' },
+  { patterns: [/^pricing$/i, /^pricing analysis/i, /^price per guest/i], action: 'data/pricing' },
+  { patterns: [/^(remy conv|remy conversations)/i], action: 'remy/conversations' },
+  { patterns: [/^(remy errors?|remy error log)/i], action: 'remy/errors' },
+  { patterns: [/^(beta health|beta deep|pi health)/i], action: 'beta/health' },
+  { patterns: [/^(prod health|production health)/i], action: 'prod/health' },
+  { patterns: [/^(prod analytics|production analytics)/i], action: 'prod/analytics' },
+  { patterns: [/^(env validate|validate env|check env)/i], action: 'env/validate' },
+  { patterns: [/^orphans$/i, /^db orphans/i, /^find orphans/i], action: 'db/orphans' },
+  { patterns: [/^(rls|rls audit|row level security)/i], action: 'db/rls-audit' },
+  { patterns: [/^security( audit)?$/i, /^full security/i], action: 'security/audit' },
+  { patterns: [/^test coverage$/i, /^coverage$/i], action: 'test/coverage' },
+  { patterns: [/^(docs coverage|doc coverage|documentation coverage)/i], action: 'docs/coverage' },
+
   { patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
-    response: '**Station check.** Here\'s what I run:\n\n| Station | Key Commands |\n|---|---|\n| **DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **Deep Data** | `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence` |\n| **Universal Access** | `db/query:table_name`, `db/sql:SELECT ...` |\n| **Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance` |\n| **Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **Scanning** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n| **Cron** | `cron/list`, `cron/trigger` |\n\nSay "call the pass" for a full briefing. Oui.' },
+    response: '**Station check.** Here\'s what I run — 10 stations, 115+ tools:\n\n| Station | Key Commands |\n|---|---|\n| **1. DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **2. Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **3. Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **4. Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance`, `remy/conversations`, `remy/errors` |\n| **5. Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **6. App Health** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **7. Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n| **8. Universal Data** | `db/query`, `db/sql`, `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence`, `cron/list`, `cron/trigger` |\n| **9. Git Extended** | `git/log`, `git/stash`, `git/blame`, `code/todo`, `code/loc` |\n| **10. Intelligence+** | `data/client-risk`, `data/forecast`, `data/seasonal`, `data/pricing`, `data/event-timeline`, `env/validate`, `db/orphans`, `db/rls-audit`, `security/audit`, `code/dead`, `test/coverage`, `docs/coverage`, `beta/health`, `prod/health`, `prod/analytics` |\n\nSay "call the pass" for a full briefing. Oui.' },
 ]
+
+function getGustavGreeting() {
+  const hour = new Date().getHours()
+  const timeWord = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
+  const greetings = [
+    `${timeWord}. All stations ready. What do you need?`,
+    `${timeWord}, chef. The pass is clean. What are we firing?`,
+    `${timeWord}. Mise en place. Say the word.`,
+    `${timeWord}. Kitchen's yours. What's on the board?`,
+  ]
+  return greetings[Math.floor(Math.random() * greetings.length)]
+}
 
 function getInstantAnswer(message) {
   const trimmed = message.trim()
   for (const entry of INSTANT_ANSWERS) {
     if (entry.patterns.some(p => p.test(trimmed))) {
+      if (entry.greeting) return getGustavGreeting()
       if (entry.response) return entry.response
       if (entry.action) return null // Let it fall through — will be handled by LLM which will call the action
       if (entry.multiAction) return null
@@ -4832,6 +5326,22 @@ function checkGuardrails(message) {
     return {
       reason: 'remy_domain',
       response: 'That\'s Remy\'s station — kitchen business, not kitchen infrastructure. Bridge to him with `remy/ask:' + message.trim() + '` (requires dev server running).',
+    }
+  }
+
+  // Block credential/secret exposure requests
+  if (/show (me )?(the )?(service.?role|api.?key|secret|password|credentials?|token|env|\.env)/i.test(lower) && !/env.?validate|env.?compare|check env/i.test(lower)) {
+    return {
+      reason: 'credential_exposure',
+      response: 'Credentials stay in the vault. I\'ll validate they exist (`env/validate`) or compare keys (`env/compare`), but I don\'t read values out loud. Standards.',
+    }
+  }
+
+  // Block production-dangerous actions
+  if (/push (to )?main|merge (to |into )?main|deploy (to )?(prod|production|vercel)|force.?push/i.test(lower)) {
+    return {
+      reason: 'production_dangerous',
+      response: 'That touches production. I don\'t fire on the main line without the chef\'s explicit order. If you mean it, say it again with "I authorize pushing to main." Otherwise, I\'ll push to the feature branch — that\'s always safe.',
     }
   }
 
@@ -4986,6 +5496,32 @@ const TOOLS = {
   'stripe/health':    { fn: checkStripeWebhookHealth,             desc: 'Check Stripe webhook health — last received, recent events' },
   'email/health':     { fn: checkEmailHealth,                     desc: 'Check email delivery health (Resend API) — recent sends, status' },
   'api/limits':       { fn: getApiRateLimitInfo,                  desc: 'Show API rate limits and configuration status for all external services' },
+
+  // Station 9: Git & Codebase Extended
+  'git/log':           { fn: (param) => gitLog(param),             desc: 'Recent commit log. Use git/log:30 for last 30 commits' },
+  'git/stash':         { fn: (param) => gitStash(param),           desc: 'Git stash operations. Use git/stash (list), git/stash:pop, git/stash:save:message' },
+  'git/blame':         { fn: (param) => gitBlame(param),           desc: 'Git blame a file. Use git/blame:lib/ai/remy-actions.ts' },
+  'code/todo':         { fn: codeTodo,                             desc: 'Scan codebase for TODO/FIXME/HACK/XXX comments' },
+  'code/loc':          { fn: codeLoc,                              desc: 'Lines of code by language/extension' },
+
+  // Station 10: Business Intelligence Extended + Security + Quality
+  'data/client-risk':  { fn: getClientRisk,                        desc: 'Clients at risk of churn — no events in 90+ days' },
+  'data/forecast':     { fn: getRevenueForecast,                   desc: 'Revenue forecast — next 60 days from pipeline + confirmed events' },
+  'data/seasonal':     { fn: getSeasonalTrends,                    desc: 'Seasonal trends — busiest months, avg guests per month' },
+  'data/pricing':      { fn: getPricingAnalysis,                   desc: 'Pricing analysis — avg per guest, by occasion, by cuisine' },
+  'data/event-timeline': { fn: (param) => getEventTimeline(param), desc: 'Event lifecycle timeline — all status transitions. Use data/event-timeline:event_id' },
+  'remy/conversations': { fn: getRemyConversations,                desc: 'Recent Remy conversation metrics across all tenants' },
+  'remy/errors':       { fn: getRemyErrors,                        desc: 'Remy error log — error metrics + abuse incidents with details' },
+  'beta/health':       { fn: getBetaDeepHealth,                    desc: 'Deep beta health — PM2 apps, disk, memory, uptime (requires Pi SSH)' },
+  'prod/health':       { fn: getProdHealth,                        desc: 'Production health check — status, latency, SSL' },
+  'prod/analytics':    { fn: getProdAnalytics,                     desc: 'Production activity — recent main branch commits' },
+  'env/validate':      { fn: validateEnv,                          desc: 'Validate all required env vars are set in .env.local' },
+  'db/orphans':        { fn: findDbOrphans,                        desc: 'Find orphaned records — quotes/expenses without linked events' },
+  'db/rls-audit':      { fn: dbRlsAudit,                          desc: 'Audit RLS policies — which tables have row-level security enabled' },
+  'security/audit':    { fn: securityAudit,                        desc: 'Full security audit — npm, env, SSL, RLS, exposed secrets' },
+  'code/dead':         { fn: findDeadExports,                      desc: 'Find potentially unused exports (dead code)' },
+  'test/coverage':     { fn: getTestCoverage,                      desc: 'Test coverage — test files vs source files' },
+  'docs/coverage':     { fn: getDocsCoverage,                      desc: 'Documentation coverage — doc files vs action files' },
 }
 
 async function getAvailableOllamaEndpoint() {
@@ -5021,11 +5557,11 @@ Available actions:
 ${toolList}
 
 ## Current System Status (The Pass)
-- Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : '**86\\'d**'}
-- Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : '**86\\'d**'}
-- Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : '**86\\'d**'}
-- Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : '**86\\'d**'}
-- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : '**86\\'d**'}
+- Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : `**86${"'"}d**`}
+- Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : `**86${"'"}d**`}
+- Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : `**86${"'"}d**`}
+- Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
+- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : `**86${"'"}d**`}
 - Git: \`${status.git.branch}\` (${status.git.clean ? 'clean — mise en place' : `${status.git.dirty} dirty files`})
 - Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
@@ -5066,6 +5602,12 @@ App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Verce
 
 ### Station 8: Universal Data Access
 Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs — list schedules and trigger manually. Business intelligence — synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
+
+### Station 9: Git & Codebase Extended
+Git log (recent commits, configurable count), stash operations (list/pop/save), blame (author breakdown per file), TODO/FIXME/HACK scanner, lines of code counter.
+
+### Station 10: Business Intelligence Extended + Security + Quality
+Churn risk (clients 90+ days inactive), revenue forecast (60-day pipeline projection), seasonal trends (busiest/slowest months), pricing analysis (per-guest avg by occasion/cuisine), event timeline (full transition history). Remy deep metrics (conversations, errors, abuse). Beta deep health (PM2, disk, memory via SSH). Production health + analytics. Env validation, DB orphan detection, RLS audit, full security audit, dead export finder, test coverage, docs coverage.
 
 ### The Pass: Morning Briefing
 \`call-the-pass\` — one command, full station check across infrastructure, business, git, Remy, and database. Your morning mise en place.

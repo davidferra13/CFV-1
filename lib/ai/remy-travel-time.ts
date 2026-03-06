@@ -88,7 +88,7 @@ async function getDrivingTime(
  * Check travel feasibility for back-to-back events within the next 7 days.
  * Returns estimates for each consecutive pair of events on the same day.
  */
-export function getTravelEstimates(tenantId: string): Promise<TravelEstimate[]> {
+export async function getTravelEstimates(tenantId: string): Promise<TravelEstimate[]> {
   const { createClient } = await import('@supabase/supabase-js')
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -190,7 +190,7 @@ export function getTravelEstimates(tenantId: string): Promise<TravelEstimate[]> 
 /**
  * Format travel estimates as a Remy response.
  */
-export function formatTravelEstimates(estimates: TravelEstimate[]): string {
+export async function formatTravelEstimates(estimates: TravelEstimate[]): Promise<string> {
   if (estimates.length === 0) {
     return "No back-to-back events this week that need travel time planning. You're good!"
   }
