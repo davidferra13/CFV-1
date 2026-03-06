@@ -1518,6 +1518,196 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     pattern: /^notification\s+(preferences?|settings?)/i,
     build: makeSimpleBuild('notifications.preferences'),
   },
+
+  // ─── Common conversational queries (covers test suite gaps) ───────────────
+
+  // "[Name] details/info" or "Show [Name]" — client lookup
+  {
+    pattern: /^(?:show|view|display|pull up)\s+(?!my\s)(.+)/i,
+    build: (match, raw) => {
+      const q = match[1].trim()
+      // Skip if it matches a known non-client pattern
+      if (
+        /^(?:recipes?|events?|calendar|inbox|emails?|dashboard|menu|inquir|loyalty|revenue|expense|financial)/i.test(
+          q
+        )
+      )
+        return null as any
+      return {
+        rawInput: raw,
+        overallConfidence: 0.9,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'client.search',
+            tier: 1,
+            confidence: 0.9,
+            inputs: { query: q },
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
+  {
+    pattern: /^(.+?)\s+(?:details?|info|information|profile)$/i,
+    build: (match, raw) => {
+      const q = match[1].trim()
+      if (/^(?:my|event|recipe|menu|inquiry)/i.test(q)) return null as any
+      return {
+        rawInput: raw,
+        overallConfidence: 0.9,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'client.search',
+            tier: 1,
+            confidence: 0.9,
+            inputs: { query: q },
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
+
+  // "[Name] dietary/allergies/restrictions" — dietary check
+  {
+    pattern: /^(.+?)\s+(?:dietary|allergies|allergy|restrictions?|diet)$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'dietary.check',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { clientName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+
+  // "Upcoming events" / "My events" / "Next events"
+  {
+    pattern: /^(?:upcoming|next|my|list|show)\s+(?:upcoming\s+)?events?$/i,
+    build: makeSimpleBuild('event.list_upcoming'),
+  },
+  // "[Name] events" — events for a specific client
+  {
+    pattern: /^(.+?)\s+events?$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'client.search',
+          tier: 1,
+          confidence: 0.9,
+          inputs: { query: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+
+  // "Total revenue" / "Revenue" / "How much have I made"
+  {
+    pattern: /^(?:total\s+)?(?:revenue|income|earnings|how much (?:have i|did i) (?:make|earn))/i,
+    build: makeSimpleBuild('finance.summary'),
+  },
+  // "Monthly expenses" / "Expenses" / "My expenses"
+  {
+    pattern: /^(?:monthly\s+)?(?:expenses?|costs?|spending)$/i,
+    build: makeSimpleBuild('finance.monthly_snapshot'),
+  },
+
+  // "Show my calendar" / "My calendar" / "Calendar"
+  {
+    pattern: /^(?:show\s+)?(?:my\s+)?calendar$/i,
+    build: makeSimpleBuild('calendar.availability'),
+  },
+  // "What is scheduled today/this week" / "Today's schedule"
+  {
+    pattern:
+      /^(?:what(?:'s| is)\s+)?(?:scheduled|on (?:my )?(?:schedule|calendar)|today'?s?\s+schedule)/i,
+    build: makeSimpleBuild('event.list_upcoming'),
+  },
+
+  // "Show my recipes" / "My recipes" / "List recipes"
+  {
+    pattern: /^(?:show|list|view)\s+(?:my\s+)?recipes?$/i,
+    build: makeSimpleBuild('recipe.search'),
+  },
+  // "[keyword] recipes" — recipe search
+  {
+    pattern: /^(.+?)\s+recipes?$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'recipe.search',
+          tier: 1,
+          confidence: 0.9,
+          inputs: { query: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+
+  // "Show pending inquiries" / "Open inquiries" / "My inquiries"
+  {
+    pattern: /^(?:show|list|view|open|pending|my)\s+(?:pending\s+|open\s+)?inquir(?:ies|y)$/i,
+    build: makeSimpleBuild('inquiry.list_open'),
+  },
+
+  // "Show recipes page" / "Go to [page]" / "Open [page]" — navigation
+  {
+    pattern: /^(?:show|go to|open|navigate to)\s+(?:the\s+)?(.+?)\s+page$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'nav.go',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { destination: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+
+  // "Email status" / "Email overview"
+  {
+    pattern: /^email\s+(?:status|overview|summary)$/i,
+    build: makeSimpleBuild('email.inbox_summary'),
+  },
+
+  // "Loyalty status" / "My loyalty" / "Loyalty program"
+  {
+    pattern: /^(?:my\s+)?loyalty\s+(?:status|program|overview|summary)?$/i,
+    build: makeSimpleBuild('loyalty.status'),
+  },
+  // "Top tier members" / "VIP clients"
+  {
+    pattern: /^(?:top|vip|best|highest)\s+(?:tier\s+)?(?:members?|clients?|customers?)/i,
+    build: makeSimpleBuild('loyalty.status'),
+  },
+
+  // "How many clients" / "Client count"
+  {
+    pattern: /^(?:how many|total|count)\s+(?:of\s+)?(?:my\s+)?clients?/i,
+    build: makeSimpleBuild('client.count'),
+  },
 ]
 
 // ─── Smart Relative Date Resolver (Formula > AI) ───────────────────────────

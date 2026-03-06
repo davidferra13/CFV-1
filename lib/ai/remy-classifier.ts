@@ -119,6 +119,27 @@ const COMMAND_PATTERNS: RegExp[] = [
   /^(call|contact|reach out|follow up|ping|nudge|remind)\b/i,
   // List/report commands
   /^(list|print|export|download|report|pull)\b/i,
+  // ─── Noun-led queries that are commands (no verb prefix) ───
+  // "[Name] details/info/profile" → client lookup
+  /^.+\s+(details?|info|information|profile)\s*$/i,
+  // "Upcoming/next/my events" → event listing
+  /^(upcoming|next|my|today'?s?)\s+(events?|bookings?|schedule)\b/i,
+  // "[Name/keyword] events" → event search
+  /^.+\s+events?\s*$/i,
+  // "Total revenue", "Monthly expenses" → financial queries
+  /^(total|monthly|yearly|quarterly|weekly|annual)?\s*(revenue|income|earnings|expenses?|spending|costs?)\s*$/i,
+  // "[keyword] recipes" → recipe search
+  /^.+\s+recipes?\s*$/i,
+  // "Loyalty status/program" → loyalty lookup
+  /^(loyalty|rewards?)\s+(status|program|overview|summary|points?|tiers?)\b/i,
+  // "Top tier members/clients" → loyalty/client query
+  /^(top|vip|best|highest)\s+(tier\s+)?(members?|clients?|customers?)\b/i,
+  // "Follow-up/follow-ups leads/pending" → follow-up actions
+  /^follow.?ups?\b/i,
+  // "Pending/open inquiries/leads" → inquiry listing
+  /^(pending|open|overdue|new)\s+(inquir|leads?|bookings?|events?|invoices?)/i,
+  // "Email status/overview" → email commands
+  /^email\s+(status|overview|summary|inbox)\b/i,
 ]
 
 const QUESTION_PATTERNS: RegExp[] = [
@@ -171,6 +192,8 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^(what.?s?\s+my\s+)?cash\s*flow/i, // Cash flow forecast
   /^(what.?s?\s+my\s+)?(food\s+cost|mileage|payroll)/i, // Finance queries
   /^(how\s+am\s+i\s+(doing|rated)|how.?s?\s+my\s+business)/i, // Benchmarks/health
+  /^what('?s| is)\s+scheduled/i, // "What is scheduled today?"
+  /^what('?s| is)\s+(on )?(my )?(calendar|schedule|agenda)/i, // "What's on my calendar?"
   /^(who.?s?\s+available|staff\s+availability)/i, // Staff availability
   /^(what.?s?\s+(in\s+)?inventory|low\s+stock)/i, // Inventory check
   /^(guest\s+list|who.?s?\s+coming)/i, // Guest list

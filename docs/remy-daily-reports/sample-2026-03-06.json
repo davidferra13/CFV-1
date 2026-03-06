@@ -1,52 +1,52 @@
 {
-  "timestamp": "2026-03-06T21:27:11.487Z",
+  "timestamp": "2026-03-06T23:25:34.392Z",
   "total": 30,
-  "pass": 10,
-  "passRate": 33.3,
+  "pass": 30,
+  "passRate": 100,
   "categories": {
     "Client": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Event": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Financial": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Calendar": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Recipe": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Dietary": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Inquiry": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Nav": {
       "total": 2,
-      "pass": 1
+      "pass": 2
     },
     "Email": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Loyalty": {
       "total": 2,
-      "pass": 0
+      "pass": 2
     },
     "Chat": {
       "total": 2,
-      "pass": 1
+      "pass": 2
     },
     "Guard": {
       "total": 8,
@@ -57,127 +57,107 @@
     {
       "test": "c1",
       "cat": "Client",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "Found 1 client:\n- Rachel Kim (bronze tier) \n  [ALERT] ALLERGIES: SHELLFISH"
     },
     {
       "test": "c2",
       "cat": "Client",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "Found 1 client:\n- Sarah Henderson (gold tier) \n  Dietary: pescatarian"
     },
     {
       "test": "e1",
       "cat": "Event",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "Here are your upcoming events:\n- Q1 Board Dinner on 2026-03-05 for Apex Group (Corporate) (confirmed)\n- Tasting for Morrison Family on 2026-03-08 for The Morrison Family (proposed)\n- Engagement Dinner on 2026-03-11 for Rachel Kim (accepted)\n- Spring Garden Party on 2026-03-17 for Sarah Henderson (confirmed)\n- Spring Tasting Menu on 2026-03-31 for Emma Rothschild (paid)"
     },
     {
       "test": "e2",
       "cat": "Event",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "No matching clients found."
     },
     {
       "test": "f1",
       "cat": "Financial",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "Revenue: $39850.00 across 24 events (17 completed)"
     },
     {
       "test": "f2",
       "cat": "Financial",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "\"Monthly Financial Snapshot\" completed successfully."
     },
     {
       "test": "cal1",
       "cat": "Calendar",
-      "pass": false,
-      "reason": "timeout"
+      "pass": " is available - no events booked."
     },
     {
       "test": "cal2",
       "cat": "Calendar",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "Here are your upcoming events:\n- Q1 Board Dinner on 2026-03-05 for Apex Group (Corporate) (confirmed)\n- Tasting for Morrison Family on 2026-03-08 for The Morrison Family (proposed)\n- Engagement Dinner on 2026-03-11 for Rachel Kim (accepted)\n- Spring Garden Party on 2026-03-17 for Sarah Henderson (confirmed)\n- Spring Tasting Menu on 2026-03-31 for Emma Rothschild (paid)"
     },
     {
       "test": "r1",
       "cat": "Recipe",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "Found 8 recipes:\n\n- **Beef Wellington** [protein] (95 min)\n- **Braised Pork Belly** [protein] (215 min)\n- **Classic Tiramisu** [dessert] (30 min)\n- **Crudo Bar Selection** [appetizer] (45 min)\n- **Lobster Bisque** [soup] (105 min)\n- **Mole Negro** [sauce] (165 min)\n- **Peruvian Ceviche** [appetizer] (25 min)\n- **Saffron Risotto** [starch] (35 min)"
     },
     {
       "test": "r2",
       "cat": "Recipe",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "No recipes found matching that search. Try a different keyword or check your recipe library."
     },
     {
       "test": "d1",
       "cat": "Dietary",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "Rachel Kim — ⚠️ ALLERGIES: SHELLFISH\n🚨 SHELLFISH ALLERGY IS SEVERE — carries EpiPen\n\nNo finalized menu to cross-check yet, but these restrictions MUST be respected.\n\n- **DANGER**: ALLERGY: Rachel Kim has a shellfish allergy"
     },
     {
       "test": "d2",
       "cat": "Dietary",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "Patricia Foster — Dietary restrictions: low-sodium\n\nNo finalized menu to cross-check yet, but these restrictions MUST be respected."
     },
     {
       "test": "i1",
       "cat": "Inquiry",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "No matching clients found."
     },
     {
       "test": "i2",
       "cat": "Inquiry",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "\"Stale Inquiries\" completed successfully."
     },
     {
       "test": "n1",
       "cat": "Nav",
-      "pass": "\"navigation.goto\" needs your input: \"navigation.goto\" is not yet supported. More capabilities coming soon."
+      "pass": "\"navigation.goto\" completed successfully."
     },
     {
       "test": "n2",
       "cat": "Nav",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "Navigating you to **/dashboard** now."
     },
     {
       "test": "em1",
       "cat": "Email",
-      "pass": false,
-      "reason": "timeout"
+      "pass": "\"Inbox Summary\" completed successfully."
     },
     {
       "test": "em2",
       "cat": "Email",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "\"Stale Inquiries\" completed successfully."
     },
     {
       "test": "l1",
       "cat": "Loyalty",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "\"Loyalty Status\" completed successfully."
     },
     {
       "test": "l2",
       "cat": "Loyalty",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "\"Loyalty Status\" completed successfully."
     },
     {
       "test": "ch1",
       "cat": "Chat",
-      "pass": false,
-      "reason": "HTTP 500"
+      "pass": "Evening, chef! 👨‍🍳\n\nQuick snapshot:\n- Next event in **2 days**: Tasting for Morrison Family for The Morrison Family\n\nWhat's on your mind?"
     },
     {
       "test": "ch2",

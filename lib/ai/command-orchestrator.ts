@@ -1301,6 +1301,8 @@ async function executeSingleTask(
         data = await executeWebRead(task.inputs)
         break
       case 'dietary.check':
+      case 'client.dietary':
+      case 'client.dietary_restrictions':
         data = await executeDietaryCheck(task.inputs)
         break
       case 'chef.favorite_chefs':
@@ -1340,6 +1342,7 @@ async function executeSingleTask(
         data = await executeEmailThread(task.inputs)
         break
       case 'email.inbox_summary':
+      case 'email.status':
         data = await executeEmailInboxSummary()
         break
       case 'email.draft_reply':
@@ -1405,6 +1408,7 @@ async function executeSingleTask(
 
       // ─── New tools (Remy upgrade) ──────────────────────────────────────────
       case 'nav.go':
+      case 'navigation.goto':
         data = executeNavGo(task.inputs)
         break
       case 'loyalty.status':

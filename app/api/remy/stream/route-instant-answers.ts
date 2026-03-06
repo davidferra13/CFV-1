@@ -212,7 +212,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
   // "Good morning" / "Hey" / greetings — warm but brief, with proactive context
   {
     pattern:
-      /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]?$/i,
+      /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)(?:\s+remy)?\s*[!.?]?$/i,
     answer: (ctx) => {
       const hour = new Date().getHours()
       const greeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
