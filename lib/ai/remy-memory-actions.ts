@@ -170,6 +170,153 @@ export async function extractAndSaveMemories(
   }
 }
 
+// ─── Correction-Aware Memory (Formula > AI) ──────────────────────────────
+// Detects when a chef corrects Remy ("no, Sarah is allergic to shellfish, not tree nuts")
+// and automatically deactivates the old wrong memory + saves the corrected version.
+
+const CORRECTION_PATTERNS: RegExp[] = [
+  /^no[,.]?\s+(actually|it'?s|she|he|they|that'?s|the|sarah|mike|lisa|dave|james)/i,
+  /^(actually|correction|wait)[,.]?\s/i,
+  /^that'?s (wrong|incorrect|not right|not true)/i,
+  /^(i said|i meant|i mean|what i meant)\b/i,
+  /not\s+(\w+)[,.]?\s*(it'?s|she'?s|he'?s|they'?re|it is|she is|he is)\s+/i,
+  /^(wrong|nope|incorrect)[,.]?\s/i,
+]
+
+function detectsCorrection(message: string): boolean {
+  const trimmed = message.trim()
+  return CORRECTION_PATTERNS.some((p) => p.test(trimmed))
+}
+
+export async function handleCorrectionMemory(
+  userMessage: string
+): Promise<{ corrected: boolean; deactivated?: string; created?: string }> {
+  if (!detectsCorrection(userMessage)) {
+    return { corrected: false }
+  }
+
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const supabase: any = createServerClient()
+
+  try {
+    // Use Ollama to understand what's being corrected and what the new fact is
+    const CorrectionSchema = z.object({
+      oldFact: z.string().describe('The incorrect fact being corrected (what was wrong)'),
+      newFact: z.string().describe('The corrected fact (what is actually true)'),
+      category: z.enum([
+        'chef_preference',
+        'client_insight',
+        'business_rule',
+        'communication_style',
+        'culinary_note',
+        'scheduling_pattern',
+        'pricing_pattern',
+        'workflow_preference',
+      ]),
+      importance: z.number().min(1).max(10),
+      relatedClientName: z.string().optional(),
+    })
+
+    const result = await parseWithOllama(
+      `You are a correction parser. The chef is correcting something they or their AI assistant previously said.
+Extract what was WRONG (the old fact) and what is CORRECT (the new fact).
+Return JSON: { "oldFact": "...", "newFact": "...", "category": "...", "importance": 1-10, "relatedClientName": "..." }
+If you can't determine a clear correction, return: { "oldFact": "", "newFact": "", "category": "chef_preference", "importance": 1 }`,
+      `Chef says: "${userMessage}"`,
+      CorrectionSchema,
+      { modelTier: 'fast', cache: false }
+    )
+
+    // If parsing couldn't extract a meaningful correction, bail
+    if (!result.oldFact || !result.newFact) {
+      return { corrected: false }
+    }
+
+    // Search for existing memories that match the OLD (wrong) fact
+    const { data: candidates } = await supabase
+      .from('remy_memories')
+      .select('id, content, category')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .limit(50)
+
+    // Find the best match by checking content overlap with the old fact
+    const oldWords = result.oldFact
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w: string) => w.length > 3)
+    let bestMatch: { id: string; content: string; score: number } | null = null
+
+    for (const row of candidates ?? []) {
+      const content = (row.content as string).toLowerCase()
+      const matchScore = oldWords.reduce((score: number, word: string) => {
+        return score + (content.includes(word) ? 1 : 0)
+      }, 0)
+      const normalized = matchScore / Math.max(oldWords.length, 1)
+      if (normalized > 0.4 && (!bestMatch || normalized > bestMatch.score)) {
+        bestMatch = { id: row.id as string, content: row.content as string, score: normalized }
+      }
+    }
+
+    // Deactivate the old wrong memory if found
+    let deactivatedId: string | undefined
+    if (bestMatch) {
+      await supabase
+        .from('remy_memories')
+        .update({ is_active: false })
+        .eq('id', bestMatch.id)
+        .eq('tenant_id', tenantId)
+      deactivatedId = bestMatch.id
+      console.log(`[remy-memory] Deactivated corrected memory: "${bestMatch.content}"`)
+    }
+
+    // Save the corrected memory
+    const contentHash = hashContent(result.newFact)
+
+    // Resolve client ID if mentioned
+    let relatedClientId: string | null = null
+    if (result.relatedClientName) {
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .ilike('full_name', `%${result.relatedClientName}%`)
+        .limit(1)
+      relatedClientId = (clients?.[0]?.id as string) ?? null
+    }
+
+    const { data: newMem } = await supabase
+      .from('remy_memories')
+      .insert({
+        tenant_id: tenantId,
+        category: result.category,
+        content: result.newFact,
+        importance: result.importance,
+        content_hash: contentHash,
+        related_client_id: relatedClientId,
+        source_message: userMessage,
+      })
+      .select('id')
+      .single()
+
+    console.log(`[remy-memory] Saved corrected memory: "${result.newFact}"`)
+
+    return {
+      corrected: true,
+      deactivated: deactivatedId,
+      created: newMem?.id as string | undefined,
+    }
+  } catch (err) {
+    if (err instanceof OllamaOfflineError) {
+      console.warn('[remy-memory] Ollama offline — skipping correction detection')
+      return { corrected: false }
+    }
+    console.error('[remy-memory] Correction detection failed:', err)
+    return { corrected: false }
+  }
+}
+
 // ─── Load Relevant Memories ────────────────────────────────────────────────
 
 export async function loadRelevantMemories(

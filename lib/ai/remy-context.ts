@@ -98,6 +98,9 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     upcomingCalls: detailed.upcomingCalls,
     documentSummary: detailed.documentSummary,
     recentArtifacts: detailed.recentArtifacts,
+    // Proactive nudges
+    staleInquiries: detailed.staleInquiries,
+    overduePayments: detailed.overduePayments,
   }
 }
 
@@ -176,6 +179,9 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     recentAARsResult,
     pendingMenuApprovalsResult,
     unreadInquiryMsgsResult,
+    // Proactive nudges (2026-03-06)
+    staleInquiriesResult,
+    overduePaymentsResult,
   ] = await Promise.all([
     // Upcoming events (next 7 days, limit 10)
     supabase
@@ -369,6 +375,29 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .eq('read', false)
       .order('created_at', { ascending: false })
       .limit(10),
+
+    // ─── Proactive nudges (2026-03-06) ────────────────────────────────────
+
+    // Stale inquiries (no response in >3 days)
+    supabase
+      .from('inquiries')
+      .select('id, lead_name, updated_at')
+      .eq('tenant_id', tenantId)
+      .in('status', ['new', 'awaiting_chef'])
+      .lt('updated_at', new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString())
+      .order('updated_at', { ascending: true })
+      .limit(5),
+
+    // Overdue payments (events past due date with outstanding balance)
+    supabase
+      .from('events')
+      .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .gt('balance_due_cents', 0)
+      .lt('payment_due_date', today)
+      .not('status', 'eq', 'cancelled')
+      .order('payment_due_date', { ascending: true })
+      .limit(5),
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
@@ -558,6 +587,21 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
         leadName: ((m.inquiry as Record<string, unknown> | null)?.lead_name as string) ?? 'Unknown',
       })
     ),
+
+    // Proactive nudges (2026-03-06)
+    staleInquiries: (staleInquiriesResult.data ?? []).map((i: Record<string, unknown>) => ({
+      leadName: (i.lead_name as string) ?? 'Unknown',
+      daysSinceContact: Math.floor(
+        (now.getTime() - new Date(i.updated_at as string).getTime()) / (1000 * 60 * 60 * 24)
+      ),
+    })),
+    overduePayments: (overduePaymentsResult.data ?? []).map((p: Record<string, unknown>) => ({
+      clientName: ((p.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      amountCents: (p.balance_due_cents as number) ?? 0,
+      daysOverdue: Math.floor(
+        (now.getTime() - new Date(p.payment_due_date as string).getTime()) / (1000 * 60 * 60 * 24)
+      ),
+    })),
   }
 }
 

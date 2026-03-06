@@ -87,7 +87,90 @@ export interface ClassificationResult {
   questionPart?: string
 }
 
+// ─── Deterministic Pre-Classifier (Formula > AI) ────────────────────────────
+// Skips Ollama entirely for obvious patterns. Saves 2-5s on ~70% of messages.
+
+const COMMAND_PATTERNS: RegExp[] = [
+  // Action verbs at start
+  /^(draft|write|create|make|add|set up|build|generate|prepare)\b/i,
+  // Specific actions
+  /^(find|search|look up|check|show|pull up|get|grab|fetch)\b/i,
+  // Draft types
+  /^(send|email|text|message|respond|reply|decline|re-engage|celebrate)\b/i,
+  // Operational commands
+  /^(scale|portion|pack|import|bulk|parse|process|log|record|schedule)\b/i,
+  // Web commands
+  /^(google|search the web|look up online|read this|read https?:)/i,
+  // Navigation
+  /^(go to|navigate|open|take me to)\b/i,
+  // Reminders
+  /^(remind me|don't let me forget|set a reminder)\b/i,
+  // Brain dump / intake patterns
+  /^(here'?s a (transcript|brain dump|dump|list|note)|i (just )?got off the phone|i talked to)\b/i,
+  // Attached file
+  /^\[attached:/i,
+]
+
+const QUESTION_PATTERNS: RegExp[] = [
+  // Direct questions
+  /^(how|what|why|when|where|who|which|can you tell me|could you explain)\b/i,
+  // Advice seeking
+  /^(any tips|any advice|should i|do you think|what do you think)\b/i,
+  // Status checks (informational, not action)
+  /^(how'?s|how is|how are|what'?s my|tell me about|give me an overview)\b/i,
+  // Conversational
+  /^(thanks|thank you|got it|ok|okay|sure|sounds good|perfect|great|awesome|nice)\b/i,
+  // Opinion / analysis
+  /^(analyze|compare|explain|describe|summarize|break down|walk me through)\b/i,
+]
+
+// Commands that look like questions but are actually action requests
+const QUESTION_SHAPED_COMMANDS: RegExp[] = [
+  /^(does|do)\s+\w+\s+have\s+(any\s+)?allerg/i, // "Does Sarah have any allergies?"
+  /^what('?s| is)\s+\w+'?s?\s+(lifetime value|ltv)/i, // "What's Sarah's lifetime value?"
+  /^how much has\b/i, // "How much has the Johnson family spent?"
+  /^what do i need to pack/i, // "What do I need to pack for Saturday?"
+  /^can you (draft|create|make|find|check|search|write)/i, // "Can you draft a..."
+]
+
+function tryDeterministicClassify(message: string): ClassificationResult | null {
+  const trimmed = message.trim()
+
+  // Question-shaped commands get caught first (they'd false-positive as questions)
+  for (const pattern of QUESTION_SHAPED_COMMANDS) {
+    if (pattern.test(trimmed)) {
+      return { intent: 'command', confidence: 0.92 }
+    }
+  }
+
+  // Check for command patterns
+  for (const pattern of COMMAND_PATTERNS) {
+    if (pattern.test(trimmed)) {
+      return { intent: 'command', confidence: 0.95 }
+    }
+  }
+
+  // Check for question patterns
+  for (const pattern of QUESTION_PATTERNS) {
+    if (pattern.test(trimmed)) {
+      return { intent: 'question', confidence: 0.95 }
+    }
+  }
+
+  // No confident match → fall through to Ollama
+  return null
+}
+
+// ─── Public API ─────────────────────────────────────────────────────────────
+
 export async function classifyIntent(message: string): Promise<ClassificationResult> {
+  // Try deterministic classification first (instant, free, no LLM)
+  const deterministic = tryDeterministicClassify(message)
+  if (deterministic) {
+    return deterministic
+  }
+
+  // Fall through to Ollama for ambiguous messages
   try {
     // Use 'complex' tier (30b conversation model) instead of 'fast' (4b)
     // to avoid model swap on 6GB VRAM. Remy streaming now uses the same tier,

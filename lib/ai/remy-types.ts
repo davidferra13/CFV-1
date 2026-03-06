@@ -233,6 +233,10 @@ export interface RemyContext {
   pendingMenuApprovals?: Array<{ clientName: string }>
   /** Unread messages from inquiry leads */
   unreadInquiryMessages?: Array<{ leadName: string }>
+  /** Stale inquiries — no response in >3 days (proactive nudge) */
+  staleInquiries?: Array<{ leadName: string; daysSinceContact: number }>
+  /** Overdue payments — past due date (proactive nudge) */
+  overduePayments?: Array<{ clientName: string; amountCents: number; daysOverdue: number }>
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

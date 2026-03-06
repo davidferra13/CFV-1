@@ -80,9 +80,279 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown:
 }`
 }
 
+// ─── Deterministic Intent Bypass (Formula > AI) ─────────────────────────────
+// Skips Ollama for common, unambiguous command patterns. Saves 2-5s per command.
+
+interface DeterministicPattern {
+  pattern: RegExp
+  build: (match: RegExpMatchArray, raw: string) => CommandPlan
+}
+
+const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
+  // "Draft/write a [type] for [name]"
+  {
+    pattern:
+      /^(?:draft|write)\s+(?:a\s+)?(?:thank[- ]?you|thank you note|follow[- ]?up|referral request|testimonial request|payment reminder|re-?engagement|decline|cancellation response|cover letter)\s+(?:for|to)\s+(.+)/i,
+    build: (match, raw) => {
+      const draftTypeMap: Record<string, string> = {
+        'thank you': 'draft.thank_you',
+        'thank-you': 'draft.thank_you',
+        thankyou: 'draft.thank_you',
+        'follow up': 'email.followup',
+        'follow-up': 'email.followup',
+        followup: 'email.followup',
+        referral: 'draft.referral_request',
+        'referral request': 'draft.referral_request',
+        testimonial: 'draft.testimonial_request',
+        'testimonial request': 'draft.testimonial_request',
+        'payment reminder': 'draft.payment_reminder',
+        reengagement: 'draft.re_engagement',
+        're-engagement': 'draft.re_engagement',
+        're engagement': 'draft.re_engagement',
+        decline: 'draft.decline_response',
+        cancellation: 'draft.cancellation_response',
+        'cancellation response': 'draft.cancellation_response',
+        'cover letter': 'draft.quote_cover_letter',
+      }
+      const lower = raw.toLowerCase()
+      let taskType = 'email.followup'
+      for (const [key, type] of Object.entries(draftTypeMap)) {
+        if (lower.includes(key)) {
+          taskType = type
+          break
+        }
+      }
+      return {
+        rawInput: raw,
+        overallConfidence: 0.95,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'client.search',
+            tier: 1,
+            confidence: 0.95,
+            inputs: { query: match[1].trim() },
+            dependsOn: [],
+          },
+          {
+            id: 't2',
+            taskType,
+            tier: 2,
+            confidence: 0.95,
+            inputs: { clientName: match[1].trim() },
+            dependsOn: ['t1'],
+          },
+        ],
+      }
+    },
+  },
+  // "Check if [date] is free" / "Am I free on [date]"
+  {
+    pattern: /^(?:check if|is|am i free on|am i free)\s+(.+?)(?:\s+(?:is )?free)?$/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'calendar.check',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { date: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Find/search [name]" (client search)
+  {
+    pattern: /^(?:find|search for|look up|search)\s+(?:my\s+)?(?:client\s+)?(.+)/i,
+    build: (match, raw) => {
+      // Don't match web searches
+      if (/^(?:the web|online|google|web for)/i.test(match[1])) return null as any
+      return {
+        rawInput: raw,
+        overallConfidence: 0.92,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'client.search',
+            tier: 1,
+            confidence: 0.92,
+            inputs: { query: match[1].trim() },
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
+  // "Create an event for [name] on [date]"
+  {
+    pattern: /^(?:create|make|add|set up)\s+(?:an?\s+)?event\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_event',
+          tier: 2,
+          confidence: 0.92,
+          inputs: { description: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Scale [recipe] for [N] guests/people/portions"
+  {
+    pattern:
+      /^(?:scale|portion)\s+(?:my\s+)?(.+?)\s+(?:for|to)\s+(\d+)\s+(?:guests?|people|portions?|servings?)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'ops.portion_calc',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { recipeName: match[1].trim(), guestCount: parseInt(match[2]) },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Packing list for [event]"
+  {
+    pattern: /^(?:generate|create|make|get)\s+(?:a\s+)?packing list\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'ops.packing_list',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { eventDescription: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Search the web for [query]" / "Google [query]"
+  {
+    pattern: /^(?:search the web|google|look up online|web search)\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'web.search',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { query: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Read [URL]"
+  {
+    pattern: /^(?:read|fetch|open)\s+(https?:\/\/.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.98,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'web.read',
+          tier: 1,
+          confidence: 0.98,
+          inputs: { url: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Check dietary/allergies for [name]" / "Does [name] have allergies"
+  {
+    pattern:
+      /^(?:check|show|what are)\s+(?:the\s+)?(?:dietary|allergies|allergy|restrictions)\s+(?:for|of)\s+(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'dietary.check',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { clientName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Break-even analysis for [event]"
+  {
+    pattern: /^break[- ]?even\s+(?:analysis\s+)?(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'analytics.break_even',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { eventDescription: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Remind me to [task]" / "Don't let me forget to [task]"
+  {
+    pattern: /^(?:remind me|don'?t let me forget|set a reminder)\s+(?:to\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_todo',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { title: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+]
+
+function tryDeterministicParse(rawInput: string): CommandPlan | null {
+  const trimmed = rawInput.trim()
+  for (const { pattern, build } of DETERMINISTIC_PATTERNS) {
+    const match = trimmed.match(pattern)
+    if (match) {
+      const result = build(match, rawInput)
+      if (result) return result
+    }
+  }
+  return null
+}
+
 // ─── Public Server Action ─────────────────────────────────────────────────────
 
 export async function parseCommandIntent(rawInput: string): Promise<CommandPlan> {
+  // Try deterministic parse first (instant, free, no LLM)
+  const deterministic = tryDeterministicParse(rawInput)
+  if (deterministic) return deterministic
+
   const systemPrompt = buildSystemPrompt()
   const userContent = `Chef command: "${rawInput}"\n\nDecompose this into tasks.`
 

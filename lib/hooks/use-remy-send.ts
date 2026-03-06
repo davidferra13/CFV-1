@@ -8,13 +8,14 @@ import {
   pruneOldConversations,
   trimConversationMessages,
   logAction,
+  getActionLog,
   autoSuggestProject,
   autoTitle,
 } from '@/lib/ai/remy-local-storage'
 import { parseRemyStream } from '@/lib/ai/remy-stream-parser'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
-import { extractAndSaveMemories } from '@/lib/ai/remy-memory-actions'
+import { extractAndSaveMemories, handleCorrectionMemory } from '@/lib/ai/remy-memory-actions'
 import {
   getSessionActivity,
   updateChannelDigest,
@@ -176,6 +177,11 @@ export function useRemySend(config: UseRemySendConfig) {
     extractAndSaveMemories(userMessage, remyMsg.content).catch((err) =>
       console.error('[non-blocking] Memory extraction failed', err)
     )
+
+    // Correction-aware memory: detect "no, actually..." and auto-fix wrong memories
+    handleCorrectionMemory(userMessage).catch((err) =>
+      console.error('[non-blocking] Correction detection failed', err)
+    )
   }, [])
 
   const handleCancel = useCallback(() => {
@@ -208,6 +214,62 @@ export function useRemySend(config: UseRemySendConfig) {
           timestamp: new Date().toISOString(),
         }
         setMessages((prev) => [...prev, debugMsg])
+        return
+      }
+
+      // Session recap — intercept client-side, no API call (Formula > AI)
+      const recapPattern =
+        /^(what did we do|session recap|recap today|what have we done|summarize (this |our )?session)/i
+      if (recapPattern.test(message)) {
+        setInput('')
+        const userMsg: RemyMessage = {
+          id: generateId(),
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
+        }
+        setMessages((prev) => [...prev, userMsg])
+
+        try {
+          const actions = await getActionLog(100)
+          const today = new Date().toDateString()
+          const todayActions = actions.filter((a) => new Date(a.createdAt).toDateString() === today)
+
+          let recapContent: string
+          if (todayActions.length === 0) {
+            recapContent =
+              "We haven't taken any actions yet today, chef. Ask me to do something and I'll keep track of it all."
+          } else {
+            const grouped = new Map<string, number>()
+            for (const a of todayActions) {
+              const key = a.action || 'action'
+              grouped.set(key, (grouped.get(key) || 0) + 1)
+            }
+            const lines = Array.from(grouped.entries()).map(
+              ([name, count]) => `- **${name}**${count > 1 ? ` (x${count})` : ''}`
+            )
+            const successCount = todayActions.filter((a) => a.status === 'success').length
+            const errorCount = todayActions.filter((a) => a.status === 'error').length
+
+            recapContent = `Here's what we've done today, chef:\n\n${lines.join('\n')}\n\n**${todayActions.length} total actions** — ${successCount} successful${errorCount > 0 ? `, ${errorCount} had issues` : ''}.`
+          }
+
+          const recapMsg: RemyMessage = {
+            id: generateId(),
+            role: 'remy',
+            content: recapContent,
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prev) => [...prev, recapMsg])
+        } catch {
+          const errorMsg: RemyMessage = {
+            id: generateId(),
+            role: 'remy',
+            content: "Couldn't pull up the action log right now. Try again in a sec.",
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prev) => [...prev, errorMsg])
+        }
         return
       }
 

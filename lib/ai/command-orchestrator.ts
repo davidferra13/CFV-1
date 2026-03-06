@@ -78,32 +78,63 @@ async function executeClientSearch(inputs: Record<string, unknown>) {
 
   // Enrich with dietary/allergy data (safety-critical)
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const supabase: any = createServerClient()
   const clientIds = clients.map((c) => c.id)
-  const { data: enriched } = await supabase
-    .from('clients')
-    .select('id, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points')
-    .eq('tenant_id', user.tenantId!)
-    .in('id', clientIds)
+
+  const [{ data: enriched }, { data: eventCounts }] = await Promise.all([
+    supabase
+      .from('clients')
+      .select('id, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points')
+      .eq('tenant_id', tenantId)
+      .in('id', clientIds),
+    // Frequency-based resolution: rank by event count when multiple clients match
+    clients.length > 1
+      ? supabase
+          .from('events')
+          .select('client_id')
+          .eq('tenant_id', tenantId)
+          .in('client_id', clientIds)
+      : Promise.resolve({ data: [] }),
+  ])
 
   const enrichedMap = new Map(
     ((enriched ?? []) as Array<Record<string, unknown>>).map((e) => [e.id as string, e])
   )
 
+  // Count events per client for frequency ranking
+  const eventCountMap = new Map<string, number>()
+  for (const row of (eventCounts ?? []) as Array<Record<string, unknown>>) {
+    const cid = row.client_id as string
+    eventCountMap.set(cid, (eventCountMap.get(cid) || 0) + 1)
+  }
+
+  const enrichedClients = clients.map((c) => {
+    const extra = enrichedMap.get(c.id)
+    const allergies = (extra?.allergies as string[]) ?? []
+    const dietary = (extra?.dietary_restrictions as string[]) ?? []
+    return {
+      id: c.id,
+      name: c.full_name ?? '',
+      email: c.email ?? '',
+      status: c.status ?? '',
+      allergies,
+      dietaryRestrictions: dietary,
+      loyaltyTier: (extra?.loyalty_tier as string) ?? null,
+      eventCount: eventCountMap.get(c.id) ?? 0,
+    }
+  })
+
+  // Sort by event frequency (most events = most likely the chef's intended client)
+  if (enrichedClients.length > 1) {
+    enrichedClients.sort((a, b) => b.eventCount - a.eventCount)
+  }
+
   return {
-    clients: clients.map((c) => {
-      const extra = enrichedMap.get(c.id)
-      const allergies = (extra?.allergies as string[]) ?? []
-      const dietary = (extra?.dietary_restrictions as string[]) ?? []
-      return {
-        id: c.id,
-        name: c.full_name ?? '',
-        email: c.email ?? '',
-        status: c.status ?? '',
-        allergies,
-        dietaryRestrictions: dietary,
-        loyaltyTier: (extra?.loyalty_tier as string) ?? null,
-      }
+    clients: enrichedClients,
+    // Signal to Remy when auto-resolving ambiguity
+    ...(enrichedClients.length > 1 && {
+      disambiguationNote: `Found ${enrichedClients.length} clients matching "${query}". Ranked by event frequency — "${enrichedClients[0].name}" has ${enrichedClients[0].eventCount} events.`,
     }),
   }
 }

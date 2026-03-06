@@ -159,6 +159,23 @@ function buildRemySystemPrompt(
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
 
+  // Time awareness — Remy knows when it is
+  const now = new Date()
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const hour = now.getHours()
+  const timeOfDay =
+    hour < 6
+      ? 'late night'
+      : hour < 12
+        ? 'morning'
+        : hour < 17
+          ? 'afternoon'
+          : hour < 21
+            ? 'evening'
+            : 'night'
+  parts.push(`\nCURRENT TIME: ${dayNames[now.getDay()]}, ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} (${timeOfDay})
+Be aware of the time — if it's early morning or late at night, acknowledge it naturally. If an event is tomorrow, convey urgency. Match energy to the moment.`)
+
   // Business context
   parts.push(`\nBUSINESS CONTEXT:
 - Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` — "${context.tagline}"` : ''}
@@ -264,6 +281,37 @@ ${aars
     parts.push(memoryBlock)
   }
 
+  // Proactive nudge instructions — surface urgent items once per conversation
+  const nudgeItems: string[] = []
+  if (context.staleInquiries && context.staleInquiries.length > 0) {
+    nudgeItems.push(
+      `${context.staleInquiries.length} stale inquir${context.staleInquiries.length === 1 ? 'y' : 'ies'} (>3 days without response): ${context.staleInquiries.map((i) => i.leadName).join(', ')}`
+    )
+  }
+  if (context.overduePayments && context.overduePayments.length > 0) {
+    nudgeItems.push(
+      `${context.overduePayments.length} overdue payment${context.overduePayments.length === 1 ? '' : 's'}: ${context.overduePayments.map((p) => `${p.clientName} ($${(p.amountCents / 100).toFixed(0)})`).join(', ')}`
+    )
+  }
+  if (context.upcomingEvents && context.upcomingEvents.length > 0) {
+    const imminent = context.upcomingEvents.filter((e) => {
+      if (!e.date) return false
+      const eventDate = new Date(e.date)
+      const hoursUntil = (eventDate.getTime() - Date.now()) / (1000 * 60 * 60)
+      return hoursUntil > 0 && hoursUntil < 48
+    })
+    if (imminent.length > 0) {
+      nudgeItems.push(
+        `${imminent.length} event${imminent.length === 1 ? '' : 's'} in the next 48 hours: ${imminent.map((e) => `${e.occasion ?? 'Event'} for ${e.clientName}`).join(', ')}`
+      )
+    }
+  }
+  if (nudgeItems.length > 0) {
+    parts.push(`\nPROACTIVE AWARENESS (mention these ONCE if relevant, don't repeat every message):
+${nudgeItems.map((n) => `- ${n}`).join('\n')}
+If the chef's question relates to one of these, weave it in naturally. Otherwise, mention at the end of your FIRST response only — "By the way..." or "Quick heads up..." — then drop it.`)
+  }
+
   // Navigation routes (scoped by Focus Mode)
   parts.push(`\n${focusMode ? NAV_ROUTE_MAP_FOCUS : NAV_ROUTE_MAP}`)
 
@@ -285,16 +333,51 @@ Present all suggestions as drafts. Never claim to have taken autonomous actions.
 
 // ─── Conversation History Formatter ─────────────────────────────────────────
 
+function summarizeDroppedMessages(dropped: RemyMessage[]): string {
+  if (dropped.length === 0) return ''
+
+  // Extract key topics from dropped messages to preserve context
+  const chefMessages = dropped.filter((m) => m.role === 'user').map((m) => m.content)
+  const remyActions = dropped
+    .filter((m) => m.role === 'remy' && m.tasks && m.tasks.length > 0)
+    .flatMap((m) => m.tasks!.map((t) => t.name || t.taskType))
+
+  const topics: string[] = []
+  if (chefMessages.length > 0) {
+    // Take first 80 chars of each chef message as topic hints
+    const snippets = chefMessages.map((msg) => msg.slice(0, 80).replace(/\n/g, ' '))
+    topics.push(`Chef discussed: ${snippets.join('; ')}`)
+  }
+  if (remyActions.length > 0) {
+    topics.push(`Actions taken: ${[...new Set(remyActions)].join(', ')}`)
+  }
+
+  return `[Earlier in this conversation (${dropped.length} messages summarized): ${topics.join('. ')}]\n\n`
+}
+
 function formatConversationHistory(history: RemyMessage[]): string {
   if (history.length === 0) return ''
 
-  // Keep last 10 messages to stay within context window
-  const recent = history.slice(-10)
+  const MAX_RECENT = 10
+
+  // If history fits, no summarization needed
+  if (history.length <= MAX_RECENT) {
+    const formatted = history
+      .map((m) => `${m.role === 'user' ? 'Chef' : 'Remy'}: ${m.content}`)
+      .join('\n')
+    return `Previous conversation:\n${formatted}\n\n`
+  }
+
+  // Summarize older messages, keep recent ones verbatim
+  const dropped = history.slice(0, -MAX_RECENT)
+  const recent = history.slice(-MAX_RECENT)
+
+  const summary = summarizeDroppedMessages(dropped)
   const formatted = recent
     .map((m) => `${m.role === 'user' ? 'Chef' : 'Remy'}: ${m.content}`)
     .join('\n')
 
-  return `Previous conversation:\n${formatted}\n\n`
+  return `${summary}Previous conversation:\n${formatted}\n\n`
 }
 
 // ─── Task Result Summarizer ─────────────────────────────────────────────────
