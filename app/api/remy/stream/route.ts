@@ -51,6 +51,7 @@ import {
   summarizeTaskResults,
 } from './route-runtime-utils'
 import { buildRemySystemPrompt, formatConversationHistory } from './route-prompt-utils'
+import { tryInstantAnswer } from './route-instant-answers'
 
 //  POST Handler
 
@@ -93,6 +94,18 @@ export async function POST(req: NextRequest) {
     const otherChannelDigest =
       typeof rawRecord.otherChannelDigest === 'string'
         ? rawRecord.otherChannelDigest.slice(0, 600)
+        : null
+    // Previous session topics — client-side summary of last conversation for continuity
+    const previousSessionTopics =
+      rawRecord.previousSessionTopics &&
+      typeof rawRecord.previousSessionTopics === 'object' &&
+      'title' in (rawRecord.previousSessionTopics as Record<string, unknown>) &&
+      'topics' in (rawRecord.previousSessionTopics as Record<string, unknown>)
+        ? (rawRecord.previousSessionTopics as {
+            title: string
+            topics: string[]
+            lastActiveAt: string
+          })
         : null
     const history = validateHistory(rawRecord.history, 10) as RemyMessage[]
 
@@ -252,26 +265,54 @@ export async function POST(req: NextRequest) {
 
       let category: MemoryCategory = 'chef_preference'
       const lower = fact.toLowerCase()
+      // Client-related: names, pronouns, dietary info, relationship details
       if (
-        /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten)\b/i.test(
+        /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten|lactose|nut|shellfish|celiac|kosher|halal|family|couple|husband|wife|daughter|son|likes|prefers|hates|loves|favorite|anniversary|birthday)\b/i.test(
           lower
         )
       )
         category = 'client_insight'
-      else if (/\b(price|charge|cost|rate|per\s+person|margin|quote)\b/i.test(lower))
-        category = 'pricing_pattern'
+      // Pricing: rates, costs, margins, financial patterns
       else if (
-        /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|day\s+before)\b/i.test(
+        /\b(price|charge|cost|rate|per\s+person|per\s+head|margin|quote|minimum|deposit|flat\s+fee|hourly|tip|gratuity|markup|food\s+cost|overhead)\b/i.test(
+          lower
+        )
+      )
+        category = 'pricing_pattern'
+      // Scheduling: days, times, availability, booking patterns
+      else if (
+        /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|afternoon|night|day\s+before|day\s+of|lead\s+time|advance|last\s+minute|buffer|travel\s+time|off\s+day|vacation|blackout)\b/i.test(
           lower
         )
       )
         category = 'scheduling_pattern'
-      else if (/\b(email|draft|message|write|tone|formal|casual)\b/i.test(lower))
+      // Communication: how they write, email style, preferences
+      else if (
+        /\b(email|draft|message|write|tone|formal|casual|text|call|phone|respond|reply|follow\s+up|signature|sign\s+off|greeting|close)\b/i.test(
+          lower
+        )
+      )
         category = 'communication_style'
-      else if (/\b(never|always|rule|policy|require)\b/i.test(lower)) category = 'business_rule'
-      else if (/\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu)\b/i.test(lower))
+      // Business rules: hard constraints, policies, never/always rules
+      else if (
+        /\b(never|always|rule|policy|require|must|won'?t|don'?t|refuse|only|no\s+exceptions|non-?negotiable|standard|guarantee|insurance|liability|contract)\b/i.test(
+          lower
+        )
+      )
+        category = 'business_rule'
+      // Culinary: food preferences, techniques, ingredients, kitchen
+      else if (
+        /\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu|plating|garnish|seasoning|spice|herb|wine|pairing|ferment|smoke|cure|sous\s+vide|grill|bake|roast|fry|local|farm|seasonal|forage|butcher|fishmonger|purveyor|vendor|supplier)\b/i.test(
+          lower
+        )
+      )
         category = 'culinary_note'
-      else if (/\b(workflow|prep|shop|process|order|system)\b/i.test(lower))
+      // Workflow: operational patterns, processes, routines
+      else if (
+        /\b(workflow|prep|shop|process|order|system|routine|checklist|setup|breakdown|cleanup|station|equipment|kit|cooler|transport|pack|label|store|freeze|thaw|batch|mise\s+en\s+place)\b/i.test(
+          lower
+        )
+      )
         category = 'workflow_preference'
 
       await addRemyMemoryManual({ content: fact, category, importance: 5 })
@@ -392,6 +433,31 @@ export async function POST(req: NextRequest) {
       classification = { ...classification, intent: 'question' }
     }
 
+    //  INSTANT ANSWER PATH (Formula > AI — skip Ollama entirely for simple facts)
+    // For simple factual questions where the answer is already in the loaded context,
+    // return an instant response without waiting 30-90s for Ollama.
+    if (classification.intent === 'question') {
+      const instant = tryInstantAnswer(message, context)
+      if (instant) {
+        releaseInteractiveLock()
+        const encoder = new TextEncoder()
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: instant.text })))
+            if (instant.navSuggestions && instant.navSuggestions.length > 0) {
+              controller.enqueue(
+                encoder.encode(encodeSSE({ type: 'nav', data: instant.navSuggestions }))
+              )
+            }
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+            controller.close()
+          },
+        })
+        return new Response(stream, { headers: sseHeaders() })
+      }
+    }
+
     //  COMMAND path
     if (classification.intent === 'command') {
       const commandRun = await runCommand(message)
@@ -499,7 +565,9 @@ export async function POST(req: NextRequest) {
         sessionMinutes,
         activeForm,
         surveyPromptSection,
-        otherChannelDigest
+        otherChannelDigest,
+        previousSessionTopics,
+        message
       )
 
       // Warn if system prompt is large enough to risk silent truncation.
@@ -669,7 +737,9 @@ export async function POST(req: NextRequest) {
       sessionMinutes,
       activeForm,
       surveyPromptSection,
-      otherChannelDigest
+      otherChannelDigest,
+      previousSessionTopics,
+      message
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`
