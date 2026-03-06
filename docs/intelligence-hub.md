@@ -1,4 +1,4 @@
-# Intelligence Hub — 28 Deterministic Intelligence Engines
+# Intelligence Hub — 30 Deterministic Intelligence Engines
 
 **Branch:** `feature/risk-gap-closure`
 **Date:** 2026-03-06
@@ -6,13 +6,13 @@
 
 ## Philosophy
 
-Every feature follows the core principle: **Formula > AI**. All 25 modules are pure deterministic computation on existing data. Zero Ollama dependency, zero cloud AI calls, instant results, 100% accurate.
+Every feature follows the core principle: **Formula > AI**. All 30 modules are pure deterministic computation on existing data. Zero Ollama dependency, zero cloud AI calls, instant results, 100% accurate.
 
 ## Architecture
 
 ```
 lib/intelligence/
-  index.ts                         — Central re-exports for all 28 engines
+  index.ts                         — Central re-exports for all 30 engines
 
   # Tier 1 — Core Intelligence (10 engines)
   seasonal-demand.ts               — Seasonal demand forecasting
@@ -342,9 +342,32 @@ When viewing a specific client, computes:
 - **Rebooking prediction** — estimated days until next booking, seasonal pattern, preferred occasion
 - **Revenue trajectory** — growing/stable/declining trend, events per year, avg event value
 
+### List-Level Intelligence Summaries (2026-03-06)
+
+Two lightweight engines provide aggregate intelligence at the list level:
+
+#### Pipeline Summary (`lib/intelligence/pipeline-summary.ts`)
+
+Aggregate pipeline intelligence for the inquiry list page:
+
+- **Total pipeline value** and **expected conversion value** (pipeline x historical rate)
+- **Historical conversion rate** from last 200 closed inquiries
+- **Average days to convert** for similar inquiry types
+- **Urgent count** — inquiries needing response (12+ hours unanswered)
+- **Week-over-week trend** — new inquiry volume comparison
+
+#### Events Financial Summary (`lib/intelligence/events-financial-summary.ts`)
+
+Aggregate financial intelligence for the events list page:
+
+- **Upcoming revenue** (next 30 days confirmed/paid events)
+- **Month-to-date revenue** with average margin percent
+- **Year-to-date revenue** with year-over-year growth comparison
+- **Events per month** average from last 12 months
+
 ## Integration Points
 
-Intelligence is wired into **11 surfaces**:
+Intelligence is wired into **14 surfaces**:
 
 1. **Intelligence Hub** (`/intelligence`) — Full 25-engine dashboard with card-per-engine layout
 2. **Remy AI (global)** — Business health summary injected into Remy's system prompt
@@ -353,7 +376,11 @@ Intelligence is wired into **11 surfaces**:
 5. **Remy AI (per-client)** — Churn risk, rebooking prediction, seasonal patterns, revenue trend
 6. **Chef Dashboard** — Intelligence section streams via Suspense: health scores, proactive alerts, key insights
 7. **Quote Form** — Smart pricing hint with "Use" button to apply suggested price
-8. **Event Form** — Prep time estimate bar with phase breakdown
-9. **Inquiry Detail** — Conversion intelligence panel: likelihood %, pipeline rank, pricing benchmark
-10. **Event Detail** — Event intelligence panel: expected margin, price vs average, post-event actions
-11. **Client Profile** — Relationship intelligence panel: churn risk, rebooking forecast, revenue trajectory
+8. **Quote List** — Acceptance rate insights, expiring quotes, pricing model comparison
+9. **Event Form** — Prep time estimate bar with phase breakdown
+10. **Inquiry List** — Pipeline summary bar: pipeline value, conversion rate, week trend, urgent count
+11. **Inquiry Detail** — Conversion intelligence panel: likelihood %, pipeline rank, pricing benchmark
+12. **Event List** — Financial summary bar: upcoming revenue, month revenue, YTD with growth, pace
+13. **Event Detail** — Event intelligence panel: expected margin, price vs average, post-event actions
+14. **Client Profile** — Relationship intelligence panel: churn risk, rebooking forecast, revenue trajectory
+15. **Calendar** — Scheduling insights bar: burnout warnings, optimal spacing, best performance day

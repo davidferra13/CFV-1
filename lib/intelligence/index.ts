@@ -150,3 +150,9 @@ export type { EventIntelligenceContext } from './event-context'
 
 export { getClientIntelligenceContext } from './client-intelligence-context'
 export type { ClientIntelligenceContext } from './client-intelligence-context'
+
+export { getPipelineSummary } from './pipeline-summary'
+export type { PipelineSummary } from './pipeline-summary'
+
+export { getEventsFinancialSummary } from './events-financial-summary'
+export type { EventsFinancialSummary } from './events-financial-summary'

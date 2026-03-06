@@ -36,6 +36,7 @@ import {
   type SerializedInquiry,
 } from '@/components/inquiries/inquiries-bulk-table'
 import { AlertTriangle, Clock, TrendingUp, BarChart3 } from 'lucide-react'
+import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-bar'
 
 type InquiryFilter =
   | 'all'
@@ -502,6 +503,11 @@ export default async function InquiriesPage({
           </Link>
         </div>
       </div>
+
+      {/* Pipeline Intelligence Summary */}
+      <Suspense fallback={null}>
+        <PipelineSummaryBar />
+      </Suspense>
 
       {/* View wrapper: manages list/kanban toggle */}
       <InquiriesViewWrapper inquiries={kanbanInquiries}>

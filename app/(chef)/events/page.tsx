@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 import { getWeatherForEvents } from '@/lib/weather/weather-actions'
+import { EventsFinancialBar } from '@/components/intelligence/events-financial-bar'
 
 type EventStatus =
   | 'all'
@@ -126,6 +127,11 @@ export default async function EventsPage({
           </Link>
         </div>
       </div>
+
+      {/* Financial Intelligence Summary */}
+      <Suspense fallback={null}>
+        <EventsFinancialBar />
+      </Suspense>
 
       <Card className="p-4">
         <EventsViewFilterBar initialStatus={status} initialView={view} />
