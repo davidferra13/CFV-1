@@ -107,6 +107,13 @@ export const DASHBOARD_WIDGET_IDS = [
   'yoy_comparison',
   'overdue_installments',
   'dormant_clients_list',
+  'live_inbox',
+  'active_shopping_list',
+  'quick_expense',
+  'quick_availability',
+  'invoice_pulse',
+  'recipe_capture',
+  'client_lookup',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -219,6 +226,13 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   yoy_comparison: 'Year-over-Year',
   overdue_installments: 'Overdue Installments',
   dormant_clients_list: 'Dormant Clients',
+  live_inbox: 'Live Inbox',
+  active_shopping_list: 'Shopping List',
+  quick_expense: 'Quick Expense',
+  quick_availability: 'Availability Check',
+  invoice_pulse: 'Invoice Pulse',
+  recipe_capture: 'Recipe Quick Capture',
+  client_lookup: 'Client Quick Lookup',
 }
 
 // Legacy alias kept for compatibility with older code paths.

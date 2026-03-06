@@ -17,6 +17,7 @@ import {
 } from '@/lib/collaboration/actions'
 import { getRecipeDebt } from '@/lib/recipes/actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
+import { getUnifiedInbox } from '@/lib/inbox/actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getRecurringCollaborationCommandCenter } from '@/lib/recurring/actions'
 import { getStuckEvents } from '@/lib/pipeline/stuck-events'
@@ -33,12 +34,15 @@ import {
   getDietaryAlertSummary,
   getUpcomingBirthdays,
   getUnreadHubMessages,
+  getBookedDates,
 } from '@/lib/dashboard/widget-actions'
 import { PaymentsDueWidget } from '@/components/dashboard/payments-due-widget'
 import { ExpiringQuotesWidget } from '@/components/dashboard/expiring-quotes-widget'
 import { DietaryAlertsWidget } from '@/components/dashboard/dietary-alerts-widget'
 import { ClientBirthdaysWidget } from '@/components/dashboard/client-birthdays-widget'
 import { UnreadHubMessagesWidget } from '@/components/dashboard/unread-hub-messages-widget'
+import { QuickAvailabilityWidget } from '@/components/dashboard/quick-availability-widget'
+import { LiveInboxWidget } from '@/components/dashboard/live-inbox-widget'
 import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
 import { RecipeDebtWidget } from '@/components/dashboard/recipe-debt-widget'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
@@ -132,6 +136,8 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     dietaryAlerts,
     upcomingBirthdays,
     unreadHubMessages,
+    inboxPreview,
+    bookedDatesResult,
   ] = await Promise.all([
     safe('schedulingGaps', getSchedulingGaps, []),
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
@@ -169,6 +175,8 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     safe('dietaryAlerts', () => getDietaryAlertSummary(7), []),
     safe('upcomingBirthdays', () => getUpcomingBirthdays(14), []),
     safe('unreadHubMessages', () => getUnreadHubMessages(5), []),
+    safe('inboxPreview', () => getUnifiedInbox({ limit: 8 }), []),
+    safe('bookedDates', getBookedDates, { booked: [], tentative: [] }),
   ])
 
   const serializableHolidayOutreachSuggestions = holidayOutreachSuggestions.map((suggestion) => ({
@@ -471,6 +479,25 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
         <section style={{ order: getWidgetOrder('unread_hub_messages') }}>
           <CollapsibleWidget widgetId="unread_hub_messages" title="Hub Messages">
             <UnreadHubMessagesWidget groups={unreadHubMessages} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('live_inbox') && inboxPreview.length > 0 && (
+        <section style={{ order: getWidgetOrder('live_inbox') }}>
+          <CollapsibleWidget widgetId="live_inbox" title="Live Inbox">
+            <LiveInboxWidget initialItems={inboxPreview} tenantId={user.tenantId!} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('quick_availability') && (
+        <section style={{ order: getWidgetOrder('quick_availability') }}>
+          <CollapsibleWidget widgetId="quick_availability" title="Availability Check">
+            <QuickAvailabilityWidget
+              bookedDates={bookedDatesResult.booked}
+              tentativeDates={bookedDatesResult.tentative}
+            />
           </CollapsibleWidget>
         </section>
       )}

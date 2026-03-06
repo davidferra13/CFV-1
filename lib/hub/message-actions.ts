@@ -518,6 +518,38 @@ export async function editHubMessage(input: {
   if (error) throw new Error(`Failed to edit message: ${error.message}`)
 }
 
+/**
+ * Search messages in a group by keyword.
+ */
+export async function searchHubMessages(input: {
+  groupId: string
+  query: string
+  limit?: number
+}): Promise<HubMessage[]> {
+  const supabase = createServerClient({ admin: true })
+  const limit = input.limit ?? 20
+  const q = input.query.trim()
+
+  if (!q || q.length < 2) return []
+
+  const { data, error } = await supabase
+    .from('hub_messages')
+    .select('*, hub_guest_profiles!author_profile_id(*)')
+    .eq('group_id', input.groupId)
+    .is('deleted_at', null)
+    .ilike('body', `%${q}%`)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) return []
+
+  return (data ?? []).map((m) => ({
+    ...m,
+    author: m.hub_guest_profiles ?? undefined,
+    hub_guest_profiles: undefined,
+  })) as HubMessage[]
+}
+
 // ---------------------------------------------------------------------------
 // Pinned Notes
 // ---------------------------------------------------------------------------

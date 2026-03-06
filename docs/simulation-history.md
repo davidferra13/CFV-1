@@ -174,3 +174,8 @@ Failing: inquiry_parse (0%)
 
 Passing: client_parse, allergen_risk, correspondence, menu_suggestions, quote_draft
 Failing: inquiry_parse (0%)
+
+## 2026-03-06 22:16 UTC — 67% pass rate — Run a625a9f5
+
+Passing: allergen_risk, correspondence, menu_suggestions, quote_draft
+Failing: inquiry_parse (0%), client_parse (0%)

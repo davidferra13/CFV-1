@@ -1,4 +1,3 @@
-// Playwright E2E Test Configuration
 // Adapted from legacy BillyBob8 patterns for Next.js + Supabase
 //
 // Default base URL is http://localhost:3100.

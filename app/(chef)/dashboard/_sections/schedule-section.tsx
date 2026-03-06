@@ -18,7 +18,8 @@ import { DOPTaskPanel } from '@/components/dashboard/dop-task-panel'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
 import { ShoppingWindowWidget } from '@/components/dashboard/shopping-window-widget'
 import { TodaysScheduleWidget } from '@/components/dashboard/todays-schedule-widget'
-import { getShoppingWindowItems } from '@/lib/dashboard/widget-actions'
+import { ShoppingListWidget } from '@/components/dashboard/shopping-list-widget'
+import { getShoppingWindowItems, getActiveShoppingList } from '@/lib/dashboard/widget-actions'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
@@ -58,15 +59,25 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
   const isWidgetEnabled = (id: DashboardWidgetId) => widgetEnabled[id] ?? true
   const getWidgetOrder = (id: DashboardWidgetId) => widgetOrder[id] ?? Number.MAX_SAFE_INTEGER
 
-  const [prepPrompts, weekSchedule, nextEvent, dopTaskDigest, dailyPlanStats, shoppingWindow] =
-    await Promise.all([
-      safe('prepPrompts', getAllPrepPrompts, []),
-      safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
-      safe('nextEvent', getNextUpcomingEvent, null),
-      safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
-      safe('dailyPlanStats', getDailyPlanStats, null),
-      safe('shoppingWindow', () => getShoppingWindowItems(3), []),
-    ])
+  const emptyShoppingList = { items: [], eventLabel: '', consolidatedEvents: [] as string[] }
+
+  const [
+    prepPrompts,
+    weekSchedule,
+    nextEvent,
+    dopTaskDigest,
+    dailyPlanStats,
+    shoppingWindow,
+    shoppingList,
+  ] = await Promise.all([
+    safe('prepPrompts', getAllPrepPrompts, []),
+    safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
+    safe('nextEvent', getNextUpcomingEvent, null),
+    safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
+    safe('dailyPlanStats', getDailyPlanStats, null),
+    safe('shoppingWindow', () => getShoppingWindowItems(3), []),
+    safe('shoppingList', () => getActiveShoppingList(5), emptyShoppingList),
+  ])
 
   // Weather fetch — collects event IDs from DOP tasks
   const weatherByEventId = await safe<Record<string, InlineWeather>>(
@@ -194,6 +205,19 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
         <section style={{ order: getWidgetOrder('shopping_window') }}>
           <CollapsibleWidget widgetId="shopping_window" title="Shopping Window">
             <ShoppingWindowWidget items={shoppingWindow} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {/* Active Shopping List */}
+      {isWidgetEnabled('active_shopping_list') && shoppingList.items.length > 0 && (
+        <section style={{ order: getWidgetOrder('active_shopping_list') }}>
+          <CollapsibleWidget widgetId="active_shopping_list" title="Shopping List">
+            <ShoppingListWidget
+              items={shoppingList.items}
+              eventLabel={shoppingList.eventLabel}
+              consolidatedEvents={shoppingList.consolidatedEvents}
+            />
           </CollapsibleWidget>
         </section>
       )}

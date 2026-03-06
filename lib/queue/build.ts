@@ -94,12 +94,59 @@ export async function buildPriorityQueue(
 
   const summary = computeSummary(deduped)
 
+  // Time-aware next action selection
+  const nextAction = selectNextAction(deduped, now)
+
   return {
     items: deduped,
-    nextAction: deduped.length > 0 ? deduped[0] : null,
+    nextAction,
     summary,
     computedAt: now.toISOString(),
   }
+}
+
+/**
+ * Select the best next action using time-of-day weighting.
+ * Morning: prioritize prep/shopping. Afternoon: communication/admin. Evening: planning.
+ */
+function selectNextAction(items: QueueItem[], now: Date): QueueItem | null {
+  if (items.length === 0) return null
+
+  const hour = now.getHours()
+
+  // Time-based preference weights by domain
+  const timeWeights: Partial<Record<QueueDomain, number>> = {}
+
+  if (hour >= 6 && hour < 12) {
+    // Morning: prep, shopping, culinary work
+    timeWeights.event = 1.2
+    timeWeights.culinary = 1.2
+  } else if (hour >= 12 && hour < 17) {
+    // Afternoon: communication and admin
+    timeWeights.inquiry = 1.3
+    timeWeights.message = 1.3
+    timeWeights.client = 1.2
+    timeWeights.financial = 1.2
+  } else if (hour >= 17) {
+    // Evening: next-day prep and post-event follow-ups
+    timeWeights.event = 1.3
+    timeWeights.post_event = 1.2
+  }
+
+  // Only apply time weighting if top items are close in score (within 15%)
+  const topScore = items[0].score
+  const candidates = items.filter((item) => item.score >= topScore * 0.85)
+
+  if (candidates.length <= 1) return items[0]
+
+  // Reweight candidates
+  const reweighted = candidates.map((item) => ({
+    item,
+    adjustedScore: item.score * (timeWeights[item.domain] ?? 1.0),
+  }))
+
+  reweighted.sort((a, b) => b.adjustedScore - a.adjustedScore)
+  return reweighted[0].item
 }
 
 function computeSummary(items: QueueItem[]): QueueSummary {

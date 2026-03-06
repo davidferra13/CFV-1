@@ -1455,3 +1455,41 @@ export async function removeSubRecipe(subRecipeId: string) {
   revalidatePath(`/recipes/${(link as any).parent_recipe_id}`)
   return { success: true }
 }
+
+// ============================================
+// RECIPE QUICK CAPTURE (dashboard widget)
+// ============================================
+
+/**
+ * Create a minimal draft recipe from raw text.
+ * First line becomes the name, full text goes into notes.
+ * No AI processing, no ingredient extraction. Just a text dump.
+ */
+export async function createRecipeDraft(rawText: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const trimmed = rawText.trim()
+  if (!trimmed) throw new Error('Recipe text cannot be empty')
+
+  const lines = trimmed.split('\n')
+  const name = lines[0].slice(0, 100) || 'Untitled Recipe Draft'
+
+  const { error } = await supabase.from('recipes').insert({
+    tenant_id: user.tenantId!,
+    created_by: user.userId,
+    name,
+    notes: trimmed,
+    category: 'other' as const,
+    method: '',
+  })
+
+  if (error) {
+    console.error('[createRecipeDraft] Error:', error)
+    throw new Error('Failed to save recipe draft')
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/recipes')
+  return { success: true, name }
+}

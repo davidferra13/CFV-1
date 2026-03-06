@@ -90,6 +90,17 @@ export async function sendFriendRequest(addresseeProfileId: string): Promise<{ s
   if (status === 'already_friends') throw new Error('Already friends')
   if (status === 'already_pending') throw new Error('Friend request already pending')
 
+  // Non-blocking: notify addressee via email
+  try {
+    const { notifyFriendRequest } = await import('./circle-notification-actions')
+    void notifyFriendRequest({
+      requesterProfileId: myProfile.id,
+      addresseeProfileId,
+    })
+  } catch {
+    // Non-blocking
+  }
+
   return { success: true }
 }
 

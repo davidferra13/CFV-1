@@ -6,6 +6,8 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { sendPaymentReminderEmail } from '@/lib/email/notifications'
 
 // ============================================
 // 1. Upcoming Payments Due
@@ -331,6 +333,130 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
 }
 
 // ============================================
+// Quick Expense Capture
+// ============================================
+
+export interface QuickExpenseResult {
+  success: boolean
+  message?: string
+  expense?: {
+    id: string
+    description: string
+    amountCents: number
+    date: string
+    category: string
+  }
+}
+
+export async function quickCaptureExpense(data: {
+  amountCents: number
+  description: string
+  category: string
+  eventId?: string
+}): Promise<QuickExpenseResult> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const expenseDate = new Date().toISOString().slice(0, 10)
+
+  const { data: inserted, error } = await supabase
+    .from('expenses')
+    .insert({
+      tenant_id: user.tenantId!,
+      description: data.description,
+      amount_cents: data.amountCents,
+      category: data.category,
+      event_id: data.eventId || null,
+      expense_date: expenseDate,
+      is_business: true,
+      created_by: user.id,
+    })
+    .select('id, description, amount_cents, expense_date, category')
+    .single()
+
+  if (error) {
+    console.error('[quickCaptureExpense] Insert error:', error)
+    return { success: false, message: error.message }
+  }
+
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath('/dashboard')
+
+  return {
+    success: true,
+    expense: {
+      id: inserted.id,
+      description: inserted.description,
+      amountCents: inserted.amount_cents,
+      date: inserted.expense_date,
+      category: inserted.category,
+    },
+  }
+}
+
+export interface RecentExpenseItem {
+  id: string
+  description: string
+  amountCents: number
+  date: string
+  category: string
+}
+
+export async function getRecentExpenses(limit = 3): Promise<RecentExpenseItem[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('expenses')
+    .select('id, description, amount_cents, expense_date, category')
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('[getRecentExpenses] Error:', error)
+    return []
+  }
+
+  return (data || []).map((e: any) => ({
+    id: e.id,
+    description: e.description ?? '',
+    amountCents: e.amount_cents ?? 0,
+    date: e.expense_date ?? '',
+    category: e.category ?? 'other',
+  }))
+}
+
+export async function getUpcomingEventsForExpense(): Promise<
+  Array<{ id: string; occasion: string; date: string }>
+> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const { data, error } = await supabase
+    .from('events')
+    .select('id, occasion, event_date')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', today)
+    .not('status', 'in', '("draft","cancelled")')
+    .order('event_date', { ascending: true })
+    .limit(10)
+
+  if (error) {
+    console.error('[getUpcomingEventsForExpense] Error:', error)
+    return []
+  }
+
+  return (data || []).map((e: any) => ({
+    id: e.id,
+    occasion: e.occasion || 'Untitled Event',
+    date: e.event_date,
+  }))
+}
+
+// ============================================
 // 6. Unread Hub Messages
 // ============================================
 
@@ -341,6 +467,157 @@ export interface UnreadHubGroup {
   lastMessageAt: string
   lastMessagePreview: string
 }
+
+// ============================================
+// 6a. Active Shopping List (grocery list items for upcoming events)
+// ============================================
+
+export interface ActiveShoppingItem {
+  id: string
+  name: string
+  quantity: string
+  category: string
+  purchased: boolean
+  eventOccasion: string
+  eventId: string
+  substituteNote?: string
+}
+
+export async function getActiveShoppingList(daysAhead = 5): Promise<{
+  items: ActiveShoppingItem[]
+  eventLabel: string
+  consolidatedEvents: string[]
+}> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const now = new Date()
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() + daysAhead)
+
+  // Find upcoming events with grocery lists
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', now.toISOString().split('T')[0])
+    .lte('event_date', cutoff.toISOString().split('T')[0])
+    .in('status', ['accepted', 'paid', 'confirmed'])
+    .order('event_date', { ascending: true })
+
+  if (!events || events.length === 0) {
+    return { items: [], eventLabel: 'No upcoming events', consolidatedEvents: [] }
+  }
+
+  const eventIds = events.map((e: any) => e.id)
+  const eventMap = new Map(events.map((e: any) => [e.id, e]))
+
+  // Fetch grocery list items for these events
+  const { data: groceryItems } = await supabase
+    .from('grocery_list_items')
+    .select(
+      'id, name, quantity, category, purchased, substitute_note, grocery_list:grocery_lists!inner(event_id)'
+    )
+    .in('grocery_lists.event_id', eventIds)
+    .order('category', { ascending: true })
+
+  if (!groceryItems || groceryItems.length === 0) {
+    return { items: [], eventLabel: 'No grocery lists', consolidatedEvents: [] }
+  }
+
+  const consolidatedEvents: string[] = []
+  const seenEvents = new Set<string>()
+
+  const items: ActiveShoppingItem[] = groceryItems.map((gi: any) => {
+    const eventId = gi.grocery_list?.event_id ?? ''
+    const event = eventMap.get(eventId) as any
+    const occasion = event?.occasion || 'Untitled Event'
+    if (!seenEvents.has(eventId)) {
+      seenEvents.add(eventId)
+      consolidatedEvents.push(occasion)
+    }
+    return {
+      id: gi.id,
+      name: gi.name ?? '',
+      quantity: gi.quantity ?? '',
+      category: gi.category ?? 'Other',
+      purchased: gi.purchased ?? false,
+      eventOccasion: occasion,
+      eventId,
+      substituteNote: gi.substitute_note ?? undefined,
+    }
+  })
+
+  const eventLabel =
+    consolidatedEvents.length === 1 ? consolidatedEvents[0] : `${consolidatedEvents.length} events`
+
+  return { items, eventLabel, consolidatedEvents }
+}
+
+export async function toggleShoppingItem(itemId: string, purchased: boolean): Promise<void> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Verify the item belongs to a grocery list owned by this tenant
+  const { data: item } = await supabase
+    .from('grocery_list_items')
+    .select('id, grocery_list:grocery_lists!inner(tenant_id)')
+    .eq('id', itemId)
+    .single()
+
+  if (!item || (item as any).grocery_list?.tenant_id !== user.tenantId) {
+    throw new Error('Item not found or unauthorized')
+  }
+
+  const { error } = await supabase.from('grocery_list_items').update({ purchased }).eq('id', itemId)
+
+  if (error) {
+    throw new Error('Failed to update shopping item')
+  }
+}
+
+// ============================================
+// 7. Quick Availability Check (booked + tentative dates, next 90 days)
+// ============================================
+
+export async function getBookedDates(): Promise<{ booked: string[]; tentative: string[] }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const now = new Date()
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() + 90)
+
+  const nowStr = now.toISOString().split('T')[0]
+  const cutoffStr = cutoff.toISOString().split('T')[0]
+
+  // Booked = confirmed pipeline events
+  const { data: bookedEvents } = await supabase
+    .from('events')
+    .select('event_date')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', nowStr)
+    .lte('event_date', cutoffStr)
+    .in('status', ['accepted', 'paid', 'confirmed', 'in_progress'])
+
+  // Tentative = draft or proposed events
+  const { data: tentativeEvents } = await supabase
+    .from('events')
+    .select('event_date')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', nowStr)
+    .lte('event_date', cutoffStr)
+    .in('status', ['draft', 'proposed'])
+
+  const booked = [...new Set((bookedEvents || []).map((e: any) => e.event_date as string))]
+  const tentative = [...new Set((tentativeEvents || []).map((e: any) => e.event_date as string))]
+
+  return { booked, tentative }
+}
+
+// ============================================
+// 8. Unread Hub Messages
+// ============================================
 
 export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]> {
   const user = await requireChef()

@@ -992,3 +992,295 @@ export async function logDashboardHours(input: LogDashboardHoursInput) {
     category,
   }
 }
+
+// ============================================
+// REVENUE PROJECTION (Widget Intelligence)
+// ============================================
+
+export interface RevenueProjection {
+  confirmedCents: number
+  pendingCents: number
+  pipelineExpectedCents: number
+  conversionRate: number
+  linearProjectionCents: number
+  goalCents: number
+  gapCents: number
+  eventsNeeded: number
+  daysRemaining: number
+}
+
+export async function getRevenueProjection(): Promise<RevenueProjection> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+  const dayOfMonth = now.getDate()
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+
+  // Get this month's events
+  const { data: bookedEvents } = await supabase
+    .from('events')
+    .select('quoted_price_cents, status')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', startOfMonth)
+    .lte('event_date', endOfMonth)
+    .neq('status', 'cancelled')
+
+  const confirmedStatuses = ['paid', 'confirmed', 'in_progress', 'completed']
+  const pendingStatuses = ['draft', 'proposed', 'accepted']
+
+  const confirmedCents = (bookedEvents ?? [])
+    .filter((e: any) => confirmedStatuses.includes(e.status))
+    .reduce((sum: number, e: any) => sum + (e.quoted_price_cents ?? 0), 0)
+
+  const pendingCents = (bookedEvents ?? [])
+    .filter((e: any) => pendingStatuses.includes(e.status))
+    .reduce((sum: number, e: any) => sum + (e.quoted_price_cents ?? 0), 0)
+
+  // Historical conversion rate (last 6 months)
+  const sixMonthsAgo = new Date(now)
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+
+  const { data: historicalEvents } = await supabase
+    .from('events')
+    .select('status')
+    .eq('tenant_id', user.tenantId!)
+    .gte('created_at', sixMonthsAgo.toISOString())
+
+  const totalHistorical = Math.max(historicalEvents?.length ?? 1, 1)
+  const convertedHistorical = (historicalEvents ?? []).filter((e: any) =>
+    confirmedStatuses.includes(e.status)
+  ).length
+  const conversionRate = convertedHistorical / totalHistorical
+
+  // Linear projection from confirmed revenue
+  const dailyRate = confirmedCents / Math.max(dayOfMonth, 1)
+  const linearProjectionCents = Math.round(dailyRate * daysInMonth)
+
+  // Pipeline expected value
+  const pipelineExpectedCents = Math.round(pendingCents * conversionRate)
+
+  // Monthly goal
+  const { data: prefs } = await supabase
+    .from('chef_preferences')
+    .select('target_monthly_revenue_cents')
+    .eq('chef_id', user.entityId ?? user.tenantId!)
+    .single()
+
+  const goalCents = prefs?.target_monthly_revenue_cents ?? 0
+  const gapCents = Math.max(0, goalCents - confirmedCents - pipelineExpectedCents)
+
+  // Events needed to close the gap
+  const confirmedCount = (bookedEvents ?? []).filter((e: any) =>
+    confirmedStatuses.includes(e.status)
+  ).length
+  const avgEventCents = confirmedCount > 0 ? Math.round(confirmedCents / confirmedCount) : 0
+  const eventsNeeded = avgEventCents > 0 ? Math.ceil(gapCents / avgEventCents) : 0
+
+  return {
+    confirmedCents,
+    pendingCents,
+    pipelineExpectedCents,
+    conversionRate: Math.round(conversionRate * 100),
+    linearProjectionCents,
+    goalCents,
+    gapCents,
+    eventsNeeded,
+    daysRemaining: daysInMonth - dayOfMonth,
+  }
+}
+
+// ============================================
+// COMPARATIVE PERIODS (Widget Intelligence)
+// ============================================
+
+export interface ComparativePeriods {
+  thisMonth: MonthMetrics
+  vsLastMonth: {
+    revenueDelta: number
+    revenuePercent: number
+    eventsDelta: number
+  }
+  vsSameMonthLastYear: {
+    revenueDelta: number
+    revenuePercent: number
+    eventsDelta: number
+  } | null
+}
+
+interface MonthMetrics {
+  revenueCents: number
+  eventCount: number
+  avgEventCents: number
+}
+
+export async function getComparativePeriods(): Promise<ComparativePeriods> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const now = new Date()
+
+  const [thisMonth, lastMonth, sameMonthLastYear] = await Promise.all([
+    fetchMonthRevenue(supabase, user.tenantId!, now),
+    fetchMonthRevenue(supabase, user.tenantId!, new Date(now.getFullYear(), now.getMonth() - 1, 1)),
+    fetchMonthRevenue(supabase, user.tenantId!, new Date(now.getFullYear() - 1, now.getMonth(), 1)),
+  ])
+
+  function pctChange(from: number, to: number): number {
+    if (from === 0) return to > 0 ? 100 : 0
+    return Math.round(((to - from) / from) * 100)
+  }
+
+  return {
+    thisMonth,
+    vsLastMonth: {
+      revenueDelta: thisMonth.revenueCents - lastMonth.revenueCents,
+      revenuePercent: pctChange(lastMonth.revenueCents, thisMonth.revenueCents),
+      eventsDelta: thisMonth.eventCount - lastMonth.eventCount,
+    },
+    vsSameMonthLastYear:
+      sameMonthLastYear.eventCount > 0
+        ? {
+            revenueDelta: thisMonth.revenueCents - sameMonthLastYear.revenueCents,
+            revenuePercent: pctChange(sameMonthLastYear.revenueCents, thisMonth.revenueCents),
+            eventsDelta: thisMonth.eventCount - sameMonthLastYear.eventCount,
+          }
+        : null,
+  }
+}
+
+async function fetchMonthRevenue(
+  supabase: any,
+  tenantId: string,
+  monthDate: Date
+): Promise<MonthMetrics> {
+  const start = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+    .toISOString()
+    .slice(0, 10)
+  const end = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+    .toISOString()
+    .slice(0, 10)
+
+  const { data } = await supabase
+    .from('events')
+    .select('quoted_price_cents, status')
+    .eq('tenant_id', tenantId)
+    .gte('event_date', start)
+    .lte('event_date', end)
+    .in('status', ['paid', 'confirmed', 'in_progress', 'completed'])
+
+  const revenueCents = (data ?? []).reduce(
+    (s: number, e: any) => s + (e.quoted_price_cents ?? 0),
+    0
+  )
+  const eventCount = data?.length ?? 0
+
+  return {
+    revenueCents,
+    eventCount,
+    avgEventCents: eventCount > 0 ? Math.round(revenueCents / eventCount) : 0,
+  }
+}
+
+// ============================================
+// Unlogged Event Hours Detection
+// ============================================
+
+export interface UnloggedEvent {
+  id: string
+  occasion: string
+  date: string
+  clientName: string
+  guestCount: number
+  suggestedHours: {
+    service: number
+    prep: number
+    shopping: number
+    travel: number
+  }
+}
+
+export async function getUnloggedEventHours(): Promise<UnloggedEvent[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const twoDaysAgo = new Date()
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+
+  const { data: recentEvents } = await supabase
+    .from('events')
+    .select(
+      'id, occasion, event_date, guest_count, service_hours, prep_hours, shopping_hours, travel_hours, client:clients(full_name)'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .in('status', ['completed', 'in_progress'])
+    .gte('event_date', twoDaysAgo.toISOString().slice(0, 10))
+    .lte('event_date', yesterday.toISOString().slice(0, 10))
+
+  return (recentEvents ?? [])
+    .filter((e: any) => {
+      const totalLogged =
+        (e.service_hours ?? 0) +
+        (e.prep_hours ?? 0) +
+        (e.shopping_hours ?? 0) +
+        (e.travel_hours ?? 0)
+      return totalLogged === 0
+    })
+    .map((e: any) => ({
+      id: e.id,
+      occasion: e.occasion ?? 'Event',
+      date: e.event_date,
+      clientName: e.client?.full_name ?? 'Client',
+      guestCount: e.guest_count ?? 0,
+      suggestedHours: {
+        service: 4,
+        prep: 2,
+        shopping: 1,
+        travel: 0.5,
+      },
+    }))
+}
+
+// ============================================
+// Events Needing AAR (completed, no AAR filed)
+// ============================================
+
+export interface EventNeedingAAR {
+  id: string
+  occasion: string
+  date: string
+  clientName: string
+  hoursSinceCompletion: number
+}
+
+export async function getEventsNeedingAAR(): Promise<EventNeedingAAR[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const twoDaysAgo = new Date()
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+
+  const { data } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, completed_at, client:clients(full_name)')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'completed')
+    .eq('aar_filed', false)
+    .gte('event_date', twoDaysAgo.toISOString().slice(0, 10))
+    .order('event_date', { ascending: false })
+    .limit(3)
+
+  const now = Date.now()
+
+  return (data ?? []).map((e: any) => ({
+    id: e.id,
+    occasion: e.occasion ?? 'Event',
+    date: e.event_date,
+    clientName: e.client?.full_name ?? 'Client',
+    hoursSinceCompletion: e.completed_at
+      ? Math.round((now - new Date(e.completed_at).getTime()) / 3600000)
+      : Math.round((now - new Date(e.event_date + 'T20:00:00').getTime()) / 3600000),
+  }))
+}

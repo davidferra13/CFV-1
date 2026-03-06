@@ -85,6 +85,31 @@ export interface QueueItem {
 
   /** Original entity type for grouping */
   entityType: string
+
+  /** Inline action (allows completing from dashboard without navigation) */
+  inlineAction?: InlineAction
+
+  /** Estimated minutes to complete this action */
+  estimatedMinutes?: number
+
+  /** Business context explaining why this matters */
+  contextLine?: string
+}
+
+// ============================================
+// INLINE ACTIONS (Zero-Navigation Completions)
+// ============================================
+
+export type InlineActionType =
+  | 'respond_inquiry'
+  | 'send_followup'
+  | 'record_payment'
+  | 'send_message'
+  | 'log_expense'
+
+export interface InlineAction {
+  type: InlineActionType
+  prefill: Record<string, string>
 }
 
 // ============================================

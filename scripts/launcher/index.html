@@ -2007,6 +2007,11 @@ body {
         <span class="nav-icon">&#x1F4D5;</span>
         <span class="nav-label">Manual</span>
       </a>
+      <a class="nav-item" data-section="marketing" title="Marketing — Demo Video Library">
+        <span class="nav-dot online" id="nd-marketing"></span>
+        <span class="nav-icon">&#x1F3AC;</span>
+        <span class="nav-label">Marketing</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -4759,6 +4764,47 @@ body {
         </div>
       </div>
 
+      <!-- ═══ Marketing Panel (Demo Video Library) ═══ -->
+      <div class="panel" id="panel-marketing">
+        <div class="panel-header">
+          <h2 class="panel-title">Marketing</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="marketing-progress" style="font-size:11px;color:var(--text-muted);"></span>
+            <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+              <span class="dot online" style="background:var(--brand);"></span>
+              <span id="marketing-status">Demo Video Library</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Summary bar -->
+        <div id="marketing-summary" style="display:flex;gap:12px;padding:12px 24px;flex-wrap:wrap;">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Filter tabs -->
+        <div id="marketing-tabs" style="display:flex;gap:4px;padding:0 24px 0;overflow-x:auto;border-bottom:1px solid var(--border);">
+          <button class="manual-tab active" data-mkt-filter="all" onclick="filterMarketingVideos('all')" style="white-space:nowrap;">All (147)</button>
+          <button class="manual-tab" data-mkt-filter="public" onclick="filterMarketingVideos('public')" style="white-space:nowrap;">Public Site</button>
+          <button class="manual-tab" data-mkt-filter="booking" onclick="filterMarketingVideos('booking')" style="white-space:nowrap;">Booking</button>
+          <button class="manual-tab" data-mkt-filter="client" onclick="filterMarketingVideos('client')" style="white-space:nowrap;">Client Portal</button>
+          <button class="manual-tab" data-mkt-filter="hub" onclick="filterMarketingVideos('hub')" style="white-space:nowrap;">Hub</button>
+          <button class="manual-tab" data-mkt-filter="guest" onclick="filterMarketingVideos('guest')" style="white-space:nowrap;">Guest</button>
+          <button class="manual-tab" data-mkt-filter="partner" onclick="filterMarketingVideos('partner')" style="white-space:nowrap;">Partner</button>
+          <button class="manual-tab" data-mkt-filter="staff" onclick="filterMarketingVideos('staff')" style="white-space:nowrap;">Staff</button>
+          <button class="manual-tab" data-mkt-filter="chef" onclick="filterMarketingVideos('chef')" style="white-space:nowrap;">Chef Portal</button>
+          <button class="manual-tab" data-mkt-filter="mobile" onclick="filterMarketingVideos('mobile')" style="white-space:nowrap;">Mobile</button>
+        </div>
+
+        <!-- Video list -->
+        <div id="marketing-content" style="flex:1;overflow-y:auto;padding:16px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:60px 0;">
+            <span style="font-size:48px;">&#x1F3AC;</span>
+            <div style="margin-top:12px;font-size:14px;">Loading video library...</div>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ Activity Log Panel ═══ -->
       <div class="panel" id="panel-activity-log">
         <div class="panel-header">
@@ -4998,6 +5044,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'expenses') loadExpenses()
     if (section === 'activity-log') loadRetroactiveActivity()
     if (section === 'manual') loadManual()
+    if (section === 'marketing') loadMarketingPanel()
     if (section === 'remy') loadRemyPanel()
   })
 })
@@ -10375,6 +10422,301 @@ async function runAction(url, message) {
 
 // ════════════════════════════════════════════════════════════════
 // RETROACTIVE ACTIVITY LOG
+// ════════════════════════════════════════════════════════════════
+// MARKETING PANEL — Demo Video Library
+// ════════════════════════════════════════════════════════════════
+
+let marketingLoaded = false
+let marketingFilter = 'all'
+
+const MARKETING_VIDEOS = [
+  // 1. PUBLIC WEBSITE
+  { id: 'pub-landing', num: 1, cat: 'public', section: 'Public Website', title: 'What is ChefFlow?', desc: 'Landing page hero, scroll through value props, CTA', status: '' },
+  { id: 'pub-pricing', num: 2, cat: 'public', section: 'Public Website', title: 'Free vs Pro', desc: 'Pricing page, tier comparison, feature breakdown', status: '' },
+  { id: 'pub-marketplace', num: 3, cat: 'public', section: 'Public Website', title: 'Find a Private Chef', desc: 'Chef directory, browse profiles, filter by location', status: '' },
+  { id: 'pub-chef-profile', num: 4, cat: 'public', section: 'Public Website', title: 'Chef Profile Page', desc: 'Public chef page: bio, specialties, reviews, inquiry button', status: '' },
+  { id: 'pub-compare', num: 5, cat: 'public', section: 'Public Website', title: 'How We Compare', desc: 'Compare page: ChefFlow vs other platforms', status: '' },
+  { id: 'pub-trust', num: 6, cat: 'public', section: 'Public Website', title: 'Trust and Safety', desc: 'Trust page, privacy policy, security overview', status: '' },
+  { id: 'pub-faq', num: 7, cat: 'public', section: 'Public Website', title: 'Common Questions', desc: 'FAQ page walkthrough', status: '' },
+  { id: 'pub-blog', num: 8, cat: 'public', section: 'Public Website', title: 'The Blog', desc: 'Blog listing, open a post, read', status: '' },
+  { id: 'pub-beta', num: 9, cat: 'public', section: 'Public Website', title: 'Join the Beta', desc: 'Beta signup page, application form, thank you', status: '' },
+  // 2. BOOKING FLOW
+  { id: 'book-direct', num: 10, cat: 'booking', section: 'Booking Flow', title: 'Book a Private Chef', desc: 'Public booking page, fill inquiry form', status: '' },
+  { id: 'book-campaign', num: 11, cat: 'booking', section: 'Booking Flow', title: 'Campaign Landing Page', desc: 'Custom marketing landing page', status: '' },
+  { id: 'book-embed', num: 12, cat: 'booking', section: 'Booking Flow', title: 'The Embeddable Widget', desc: 'Chef embeds inquiry form on their own site', status: '' },
+  { id: 'book-inquire', num: 13, cat: 'booking', section: 'Booking Flow', title: 'Submit an Inquiry', desc: 'Branded inquiry form submission', status: '' },
+  { id: 'book-gift', num: 14, cat: 'booking', section: 'Booking Flow', title: 'Buy a Gift Card', desc: 'Gift card purchase flow and success page', status: '' },
+  { id: 'book-partner-signup', num: 15, cat: 'booking', section: 'Booking Flow', title: 'Become a Referral Partner', desc: 'Partner application page', status: '' },
+  // 3. CLIENT PORTAL
+  { id: 'client-dashboard', num: 16, cat: 'client', section: 'Client Portal', title: 'Your Client Dashboard', desc: 'My Events list, upcoming dinners at a glance', status: '' },
+  { id: 'client-event-detail', num: 17, cat: 'client', section: 'Client Portal', title: 'Your Event', desc: 'Date, menu, location, event details', status: '' },
+  { id: 'client-proposal', num: 18, cat: 'client', section: 'Client Portal', title: 'Review a Proposal', desc: 'See the quote, accept or decline', status: '' },
+  { id: 'client-approve-menu', num: 19, cat: 'client', section: 'Client Portal', title: 'Approve the Menu', desc: 'Review dishes, sign off on menu', status: '' },
+  { id: 'client-choose-menu', num: 20, cat: 'client', section: 'Client Portal', title: 'Choose Your Menu', desc: 'Pick from menu options', status: '' },
+  { id: 'client-pay', num: 21, cat: 'client', section: 'Client Portal', title: 'Pay Your Chef', desc: 'Stripe payment flow', status: '' },
+  { id: 'client-invoice', num: 22, cat: 'client', section: 'Client Portal', title: 'Your Invoice', desc: 'View and download invoice', status: '' },
+  { id: 'client-payment-plan', num: 23, cat: 'client', section: 'Client Portal', title: 'Payment Plans', desc: 'Installment schedule view', status: '' },
+  { id: 'client-checklist', num: 24, cat: 'client', section: 'Client Portal', title: 'Pre-Event Checklist', desc: 'What to prep at home before the event', status: '' },
+  { id: 'client-countdown', num: 25, cat: 'client', section: 'Client Portal', title: 'Event Countdown', desc: 'Excitement builder countdown page', status: '' },
+  { id: 'client-contract', num: 26, cat: 'client', section: 'Client Portal', title: 'Your Contract', desc: 'Review and sign service contract', status: '' },
+  { id: 'client-summary', num: 27, cat: 'client', section: 'Client Portal', title: 'Event Summary', desc: 'Post-event recap page', status: '' },
+  { id: 'client-spending', num: 28, cat: 'client', section: 'Client Portal', title: 'Your Spending History', desc: 'Total spend across all events', status: '' },
+  { id: 'client-rewards', num: 29, cat: 'client', section: 'Client Portal', title: 'Your Loyalty Rewards', desc: 'Tier, points, available rewards', status: '' },
+  { id: 'client-chat', num: 30, cat: 'client', section: 'Client Portal', title: 'Chat with Your Chef', desc: 'Direct messaging with your chef', status: '' },
+  { id: 'client-profile', num: 31, cat: 'client', section: 'Client Portal', title: 'Your Profile', desc: 'Dietary preferences, allergies, contact info', status: '' },
+  { id: 'client-feedback', num: 32, cat: 'client', section: 'Client Portal', title: 'Leave Feedback', desc: 'Post-event satisfaction survey', status: '' },
+  { id: 'client-rebook', num: 33, cat: 'client', section: 'Client Portal', title: 'Book Again', desc: 'Quick re-booking flow', status: '' },
+  { id: 'client-quotes', num: 34, cat: 'client', section: 'Client Portal', title: 'Your Quotes', desc: 'View and compare active quotes', status: '' },
+  { id: 'client-inquiries', num: 35, cat: 'client', section: 'Client Portal', title: 'Your Inquiries', desc: 'Track inquiry status', status: '' },
+  { id: 'client-cannabis', num: 36, cat: 'client', section: 'Client Portal', title: 'Cannabis Menu', desc: 'Cannabis-infused event options', status: '' },
+  // 4. THE HUB
+  { id: 'hub-landing', num: 37, cat: 'hub', section: 'The Hub', title: 'What is The Hub?', desc: 'Hub landing, overview of social features', status: '' },
+  { id: 'hub-create', num: 38, cat: 'hub', section: 'The Hub', title: 'Create a Group', desc: 'Start a dinner group', status: '' },
+  { id: 'hub-join', num: 39, cat: 'hub', section: 'The Hub', title: 'Join a Group', desc: 'Accept a group invitation', status: '' },
+  { id: 'hub-group', num: 40, cat: 'hub', section: 'The Hub', title: 'Group Chat and Planning', desc: 'Feed, messages, availability grid, notes', status: '' },
+  { id: 'hub-friends', num: 41, cat: 'hub', section: 'The Hub', title: 'Find Your Friends', desc: 'Friend list and connections', status: '' },
+  { id: 'hub-invite', num: 42, cat: 'hub', section: 'The Hub', title: 'Invite Friends', desc: 'Send friend invitations', status: '' },
+  { id: 'hub-share-chef', num: 43, cat: 'hub', section: 'The Hub', title: 'Share Your Chef', desc: 'Refer your chef to friends', status: '' },
+  { id: 'hub-notifications', num: 44, cat: 'hub', section: 'The Hub', title: 'Hub Notifications', desc: 'Activity feed and alerts', status: '' },
+  { id: 'hub-profile', num: 45, cat: 'hub', section: 'The Hub', title: 'Your Public Profile', desc: 'What others see about you', status: '' },
+  { id: 'hub-client-group', num: 46, cat: 'hub', section: 'The Hub', title: 'Client Group View', desc: 'Authenticated group experience', status: '' },
+  // 5. GUEST EXPERIENCE
+  { id: 'guest-rsvp', num: 47, cat: 'guest', section: 'Guest Experience', title: "You're Invited", desc: 'RSVP, dietary form, photo consent', status: '' },
+  { id: 'guest-availability', num: 48, cat: 'guest', section: 'Guest Experience', title: 'Pick Your Dates', desc: 'Vote on available dates', status: '' },
+  { id: 'guest-recap', num: 49, cat: 'guest', section: 'Guest Experience', title: 'Event Recap', desc: 'Post-dinner photos and thank you', status: '' },
+  { id: 'guest-shared', num: 50, cat: 'guest', section: 'Guest Experience', title: 'Shared Content', desc: 'View shared menus and event info', status: '' },
+  { id: 'guest-worksheet', num: 51, cat: 'guest', section: 'Guest Experience', title: 'The Worksheet', desc: 'Pre-event planning details', status: '' },
+  // 6. PARTNER PORTAL
+  { id: 'partner-dashboard', num: 52, cat: 'partner', section: 'Partner Portal', title: 'Partner Dashboard', desc: 'Referral stats and earnings overview', status: '' },
+  { id: 'partner-profile', num: 53, cat: 'partner', section: 'Partner Portal', title: 'Your Partner Profile', desc: 'Set up listing and specialties', status: '' },
+  { id: 'partner-events', num: 54, cat: 'partner', section: 'Partner Portal', title: 'Your Referral Events', desc: 'Events from your referrals', status: '' },
+  { id: 'partner-locations', num: 55, cat: 'partner', section: 'Partner Portal', title: 'Manage Locations', desc: 'Add and edit venue listings', status: '' },
+  { id: 'partner-preview', num: 56, cat: 'partner', section: 'Partner Portal', title: 'Preview Your Listing', desc: 'See how clients see your page', status: '' },
+  { id: 'partner-report', num: 57, cat: 'partner', section: 'Partner Portal', title: 'Performance Report', desc: 'Detailed referral analytics', status: '' },
+  // 7. STAFF PORTAL
+  { id: 'staff-login', num: 58, cat: 'staff', section: 'Staff Portal', title: 'Staff Login', desc: 'Separate login for staff members', status: '' },
+  { id: 'staff-dashboard', num: 59, cat: 'staff', section: 'Staff Portal', title: 'Staff Dashboard', desc: 'Assigned events and tasks overview', status: '' },
+  { id: 'staff-tasks', num: 60, cat: 'staff', section: 'Staff Portal', title: 'Your Tasks', desc: 'Task list with check-off and deadlines', status: '' },
+  { id: 'staff-schedule', num: 61, cat: 'staff', section: 'Staff Portal', title: 'Your Schedule', desc: 'Upcoming events and shifts', status: '' },
+  { id: 'staff-station', num: 62, cat: 'staff', section: 'Staff Portal', title: 'Kitchen Station', desc: 'Station assignments, course tracking', status: '' },
+  { id: 'staff-time', num: 63, cat: 'staff', section: 'Staff Portal', title: 'Clock In / Clock Out', desc: 'Time tracking for staff hours', status: '' },
+  { id: 'staff-recipes', num: 64, cat: 'staff', section: 'Staff Portal', title: 'Staff Recipe Access', desc: 'View assigned recipes (read-only)', status: '' },
+  // 8. CHEF: GETTING STARTED
+  { id: 'chef-command-center', num: 65, cat: 'chef', section: 'Chef: Getting Started', title: 'Your Command Center', desc: 'Dashboard tour: widgets, priority queue, week strip', status: '' },
+  { id: 'chef-signup', num: 66, cat: 'chef', section: 'Chef: Getting Started', title: 'Sign Up in 60 Seconds', desc: 'Landing, pricing, create account', status: '' },
+  { id: 'chef-profile-setup', num: 67, cat: 'chef', section: 'Chef: Getting Started', title: 'Set Up Your Profile', desc: 'Settings, photo, business info, branding', status: '' },
+  { id: 'chef-import', num: 68, cat: 'chef', section: 'Chef: Getting Started', title: 'Import Your Clients', desc: 'CSV import, manual add, brain dump', status: '' },
+  { id: 'chef-onboarding', num: 69, cat: 'chef', section: 'Chef: Getting Started', title: 'The Onboarding Checklist', desc: 'Walk through all 5 setup steps', status: '' },
+  // 9. CHEF: CORE LOOP
+  { id: 'chef-full-lifecycle', num: 70, cat: 'chef', section: 'Chef: Core Loop', title: 'Inquiry to Invoice', desc: 'Full lifecycle: inquiry, lead score, event, quote, payment', status: '' },
+  { id: 'chef-create-event', num: 71, cat: 'chef', section: 'Chef: Core Loop', title: 'Create an Event', desc: 'New event form: client, date, location, guests', status: '' },
+  { id: 'chef-build-quote', num: 72, cat: 'chef', section: 'Chef: Core Loop', title: 'Build a Quote', desc: 'Line items, deposit %, preview, send', status: '' },
+  { id: 'chef-8-states', num: 73, cat: 'chef', section: 'Chef: Core Loop', title: 'The 8 States of an Event', desc: 'FSM transitions: draft to completed', status: '' },
+  { id: 'chef-close-out', num: 74, cat: 'chef', section: 'Chef: Core Loop', title: 'Close Out an Event', desc: '5-step wizard: tip, receipts, mileage, reflection, close', status: '' },
+  { id: 'chef-invoice', num: 75, cat: 'chef', section: 'Chef: Core Loop', title: 'Send an Invoice', desc: 'Invoice page, PDF, email to client', status: '' },
+  { id: 'chef-record-payment', num: 76, cat: 'chef', section: 'Chef: Core Loop', title: 'Record a Payment', desc: 'Payment modal, method, confirmation', status: '' },
+  { id: 'chef-kanban', num: 77, cat: 'chef', section: 'Chef: Core Loop', title: 'The Event Board', desc: 'Kanban view, drag events between columns', status: '' },
+  { id: 'chef-event-detail', num: 78, cat: 'chef', section: 'Chef: Core Loop', title: 'Event Deep Dive', desc: '4-tab event detail: Overview, Money, Ops, Wrap-Up', status: '' },
+  // 10. CHEF: CLIENTS
+  { id: 'chef-know-client', num: 79, cat: 'chef', section: 'Chef: Clients', title: 'Know Your Client', desc: 'Client detail: 30 panels of intelligence', status: '' },
+  { id: 'chef-dietary', num: 80, cat: 'chef', section: 'Chef: Clients', title: 'Dietary Restrictions and Allergies', desc: 'Adding allergies, severity, how they surface', status: '' },
+  { id: 'chef-loyalty', num: 81, cat: 'chef', section: 'Chef: Clients', title: 'Client Loyalty Program', desc: 'Tiers, points, rewards, redemptions', status: '' },
+  { id: 'chef-kitchen-profile', num: 82, cat: 'chef', section: 'Chef: Clients', title: 'Kitchen Profiles', desc: "Log a client's kitchen details", status: '' },
+  { id: 'chef-birthdays', num: 83, cat: 'chef', section: 'Chef: Clients', title: 'Never Forget a Birthday', desc: 'Demographics, milestones, occasions widget', status: '' },
+  { id: 'chef-segments', num: 84, cat: 'chef', section: 'Chef: Clients', title: 'Client Segments', desc: 'Build custom filter rules, save segments', status: '' },
+  { id: 'chef-gift-cards', num: 85, cat: 'chef', section: 'Chef: Clients', title: 'Issue Gift Cards', desc: 'Create, send, track gift cards', status: '' },
+  // 11. CHEF: CULINARY
+  { id: 'chef-recipes', num: 86, cat: 'chef', section: 'Chef: Culinary', title: 'Your Recipe Book', desc: 'Add a recipe, ingredients, method, costing', status: '' },
+  { id: 'chef-build-menu', num: 87, cat: 'chef', section: 'Chef: Culinary', title: 'Build a Menu', desc: 'Menu editor, add courses, assign recipes', status: '' },
+  { id: 'chef-food-cost', num: 88, cat: 'chef', section: 'Chef: Culinary', title: 'Food Cost Breakdown', desc: 'Per-recipe cost, per-event %, trend chart', status: '' },
+  { id: 'chef-grocery', num: 89, cat: 'chef', section: 'Chef: Culinary', title: 'Grocery Price Comparison', desc: 'Multi-vendor: USDA, Kroger, Spoonacular, Instacart', status: '' },
+  { id: 'chef-prep', num: 90, cat: 'chef', section: 'Chef: Culinary', title: 'Prep Planning', desc: 'Prep timeline, task assignments, prep blocks', status: '' },
+  // 12. CHEF: DAY OF EVENT
+  { id: 'chef-dop', num: 91, cat: 'chef', section: 'Chef: Day of Event', title: 'The Day-of Plan', desc: 'DOP timeline, task checklist, mobile view', status: '' },
+  { id: 'chef-packing', num: 92, cat: 'chef', section: 'Chef: Day of Event', title: 'Packing List', desc: '5-section checklist, tap to check, car packed', status: '' },
+  { id: 'chef-travel', num: 93, cat: 'chef', section: 'Chef: Day of Event', title: 'Travel Planning', desc: 'Route stops, travel legs, ingredient sourcing', status: '' },
+  { id: 'chef-kds', num: 94, cat: 'chef', section: 'Chef: Day of Event', title: 'Kitchen Display System', desc: 'KDS: fire, plating, served progression', status: '' },
+  { id: 'chef-temp-log', num: 95, cat: 'chef', section: 'Chef: Day of Event', title: 'Temperature Logging', desc: 'Food safety temp entries, anomaly detection', status: '' },
+  { id: 'chef-time-tracking', num: 96, cat: 'chef', section: 'Chef: Day of Event', title: 'Time Tracking', desc: 'Start/stop timers for all activities', status: '' },
+  { id: 'chef-contingency', num: 97, cat: 'chef', section: 'Chef: Day of Event', title: 'Contingency Plans', desc: 'Emergency scenarios, contacts, AI suggestions', status: '' },
+  // 13. CHEF: FINANCIALS
+  { id: 'chef-finance-dash', num: 98, cat: 'chef', section: 'Chef: Financials', title: 'Your Financial Dashboard', desc: 'Revenue, expenses, profit, margins at a glance', status: '' },
+  { id: 'chef-ledger', num: 99, cat: 'chef', section: 'Chef: Financials', title: 'The Ledger', desc: 'Immutable append-only ledger, every dollar tracked', status: '' },
+  { id: 'chef-expenses', num: 100, cat: 'chef', section: 'Chef: Financials', title: 'Expense Tracking', desc: 'Add expenses, categories, receipt upload, OCR', status: '' },
+  { id: 'chef-tax', num: 101, cat: 'chef', section: 'Chef: Financials', title: 'Tax Center', desc: 'Tax-ready reporting, mileage deductions', status: '' },
+  { id: 'chef-goals', num: 102, cat: 'chef', section: 'Chef: Financials', title: 'Revenue Goals', desc: 'Set goals, track progress, dinners needed', status: '' },
+  { id: 'chef-split-billing', num: 103, cat: 'chef', section: 'Chef: Financials', title: 'Split Billing', desc: 'Divide event costs across multiple payers', status: '' },
+  { id: 'chef-payroll', num: 104, cat: 'chef', section: 'Chef: Financials', title: 'Payroll', desc: 'Staff payment tracking', status: '' },
+  // 14. CHEF: CALENDAR
+  { id: 'chef-calendar', num: 105, cat: 'chef', section: 'Chef: Calendar', title: 'Visual Calendar', desc: 'Month/week/day views, event blocks, color coding', status: '' },
+  { id: 'chef-gaps', num: 106, cat: 'chef', section: 'Chef: Calendar', title: 'Scheduling Gaps', desc: 'Availability conflict warnings', status: '' },
+  { id: 'chef-prep-blocks', num: 107, cat: 'chef', section: 'Chef: Calendar', title: 'Prep Blocks', desc: 'Schedule prep time before events', status: '' },
+  // 15. CHEF: AI
+  { id: 'chef-remy', num: 108, cat: 'chef', section: 'Chef: AI Features', title: 'Meet Remy', desc: 'AI drawer, ask questions, get business intelligence', status: '' },
+  { id: 'chef-ai-insights', num: 109, cat: 'chef', section: 'Chef: AI Features', title: 'AI Business Insights', desc: 'Health score, domain breakdown, recommendations', status: '' },
+  { id: 'chef-ai-contract', num: 110, cat: 'chef', section: 'Chef: AI Features', title: 'AI Contract Generator', desc: 'Generate service contract from event details', status: '' },
+  { id: 'chef-brain-dump', num: 111, cat: 'chef', section: 'Chef: AI Features', title: 'Brain Dump', desc: 'Paste unstructured notes, AI extracts structure', status: '' },
+  { id: 'chef-ai-pricing', num: 112, cat: 'chef', section: 'Chef: AI Features', title: 'AI Pricing Intelligence', desc: 'Market-aware pricing suggestions on quotes', status: '' },
+  // 16. CHEF: COMMUNICATION
+  { id: 'chef-messaging', num: 113, cat: 'chef', section: 'Chef: Communication', title: 'Client Communication', desc: 'Message thread, channel selection, templates', status: '' },
+  { id: 'chef-follow-ups', num: 114, cat: 'chef', section: 'Chef: Communication', title: 'Follow-Up Reminders', desc: 'Overdue follow-ups, SLA tracking', status: '' },
+  { id: 'chef-holiday', num: 115, cat: 'chef', section: 'Chef: Communication', title: 'Holiday Outreach', desc: 'AI-drafted outreach, promo codes, bulk send', status: '' },
+  { id: 'chef-direct-outreach', num: 116, cat: 'chef', section: 'Chef: Communication', title: 'Direct Outreach', desc: 'Email/SMS compose from client profile', status: '' },
+  // 17. CHEF: PIPELINE
+  { id: 'chef-inquiries', num: 117, cat: 'chef', section: 'Chef: Pipeline', title: 'Inquiry Pipeline', desc: 'List view, lead scores, status filters', status: '' },
+  { id: 'chef-inquiry-detail', num: 118, cat: 'chef', section: 'Chef: Pipeline', title: 'Inquiry Detail', desc: 'Lead score, timeline, conversion actions', status: '' },
+  { id: 'chef-leads', num: 119, cat: 'chef', section: 'Chef: Pipeline', title: 'Lead Management', desc: 'Lead tracking, scoring, follow-up', status: '' },
+  { id: 'chef-calls', num: 120, cat: 'chef', section: 'Chef: Pipeline', title: 'Calls and Meetings', desc: 'Schedule and log consultation calls', status: '' },
+  { id: 'chef-proposals', num: 121, cat: 'chef', section: 'Chef: Pipeline', title: 'Proposals', desc: 'Create and send professional proposals', status: '' },
+  { id: 'chef-testimonials', num: 122, cat: 'chef', section: 'Chef: Pipeline', title: 'Testimonials', desc: 'Collect and manage client testimonials', status: '' },
+  // 18. CHEF: ADVANCED
+  { id: 'chef-embed-setup', num: 123, cat: 'chef', section: 'Chef: Advanced', title: 'Embeddable Widget Setup', desc: 'Configure inquiry form for any website', status: '' },
+  { id: 'chef-queue', num: 124, cat: 'chef', section: 'Chef: Advanced', title: 'The Priority Queue', desc: 'What to do next, urgency ranking', status: '' },
+  { id: 'chef-aar', num: 125, cat: 'chef', section: 'Chef: Advanced', title: 'After Action Review', desc: 'Rate event, log lessons, track patterns', status: '' },
+  { id: 'chef-collab', num: 126, cat: 'chef', section: 'Chef: Advanced', title: 'Chef Collaboration', desc: 'Invite other chefs, assign roles', status: '' },
+  { id: 'chef-analytics', num: 127, cat: 'chef', section: 'Chef: Advanced', title: 'Business Analytics', desc: 'Booking seasons, YoY, top clients, trends', status: '' },
+  { id: 'chef-intelligence', num: 128, cat: 'chef', section: 'Chef: Advanced', title: 'Business Intelligence Hub', desc: '25-engine health score, proactive alerts', status: '' },
+  { id: 'chef-documents', num: 129, cat: 'chef', section: 'Chef: Advanced', title: 'Documents and Contracts', desc: 'Printable PDFs, contract management', status: '' },
+  { id: 'chef-staff', num: 130, cat: 'chef', section: 'Chef: Advanced', title: 'Staff Management', desc: 'Add staff, assign to events, log hours', status: '' },
+  { id: 'chef-debrief', num: 131, cat: 'chef', section: 'Chef: Advanced', title: 'Post-Dinner Debrief', desc: 'Dish gallery, recipe notes, client insights', status: '' },
+  { id: 'chef-guests', num: 132, cat: 'chef', section: 'Chef: Advanced', title: 'Guest Management', desc: 'RSVPs, dietary collection, guest pipeline', status: '' },
+  // 19. CHEF: SETTINGS
+  { id: 'chef-settings', num: 133, cat: 'chef', section: 'Chef: Settings', title: 'Settings Overview', desc: 'All settings categories', status: '' },
+  { id: 'chef-modules', num: 134, cat: 'chef', section: 'Chef: Settings', title: 'Module Toggles', desc: 'Enable/disable Pro features, freemium system', status: '' },
+  { id: 'chef-embed-config', num: 135, cat: 'chef', section: 'Chef: Settings', title: 'Widget Configuration', desc: 'Embed settings, branding, form fields', status: '' },
+  { id: 'chef-journal', num: 136, cat: 'chef', section: 'Chef: Settings', title: 'Chef Journal', desc: 'Career growth tracking, reflections', status: '' },
+  // 20. CHEF: MARKETING
+  { id: 'chef-campaigns', num: 137, cat: 'chef', section: 'Chef: Marketing', title: 'Marketing Campaigns', desc: 'Create and manage outreach campaigns', status: '' },
+  { id: 'chef-social', num: 138, cat: 'chef', section: 'Chef: Marketing', title: 'Social Media Tools', desc: 'AI captions, content planning', status: '' },
+  { id: 'chef-partners', num: 139, cat: 'chef', section: 'Chef: Marketing', title: 'Referral Partners', desc: 'Manage partner relationships', status: '' },
+  // 21. CHEF: SPECIALTY
+  { id: 'chef-cannabis', num: 140, cat: 'chef', section: 'Chef: Specialty', title: 'Cannabis Events', desc: 'Cannabis-infused event management', status: '' },
+  { id: 'chef-charity', num: 141, cat: 'chef', section: 'Chef: Specialty', title: 'Charity Events', desc: 'Pro-bono and charity event tracking', status: '' },
+  { id: 'chef-network', num: 142, cat: 'chef', section: 'Chef: Specialty', title: 'Chef Network', desc: 'Community, recipe sharing, collaboration', status: '' },
+  // 22. MOBILE
+  { id: 'mobile-pwa', num: 143, cat: 'mobile', section: 'Mobile', title: 'ChefFlow on Your Phone', desc: 'PWA install, mobile dashboard, navigation', status: '' },
+  { id: 'mobile-dop', num: 144, cat: 'mobile', section: 'Mobile', title: 'Mobile Day-of Plan', desc: 'Full-screen DOP with large tap targets', status: '' },
+  { id: 'mobile-client', num: 145, cat: 'mobile', section: 'Mobile', title: 'Client Portal on Mobile', desc: 'What clients see on their phone', status: '' },
+  { id: 'mobile-guest-rsvp', num: 146, cat: 'mobile', section: 'Mobile', title: 'Guest RSVP on Mobile', desc: 'RSVP and dietary form on phone', status: '' },
+  { id: 'mobile-quick', num: 147, cat: 'mobile', section: 'Mobile', title: 'Quick Actions on Mobile', desc: 'Fast creation: event, client, recipe', status: '' },
+]
+
+function loadMarketingPanel() {
+  if (marketingLoaded) return
+  marketingLoaded = true
+  renderMarketingSummary()
+  renderMarketingVideos()
+}
+
+function renderMarketingSummary() {
+  const el = document.getElementById('marketing-summary')
+  const total = MARKETING_VIDEOS.length
+  const ready = MARKETING_VIDEOS.filter(v => v.status === 'ready').length
+  const recorded = MARKETING_VIDEOS.filter(v => v.status === 'recorded').length
+  const published = MARKETING_VIDEOS.filter(v => v.status === 'published').length
+  const notStarted = total - ready - recorded - published
+  const pct = total > 0 ? Math.round(((recorded + published) / total) * 100) : 0
+
+  el.innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;width:100%;">
+      <div style="flex:1;min-width:120px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">
+        <div style="font-size:24px;font-weight:700;color:var(--text-primary);">${total}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Total Videos</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">
+        <div style="font-size:24px;font-weight:700;color:var(--text-muted);">${notStarted}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Not Started</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">
+        <div style="font-size:24px;font-weight:700;color:var(--warning);">${ready}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Script Ready</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">
+        <div style="font-size:24px;font-weight:700;color:var(--info);">${recorded}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Recorded</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">
+        <div style="font-size:24px;font-weight:700;color:var(--success);">${published}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Published</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">
+        <div style="font-size:24px;font-weight:700;color:var(--brand);">${pct}%</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Complete</div>
+      </div>
+    </div>
+  `
+
+  const prog = document.getElementById('marketing-progress')
+  if (prog) prog.textContent = `${recorded + published} / ${total} recorded`
+}
+
+function filterMarketingVideos(cat) {
+  marketingFilter = cat
+  document.querySelectorAll('#marketing-tabs .manual-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mktFilter === cat)
+  })
+  renderMarketingVideos()
+}
+
+function renderMarketingVideos() {
+  const el = document.getElementById('marketing-content')
+  const filtered = marketingFilter === 'all'
+    ? MARKETING_VIDEOS
+    : MARKETING_VIDEOS.filter(v => v.cat === marketingFilter)
+
+  // Group by section
+  const groups = {}
+  filtered.forEach(v => {
+    if (!groups[v.section]) groups[v.section] = []
+    groups[v.section].push(v)
+  })
+
+  const statusDot = (s) => {
+    if (s === 'published') return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:6px;" title="Published"></span>'
+    if (s === 'recorded') return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--info);margin-right:6px;" title="Recorded"></span>'
+    if (s === 'ready') return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warning);margin-right:6px;" title="Script Ready"></span>'
+    return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--border-bright);margin-right:6px;" title="Not Started"></span>'
+  }
+
+  const statusBadge = (s) => {
+    if (s === 'published') return '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--success-dim);color:var(--success);font-weight:600;">PUBLISHED</span>'
+    if (s === 'recorded') return '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--info-dim);color:var(--info);font-weight:600;">RECORDED</span>'
+    if (s === 'ready') return '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--warning-dim);color:var(--warning);font-weight:600;">SCRIPT READY</span>'
+    return ''
+  }
+
+  let html = ''
+  for (const [section, videos] of Object.entries(groups)) {
+    html += `<div style="margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+        ${section} <span style="color:var(--text-muted);font-weight:400;">(${videos.length})</span>
+      </div>`
+
+    videos.forEach(v => {
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius);background:var(--bg-card);border:1px solid var(--border);margin-bottom:6px;transition:background var(--transition);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-card)'">
+        <div style="font-size:11px;color:var(--text-muted);min-width:28px;text-align:right;font-variant-numeric:tabular-nums;">${v.num}</div>
+        ${statusDot(v.status)}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${v.title}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${v.desc}</div>
+        </div>
+        <code style="font-size:10px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 6px;border-radius:4px;white-space:nowrap;">${v.id}</code>
+        ${statusBadge(v.status)}
+      </div>`
+    })
+
+    html += `</div>`
+  }
+
+  if (filtered.length === 0) {
+    html = `<div style="color:var(--text-muted);text-align:center;padding:60px 0;">
+      <div style="font-size:14px;">No videos in this category</div>
+    </div>`
+  }
+
+  el.innerHTML = html
+}
+
 // ════════════════════════════════════════════════════════════════
 
 let retroData = null

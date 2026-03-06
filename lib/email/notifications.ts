@@ -51,6 +51,8 @@ import { ContractSignedChefEmail } from './templates/contract-signed-chef'
 import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
 import { MenuRevisionChefEmail } from './templates/menu-revision-chef'
 import { AvailabilitySignalEmail } from './templates/availability-signal'
+import { CircleMessageEmail } from './templates/circle-message'
+import { FriendRequestEmail } from './templates/friend-request'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -1295,6 +1297,49 @@ export async function sendAvailabilitySignalEmail(params: {
       title: params.title,
       date: formatDate(params.date),
       publicNote: params.publicNote,
+    }),
+  })
+}
+
+// ─── Circle Message Notification ──────────────────────────────────────
+
+export async function sendCircleMessageEmail(params: {
+  recipientEmail: string
+  recipientName: string
+  senderName: string
+  groupName: string
+  messagePreview: string
+  groupToken: string
+}) {
+  const circleUrl = `${APP_URL}/hub/g/${params.groupToken}`
+  await sendEmail({
+    to: params.recipientEmail,
+    subject: `${params.senderName} posted in ${params.groupName}`,
+    react: createElement(CircleMessageEmail, {
+      recipientName: params.recipientName,
+      senderName: params.senderName,
+      groupName: params.groupName,
+      messagePreview: params.messagePreview.slice(0, 120),
+      circleUrl,
+    }),
+  })
+}
+
+// ─── Friend Request Notification ─────────────────────────────────────
+
+export async function sendFriendRequestEmail(params: {
+  recipientEmail: string
+  recipientName: string
+  senderName: string
+  hubUrl: string
+}) {
+  await sendEmail({
+    to: params.recipientEmail,
+    subject: `${params.senderName} wants to connect on ChefFlow`,
+    react: createElement(FriendRequestEmail, {
+      recipientName: params.recipientName,
+      senderName: params.senderName,
+      hubUrl: params.hubUrl,
     }),
   })
 }

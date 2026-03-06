@@ -6,14 +6,30 @@ import { requireChef } from '@/lib/auth/get-user'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { OnboardingAccelerator } from '@/components/dashboard/onboarding-accelerator'
 import { BusinessInsightsPanel } from '@/components/ai/business-insights-panel'
+import { RevenueProjectionWidget } from '@/components/dashboard/revenue-projection-widget'
+import { ComparativePeriodsWidget } from '@/components/dashboard/comparative-periods-widget'
+import { QuickExpenseWidget } from '@/components/dashboard/quick-expense-widget'
 import SystemNerveCenter from '@/components/dashboard/system-nerve-center'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getRevenueProjection, getComparativePeriods } from '@/lib/dashboard/actions'
+import { getRecentExpenses, getUpcomingEventsForExpense } from '@/lib/dashboard/widget-actions'
 import Link from 'next/link'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import type { RevenueProjection, ComparativePeriods } from '@/lib/dashboard/actions'
 import { MONTH_NAMES } from './business-section-defaults'
 import { loadBusinessSectionData } from './business-section-loader'
 import { buildBusinessSectionMetrics } from './business-section-metrics'
 import { BusinessSectionMobileContent } from './business-section-mobile-content'
+
+// Safe wrapper for intelligence fetches
+async function safeFetch<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    console.error(`[BusinessSection/Intelligence] ${label} failed:`, err)
+    return fallback
+  }
+}
 
 interface BusinessSectionProps {
   widgetEnabled: Record<string, boolean>
@@ -30,12 +46,15 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
   const isWidgetEnabled = (id: DashboardWidgetId) => widgetEnabled[id] ?? true
   const getWidgetOrder = (id: DashboardWidgetId) => widgetOrder[id] ?? Number.MAX_SAFE_INTEGER
 
-  const data = await loadBusinessSectionData({
-    monthEnd,
-    monthStart,
-    now,
-    userId: user.id,
-  })
+  // Fetch existing data + intelligence data + expense widget data in parallel
+  const [data, revenueProjection, comparativePeriods, recentExpenses, upcomingEventsForExpense] =
+    await Promise.all([
+      loadBusinessSectionData({ monthEnd, monthStart, now, userId: user.id }),
+      safeFetch('revenueProjection', getRevenueProjection, null as RevenueProjection | null),
+      safeFetch('comparativePeriods', getComparativePeriods, null as ComparativePeriods | null),
+      safeFetch('recentExpenses', () => getRecentExpenses(3), []),
+      safeFetch('upcomingEventsForExpense', getUpcomingEventsForExpense, []),
+    ])
   const metrics = buildBusinessSectionMetrics({ data, now })
   const { clients, eventCounts, overdueFollowUps, quoteStats } = data
   const { shouldShowOnboardingAccelerator, totalInquiryCount } = metrics
@@ -112,6 +131,36 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
               ))}
             </CardContent>
           </Card>
+        </section>
+      )}
+
+      {/* Revenue Projection - intelligence widget */}
+      {isWidgetEnabled('pipeline_forecast') && revenueProjection && (
+        <section style={{ order: getWidgetOrder('pipeline_forecast') }}>
+          <CollapsibleWidget widgetId="pipeline_forecast" title="Revenue Projection">
+            <RevenueProjectionWidget projection={revenueProjection} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {/* Comparative Periods - intelligence widget */}
+      {isWidgetEnabled('revenue_comparison') && comparativePeriods && (
+        <section style={{ order: getWidgetOrder('revenue_comparison') }}>
+          <CollapsibleWidget widgetId="revenue_comparison" title="Performance Comparison">
+            <ComparativePeriodsWidget periods={comparativePeriods} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {/* Quick Expense Capture */}
+      {isWidgetEnabled('quick_expense') && (
+        <section style={{ order: getWidgetOrder('quick_expense') }}>
+          <CollapsibleWidget widgetId="quick_expense" title="Quick Expense">
+            <QuickExpenseWidget
+              upcomingEvents={upcomingEventsForExpense}
+              recentExpenses={recentExpenses}
+            />
+          </CollapsibleWidget>
         </section>
       )}
 

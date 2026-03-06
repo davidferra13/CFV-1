@@ -52,8 +52,18 @@ export function NextActionCard({ item }: Props) {
               <p className="text-xs font-medium uppercase tracking-wide text-stone-500 mb-1">
                 {URGENCY_LABEL[item.urgency]}
               </p>
-              <h3 className="text-lg font-semibold text-stone-100">{item.title}</h3>
+              <h3 className="text-lg font-semibold text-stone-100">
+                {item.title}
+                {item.estimatedMinutes && (
+                  <span className="text-sm font-normal text-stone-500 ml-2">
+                    (~{item.estimatedMinutes} min)
+                  </span>
+                )}
+              </h3>
               <p className="text-sm text-stone-400 mt-1">{item.description}</p>
+              {item.contextLine && (
+                <p className="text-xs text-stone-500 mt-1.5 italic">{item.contextLine}</p>
+              )}
               {item.blocks && <p className="text-xs text-red-600 mt-2">Blocks: {item.blocks}</p>}
             </div>
           </div>

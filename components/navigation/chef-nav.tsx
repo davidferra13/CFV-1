@@ -16,6 +16,7 @@ import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
+import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import {
   getStrictFocusGroupRank,
   isStrictFocusGroupVisible,
@@ -856,6 +857,11 @@ export function ChefSidebar({
                       <InboxUnreadBadge />
                     </span>
                   )}
+                  {item.href === '/circles' && (
+                    <span className="absolute -top-1 -right-1">
+                      <CirclesUnreadBadge />
+                    </span>
+                  )}
                 </Link>
               )
             })}
@@ -975,6 +981,7 @@ export function ChefSidebar({
                       />
                       {item.label}
                       {item.href === '/inbox' && <InboxUnreadBadge />}
+                      {item.href === '/circles' && <CirclesUnreadBadge />}
                     </Link>
                   )
                 })}

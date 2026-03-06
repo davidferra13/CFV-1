@@ -16,8 +16,9 @@ import { HubMemberList } from '@/components/hub/hub-member-list'
 import { HubNotesBoard } from '@/components/hub/hub-notes-board'
 import { HubPhotoGallery } from '@/components/hub/hub-photo-gallery'
 import { HubAvailabilityGrid } from '@/components/hub/hub-availability-grid'
+import { HubMessageSearch } from '@/components/hub/hub-message-search'
 
-type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'schedule' | 'members'
+type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'schedule' | 'members' | 'search'
 
 interface HubGroupViewProps {
   group: HubGroup
@@ -76,6 +77,7 @@ export function HubGroupView({
     { id: 'schedule', label: 'Schedule', emoji: '📅', count: availability.length },
     { id: 'notes', label: 'Notes', emoji: '📝', count: notes.length },
     { id: 'members', label: 'Members', emoji: '👥', count: members.length },
+    { id: 'search', label: 'Search', emoji: '🔍' },
   ]
 
   const memberAvatars = members.slice(0, 5)
@@ -215,6 +217,8 @@ export function HubGroupView({
         {activeTab === 'members' && (
           <HubMemberList members={members} currentProfileId={currentProfileId} />
         )}
+
+        {activeTab === 'search' && <HubMessageSearch groupId={group.id} />}
       </main>
 
       {/* Footer */}

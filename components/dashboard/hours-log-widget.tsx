@@ -14,7 +14,9 @@ import {
   type DashboardHoursTopActivity,
   type DashboardHoursCategoryEntry,
   type ManualLaborCategory,
+  type UnloggedEvent,
 } from '@/lib/dashboard/actions'
+import Link from 'next/link'
 import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 const CATEGORY_OPTIONS: { value: ManualLaborCategory; label: string }[] = [
@@ -73,6 +75,7 @@ type HoursLogWidgetProps = {
   trackingStreak: number
   todayLogged: boolean
   weekCategoryBreakdown: DashboardHoursCategoryEntry[]
+  unloggedEvents?: UnloggedEvent[]
 }
 
 function formatEntryDate(date: string): string {
@@ -91,8 +94,11 @@ export function HoursLogWidget({
   trackingStreak,
   todayLogged,
   weekCategoryBreakdown,
+  unloggedEvents = [],
 }: HoursLogWidgetProps) {
   const router = useRouter()
+  const [dismissedUnlogged, setDismissedUnlogged] = useState<Set<string>>(new Set())
+  const [loggingEventId, setLoggingEventId] = useState<string | null>(null)
 
   const today = new Date().toISOString().slice(0, 10)
   const [loggedFor, setLoggedFor] = useState(() => today)
