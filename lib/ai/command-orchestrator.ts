@@ -1259,6 +1259,11 @@ async function executeSingleTask(
       case 'event.create_draft':
         data = await executeEventCreateDraft(task.inputs)
         break
+      case 'client.count': {
+        const allForCount = await getClients()
+        data = { totalClients: (allForCount ?? []).length }
+        break
+      }
       case 'client.list_recent':
         data = await executeClientListRecent(task.inputs)
         break

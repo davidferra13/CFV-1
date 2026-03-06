@@ -1,3 +1,5 @@
+'use client'
+
 // Phosphor Icons - mapped from former Lucide icon names for drop-in compatibility
 // ChefFlow uses Phosphor (https://phosphoricons.com/) for a distinctive visual identity
 // Import from '@/components/ui/icons' instead of 'lucide-react'

@@ -1676,7 +1676,7 @@ export async function parseCommandIntent(rawInput: string): Promise<CommandPlan>
 
   try {
     const parsed = await parseWithOllama(systemPrompt, userContent, CommandPlanSchema, {
-      modelTier: 'standard',
+      modelTier: 'fast',
     })
 
     // Validate that all dependsOn references actually exist in this plan
