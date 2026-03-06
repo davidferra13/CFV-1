@@ -45,6 +45,7 @@ import { QuickAvailabilityWidget } from '@/components/dashboard/quick-availabili
 import { LiveInboxWidget } from '@/components/dashboard/live-inbox-widget'
 import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
 import { RecipeDebtWidget } from '@/components/dashboard/recipe-debt-widget'
+import { RecipeCaptureWidget } from '@/components/dashboard/recipe-capture-widget'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
 import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
 import {
