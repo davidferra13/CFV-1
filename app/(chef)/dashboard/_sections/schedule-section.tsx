@@ -13,6 +13,8 @@ import { TimelineView } from '@/components/scheduling/timeline-view'
 import { PrepPromptsView } from '@/components/scheduling/prep-prompts-view'
 import { DOPTaskPanel } from '@/components/dashboard/dop-task-panel'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
+import { ShoppingWindowWidget } from '@/components/dashboard/shopping-window-widget'
+import { getShoppingWindowItems } from '@/lib/dashboard/widget-actions'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
@@ -53,15 +55,23 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
   const isWidgetEnabled = (id: DashboardWidgetId) => widgetEnabled[id] ?? true
   const getWidgetOrder = (id: DashboardWidgetId) => widgetOrder[id] ?? Number.MAX_SAFE_INTEGER
 
-  const [todaysSchedule, prepPrompts, weekSchedule, nextEvent, dopTaskDigest, dailyPlanStats] =
-    await Promise.all([
-      safe('todaysSchedule', getTodaysSchedule, null),
-      safe('prepPrompts', getAllPrepPrompts, []),
-      safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
-      safe('nextEvent', getNextUpcomingEvent, null),
-      safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
-      safe('dailyPlanStats', getDailyPlanStats, null),
-    ])
+  const [
+    todaysSchedule,
+    prepPrompts,
+    weekSchedule,
+    nextEvent,
+    dopTaskDigest,
+    dailyPlanStats,
+    shoppingWindow,
+  ] = await Promise.all([
+    safe('todaysSchedule', getTodaysSchedule, null),
+    safe('prepPrompts', getAllPrepPrompts, []),
+    safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
+    safe('nextEvent', getNextUpcomingEvent, null),
+    safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
+    safe('dailyPlanStats', getDailyPlanStats, null),
+    safe('shoppingWindow', () => getShoppingWindowItems(3), []),
+  ])
 
   // Weather fetch — depends on schedule data, so sequential is correct here
   const weatherByEventId = await safe<Record<string, InlineWeather>>(
@@ -219,6 +229,15 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
                 <PrepPromptsView prompts={prepPrompts} />
               </CardContent>
             </Card>
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {/* Shopping Window */}
+      {isWidgetEnabled('shopping_window') && shoppingWindow.length > 0 && (
+        <section style={{ order: getWidgetOrder('shopping_window') }}>
+          <CollapsibleWidget widgetId="shopping_window" title="Shopping Window">
+            <ShoppingWindowWidget items={shoppingWindow} />
           </CollapsibleWidget>
         </section>
       )}

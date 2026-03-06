@@ -19,8 +19,26 @@ import { getRecipeDebt } from '@/lib/recipes/actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getRecurringCollaborationCommandCenter } from '@/lib/recurring/actions'
+import { getStuckEvents } from '@/lib/pipeline/stuck-events'
+import { getNextBestActions } from '@/lib/clients/next-best-action'
+import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { ResponseTimeWidget } from '@/components/dashboard/response-time-widget'
 import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
+import { StuckEventsWidget } from '@/components/pipeline/stuck-events-widget'
+import { NextBestActionsWidget } from '@/components/clients/next-best-actions-widget'
+import { CoolingAlertWidget } from '@/components/clients/cooling-alert-widget'
+import {
+  getUpcomingPaymentsDue,
+  getExpiringQuotes,
+  getDietaryAlertSummary,
+  getUpcomingBirthdays,
+  getUnreadHubMessages,
+} from '@/lib/dashboard/widget-actions'
+import { PaymentsDueWidget } from '@/components/dashboard/payments-due-widget'
+import { ExpiringQuotesWidget } from '@/components/dashboard/expiring-quotes-widget'
+import { DietaryAlertsWidget } from '@/components/dashboard/dietary-alerts-widget'
+import { ClientBirthdaysWidget } from '@/components/dashboard/client-birthdays-widget'
+import { UnreadHubMessagesWidget } from '@/components/dashboard/unread-hub-messages-widget'
 import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
 import { RecipeDebtWidget } from '@/components/dashboard/recipe-debt-widget'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
@@ -106,6 +124,14 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     onboardingProgress,
     recurringCommandCenter,
     chefProfile,
+    stuckEvents,
+    nextBestActions,
+    coolingClients,
+    paymentsDue,
+    expiringQuotes,
+    dietaryAlerts,
+    upcomingBirthdays,
+    unreadHubMessages,
   ] = await Promise.all([
     safe('schedulingGaps', getSchedulingGaps, []),
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
@@ -135,6 +161,14 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       },
       null
     ),
+    safe('stuckEvents', () => getStuckEvents(5), []),
+    safe('nextBestActions', () => getNextBestActions(5), []),
+    safe('coolingClients', getCoolingClients, []),
+    safe('paymentsDue', () => getUpcomingPaymentsDue(5), []),
+    safe('expiringQuotes', () => getExpiringQuotes(7), []),
+    safe('dietaryAlerts', () => getDietaryAlertSummary(7), []),
+    safe('upcomingBirthdays', () => getUpcomingBirthdays(14), []),
+    safe('unreadHubMessages', () => getUnreadHubMessages(5), []),
   ])
 
   const serializableHolidayOutreachSuggestions = holidayOutreachSuggestions.map((suggestion) => ({
@@ -373,6 +407,70 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
               chefSlug={chefProfile?.slug}
               chefName={chefProfile?.display_name ?? undefined}
             />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('stuck_events') && stuckEvents.length > 0 && (
+        <section style={{ order: getWidgetOrder('stuck_events') }}>
+          <CollapsibleWidget widgetId="stuck_events" title="Stuck Events">
+            <StuckEventsWidget events={stuckEvents} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('next_best_actions') && nextBestActions.length > 0 && (
+        <section style={{ order: getWidgetOrder('next_best_actions') }}>
+          <CollapsibleWidget widgetId="next_best_actions" title="Client Actions">
+            <NextBestActionsWidget actions={nextBestActions} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('cooling_alerts') && coolingClients.length > 0 && (
+        <section style={{ order: getWidgetOrder('cooling_alerts') }}>
+          <CollapsibleWidget widgetId="cooling_alerts" title="Cooling Relationships">
+            <CoolingAlertWidget coolingClients={coolingClients} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('dietary_allergy_alerts') && dietaryAlerts.length > 0 && (
+        <section style={{ order: getWidgetOrder('dietary_allergy_alerts') }}>
+          <CollapsibleWidget widgetId="dietary_allergy_alerts" title="Dietary & Allergy Alerts">
+            <DietaryAlertsWidget alerts={dietaryAlerts} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('payments_due') && paymentsDue.length > 0 && (
+        <section style={{ order: getWidgetOrder('payments_due') }}>
+          <CollapsibleWidget widgetId="payments_due" title="Payments Due">
+            <PaymentsDueWidget payments={paymentsDue} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('expiring_quotes') && expiringQuotes.length > 0 && (
+        <section style={{ order: getWidgetOrder('expiring_quotes') }}>
+          <CollapsibleWidget widgetId="expiring_quotes" title="Expiring Quotes">
+            <ExpiringQuotesWidget quotes={expiringQuotes} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('client_birthdays') && upcomingBirthdays.length > 0 && (
+        <section style={{ order: getWidgetOrder('client_birthdays') }}>
+          <CollapsibleWidget widgetId="client_birthdays" title="Client Birthdays">
+            <ClientBirthdaysWidget birthdays={upcomingBirthdays} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('unread_hub_messages') && unreadHubMessages.length > 0 && (
+        <section style={{ order: getWidgetOrder('unread_hub_messages') }}>
+          <CollapsibleWidget widgetId="unread_hub_messages" title="Hub Messages">
+            <UnreadHubMessagesWidget groups={unreadHubMessages} />
           </CollapsibleWidget>
         </section>
       )}

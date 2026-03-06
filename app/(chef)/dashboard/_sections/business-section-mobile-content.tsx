@@ -12,6 +12,10 @@ import { BurnoutIndicatorCard } from '@/components/dashboard/burnout-indicator-c
 import { ConcentrationWarningCard } from '@/components/dashboard/concentration-warning-card'
 import { BusinessHealthCard } from '@/components/dashboard/business-health-card'
 import { InsuranceHealthCard } from '@/components/dashboard/insurance-health-card'
+import { ProspectingWidget } from '@/components/dashboard/prospecting-widget'
+import { BetaTestersWidget } from '@/components/beta/beta-testers-widget'
+import { ActiveClientsCard } from '@/components/dashboard/active-clients-card'
+import { RevenueComparisonWidget } from '@/components/dashboard/revenue-comparison-widget'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
@@ -676,6 +680,39 @@ export function BusinessSectionMobileContent(context: BusinessSectionRenderConte
         </section>
       )}
 
+      {isWidgetEnabled('revenue_comparison') && (
+        <section style={{ order: getWidgetOrder('revenue_comparison') }}>
+          <CollapsibleWidget widgetId="revenue_comparison" title="Revenue This Month">
+            <RevenueComparisonWidget
+              currentMonthRevenueCents={monthRevenue.currentMonthRevenueCents}
+              previousMonthRevenueCents={monthRevenue.previousMonthRevenueCents}
+              currentMonthProfitCents={monthRevenue.currentMonthProfitCents}
+              changePercent={monthRevenue.changePercent}
+              currentMonthName={currentMonthName}
+              previousMonthName={(() => {
+                const now = new Date()
+                const prevIdx = now.getMonth() === 0 ? 11 : now.getMonth() - 1
+                const names = [
+                  'Jan',
+                  'Feb',
+                  'Mar',
+                  'Apr',
+                  'May',
+                  'Jun',
+                  'Jul',
+                  'Aug',
+                  'Sep',
+                  'Oct',
+                  'Nov',
+                  'Dec',
+                ]
+                return names[prevIdx]
+              })()}
+            />
+          </CollapsibleWidget>
+        </section>
+      )}
+
       {metricWidgets
         .filter((widget) => isWidgetEnabled(widget.id) && widget.id !== 'service_quality')
         .map((widget) => renderMetricWidget(widget, getWidgetOrder))}
@@ -769,6 +806,30 @@ export function BusinessSectionMobileContent(context: BusinessSectionRenderConte
               <LivePresencePanel tenantId={userTenantId} initialClients={activeClients} />
               <ActivityFeed events={recentActivity} />
             </div>
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('active_clients_now') && activeClients.length > 0 && (
+        <section style={{ order: getWidgetOrder('active_clients_now') }}>
+          <CollapsibleWidget widgetId="active_clients_now" title="Active Clients Now">
+            <ActiveClientsCard clients={activeClients} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('prospecting_hub') && userIsAdmin && prospectStats.total > 0 && (
+        <section style={{ order: getWidgetOrder('prospecting_hub') }}>
+          <CollapsibleWidget widgetId="prospecting_hub" title="Prospecting">
+            <ProspectingWidget stats={prospectStats} hotPipelineCount={context.hotPipelineCount} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('beta_program') && userIsAdmin && (
+        <section style={{ order: getWidgetOrder('beta_program') }}>
+          <CollapsibleWidget widgetId="beta_program" title="Beta Program">
+            <BetaTestersWidget />
           </CollapsibleWidget>
         </section>
       )}

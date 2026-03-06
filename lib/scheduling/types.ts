@@ -80,6 +80,20 @@ export const DASHBOARD_WIDGET_IDS = [
   'activity',
   'todo_list',
   'intelligence_hub',
+  'stuck_events',
+  'next_best_actions',
+  'cooling_alerts',
+  'active_clients_now',
+  'work_surface',
+  'prospecting_hub',
+  'beta_program',
+  'revenue_comparison',
+  'payments_due',
+  'expiring_quotes',
+  'dietary_allergy_alerts',
+  'client_birthdays',
+  'shopping_window',
+  'unread_hub_messages',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -165,6 +179,20 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   activity: 'Activity',
   todo_list: 'To Do List',
   intelligence_hub: 'Intelligence Hub',
+  stuck_events: 'Stuck Events',
+  next_best_actions: 'Client Actions',
+  cooling_alerts: 'Cooling Relationships',
+  active_clients_now: 'Active Clients Now',
+  work_surface: 'Work Surface',
+  prospecting_hub: 'Prospecting',
+  beta_program: 'Beta Program',
+  revenue_comparison: 'Revenue This Month',
+  payments_due: 'Payments Due',
+  expiring_quotes: 'Expiring Quotes',
+  dietary_allergy_alerts: 'Dietary & Allergy Alerts',
+  client_birthdays: 'Client Birthdays',
+  shopping_window: 'Shopping Window',
+  unread_hub_messages: 'Hub Messages',
 }
 
 // Legacy alias kept for compatibility with older code paths.
