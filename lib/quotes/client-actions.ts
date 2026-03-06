@@ -122,6 +122,21 @@ export async function acceptQuote(quoteId: string) {
     revalidatePath('/events')
   }
 
+  // Post quote accepted to Dinner Circle (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { postQuoteAcceptedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+      await postQuoteAcceptedToCircle({
+        quoteId,
+        tenantId: quote.tenant_id,
+        eventId: quote.event_id,
+        inquiryId: quote.inquiry_id,
+      })
+    } catch (circleErr) {
+      console.error('[acceptQuote] Circle post failed (non-blocking):', circleErr)
+    }
+  }
+
   // Notify chef that quote was accepted (non-blocking)
   if (quote.tenant_id) {
     notifyChefOfQuoteAccepted(quote.tenant_id, quoteId, quote, user.entityId).catch(async (err) => {

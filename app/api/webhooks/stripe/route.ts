@@ -607,6 +607,19 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       )
     }
 
+    // Post payment received to Dinner Circle (non-blocking)
+    try {
+      const { postPaymentReceivedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+      await postPaymentReceivedToCircle({
+        eventId: event_id,
+        tenantId: tenant_id,
+        amountCents: paymentIntent.amount,
+        paymentType: payment_type || 'payment',
+      })
+    } catch (circleErr) {
+      console.error('[handlePaymentSucceeded] Circle post failed (non-blocking):', circleErr)
+    }
+
     // Send payment confirmation email to client + chef (non-blocking)
     try {
       const { data: eventData } = await supabaseAdmin

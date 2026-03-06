@@ -64,6 +64,9 @@ const BRAIN_FILES = {
   bookingPayment: '06-BOOKING_PAYMENT.md',
   edgeCases: '07-EDGE_CASES.md',
   inquiryFirstResponse: '08-INQUIRY_FIRST_RESPONSE.md',
+  menuPlanning: '09-MENU_PLANNING.md',
+  prepAndDayOf: '10-PREP_AND_DAY_OF.md',
+  postEvent: '11-POST_EVENT.md',
 } as const
 
 type BrainDocument = keyof typeof BRAIN_FILES
@@ -121,6 +124,22 @@ export function getAgentBrainForState(
     detection.state === 'INBOUND_SIGNAL' || detection.state === 'QUALIFIED_INQUIRY'
   const firstResponseRules = isFirstResponse ? extractFirstResponseRules() : ''
 
+  // Determine if menu planning rules should be injected
+  const needsMenuRules =
+    detection.state === 'QUALIFIED_INQUIRY' ||
+    detection.state === 'DISCOVERY_COMPLETE' ||
+    detection.state === 'PRICING_PRESENTED'
+
+  // Determine if prep/day-of rules should be injected
+  const needsPrepRules =
+    detection.state === 'BOOKED' ||
+    detection.state === 'MENU_LOCKED' ||
+    detection.state === 'EXECUTION_READY' ||
+    detection.state === 'IN_PROGRESS'
+
+  // Determine if post-event rules should be injected
+  const needsPostEventRules = detection.state === 'SERVICE_COMPLETE' || detection.state === 'CLOSED'
+
   switch (emailStage) {
     case 'discovery':
       stageRules = extractDiscoveryRules()
@@ -151,6 +170,18 @@ export function getAgentBrainForState(
 
   if (firstResponseRules) {
     systemRuleParts.push('', '=== FIRST RESPONSE RULES (HIGHEST PRIORITY) ===', firstResponseRules)
+  }
+
+  if (needsMenuRules) {
+    systemRuleParts.push('', '=== MENU PLANNING RULES ===', extractMenuPlanningRules())
+  }
+
+  if (needsPrepRules) {
+    systemRuleParts.push('', '=== PREP & DAY-OF COMMUNICATION RULES ===', extractPrepDayOfRules())
+  }
+
+  if (needsPostEventRules) {
+    systemRuleParts.push('', '=== POST-EVENT COMMUNICATION RULES ===', extractPostEventRules())
   }
 
   systemRuleParts.push(
@@ -617,6 +648,49 @@ ANTI-PATTERNS (NEVER DO):
 - Create homework for the client
 
 THE TEST: After reading, the client knows: what you charge, that you heard them, what's included, and what happens next.`
+}
+
+function extractMenuPlanningRules(): string {
+  const doc = loadDocument('menuPlanning')
+  if (!doc) return ''
+
+  return `MENU PLANNING COMMUNICATION RULES:
+- Propose 2-3 distinct menu directions (never more)
+- Include: menu name/theme, course count, key dishes per course, dietary handling note
+- Do NOT include: full recipes, ingredient quantities, cost breakdowns, prep logistics
+- End with ONE question: "Which direction speaks to you?" or "Want me to adjust anything?"
+- Never propose menus without knowing dietary restrictions first
+- Acknowledge revision feedback before making changes (don't defend the original)
+- Silence after sharing does NOT equal approval (follow up after 48h)
+- Share menu proposals in the Dinner Circle when one exists`
+}
+
+function extractPrepDayOfRules(): string {
+  const doc = loadDocument('prepAndDayOf')
+  if (!doc) return ''
+
+  return `PREP & DAY-OF COMMUNICATION RULES:
+- Send pre-event briefing 2-3 days before (timeline, arrival, dietary confirmation, what to have ready)
+- Tone: confident, organized, "everything is handled" energy
+- Do NOT share: shopping costs, prep stress, equipment concerns, staff scheduling
+- Day-of: one arrival notification ("I'm on my way!"), no play-by-play during service
+- Same-evening thank-you in circle: warm, personal, 3-4 sentences, mention photos coming
+- If something changes (ingredient sub, timing): tell client only if it affects their experience
+- The client should feel: "I just show up. Everything is handled."`
+}
+
+function extractPostEventRules(): string {
+  const doc = loadDocument('postEvent')
+  if (!doc) return ''
+
+  return `POST-EVENT COMMUNICATION RULES:
+- Same evening: warm thank-you in circle (personal, mention client by first name, sign with chef first name)
+- Within 24h: share photos in circle
+- 3 days: thank-you email (warm, not transactional, no review asks)
+- 7 days: review request (grateful tone, "if you have a moment", one link)
+- 14 days: referral ask (organic, "if anyone you know...", no discount codes)
+- Do NOT share: AAR content, financial breakdowns, staff notes, prep retrospective
+- Re-engagement: seasonal/occasion-based, not calendar-based ("It's been 90 days" is bad)`
 }
 
 function extractForbiddenPhrases(): string {

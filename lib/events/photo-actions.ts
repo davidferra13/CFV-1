@@ -245,6 +245,20 @@ export async function uploadEventPhoto(
       // Non-fatal
     }
 
+    // Post to Dinner Circle on first photo (non-blocking)
+    if (isFirstPhoto) {
+      try {
+        const { postPhotosToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+        await postPhotosToCircle({
+          eventId,
+          tenantId: user.tenantId!,
+          photoCount: 1,
+        })
+      } catch {
+        // Non-fatal
+      }
+    }
+
     if (isFirstPhoto) {
       try {
         const adminSupabase = createServerClient({ admin: true })

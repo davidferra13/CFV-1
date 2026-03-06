@@ -770,6 +770,42 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     console.error('[transitionMenu] Activity log failed (non-blocking):', err)
   }
 
+  // Post menu shared to Dinner Circle (non-blocking)
+  if (toStatus === 'shared') {
+    try {
+      const { postMenuSharedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+      // Look up menu name + linked event/inquiry
+      const adminSupa = createServerClient({ admin: true })
+      const { data: menuData } = await adminSupa
+        .from('menus')
+        .select('name, event_id')
+        .eq('id', menuId)
+        .single()
+
+      // Find inquiry via event if needed
+      let inquiryId: string | null = null
+      if (menuData?.event_id) {
+        const { data: inq } = await adminSupa
+          .from('inquiries')
+          .select('id')
+          .eq('converted_to_event_id', menuData.event_id)
+          .limit(1)
+          .maybeSingle()
+        inquiryId = inq?.id ?? null
+      }
+
+      await postMenuSharedToCircle({
+        menuId,
+        menuName: menuData?.name || 'Menu',
+        tenantId: user.tenantId!,
+        eventId: menuData?.event_id ?? null,
+        inquiryId,
+      })
+    } catch (err) {
+      console.error('[transitionMenu] Circle post failed (non-blocking):', err)
+    }
+  }
+
   // Auto-index dishes when a menu is locked (non-blocking side effect)
   if (toStatus === 'locked') {
     try {

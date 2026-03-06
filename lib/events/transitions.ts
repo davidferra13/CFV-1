@@ -544,6 +544,38 @@ export async function transitionEvent({
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
 
+  // Post to Dinner Circle on confirmed + completed (non-blocking)
+  try {
+    if (toStatus === 'confirmed' && fromStatus === 'paid') {
+      const { postEventConfirmedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+      await postEventConfirmedToCircle({
+        eventId,
+        tenantId: event.tenant_id,
+        eventDate: event.event_date,
+      })
+    }
+
+    if (toStatus === 'completed' && fromStatus === 'in_progress') {
+      const { postEventCompletedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+      // Load client name for the thank-you message
+      const adminSupa = createServerClient({ admin: true })
+      const { data: clientForCircle } = await adminSupa
+        .from('clients')
+        .select('full_name')
+        .eq('id', event.client_id)
+        .single()
+
+      await postEventCompletedToCircle({
+        eventId,
+        tenantId: event.tenant_id,
+        clientName: clientForCircle?.full_name ?? null,
+        occasion: event.occasion ?? null,
+      })
+    }
+  } catch (circleErr) {
+    log.events.warn('Circle post failed (non-blocking)', { error: circleErr })
+  }
+
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
     try {

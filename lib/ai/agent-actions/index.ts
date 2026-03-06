@@ -28,6 +28,9 @@ import { intakeAgentActions } from './intake-actions'
 import { briefingAgentActions } from './briefing-actions'
 // ─── Inquiry response actions (2026-03-06) ───────────────────────────────
 import { inquiryResponseAgentActions } from './inquiry-response-actions'
+// ─── Menu proposal + lifecycle circle actions (2026-03-06) ───────────────
+import { menuProposalAgentActions } from './menu-proposal-actions'
+import { lifecycleCircleAgentActions } from './lifecycle-circle-actions'
 
 let registered = false
 
@@ -64,4 +67,8 @@ export function ensureAgentActionsRegistered(): void {
 
   // ─── Inquiry response actions (2026-03-06) ───────────────────────────────
   registerAgentActions(inquiryResponseAgentActions)
+
+  // ─── Menu proposal + lifecycle circle actions (2026-03-06) ───────────────
+  registerAgentActions(menuProposalAgentActions)
+  registerAgentActions(lifecycleCircleAgentActions)
 }

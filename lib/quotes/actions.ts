@@ -605,6 +605,25 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     console.error('[transitionQuote] Activity log failed (non-blocking):', err)
   }
 
+  // Post quote sent to Dinner Circle (non-blocking)
+  if (newStatus === 'sent') {
+    try {
+      const { postQuoteSentToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
+      await postQuoteSentToCircle({
+        quoteId: id,
+        totalCents: updated.total_quoted_cents,
+        perPersonCents: quote.price_per_person_cents ?? null,
+        depositRequired: updated.deposit_required ?? false,
+        depositCents: updated.deposit_amount_cents ?? null,
+        tenantId: user.tenantId!,
+        eventId: updated.event_id,
+        inquiryId: updated.inquiry_id,
+      })
+    } catch (err) {
+      console.error('[transitionQuote] Circle post failed (non-blocking):', err)
+    }
+  }
+
   // Zapier/Make webhook dispatch (non-blocking)
   try {
     const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
