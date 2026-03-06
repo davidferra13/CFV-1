@@ -15,6 +15,24 @@ import {
 
 const PLAN_COLUMNS: PricingPlanId[] = ['free', 'pro', 'scale']
 
+const MARKETPLACE_FIT_POINTS = [
+  {
+    title: 'Keep the booking channel that already works',
+    description:
+      'ChefFlow is designed for chefs who still use marketplaces, referrals, and direct leads at the same time.',
+  },
+  {
+    title: 'Pay for the layer the marketplace does not own',
+    description:
+      'Client memory, service ops, prep documents, follow-up, repeat-booking systems, and true margin visibility live in ChefFlow.',
+  },
+  {
+    title: 'Grow beyond one booked dinner at a time',
+    description:
+      'Use ChefFlow to turn platform demand into an owned client base with better records, better follow-up, and better profit discipline.',
+  },
+]
+
 function getCellTone(state: ComparisonCellState) {
   if (state === 'included') return 'text-green-400'
   if (state === 'limited') return 'text-amber-300'
@@ -71,15 +89,44 @@ export default function PricingPage() {
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="mx-auto max-w-3xl text-center">
             <p className="inline-flex items-center gap-2 rounded-full border border-brand-700/80 bg-stone-900/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-              Plan Comparison
+              Built for Marketplace-Driven Private Chefs
             </p>
             <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-100">
-              Choose the tier that matches your operating stage.
+              Pricing for chefs who want to own more than the marketplace does.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
-              Free gives every chef a full core system. Pro adds automation and growth leverage.
-              Scale is a guided pilot for teams and larger rollouts.
+              Start free to centralize the business layer around your existing booking channels.
+              Upgrade when you want stronger automation, better follow-up, and deeper visibility
+              into repeat business and margins.
             </p>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-stone-400">
+              ChefFlow is an independent platform built to complement your current booking channels.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
+              Why chefs pay for ChefFlow and still keep the marketplace
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
+              The marketplace can keep doing lead flow and booking mechanics. ChefFlow is where you
+              keep the client, the process, and the economics of the business.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {MARKETPLACE_FIT_POINTS.map((point) => (
+              <div
+                key={point.title}
+                className="rounded-xl border border-stone-700 bg-stone-900/80 p-5"
+              >
+                <h3 className="text-lg font-semibold text-stone-100">{point.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-stone-300">{point.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -153,11 +200,12 @@ export default function PricingPage() {
         <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
           <div className="max-w-3xl">
             <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
-              How we organize website functions
+              How we organize platform functions
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
-              This model keeps tiering clear: Free for must-have weekly workflow, Pro for leverage
-              and automation, Scale for rollout services when team complexity appears.
+              This model keeps tiering clear: Free for the core business layer every working chef
+              needs, Pro for leverage and automation, Scale for rollout support when complexity
+              grows past one operator.
             </p>
           </div>
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
@@ -241,8 +289,8 @@ export default function PricingPage() {
             Pro function map by domain
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
-            This is the current catalog of Pro domains, grouped so your team can quickly decide
-            where new features should live.
+            This is the current catalog of Pro domains, grouped so teams can quickly decide where
+            new features should live.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {PRO_FEATURE_AREAS.map((area) => (
@@ -270,8 +318,8 @@ export default function PricingPage() {
         <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
           <h2 className="text-2xl font-display text-stone-100 md:text-3xl">Need verification?</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-300 md:text-base">
-            Review our trust materials and platform comparisons. We only publish verified customer
-            testimonials.
+            Review our trust materials and platform comparisons to see how ChefFlow fits beside
+            marketplace-led booking workflows. We only publish verified customer testimonials.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <TrackedLink
@@ -326,11 +374,11 @@ export default function PricingPage() {
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="container mx-auto px-4 py-14 text-center md:py-20">
           <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
-            Start with structure, upgrade for leverage.
+            Start by owning the business layer around the booking.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
-            Launch on Free, move to Pro when automation becomes a bottleneck, and use Scale when
-            team rollout requires implementation support.
+            Launch on Free, move to Pro when follow-up and automation become the bottleneck, and use
+            Scale when your chef operation needs guided rollout support.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink

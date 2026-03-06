@@ -2,6 +2,10 @@ import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
+import {
+  PLATFORM_AUDIENCE_LABEL,
+  PLATFORM_SHORT_DESCRIPTION,
+} from '@/lib/marketing/platform-positioning'
 
 const FOOTER_LINKS = {
   product: [
@@ -40,8 +44,8 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            The operating system for private chefs. Manage events, clients, menus, and payments in
-            one workspace.
+            Built for {PLATFORM_AUDIENCE_LABEL}. Keep marketplace demand flowing while ChefFlow runs
+            your client memory, service ops, follow-up, and payments in one workspace.
           </p>
           <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-500/80">
             Ops for Artists
@@ -83,7 +87,7 @@ export function PublicFooter() {
         <div>
           <p className="text-sm font-semibold text-stone-100">Stay Updated</p>
           <p className="mt-4 mb-3 text-sm text-stone-400">
-            Short guides for private chef operations.
+            Short guides for modern food-business operations.
           </p>
           <NewsletterSignup />
 
@@ -105,9 +109,7 @@ export function PublicFooter() {
       <div className="border-t border-stone-600/50 px-4 py-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
           <p className="text-xs text-stone-500">&copy; {year} ChefFlow. All rights reserved.</p>
-          <p className="text-xs text-stone-600">
-            Private chef software for events, clients, menus, and payments.
-          </p>
+          <p className="text-xs text-stone-600">{PLATFORM_SHORT_DESCRIPTION}</p>
         </div>
       </div>
     </footer>

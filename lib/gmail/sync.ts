@@ -37,6 +37,15 @@ import {
 } from './google-business-parser'
 import { isWixFormsEmail, parseWixFormsEmail } from './wix-forms-parser'
 import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
+import { mergePlatformIdentityKeys } from './platform-identity'
+import { buildSeriesSchedulePlan } from '@/lib/booking/series-planning'
+import {
+  materializeSeriesEvents,
+  materializeSeriesSessions,
+  mergeSpecialRequestNotes,
+} from '@/lib/booking/series-materialization'
+import { parseCityStateFromConversation } from '@/lib/inquiries/conversation-scaffold'
+import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
 
@@ -57,6 +66,16 @@ const PLATFORM_DOMAINS = [
   'gigsalad.com',
   'wix-forms.com',
 ]
+
+function asUnknownFieldsRecord(value: Json | null | undefined): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  return value as Record<string, unknown>
+}
+
+function mapCannabisPreferenceToBoolean(value?: string | null): boolean | null {
+  if (!value) return null
+  return ['yes', 'true', 'open'].some((option) => value.toLowerCase().includes(option))
+}
 
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
@@ -941,7 +960,8 @@ async function handleTacNewInquiry(
   // Dedup check — same inquiry sent multiple times?
   const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
     channel: 'take_a_chef',
-    externalId: inquiry.ctaLink || undefined,
+    externalId: inquiry.ctaUriToken || undefined,
+    externalIds: inquiry.identityKeys,
     clientName: inquiry.clientName,
     eventDate: inquiry.eventDate,
   })
@@ -1005,7 +1025,7 @@ async function handleTacNewInquiry(
   })
 
   // Build unknown_fields with all TakeAChef-specific data + lead score
-  const unknownFields: Record<string, unknown> = {
+  const unknownFields = mergePlatformIdentityKeys(null, inquiry.identityKeys, {
     submission_source: 'take_a_chef_gmail_auto',
     original_sender_name: inquiry.clientName,
     guest_count_text: inquiry.guestCountText,
@@ -1015,13 +1035,18 @@ async function handleTacNewInquiry(
     meal_type: inquiry.mealType,
     partner_name: inquiry.partnerName,
     client_notes: inquiry.clientNotes,
+    tac_event_date_raw: inquiry.eventDateRaw,
     tac_link: inquiry.ctaLink,
+    tac_cta_uri_token: inquiry.ctaUriToken,
     price_min_cents: inquiry.priceMinCents,
     price_max_cents: inquiry.priceMaxCents,
     lead_score: tacLeadScore.lead_score,
     lead_tier: tacLeadScore.lead_tier,
     lead_score_factors: tacLeadScore.lead_score_factors,
-  }
+    take_a_chef_finance: {
+      commission_percent: getDefaultTakeAChefCommissionPercent(email.date ?? null),
+    },
+  })
 
   // Create the inquiry
   const { data: newInquiry, error: inquiryError } = await supabase
@@ -1045,8 +1070,11 @@ async function handleTacNewInquiry(
       confirmed_service_expectations: inquiry.experienceType,
       source_message:
         `${inquiry.clientNotes || ''}\n\n--- Original TakeAChef email ---\n${email.body}`.trim(),
+      service_mode: inquiry.serviceMode,
+      schedule_request_jsonb: inquiry.scheduleRequest as unknown as Json,
       unknown_fields: unknownFields as unknown as Json,
       external_platform: 'take_a_chef',
+      external_inquiry_id: inquiry.ctaUriToken,
       external_link: inquiry.ctaLink,
       status: 'new',
       // GOLDMINE: set chef_likelihood + follow_up_due_at from lead score
@@ -1145,13 +1173,14 @@ async function handleTacClientMessage(
     clientName,
     eventDate,
     orderId: null,
+    externalIds: msg?.identityKeys,
   })
 
   if (inquiryId) {
     // Advance status to awaiting_chef (client has messaged — chef needs to respond)
     const { data: inquiry } = await supabase
       .from('inquiries')
-      .select('status, external_link')
+      .select('status, external_link, unknown_fields')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
@@ -1164,6 +1193,14 @@ async function handleTacClientMessage(
           next_action_required: `${clientName || 'Client'} messaged you on TakeAChef — respond to keep lead warm`,
           next_action_by: 'chef',
           external_link: msg?.ctaLink || inquiry.external_link,
+          unknown_fields: mergePlatformIdentityKeys(
+            asUnknownFieldsRecord(inquiry.unknown_fields as Json | null),
+            msg?.identityKeys ?? [],
+            {
+              tac_link: msg?.ctaLink || inquiry.external_link,
+              tac_cta_uri_token: msg?.ctaUriToken || null,
+            }
+          ) as unknown as Json,
         })
         .eq('id', inquiryId)
         .eq('tenant_id', tenantId)
@@ -1200,6 +1237,156 @@ async function handleTacClientMessage(
   result.messagesLogged++
 }
 
+async function ensureTacSeriesEvents(params: {
+  supabase: DbClient
+  tenantId: string
+  inquiryId: string
+  booking: NonNullable<TacParseResult['booking']>
+  existingInquiry: {
+    id: string
+    client_id: string | null
+    referral_partner_id?: string | null
+    partner_location_id?: string | null
+    confirmed_date: string | null
+    confirmed_guest_count: number | null
+    confirmed_occasion: string | null
+    confirmed_location: string | null
+    confirmed_service_expectations?: string | null
+    confirmed_dietary_restrictions?: string[] | null
+    confirmed_cannabis_preference?: string | null
+    schedule_request_jsonb?: Json | null
+    source_message?: string | null
+  }
+}): Promise<string | null> {
+  const { supabase, tenantId, inquiryId, booking, existingInquiry } = params
+  const clientId = existingInquiry.client_id
+  if (!clientId) return null
+
+  const scheduleSource =
+    existingInquiry.schedule_request_jsonb &&
+    typeof existingInquiry.schedule_request_jsonb === 'object' &&
+    !Array.isArray(existingInquiry.schedule_request_jsonb)
+      ? (existingInquiry.schedule_request_jsonb as Record<string, unknown>)
+      : booking.scheduleRequest || null
+
+  let schedulePlan: ReturnType<typeof buildSeriesSchedulePlan>
+  try {
+    schedulePlan = buildSeriesSchedulePlan({
+      scheduleRequest: scheduleSource as any,
+      fallbackDate: existingInquiry.confirmed_date || booking.primaryServiceDate,
+      fallbackGuestCount: existingInquiry.confirmed_guest_count ?? 2,
+    })
+  } catch (error) {
+    console.error('[TakeAChef] Failed to build series schedule plan:', error)
+    return null
+  }
+
+  const parsedLocation = parseCityStateFromConversation(
+    booking.address || existingInquiry.confirmed_location || '',
+    `${existingInquiry.source_message || ''}\n${booking.address || ''}`
+  )
+
+  const { data: existingSeries } = await supabase
+    .from('event_series')
+    .select('id, service_mode')
+    .eq('tenant_id', tenantId)
+    .eq('inquiry_id', inquiryId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  let series = existingSeries as {
+    id: string
+    service_mode: Database['public']['Enums']['booking_service_mode']
+  } | null
+
+  if (!series) {
+    const { data: createdSeries, error: seriesError } = await supabase
+      .from('event_series')
+      .insert({
+        tenant_id: tenantId,
+        client_id: clientId,
+        inquiry_id: inquiryId,
+        service_mode: 'multi_day',
+        status: 'draft',
+        title: booking.occasion || existingInquiry.confirmed_occasion || 'Multi-day service',
+        start_date: schedulePlan.start_date,
+        end_date: schedulePlan.end_date,
+        base_guest_count: existingInquiry.confirmed_guest_count ?? null,
+        location_address: booking.address || existingInquiry.confirmed_location || null,
+        location_city: parsedLocation.city || 'TBD',
+        location_state: parsedLocation.state || null,
+        pricing_model: null,
+        quoted_total_cents: booking.amountCents,
+        deposit_total_cents: null,
+        notes: mergeSpecialRequestNotes(
+          existingInquiry.confirmed_service_expectations,
+          `TakeAChef Order ID: ${booking.orderId}`,
+          booking.requestType ? `Request type: ${booking.requestType}` : null,
+          booking.serviceDates ? `Service dates: ${booking.serviceDates}` : null
+        ),
+      })
+      .select('id, service_mode')
+      .single()
+
+    if (seriesError || !createdSeries) {
+      console.error('[TakeAChef] Series creation failed:', seriesError)
+      return null
+    }
+
+    series = createdSeries as {
+      id: string
+      service_mode: Database['public']['Enums']['booking_service_mode']
+    }
+  }
+
+  const inquiryContext = {
+    id: existingInquiry.id,
+    client_id: clientId,
+    referral_partner_id: existingInquiry.referral_partner_id || null,
+    partner_location_id: existingInquiry.partner_location_id || null,
+    confirmed_location: booking.address || existingInquiry.confirmed_location || null,
+    confirmed_occasion: booking.occasion || existingInquiry.confirmed_occasion || null,
+    confirmed_guest_count: existingInquiry.confirmed_guest_count ?? 2,
+    confirmed_service_expectations: mergeSpecialRequestNotes(
+      existingInquiry.confirmed_service_expectations,
+      booking.requestType ? `TakeAChef request type: ${booking.requestType}` : null,
+      booking.serviceDates ? `Service dates: ${booking.serviceDates}` : null
+    ),
+    confirmed_dietary_restrictions: existingInquiry.confirmed_dietary_restrictions || [],
+  }
+
+  const sessions = await materializeSeriesSessions({
+    supabase,
+    tenantId,
+    actorId: null,
+    series,
+    inquiry: inquiryContext,
+    plannedSessions: schedulePlan.sessions,
+    parsedLocation,
+  })
+
+  const events = await materializeSeriesEvents({
+    supabase,
+    tenantId,
+    actorId: null,
+    inquiry: inquiryContext,
+    series,
+    sessions,
+    parsedLocation,
+    serveTimeFallback: null,
+    arrivalTimeFallback: null,
+    quotedPriceCents: booking.amountCents,
+    depositAmountCents: null,
+    pricingModel: null,
+    cannabisPreference: mapCannabisPreferenceToBoolean(
+      existingInquiry.confirmed_cannabis_preference || null
+    ),
+  })
+
+  return events[0]?.id || null
+}
+
 // ─── TAC: Booking Confirmed ────────────────────────────────────────────────
 
 async function handleTacBookingConfirmed(
@@ -1226,36 +1413,103 @@ async function handleTacBookingConfirmed(
   const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
     channel: 'take_a_chef',
     clientName: booking.clientName,
-    eventDate: null, // Booking may have different date format
-    orderId: null,
+    eventDate: booking.primaryServiceDate,
+    orderId: booking.orderId || null,
+    externalIds: booking.identityKeys,
   })
 
   if (inquiryId) {
+    const { data: existingInquiry } = await supabase
+      .from('inquiries')
+      .select(
+        'id, client_id, referral_partner_id, partner_location_id, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_service_expectations, confirmed_dietary_restrictions, confirmed_cannabis_preference, source_message, service_mode, schedule_request_jsonb, converted_to_event_id, external_link, unknown_fields'
+      )
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .single()
+
     // Store the Order ID for future matching (customer info, payment)
     await supabase
       .from('inquiries')
       .update({
         status: 'confirmed',
+        service_mode: existingInquiry?.service_mode || booking.serviceMode,
         external_inquiry_id: booking.orderId || null,
-        external_link: booking.ctaLink || null,
+        external_link: booking.ctaLink || existingInquiry?.external_link || null,
         confirmed_budget_cents: booking.amountCents,
         confirmed_location: booking.address,
+        schedule_request_jsonb:
+          existingInquiry?.schedule_request_jsonb ||
+          (booking.scheduleRequest as unknown as Json) ||
+          null,
+        unknown_fields: mergePlatformIdentityKeys(
+          asUnknownFieldsRecord(existingInquiry?.unknown_fields as Json | null),
+          booking.identityKeys,
+          {
+            tac_order_id: booking.orderId || null,
+            tac_link: booking.ctaLink,
+            tac_cta_uri_token: booking.ctaUriToken,
+            tac_service_dates: booking.serviceDates,
+            tac_request_type: booking.requestType,
+          }
+        ) as unknown as Json,
         next_action_required: 'TakeAChef booking confirmed — prepare for event',
         next_action_by: 'chef',
       })
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
 
-    // Create draft event from booking details
-    const { data: existingInquiry } = await supabase
-      .from('inquiries')
-      .select('client_id, confirmed_date, confirmed_guest_count, confirmed_occasion')
-      .eq('id', inquiryId)
-      .single()
+    if (
+      existingInquiry &&
+      (existingInquiry.service_mode === 'multi_day' ||
+        booking.serviceMode === 'multi_day' ||
+        Boolean(
+          booking.scheduleRequest?.sessions?.length && booking.scheduleRequest.sessions.length > 1
+        ))
+    ) {
+      const eventId = await ensureTacSeriesEvents({
+        supabase,
+        tenantId,
+        inquiryId,
+        booking,
+        existingInquiry,
+      })
 
-    if (existingInquiry) {
+      if (eventId) {
+        await supabase
+          .from('inquiries')
+          .update({ converted_to_event_id: eventId })
+          .eq('id', inquiryId)
+
+        try {
+          const { logChefActivity } = await import('@/lib/activity/log-chef')
+          await logChefActivity({
+            tenantId,
+            actorId: chefId,
+            action: 'event_created',
+            domain: 'event',
+            entityType: 'event',
+            entityId: eventId,
+            summary: `Auto-created event series from TakeAChef booking - Order #${booking.orderId || 'unknown'}. Next: create the final menu.`,
+            context: {
+              source: 'take_a_chef_booking_email',
+              order_id: booking.orderId,
+              inquiry_id: inquiryId,
+              amount_cents: booking.amountCents,
+              service_mode: 'multi_day',
+            },
+          })
+        } catch (actErr) {
+          console.error('[TakeAChef] Activity log failed (non-fatal):', actErr)
+        }
+      }
+    }
+
+    // Create draft event from booking details
+    else if (existingInquiry) {
       const eventDate =
         existingInquiry.confirmed_date ||
+        booking.primaryServiceDate ||
         booking.serviceDates?.split(/[-–]/)[0]?.trim() ||
         new Date().toISOString().slice(0, 10)
 
@@ -1383,13 +1637,14 @@ async function handleTacCustomerInfo(
     clientName: info.guestName,
     eventDate: null,
     orderId: null,
+    externalIds: info.identityKeys,
   })
 
   if (inquiryId) {
     // Get the linked client
     const { data: inquiry } = await supabase
       .from('inquiries')
-      .select('client_id')
+      .select('client_id, external_link, unknown_fields')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
@@ -1410,14 +1665,21 @@ async function handleTacCustomerInfo(
       }
     }
 
-    // Update the inquiry's external link
-    if (info.ctaLink) {
-      await supabase
-        .from('inquiries')
-        .update({ external_link: info.ctaLink })
-        .eq('id', inquiryId)
-        .eq('tenant_id', tenantId)
-    }
+    await supabase
+      .from('inquiries')
+      .update({
+        external_link: info.ctaLink || inquiry?.external_link || null,
+        unknown_fields: mergePlatformIdentityKeys(
+          asUnknownFieldsRecord(inquiry?.unknown_fields as Json | null),
+          info.identityKeys,
+          {
+            tac_link: info.ctaLink || inquiry?.external_link || null,
+            tac_cta_uri_token: info.ctaUriToken || null,
+          }
+        ) as unknown as Json,
+      })
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
 
     // Notify chef
     try {

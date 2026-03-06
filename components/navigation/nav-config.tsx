@@ -194,6 +194,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/marketplace',
+        label: 'Marketplace',
+        icon: Store,
+      },
+      {
         href: '/prospecting',
         label: 'Prospecting',
         icon: Crosshair,
@@ -884,7 +889,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/safety/backup-chef',
-        label: 'Backup Chef',
+        label: 'Backup Coverage',
         icon: Users,
       },
     ],
@@ -1020,7 +1025,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   },
   { href: '/settings/repertoire', label: 'Seasonal Palettes', icon: Settings, context: 'Settings' },
   { href: '/settings/journal', label: 'Chef Journal', icon: Settings, context: 'Settings' },
-  { href: '/settings/favorite-chefs', label: 'Favorite Chefs', icon: Star, context: 'Settings' },
+  {
+    href: '/settings/favorite-chefs',
+    label: 'Inspiration Board',
+    icon: Star,
+    context: 'Settings',
+  },
   { href: '/settings/profile', label: 'Network Profile', icon: Settings, context: 'Settings' },
   {
     href: '/settings/compliance',

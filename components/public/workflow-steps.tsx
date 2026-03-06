@@ -7,30 +7,34 @@ import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
 const STEPS = [
   {
     icon: '1',
-    label: 'Inquiry',
-    title: 'Receive inquiry',
-    description: 'Capture date, guest count, and dietary details in one record.',
+    label: 'Intake',
+    title: 'Capture the request',
+    description:
+      'Pull the request from a booking platform, email, text, or referral into one owned record with dates, guest context, and next actions.',
     href: '/auth/signup',
   },
   {
     icon: '2',
-    label: 'Event',
-    title: 'Plan service',
-    description: 'Build the menu, set pricing, and prep with a clear workflow.',
+    label: 'Plan',
+    title: 'Mirror the booking',
+    description:
+      'Track proposal status, final menu, prep lists, pricing, staffing, and production without losing the marketplace context.',
     href: '/auth/signup',
   },
   {
     icon: '3',
-    label: 'Quote',
-    title: 'Send proposal',
-    description: 'Share one polished link for review and approval.',
+    label: 'Own',
+    title: 'Own the relationship',
+    description:
+      'Once the booking is real, keep client notes, household details, approvals, and repeat-booking opportunities in your own system.',
     href: '/auth/signup',
   },
   {
     icon: '4',
-    label: 'Payment',
-    title: 'Get paid',
-    description: 'Invoice and collect payment before service starts.',
+    label: 'Revenue',
+    title: 'See the real margin',
+    description:
+      'Track booking value, platform fees, payouts, expenses, and follow-up value instead of stopping at the marketplace payout screen.',
     href: '/auth/signup',
   },
 ]

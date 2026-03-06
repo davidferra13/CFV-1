@@ -12,6 +12,7 @@ import { MileageLogPanel } from '@/components/finance/mileage-log-panel'
 import { TipLogPanel } from '@/components/finance/tip-log-panel'
 import { BudgetTracker } from '@/components/events/budget-tracker'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
+import { TakeAChefPayoutPanel } from '@/components/events/take-a-chef-payout-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -33,6 +34,7 @@ type EventDetailMoneyTabProps = {
   eventExpenseData: any
   profitSummary: any
   eventLoyaltyPoints: number
+  takeAChefFinance: any
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -53,6 +55,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     eventExpenseData,
     profitSummary,
     eventLoyaltyPoints,
+    takeAChefFinance,
   } = props
 
   return (
@@ -131,6 +134,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           </div>
         </div>
       </Card>
+
+      {takeAChefFinance?.isTakeAChef && <TakeAChefPayoutPanel finance={takeAChefFinance} />}
 
       {/* AI Pricing Intelligence */}
       {['proposed', 'accepted'].includes(event.status) && (

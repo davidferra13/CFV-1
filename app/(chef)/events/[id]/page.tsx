@@ -65,6 +65,7 @@ import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { getEventReadiness } from '@/lib/events/readiness'
 import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
+import { getTakeAChefEventFinance } from '@/lib/integrations/take-a-chef-finance-actions'
 import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
@@ -311,6 +312,7 @@ export default async function EventDetailPage({
     hubGroupToken,
     menuLibraryData,
     chefDisplayName,
+    takeAChefFinance,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -378,6 +380,7 @@ export default async function EventDetailPage({
         return 'your chef'
       }
     })(),
+    getTakeAChefEventFinance(params.id).catch(() => null),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
@@ -625,6 +628,7 @@ export default async function EventDetailPage({
         eventExpenseData={eventExpenseData}
         profitSummary={profitSummary}
         eventLoyaltyPoints={eventLoyaltyPoints}
+        takeAChefFinance={takeAChefFinance}
       />
 
       {/* ============================================ */}

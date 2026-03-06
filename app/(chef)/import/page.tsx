@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { SmartImportHub, type ImportMode } from '@/components/import/smart-import-hub'
 import { getClientsForHistoricalImport } from '@/lib/events/historical-import-actions'
 import { Alert } from '@/components/ui/alert'
+import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
 
 const IMPORT_MODES: ImportMode[] = [
   'brain-dump',
@@ -43,10 +44,11 @@ async function getEventsForDropdown() {
 export default async function ImportPage({ searchParams }: { searchParams: { mode?: string } }) {
   await requireChef()
   const initialMode = getInitialMode(searchParams.mode)
-  const [aiConfigured, events, existingClients] = await Promise.all([
+  const [aiConfigured, events, existingClients, tacSettings] = await Promise.all([
     isAIConfigured(),
     getEventsForDropdown(),
     getClientsForHistoricalImport(),
+    getTakeAChefIntegrationSettings(),
   ])
 
   return (
@@ -81,6 +83,7 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
         events={events}
         existingClients={existingClients}
         initialMode={initialMode}
+        defaultTakeAChefCommissionPercent={tacSettings.defaultCommissionPercent}
       />
     </div>
   )

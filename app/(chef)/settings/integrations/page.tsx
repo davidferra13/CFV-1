@@ -15,32 +15,41 @@ import { Suspense } from 'react'
 import { IntegrationCallbackToast } from '@/components/settings/integration-callback-toast'
 import { listConnectedAccounts } from '@/lib/integrations/integration-hub'
 import { ConnectedAccounts } from '@/components/integrations/connected-accounts'
+import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
 
 export const metadata: Metadata = { title: 'Integrations - ChefFlow' }
 
 export default async function IntegrationsSettingsPage() {
   const user = await requireChef()
 
-  const [overview, recentEvents, tacStats, gmailConn, oauthStatuses, connectedAccounts] =
-    await Promise.all([
-      getIntegrationProviderOverview(),
-      getRecentIntegrationEvents(30),
-      getTakeAChefStats().catch(() => ({
-        newLeads: 0,
-        awaitingResponse: 0,
-        confirmed: 0,
-        totalAllTime: 0,
-        lastSyncAt: null,
-      })),
-      createServerClient()
-        .from('google_connections')
-        .select('gmail_connected, gmail_last_sync_at')
-        .eq('chef_id', user.entityId)
-        .maybeSingle()
-        .then((r) => r.data),
-      getOAuthConnectionStatuses(),
-      listConnectedAccounts().catch(() => []),
-    ])
+  const [
+    overview,
+    recentEvents,
+    tacStats,
+    gmailConn,
+    oauthStatuses,
+    connectedAccounts,
+    tacSettings,
+  ] = await Promise.all([
+    getIntegrationProviderOverview(),
+    getRecentIntegrationEvents(30),
+    getTakeAChefStats().catch(() => ({
+      newLeads: 0,
+      awaitingResponse: 0,
+      confirmed: 0,
+      totalAllTime: 0,
+      lastSyncAt: null,
+    })),
+    createServerClient()
+      .from('google_connections')
+      .select('gmail_connected, gmail_last_sync_at')
+      .eq('chef_id', user.entityId)
+      .maybeSingle()
+      .then((r) => r.data),
+    getOAuthConnectionStatuses(),
+    listConnectedAccounts().catch(() => []),
+    getTakeAChefIntegrationSettings(),
+  ])
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -67,6 +76,7 @@ export default async function IntegrationsSettingsPage() {
         gmailConnected={gmailConn?.gmail_connected ?? false}
         lastSyncAt={gmailConn?.gmail_last_sync_at ?? null}
         tacLeadCount={tacStats.totalAllTime}
+        defaultCommissionPercent={tacSettings.defaultCommissionPercent}
       />
 
       <IntegrationCenter

@@ -5,6 +5,11 @@
 //
 // PRIVACY: Email body is processed locally only. Never sent to cloud LLMs.
 
+import type {
+  BookingServiceMode,
+  ScheduleRequest,
+  ServiceSessionRequest,
+} from '@/lib/booking/schedule-schema'
 import type { ParsedEmail } from './types'
 
 // ─── TakeAChef Email Types ────────────────────────────────────────────────
@@ -22,6 +27,7 @@ export interface TacParsedInquiry {
   location: string | null
   mealType: string | null
   eventDate: string | null
+  eventDateRaw: string | null
   guestCountText: string | null
   guestCountNumber: number | null
   pricePerPersonRange: string | null
@@ -34,6 +40,10 @@ export interface TacParsedInquiry {
   clientNotes: string | null
   partnerName: string | null
   ctaLink: string | null
+  ctaUriToken: string | null
+  identityKeys: string[]
+  serviceMode: BookingServiceMode
+  scheduleRequest: ScheduleRequest | null
 }
 
 export interface TacParsedBooking {
@@ -44,10 +54,15 @@ export interface TacParsedBooking {
   requestType: string | null
   address: string | null
   serviceDates: string | null
+  primaryServiceDate: string | null
+  serviceMode: BookingServiceMode
+  scheduleRequest: ScheduleRequest | null
   occasion: string | null
   clientName: string | null
   partnerName: string | null
   ctaLink: string | null
+  ctaUriToken: string | null
+  identityKeys: string[]
 }
 
 export interface TacParsedCustomerInfo {
@@ -58,12 +73,16 @@ export interface TacParsedCustomerInfo {
   bookingLocation: string | null
   bookingDate: string | null
   ctaLink: string | null
+  ctaUriToken: string | null
+  identityKeys: string[]
 }
 
 export interface TacParsedMessage {
   clientName: string | null
   eventDate: string | null
   ctaLink: string | null
+  ctaUriToken: string | null
+  identityKeys: string[]
 }
 
 export interface TacParseResult {
@@ -118,6 +137,220 @@ export function detectTacEmailType(subject: string): TacEmailType {
   return 'tac_administrative'
 }
 
+const TAC_LOGIN_LINK_PATTERN =
+  'https?:\\/\\/(?:www\\.)?(?:privatechefmanager|takeachef)\\.com\\/en-us\\/user\\/login-check\\?[^\\s<>"\')]+'
+
+const TAC_MONTH_TRANSLATIONS: Record<string, string> = {
+  enero: 'January',
+  febrero: 'February',
+  marzo: 'March',
+  abril: 'April',
+  mayo: 'May',
+  junio: 'June',
+  julio: 'July',
+  agosto: 'August',
+  septiembre: 'September',
+  setiembre: 'September',
+  octubre: 'October',
+  noviembre: 'November',
+  diciembre: 'December',
+}
+
+function normalizeTacDateValue(rawValue: string | null): string | null {
+  if (!rawValue) return null
+
+  const trimmed = rawValue
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!trimmed) return null
+
+  let normalized = trimmed
+    .replace(/\bSept\b/gi, 'Sep')
+    .replace(
+      /\b(\d{1,2})\s+de\s+([A-Za-z\u00C0-\u017F]+)\s+de\s+(\d{4})\b/gi,
+      (_, day: string, month: string, year: string) => {
+        const translated =
+          TAC_MONTH_TRANSLATIONS[
+            month
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+          ]
+        return translated ? `${day} ${translated} ${year}` : `${day} ${month} ${year}`
+      }
+    )
+
+  const parsed = new Date(normalized)
+  if (Number.isNaN(parsed.getTime())) return null
+
+  return parsed.toISOString().split('T')[0]
+}
+
+function parseTacDateRangeStart(rawValue: string | null): string | null {
+  if (!rawValue) return null
+  const firstDate = rawValue.split(/\s+to\s+|\s+[-–]\s+/i)[0]?.trim() || null
+  return normalizeTacDateValue(firstDate)
+}
+
+function enumerateTacDateRange(startDate: string, endDate: string): string[] {
+  const start = new Date(`${startDate}T00:00:00.000Z`)
+  const end = new Date(`${endDate}T00:00:00.000Z`)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return []
+
+  const dates: string[] = []
+  const cursor = new Date(start)
+  while (cursor <= end) {
+    dates.push(cursor.toISOString().slice(0, 10))
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  }
+  return dates
+}
+
+function parseTacDateCollection(rawValue: string | null): string[] {
+  if (!rawValue) return []
+
+  const trimmed = rawValue
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!trimmed) return []
+
+  const rangeParts = trimmed.split(/\s+to\s+|\s+[-–]\s+/i).map((part) => part.trim())
+  if (rangeParts.length >= 2) {
+    const start = normalizeTacDateValue(rangeParts[0])
+    const end = normalizeTacDateValue(rangeParts[rangeParts.length - 1])
+    if (start && end) {
+      const dates = enumerateTacDateRange(start, end)
+      if (dates.length > 0) return dates
+    }
+  }
+
+  const direct = normalizeTacDateValue(trimmed)
+  return direct ? [direct] : []
+}
+
+function inferTacMealSlot(value: string | null): ServiceSessionRequest['meal_slot'] {
+  const normalized = value?.trim().toLowerCase() || ''
+  if (!normalized) return 'dinner'
+  if (normalized.includes('breakfast') || normalized.includes('brunch')) return 'breakfast'
+  if (normalized.includes('lunch')) return 'lunch'
+  if (normalized.includes('late') || normalized.includes('snack')) return 'late_snack'
+  if (normalized.includes('drop')) return 'dropoff'
+  if (normalized.includes('dinner')) return 'dinner'
+  return 'other'
+}
+
+function inferTacExecutionType(value: string | null): ServiceSessionRequest['execution_type'] {
+  const normalized = value?.trim().toLowerCase() || ''
+  if (!normalized) return 'on_site'
+  if (
+    normalized.includes('drop off') ||
+    normalized.includes('drop-off') ||
+    normalized.includes('dropoff')
+  ) {
+    return 'drop_off'
+  }
+  if (normalized.includes('prep only')) return 'prep_only'
+  if (normalized.includes('hybrid')) return 'hybrid'
+  return 'on_site'
+}
+
+function buildTacScheduleRequest(params: {
+  rawDateValue: string | null
+  requestType?: string | null
+  mealLabel?: string | null
+  executionLabel?: string | null
+  note?: string | null
+}): { serviceMode: BookingServiceMode; scheduleRequest: ScheduleRequest | null } {
+  const { rawDateValue, requestType, mealLabel, executionLabel, note } = params
+  const dates = parseTacDateCollection(rawDateValue)
+  const requestTypeText = requestType?.trim().toLowerCase() || ''
+  const forceMultiDay = requestTypeText.includes('multiple') || requestTypeText.includes('multi')
+  const serviceMode: BookingServiceMode =
+    forceMultiDay || dates.length > 1 ? 'multi_day' : 'one_off'
+
+  if (serviceMode !== 'multi_day') {
+    return { serviceMode, scheduleRequest: null }
+  }
+
+  const firstDate = dates[0] || normalizeTacDateValue(rawDateValue)
+  const lastDate = dates[dates.length - 1] || firstDate
+  const mealSlot = inferTacMealSlot(mealLabel || requestType || null)
+  const executionType = inferTacExecutionType(executionLabel || requestType || null)
+  const outlineParts = [requestType, rawDateValue, note]
+    .map((value) => value?.trim())
+    .filter(Boolean)
+
+  const sessionDates = dates.length > 0 ? dates : firstDate ? [firstDate] : []
+  const sessions =
+    sessionDates.length > 0
+      ? sessionDates.map((sessionDate, index) => ({
+          service_date: sessionDate,
+          meal_slot: mealSlot,
+          execution_type: executionType,
+          notes: index === 0 ? note?.trim() || undefined : undefined,
+        }))
+      : undefined
+
+  if (!firstDate || !lastDate) {
+    return {
+      serviceMode,
+      scheduleRequest: outlineParts.length > 0 ? { outline: outlineParts.join(' | ') } : null,
+    }
+  }
+
+  return {
+    serviceMode,
+    scheduleRequest: {
+      start_date: firstDate,
+      end_date: lastDate,
+      sessions,
+      outline: outlineParts.length > 0 ? outlineParts.join(' | ') : undefined,
+    },
+  }
+}
+
+function extractTacCtaLink(body: string, anchorPattern: string): string | null {
+  const hrefPattern = new RegExp(`href="([^"]*)"[^>]*>(?:[^<]*?)(?:${anchorPattern})`, 'i')
+  const markdownPattern = new RegExp(`\\((${TAC_LOGIN_LINK_PATTERN})\\)`, 'i')
+  const directPattern = new RegExp(TAC_LOGIN_LINK_PATTERN, 'i')
+
+  return (
+    body.match(hrefPattern)?.[1] ||
+    body.match(markdownPattern)?.[1] ||
+    body.match(directPattern)?.[0] ||
+    null
+  )
+}
+
+export function extractTacLinkIdentity(link: string | null | undefined): {
+  ctaLink: string | null
+  ctaUriToken: string | null
+  identityKeys: string[]
+} {
+  const trimmed = typeof link === 'string' ? link.trim() : ''
+  if (!trimmed) {
+    return { ctaLink: null, ctaUriToken: null, identityKeys: [] }
+  }
+
+  let ctaUriToken: string | null = null
+
+  try {
+    ctaUriToken = new URL(trimmed).searchParams.get('uri')?.trim() || null
+  } catch {
+    ctaUriToken = null
+  }
+
+  const identityKeys = Array.from(new Set([ctaUriToken, trimmed].filter(Boolean) as string[]))
+
+  return {
+    ctaLink: trimmed,
+    ctaUriToken,
+    identityKeys,
+  }
+}
+
 // ─── Field Extraction — New Inquiry ──────────────────────────────────────
 
 function parseInquiryEmail(
@@ -132,11 +365,11 @@ function parseInquiryEmail(
   if (!nameMatch) warnings.push('Could not extract client name from subject')
 
   // Location
-  const locationMatch = body.match(/Location:\s*(.+)/i)
+  const locationMatch = body.match(/Location:\*?\*?\s*(.+)/i)
   const location = locationMatch?.[1]?.trim() || null
 
   // Meal type
-  const mealMatch = body.match(/Meal:\s*(.+)/i)
+  const mealMatch = body.match(/Meal:\*?\*?\s*(.+)/i)
   const mealType = mealMatch?.[1]?.trim() || null
 
   // Date
@@ -144,20 +377,13 @@ function parseInquiryEmail(
   // - "Date: June 23, 2026"
   // - "Dates: Jun 6, 2026 to Jun 10, 2026"
   const dateMatch = body.match(
-    /Date[s]?:\*?\*?\s*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}(?:\s+to\s+[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})?)/i
+    /Date[s]?:\*?\*?\s*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}(?:(?:\s+to\s+|\s+[-–]\s+)[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})?)/i
   )
   const eventDateRaw = dateMatch?.[1]?.trim() || null
-  const eventDateStart = eventDateRaw ? eventDateRaw.split(/\s+to\s+/i)[0].trim() : null
-  let eventDate: string | null = eventDateStart
-  if (eventDateStart) {
-    const parsed = new Date(eventDateStart)
-    if (!isNaN(parsed.getTime())) {
-      eventDate = parsed.toISOString().split('T')[0]
-    }
-  }
+  const eventDate = parseTacDateRangeStart(eventDateRaw)
 
   // Guest count — "No. of guests: Mid-size group (7 to 15 people)" or similar
-  const guestMatch = body.match(/No\.\s*of\s*guests?:\s*(.+)/i)
+  const guestMatch = body.match(/No\.\s*of\s*guests?:\*?\*?\s*(.+)/i)
   const guestCountText = guestMatch?.[1]?.trim() || null
   let guestCountNumber: number | null = null
   if (guestCountText) {
@@ -177,7 +403,7 @@ function parseInquiryEmail(
   }
 
   // Price per person — "Price per person: from 101 USD to 174 USD"
-  const priceMatch = body.match(/Price per person:\s*(.+)/i)
+  const priceMatch = body.match(/(?:Price per person|Price range):\*?\*?\s*(.+)/i)
   const pricePerPersonRange = priceMatch?.[1]?.trim() || null
   let priceMinCents: number | null = null
   let priceMaxCents: number | null = null
@@ -193,41 +419,44 @@ function parseInquiryEmail(
   }
 
   // Type of experience
-  const experienceMatch = body.match(/Type of experience:\s*(.+)/i)
+  const experienceMatch = body.match(/Type of experience:\*?\*?\s*(.+)/i)
   const experienceType = experienceMatch?.[1]?.trim() || null
 
   // Food preferences
-  const foodPrefMatch = body.match(/Food preferences:\s*(.+)/i)
+  const foodPrefMatch = body.match(/Food preferences:\*?\*?\s*(.+)/i)
   const foodPreferences = foodPrefMatch?.[1]?.trim() || null
 
   // Dietary restrictions
-  const dietaryMatch = body.match(/Dietary (?:restrictions|requirements):\s*(.+)/i)
+  const dietaryMatch = body.match(
+    /(?:Dietary (?:restrictions|requirements)|Additional notes regarding dietary restrictions):\*?\*?\s*(.+)/i
+  )
   const dietaryRestrictions = dietaryMatch?.[1]?.trim() || null
 
   // Occasion
-  const occasionMatch = body.match(/Occasion:\s*(.+)/i)
+  const occasionMatch = body.match(/Occasion:\*?\*?\s*(.+)/i)
   const occasion = occasionMatch?.[1]?.trim() || null
 
   // Client notes — everything between "SOMETHING TO ADD" and "PARTNER"
   const notesMatch = body.match(
-    /SOMETHING TO ADD[\s\S]*?Notes?:\s*([\s\S]*?)(?=PARTNER|If you are interested|$)/i
+    /SOMETHING TO ADD[\s\S]*?Notes?:\*?\*?\s*([\s\S]*?)(?=PARTNER|If you are interested|$)/i
   )
   const clientNotes = notesMatch?.[1]?.trim() || null
 
   // Partner
-  const partnerMatch = body.match(/(?:PARTNER|Partner)[\s\S]*?Name:\s*(.+)/i)
+  const partnerMatch = body.match(/(?:PARTNER|Partner)[\s\S]*?Name:\*?\*?\s*(.+)/i)
   const partnerName = partnerMatch?.[1]?.trim() || null
 
   // CTA link
   // Supports HTML href and markdown/plain login-check URLs used in Gmail exports.
-  const ctaHrefMatch = body.match(/href="([^"]*)"[^>]*>(?:[^<]*?)(?:Send proposal|View request)/i)
-  const ctaMarkdownMatch = body.match(
-    /\((https?:\/\/www\.privatechefmanager\.com\/en-us\/user\/login-check\?[^\s)]+)\)/i
+  const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
+    extractTacCtaLink(body, 'Send proposal|View request')
   )
-  const ctaDirectMatch = body.match(
-    /https?:\/\/www\.privatechefmanager\.com\/en-us\/user\/login-check\?[^\s<>"']+/i
-  )
-  const ctaLink = ctaHrefMatch?.[1] || ctaMarkdownMatch?.[1] || ctaDirectMatch?.[0] || null
+  const { serviceMode, scheduleRequest } = buildTacScheduleRequest({
+    rawDateValue: eventDateRaw,
+    mealLabel: mealType,
+    executionLabel: experienceType,
+    note: clientNotes,
+  })
 
   return {
     data: {
@@ -235,6 +464,7 @@ function parseInquiryEmail(
       location,
       mealType,
       eventDate,
+      eventDateRaw,
       guestCountText,
       guestCountNumber,
       pricePerPersonRange,
@@ -247,6 +477,10 @@ function parseInquiryEmail(
       clientNotes,
       partnerName,
       ctaLink,
+      ctaUriToken,
+      identityKeys,
+      serviceMode,
+      scheduleRequest,
     },
     warnings,
   }
@@ -266,41 +500,54 @@ function parseBookingEmail(
   if (!orderId) warnings.push('Could not extract Order ID from subject')
 
   // Amount — "Amount: 1000 USD"
-  const amountMatch = body.match(/Amount:\s*([\d,.]+)\s*USD/i)
+  const amountMatch = body.match(/Amount:\*?\*?\s*([\d,.]+)\s*USD/i)
   const amountUsd = amountMatch ? parseFloat(amountMatch[1].replace(',', '')) : null
   const amountCents = amountUsd !== null ? Math.round(amountUsd * 100) : null
 
   // Payment gateway — "Payment gateway: Stripe (Domestic)"
-  const gatewayMatch = body.match(/Payment gateway:\s*(.+)/i)
+  const gatewayMatch = body.match(/Payment gateway:\*?\*?\s*(.+)/i)
   const paymentGateway = gatewayMatch?.[1]?.trim() || null
 
   // Request type — "Request: Multiple services"
-  const requestMatch = body.match(/Request:\s*(.+)/i)
+  const requestMatch = body.match(/Request:\*?\*?\s*(.+)/i)
   const requestType = requestMatch?.[1]?.trim() || null
 
   // Address — "Address: North Conway, Conway, NH"
-  const addressMatch = body.match(/Address:\s*(.+)/i)
+  const addressMatch = body.match(/Address:\*?\*?\s*(.+)/i)
   const address = addressMatch?.[1]?.trim() || null
 
   // Service dates — "Service dates: 18 Sept 2025 - 21 Sept 2025"
-  const datesMatch = body.match(/Service date[s]?:\s*(.+)/i)
+  const datesMatch = body.match(/(?:Service date[s]?|Date):\*?\*?\s*(.+)/i)
   const serviceDates = datesMatch?.[1]?.trim() || null
+  const primaryServiceDate = parseTacDateRangeStart(serviceDates)
+
+  // Time / meal slot label — "Time: Dinner"
+  const timeMatch = body.match(/Time:\*?\*?\s*(.+)/i)
+  const serviceTimeLabel = timeMatch?.[1]?.trim() || null
 
   // Occasion — "Occasion: Dinner"
-  const occasionMatch = body.match(/Occasion:\s*(.+)/i)
+  const occasionMatch = body.match(/Occasion:\*?\*?\s*(.+)/i)
   const occasion = occasionMatch?.[1]?.trim() || null
 
   // Guests (client name) — "Guests: Jessica Zoll"
-  const guestsMatch = body.match(/Guests?:\s*(.+)/i)
+  const guestsMatch = body.match(/Guests?:\*?\*?\s*(.+)/i)
   const clientName = guestsMatch?.[1]?.trim() || null
 
   // Partner — "Partner: Take a Chef"
-  const partnerMatch = body.match(/Partner:\s*(.+)/i)
+  const partnerMatch = body.match(/Partner:\*?\*?\s*(.+)/i)
   const partnerName = partnerMatch?.[1]?.trim() || null
 
   // CTA link — "Manage your guest"
-  const ctaMatch = body.match(/href="([^"]*)"[^>]*>(?:[^<]*?)(?:Manage your guest)/i)
-  const ctaLink = ctaMatch?.[1] || null
+  const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
+    extractTacCtaLink(body, 'Manage your guest|Message your guest')
+  )
+  const { serviceMode, scheduleRequest } = buildTacScheduleRequest({
+    rawDateValue: serviceDates,
+    requestType,
+    mealLabel: serviceTimeLabel,
+    executionLabel: requestType,
+    note: orderId ? `Take a Chef order ${orderId}` : null,
+  })
 
   return {
     data: {
@@ -311,10 +558,15 @@ function parseBookingEmail(
       requestType,
       address,
       serviceDates,
+      primaryServiceDate,
+      serviceMode,
+      scheduleRequest,
       occasion,
       clientName,
       partnerName,
       ctaLink,
+      ctaUriToken,
+      identityKeys,
     },
     warnings,
   }
@@ -329,20 +581,20 @@ function parseCustomerInfoEmail(
   const warnings: string[] = []
 
   // Guest name — "Guest name: Jessica Zoll"
-  const nameMatch = body.match(/Guest name:\s*(.+)/i)
+  const nameMatch = body.match(/Guest name\s*:\*?\*?\s*(.+)/i)
   const guestName = nameMatch?.[1]?.trim() || null
   if (!guestName) warnings.push('Could not extract guest name from customer info email')
 
   // Phone number — "Phone number: +1 XXXXXXXXXX"
-  const phoneMatch = body.match(/Phone (?:number|#):\s*(\+?[\d\s()-]+)/i)
+  const phoneMatch = body.match(/Phone (?:number|#)\s*:\*?\*?\s*(\+?[\d\s()-]+)/i)
   const phoneNumber = phoneMatch?.[1]?.trim() || null
 
   // Email (may not always be present)
-  const emailMatch = body.match(/(?:Email|E-mail):\s*([\w.+-]+@[\w.-]+)/i)
+  const emailMatch = body.match(/(?:Email|E-mail)\s*:\*?\*?\s*([\w.+-]+@[\w.-]+)/i)
   const email = emailMatch?.[1]?.trim() || null
 
   // Partner
-  const partnerMatch = body.match(/Partner:\s*(.+)/i)
+  const partnerMatch = body.match(/Partner:\*?\*?\s*(.+)/i)
   const partnerName = partnerMatch?.[1]?.trim() || null
 
   // Booking location + date from greeting text
@@ -352,8 +604,9 @@ function parseCustomerInfoEmail(
   const bookingDate = contextMatch?.[2]?.trim() || null
 
   // CTA link — "Manage your guest"
-  const ctaMatch = body.match(/href="([^"]*)"[^>]*>(?:[^<]*?)(?:Manage your guest)/i)
-  const ctaLink = ctaMatch?.[1] || null
+  const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
+    extractTacCtaLink(body, 'Manage your guest|Message your guest')
+  )
 
   return {
     data: {
@@ -364,6 +617,8 @@ function parseCustomerInfoEmail(
       bookingLocation,
       bookingDate,
       ctaLink,
+      ctaUriToken,
+      identityKeys,
     },
     warnings,
   }
@@ -384,17 +639,21 @@ function parseMessageEmail(
 
   // Event date from subject: "You have a message for the on 18 September 2025"
   const dateMatch = subject.match(/for the on\s+(.+?)(?:\s*📬|\s*$)/i)
-  const eventDate = dateMatch?.[1]?.trim() || null
+  const eventDate =
+    normalizeTacDateValue(dateMatch?.[1]?.trim() || null) || dateMatch?.[1]?.trim() || null
 
   // CTA link — "Guest's message"
-  const ctaMatch = body.match(/href="([^"]*)"[^>]*>(?:[^<]*?)(?:Guest's message|View message)/i)
-  const ctaLink = ctaMatch?.[1] || null
+  const { ctaLink, ctaUriToken, identityKeys } = extractTacLinkIdentity(
+    extractTacCtaLink(body, "Guest's message|View message|Message your guest")
+  )
 
   return {
     data: {
       clientName,
       eventDate,
       ctaLink,
+      ctaUriToken,
+      identityKeys,
     },
     warnings,
   }

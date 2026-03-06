@@ -12,12 +12,13 @@ import { createClientFromLead } from '@/lib/clients/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
+import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
 // ─── Input Schema ──────────────────────────────────────────────────────────
 
 const TakeAChefImportSchema = z.object({
   rawText: z.string().min(10, 'Paste the booking notification text — at least a few lines'),
-  commissionPercent: z.number().min(0).max(50).default(25),
+  commissionPercent: z.number().min(0).max(50).default(getDefaultTakeAChefCommissionPercent()),
   logCommission: z.boolean().default(true),
 })
 
@@ -102,8 +103,13 @@ export async function importTakeAChefBooking(
         confirmed_service_expectations: parsed.confirmed_service_expectations || null,
         confirmed_cannabis_preference: parsed.confirmed_cannabis_preference || null,
         source_message: validated.rawText,
-        unknown_fields:
-          unknownFields as unknown as Database['public']['Tables']['inquiries']['Insert']['unknown_fields'],
+        unknown_fields: {
+          ...unknownFields,
+          take_a_chef_finance: {
+            gross_booking_cents: parsed.confirmed_budget_cents ?? null,
+            commission_percent: validated.commissionPercent,
+          },
+        } as unknown as Database['public']['Tables']['inquiries']['Insert']['unknown_fields'],
         status: 'new',
         next_action_required: 'Review Take a Chef booking import',
         next_action_by: 'chef',
