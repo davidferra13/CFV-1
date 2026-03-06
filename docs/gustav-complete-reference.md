@@ -37,7 +37,7 @@ User -> Gustav Chat UI (index.html)
 
 ---
 
-## The 7 Stations (80+ Tools)
+## The 8 Stations (90+ Tools)
 
 ### Station 1: DevOps (Process Control)
 
@@ -150,6 +150,23 @@ User -> Gustav Chat UI (index.html)
 | `email/health`     | Email delivery health (Resend)                      |
 | `api/limits`       | API rate limits and config status                   |
 
+### Station 8: Universal Data Access
+
+| Tool                 | What It Does                                                           |
+| -------------------- | ---------------------------------------------------------------------- |
+| `db/query`           | Query any Supabase table (db/query:table?select=...&filter=...&limit=) |
+| `db/sql`             | Read-only SQL shell (blocks writes)                                    |
+| `cron/list`          | List cron jobs — routes, schedules, execution history                  |
+| `cron/trigger`       | Trigger a cron job manually                                            |
+| `data/event-deep`    | Full event deep-dive — ledger, expenses, temps, transitions, staff     |
+| `data/ledger`        | Raw financial journal with type filter and aggregation                 |
+| `data/notifications` | Notification list, unread count, push subscriptions                    |
+| `data/automations`   | Automation rules, execution history, sequences                         |
+| `data/inventory`     | Equipment inventory, stock levels, waste logs                          |
+| `data/activity`      | Recent system activity events                                          |
+| `data/webhooks`      | Webhook delivery history — inbound/outbound, status                    |
+| `data/intelligence`  | Synthesized business intelligence — trends, funnel, hot leads          |
+
 ### The Pass: Morning Briefing
 
 | Tool            | What It Does                                       |
@@ -175,12 +192,12 @@ User -> Gustav Chat UI (index.html)
 
 ---
 
-## Instant Deterministic Answers (30+ Patterns)
+## Instant Deterministic Answers (40+ Patterns)
 
 These fire BEFORE any LLM call. Pattern-matched commands that execute immediately:
 
 **Direct action dispatch (no LLM):**
-status, start dev, stop dev, deploy, push, typecheck, build, diff, revenue, events, inquiries, clients, staff, quotes, expenses, calendar, loyalty, documents, menus, emails, remy status, remy guardrails, remy memories, test remy, pi status, schema, branches, calling the pass, mise en place
+status, start dev, stop dev, deploy, push, typecheck, build, diff, revenue, events, inquiries, clients, staff, quotes, expenses, calendar, loyalty, documents, menus, emails, remy status, remy guardrails, remy memories, test remy, pi status, schema, branches, calling the pass, mise en place, ledger, notifications, automations, inventory, activity, webhooks, intelligence, cron
 
 **Static responses (no LLM, no tool):**
 help, scan (shows scan menu)

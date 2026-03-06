@@ -4871,12 +4871,14 @@ body {
         <div class="chat-welcome-title">Gustav</div>
         <div class="chat-welcome-text">Mise en place. All stations ready. What do you need?</div>
         <div class="chat-quick-actions" id="chat-quick-actions">
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">All stations</button>
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show revenue summary')">Revenue</button>
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show upcoming events')">Events</button>
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Check the Pi status')">Pi status</button>
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Fire dev</button>
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('status')">Call the pass</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('revenue')">Revenue</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('events')">Events</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('inquiries')">Inquiries</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('diff')">Git diff</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('remy status')">Remy</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('pi status')">Pi</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('help')">All commands</button>
         </div>
       </div>
     </div>
@@ -5596,12 +5598,14 @@ function showWelcomeScreen() {
     <div class="chat-welcome-title">Gustav</div>
     <div class="chat-welcome-text">Mise en place. All stations ready. What do you need?</div>
     <div class="chat-quick-actions" id="chat-quick-actions">
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">All stations</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show revenue summary')">Revenue</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show upcoming events')">Events</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Check the Pi status')">Pi status</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Fire dev</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('status')">Call the pass</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('revenue')">Revenue</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('events')">Events</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('inquiries')">Inquiries</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('diff')">Git diff</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('remy status')">Remy</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('pi status')">Pi</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('help')">All commands</button>
     </div>
   </div>`
 }

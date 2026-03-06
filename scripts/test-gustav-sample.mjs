@@ -301,6 +301,49 @@ async function runTests() {
     return actionResults.length > 0 ? true : 'No action results returned'
   })
 
+  // ── 9. Universal Data Access (Tier 1 — via instant dispatch) ──
+  console.log('\n=== STATION 9: Universal Data Access ===')
+
+  await testChat('instant-ledger', 'ledger', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-notifications', 'notifications', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-automations', 'automations', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-inventory', 'inventory', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-activity', 'activity', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-webhooks', 'webhooks', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-intelligence', 'intelligence', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
+  await testChat('instant-cron', 'cron', ({ source, actionResults }) => {
+    return source === 'instant-action' || actionResults.length > 0
+      ? true : `Expected instant action, got source: ${source}`
+  })
+
   // ── Results ──────────────────────────────────────────────────
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
   const total = results.pass + results.fail + results.warn

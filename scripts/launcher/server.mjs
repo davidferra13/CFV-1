@@ -65,7 +65,7 @@ const CONFIG = {
 
 const CHAT_CONFIG = {
   maxHistoryMessages: 20,
-  maxTokens: 1024,
+  maxTokens: 4096,
   timeoutMs: 120_000,
   streamTimeoutMs: 30_000,
 }
@@ -4014,6 +4014,602 @@ async function scanStaleCache() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// TIER 1: UNIVERSAL DATA ACCESS + DEEP OPERATIONAL VISIBILITY
+// ══════════════════════════════════════════════════════════════════
+
+// Universal table query — query ANY Supabase table by name
+async function queryTable(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Usage: db/query:table_name or db/query:table_name?select=col1,col2&limit=10&filter=status.eq.active' }
+  const parts = param.trim().split('?')
+  const table = parts[0].trim()
+  if (!table) return { ok: false, error: 'Table name required' }
+
+  // Parse optional query params
+  const opts = { limit: 25, order: 'created_at.desc' }
+  const filters = []
+  if (parts[1]) {
+    const params = new URLSearchParams(parts[1])
+    if (params.get('select')) opts.select = params.get('select')
+    if (params.get('limit')) opts.limit = parseInt(params.get('limit'))
+    if (params.get('order')) opts.order = params.get('order')
+    if (params.get('filter')) {
+      // Support multiple filters separated by comma
+      for (const f of params.get('filter').split(',')) filters.push(f.trim())
+    }
+  }
+  opts.filters = filters
+
+  const result = await supabaseQuery(table, opts)
+  if (!result.ok) return result
+  return {
+    ok: true,
+    table,
+    rows: result.data,
+    count: result.data.length,
+    message: `${result.data.length} rows from ${table}`,
+  }
+}
+
+// SQL-like query via Supabase RPC or raw PostgREST
+async function sqlQuery(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Usage: db/sql:SELECT count(*) FROM events WHERE status = \'completed\'' }
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) return { ok: false, error: 'Supabase not configured' }
+
+  // Safety: read-only queries only
+  const trimmed = param.trim()
+  const upper = trimmed.toUpperCase()
+  if (/^\s*(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE)/i.test(trimmed)) {
+    return { ok: false, error: 'Read-only SQL shell. Write operations are blocked. Use SELECT, WITH, or EXPLAIN only.' }
+  }
+
+  try {
+    // Use Supabase's RPC endpoint to run raw SQL via a database function
+    // If the rpc function doesn't exist, fall back to explaining what's needed
+    const url = `${CONFIG.supabaseUrl}/rest/v1/rpc/execute_sql`
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 15000)
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': CONFIG.supabaseServiceKey,
+        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ query: trimmed }),
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+
+    if (res.status === 404) {
+      // RPC function doesn't exist — guide user to create it
+      return {
+        ok: false,
+        error: 'SQL shell requires a database function. Run this migration:\n\nCREATE OR REPLACE FUNCTION execute_sql(query text) RETURNS json AS $$\nBEGIN\n  RETURN (SELECT json_agg(row_to_json(t)) FROM (EXECUTE query) t);\nEND;\n$$ LANGUAGE plpgsql SECURITY DEFINER;\n\nGRANT EXECUTE ON FUNCTION execute_sql TO service_role;\n\nThen try again.',
+      }
+    }
+
+    if (!res.ok) {
+      const errText = await res.text()
+      return { ok: false, error: `SQL error: ${errText.slice(0, 500)}` }
+    }
+
+    const data = await res.json()
+    return {
+      ok: true,
+      rows: Array.isArray(data) ? data : [data],
+      count: Array.isArray(data) ? data.length : 1,
+      message: `Query returned ${Array.isArray(data) ? data.length : 1} rows`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// List all cron jobs and their last execution status
+async function getCronJobs() {
+  // Check for cron route files
+  const cronDir = join(PROJECT_ROOT, 'app', 'api', 'cron')
+  let cronJobs = []
+  try {
+    const entries = await readdir(cronDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        cronJobs.push(entry.name)
+      }
+    }
+  } catch {
+    return { ok: false, error: 'No cron directory found at app/api/cron/' }
+  }
+
+  // Try to get execution history from cron_executions table
+  const execResult = await supabaseQuery('cron_executions', {
+    select: 'id,job_name,started_at,completed_at,status,error_message,duration_ms',
+    order: 'started_at.desc',
+    limit: 30,
+  }).catch(() => ({ ok: false }))
+
+  const executions = execResult.ok ? execResult.data : []
+  const lastByJob = {}
+  for (const e of executions) {
+    if (!lastByJob[e.job_name]) lastByJob[e.job_name] = e
+  }
+
+  return {
+    ok: true,
+    jobs: cronJobs.map(j => ({
+      name: j,
+      lastRun: lastByJob[j]?.started_at || 'never',
+      lastStatus: lastByJob[j]?.status || 'unknown',
+      lastDuration: lastByJob[j]?.duration_ms || null,
+      lastError: lastByJob[j]?.error_message || null,
+    })),
+    recentExecutions: executions.slice(0, 10).map(e => ({
+      job: e.job_name,
+      started: e.started_at,
+      status: e.status,
+      duration: e.duration_ms,
+      error: e.error_message || null,
+    })),
+    totalJobs: cronJobs.length,
+    message: `${cronJobs.length} cron jobs: ${cronJobs.join(', ')}`,
+  }
+}
+
+// Trigger a cron job manually
+async function triggerCronJob(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Usage: cron/trigger:job-name (e.g., cron/trigger:recall-check)' }
+  const jobName = param.trim()
+  const cronUrl = `http://localhost:${CONFIG.devPort}/api/cron/${jobName}`
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 30000)
+    const res = await fetch(cronUrl, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${process.env.CRON_SECRET || ''}` },
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    const data = await res.json().catch(() => ({}))
+    return {
+      ok: res.ok,
+      status: res.status,
+      result: data,
+      message: res.ok ? `Cron job ${jobName} triggered successfully` : `Cron job ${jobName} failed: ${res.status}`,
+    }
+  } catch (err) {
+    return { ok: false, error: `Cannot reach cron endpoint: ${err.message}. Dev server running?` }
+  }
+}
+
+// Event deep-dive — full operational data for a specific event
+async function eventDeepDive(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Usage: data/event-deep:event_id or data/event-deep:search term' }
+  const q = param.trim()
+
+  // Try UUID first, then search by occasion
+  let eventId = q
+  if (!/^[0-9a-f-]{36}$/i.test(q)) {
+    const searchResult = await supabaseQuery('events', {
+      select: 'id,occasion,event_date',
+      limit: 200,
+    })
+    if (!searchResult.ok) return searchResult
+    const match = searchResult.data.find(e => (e.occasion || '').toLowerCase().includes(q.toLowerCase()))
+    if (!match) return { ok: false, error: `No event found matching "${q}"` }
+    eventId = match.id
+  }
+
+  // Fetch everything about this event in parallel
+  const [event, ledger, expenses, tempLogs, transitions, staffAssign, quotes, contracts] = await Promise.all([
+    supabaseQuery('events', { select: '*', filters: [`id=eq.${eventId}`], limit: 1 }),
+    supabaseQuery('ledger_entries', { select: 'id,entry_type,amount_cents,description,created_at', filters: [`event_id=eq.${eventId}`], order: 'created_at.desc', limit: 50 }).catch(() => ({ ok: false })),
+    supabaseQuery('expenses', { select: 'id,amount_cents,category,description,expense_date,vendor', filters: [`event_id=eq.${eventId}`], order: 'expense_date.desc', limit: 20 }).catch(() => ({ ok: false })),
+    supabaseQuery('event_temp_logs', { select: 'id,item_name,temperature_f,logged_at,is_safe', filters: [`event_id=eq.${eventId}`], order: 'logged_at.desc', limit: 20 }).catch(() => ({ ok: false })),
+    supabaseQuery('event_transitions', { select: 'id,from_status,to_status,created_at,reason', filters: [`event_id=eq.${eventId}`], order: 'created_at.asc', limit: 20 }).catch(() => ({ ok: false })),
+    supabaseQuery('event_staff_assignments', { select: 'id,role,staff_member:staff_members(full_name,hourly_rate_cents)', filters: [`event_id=eq.${eventId}`], limit: 10 }).catch(() => ({ ok: false })),
+    supabaseQuery('quotes', { select: 'id,status,total_cents,valid_until,created_at', filters: [`event_id=eq.${eventId}`], order: 'created_at.desc', limit: 5 }).catch(() => ({ ok: false })),
+    supabaseQuery('event_contract_versions', { select: 'id,version,status,signed_at,created_at', filters: [`event_id=eq.${eventId}`], order: 'created_at.desc', limit: 5 }).catch(() => ({ ok: false })),
+  ])
+
+  if (!event.ok || !event.data[0]) return { ok: false, error: `Event ${eventId} not found` }
+  const e = event.data[0]
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+
+  return {
+    ok: true,
+    event: {
+      id: e.id,
+      occasion: e.occasion,
+      date: e.event_date,
+      time: e.serve_time,
+      status: e.status,
+      guests: e.guest_count,
+      style: e.service_style,
+      city: e.location_city,
+      address: e.location_address,
+      notes: e.notes,
+    },
+    ledger: ledger.ok ? ledger.data.map(l => ({
+      type: l.entry_type,
+      amount: fmt(l.amount_cents),
+      desc: l.description,
+      date: l.created_at?.slice(0, 10),
+    })) : 'unavailable',
+    expenses: expenses.ok ? expenses.data.map(x => ({
+      category: x.category,
+      amount: fmt(x.amount_cents),
+      vendor: x.vendor,
+      desc: x.description,
+      date: x.expense_date,
+    })) : 'unavailable',
+    tempLogs: tempLogs.ok ? tempLogs.data.map(t => ({
+      item: t.item_name,
+      temp: `${t.temperature_f}F`,
+      safe: t.is_safe,
+      time: t.logged_at,
+    })) : 'unavailable',
+    statusHistory: transitions.ok ? transitions.data.map(t => ({
+      from: t.from_status,
+      to: t.to_status,
+      reason: t.reason,
+      date: t.created_at?.slice(0, 16),
+    })) : 'unavailable',
+    staff: staffAssign.ok ? staffAssign.data.map(s => ({
+      name: s.staff_member?.full_name,
+      role: s.role,
+      rate: fmt(s.staff_member?.hourly_rate_cents),
+    })) : 'unavailable',
+    quotes: quotes.ok ? quotes.data.map(q => ({
+      status: q.status,
+      total: fmt(q.total_cents),
+      validUntil: q.valid_until?.slice(0, 10),
+    })) : 'unavailable',
+    contracts: contracts.ok ? contracts.data : 'unavailable',
+    message: `Deep dive: ${e.occasion || 'Event'} on ${e.event_date} (${e.status})`,
+  }
+}
+
+// Ledger entries viewer — raw financial journal
+async function getLedgerEntries(param) {
+  const opts = {
+    select: 'id,event_id,entry_type,amount_cents,description,created_at,event:events(occasion,event_date)',
+    order: 'created_at.desc',
+    limit: 50,
+  }
+  if (param && param.trim()) {
+    // Filter by entry_type
+    opts.filters = [`entry_type=eq.${param.trim()}`]
+  }
+  const result = await supabaseQuery('ledger_entries', opts)
+  if (!result.ok) return result
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const byType = {}
+  let total = 0
+  for (const e of result.data) {
+    byType[e.entry_type] = (byType[e.entry_type] || 0) + (e.amount_cents || 0)
+    total += (e.amount_cents || 0)
+  }
+  return {
+    ok: true,
+    entries: result.data.map(e => ({
+      type: e.entry_type,
+      amount: fmt(e.amount_cents),
+      description: e.description,
+      event: e.event?.occasion || null,
+      eventDate: e.event?.event_date || null,
+      date: e.created_at?.slice(0, 16),
+    })),
+    byType: Object.fromEntries(Object.entries(byType).map(([k, v]) => [k, fmt(v)])),
+    total: fmt(total),
+    count: result.data.length,
+    message: `${result.data.length} ledger entries | Total: ${fmt(total)} | ${Object.entries(byType).map(([k, v]) => `${k}: ${fmt(v)}`).join(', ')}`,
+  }
+}
+
+// Notification viewer
+async function getNotifications() {
+  const [notifResult, pushResult] = await Promise.all([
+    supabaseQuery('notifications', {
+      select: 'id,type,title,body,is_read,created_at,tenant_id',
+      order: 'created_at.desc',
+      limit: 30,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('push_subscriptions', {
+      select: 'id,created_at,endpoint',
+      limit: 50,
+    }).catch(() => ({ ok: false })),
+  ])
+  const notifications = notifResult.ok ? notifResult.data : []
+  const pushSubs = pushResult.ok ? pushResult.data : []
+  const unread = notifications.filter(n => !n.is_read).length
+  const byType = {}
+  for (const n of notifications) {
+    byType[n.type || 'general'] = (byType[n.type || 'general'] || 0) + 1
+  }
+  return {
+    ok: true,
+    notifications: notifications.slice(0, 15).map(n => ({
+      type: n.type,
+      title: n.title,
+      body: (n.body || '').slice(0, 100),
+      read: n.is_read,
+      time: n.created_at?.slice(0, 16),
+    })),
+    unreadCount: unread,
+    byType,
+    pushSubscriptions: pushSubs.length,
+    message: `${notifications.length} notifications (${unread} unread) | ${pushSubs.length} push subscriptions`,
+  }
+}
+
+// Automation viewer
+async function getAutomations() {
+  const [rulesResult, execResult, seqResult] = await Promise.all([
+    supabaseQuery('automation_rules', {
+      select: 'id,name,trigger_type,action_type,is_active,created_at',
+      order: 'created_at.desc',
+      limit: 30,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('automation_executions', {
+      select: 'id,rule_id,status,started_at,completed_at,error_message',
+      order: 'started_at.desc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('automated_sequences', {
+      select: 'id,name,type,status,created_at',
+      order: 'created_at.desc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+  ])
+  const rules = rulesResult.ok ? rulesResult.data : []
+  const executions = execResult.ok ? execResult.data : []
+  const sequences = seqResult.ok ? seqResult.data : []
+  const active = rules.filter(r => r.is_active).length
+  const failed = executions.filter(e => e.status === 'failed').length
+  return {
+    ok: true,
+    rules: rules.map(r => ({
+      name: r.name,
+      trigger: r.trigger_type,
+      action: r.action_type,
+      active: r.is_active,
+      created: r.created_at?.slice(0, 10),
+    })),
+    recentExecutions: executions.slice(0, 10).map(e => ({
+      status: e.status,
+      started: e.started_at?.slice(0, 16),
+      error: e.error_message || null,
+    })),
+    sequences: sequences.map(s => ({
+      name: s.name,
+      type: s.type,
+      status: s.status,
+    })),
+    totalRules: rules.length,
+    activeRules: active,
+    failedExecutions: failed,
+    message: `${rules.length} automation rules (${active} active) | ${executions.length} recent executions (${failed} failed) | ${sequences.length} sequences`,
+  }
+}
+
+// Inventory & equipment viewer
+async function getInventoryEquipment() {
+  const [equipResult, inventoryResult, wasteResult] = await Promise.all([
+    supabaseQuery('equipment', {
+      select: 'id,name,purchase_price_cents,purchase_date,condition,category,depreciation_method',
+      order: 'purchase_date.desc',
+      limit: 50,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('inventory_items', {
+      select: 'id,name,quantity,unit,min_quantity,category,last_restocked_at',
+      order: 'name.asc',
+      limit: 50,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('waste_logs', {
+      select: 'id,item_name,quantity,reason,waste_date,cost_cents',
+      order: 'waste_date.desc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+  ])
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+  const equipment = equipResult.ok ? equipResult.data : []
+  const inventory = inventoryResult.ok ? inventoryResult.data : []
+  const waste = wasteResult.ok ? wasteResult.data : []
+  const totalEquipValue = equipment.reduce((s, e) => s + (e.purchase_price_cents || 0), 0)
+  const lowStock = inventory.filter(i => i.quantity <= (i.min_quantity || 0))
+  const totalWasteCost = waste.reduce((s, w) => s + (w.cost_cents || 0), 0)
+  return {
+    ok: true,
+    equipment: equipment.slice(0, 15).map(e => ({
+      name: e.name,
+      value: fmt(e.purchase_price_cents),
+      purchased: e.purchase_date,
+      condition: e.condition,
+      category: e.category,
+    })),
+    inventory: inventory.slice(0, 15).map(i => ({
+      name: i.name,
+      quantity: `${i.quantity} ${i.unit || ''}`,
+      category: i.category,
+      lowStock: i.quantity <= (i.min_quantity || 0),
+      lastRestocked: i.last_restocked_at?.slice(0, 10),
+    })),
+    recentWaste: waste.slice(0, 10).map(w => ({
+      item: w.item_name,
+      quantity: w.quantity,
+      reason: w.reason,
+      cost: fmt(w.cost_cents),
+      date: w.waste_date,
+    })),
+    totalEquipmentValue: fmt(totalEquipValue),
+    totalEquipment: equipment.length,
+    totalInventory: inventory.length,
+    lowStockItems: lowStock.length,
+    totalWasteCost: fmt(totalWasteCost),
+    message: `Equipment: ${equipment.length} items (${fmt(totalEquipValue)}) | Inventory: ${inventory.length} items (${lowStock.length} low stock) | Waste: ${fmt(totalWasteCost)}`,
+  }
+}
+
+// Activity feed — recent system events
+async function getActivityFeed(param) {
+  const limit = parseInt(param) || 30
+  const result = await supabaseQuery('activity_events', {
+    select: 'id,event_type,entity_type,entity_id,actor_type,description,created_at',
+    order: 'created_at.desc',
+    limit,
+  }).catch(() => ({ ok: false }))
+  if (!result.ok) {
+    // Try activity_events_archive as fallback
+    return { ok: false, error: 'activity_events table not accessible' }
+  }
+  const events = result.data
+  const byType = {}
+  for (const e of events) byType[e.event_type || 'unknown'] = (byType[e.event_type || 'unknown'] || 0) + 1
+  return {
+    ok: true,
+    events: events.map(e => ({
+      type: e.event_type,
+      entity: `${e.entity_type}:${e.entity_id?.slice(0, 8)}`,
+      actor: e.actor_type,
+      description: e.description,
+      time: e.created_at?.slice(0, 16),
+    })),
+    byType,
+    total: events.length,
+    message: `${events.length} recent activities | ${Object.entries(byType).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+  }
+}
+
+// Webhook delivery history
+async function getWebhookHistory() {
+  const [stripeResult, resendResult] = await Promise.all([
+    supabaseQuery('webhook_events', {
+      select: 'id,source,event_type,status,received_at,error_message',
+      order: 'received_at.desc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('webhook_deliveries', {
+      select: 'id,endpoint,status,attempts,last_attempt_at,error_message',
+      order: 'last_attempt_at.desc',
+      limit: 20,
+    }).catch(() => ({ ok: false })),
+  ])
+  const inbound = stripeResult.ok ? stripeResult.data : []
+  const outbound = resendResult.ok ? resendResult.data : []
+  const failedInbound = inbound.filter(e => e.status === 'failed').length
+  const failedOutbound = outbound.filter(e => e.status === 'failed').length
+  return {
+    ok: true,
+    inbound: inbound.map(e => ({
+      source: e.source,
+      type: e.event_type,
+      status: e.status,
+      time: e.received_at?.slice(0, 16),
+      error: e.error_message || null,
+    })),
+    outbound: outbound.map(e => ({
+      endpoint: e.endpoint?.slice(0, 50),
+      status: e.status,
+      attempts: e.attempts,
+      lastAttempt: e.last_attempt_at?.slice(0, 16),
+      error: e.error_message || null,
+    })),
+    failedInbound,
+    failedOutbound,
+    message: `Inbound: ${inbound.length} events (${failedInbound} failed) | Outbound: ${outbound.length} deliveries (${failedOutbound} failed)`,
+  }
+}
+
+// Synthesized business intelligence — patterns, not just facts
+async function getBusinessIntelligence() {
+  const [revenue, events, inquiries, clients] = await Promise.all([
+    supabaseQuery('event_financial_summary', {
+      select: 'event_id,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage',
+      limit: 200,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('events', {
+      select: 'id,event_date,status,guest_count,service_style,created_at',
+      limit: 500,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('inquiries', {
+      select: 'id,status,created_at,event_date,chef_likelihood',
+      limit: 200,
+    }).catch(() => ({ ok: false })),
+    supabaseQuery('clients', {
+      select: 'id,created_at,loyalty_tier,lifetime_points',
+      limit: 200,
+    }).catch(() => ({ ok: false })),
+  ])
+  const fmt = c => '$' + (Math.abs(c || 0) / 100).toFixed(2)
+
+  // Revenue trends (by month)
+  const monthlyRevenue = {}
+  if (revenue.ok) {
+    // We need event dates for monthly grouping
+    const eventDates = {}
+    if (events.ok) for (const e of events.data) eventDates[e.id] = e.event_date
+    for (const r of revenue.data) {
+      const date = eventDates[r.event_id]
+      if (!date) continue
+      const month = date.slice(0, 7)
+      if (!monthlyRevenue[month]) monthlyRevenue[month] = { revenue: 0, expenses: 0, profit: 0, events: 0 }
+      monthlyRevenue[month].revenue += r.net_revenue_cents || 0
+      monthlyRevenue[month].expenses += r.total_expenses_cents || 0
+      monthlyRevenue[month].profit += r.profit_cents || 0
+      monthlyRevenue[month].events++
+    }
+  }
+
+  // Conversion funnel
+  let conversionRate = 0
+  if (inquiries.ok && events.ok) {
+    const totalInquiries = inquiries.data.length
+    const converted = events.data.filter(e => !['draft', 'cancelled'].includes(e.status)).length
+    conversionRate = totalInquiries > 0 ? ((converted / totalInquiries) * 100).toFixed(1) : 0
+  }
+
+  // Client loyalty distribution
+  const loyaltyDist = {}
+  if (clients.ok) {
+    for (const c of clients.data) {
+      const tier = c.loyalty_tier || 'none'
+      loyaltyDist[tier] = (loyaltyDist[tier] || 0) + 1
+    }
+  }
+
+  // Average event metrics
+  let avgGuests = 0, avgRevPerGuest = 0
+  if (events.ok && revenue.ok) {
+    const validEvents = events.data.filter(e => e.guest_count > 0)
+    avgGuests = validEvents.length > 0 ? Math.round(validEvents.reduce((s, e) => s + e.guest_count, 0) / validEvents.length) : 0
+    const totalRev = revenue.data.reduce((s, r) => s + (r.net_revenue_cents || 0), 0)
+    const totalGuests = validEvents.reduce((s, e) => s + e.guest_count, 0)
+    avgRevPerGuest = totalGuests > 0 ? fmt(totalRev / totalGuests) : '$0.00'
+  }
+
+  // Hot lead score (inquiries with high likelihood)
+  let hotLeads = 0
+  if (inquiries.ok) {
+    hotLeads = inquiries.data.filter(i => (i.chef_likelihood || 0) >= 70).length
+  }
+
+  return {
+    ok: true,
+    monthlyTrends: Object.fromEntries(
+      Object.entries(monthlyRevenue).sort().slice(-6).map(([k, v]) => [k, { revenue: fmt(v.revenue), expenses: fmt(v.expenses), profit: fmt(v.profit), events: v.events }])
+    ),
+    conversionRate: `${conversionRate}%`,
+    loyaltyDistribution: loyaltyDist,
+    avgGuestsPerEvent: avgGuests,
+    avgRevenuePerGuest: avgRevPerGuest,
+    hotLeads,
+    totalClients: clients.ok ? clients.data.length : 0,
+    message: `Intelligence: ${conversionRate}% conversion | ${avgGuests} avg guests | ${avgRevPerGuest}/guest | ${hotLeads} hot leads | Loyalty: ${Object.entries(loyaltyDist).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+  }
+}
+
 async function runHallucinationScan() {
   log('chat', 'Running hallucination scan...', 'info')
   const [tsNoCheck, errorHandling, staleCache] = await Promise.all([
@@ -4165,8 +4761,27 @@ const INSTANT_ANSWERS = [
     response: 'Which scan do you need?\n\n| Scan | Command |\n|---|---|\n| @ts-nocheck exports | `scan/ts-nocheck` |\n| Missing error handling | `scan/error-handling` |\n| Stale cache tags | `scan/stale-cache` |\n| Full station check | `call-the-pass` |\n\nOr say "run all scans" and I\'ll fire them all.' },
   { patterns: [/^run all scans/i, /^scan everything/i, /^full scan/i],
     multiAction: ['scan/ts-nocheck', 'scan/error-handling', 'scan/stale-cache'] },
+
+  // Universal Data Access (Tier 1)
+  { patterns: [/^ledger$/i, /^ledger entries/i, /^financial journal/i, /^show ledger/i],
+    action: 'data/ledger' },
+  { patterns: [/^notifications$/i, /^notifs$/i, /^unread$/i],
+    action: 'data/notifications' },
+  { patterns: [/^automations?$/i, /^rules$/i, /^sequences$/i],
+    action: 'data/automations' },
+  { patterns: [/^inventory$/i, /^equipment$/i, /^stock$/i],
+    action: 'data/inventory' },
+  { patterns: [/^activity$/i, /^activity feed$/i, /^recent activity/i],
+    action: 'data/activity' },
+  { patterns: [/^webhooks?$/i, /^webhook history/i, /^deliveries$/i],
+    action: 'data/webhooks' },
+  { patterns: [/^intelligence$/i, /^business intelligence$/i, /^bi$/i, /^insights$/i, /^trends$/i],
+    action: 'data/intelligence' },
+  { patterns: [/^cron$/i, /^cron jobs$/i, /^scheduled tasks/i, /^crons$/i],
+    action: 'cron/list' },
+
   { patterns: [/^help$/i, /^what can you do/i, /^commands$/i, /^tools$/i],
-    response: '**Station check.** Here\'s what I run:\n\n| Station | Key Commands |\n|---|---|\n| **DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance` |\n| **Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **Scanning** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache` |\n| **Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n\nSay "call the pass" for a full briefing. Oui.' },
+    response: '**Station check.** Here\'s what I run:\n\n| Station | Key Commands |\n|---|---|\n| **DevOps** | `dev/start`, `dev/stop`, `beta/deploy`, `beta/restart`, `ship-it` |\n| **Git & Build** | `git/push`, `git/commit`, `build/typecheck`, `build/full`, `close-out` |\n| **Business Data** | `data/events`, `data/clients`, `data/revenue`, `data/expenses`, `data/inquiry-pipeline`, `data/quotes`, `data/calendar`, `data/staff`, `data/email`, `data/loyalty`, `data/menu-recipes`, `data/documents` |\n| **Deep Data** | `data/ledger`, `data/event-deep`, `data/notifications`, `data/automations`, `data/inventory`, `data/activity`, `data/webhooks`, `data/intelligence` |\n| **Universal Access** | `db/query:table_name`, `db/sql:SELECT ...` |\n| **Remy Oversight** | `remy/metrics`, `remy/guardrails`, `remy/memories`, `remy/test`, `remy/performance` |\n| **Codebase** | `code/search`, `code/read`, `code/changes`, `code/branches`, `db/schema` |\n| **Scanning** | `scan/ts-nocheck`, `scan/error-handling`, `scan/stale-cache`, `scan/hallucination` |\n| **Monitoring** | `status/all`, `pi/status`, `pi/logs`, `health/app`, `uptime/report`, `call-the-pass` |\n| **Cron** | `cron/list`, `cron/trigger` |\n\nSay "call the pass" for a full briefing. Oui.' },
 ]
 
 function getInstantAnswer(message) {
@@ -4339,6 +4954,20 @@ const TOOLS = {
   'scan/stale-cache':  { fn: scanStaleCache,                       desc: 'Scan for unstable_cache tags without matching revalidateTag' },
   'scan/hallucination': { fn: runHallucinationScan,                desc: 'Full hallucination scan — @ts-nocheck, error handling, stale cache, hardcoded $, empty handlers' },
 
+  // Universal Data Access (Tier 1)
+  'db/query':          { fn: (param) => queryTable(param),         desc: 'Query any Supabase table. Use db/query:table_name or db/query:table_name?select=col1,col2&filter=status.eq.active&limit=10' },
+  'db/sql':            { fn: (param) => sqlQuery(param),           desc: 'Run read-only SQL query. Use db/sql:SELECT count(*) FROM events WHERE status = \'completed\'' },
+  'cron/list':         { fn: getCronJobs,                          desc: 'List all cron jobs — routes, schedules, recent execution history' },
+  'cron/trigger':      { fn: (param) => triggerCronJob(param),     desc: 'Trigger a cron job manually. Use cron/trigger:daily-maintenance' },
+  'data/event-deep':   { fn: (param) => eventDeepDive(param),      desc: 'Full event deep-dive — ledger, expenses, temps, transitions, staff, quotes, contracts. Use data/event-deep:event_id' },
+  'data/ledger':       { fn: (param) => getLedgerEntries(param),   desc: 'Raw financial journal — ledger entries with type filter and aggregation. Use data/ledger:payment or data/ledger for all' },
+  'data/notifications': { fn: getNotifications,                    desc: 'Notification list — recent notifications, unread count, push subscriptions' },
+  'data/automations':  { fn: getAutomations,                       desc: 'Automation rules, execution history, active sequences' },
+  'data/inventory':    { fn: getInventoryEquipment,                desc: 'Equipment inventory, stock levels, waste logs, depreciation' },
+  'data/activity':     { fn: (param) => getActivityFeed(param),    desc: 'Recent system activity events. Use data/activity:50 for more entries' },
+  'data/webhooks':     { fn: getWebhookHistory,                    desc: 'Webhook delivery history — inbound/outbound, status, recent events' },
+  'data/intelligence': { fn: getBusinessIntelligence,              desc: 'Synthesized business intelligence — revenue trends, conversion funnel, loyalty distribution, hot leads' },
+
   // The Pass — Full Briefing
   'call-the-pass':     { fn: callThePass,                          desc: 'FULL STATION CHECK — infrastructure, business, git, Remy, database. The morning briefing.' },
 
@@ -4434,6 +5063,9 @@ Scan for @ts-nocheck files with dangerous exports, startTransition calls missing
 
 ### Station 7: Monitoring
 App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Vercel deployments, PM2 logs, uptime reports, error aggregation, bundle size trends.
+
+### Station 8: Universal Data Access
+Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs — list schedules and trigger manually. Business intelligence — synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
 
 ### The Pass: Morning Briefing
 \`call-the-pass\` — one command, full station check across infrastructure, business, git, Remy, and database. Your morning mise en place.
@@ -5012,12 +5644,13 @@ async function handleRequest(req, res) {
       })
       const actionsToRun = instantAction.type === 'single' ? [instantAction.action] : instantAction.actions
       let fullResponse = ''
+      const collectedResults = []
       for (const actionName of actionsToRun) {
         const tool = TOOLS[actionName]
         if (!tool) {
           const errMsg = `Unknown action: ${actionName}\n`
           fullResponse += errMsg
-          res.write(JSON.stringify({ type: 'token', content: errMsg }) + '\n')
+          collectedResults.push({ action: actionName, ok: false, error: `Unknown action: ${actionName}` })
           continue
         }
         try {
@@ -5025,13 +5658,15 @@ async function handleRequest(req, res) {
           const resultStr = typeof result === 'string' ? result : JSON.stringify(result, null, 2)
           const msg = `**${actionName}**\n\`\`\`json\n${resultStr.slice(0, 3000)}\n\`\`\`\n\n`
           fullResponse += msg
-          res.write(JSON.stringify({ type: 'action_result', action: actionName, result }) + '\n')
+          collectedResults.push({ action: actionName, ok: true, result })
         } catch (err) {
           const errMsg = `**${actionName}** — failed: ${err.message}\n\n`
           fullResponse += errMsg
-          res.write(JSON.stringify({ type: 'action_result', action: actionName, error: err.message }) + '\n')
+          collectedResults.push({ action: actionName, ok: false, error: err.message })
         }
       }
+      // Send action_results in the format the UI expects (plural, with results array)
+      res.write(JSON.stringify({ type: 'action_results', results: collectedResults }) + '\n')
       res.write(JSON.stringify({ type: 'done', fullResponse }) + '\n')
       return res.end()
     }
