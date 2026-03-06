@@ -157,9 +157,138 @@ All intelligence commands are **deterministic** — pure database queries and ma
 | `contingency.plan`    | Generate contingency plans for event risks                 | 2    | `lib/ai/remy-intelligence-actions.ts` → `lib/ai/contingency-ai.ts`        |
 | `grocery.consolidate` | Consolidate grocery list by store section                  | 2    | `lib/ai/remy-intelligence-actions.ts` → `lib/ai/grocery-consolidation.ts` |
 
-**Deterministic Intent Patterns:** All intelligence commands have regex patterns in `lib/ai/command-intent-parser.ts` that skip Ollama entirely. Natural language like "good morning", "revenue forecast", "what's in season", "who hasn't booked lately" routes directly to the right executor.
+### Intelligence Commands — Batch 2 (65+ Capabilities)
 
-**Implementation:** `lib/ai/remy-intelligence-actions.ts`, `lib/ai/command-intent-parser.ts`
+Complete domain coverage. All deterministic unless noted.
+
+#### Client Intelligence
+
+| Command                   | What It Does                                      | Tier | File                                    |
+| ------------------------- | ------------------------------------------------- | ---- | --------------------------------------- |
+| `client.spending`         | Spending summary — top spenders, averages, trends | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.churn_risk`       | At-risk clients based on booking frequency        | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.birthdays`        | Upcoming birthdays/milestones (30 days)           | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.next_best_action` | AI-suggested next action per client               | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.cooling`          | Clients going dormant                             | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.ltv_trajectory`   | LTV projection for specific client                | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.menu_history`     | What a client has been served                     | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.referral_health`  | Referral pipeline health                          | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.nda_status`       | NDA status across clients                         | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `client.payment_plans`    | Payment plan installments for event               | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Event Intelligence
+
+| Command                   | What It Does                         | Tier | File                                    |
+| ------------------------- | ------------------------------------ | ---- | --------------------------------------- |
+| `event.dietary_conflicts` | Allergen/dietary conflicts vs menu   | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `event.debrief`           | Post-event debrief form              | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `event.countdown`         | Days until event(s)                  | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `event.invoice`           | Invoice lookup — line items, balance | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Inquiry Intelligence
+
+| Command              | What It Does                         | Tier | File                                    |
+| -------------------- | ------------------------------------ | ---- | --------------------------------------- |
+| `inquiry.follow_ups` | Stale inquiries needing follow-up    | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `inquiry.likelihood` | Rank inquiries by booking likelihood | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Menu & Recipe Intelligence
+
+| Command                  | What It Does                           | Tier | File                                    |
+| ------------------------ | -------------------------------------- | ---- | --------------------------------------- |
+| `menu.food_cost`         | Food cost %, cost per guest, all menus | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `menu.dish_index`        | All dishes across all menus            | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `menu.showcase`          | Saved menu templates                   | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `recipe.allergens`       | Allergen info across recipes           | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `recipe.nutrition`       | Nutrition lookup for recipe            | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `recipe.production_logs` | Recent production/batch logs           | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Finance Intelligence
+
+| Command                      | What It Does                  | Tier | File                                    |
+| ---------------------------- | ----------------------------- | ---- | --------------------------------------- |
+| `finance.cash_flow`          | 90-day cash flow forecast     | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.mileage`            | YTD mileage for tax deduction | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.tips`               | YTD tip income                | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.contractors`        | 1099 contractor summary       | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.disputes`           | Active payment disputes       | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.payment_plan`       | Payment plan for event        | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.recurring_invoices` | Recurring invoice schedules   | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.tax_package`        | Year-end tax package          | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `finance.payroll`            | Employee list + 941 summaries | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Vendor Intelligence
+
+| Command                 | What It Does                       | Tier | File                                    |
+| ----------------------- | ---------------------------------- | ---- | --------------------------------------- |
+| `vendor.invoices`       | Vendor invoices (what you owe)     | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `vendor.price_insights` | Price trends across vendors        | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `vendor.payment_aging`  | Outstanding vendor payments by age | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Equipment Intelligence
+
+| Command             | What It Does             | Tier | File                                    |
+| ------------------- | ------------------------ | ---- | --------------------------------------- |
+| `equipment.rentals` | Rental history and costs | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Staff Intelligence
+
+| Command                 | What It Does                 | Tier | File                                    |
+| ----------------------- | ---------------------------- | ---- | --------------------------------------- |
+| `staff.availability`    | Staff available on a date    | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `staff.briefing`        | Event staff briefing         | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `staff.clock_summary`   | Time clock entries for event | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `staff.performance`     | Performance scoreboard       | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `staff.labor_dashboard` | Monthly labor costs          | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Scheduling Intelligence
+
+| Command                     | What It Does                  | Tier | File                                    |
+| --------------------------- | ----------------------------- | ---- | --------------------------------------- |
+| `scheduling.capacity`       | Capacity check for date       | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `scheduling.prep_blocks`    | Prep blocks for week/event    | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `scheduling.protected_time` | Protected/personal time       | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `scheduling.gaps`           | Scheduling gaps and conflicts | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Analytics Intelligence
+
+| Command                         | What It Does                                 | Tier | File                                    |
+| ------------------------------- | -------------------------------------------- | ---- | --------------------------------------- |
+| `analytics.pipeline`            | Inquiry funnel, quote acceptance, ghost rate | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.yoy`                 | Year-over-year comparison                    | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.demand_forecast`     | Seasonal demand heatmap                      | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.benchmarks`          | Business benchmarks + conversion funnel      | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.pricing_suggestions` | Data-driven pricing by guest count           | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.response_time`       | Inquiry response time metrics                | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.cost_trends`         | Food cost % trend (6 months)                 | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.referrals`           | Full referral analytics                      | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.quote_loss`          | Quote decline reasons                        | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+| `analytics.service_mix`         | Revenue by service type                      | 1    | `lib/ai/remy-intelligence-actions-2.ts` |
+
+#### Goal, Protection, Loyalty, Inventory, Commerce, Guest, Marketing, Review, Gmail, Notifications
+
+| Command                      | What It Does                        | Tier |
+| ---------------------------- | ----------------------------------- | ---- |
+| `goals.history`              | Goal progress snapshots over time   | 1    |
+| `goals.check_ins`            | Goal check-in entries               | 1    |
+| `protection.certifications`  | Cert status + expiring soon         | 1    |
+| `protection.business_health` | Health score + checklist            | 1    |
+| `loyalty.redemptions`        | Recent point redemptions            | 1    |
+| `loyalty.gift_cards`         | Gift card inventory                 | 1    |
+| `inventory.status`           | Inventory levels + low stock alerts | 1    |
+| `inventory.purchase_orders`  | Recent purchase orders              | 1    |
+| `commerce.sales_summary`     | Today's POS transactions            | 1    |
+| `guest.list`                 | Guest list for event                | 1    |
+| `marketing.campaigns`        | Campaign performance                | 1    |
+| `marketing.newsletters`      | Newsletter performance              | 1    |
+| `reviews.summary`            | Reviews + average rating            | 1    |
+| `gmail.sender_reputation`    | Sender reputation scores            | 1    |
+| `notifications.preferences`  | Notification settings               | 1    |
+| `document.snapshots`         | Document version history            | 1    |
+
+**Deterministic Intent Patterns:** All intelligence commands have regex patterns in `lib/ai/command-intent-parser.ts` that skip Ollama entirely. 80+ patterns covering natural language like "good morning", "revenue forecast", "what's in season", "who hasn't booked lately", "cash flow", "food cost", "who's at risk", "staff performance", etc.
+
+**Implementation:** `lib/ai/remy-intelligence-actions.ts`, `lib/ai/remy-intelligence-actions-2.ts`, `lib/ai/command-intent-parser.ts`
 
 ---
 
@@ -526,6 +655,7 @@ ADMIN_EMAILS=admin@example.com
 | Client-facing actions    | `lib/ai/client-facing-actions.ts`             |
 | Web actions              | `lib/ai/remy-web-actions.ts`                  |
 | Intelligence actions     | `lib/ai/remy-intelligence-actions.ts`         |
+| Intelligence actions 2   | `lib/ai/remy-intelligence-actions-2.ts`       |
 | Artifact actions         | `lib/ai/remy-artifact-actions.ts`             |
 | Context loader           | `lib/ai/remy-context.ts`                      |
 | Client context           | `lib/ai/remy-client-context.ts`               |
