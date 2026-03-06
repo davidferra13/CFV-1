@@ -206,6 +206,12 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     inquiryVelocityResult,
     // Staff utilization
     staffAssignmentsResult,
+    // Wave 9-12 intelligence
+    conversionRateResult,
+    expenseBreakdownResult,
+    allEventsPatternResult,
+    menuApprovalResult,
+    clientReferralResult,
   ] = await Promise.all([
     // Upcoming events (next 7 days, limit 10)
     supabase
@@ -498,6 +504,48 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .eq('chef_id', tenantId)
       .eq('status', 'confirmed')
       .limit(100),
+
+    // Conversion rate — all inquiries with their resolution status
+    supabase
+      .from('inquiries')
+      .select('id, status, created_at, channel')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', yearStart)
+      .limit(500),
+
+    // Expense breakdown — categories for this year
+    supabase
+      .from('expenses')
+      .select('category, amount_cents')
+      .eq('tenant_id', tenantId)
+      .gte('expense_date', yearStart.split('T')[0])
+      .limit(500),
+
+    // All events with dates, guest counts, service style, location for pattern detection
+    supabase
+      .from('events')
+      .select(
+        'id, event_date, guest_count, service_style, status, location_city, location_state, dietary_restrictions, allergies, client_id, occasion, created_at'
+      )
+      .eq('tenant_id', tenantId)
+      .not('status', 'eq', 'cancelled')
+      .order('event_date', { ascending: false })
+      .limit(200),
+
+    // Menu approval turnaround
+    supabase
+      .from('menu_approval_requests')
+      .select('sent_at, responded_at, status')
+      .eq('chef_id', tenantId)
+      .not('responded_at', 'is', null)
+      .limit(50),
+
+    // Client referral sources
+    supabase
+      .from('clients')
+      .select('id, referral_source, created_at')
+      .eq('tenant_id', tenantId)
+      .limit(500),
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
@@ -602,6 +650,241 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     .map((e) => (e.quoted_price_cents as number) ?? 0)
     .filter((p) => p > 0)
     .sort((a, b) => a - b)
+
+  // ─── Wave 9-12 Intelligence Computations (Formula > AI) ─────────────────
+
+  // Conversion rate — inquiry to event
+  const allInquiries = (conversionRateResult.data ?? []) as Array<Record<string, unknown>>
+  const totalInquiries = allInquiries.length
+  const convertedInquiries = allInquiries.filter((i) => (i.status as string) === 'converted').length
+  const conversionRate =
+    totalInquiries >= 5
+      ? {
+          total: totalInquiries,
+          converted: convertedInquiries,
+          rate: Math.round((convertedInquiries / totalInquiries) * 100),
+          byChannel: (() => {
+            const channels = new Map<string, { total: number; converted: number }>()
+            for (const i of allInquiries) {
+              const ch = (i.channel as string) ?? 'unknown'
+              if (!channels.has(ch)) channels.set(ch, { total: 0, converted: 0 })
+              const c = channels.get(ch)!
+              c.total++
+              if ((i.status as string) === 'converted') c.converted++
+            }
+            return Array.from(channels.entries())
+              .filter(([, v]) => v.total >= 3)
+              .map(([channel, v]) => ({
+                channel,
+                total: v.total,
+                converted: v.converted,
+                rate: Math.round((v.converted / v.total) * 100),
+              }))
+              .sort((a, b) => b.rate - a.rate)
+          })(),
+        }
+      : undefined
+
+  // Expense category breakdown
+  const expenses = (expenseBreakdownResult.data ?? []) as Array<Record<string, unknown>>
+  const expenseByCategory = new Map<string, number>()
+  for (const e of expenses) {
+    const cat = (e.category as string) ?? 'other'
+    expenseByCategory.set(
+      cat,
+      (expenseByCategory.get(cat) ?? 0) + ((e.amount_cents as number) ?? 0)
+    )
+  }
+  const expenseBreakdown =
+    expenseByCategory.size > 0
+      ? Array.from(expenseByCategory.entries())
+          .map(([category, totalCents]) => ({ category, totalCents }))
+          .sort((a, b) => b.totalCents - a.totalCents)
+      : undefined
+
+  // All events pattern analysis
+  const allEvents = (allEventsPatternResult.data ?? []) as Array<Record<string, unknown>>
+
+  // Day-of-week patterns
+  const dayOfWeekCounts = [0, 0, 0, 0, 0, 0, 0] // Sun-Sat
+  const eventsWithDates = allEvents.filter((e) => e.event_date)
+  for (const e of eventsWithDates) {
+    const day = new Date(e.event_date as string).getDay()
+    dayOfWeekCounts[day]++
+  }
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const busiestDayIdx = dayOfWeekCounts.indexOf(Math.max(...dayOfWeekCounts))
+  const slowestDayIdx = dayOfWeekCounts.indexOf(Math.min(...dayOfWeekCounts))
+
+  // Service style distribution
+  const styleMap = new Map<string, number>()
+  for (const e of allEvents) {
+    const style = (e.service_style as string) ?? 'not specified'
+    styleMap.set(style, (styleMap.get(style) ?? 0) + 1)
+  }
+  const serviceStyles =
+    styleMap.size > 0
+      ? Array.from(styleMap.entries())
+          .map(([style, count]) => ({
+            style: style.replace(/_/g, ' '),
+            count,
+            pct: Math.round((count / allEvents.length) * 100),
+          }))
+          .sort((a, b) => b.count - a.count)
+      : undefined
+
+  // Repeat client ratio
+  const clientIds = new Set<string>()
+  const repeatClientIds = new Set<string>()
+  const clientEventCounts = new Map<string, number>()
+  for (const e of allEvents) {
+    const cid = e.client_id as string | null
+    if (!cid) continue
+    clientEventCounts.set(cid, (clientEventCounts.get(cid) ?? 0) + 1)
+    clientIds.add(cid)
+  }
+  for (const [cid, count] of clientEventCounts) {
+    if (count >= 2) repeatClientIds.add(cid)
+  }
+  const repeatClientRatio =
+    clientIds.size >= 3
+      ? {
+          totalClients: clientIds.size,
+          repeatClients: repeatClientIds.size,
+          ratio: Math.round((repeatClientIds.size / clientIds.size) * 100),
+        }
+      : undefined
+
+  // Guest count trend (last 10 events vs previous 10)
+  const eventsWithGuests = eventsWithDates
+    .filter((e) => (e.guest_count as number) > 0)
+    .sort(
+      (a, b) =>
+        new Date(b.event_date as string).getTime() - new Date(a.event_date as string).getTime()
+    )
+  let guestCountTrend: { recentAvg: number; previousAvg: number; direction: string } | undefined
+  if (eventsWithGuests.length >= 6) {
+    const half = Math.floor(eventsWithGuests.length / 2)
+    const recent = eventsWithGuests.slice(0, half)
+    const previous = eventsWithGuests.slice(half)
+    const recentAvg = Math.round(
+      recent.reduce((s, e) => s + ((e.guest_count as number) ?? 0), 0) / recent.length
+    )
+    const previousAvg = Math.round(
+      previous.reduce((s, e) => s + ((e.guest_count as number) ?? 0), 0) / previous.length
+    )
+    const change = recentAvg - previousAvg
+    const direction = Math.abs(change) <= 2 ? 'stable' : change > 0 ? 'growing' : 'shrinking'
+    guestCountTrend = { recentAvg, previousAvg, direction }
+  }
+
+  // Booking lead time — how far in advance clients book
+  const leadTimes: number[] = []
+  for (const e of eventsWithDates) {
+    const created = e.created_at ? new Date(e.created_at as string).getTime() : null
+    const eventDate = new Date(e.event_date as string).getTime()
+    if (!created) continue
+    const daysAhead = Math.round((eventDate - created) / (1000 * 60 * 60 * 24))
+    if (daysAhead > 0 && daysAhead < 365) leadTimes.push(daysAhead)
+  }
+  leadTimes.sort((a, b) => a - b)
+  const avgLeadTime =
+    leadTimes.length >= 3
+      ? {
+          avgDays: Math.round(leadTimes.reduce((s, d) => s + d, 0) / leadTimes.length),
+          medianDays: leadTimes[Math.floor(leadTimes.length / 2)],
+          shortestDays: leadTimes[0],
+          longestDays: leadTimes[leadTimes.length - 1],
+        }
+      : undefined
+
+  // Dietary restriction frequency
+  const dietaryFreq = new Map<string, number>()
+  const allergyFreq = new Map<string, number>()
+  for (const e of allEvents) {
+    const diets = e.dietary_restrictions as string[] | null
+    const allergies = e.allergies as string[] | null
+    if (diets) {
+      for (const d of diets) {
+        if (d) dietaryFreq.set(d.toLowerCase(), (dietaryFreq.get(d.toLowerCase()) ?? 0) + 1)
+      }
+    }
+    if (allergies) {
+      for (const a of allergies) {
+        if (a) allergyFreq.set(a.toLowerCase(), (allergyFreq.get(a.toLowerCase()) ?? 0) + 1)
+      }
+    }
+  }
+  const dietaryProfile =
+    dietaryFreq.size > 0 || allergyFreq.size > 0
+      ? {
+          topDietary: Array.from(dietaryFreq.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count })),
+          topAllergies: Array.from(allergyFreq.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count })),
+        }
+      : undefined
+
+  // Menu approval turnaround
+  const approvals = (menuApprovalResult.data ?? []) as Array<Record<string, unknown>>
+  const turnaroundDays: number[] = []
+  for (const a of approvals) {
+    if (a.sent_at && a.responded_at) {
+      const sent = new Date(a.sent_at as string).getTime()
+      const responded = new Date(a.responded_at as string).getTime()
+      const days = Math.round((responded - sent) / (1000 * 60 * 60 * 24))
+      if (days >= 0 && days < 60) turnaroundDays.push(days)
+    }
+  }
+  turnaroundDays.sort((a, b) => a - b)
+  const menuApprovalStats =
+    turnaroundDays.length >= 3
+      ? {
+          avgDays: Math.round(turnaroundDays.reduce((s, d) => s + d, 0) / turnaroundDays.length),
+          medianDays: turnaroundDays[Math.floor(turnaroundDays.length / 2)],
+          fastestDays: turnaroundDays[0],
+          slowestDays: turnaroundDays[turnaroundDays.length - 1],
+        }
+      : undefined
+
+  // Client referral sources
+  const allClients = (clientReferralResult.data ?? []) as Array<Record<string, unknown>>
+  const referralMap = new Map<string, number>()
+  for (const c of allClients) {
+    const source = (c.referral_source as string) ?? 'unknown'
+    referralMap.set(source, (referralMap.get(source) ?? 0) + 1)
+  }
+  const referralSources =
+    referralMap.size > 0
+      ? Array.from(referralMap.entries())
+          .map(([source, count]) => ({
+            source: source.replace(/_/g, ' '),
+            count,
+            pct: Math.round((count / allClients.length) * 100),
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5)
+      : undefined
+
+  // Cash flow projection — expected payments from upcoming events
+  const cashFlowProjection = (() => {
+    const upcoming = (eventsResult.data ?? []) as Array<Record<string, unknown>>
+    let expectedCents = 0
+    let count = 0
+    for (const e of upcoming) {
+      const price = (e.quoted_price_cents as number) ?? 0
+      const status = e.status as string
+      if (price > 0 && status !== 'cancelled' && status !== 'completed') {
+        expectedCents += price
+        count++
+      }
+    }
+    return count > 0 ? { expectedCents, eventCount: count } : undefined
+  })()
 
   // Build calendar summary
   const blockedDates = (availabilityResult.data ?? []).map((b: Record<string, unknown>) => ({
@@ -837,6 +1120,26 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
         ),
       }
     }),
+
+    // Wave 9-12 Intelligence
+    conversionRate,
+    expenseBreakdown,
+    dayOfWeekPattern:
+      eventsWithDates.length >= 5
+        ? {
+            busiestDay: dayNames[busiestDayIdx],
+            slowestDay: dayNames[slowestDayIdx],
+            distribution: dayNames.map((name, i) => ({ day: name, count: dayOfWeekCounts[i] })),
+          }
+        : undefined,
+    serviceStyles,
+    repeatClientRatio,
+    guestCountTrend,
+    avgLeadTime,
+    dietaryProfile,
+    menuApprovalStats,
+    referralSources,
+    cashFlowProjection,
   }
 }
 
@@ -1538,6 +1841,32 @@ async function loadClientEntity(
         : ''
       const details = [guests, price, payment].filter(Boolean).join(', ')
       lines.push(`- ${occasion} (${date}) — ${status}${details ? ` | ${details}` : ''}`)
+    }
+  }
+
+  // Payment reliability score — deterministic from event payment history
+  if (events.length >= 2) {
+    const typedEvts = events as Array<Record<string, unknown>>
+    const withPayment = typedEvts.filter(
+      (e) =>
+        e.payment_status && (e.status as string) !== 'draft' && (e.status as string) !== 'cancelled'
+    )
+    if (withPayment.length >= 2) {
+      const paid = withPayment.filter(
+        (e) =>
+          (e.payment_status as string) === 'paid' || (e.payment_status as string) === 'deposit_paid'
+      ).length
+      const unpaid = withPayment.filter((e) => (e.payment_status as string) === 'unpaid').length
+      const reliability = Math.round((paid / withPayment.length) * 100)
+      if (reliability < 70) {
+        lines.push(
+          `\n[ALERT] PAYMENT RELIABILITY: ${reliability}% (${paid}/${withPayment.length} events paid on time, ${unpaid} unpaid) — consider requiring deposits or upfront payment for this client.`
+        )
+      } else if (reliability >= 90) {
+        lines.push(
+          `\nPAYMENT RELIABILITY: ${reliability}% — excellent payer. Low risk for flexible payment terms.`
+        )
+      }
     }
   }
 

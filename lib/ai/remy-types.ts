@@ -296,6 +296,61 @@ export interface RemyContext {
     thisWeek: number
     lastWeek: number
   }
+  /** Conversion rate — inquiry to event */
+  conversionRate?: {
+    total: number
+    converted: number
+    rate: number
+    byChannel: Array<{ channel: string; total: number; converted: number; rate: number }>
+  }
+  /** Expense category breakdown */
+  expenseBreakdown?: Array<{ category: string; totalCents: number }>
+  /** Day-of-week event patterns */
+  dayOfWeekPattern?: {
+    busiestDay: string
+    slowestDay: string
+    distribution: Array<{ day: string; count: number }>
+  }
+  /** Service style distribution */
+  serviceStyles?: Array<{ style: string; count: number; pct: number }>
+  /** Repeat client ratio */
+  repeatClientRatio?: {
+    totalClients: number
+    repeatClients: number
+    ratio: number
+  }
+  /** Guest count trend */
+  guestCountTrend?: {
+    recentAvg: number
+    previousAvg: number
+    direction: string
+  }
+  /** Average booking lead time */
+  avgLeadTime?: {
+    avgDays: number
+    medianDays: number
+    shortestDays: number
+    longestDays: number
+  }
+  /** Dietary restriction frequency across events */
+  dietaryProfile?: {
+    topDietary: Array<{ name: string; count: number }>
+    topAllergies: Array<{ name: string; count: number }>
+  }
+  /** Menu approval turnaround stats */
+  menuApprovalStats?: {
+    avgDays: number
+    medianDays: number
+    fastestDays: number
+    slowestDays: number
+  }
+  /** Client referral sources */
+  referralSources?: Array<{ source: string; count: number; pct: number }>
+  /** Cash flow projection from upcoming events */
+  cashFlowProjection?: {
+    expectedCents: number
+    eventCount: number
+  }
   /** Business intelligence summary — cross-engine synthesized insights */
   businessIntelligence?: string
 }

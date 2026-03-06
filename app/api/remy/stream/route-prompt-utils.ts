@@ -639,7 +639,7 @@ If the chef's first message relates to these topics, pick up naturally — "Pick
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference data that appears in the sections above. You have access to:
-ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan (admin/prep/creative/relationship items), email inbox digest (last 24h), session navigation trail (pages visited this session), recent actions (mutations the chef just performed), calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, proactive alerts (payment deadlines, expiring quotes, stale inquiries, overdue payments, client re-engagement), revenue patterns, and memories.
+ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan, email inbox digest (24h), session navigation, recent actions, calendar & availability, year-to-date stats, staff roster (with utilization), equipment, goals, todos, calls, documents, artifacts, proactive alerts (deadlines, expiring quotes, stale inquiries, overdue payments, re-engagement), revenue patterns, conversion rate, expense breakdown, day-of-week patterns, service style mix, repeat client ratio, guest count trends, booking lead time, dietary intelligence, menu approval turnaround, referral sources, cash flow projection, profitability stats, quote comparison, pricing intelligence, inquiry velocity, workload capacity, and memories.
 ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
 ON CLIENT PAGES: Full event history, client notes, and client reviews.
 ON INQUIRY PAGES: Full message thread.
@@ -753,6 +753,119 @@ When the chef asks about profitability, margins, or "am I charging enough?", use
 - Range: $${(qd.minCents / 100).toFixed(0)} — $${(qd.maxCents / 100).toFixed(0)}
 - Median: $${(qd.medianCents / 100).toFixed(0)} | 25th pctl: $${(qd.p25Cents / 100).toFixed(0)} | 75th pctl: $${(qd.p75Cents / 100).toFixed(0)}
 When the chef asks about a quote amount, compare it to this range: below 25th = low end, above 75th = premium, near median = typical. Help them understand if they're undercharging or if it's a premium gig.`)
+  }
+
+  // Conversion rate intelligence
+  if (context.conversionRate) {
+    const cr = context.conversionRate
+    let channelNote = ''
+    if (cr.byChannel.length > 0) {
+      const best = cr.byChannel[0]
+      channelNote = ` Best channel: ${best.channel} (${best.rate}% conversion from ${best.total} inquiries).`
+    }
+    parts.push(
+      `\nCONVERSION RATE: ${cr.rate}% of inquiries become events (${cr.converted}/${cr.total} this year).${channelNote} Use this when discussing lead quality or marketing ROI.`
+    )
+  }
+
+  // Expense breakdown
+  if (context.expenseBreakdown && context.expenseBreakdown.length > 0) {
+    const totalExpCents = context.expenseBreakdown.reduce((s, e) => s + e.totalCents, 0)
+    const top3 = context.expenseBreakdown.slice(0, 3)
+    parts.push(
+      `\nEXPENSE BREAKDOWN (YTD $${(totalExpCents / 100).toFixed(0)}): ${top3.map((e) => `${e.category.replace(/_/g, ' ')} $${(e.totalCents / 100).toFixed(0)} (${Math.round((e.totalCents / totalExpCents) * 100)}%)`).join(', ')}. Use when chef asks "where is my money going?" or about cost control.`
+    )
+  }
+
+  // Day-of-week patterns
+  if (context.dayOfWeekPattern) {
+    const dp = context.dayOfWeekPattern
+    parts.push(
+      `\nEVENT DAY PATTERNS: Busiest day is ${dp.busiestDay}, slowest is ${dp.slowestDay}. Use for scheduling advice and availability planning.`
+    )
+  }
+
+  // Service style distribution
+  if (context.serviceStyles && context.serviceStyles.length > 0) {
+    parts.push(
+      `\nSERVICE STYLE MIX: ${context.serviceStyles.map((s) => `${s.style} ${s.pct}%`).join(', ')}. Use when discussing business diversification or niche focus.`
+    )
+  }
+
+  // Repeat client ratio
+  if (context.repeatClientRatio) {
+    const rc = context.repeatClientRatio
+    const health =
+      rc.ratio >= 50
+        ? 'strong retention'
+        : rc.ratio >= 30
+          ? 'moderate retention'
+          : 'growth opportunity — focus on client nurturing'
+    parts.push(
+      `\nCLIENT RETENTION: ${rc.ratio}% repeat clients (${rc.repeatClients}/${rc.totalClients}) — ${health}.`
+    )
+  }
+
+  // Guest count trend
+  if (context.guestCountTrend) {
+    const gc = context.guestCountTrend
+    if (gc.direction !== 'stable') {
+      parts.push(
+        `\nGUEST COUNT TREND: ${gc.direction === 'growing' ? 'Growing' : 'Shrinking'} — recent avg ${gc.recentAvg} guests vs previous avg ${gc.previousAvg}. ${gc.direction === 'growing' ? 'Events are getting bigger — consider scaling pricing and staffing.' : 'Events are getting smaller — could mean more intimate bookings or a shift in clientele.'}`
+      )
+    }
+  }
+
+  // Booking lead time
+  if (context.avgLeadTime) {
+    const lt = context.avgLeadTime
+    parts.push(
+      `\nBOOKING LEAD TIME: Clients book avg ${lt.avgDays} days ahead (median ${lt.medianDays}, range ${lt.shortestDays}-${lt.longestDays} days). Use for capacity planning and when to start marketing for slow periods.`
+    )
+  }
+
+  // Dietary profile across events
+  if (context.dietaryProfile) {
+    const dp = context.dietaryProfile
+    const dietLines: string[] = []
+    if (dp.topDietary.length > 0) {
+      dietLines.push(
+        `Common dietary needs: ${dp.topDietary.map((d) => `${d.name} (${d.count}x)`).join(', ')}`
+      )
+    }
+    if (dp.topAllergies.length > 0) {
+      dietLines.push(
+        `Common allergies: ${dp.topAllergies.map((a) => `${a.name} (${a.count}x)`).join(', ')}`
+      )
+    }
+    if (dietLines.length > 0) {
+      parts.push(
+        `\nDIETARY INTELLIGENCE: ${dietLines.join('. ')}. Use for menu planning and ingredient prep awareness.`
+      )
+    }
+  }
+
+  // Menu approval turnaround
+  if (context.menuApprovalStats) {
+    const ma = context.menuApprovalStats
+    parts.push(
+      `\nMENU APPROVAL TURNAROUND: Clients take avg ${ma.avgDays} days to approve menus (median ${ma.medianDays}, range ${ma.fastestDays}-${ma.slowestDays}). Factor this into timeline planning — send menus early enough to account for approval time.`
+    )
+  }
+
+  // Referral sources
+  if (context.referralSources && context.referralSources.length > 0) {
+    parts.push(
+      `\nCLIENT ACQUISITION: Top referral sources: ${context.referralSources.map((r) => `${r.source} ${r.pct}% (${r.count})`).join(', ')}. Use when discussing marketing strategy or growth.`
+    )
+  }
+
+  // Cash flow projection
+  if (context.cashFlowProjection) {
+    const cf = context.cashFlowProjection
+    parts.push(
+      `\nCASH FLOW PROJECTION: $${(cf.expectedCents / 100).toFixed(0)} expected from ${cf.eventCount} upcoming events (based on quoted prices). This is pipeline revenue, not yet collected.`
+    )
   }
 
   // Business intelligence summary (cross-engine synthesis from 30 analytics engines)
