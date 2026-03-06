@@ -162,7 +162,7 @@ export async function getPriceElasticity(): Promise<PriceElasticityResult | null
           ? ((q.total_quoted_cents - expense) / q.total_quoted_cents) * 100
           : 0
       })
-      avgMargin = Math.round(margins.reduce((s, m) => s + m, 0) / margins.length)
+      avgMargin = Math.round(margins.reduce((s: number, m: number) => s + m, 0) / margins.length)
     }
 
     priceBands.push({

@@ -855,6 +855,58 @@
 
 ---
 
+## 10b. INTELLIGENCE HUB (Pro)
+
+**Route:** `/intelligence` — 25-engine deterministic analytics hub. All engines are Formula > AI (zero Ollama dependency). Pro-gated via `requirePro('intelligence-hub')` + `<UpgradeGate>`. All 25 data fetches run in parallel via `Promise.all()` with `.catch(() => null)` graceful degradation.
+
+**Tier 1 — Foundation (10 engines):**
+
+| Card                 | Data Source           | Key Metrics                                                                 |
+| -------------------- | --------------------- | --------------------------------------------------------------------------- |
+| Revenue Trend        | events (completed)    | MoM growth %, 3-month moving avg, best/worst months, projected annual       |
+| Booking Patterns     | events                | Day-of-week heatmap, peak hours, seasonal patterns, advance booking avg     |
+| Client Concentration | events + clients      | Herfindahl index, top-client revenue %, risk level, diversification score   |
+| Service Mix          | events                | Occasion breakdown, avg revenue by type, emerging/declining types           |
+| Inquiry Conversion   | inquiries + events    | Stage conversion rates, avg days per stage, drop-off points, win rate       |
+| Expense Breakdown    | expenses              | Category totals, % of revenue, MoM trend, largest single expense            |
+| Payment Velocity     | payments + invoices   | Days-to-pay avg/median, overdue %, on-time trend, slow payers               |
+| Repeat Client Rate   | events + clients      | Repeat %, rebooking interval, top repeaters, new vs returning revenue split |
+| Quote Win Rate       | quotes                | Acceptance %, avg quote value, win rate by occasion, revision impact        |
+| Dietary Trend        | events + dietary data | Top restrictions, frequency trends, accommodation success rate              |
+
+**Tier 2 — Operational (5 engines):**
+
+| Card                  | Data Source          | Key Metrics                                                                                    |
+| --------------------- | -------------------- | ---------------------------------------------------------------------------------------------- |
+| Prep Time Estimator   | events (time phases) | Phase averages (shop/prep/service/travel/reset), sqrt scaling by guest count, efficiency trend |
+| Communication Cadence | messages + inquiries | Per-client response patterns, status (active/slowing/silent/new), avg response time            |
+| Vendor Price Tracking | expenses (12-month)  | Price increase alerts (>15%), vendor concentration warnings (>60%), category trends            |
+| Event Profitability   | events + expenses    | Per-event profit margins, effective hourly rate (profit / hours), best/worst events            |
+| Quote Confidence      | quotes + events      | Sweet spot pricing, confidence score for new quotes, acceptance by pricing model               |
+
+**Tier 3 — Strategic (5 engines):**
+
+| Card                      | Data Source                 | Key Metrics                                                                               |
+| ------------------------- | --------------------------- | ----------------------------------------------------------------------------------------- |
+| Untapped Markets          | inquiries vs events         | Occasion gaps (untapped/underserved/strong), service style gaps, guest count brackets     |
+| Geographic Hotspots       | events (location_text)      | Revenue per travel minute, location concentration %, growing/declining areas              |
+| Revenue per Guest         | events (guest_count)        | Per-guest avg by occasion, optimal guest range, sweet spot count, volume vs value insight |
+| Seasonal Menu Correlation | events + menus + menu_items | Dish seasonality (CV-based), season patterns, menu diversity score 0-100                  |
+| Client Lifetime Journey   | clients + events            | Lifecycle stages (prospect to champion), cohort retention, growth rate, risk levels       |
+
+**Tier 4 — Predictive (4 engines):**
+
+| Card                   | Data Source                           | Key Metrics                                                                       |
+| ---------------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
+| Churn Prevention       | clients + events + inquiries          | 6 trigger types, risk score 0-100 (critical/high/moderate/low), suggested actions |
+| Capacity Ceiling       | events (12-month)                     | Weekly/monthly utilization %, bottleneck detection, theoretical max, burnout risk |
+| Price Elasticity       | quotes (accepted/rejected/expired)    | Price bands with acceptance rates, per-occasion elasticity, headroom %            |
+| Referral Chain Mapping | clients + inquiries (referral_source) | Referral graph, chain depth, network effect score 0-100, source ROI               |
+
+**Buttons/Actions:** None (read-only dashboard). Each card shows stats grid + detail lists, or EmptyState fallback when engine returns null (insufficient data).
+
+---
+
 ## 11. DAILY OPS
 
 **Route:** `/daily` — Remy-generated daily plan with 4 swim lanes (Quick Admin, Event Prep, Creative, Relationship).
