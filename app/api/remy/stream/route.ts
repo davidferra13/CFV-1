@@ -49,9 +49,21 @@ import {
   sseErrorResponse,
   sseHeaders,
   summarizeTaskResults,
+  ThinkingBlockFilter,
 } from './route-runtime-utils'
-import { buildRemySystemPrompt, formatConversationHistory } from './route-prompt-utils'
+import {
+  buildRemySystemPrompt,
+  formatConversationHistory,
+  determineContextScope,
+} from './route-prompt-utils'
 import { tryInstantAnswer } from './route-instant-answers'
+import { parseTaskChain, looksLikeChain } from '@/lib/ai/remy-chain-parser'
+import {
+  scanReceipt,
+  formatReceiptForConfirmation,
+  analyzeDishPhoto,
+  formatDishPhotoResponse,
+} from '@/lib/ai/remy-vision-actions'
 
 //  POST Handler
 
@@ -107,6 +119,12 @@ export async function POST(req: NextRequest) {
             lastActiveAt: string
           })
         : null
+    // Recent conversation summaries — cross-conversation memory (Phase 3C)
+    const recentConversationSummaries = Array.isArray(rawRecord.recentConversationSummaries)
+      ? (
+          rawRecord.recentConversationSummaries as Array<{ summary: string; generatedAt: string }>
+        ).slice(0, 5)
+      : null
     const history = validateHistory(rawRecord.history, 10) as RemyMessage[]
 
     //  GUARDRAILS
@@ -171,6 +189,61 @@ export async function POST(req: NextRequest) {
         encodeSSE({ type: 'token', data: dangerousActionBlock }) +
         encodeSSE({ type: 'done', data: null })
       return new Response(body, { headers: sseHeaders() })
+    }
+
+    //  VISION PATH (4A: receipt scanning, 4B: dish photos)
+    const imageBase64 =
+      typeof rawRecord.imageBase64 === 'string' && rawRecord.imageBase64.length > 100
+        ? (rawRecord.imageBase64 as string)
+        : null
+    const imageIntent =
+      typeof rawRecord.imageIntent === 'string'
+        ? (rawRecord.imageIntent as 'receipt' | 'dish' | 'auto')
+        : 'auto'
+
+    if (imageBase64) {
+      try {
+        // Determine intent: explicit from client, or auto-detect from message text
+        let resolvedIntent = imageIntent
+        if (resolvedIntent === 'auto') {
+          const lower = message.toLowerCase()
+          const receiptSignals =
+            /receipt|expense|grocery|shopping|store|purchase|bought|cost|total|scan/i
+          resolvedIntent = receiptSignals.test(lower) ? 'receipt' : 'dish'
+        }
+
+        let responseText: string
+        if (resolvedIntent === 'receipt') {
+          const receiptData = await scanReceipt(imageBase64)
+          // Try to match to an upcoming event for context
+          const eventHint = message
+            .match(/for\s+(.+?)(?:\s*event|\s*dinner|\s*party|$)/i)?.[1]
+            ?.trim()
+          responseText = formatReceiptForConfirmation(receiptData, eventHint || undefined)
+        } else {
+          const dishData = await analyzeDishPhoto(imageBase64)
+          responseText = formatDishPhotoResponse(dishData)
+        }
+
+        const body =
+          encodeSSE({ type: 'intent', data: 'vision' }) +
+          encodeSSE({ type: 'token', data: responseText }) +
+          encodeSSE({ type: 'done', data: null })
+        return new Response(body, { headers: sseHeaders() })
+      } catch (err) {
+        const isOllama =
+          err instanceof Error &&
+          (err.message.includes('Ollama') || err.message.includes('ECONNREFUSED'))
+        return new Response(
+          encodeSSE({
+            type: 'error',
+            data: isOllama
+              ? 'Vision analysis requires Ollama with the LLaVA model. Make sure Ollama is running with `ollama pull llava:7b`.'
+              : 'Failed to analyze the image. Try again or describe what you see instead.',
+          }),
+          { headers: sseHeaders() }
+        )
+      }
     }
 
     //  PI TEST (admin only)
@@ -330,6 +403,59 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
+    //  WEATHER PATH (6A: on-demand event weather forecasts — no Ollama needed)
+    const weatherRegex =
+      /(?:weather|forecast)\s+(?:for|at|look\s+like\s+for)\s+(?:my|the|this|next|upcoming)\s+event/i
+    if (weatherRegex.test(message)) {
+      try {
+        const { getWeatherAlerts, formatWeatherAlerts } = await import('@/lib/ai/remy-weather')
+        const alerts = await getWeatherAlerts(user.tenantId!)
+        const text = formatWeatherAlerts(alerts)
+        const body =
+          encodeSSE({ type: 'intent', data: 'question' }) +
+          encodeSSE({ type: 'token', data: text }) +
+          encodeSSE({ type: 'done', data: null })
+        return new Response(body, { headers: sseHeaders() })
+      } catch (err) {
+        console.error('[remy] Weather fetch failed:', err)
+        const body =
+          encodeSSE({ type: 'intent', data: 'question' }) +
+          encodeSSE({
+            type: 'token',
+            data: "Couldn't fetch weather data right now. The Open-Meteo API might be down — try again in a few minutes.",
+          }) +
+          encodeSSE({ type: 'done', data: null })
+        return new Response(body, { headers: sseHeaders() })
+      }
+    }
+
+    //  TRAVEL TIME PATH (6B: on-demand travel estimates — no Ollama needed)
+    const travelRegex =
+      /(?:travel\s+time|driving\s+time|back.to.back|how\s+(?:long|far)\s+(?:between|to\s+get)|commute|drive\s+between)\s*(?:my\s+)?event/i
+    if (travelRegex.test(message)) {
+      try {
+        const { getTravelEstimates, formatTravelEstimates } =
+          await import('@/lib/ai/remy-travel-time')
+        const estimates = await getTravelEstimates(user.tenantId!)
+        const text = formatTravelEstimates(estimates)
+        const body =
+          encodeSSE({ type: 'intent', data: 'question' }) +
+          encodeSSE({ type: 'token', data: text }) +
+          encodeSSE({ type: 'done', data: null })
+        return new Response(body, { headers: sseHeaders() })
+      } catch (err) {
+        console.error('[remy] Travel time fetch failed:', err)
+        const body =
+          encodeSSE({ type: 'intent', data: 'question' }) +
+          encodeSSE({
+            type: 'token',
+            data: "Couldn't calculate travel times right now. The routing API might be down — try again in a few minutes.",
+          }) +
+          encodeSSE({ type: 'done', data: null })
+        return new Response(body, { headers: sseHeaders() })
+      }
+    }
+
     //  INTERACTIVE LOCK: pause background worker while Remy is streaming
     // This prevents the AI queue worker from competing for Ollama while
     // we're streaming a response. Released in the finally block.
@@ -460,6 +586,60 @@ export async function POST(req: NextRequest) {
 
     //  COMMAND path
     if (classification.intent === 'command') {
+      // Multi-step chain detection: split compound commands
+      const chainSteps = looksLikeChain(message) ? parseTaskChain(message) : null
+
+      if (chainSteps && chainSteps.length > 1) {
+        // Execute each step sequentially, combining results
+        const allTasks: RemyTaskResult[] = []
+        const stepSummaries: string[] = []
+
+        for (let i = 0; i < chainSteps.length; i++) {
+          const stepRun = await runCommand(chainSteps[i])
+          if (stepRun.ollamaOffline) {
+            releaseInteractiveLock()
+            return new Response(
+              encodeSSE({
+                type: 'error',
+                data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
+              }),
+              { headers: sseHeaders() }
+            )
+          }
+          const stepTasks: RemyTaskResult[] = stepRun.results.map((r) => ({
+            taskId: r.taskId,
+            taskType: r.taskType,
+            tier: r.tier,
+            name: r.name ?? getTaskName(r.taskType),
+            status: r.status === 'running' ? 'done' : (r.status as RemyTaskResult['status']),
+            data: r.data,
+            error: r.error,
+            holdReason: r.holdReason,
+            preview: r.preview,
+          }))
+          allTasks.push(...stepTasks)
+          stepSummaries.push(`**Step ${i + 1}/${chainSteps.length}:** ${chainSteps[i]}`)
+        }
+
+        const chainHeader = `Handled **${chainSteps.length} steps**:\n\n${stepSummaries.join('\n')}\n\n`
+        const text = chainHeader + summarizeTaskResults(allTasks)
+
+        const encoder = new TextEncoder()
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'command' })))
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: text })))
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: allTasks })))
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+            controller.close()
+          },
+        })
+        releaseInteractiveLock()
+        recordRemyMetric({ category: 'general' } as any).catch(() => {})
+        return new Response(stream, { headers: sseHeaders() })
+      }
+
+      // Single command (no chain)
       const commandRun = await runCommand(message)
 
       if (commandRun.ollamaOffline) {
@@ -553,6 +733,9 @@ export async function POST(req: NextRequest) {
         )
       }
 
+      // Phase 5B: Intent-aware context scoping for mixed path
+      const mixedScope = determineContextScope(message, classification.intent)
+
       const systemPrompt = buildRemySystemPrompt(
         context,
         memories,
@@ -567,7 +750,9 @@ export async function POST(req: NextRequest) {
         surveyPromptSection,
         otherChannelDigest,
         previousSessionTopics,
-        message
+        message,
+        mixedScope,
+        recentConversationSummaries
       )
 
       // Warn if system prompt is large enough to risk silent truncation.
@@ -597,6 +782,7 @@ export async function POST(req: NextRequest) {
 
             let fullResponse = ''
             let usedMixedEndpoint = mixedEndpoint
+            const mixedThinkFilter = new ThinkingBlockFilter()
 
             // Try primary endpoint, failover if connection fails before any tokens
             try {
@@ -619,9 +805,17 @@ export async function POST(req: NextRequest) {
                 if (abortCtrl.signal.aborted) break
                 const token = chunk.message?.content ?? ''
                 if (token) {
-                  fullResponse += token
-                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+                  const filtered = mixedThinkFilter.process(token)
+                  if (filtered) {
+                    fullResponse += filtered
+                    controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
+                  }
                 }
+              }
+              const flushed = mixedThinkFilter.flush()
+              if (flushed) {
+                fullResponse += flushed
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
               }
             } catch (primaryErr) {
               if (fullResponse.length > 0) throw primaryErr
@@ -635,6 +829,7 @@ export async function POST(req: NextRequest) {
                 `[remy] mixed: ${mixedEndpoint.endpointName} failed - falling back to ${fallback.endpointName}`
               )
               usedMixedEndpoint = fallback
+              const mixedFallbackFilter = new ThinkingBlockFilter()
               const fallbackOllama = new Ollama({ host: fallback.host })
               const response: any = await fallbackOllama.chat({
                 model: fallback.model,
@@ -654,9 +849,17 @@ export async function POST(req: NextRequest) {
                 if (abortCtrl.signal.aborted) break
                 const token = chunk.message?.content ?? ''
                 if (token) {
-                  fullResponse += token
-                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+                  const filtered = mixedFallbackFilter.process(token)
+                  if (filtered) {
+                    fullResponse += filtered
+                    controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
+                  }
                 }
+              }
+              const flushed = mixedFallbackFilter.flush()
+              if (flushed) {
+                fullResponse += flushed
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
               }
             }
 
@@ -725,6 +928,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Phase 5B: Intent-aware context scoping — reduce prompt size for focused queries
+    const contextScope = determineContextScope(message, classification.intent)
+
     const systemPrompt = buildRemySystemPrompt(
       context,
       memories,
@@ -739,7 +945,9 @@ export async function POST(req: NextRequest) {
       surveyPromptSection,
       otherChannelDigest,
       previousSessionTopics,
-      message
+      message,
+      contextScope,
+      recentConversationSummaries
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`
@@ -759,6 +967,7 @@ export async function POST(req: NextRequest) {
 
           let fullResponse = ''
           let usedEndpoint = endpoint
+          const thinkFilter = new ThinkingBlockFilter()
 
           // Try primary endpoint, failover to secondary if connection fails
           try {
@@ -781,9 +990,18 @@ export async function POST(req: NextRequest) {
               if (abortCtrl.signal.aborted) break
               const token = chunk.message?.content ?? ''
               if (token) {
-                fullResponse += token
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+                const filtered = thinkFilter.process(token)
+                if (filtered) {
+                  fullResponse += filtered
+                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
+                }
               }
+            }
+            // Flush any remaining buffered content
+            const flushed = thinkFilter.flush()
+            if (flushed) {
+              fullResponse += flushed
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
             }
           } catch (primaryErr) {
             // Only failover if no tokens were sent (connection failure, not mid-stream)
@@ -797,6 +1015,7 @@ export async function POST(req: NextRequest) {
               `[remy] ${endpoint.endpointName} failed - falling back to ${fallback.endpointName}`
             )
             usedEndpoint = fallback
+            const fallbackFilter = new ThinkingBlockFilter()
             const fallbackOllama = new Ollama({ host: fallback.host })
             const response: any = await fallbackOllama.chat({
               model: fallback.model,
@@ -816,9 +1035,17 @@ export async function POST(req: NextRequest) {
               if (abortCtrl.signal.aborted) break
               const token = chunk.message?.content ?? ''
               if (token) {
-                fullResponse += token
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+                const filtered = fallbackFilter.process(token)
+                if (filtered) {
+                  fullResponse += filtered
+                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
+                }
               }
+            }
+            const flushed = fallbackFilter.flush()
+            if (flushed) {
+              fullResponse += flushed
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
             }
           }
 
