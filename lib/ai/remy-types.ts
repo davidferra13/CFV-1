@@ -127,6 +127,9 @@ export interface RemyContext {
     guestCount: number | null
     clientLoyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
     clientLoyaltyPoints?: number | null
+    prepReady?: boolean
+    groceryReady?: boolean
+    timelineReady?: boolean
   }>
   recentClients?: Array<{
     id: string
@@ -233,10 +236,68 @@ export interface RemyContext {
   pendingMenuApprovals?: Array<{ clientName: string }>
   /** Unread messages from inquiry leads */
   unreadInquiryMessages?: Array<{ leadName: string }>
-  /** Stale inquiries — no response in >3 days (proactive nudge) */
-  staleInquiries?: Array<{ leadName: string; daysSinceContact: number }>
+  /** Stale inquiries — no response in >3 days, sorted by urgency (proactive nudge) */
+  staleInquiries?: Array<{
+    leadName: string
+    daysSinceContact: number
+    leadScore: number
+    urgency: number
+  }>
   /** Overdue payments — past due date (proactive nudge) */
   overduePayments?: Array<{ clientName: string; amountCents: number; daysOverdue: number }>
+  /** Revenue pattern — busy/slow months from historical data */
+  revenuePattern?: {
+    busiestMonth: string
+    slowestMonth: string
+    monthlyAvgCents: number
+  }
+  /** Client re-engagement signals — clients overdue for a booking based on their cadence */
+  clientReengagement?: Array<{
+    clientName: string
+    avgIntervalDays: number
+    daysSinceLastBooking: number
+    eventCount: number
+  }>
+  /** Quote distribution — historical range for comparison intelligence */
+  quoteDistribution?: {
+    count: number
+    minCents: number
+    maxCents: number
+    medianCents: number
+    p25Cents: number
+    p75Cents: number
+  }
+  /** Profitability stats — aggregate margins across events */
+  profitabilityStats?: {
+    eventCount: number
+    avgMargin: number
+    bestMargin: number
+    worstMargin: number
+    avgProfitCents: number
+  }
+  /** Upcoming payment deadlines — due within 7 days, not yet overdue */
+  upcomingPaymentDeadlines?: Array<{
+    clientName: string
+    occasion: string
+    amountCents: number
+    dueDate: string
+    daysUntilDue: number
+  }>
+  /** Expiring quotes — valid_until within 7 days */
+  expiringQuotes?: Array<{
+    clientName: string
+    occasion: string
+    totalCents: number
+    validUntil: string
+    daysUntilExpiry: number
+  }>
+  /** Inquiry velocity — week-over-week comparison */
+  inquiryVelocity?: {
+    thisWeek: number
+    lastWeek: number
+  }
+  /** Business intelligence summary — cross-engine synthesized insights */
+  businessIntelligence?: string
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

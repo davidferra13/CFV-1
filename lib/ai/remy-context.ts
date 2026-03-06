@@ -10,6 +10,7 @@ import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
 import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
+import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -42,10 +43,13 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   const supabase: any = createServerClient()
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan)
-  const [chefProfile, counts, dailyPlan] = await Promise.all([
+  const [chefProfile, counts, dailyPlan, healthSummary] = await Promise.all([
     loadChefProfile(supabase, tenantId),
     loadQuickCounts(supabase, tenantId),
     getDailyPlanStats().catch(() => null),
+    getBusinessHealthSummary()
+      .then((s) => s.remyContext)
+      .catch(() => null),
   ])
 
   // Tier 2: Cached for 5 minutes
@@ -101,6 +105,12 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     // Proactive nudges
     staleInquiries: detailed.staleInquiries,
     overduePayments: detailed.overduePayments,
+    // Re-engagement signals
+    clientReengagement: detailed.clientReengagement,
+    // Revenue patterns
+    revenuePattern: detailed.revenuePattern,
+    // Business intelligence (cross-engine synthesis)
+    businessIntelligence: healthSummary ?? undefined,
   }
 }
 
@@ -182,12 +192,23 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     // Proactive nudges (2026-03-06)
     staleInquiriesResult,
     overduePaymentsResult,
+    clientBookingHistoryResult,
+    monthlyRevenueResult,
+    // Deadline warnings (2026-03-06)
+    upcomingPaymentDeadlinesResult,
+    expiringQuotesResult,
+    // Event profitability
+    eventProfitabilityResult,
+    // Inquiry velocity
+    inquiryVelocityResult,
+    // Staff utilization
+    staffAssignmentsResult,
   ] = await Promise.all([
     // Upcoming events (next 7 days, limit 10)
     supabase
       .from('events')
       .select(
-        'id, occasion, event_date, status, guest_count, client:clients(full_name, loyalty_tier, loyalty_points)'
+        'id, occasion, event_date, status, guest_count, prep_list_ready, grocery_list_ready, timeline_ready, client:clients(full_name, loyalty_tier, loyalty_points)'
       )
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","completed")')
@@ -250,7 +271,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     // Staff roster
     supabase
       .from('staff_members')
-      .select('full_name, default_role, phone, status')
+      .select('id, full_name, default_role, phone, status')
       .eq('chef_id', tenantId)
       .eq('status', 'active')
       .order('full_name', { ascending: true })
@@ -378,10 +399,10 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
 
     // ─── Proactive nudges (2026-03-06) ────────────────────────────────────
 
-    // Stale inquiries (no response in >3 days)
+    // Stale inquiries (no response in >3 days) — includes lead score for urgency escalation
     supabase
       .from('inquiries')
-      .select('id, lead_name, updated_at')
+      .select('id, lead_name, updated_at, chef_likelihood, unknown_fields')
       .eq('tenant_id', tenantId)
       .in('status', ['new', 'awaiting_chef'])
       .lt('updated_at', new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString())
@@ -398,6 +419,82 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .not('status', 'eq', 'cancelled')
       .order('payment_due_date', { ascending: true })
       .limit(5),
+
+    // Client booking frequency — all completed/confirmed events with client + date
+    // Used to detect clients overdue for re-engagement based on their historical cadence
+    supabase
+      .from('events')
+      .select('client_id, event_date, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
+      .not('client_id', 'is', null)
+      .order('event_date', { ascending: true })
+      .limit(500),
+
+    // Monthly revenue distribution — ledger payments from past 12 months
+    // Used to identify busy/slow months for revenue pattern awareness
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents, created_at')
+      .eq('tenant_id', tenantId)
+      .eq('entry_type', 'payment')
+      .gte('created_at', new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString()),
+
+    // Upcoming payment deadlines (due within 7 days, not yet overdue)
+    supabase
+      .from('events')
+      .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .gt('balance_due_cents', 0)
+      .gte('payment_due_date', today)
+      .lte(
+        'payment_due_date',
+        new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      )
+      .not('status', 'eq', 'cancelled')
+      .order('payment_due_date', { ascending: true })
+      .limit(5),
+
+    // Expiring quotes (valid_until within 7 days)
+    supabase
+      .from('quotes')
+      .select('id, valid_until, total_cents, event:events(occasion, client:clients(full_name))')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'sent')
+      .gte('valid_until', today)
+      .lte(
+        'valid_until',
+        new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      )
+      .order('valid_until', { ascending: true })
+      .limit(5),
+
+    // Event profitability — completed events this year with profit data
+    supabase
+      .from('event_financial_summary' as any)
+      .select(
+        'event_id, quoted_price_cents, net_revenue_cents, total_expenses_cents, profit_cents, profit_margin'
+      )
+      .eq('tenant_id', tenantId)
+      .gt('net_revenue_cents', 0)
+      .limit(50),
+
+    // Inquiry velocity — this week vs last week
+    supabase
+      .from('inquiries')
+      .select('id, created_at')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(100),
+
+    // Staff assignments — upcoming events (for utilization awareness)
+    supabase
+      .from('event_staff_assignments')
+      .select('staff_member_id, event:events!inner(event_date, status)')
+      .eq('chef_id', tenantId)
+      .eq('status', 'confirmed')
+      .limit(100),
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
@@ -457,6 +554,52 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     }
   }
 
+  // Staff utilization — count upcoming assignments per staff member
+  const staffAssignmentCounts = new Map<string, number>()
+  for (const a of (staffAssignmentsResult.data ?? []) as Array<Record<string, unknown>>) {
+    const memberId = a.staff_member_id as string
+    if (!memberId) continue
+    const event = a.event as Record<string, unknown> | null
+    if (!event) continue
+    const eventDate = event.event_date as string | null
+    const eventStatus = event.status as string
+    if (
+      eventDate &&
+      new Date(eventDate).getTime() > now.getTime() &&
+      eventStatus !== 'cancelled' &&
+      eventStatus !== 'completed'
+    ) {
+      staffAssignmentCounts.set(memberId, (staffAssignmentCounts.get(memberId) ?? 0) + 1)
+    }
+  }
+
+  // Event profitability aggregates — avg margin, best/worst margin
+  const profitData = (eventProfitabilityResult.data ?? []) as Array<Record<string, unknown>>
+  const marginsWithData = profitData
+    .filter((p) => typeof p.profit_margin === 'number' && (p.net_revenue_cents as number) > 0)
+    .map((p) => ({
+      margin: p.profit_margin as number,
+      profitCents: (p.profit_cents as number) ?? 0,
+    }))
+
+  // Inquiry velocity — this week vs last week
+  const recentInquiries = (inquiryVelocityResult.data ?? []) as Array<Record<string, unknown>>
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+  const thisWeekInquiries = recentInquiries.filter(
+    (i) => new Date(i.created_at as string).getTime() >= oneWeekAgo.getTime()
+  ).length
+  const lastWeekInquiries = recentInquiries.filter((i) => {
+    const t = new Date(i.created_at as string).getTime()
+    return t >= twoWeeksAgo.getTime() && t < oneWeekAgo.getTime()
+  }).length
+
+  // Quote distribution — for comparison intelligence
+  const quotedPrices = yearEvents
+    .map((e) => (e.quoted_price_cents as number) ?? 0)
+    .filter((p) => p > 0)
+    .sort((a, b) => a - b)
+
   // Build calendar summary
   const blockedDates = (availabilityResult.data ?? []).map((b: Record<string, unknown>) => ({
     date: b.block_date as string,
@@ -494,6 +637,9 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
         clientLoyaltyTier:
           (client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum' | null) ?? null,
         clientLoyaltyPoints: (client?.loyalty_points as number | null) ?? null,
+        prepReady: (e.prep_list_ready as boolean) ?? false,
+        groceryReady: (e.grocery_list_ready as boolean) ?? false,
+        timelineReady: (e.timeline_ready as boolean) ?? false,
       }
     }),
     recentClients: (clientsResult.data ?? []).map((c: Record<string, unknown>) => ({
@@ -523,11 +669,43 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
         eventCount: data.count,
       })),
     },
+    // Quote distribution — historical range for comparison intelligence
+    quoteDistribution:
+      quotedPrices.length >= 3
+        ? {
+            count: quotedPrices.length,
+            minCents: quotedPrices[0],
+            maxCents: quotedPrices[quotedPrices.length - 1],
+            medianCents: quotedPrices[Math.floor(quotedPrices.length / 2)],
+            p25Cents: quotedPrices[Math.floor(quotedPrices.length * 0.25)],
+            p75Cents: quotedPrices[Math.floor(quotedPrices.length * 0.75)],
+          }
+        : undefined,
+    // Inquiry velocity — week-over-week comparison
+    inquiryVelocity:
+      thisWeekInquiries > 0 || lastWeekInquiries > 0
+        ? { thisWeek: thisWeekInquiries, lastWeek: lastWeekInquiries }
+        : undefined,
+    // Profitability stats — aggregate margins across events
+    profitabilityStats:
+      marginsWithData.length >= 2
+        ? {
+            eventCount: marginsWithData.length,
+            avgMargin: Math.round(
+              marginsWithData.reduce((sum, m) => sum + m.margin, 0) / marginsWithData.length
+            ),
+            bestMargin: Math.max(...marginsWithData.map((m) => m.margin)),
+            worstMargin: Math.min(...marginsWithData.map((m) => m.margin)),
+            avgProfitCents: Math.round(
+              marginsWithData.reduce((sum, m) => sum + m.profitCents, 0) / marginsWithData.length
+            ),
+          }
+        : undefined,
     staffRoster: (staffResult.data ?? []).map((s: Record<string, unknown>) => ({
       name: (s.full_name as string) ?? 'Unknown',
       role: (s.default_role as string) ?? 'general',
       phone: (s.phone as string) ?? null,
-      activeAssignments: 0,
+      activeAssignments: staffAssignmentCounts.get(s.id as string) ?? 0,
     })),
     equipmentSummary: { totalItems: equipItems.length, categories: equipCategories },
     activeGoals: (goalsResult.data ?? []).map((g: Record<string, unknown>) => ({
@@ -589,12 +767,28 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     ),
 
     // Proactive nudges (2026-03-06)
-    staleInquiries: (staleInquiriesResult.data ?? []).map((i: Record<string, unknown>) => ({
-      leadName: (i.lead_name as string) ?? 'Unknown',
-      daysSinceContact: Math.floor(
-        (now.getTime() - new Date(i.updated_at as string).getTime()) / (1000 * 60 * 60 * 24)
-      ),
-    })),
+    staleInquiries: (staleInquiriesResult.data ?? [])
+      .map((i: Record<string, unknown>) => {
+        const daysSinceContact = Math.floor(
+          (now.getTime() - new Date(i.updated_at as string).getTime()) / (1000 * 60 * 60 * 24)
+        )
+        // Lead score from chef_likelihood or GOLDMINE unknown_fields
+        const uf = i.unknown_fields as Record<string, unknown> | null
+        const leadScore =
+          (i.chef_likelihood as number) ??
+          (uf && typeof uf === 'object' && !Array.isArray(uf)
+            ? ((uf.lead_score as number) ?? 0)
+            : 0)
+        // Urgency = days stale × lead score (higher = more urgent to respond)
+        const urgency = daysSinceContact * Math.max(leadScore, 10)
+        return {
+          leadName: (i.lead_name as string) ?? 'Unknown',
+          daysSinceContact,
+          leadScore,
+          urgency,
+        }
+      })
+      .sort((a: { urgency: number }, b: { urgency: number }) => b.urgency - a.urgency),
     overduePayments: (overduePaymentsResult.data ?? []).map((p: Record<string, unknown>) => ({
       clientName: ((p.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
       amountCents: (p.balance_due_cents as number) ?? 0,
@@ -602,6 +796,174 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
         (now.getTime() - new Date(p.payment_due_date as string).getTime()) / (1000 * 60 * 60 * 24)
       ),
     })),
+
+    // Client re-engagement signals — detect clients overdue for a booking
+    clientReengagement: computeClientReengagement(
+      (clientBookingHistoryResult.data ?? []) as Array<Record<string, unknown>>,
+      now
+    ),
+
+    // Revenue pattern — monthly distribution for busy/slow awareness
+    revenuePattern: computeRevenuePattern(
+      (monthlyRevenueResult.data ?? []) as Array<Record<string, unknown>>
+    ),
+
+    // Deadline warnings (2026-03-06)
+    upcomingPaymentDeadlines: (upcomingPaymentDeadlinesResult.data ?? []).map(
+      (p: Record<string, unknown>) => ({
+        clientName:
+          ((p.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+        occasion: (p.occasion as string) ?? 'Event',
+        amountCents: (p.balance_due_cents as number) ?? 0,
+        dueDate: (p.payment_due_date as string) ?? '',
+        daysUntilDue: Math.ceil(
+          (new Date(p.payment_due_date as string).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        ),
+      })
+    ),
+    expiringQuotes: (expiringQuotesResult.data ?? []).map((q: Record<string, unknown>) => {
+      const event = q.event as Record<string, unknown> | null
+      const client = event ? (event.client as Record<string, unknown> | null) : null
+      return {
+        clientName: (client?.full_name as string) ?? 'Unknown',
+        occasion: (event?.occasion as string) ?? 'Event',
+        totalCents: (q.total_cents as number) ?? 0,
+        validUntil: (q.valid_until as string) ?? '',
+        daysUntilExpiry: Math.ceil(
+          (new Date(q.valid_until as string).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        ),
+      }
+    }),
+  }
+}
+
+// ─── Client Re-engagement Detection (Formula > AI) ─────────────────────────
+// Analyzes booking history to find clients whose booking cadence has lapsed.
+// If a client books every ~60 days and hasn't booked in 90, they're flagged.
+
+function computeClientReengagement(
+  bookingHistory: Array<Record<string, unknown>>,
+  now: Date
+): Array<{
+  clientName: string
+  avgIntervalDays: number
+  daysSinceLastBooking: number
+  eventCount: number
+}> {
+  if (bookingHistory.length === 0) return []
+
+  // Group events by client
+  const byClient = new Map<string, { name: string; dates: Date[] }>()
+  for (const row of bookingHistory) {
+    const clientId = row.client_id as string
+    if (!clientId || !row.event_date) continue
+    const client = row.client as Record<string, unknown> | null
+    const name = (client?.full_name as string) ?? 'Unknown'
+    if (!byClient.has(clientId)) byClient.set(clientId, { name, dates: [] })
+    byClient.get(clientId)!.dates.push(new Date(row.event_date as string))
+  }
+
+  const results: Array<{
+    clientName: string
+    avgIntervalDays: number
+    daysSinceLastBooking: number
+    eventCount: number
+  }> = []
+
+  for (const [, { name, dates }] of byClient) {
+    // Need at least 2 events to compute a cadence
+    if (dates.length < 2) continue
+
+    dates.sort((a, b) => a.getTime() - b.getTime())
+
+    // Compute average interval between bookings
+    let totalInterval = 0
+    for (let i = 1; i < dates.length; i++) {
+      totalInterval += dates[i].getTime() - dates[i - 1].getTime()
+    }
+    const avgIntervalMs = totalInterval / (dates.length - 1)
+    const avgIntervalDays = Math.round(avgIntervalMs / (1000 * 60 * 60 * 24))
+
+    // How long since last booking?
+    const lastBooking = dates[dates.length - 1]
+    const daysSinceLast = Math.floor(
+      (now.getTime() - lastBooking.getTime()) / (1000 * 60 * 60 * 24)
+    )
+
+    // Flag if they've gone 50% past their usual interval (and at least 30 days since last)
+    if (daysSinceLast > avgIntervalDays * 1.5 && daysSinceLast >= 30) {
+      results.push({
+        clientName: name,
+        avgIntervalDays,
+        daysSinceLastBooking: daysSinceLast,
+        eventCount: dates.length,
+      })
+    }
+  }
+
+  // Sort by most overdue first (ratio of daysSince / avgInterval)
+  results.sort(
+    (a, b) =>
+      b.daysSinceLastBooking / b.avgIntervalDays - a.daysSinceLastBooking / a.avgIntervalDays
+  )
+
+  return results.slice(0, 5) // Top 5 most overdue
+}
+
+// ─── Revenue Pattern Detection (Formula > AI) ──────────────────────────────
+// Identifies busy and slow months from historical revenue.
+
+function computeRevenuePattern(
+  ledgerEntries: Array<Record<string, unknown>>
+): { busiestMonth: string; slowestMonth: string; monthlyAvgCents: number } | undefined {
+  if (ledgerEntries.length < 5) return undefined // Need meaningful data
+
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
+  const byMonth = new Map<number, number>()
+
+  for (const entry of ledgerEntries) {
+    const date = new Date(entry.created_at as string)
+    const month = date.getMonth()
+    byMonth.set(month, (byMonth.get(month) ?? 0) + ((entry.amount_cents as number) ?? 0))
+  }
+
+  if (byMonth.size < 2) return undefined
+
+  let busiestMonth = 0
+  let slowestMonth = 0
+  let maxRev = -Infinity
+  let minRev = Infinity
+  let totalRev = 0
+
+  for (const [month, rev] of byMonth) {
+    totalRev += rev
+    if (rev > maxRev) {
+      maxRev = rev
+      busiestMonth = month
+    }
+    if (rev < minRev) {
+      minRev = rev
+      slowestMonth = month
+    }
+  }
+
+  return {
+    busiestMonth: monthNames[busiestMonth],
+    slowestMonth: monthNames[slowestMonth],
+    monthlyAvgCents: Math.round(totalRev / byMonth.size),
   }
 }
 
@@ -968,6 +1330,62 @@ async function loadEventEntity(
     }
   }
 
+  // Smart follow-up suggestions — deterministic "next best action" based on event state
+  const eventSuggestions: string[] = []
+  const evtStatus = data.status as string
+  const evtDate = data.event_date ? new Date(data.event_date as string) : null
+  const hoursUntilEvent = evtDate ? (evtDate.getTime() - Date.now()) / (1000 * 60 * 60) : null
+
+  if (evtStatus === 'draft') {
+    eventSuggestions.push('Send a quote to move this event forward')
+  } else if (evtStatus === 'proposed') {
+    eventSuggestions.push('Follow up with client on the quote')
+  } else if (evtStatus === 'accepted' && data.payment_status === 'unpaid') {
+    eventSuggestions.push('Send a payment request — event is accepted but unpaid')
+  } else if (
+    (evtStatus === 'paid' || evtStatus === 'confirmed') &&
+    hoursUntilEvent !== null &&
+    hoursUntilEvent > 0 &&
+    hoursUntilEvent < 72
+  ) {
+    const missing: string[] = []
+    if (!data.prep_list_ready) missing.push('prep list')
+    if (!data.grocery_list_ready) missing.push('grocery list')
+    if (!data.timeline_ready) missing.push('timeline')
+    if (missing.length > 0) {
+      eventSuggestions.push(
+        `Event is in ${Math.round(hoursUntilEvent)}h — finalize: ${missing.join(', ')}`
+      )
+    } else {
+      eventSuggestions.push('All prep done — send a confirmation message to the client')
+    }
+  } else if (evtStatus === 'completed') {
+    const hasAAR = aars.length > 0
+    if (!hasAAR) {
+      eventSuggestions.push('Write an after-action review while the event is fresh')
+    }
+    eventSuggestions.push('Send a thank-you note to the client')
+  }
+
+  // Menu not sent yet for upcoming event
+  if (
+    !data.menu_sent_at &&
+    evtStatus !== 'draft' &&
+    evtStatus !== 'completed' &&
+    evtStatus !== 'cancelled' &&
+    hoursUntilEvent !== null &&
+    hoursUntilEvent > 0
+  ) {
+    eventSuggestions.push('Send the menu for client approval')
+  }
+
+  if (eventSuggestions.length > 0) {
+    lines.push(`\nSUGGESTED NEXT ACTIONS:`)
+    for (const s of eventSuggestions) {
+      lines.push(`- ${s}`)
+    }
+  }
+
   return { type: 'event', summary: lines.join('\n') }
 }
 
@@ -976,47 +1394,56 @@ async function loadClientEntity(
   tenantId: string,
   clientId: string
 ): Promise<PageEntityContext | undefined> {
-  const [clientResult, eventsResult, notesResult, reviewsResult] = await Promise.all([
-    supabase
-      .from('clients')
-      .select(
-        `id, full_name, email, phone, preferred_contact_method, referral_source,
+  const [clientResult, eventsResult, notesResult, reviewsResult, lastMessageResult] =
+    await Promise.all([
+      supabase
+        .from('clients')
+        .select(
+          `id, full_name, email, phone, preferred_contact_method, referral_source,
          partner_name, dietary_restrictions, allergies, dislikes, spice_tolerance,
          favorite_cuisines, favorite_dishes, vibe_notes, payment_behavior,
          tipping_pattern, what_they_care_about, kitchen_size, kitchen_constraints,
          lifetime_value_cents, total_events_count, average_spend_cents, status,
          loyalty_tier, loyalty_points`
-      )
-      .eq('id', clientId)
-      .eq('tenant_id', tenantId)
-      .single(),
-    // Event history for this client
-    supabase
-      .from('events')
-      .select(
-        'id, occasion, event_date, status, guest_count, quoted_price_cents, payment_status, service_style'
-      )
-      .eq('client_id', clientId)
-      .eq('tenant_id', tenantId)
-      .order('event_date', { ascending: false })
-      .limit(15),
-    // Client notes
-    supabase
-      .from('client_notes')
-      .select('note, category, created_at')
-      .eq('client_id', clientId)
-      .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false })
-      .limit(10),
-    // Client reviews
-    supabase
-      .from('client_reviews')
-      .select('rating, review_text, event_id, created_at')
-      .eq('client_id', clientId)
-      .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false })
-      .limit(5),
-  ])
+        )
+        .eq('id', clientId)
+        .eq('tenant_id', tenantId)
+        .single(),
+      // Event history for this client
+      supabase
+        .from('events')
+        .select(
+          'id, occasion, event_date, status, guest_count, quoted_price_cents, payment_status, service_style'
+        )
+        .eq('client_id', clientId)
+        .eq('tenant_id', tenantId)
+        .order('event_date', { ascending: false })
+        .limit(15),
+      // Client notes
+      supabase
+        .from('client_notes')
+        .select('note, category, created_at')
+        .eq('client_id', clientId)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false })
+        .limit(10),
+      // Client reviews
+      supabase
+        .from('client_reviews')
+        .select('rating, review_text, event_id, created_at')
+        .eq('client_id', clientId)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      // Last communication — most recent message with this client
+      supabase
+        .from('messages')
+        .select('direction, body, created_at')
+        .eq('tenant_id', tenantId)
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+        .limit(1),
+    ])
 
   const data = clientResult.data
   if (!data) return undefined
@@ -1106,6 +1533,102 @@ async function loadClientEntity(
       const text = sanitizeForPrompt((r.review_text as string) ?? '')
       const truncated = text.length > 150 ? text.slice(0, 150) + '...' : text
       lines.push(`- ${rating}${rating && truncated ? ': ' : ''}${truncated}`)
+    }
+  }
+
+  // Last communication with this client
+  const lastMsg = (lastMessageResult.data ?? [])[0] as Record<string, unknown> | undefined
+  if (lastMsg) {
+    const direction = lastMsg.direction === 'inbound' ? 'FROM client' : 'TO client'
+    const date = new Date(lastMsg.created_at as string)
+    const daysAgo = Math.round((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
+    const timeLabel = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : `${daysAgo} days ago`
+    const snippet = ((lastMsg.body as string) ?? '').slice(0, 100).replace(/\n/g, ' ')
+    lines.push(
+      `\nLAST COMMUNICATION (${direction}, ${timeLabel}): "${snippet}${snippet.length >= 100 ? '...' : ''}"`
+    )
+  }
+
+  // Client lifetime value tier (deterministic — based on LTV and event count)
+  const ltvCents = (data.lifetime_value_cents as number) ?? 0
+  const totalEvents = (data.total_events_count as number) ?? 0
+  if (ltvCents > 0) {
+    let ltvTier = 'Standard'
+    if (ltvCents >= 2000000) ltvTier = 'VIP ($20K+ lifetime value)'
+    else if (ltvCents >= 1000000) ltvTier = 'High-value ($10K+ lifetime value)'
+    else if (ltvCents >= 500000) ltvTier = 'Growing ($5K+ lifetime value)'
+    lines.push(
+      `\nCLIENT VALUE: ${ltvTier} — $${(ltvCents / 100).toFixed(0)} lifetime, ${totalEvents} events`
+    )
+    if (ltvCents >= 1000000) {
+      lines.push(
+        `[IMPORTANT] This is a high-value client — prioritize their requests and nurture the relationship.`
+      )
+    }
+  }
+
+  // Smart follow-up suggestions — deterministic "next best action" based on client state
+  const suggestions: string[] = []
+  const now = Date.now()
+
+  if (events.length > 0) {
+    const typedEvents = events as Array<Record<string, unknown>>
+    const lastEvent = typedEvents[0]
+    const lastStatus = lastEvent.status as string
+    const lastDate = lastEvent.event_date ? new Date(lastEvent.event_date as string) : null
+    const daysSinceLastEvent = lastDate
+      ? Math.floor((now - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+      : null
+
+    // Recently completed event → suggest thank-you or follow-up
+    if (lastStatus === 'completed' && daysSinceLastEvent !== null && daysSinceLastEvent <= 7) {
+      suggestions.push('Send a thank-you message — event completed this week')
+    } else if (
+      lastStatus === 'completed' &&
+      daysSinceLastEvent !== null &&
+      daysSinceLastEvent <= 14
+    ) {
+      suggestions.push('Follow up for feedback — event was 1-2 weeks ago')
+    }
+
+    // Upcoming event with pending payment
+    const unpaidUpcoming = typedEvents.find(
+      (e) =>
+        e.payment_status === 'unpaid' &&
+        e.status !== 'completed' &&
+        e.status !== 'cancelled' &&
+        e.event_date &&
+        new Date(e.event_date as string).getTime() > now
+    )
+    if (unpaidUpcoming) {
+      suggestions.push(
+        `Send payment reminder — ${(unpaidUpcoming.occasion as string) ?? 'upcoming event'} is unpaid`
+      )
+    }
+
+    // Long gap since last event → re-engagement
+    if (daysSinceLastEvent !== null && daysSinceLastEvent > 60 && lastStatus === 'completed') {
+      suggestions.push(
+        `Re-engage — last event was ${daysSinceLastEvent} days ago. Consider a seasonal menu offer`
+      )
+    }
+  } else {
+    suggestions.push('New client — schedule an intro call or send a welcome message')
+  }
+
+  // No communication in a while
+  if (lastMsg) {
+    const msgDate = new Date(lastMsg.created_at as string)
+    const daysSinceMsg = Math.floor((now - msgDate.getTime()) / (1000 * 60 * 60 * 24))
+    if (daysSinceMsg > 30 && lastMsg.direction === 'inbound') {
+      suggestions.push(`Client messaged ${daysSinceMsg} days ago and you haven't replied since`)
+    }
+  }
+
+  if (suggestions.length > 0) {
+    lines.push(`\nSUGGESTED NEXT ACTIONS:`)
+    for (const s of suggestions) {
+      lines.push(`- ${s}`)
     }
   }
 
@@ -1414,17 +1937,36 @@ async function findMentionedClients(
   if (!data) return []
 
   // Match: check if any client's first name, last name, or full name appears in the message
+  // Includes fuzzy matching: "the Johnsons", "Mrs. Henderson", pluralized last names
   return data.filter((c: any) => {
     if (!c.full_name) return false
     const fullLower = c.full_name.toLowerCase()
     // Full name match
     if (msgLower.includes(fullLower)) return true
-    // Last name match (more unique, less likely to false-positive)
     const parts = fullLower.split(/\s+/)
     if (parts.length >= 2) {
       const lastName = parts[parts.length - 1]
-      // Only match last names 3+ chars to avoid matching "Mr" or "Li" etc.
-      if (lastName.length >= 3 && msgLower.includes(lastName)) return true
+      const firstName = parts[0]
+      // Only match names 3+ chars to avoid matching "Mr" or "Li" etc.
+      if (lastName.length >= 3) {
+        // Exact last name
+        if (msgLower.includes(lastName)) return true
+        // Pluralized last name: "the Johnsons" → "johnson"
+        if (msgLower.includes(lastName + 's')) return true
+        // "the [lastName] family"
+        if (msgLower.includes(`the ${lastName}`)) return true
+        // "Mrs./Mr./Ms. [lastName]"
+        const honorifics = ['mr', 'mrs', 'ms', 'miss', 'dr', 'chef']
+        for (const h of honorifics) {
+          if (msgLower.includes(`${h}. ${lastName}`) || msgLower.includes(`${h} ${lastName}`))
+            return true
+        }
+      }
+      // First name match (only if 4+ chars to avoid false positives)
+      if (firstName.length >= 4 && msgLower.includes(firstName)) return true
+    } else if (parts.length === 1 && parts[0].length >= 4) {
+      // Single-name clients — match if 4+ chars
+      if (msgLower.includes(parts[0])) return true
     }
     return false
   })

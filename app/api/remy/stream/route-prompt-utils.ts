@@ -52,6 +52,46 @@ AVAILABLE PAGES (suggest these when relevant):
 /remy - Remy history (everything Remy has saved)
 `.trim()
 
+// ─── Response Length Calibration (deterministic — word count analysis) ────────
+// Matches response length to the chef's message complexity. Short questions get
+// short answers. Detailed messages get detailed responses. No LLM needed.
+
+function calibrateResponseLength(message: string): string {
+  if (!message) return ''
+
+  const words = message.trim().split(/\s+/).length
+  const hasQuestionMark = message.includes('?')
+  const isYesNo = /^(is|are|was|were|do|does|did|can|could|will|would|should|has|have|had)\b/i.test(
+    message.trim()
+  )
+
+  // Very short messages (1-5 words) — likely a quick question or command
+  if (words <= 5) {
+    return '\nRESPONSE LENGTH: Very short question — keep your answer to 1-2 sentences max. Be crisp.'
+  }
+
+  // Short messages (6-15 words) — standard question
+  if (words <= 15) {
+    if (isYesNo && hasQuestionMark) {
+      return '\nRESPONSE LENGTH: Yes/no question — lead with the answer, then add 1 sentence of context if needed.'
+    }
+    return '\nRESPONSE LENGTH: Brief question — respond in 2-4 sentences. No padding.'
+  }
+
+  // Medium messages (16-40 words) — moderate detail expected
+  if (words <= 40) {
+    return '' // Default length — no calibration needed
+  }
+
+  // Long messages (41-80 words) — chef is being detailed, match their energy
+  if (words <= 80) {
+    return '\nRESPONSE LENGTH: The chef wrote a detailed message — give a thorough response with specifics. Use bullet points if listing multiple items.'
+  }
+
+  // Very long messages (80+ words) — chef is explaining something complex
+  return '\nRESPONSE LENGTH: The chef wrote a long, detailed message — they want a comprehensive response. Be thorough, use structure (bullets, sections), and address all their points.'
+}
+
 //  System Prompt Builder
 
 function formatMemoriesForPrompt(memories: RemyMemory[]): string {
@@ -91,7 +131,9 @@ export function buildRemySystemPrompt(
   sessionMinutes?: number,
   activeForm?: string,
   surveyPromptSection?: string | null,
-  otherChannelDigest?: string | null
+  otherChannelDigest?: string | null,
+  previousSessionTopics?: { title: string; topics: string[]; lastActiveAt: string } | null,
+  userMessage?: string
 ): string {
   const parts: string[] = []
 
@@ -136,7 +178,17 @@ export function buildRemySystemPrompt(
     day: 'numeric',
     year: 'numeric',
   })
-  parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}`)
+  const hour = now.getHours()
+  let timeOfDayNote = ''
+  if (hour >= 22 || hour < 5) {
+    timeOfDayNote = ' (late night — the chef is working late. Be concise, they may be tired.)'
+  } else if (hour >= 5 && hour < 8) {
+    timeOfDayNote =
+      ' (early morning — the chef is starting their day. Good time for a brief daily overview.)'
+  } else if (hour >= 12 && hour < 14) {
+    timeOfDayNote = ' (lunch break — keep responses efficient.)'
+  }
+  parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}${timeOfDayNote}`)
 
   parts.push(`\nBUSINESS CONTEXT:
 - Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}
@@ -152,7 +204,21 @@ ${context.upcomingEvents
       e.clientLoyaltyTier || typeof e.clientLoyaltyPoints === 'number'
         ? `, loyalty ${e.clientLoyaltyTier ?? 'tier unknown'}${typeof e.clientLoyaltyPoints === 'number' ? ` (${e.clientLoyaltyPoints} pts)` : ''}`
         : ''
-    return `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status}${loyaltySuffix})`
+    // Prep readiness — flag missing prep items for imminent events
+    let prepSuffix = ''
+    if (e.date) {
+      const hoursUntil = (new Date(e.date).getTime() - Date.now()) / (1000 * 60 * 60)
+      if (hoursUntil > 0 && hoursUntil < 72) {
+        const missing: string[] = []
+        if (!e.prepReady) missing.push('prep list')
+        if (!e.groceryReady) missing.push('grocery list')
+        if (!e.timelineReady) missing.push('timeline')
+        if (missing.length > 0) {
+          prepSuffix = ` [ALERT: missing ${missing.join(', ')}]`
+        }
+      }
+    }
+    return `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status}${loyaltySuffix})${prepSuffix}`
   })
   .join('\n')}`)
   }
@@ -240,10 +306,18 @@ The chef can see the full structured view at /daily.`)
 - Avg revenue/event: $${(y.avgEventRevenueCents / 100).toFixed(2)}${y.topClients.length > 0 ? `\n- Top clients: ${y.topClients.map((c) => `${c.name} ($${(c.revenueCents / 100).toFixed(2)}, ${c.eventCount} events)`).join('; ')}` : ''}`)
   }
 
-  // Staff roster
+  // Staff roster with utilization
   if (context.staffRoster && context.staffRoster.length > 0) {
     parts.push(`\nSTAFF ROSTER (${context.staffRoster.length}):
-${context.staffRoster.map((s) => `- ${s.name} (${s.role.replace(/_/g, ' ')})${s.phone ? ` ${s.phone}` : ''}`).join('\n')}`)
+${context.staffRoster
+  .map((s) => {
+    const assignmentNote =
+      s.activeAssignments > 0
+        ? ` [${s.activeAssignments} upcoming event${s.activeAssignments !== 1 ? 's' : ''}]`
+        : ' [available]'
+    return `- ${s.name} (${s.role.replace(/_/g, ' ')})${s.phone ? ` ${s.phone}` : ''}${assignmentNote}`
+  })
+  .join('\n')}`)
   }
 
   // Equipment
@@ -375,6 +449,79 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     )
   }
 
+  // Proactive nudges — deadline warnings, stale inquiries, overdue payments, re-engagement
+  const nudgeLines: string[] = []
+
+  // Upcoming payment deadlines (due within 7 days)
+  if (context.upcomingPaymentDeadlines && context.upcomingPaymentDeadlines.length > 0) {
+    for (const d of context.upcomingPaymentDeadlines) {
+      const urgency = d.daysUntilDue <= 2 ? '[URGENT]' : ''
+      nudgeLines.push(
+        `${urgency} Payment of $${(d.amountCents / 100).toFixed(2)} due in ${d.daysUntilDue} day${d.daysUntilDue !== 1 ? 's' : ''} — ${d.clientName} (${d.occasion})`
+      )
+    }
+  }
+
+  // Expiring quotes (valid_until within 7 days)
+  if (context.expiringQuotes && context.expiringQuotes.length > 0) {
+    for (const q of context.expiringQuotes) {
+      const urgency = q.daysUntilExpiry <= 2 ? '[URGENT]' : ''
+      nudgeLines.push(
+        `${urgency} Quote of $${(q.totalCents / 100).toFixed(2)} expires in ${q.daysUntilExpiry} day${q.daysUntilExpiry !== 1 ? 's' : ''} — ${q.clientName} (${q.occasion})`
+      )
+    }
+  }
+
+  // Stale inquiries (no response in >3 days)
+  if (context.staleInquiries && context.staleInquiries.length > 0) {
+    for (const s of context.staleInquiries) {
+      nudgeLines.push(
+        `Inquiry from ${s.leadName} — no response in ${s.daysSinceContact} days (lead score: ${s.leadScore})`
+      )
+    }
+  }
+
+  // Overdue payments
+  if (context.overduePayments && context.overduePayments.length > 0) {
+    for (const p of context.overduePayments) {
+      nudgeLines.push(
+        `[OVERDUE] $${(p.amountCents / 100).toFixed(2)} from ${p.clientName} — ${p.daysOverdue} day${p.daysOverdue !== 1 ? 's' : ''} past due`
+      )
+    }
+  }
+
+  // Client re-engagement (overdue for a booking based on cadence)
+  if (context.clientReengagement && context.clientReengagement.length > 0) {
+    for (const c of context.clientReengagement) {
+      nudgeLines.push(
+        `${c.clientName} usually books every ~${c.avgIntervalDays} days — last booking was ${c.daysSinceLastBooking} days ago (${c.eventCount} events total)`
+      )
+    }
+  }
+
+  if (nudgeLines.length > 0) {
+    parts.push(`\n[ACTION NEEDED] PROACTIVE ALERTS (${nudgeLines.length}):
+${nudgeLines.map((l) => `- ${l}`).join('\n')}
+Mention the most urgent items naturally when relevant — especially if the chef asks "what should I focus on?" or during a morning briefing. Don't dump all at once unless asked.`)
+  }
+
+  // Revenue pattern + seasonal awareness — busy/slow months with time-of-year context
+  if (context.revenuePattern) {
+    const rp = context.revenuePattern
+    const currentMonth = new Date().toLocaleString('en-US', { month: 'long' })
+    const isBusyMonth = currentMonth.toLowerCase() === rp.busiestMonth.toLowerCase()
+    const isSlowMonth = currentMonth.toLowerCase() === rp.slowestMonth.toLowerCase()
+    let seasonalNote = ''
+    if (isBusyMonth) {
+      seasonalNote = ` RIGHT NOW is your busiest month — maximize bookings, consider raising rates for new inquiries.`
+    } else if (isSlowMonth) {
+      seasonalNote = ` RIGHT NOW is your slowest month — good time for client outreach, menu development, and re-engagement campaigns.`
+    }
+    parts.push(
+      `\nREVENUE PATTERN: Busiest month is ${rp.busiestMonth}, slowest is ${rp.slowestMonth} (avg $${(rp.monthlyAvgCents / 100).toFixed(0)}/month).${seasonalNote} Use this for seasonal planning and pricing advice.`
+    )
+  }
+
   // Navigation trail - what pages the chef visited this session
   if (recentPages && recentPages.length > 0) {
     const trail = recentPages.map((p) => {
@@ -473,17 +620,146 @@ The chef mentioned these by name. Use this data to answer their question accurat
     parts.push(memoryBlock)
   }
 
+  // Previous session continuity — remind Remy what the chef was working on last time
+  if (previousSessionTopics && previousSessionTopics.topics.length > 0) {
+    const timeSince = new Date(previousSessionTopics.lastActiveAt)
+    const hoursAgo = Math.round((Date.now() - timeSince.getTime()) / (1000 * 60 * 60))
+    const timeLabel =
+      hoursAgo < 1
+        ? 'just now'
+        : hoursAgo < 24
+          ? `${hoursAgo} hour${hoursAgo !== 1 ? 's' : ''} ago`
+          : `${Math.round(hoursAgo / 24)} day${Math.round(hoursAgo / 24) !== 1 ? 's' : ''} ago`
+    parts.push(`\nLAST SESSION (${timeLabel} — "${previousSessionTopics.title}"):
+The chef previously discussed: ${previousSessionTopics.topics.join('; ')}
+If the chef's first message relates to these topics, pick up naturally — "Picking up where we left off..." or weave in the context. If they're asking about something new, don't force a reference to the old session.`)
+  }
+
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference data that appears in the sections above. You have access to:
-ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan (admin/prep/creative/relationship items), email inbox digest (last 24h), session navigation trail (pages visited this session), recent actions (mutations the chef just performed), calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, and memories.
+ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan (admin/prep/creative/relationship items), email inbox digest (last 24h), session navigation trail (pages visited this session), recent actions (mutations the chef just performed), calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, proactive alerts (payment deadlines, expiring quotes, stale inquiries, overdue payments, client re-engagement), revenue patterns, and memories.
 ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
 ON CLIENT PAGES: Full event history, client notes, and client reviews.
 ON INQUIRY PAGES: Full message thread.
 Use all available data when answering questions - never say "I don't have that info" if it's in one of these sections.
 If a section says "0" or is empty, that means there are NONE - do not invent any.
 NEVER fabricate names, dates, amounts, or details to sound helpful.`)
+
+  // Cost-per-guest intelligence (deterministic — pure math from existing context)
+  if (
+    context.yearlyStats &&
+    context.yearlyStats.completedEventsThisYear > 0 &&
+    context.upcomingEvents &&
+    context.upcomingEvents.length > 0
+  ) {
+    const eventsWithGuests = context.upcomingEvents.filter((e) => e.guestCount && e.guestCount > 0)
+    if (eventsWithGuests.length > 0) {
+      const avgGuests = Math.round(
+        eventsWithGuests.reduce((sum, e) => sum + (e.guestCount ?? 0), 0) / eventsWithGuests.length
+      )
+      const avgRevenuePerGuest = Math.round(
+        context.yearlyStats.avgEventRevenueCents / Math.max(avgGuests, 1)
+      )
+      parts.push(
+        `\nPRICING INTELLIGENCE: Avg ${avgGuests} guests/event, avg $${(avgRevenuePerGuest / 100).toFixed(0)}/guest revenue. Use this when the chef asks about pricing, quotes, or whether a deal is good.`
+      )
+    }
+  }
+
+  // Inquiry velocity (deterministic — week-over-week trend)
+  if (context.inquiryVelocity) {
+    const iv = context.inquiryVelocity
+    if (iv.thisWeek > iv.lastWeek && iv.lastWeek > 0) {
+      const pctUp = Math.round(((iv.thisWeek - iv.lastWeek) / iv.lastWeek) * 100)
+      parts.push(
+        `\nINQUIRY VELOCITY: ${iv.thisWeek} inquiries this week vs ${iv.lastWeek} last week (+${pctUp}%). Pipeline is heating up — stay on top of responses.`
+      )
+    } else if (iv.thisWeek < iv.lastWeek && iv.lastWeek > 0) {
+      const pctDown = Math.round(((iv.lastWeek - iv.thisWeek) / iv.lastWeek) * 100)
+      parts.push(
+        `\nINQUIRY VELOCITY: ${iv.thisWeek} inquiries this week vs ${iv.lastWeek} last week (-${pctDown}%). Consider boosting outreach or marketing.`
+      )
+    } else if (iv.thisWeek > 0 && iv.lastWeek === 0) {
+      parts.push(
+        `\nINQUIRY VELOCITY: ${iv.thisWeek} new inquiries this week (none last week). Fresh leads coming in!`
+      )
+    }
+  }
+
+  // Weekly revenue pacing (deterministic — compare month revenue to monthly average)
+  if (context.monthRevenueCents !== undefined && context.revenuePattern) {
+    const dayOfMonth = new Date().getDate()
+    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
+    const monthProgress = dayOfMonth / daysInMonth
+    const expectedRevenue = Math.round(context.revenuePattern.monthlyAvgCents * monthProgress)
+    const actualRevenue = context.monthRevenueCents
+    const pacePercent =
+      expectedRevenue > 0 ? Math.round((actualRevenue / expectedRevenue) * 100) : 0
+
+    if (pacePercent > 120) {
+      parts.push(
+        `\nREVENUE PACING: ${pacePercent}% of target — ahead of pace! $${(actualRevenue / 100).toFixed(0)} earned vs $${(expectedRevenue / 100).toFixed(0)} expected by day ${dayOfMonth}.`
+      )
+    } else if (pacePercent < 80 && pacePercent > 0) {
+      parts.push(
+        `\nREVENUE PACING: ${pacePercent}% of target — behind pace. $${(actualRevenue / 100).toFixed(0)} earned vs $${(expectedRevenue / 100).toFixed(0)} expected by day ${dayOfMonth}. Consider following up on pending quotes or re-engaging past clients.`
+      )
+    }
+  }
+
+  // Workload capacity alerting (deterministic — event density analysis from existing context)
+  if (context.upcomingEvents && context.upcomingEvents.length > 0) {
+    const now = Date.now()
+    const next7Days = context.upcomingEvents.filter((e) => {
+      if (!e.date) return false
+      const dt = new Date(e.date).getTime()
+      return dt > now && dt < now + 7 * 24 * 60 * 60 * 1000
+    })
+    const next3Days = next7Days.filter((e) => {
+      const dt = new Date(e.date!).getTime()
+      return dt < now + 3 * 24 * 60 * 60 * 1000
+    })
+
+    if (next3Days.length >= 3) {
+      parts.push(
+        `\n[ALERT] HEAVY WORKLOAD: ${next3Days.length} events in the next 3 days. The chef is slammed — be efficient, prioritize prep reminders, and don't suggest non-essential tasks.`
+      )
+    } else if (next7Days.length >= 5) {
+      parts.push(
+        `\nWORKLOAD: ${next7Days.length} events this week — busy schedule. Prioritize time-sensitive items in your suggestions.`
+      )
+    } else if (next7Days.length === 0) {
+      parts.push(
+        `\nWORKLOAD: No events in the next 7 days — lighter schedule. Good time for admin, menu development, client outreach, or creative work.`
+      )
+    }
+  }
+
+  // Profitability intelligence (deterministic — aggregate margins from financial summary view)
+  if (context.profitabilityStats) {
+    const ps = context.profitabilityStats
+    parts.push(`\nPROFITABILITY INTELLIGENCE (from ${ps.eventCount} events with financial data):
+- Avg profit margin: ${ps.avgMargin}% | Best: ${ps.bestMargin}% | Worst: ${ps.worstMargin}%
+- Avg profit/event: $${(ps.avgProfitCents / 100).toFixed(0)}
+When the chef asks about profitability, margins, or "am I charging enough?", use these benchmarks. If a specific event's margin is below the average, flag it.`)
+  }
+
+  // Quote comparison intelligence (deterministic — percentile positioning from historical data)
+  if (context.quoteDistribution) {
+    const qd = context.quoteDistribution
+    parts.push(`\nQUOTE COMPARISON INTELLIGENCE (from ${qd.count} historical quotes):
+- Range: $${(qd.minCents / 100).toFixed(0)} — $${(qd.maxCents / 100).toFixed(0)}
+- Median: $${(qd.medianCents / 100).toFixed(0)} | 25th pctl: $${(qd.p25Cents / 100).toFixed(0)} | 75th pctl: $${(qd.p75Cents / 100).toFixed(0)}
+When the chef asks about a quote amount, compare it to this range: below 25th = low end, above 75th = premium, near median = typical. Help them understand if they're undercharging or if it's a premium gig.`)
+  }
+
+  // Response length calibration (deterministic — word count analysis)
+  if (userMessage) {
+    const lengthInstruction = calibrateResponseLength(userMessage)
+    if (lengthInstruction) parts.push(lengthInstruction)
+  }
 
   // Streaming mode: plain text with nav suggestions as JSON at the end
   parts.push(`\nRESPONSE FORMAT:
