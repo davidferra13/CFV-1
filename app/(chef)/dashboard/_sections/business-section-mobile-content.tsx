@@ -16,6 +16,19 @@ import { ProspectingWidget } from '@/components/dashboard/prospecting-widget'
 import { BetaTestersWidget } from '@/components/beta/beta-testers-widget'
 import { ActiveClientsCard } from '@/components/dashboard/active-clients-card'
 import { RevenueComparisonWidget } from '@/components/dashboard/revenue-comparison-widget'
+import { TopEventsProfitWidget } from '@/components/dashboard/top-events-profit-widget'
+import { PipelineForecastWidget } from '@/components/dashboard/pipeline-forecast-widget'
+import { MultiEventDaysWidget } from '@/components/dashboard/multi-event-days-widget'
+import { AARPerformanceWidget } from '@/components/dashboard/aar-performance-widget'
+import { AvgHourlyRateWidget } from '@/components/dashboard/avg-hourly-rate-widget'
+import { PayoutSummaryWidget } from '@/components/dashboard/payout-summary-widget'
+import { RevenueGoalWidget } from '@/components/dashboard/revenue-goal-widget'
+import { LoyaltyApproachingWidget } from '@/components/dashboard/loyalty-approaching-widget'
+import { FoodCostTrendWidget } from '@/components/dashboard/food-cost-trend-widget'
+import { BookingSeasonalityWidget } from '@/components/dashboard/booking-seasonality-widget'
+import { YoYComparisonWidget } from '@/components/dashboard/yoy-comparison-widget'
+import { OverdueInstallmentsWidget } from '@/components/dashboard/overdue-installments-widget'
+import { DormantClientsWidget } from '@/components/dashboard/dormant-clients-widget'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
@@ -149,6 +162,13 @@ export function BusinessSectionMobileContent(context: BusinessSectionRenderConte
     yoyData,
     topEvents,
     overdueInstallments,
+    aarStats,
+    avgHourlyRate,
+    pipelineForecast,
+    multiEventDays,
+    seasonality,
+    dormantClients,
+    revenueGoal,
     recentTestimonialCount,
     pendingTestimonialApprovalCount,
     pendingSurveyCount,
@@ -830,6 +850,113 @@ export function BusinessSectionMobileContent(context: BusinessSectionRenderConte
         <section style={{ order: getWidgetOrder('beta_program') }}>
           <CollapsibleWidget widgetId="beta_program" title="Beta Program">
             <BetaTestersWidget />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('top_events_profit') && topEvents.length > 0 && (
+        <section style={{ order: getWidgetOrder('top_events_profit') }}>
+          <CollapsibleWidget widgetId="top_events_profit" title="Top Events by Profit">
+            <TopEventsProfitWidget events={topEvents} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('pipeline_forecast') &&
+        (pipelineForecast.expectedCents > 0 || pipelineForecast.stages.length > 0) && (
+          <section style={{ order: getWidgetOrder('pipeline_forecast') }}>
+            <CollapsibleWidget widgetId="pipeline_forecast" title="Pipeline Forecast">
+              <PipelineForecastWidget forecast={pipelineForecast} />
+            </CollapsibleWidget>
+          </section>
+        )}
+
+      {isWidgetEnabled('multi_event_days') && multiEventDays.length > 0 && (
+        <section style={{ order: getWidgetOrder('multi_event_days') }}>
+          <CollapsibleWidget widgetId="multi_event_days" title="Multi-Event Days">
+            <MultiEventDaysWidget days={multiEventDays} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('aar_performance') && aarStats && aarStats.totalReviews > 0 && (
+        <section style={{ order: getWidgetOrder('aar_performance') }}>
+          <CollapsibleWidget widgetId="aar_performance" title="AAR Performance">
+            <AARPerformanceWidget stats={aarStats} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('avg_hourly_rate') && (
+        <section style={{ order: getWidgetOrder('avg_hourly_rate') }}>
+          <CollapsibleWidget widgetId="avg_hourly_rate" title="Avg Hourly Rate">
+            <AvgHourlyRateWidget rateCents={avgHourlyRate} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('payout_summary') &&
+        (payoutSummary.transferCount > 0 || payoutSummary.onboardingComplete) && (
+          <section style={{ order: getWidgetOrder('payout_summary') }}>
+            <CollapsibleWidget widgetId="payout_summary" title="Payout Summary">
+              <PayoutSummaryWidget summary={payoutSummary} />
+            </CollapsibleWidget>
+          </section>
+        )}
+
+      {isWidgetEnabled('revenue_goal') && revenueGoal.enabled && (
+        <section style={{ order: getWidgetOrder('revenue_goal') }}>
+          <CollapsibleWidget widgetId="revenue_goal" title="Revenue Goal">
+            <RevenueGoalWidget snapshot={revenueGoal} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('loyalty_approaching') && loyaltyApproaching.length > 0 && (
+        <section style={{ order: getWidgetOrder('loyalty_approaching') }}>
+          <CollapsibleWidget widgetId="loyalty_approaching" title="Loyalty Rewards">
+            <LoyaltyApproachingWidget clients={loyaltyApproaching} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('food_cost_trend') && (
+        <section style={{ order: getWidgetOrder('food_cost_trend') }}>
+          <CollapsibleWidget widgetId="food_cost_trend" title="Food Cost Trend">
+            <FoodCostTrendWidget trend={foodCostTrend} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('booking_seasonality') && seasonality.hasEnoughData && (
+        <section style={{ order: getWidgetOrder('booking_seasonality') }}>
+          <CollapsibleWidget widgetId="booking_seasonality" title="Booking Seasonality">
+            <BookingSeasonalityWidget seasonality={seasonality} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('yoy_comparison') &&
+        (yoyData.revenueMetric.currentYear > 0 || yoyData.revenueMetric.previousYear > 0) && (
+          <section style={{ order: getWidgetOrder('yoy_comparison') }}>
+            <CollapsibleWidget widgetId="yoy_comparison" title="Year-over-Year">
+              <YoYComparisonWidget data={yoyData} />
+            </CollapsibleWidget>
+          </section>
+        )}
+
+      {isWidgetEnabled('overdue_installments') && overdueInstallments.length > 0 && (
+        <section style={{ order: getWidgetOrder('overdue_installments') }}>
+          <CollapsibleWidget widgetId="overdue_installments" title="Overdue Installments">
+            <OverdueInstallmentsWidget installments={overdueInstallments} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {isWidgetEnabled('dormant_clients_list') && dormantClients.length > 0 && (
+        <section style={{ order: getWidgetOrder('dormant_clients_list') }}>
+          <CollapsibleWidget widgetId="dormant_clients_list" title="Dormant Clients">
+            <DormantClientsWidget clients={dormantClients} />
           </CollapsibleWidget>
         </section>
       )}

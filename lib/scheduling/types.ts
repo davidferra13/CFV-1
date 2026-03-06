@@ -94,6 +94,19 @@ export const DASHBOARD_WIDGET_IDS = [
   'client_birthdays',
   'shopping_window',
   'unread_hub_messages',
+  'top_events_profit',
+  'pipeline_forecast',
+  'multi_event_days',
+  'aar_performance',
+  'avg_hourly_rate',
+  'payout_summary',
+  'revenue_goal',
+  'loyalty_approaching',
+  'food_cost_trend',
+  'booking_seasonality',
+  'yoy_comparison',
+  'overdue_installments',
+  'dormant_clients_list',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -193,6 +206,19 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   client_birthdays: 'Client Birthdays',
   shopping_window: 'Shopping Window',
   unread_hub_messages: 'Hub Messages',
+  top_events_profit: 'Top Events by Profit',
+  pipeline_forecast: 'Pipeline Forecast',
+  multi_event_days: 'Multi-Event Days',
+  aar_performance: 'AAR Performance',
+  avg_hourly_rate: 'Avg Hourly Rate',
+  payout_summary: 'Payout Summary',
+  revenue_goal: 'Revenue Goal',
+  loyalty_approaching: 'Loyalty Rewards',
+  food_cost_trend: 'Food Cost Trend',
+  booking_seasonality: 'Booking Seasonality',
+  yoy_comparison: 'Year-over-Year',
+  overdue_installments: 'Overdue Installments',
+  dormant_clients_list: 'Dormant Clients',
 }
 
 // Legacy alias kept for compatibility with older code paths.
@@ -275,6 +301,54 @@ export interface RevenueGoalCustom {
   period_start: string
   period_end: string
   enabled: boolean
+}
+
+// ============================================
+// ENRICHED TODAY'S SCHEDULE (Widget Intelligence)
+// ============================================
+
+export type EventPhase =
+  | 'pre_event'
+  | 'shopping'
+  | 'prep'
+  | 'packing'
+  | 'travel'
+  | 'service'
+  | 'cleanup'
+  | 'post_event'
+
+export interface EnrichedTodaySchedule {
+  event: SchedulingEvent
+  timeline: EventTimeline
+  dop: DOPSchedule
+  currentPhase: EventPhase
+  nextMilestone: { label: string; time: string; minutesUntil: number } | null
+  departureTime: string | null
+  minutesUntilDeparture: number | null
+  clientContext: ClientEventContext | null
+  prepGate: PrepGate
+  weatherAlerts: WeatherAlert[]
+}
+
+export interface ClientEventContext {
+  name: string
+  dietaryRestrictions: string | null
+  allergies: string | null
+  pastEventCount: number
+  lastEventDate: string | null
+  lastOccasion: string | null
+}
+
+export interface PrepGate {
+  progress: number // 0-1
+  total: number
+  completed: number
+  blockers: { label: string; category: DOPTaskCategory; deadline: string | null }[]
+}
+
+export interface WeatherAlert {
+  severity: 'info' | 'warning' | 'critical'
+  message: string
 }
 
 // ============================================
