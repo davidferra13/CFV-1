@@ -741,6 +741,396 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       }
     },
   },
+
+  // ─── Remy Intelligence Patterns ──────────────────────────────────────────
+
+  // "What's in season" / "Seasonal produce"
+  {
+    pattern: /^(?:what'?s|show|list)\s+(?:in\s+season|seasonal\s+(?:produce|ingredients?|items?))/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.98,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'seasonal.produce',
+          tier: 1,
+          confidence: 0.98,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Revenue forecast" / "What does next month look like"
+  {
+    pattern:
+      /^(?:revenue\s+forecast|forecast\s+revenue|what\s+does?\s+(?:next|my)\s+(?:month|quarter|week)\s+look\s+like|project\s+(?:my\s+)?revenue)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'finance.forecast',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "P&L" / "Profit and loss" / "How did I do this month"
+  {
+    pattern:
+      /^(?:p\s*&?\s*l|profit\s+(?:and|&)\s+loss|how\s+did\s+i\s+do\s+(?:this|last)\s+month)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        { id: 't1', taskType: 'finance.pnl', tier: 1, confidence: 0.95, inputs: {}, dependsOn: [] },
+      ],
+    }),
+  },
+  // "Tax summary" / "Deductible expenses"
+  {
+    pattern: /^(?:tax\s+summary|deductible\s+expenses|tax\s+prep|prepare\s+(?:for\s+)?taxes)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'finance.tax_summary',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Pricing analysis" / "How does my pricing compare" / "Average per head"
+  {
+    pattern:
+      /^(?:pricing\s+analysis|analyze\s+(?:my\s+)?pricing|average\s+per\s+head|(?:how\s+does?\s+)?my\s+pricing|should\s+i\s+raise\s+(?:my\s+)?rates)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'finance.pricing',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Can I take more work" / "Am I overbooked" / "Utilization"
+  {
+    pattern:
+      /^(?:can\s+i\s+take\s+(?:more|another)|am\s+i\s+overbooked|utilization|workload|how\s+(?:busy|booked)\s+am\s+i)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'capacity.utilization',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Upcoming milestones" / "Any birthdays" / "Client anniversaries"
+  {
+    pattern:
+      /^(?:upcoming\s+milestones?|any\s+(?:upcoming\s+)?birthdays?|client\s+anniversar|milestone\s+check)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'relationship.milestones',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Dormant clients" / "Who should I re-engage" / "Re-engagement"
+  {
+    pattern:
+      /^(?:dormant\s+clients?|who\s+should\s+i\s+re-?engage|re-?engagement\s+(?:scoring|list|candidates)|clients?\s+to\s+re-?engage)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'relationship.reengagement',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Where do my clients come from" / "Acquisition funnel" / "Conversion rate"
+  {
+    pattern:
+      /^(?:where\s+do\s+(?:my\s+)?(?:best\s+)?clients?\s+come\s+from|acquisition\s+funnel|conversion\s+rate|inquiry\s+(?:to\s+)?booking\s+(?:rate|conversion)|referral\s+sources?)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'relationship.acquisition',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Goals" / "How am I tracking"
+  {
+    pattern:
+      /^(?:show\s+(?:my\s+)?goals?|how\s+am\s+i\s+tracking|goal\s+(?:progress|dashboard|status))/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'goals.dashboard',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Equipment" / "My equipment" / "Equipment maintenance"
+  {
+    pattern:
+      /^(?:show\s+(?:my\s+)?equipment|equipment\s+(?:list|status)|what\s+equipment\s+do\s+i\s+(?:have|own))/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'equipment.list',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Equipment due for maintenance" / "Maintenance schedule"
+  {
+    pattern:
+      /^(?:equipment\s+(?:due\s+for\s+)?maintenance|maintenance\s+(?:due|schedule|overdue)|what\s+needs?\s+maintenance)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'equipment.maintenance',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Vendors" / "My suppliers" / "Vendor list"
+  {
+    pattern:
+      /^(?:show\s+(?:my\s+)?vendors?|vendor\s+list|my\s+suppliers?|show\s+(?:my\s+)?suppliers?)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'vendors.list',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Generate contract for [event]"
+  {
+    pattern: /^(?:generate|create|draft)\s+(?:a\s+)?contract\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'contract.generate',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { eventName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Contingency plan for [event]" / "What if something goes wrong at [event]"
+  {
+    pattern:
+      /^(?:contingency\s+plan|backup\s+plan|what\s+if\s+something\s+goes\s+wrong)\s+(?:for|at)\s+(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'contingency.plan',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { eventName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Consolidate grocery list for [event]" / "Shopping list for [event]"
+  {
+    pattern: /^(?:consolidate|combined?|full)\s+(?:grocery|shopping)\s+list\s+(?:for\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'grocery.consolidate',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { eventName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Compare [event1] to/and/vs [event2]"
+  {
+    pattern: /^compare\s+(?:the\s+)?(.+?)\s+(?:to|and|vs\.?|versus|with)\s+(?:the\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'analytics.compare_events',
+          tier: 1,
+          confidence: 0.92,
+          inputs: { event1: match[1].trim(), event2: match[2].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Morning briefing" / "Good morning" / "What's today look like"
+  {
+    pattern:
+      /^(?:morning\s+briefing|good\s+morning|what'?s\s+(?:today|my\s+day)\s+look\s+like|(?:daily|today'?s?)\s+briefing|brief\s+me)/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'briefing.morning',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "[Event] just cancelled" / "Cancellation impact for [event]"
+  {
+    pattern:
+      /^(?:(?:the\s+)?(.+?)\s+(?:just\s+)?cancelled|cancellation\s+impact\s+(?:for|of)\s+(.+))/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.92,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'workflow.cancellation_impact',
+          tier: 1,
+          confidence: 0.92,
+          inputs: { eventName: (match[1] ?? match[2]).trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "Post-event checklist for [event]" / "What do I need to do after [event]"
+  {
+    pattern:
+      /^(?:post[- ]event\s+(?:checklist|sequence|steps?)|what\s+(?:do\s+i\s+need|should\s+i\s+do)\s+after)\s+(?:for\s+|the\s+)?(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'workflow.post_event',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { eventName: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  // "What can I use instead of [ingredient]" / "Substitute for [ingredient]"
+  {
+    pattern:
+      /^(?:what\s+can\s+i\s+use\s+instead\s+of|substitute\s+for|replacement\s+for|swap\s+(?:for|out))\s+(.+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'ops.ingredient_sub',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { ingredient: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
 ]
 
 // ─── Smart Relative Date Resolver (Formula > AI) ───────────────────────────

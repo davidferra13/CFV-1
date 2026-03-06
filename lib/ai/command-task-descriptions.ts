@@ -176,9 +176,9 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
   {
     type: 'chef.favorite_chefs',
     tier: 1,
-    name: 'Favorite Chefs',
+    name: 'Inspiration Board',
     description:
-      "Show the chef's list of culinary heroes and inspirations. These are chefs they admire and draw inspiration from.",
+      "Show the chef's saved inspirations. These can be chefs, bakers, operators, or hospitality brands they admire and learn from.",
     inputSchema: '{}',
   },
   {
@@ -496,6 +496,205 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
       'Draft a formal food safety incident report for internal records and regulatory purposes.',
     inputSchema: '{ "description": "string — description of the incident" }',
     tierNote: 'ALWAYS tier 2 — chef reviews before filing.',
+  },
+
+  // ─── Phase 1: Wire Existing Features ──────────────────────────────────────
+
+  {
+    type: 'contract.generate',
+    tier: 2,
+    name: 'Generate Contract',
+    description:
+      'Generate a draft contract/proposal for an event. Includes service details, pricing, terms, and cancellation policy. Draft only — chef must review and consult attorney.',
+    inputSchema: '{ "eventName": "string — event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 — legal document, chef must review.',
+  },
+  {
+    type: 'contingency.plan',
+    tier: 2,
+    name: 'Contingency Planning',
+    description:
+      'Generate "if X goes wrong, do Y" contingency plans for an event. Identifies top risks based on venue, menu, dietary restrictions, and guest count.',
+    inputSchema: '{ "eventName": "string — event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 — chef picks which plans to save.',
+  },
+  {
+    type: 'seasonal.produce',
+    tier: 1,
+    name: 'Seasonal Produce',
+    description:
+      "Show what's in season right now — fruits, vegetables, herbs, seafood, and specialty items grouped by category with chef tips. Use when the chef asks what to source, what's in season, or what's at peak.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'grocery.consolidate',
+    tier: 2,
+    name: 'Consolidated Grocery List',
+    description:
+      'Consolidate all recipe ingredients for an event into a single shopping list grouped by store section. Flags dietary conflicts and suggests substitutions.',
+    inputSchema: '{ "eventName": "string — event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before shopping.',
+  },
+
+  // ─── Phase 2: Financial Intelligence ──────────────────────────────────────
+
+  {
+    type: 'finance.forecast',
+    tier: 1,
+    name: 'Revenue Forecast',
+    description:
+      'Project revenue for the next 30, 60, and 90 days based on upcoming events and quotes. Shows confidence level (high/medium/low) based on event status.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'finance.pnl',
+    tier: 1,
+    name: 'P&L Report',
+    description:
+      'Profit & Loss report for a specific month — revenue, refunds, expenses by category, profit margin. Defaults to current month.',
+    inputSchema:
+      '{ "month": "number — optional, 1-12", "year": "number — optional, defaults to current year" }',
+  },
+  {
+    type: 'finance.tax_summary',
+    tier: 1,
+    name: 'Tax Summary',
+    description:
+      'Tax preparation summary — all deductible expenses by category, mileage deduction at IRS rate, total deductible amount. Defaults to current year.',
+    inputSchema: '{ "year": "number — optional, defaults to current year" }',
+  },
+  {
+    type: 'finance.pricing',
+    tier: 1,
+    name: 'Pricing Analysis',
+    description:
+      "Analyze the chef's pricing — average per-head rate, min/max, breakdown by service style, and trend (increasing/decreasing/stable).",
+    inputSchema: '{}',
+  },
+
+  // ─── Phase 3: Capacity & Scheduling ───────────────────────────────────────
+
+  {
+    type: 'capacity.utilization',
+    tier: 1,
+    name: 'Utilization Analysis',
+    description:
+      'Analyze workload density for the next N days — booked vs free days, double-booked days, consecutive event streaks, and whether the chef can take more work.',
+    inputSchema: '{ "days": "number — optional, how many days to look ahead, defaults to 14" }',
+  },
+
+  // ─── Phase 4: Relationship Intelligence ───────────────────────────────────
+
+  {
+    type: 'relationship.milestones',
+    tier: 1,
+    name: 'Upcoming Milestones',
+    description:
+      'Surface upcoming client milestones — birthdays, anniversaries, Nth-event celebrations, and client anniversary dates within the next 2 weeks. Suggests personalized actions.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'relationship.reengagement',
+    tier: 1,
+    name: 'Re-Engagement Scoring',
+    description:
+      'Rank dormant clients (no events in 90+ days) by rebooking likelihood based on loyalty, total spend, and recency. Suggests approach for each.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'relationship.acquisition',
+    tier: 1,
+    name: 'Client Acquisition Funnel',
+    description:
+      'Analyze the inquiry-to-booking pipeline — conversion rate, best referral sources, revenue by source. Shows where the best clients come from.',
+    inputSchema: '{}',
+  },
+
+  // ─── Phase 5: Entity Awareness ────────────────────────────────────────────
+
+  {
+    type: 'goals.dashboard',
+    tier: 1,
+    name: 'Goals Dashboard',
+    description:
+      "Show the chef's goals with progress tracking — revenue targets, event counts, client growth. Use when the chef asks how they're tracking.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'equipment.list',
+    tier: 1,
+    name: 'Equipment List',
+    description:
+      "Show the chef's equipment with depreciation and maintenance status. Flags items due for maintenance or replacement.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'equipment.maintenance',
+    tier: 1,
+    name: 'Equipment Maintenance Due',
+    description: 'Show equipment items that are due or overdue for maintenance.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'vendors.list',
+    tier: 1,
+    name: 'Vendor List',
+    description:
+      "Show the chef's vendors/suppliers. Use when the chef asks about their vendors, suppliers, or where to source ingredients.",
+    inputSchema: '{}',
+  },
+
+  // ─── Phase 6: Multi-Event Intelligence ────────────────────────────────────
+
+  {
+    type: 'analytics.compare_events',
+    tier: 1,
+    name: 'Compare Events',
+    description:
+      'Compare two events side-by-side — revenue, expenses, profit, per-head rate, margin. Use when the chef asks which event was more profitable.',
+    inputSchema:
+      '{ "event1": "string — first event name/occasion", "event2": "string — second event name/occasion" }',
+  },
+
+  // ─── Phase 7: Day-of Support ──────────────────────────────────────────────
+
+  {
+    type: 'briefing.morning',
+    tier: 1,
+    name: 'Morning Briefing',
+    description:
+      "Full operational briefing for today — events with timelines, dietary reminders, staff confirmed, equipment needed, overdue todos, new inquiries, and pending payments. Use when the chef says good morning, what's today look like, or asks for their briefing.",
+    inputSchema: '{}',
+  },
+
+  // ─── Phase 6: Workflow Chains ───────────────────────────────────────────
+
+  {
+    type: 'workflow.cancellation_impact',
+    tier: 1,
+    name: 'Cancellation Impact',
+    description:
+      'Analyze the financial and scheduling impact of a cancellation — lost revenue, monthly impact percentage, and rebooking opportunities from the waitlist.',
+    inputSchema: '{ "eventName": "string — event occasion or description that was cancelled" }',
+  },
+  {
+    type: 'workflow.post_event',
+    tier: 1,
+    name: 'Post-Event Sequence',
+    description:
+      'Show the post-event checklist — log expenses, save debrief, send thank-you, request testimonial, log mileage. Tracks what has and has not been done.',
+    inputSchema: '{ "eventName": "string — event occasion or description" }',
+  },
+
+  // ─── Phase 8-9: Operational Intelligence ──────────────────────────────────
+
+  {
+    type: 'ops.ingredient_sub',
+    tier: 1,
+    name: 'Ingredient Substitution',
+    description:
+      'Find allergy-safe substitutions for an ingredient. Returns alternatives with reasons (e.g., dairy-free, nut-free, vegan). Use when the chef asks "what can I use instead of X?"',
+    inputSchema: '{ "ingredient": "string — ingredient to find substitutions for" }',
   },
 ]
 

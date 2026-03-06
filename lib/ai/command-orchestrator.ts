@@ -68,6 +68,29 @@ import {
 } from '@/lib/ai/remy-approval-policy-core'
 import { getTenantRemyApprovalPolicyMap } from '@/lib/ai/remy-approval-policy-actions'
 import { validateSignificantApprovalPhrase } from '@/lib/ai/remy-significant-approval'
+import {
+  executeContractGeneration,
+  executeContingencyPlanning,
+  executeSeasonalProduce,
+  executeGroceryConsolidation,
+  executeRevenueForecast,
+  executePnLReport,
+  executeTaxSummary,
+  executePricingAnalysis,
+  executeUtilizationAnalysis,
+  executeClientMilestones,
+  executeReEngagementScoring,
+  executeAcquisitionFunnel,
+  executeMultiEventComparison,
+  executeGoalsDashboard,
+  executeEquipmentList,
+  executeEquipmentMaintenance,
+  executeVendorsList,
+  executeMorningBriefing,
+  executeCancellationImpact,
+  executePostEventSequence,
+  executeIngredientSubstitution,
+} from '@/lib/ai/remy-intelligence-actions'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -130,11 +153,20 @@ async function executeClientSearch(inputs: Record<string, unknown>) {
     enrichedClients.sort((a, b) => b.eventCount - a.eventCount)
   }
 
+  // Ambiguity detection: if multiple clients match and the top two have similar event counts,
+  // the match is genuinely ambiguous — flag it so dependent tasks can hold for clarification
+  const isAmbiguous =
+    enrichedClients.length > 1 &&
+    Math.abs(enrichedClients[0].eventCount - enrichedClients[1].eventCount) <= 1
+
   return {
     clients: enrichedClients,
+    ambiguous: isAmbiguous,
     // Signal to Remy when auto-resolving ambiguity
     ...(enrichedClients.length > 1 && {
-      disambiguationNote: `Found ${enrichedClients.length} clients matching "${query}". Ranked by event frequency — "${enrichedClients[0].name}" has ${enrichedClients[0].eventCount} events.`,
+      disambiguationNote: isAmbiguous
+        ? `Found ${enrichedClients.length} clients matching "${query}": ${enrichedClients.map((c) => `${c.name} (${c.eventCount} events)`).join(', ')}. Which one did you mean?`
+        : `Found ${enrichedClients.length} clients matching "${query}". Ranked by event frequency — "${enrichedClients[0].name}" has ${enrichedClients[0].eventCount} events.`,
     }),
   }
 }
@@ -200,8 +232,20 @@ async function executeEmailFollowup(
 ) {
   // Try to resolve client from a prior client.search dependency
   const searchResult = resolvedDeps['client.search'] as
-    | { clients: Array<{ id: string; name: string }> }
+    | {
+        clients: Array<{ id: string; name: string }>
+        ambiguous?: boolean
+        disambiguationNote?: string
+      }
     | undefined
+
+  // If client search was ambiguous, hold this task for disambiguation
+  if (searchResult?.ambiguous && searchResult.clients.length > 1) {
+    throw new Error(
+      `Multiple clients match — ${searchResult.disambiguationNote ?? 'which one did you mean?'}`
+    )
+  }
+
   let clientId: string | null = searchResult?.clients?.[0]?.id ?? null
   const clientName = String(inputs.clientName ?? searchResult?.clients?.[0]?.name ?? 'Client')
 
@@ -1355,6 +1399,87 @@ async function executeSingleTask(
         break
       case 'quote.compare':
         data = await executeQuoteCompare(task.inputs, tenantId)
+        break
+
+      // ─── Phase 1: Wire existing features ──────────────────────────────────
+      case 'contract.generate':
+        data = await executeContractGeneration(task.inputs)
+        break
+      case 'contingency.plan':
+        data = await executeContingencyPlanning(task.inputs)
+        break
+      case 'seasonal.produce':
+        data = executeSeasonalProduce()
+        break
+      case 'grocery.consolidate':
+        data = await executeGroceryConsolidation(task.inputs)
+        break
+
+      // ─── Phase 2: Financial intelligence ──────────────────────────────────
+      case 'finance.forecast':
+        data = await executeRevenueForecast(tenantId)
+        break
+      case 'finance.pnl':
+        data = await executePnLReport(tenantId, task.inputs)
+        break
+      case 'finance.tax_summary':
+        data = await executeTaxSummary(tenantId, task.inputs)
+        break
+      case 'finance.pricing':
+        data = await executePricingAnalysis(tenantId)
+        break
+
+      // ─── Phase 3: Capacity ────────────────────────────────────────────────
+      case 'capacity.utilization':
+        data = await executeUtilizationAnalysis(tenantId, task.inputs)
+        break
+
+      // ─── Phase 4: Relationship intelligence ───────────────────────────────
+      case 'relationship.milestones':
+        data = await executeClientMilestones(tenantId)
+        break
+      case 'relationship.reengagement':
+        data = await executeReEngagementScoring(tenantId)
+        break
+      case 'relationship.acquisition':
+        data = await executeAcquisitionFunnel(tenantId)
+        break
+
+      // ─── Phase 5: Entity awareness ────────────────────────────────────────
+      case 'goals.dashboard':
+        data = await executeGoalsDashboard()
+        break
+      case 'equipment.list':
+        data = await executeEquipmentList()
+        break
+      case 'equipment.maintenance':
+        data = await executeEquipmentMaintenance()
+        break
+      case 'vendors.list':
+        data = await executeVendorsList(tenantId)
+        break
+
+      // ─── Phase 6: Multi-event intelligence ────────────────────────────────
+      case 'analytics.compare_events':
+        data = await executeMultiEventComparison(task.inputs, tenantId)
+        break
+
+      // ─── Phase 7: Day-of support ──────────────────────────────────────────
+      case 'briefing.morning':
+        data = await executeMorningBriefing(tenantId)
+        break
+
+      // ─── Phase 6: Workflow chains ─────────────────────────────────────────
+      case 'workflow.cancellation_impact':
+        data = await executeCancellationImpact(task.inputs, tenantId)
+        break
+      case 'workflow.post_event':
+        data = await executePostEventSequence(task.inputs)
+        break
+
+      // ─── Phase 8-9: Operational intelligence ──────────────────────────────
+      case 'ops.ingredient_sub':
+        data = executeIngredientSubstitution(task.inputs)
         break
 
       default:

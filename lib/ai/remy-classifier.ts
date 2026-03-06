@@ -159,6 +159,14 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^(where|how)\s+do\s+i\s+(add|create|find|set up|log|import)/i, // "How do I add a client?"
   /^what('?s| is)\s+(my|the)\s+(margin|profit|revenue|conversion|cost)/i, // "What's my profit margin?"
   /^how\s+(many|much)\s+(clients?|events?|inquir)/i, // "How many events do I have?"
+  /^good\s+morning/i, // Triggers morning briefing, not a greeting
+  /^what'?s\s+(today|my day)\s+look\s+like/i, // "What's today look like?"
+  /^(brief|debrief)\s+me/i, // "Brief me"
+  /^(revenue|pricing|tax|p\s*&?\s*l)\s+(forecast|analysis|summary|report)/i, // Financial commands
+  /^(can\s+i\s+take|am\s+i\s+(overbooked|too busy))/i, // Capacity check
+  /^(what'?s|show)\s+in\s+season/i, // Seasonal produce
+  /^(dormant|re-?engage|acquisition|conversion)\s+(clients?|funnel|rate|scoring)/i, // Relationship intelligence
+  /^(compare|contingency|contract)\s/i, // Multi-event, contingency, contract commands
 ]
 
 function tryDeterministicClassify(message: string): ClassificationResult | null {
