@@ -11,6 +11,7 @@ type InquiryReceivedProps = {
   chefName: string
   occasion: string
   eventDate: string | null
+  circleUrl?: string
 }
 
 export function InquiryReceivedEmail({
@@ -18,6 +19,7 @@ export function InquiryReceivedEmail({
   chefName,
   occasion,
   eventDate,
+  circleUrl,
 }: InquiryReceivedProps) {
   return (
     <BaseLayout preview={`${chefName} received your inquiry`}>
@@ -25,7 +27,7 @@ export function InquiryReceivedEmail({
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
         Thank you for reaching out to <strong>{chefName}</strong>. Your inquiry has been received
-        and will be reviewed shortly. You can expect to hear back within 1–2 business days.
+        and you can expect to hear back shortly.
       </Text>
       <table style={detailsTable}>
         <tbody>
@@ -41,10 +43,15 @@ export function InquiryReceivedEmail({
           )}
         </tbody>
       </table>
-      <Text style={footer}>
-        Once your chef reviews the details, they will send you a formal proposal to review and
-        approve.
-      </Text>
+      {circleUrl && (
+        <Text style={paragraph}>
+          I have set up a space where we can plan everything together. You can view it here:{' '}
+          <a href={circleUrl} style={linkStyle}>
+            Your Dinner Circle
+          </a>
+        </Text>
+      )}
+      <Text style={footer}>Your chef will follow up with menu options and next steps.</Text>
     </BaseLayout>
   )
 }
@@ -83,6 +90,11 @@ const detailValue = {
   color: '#18181b',
   padding: '8px 0',
   borderBottom: '1px solid #f3f4f6',
+}
+
+const linkStyle = {
+  color: '#2563eb',
+  textDecoration: 'underline',
 }
 
 const footer = {

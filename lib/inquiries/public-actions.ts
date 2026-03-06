@@ -235,6 +235,28 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     throw new Error('Failed to create inquiry')
   }
 
+  // Auto-create Dinner Circle (non-blocking)
+  let circleGroupToken: string | null = null
+  try {
+    const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+    const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
+    const circle = await createInquiryCircle({
+      inquiryId: inquiry.id,
+      tenantId,
+      clientName: validated.full_name.trim(),
+      clientEmail: validated.email.toLowerCase().trim(),
+      occasion: validated.occasion.trim(),
+    })
+    circleGroupToken = circle.groupToken
+    await postFirstCircleMessage({
+      groupId: circle.groupId,
+      inquiryId: inquiry.id,
+      tenantId,
+    })
+  } catch (circleErr) {
+    console.error('[submitPublicInquiry] Circle creation failed (non-blocking):', circleErr)
+  }
+
   // Send acknowledgment email to client (non-blocking — never fails the submission)
   try {
     const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
@@ -244,6 +266,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       chefName,
       occasion: validated.occasion.trim(),
       eventDate: validated.event_date || null,
+      circleUrl: circleGroupToken
+        ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
+        : undefined,
     })
   } catch (emailErr) {
     console.error('[submitPublicInquiry] Acknowledgment email failed (non-blocking):', emailErr)

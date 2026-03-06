@@ -303,6 +303,30 @@ export async function POST(request: NextRequest) {
       console.error('[embed-inquiry] Event creation failed (non-blocking):', eventErr)
     }
 
+    // 5b. Auto-create Dinner Circle (non-blocking)
+    let circleGroupToken: string | null = null
+    try {
+      const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+      const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
+      const circle = await createInquiryCircle({
+        inquiryId: inquiry.id,
+        tenantId,
+        clientName,
+        clientEmail,
+        occasion: data.occasion.trim(),
+      })
+      circleGroupToken = circle.groupToken
+
+      // Post chef's first response in the circle
+      await postFirstCircleMessage({
+        groupId: circle.groupId,
+        inquiryId: inquiry.id,
+        tenantId,
+      })
+    } catch (circleErr) {
+      console.error('[embed-inquiry] Circle creation failed (non-blocking):', circleErr)
+    }
+
     // 6. Send acknowledgment email (non-blocking)
     try {
       const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
@@ -312,6 +336,9 @@ export async function POST(request: NextRequest) {
         chefName,
         occasion: data.occasion.trim(),
         eventDate: data.event_date || null,
+        circleUrl: circleGroupToken
+          ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
+          : undefined,
       })
     } catch (emailErr) {
       console.error('[embed-inquiry] Acknowledgment email failed (non-blocking):', emailErr)

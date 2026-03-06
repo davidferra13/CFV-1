@@ -63,6 +63,7 @@ const BRAIN_FILES = {
   discovery: '05-DISCOVERY.md',
   bookingPayment: '06-BOOKING_PAYMENT.md',
   edgeCases: '07-EDGE_CASES.md',
+  inquiryFirstResponse: '08-INQUIRY_FIRST_RESPONSE.md',
 } as const
 
 type BrainDocument = keyof typeof BRAIN_FILES
@@ -115,9 +116,15 @@ export function getAgentBrainForState(
   let stageRules = ''
   let rateCard = ''
 
+  // First-response rules (injected for first contact only)
+  const isFirstResponse =
+    detection.state === 'INBOUND_SIGNAL' || detection.state === 'QUALIFIED_INQUIRY'
+  const firstResponseRules = isFirstResponse ? extractFirstResponseRules() : ''
+
   switch (emailStage) {
     case 'discovery':
       stageRules = extractDiscoveryRules()
+      rateCard = extractRateCard() // Chef quotes their own prices in first response
       break
     case 'pricing':
       stageRules = extractPricingRules()
@@ -134,19 +141,28 @@ export function getAgentBrainForState(
       break
   }
 
-  const systemRules = [
+  const systemRuleParts = [
     '=== BRAND VOICE ===',
     brandVoice,
     '',
     `=== STAGE: ${emailStage.toUpperCase()} ===`,
     stageRules,
+  ]
+
+  if (firstResponseRules) {
+    systemRuleParts.push('', '=== FIRST RESPONSE RULES (HIGHEST PRIORITY) ===', firstResponseRules)
+  }
+
+  systemRuleParts.push(
     '',
     '=== EDGE CASE HANDLING ===',
     edgeCases,
     '',
     '=== FORBIDDEN PHRASES (HARD STRIP) ===',
-    forbiddenPhrases,
-  ].join('\n')
+    forbiddenPhrases
+  )
+
+  const systemRules = systemRuleParts.join('\n')
 
   const validationRules = emailFirewall
 
@@ -467,15 +483,17 @@ function assessDataCompleteness(input: DetectionInput, stage: EmailStage): DataF
 }
 
 function determinePricingEligibility(input: DetectionInput, stage: EmailStage): boolean {
-  // From 04-PRICING.md: pricing is forbidden at discovery stage
-  if (stage === 'discovery') return false
+  // Discovery: chef quotes their own per-person rate from their rate card.
+  // This is not "presenting a quote" - it's showing what they charge.
+  // Full quote generation still requires all data at pricing stage.
+  if (stage === 'discovery') return true
 
   // Pricing requires: guest count known/bounded, date known, location known
   const hasDate = !!input.inquiry.confirmed_date
   const hasGuests = input.inquiry.confirmed_guest_count != null
   const hasLocation = !!input.inquiry.confirmed_location
 
-  // All three must be present for pricing to be allowed
+  // All three must be present for formal pricing to be allowed
   if (!hasDate || !hasGuests || !hasLocation) return false
 
   // At pricing or booking stage with required data = pricing allowed
@@ -515,14 +533,16 @@ function extractDiscoveryRules(): string {
   return `CORE PRINCIPLE: When enough information exists to make a reasonable decision, the chef must make it.
 ASKING VS CONFIRMING: Avoid "Could you tell me..." / "Let me know what you'd like..." — Use "I'll plan for..." / "I've got you down for..." / "Unless you'd like something different..."
 FIRST CONTACT — COLLECT (blocking): Event date or range, guest count or range, city or town.
-FIRST CONTACT — ACCEPT IF OFFERED (non-blocking): Preferences, allergies, occasion context.
-FIRST CONTACT — FORBIDDEN TO REQUEST: Full street address, start time, detailed logistics, pricing/deposits.
+FIRST CONTACT — CONFIRM IF PROVIDED: Allergies, dietary restrictions, preferences, occasion context. Acknowledge what the client gave you. Do not re-ask.
+FIRST CONTACT — INCLUDE: Per-person pricing from chef's rate card, what's included (shopping, cooking, plating, serving, cleanup), menu direction.
+FIRST CONTACT — FORBIDDEN TO REQUEST: Budget (chef quotes THEIR prices), kitchen setup/equipment (insulting, redundant), full street address, start time, detailed logistics, deposits.
 MENU COMMITMENT: Begin menu thinking immediately. Say "I'll plan a chef-driven seasonal menu" or similar. Do not wait for logistics.
-OPTIONAL FOLLOW-UP: At most ONE, only if it materially improves direction.
+OPTIONAL FOLLOW-UP: At most ONE, only if it materially improves direction. No parenthetical examples.
 WHIMSICAL: If birthday/anniversary mentioned, slightly warmer language, ask ONE joy-forward question max. Never block progress.
 PARALLEL: Menu planning and logistics happen in parallel, not sequentially. Menu is never blocked by missing logistics.
 NORMALIZING FIRST-TIMERS: One sentence acknowledgment, lower the stakes, move on. Example: "That's totally fine. A lot of people I cook for are doing this for the first time."
-REPEAT CLIENTS: Do not reset to formal. Reference past context. Treat it as routine. Skip known discovery data.`
+REPEAT CLIENTS: Do not reset to formal. Reference past context. Treat it as routine. Skip known discovery data.
+FRICTION RULE: Every question adds friction and delays. Only ask what you genuinely cannot proceed without. One email should move the ball forward, not create homework.`
 }
 
 function extractPricingRules(): string {
@@ -572,6 +592,33 @@ AMBIGUOUS/INVALID: Politely redirect. "My work is focused on private in-home din
 WHEN UNSURE: State → default to Discovery. Service type → default to Private Dinner. Pricing → do not include. Data → treat as unconfirmed. Err on shorter, simpler response.`
 }
 
+function extractFirstResponseRules(): string {
+  const doc = loadDocument('inquiryFirstResponse')
+  if (!doc) return ''
+
+  return `THIS IS THE FIRST RESPONSE TO A NEW INQUIRY. These rules override all other stage rules.
+
+STRUCTURE (in order):
+1. Warm acknowledgment (one sentence)
+2. Confirm what you know (date, guests, dietary - stated as facts, not questions)
+3. Show what's included (shopping, cooking, plating, serving, cleanup)
+4. Give your per-person pricing (from your rate card)
+5. Suggest menu direction (based on occasion, guest count, or season)
+6. One simple question max (usually occasion if unknown - no parenthetical examples)
+7. Next step (tell them what happens next - "I'll send 2-3 menu options")
+8. Sign-off (warm, first name)
+
+ANTI-PATTERNS (NEVER DO):
+- Ask their budget (quote YOUR prices)
+- Ask about kitchen setup (insulting, redundant)
+- Re-ask info they already provided (confirm it instead)
+- Overload with questions (every question adds friction)
+- Give parenthetical examples for obvious words
+- Create homework for the client
+
+THE TEST: After reading, the client knows: what you charge, that you heard them, what's included, and what happens next.`
+}
+
 function extractForbiddenPhrases(): string {
   return `HARD BLOCKLIST — if any appear, the draft is INVALID and must be rewritten:
 - "Thanks for your inquiry"
@@ -581,6 +628,9 @@ function extractForbiddenPhrases(): string {
 - "Please provide the following"
 - "I just need a few more details"
 - "Based on your request"
+- "What's your budget?" (or any budget question)
+- "How's your kitchen setup?" (or any kitchen/equipment question)
+- "Any other dietary needs beyond [X]?" (re-asking what client provided)
 - Administrative, corporate, platform, checklist, CRM, or form language
 - "AI:", "Assistant:", "System:", "Note:"
 - "SERVICE BLUEPRINT", schema names, template names, "ChefFlow", "queue", "FSM"
@@ -606,14 +656,20 @@ HARD STRIP RULES (remove if found in output):
 STAGE-SPECIFIC VALIDATION:
 ${
   stage === 'discovery'
-    ? `DISCOVERY — FORBIDDEN in output:
-- ANY pricing (numbers, ranges, per-person, totals, "starting at")
+    ? `DISCOVERY — ALLOWED in output:
+- Chef's per-person rate from their own rate card (the chef quotes THEIR prices)
+- What's included in the service (shopping, cooking, plating, serving, cleanup)
+- Menu direction ("I'm thinking X based on the occasion")
+DISCOVERY — FORBIDDEN in output:
+- Asking the client's budget (chef quotes their OWN prices, never asks budget)
+- Asking about kitchen setup or equipment
+- Re-asking dietary info the client already provided
 - Deposits, payment language, retainers
 - Booking or confirmation language
 - Availability guarantees
-- Menu specifics or course counts
 - Urgency, scarcity, deadline framing
-- Bullets, numbered lists, headers, sections`
+- Bullets, numbered lists, headers, sections
+- Parenthetical examples for obvious words`
     : ''
 }
 ${

@@ -56,6 +56,7 @@ import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
 import { Suspense } from 'react'
 import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
+import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -156,6 +157,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     availableRecipes,
     bookingScore,
     timelineEntries,
+    circleToken,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -168,6 +170,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getRecipesForLinker(),
     getBookingScoreForInquiry(params.id).catch(() => null),
     getEntityActivityTimeline('inquiry', params.id),
+    getInquiryCircleToken(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -293,6 +296,25 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           <Button variant="ghost">Back to Pipeline</Button>
         </Link>
       </div>
+
+      {/* Dinner Circle Link */}
+      {circleToken && (
+        <Card className="bg-stone-800/50 border-stone-700 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-stone-200">Dinner Circle</p>
+              <p className="text-xs text-stone-400">
+                This inquiry has an active Dinner Circle where the client can view updates
+              </p>
+            </div>
+            <Link href={`/my-hub/g/${circleToken}`}>
+              <Button variant="ghost" className="text-sm">
+                View Circle
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
 
       {/* Missing Facts Warning */}
       {missingFacts.length > 0 && inquiry.status !== 'declined' && inquiry.status !== 'expired' && (

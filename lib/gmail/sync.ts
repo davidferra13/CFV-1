@@ -625,6 +625,28 @@ async function handleInquiry(
       console.error('[handleInquiry] Notification failed (non-fatal):', notifErr)
     }
 
+    // Auto-create Dinner Circle (non-blocking)
+    let circleGroupToken: string | null = null
+    try {
+      const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+      const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
+      const circle = await createInquiryCircle({
+        inquiryId: inquiry.id,
+        tenantId,
+        clientName: leadName,
+        clientEmail: email.from.email || null,
+        occasion: ollamaOccasion || detFields.confirmed_occasion || null,
+      })
+      circleGroupToken = circle.groupToken
+      await postFirstCircleMessage({
+        groupId: circle.groupId,
+        inquiryId: inquiry.id,
+        tenantId,
+      })
+    } catch (circleErr) {
+      console.error('[handleInquiry] Circle creation failed (non-blocking):', circleErr)
+    }
+
     // Email the chef directly about the new inquiry (non-blocking)
     try {
       const chefProfile = await getChefProfile(tenantId)
@@ -649,6 +671,9 @@ async function handleInquiry(
             chefName: chefProfile.name,
             occasion: ollamaOccasion || detFields.confirmed_occasion || '',
             eventDate: detFields.confirmed_date ?? null,
+            circleUrl: circleGroupToken
+              ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
+              : undefined,
           })
         }
       }

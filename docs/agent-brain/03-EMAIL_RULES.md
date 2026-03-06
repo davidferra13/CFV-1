@@ -81,6 +81,9 @@ If any of these appear, the draft is **invalid** — discard and rewrite:
 - "Please provide the following"
 - "I just need a few more details"
 - "Based on your request"
+- "What's your budget?" (or any budget question - chef quotes their OWN prices)
+- "How's your kitchen setup?" (or any kitchen/equipment question - insulting and redundant)
+- "Any other dietary needs beyond [X]?" (re-asking what the client already provided)
 
 **Forbidden tone:**
 
@@ -100,23 +103,28 @@ If any of these appear, the draft is **invalid** — discard and rewrite:
 - Acknowledge the inquiry naturally
 - Normalize first-time clients (one sentence)
 - Confirm availability or clarify which date/night
-- Calmly acknowledge allergies or preferences
-- Ask only for: the exact date (if unclear), the full address
+- Calmly acknowledge allergies or preferences (confirm what was provided, don't re-ask)
+- Per-person pricing from the chef's own rate card (the chef quotes THEIR prices)
+- What's included in the service (shopping, cooking, plating, serving, cleanup)
+- Start the menu conversation ("I'm thinking X based on the occasion")
+- Ask only for: the exact date (if unclear), occasion (simple, no parenthetical examples)
 - High-level explanation of how private dinners work (one sentence max)
 
 ### Discovery Stage — What's Forbidden
 
-- **Any pricing** — numbers, ranges, per-person, totals, "starting at"
+- Asking the client's budget (the chef quotes their OWN prices, period)
+- Asking about kitchen setup or equipment (insulting, redundant)
+- Re-asking dietary info the client already provided (confirm it instead)
 - Deposits, payment language, retainers
 - Booking or confirmation language
 - Availability guarantees
-- Menu planning beyond high-level style acknowledgment
-- Course counts or menu structures
 - Urgency, scarcity, or deadline framing
-- Asking for number of courses, budget, start time, or full address (on first touch)
+- Asking for start time or full address (on first touch)
 - Bullets, numbered lists, headers, sections
+- Parenthetical examples for obvious words (they know what "occasion" means)
+- Overloading with questions (every question adds friction and delays the process)
 
-Discovery emails must never imply that work has begun.
+Discovery emails must move the ball forward, not create homework for the client.
 
 ### Pricing Stage — What's Allowed
 

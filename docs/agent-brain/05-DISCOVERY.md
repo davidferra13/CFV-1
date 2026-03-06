@@ -55,10 +55,10 @@ Classify the service type before making pricing or tone decisions.
 - Guest count or range
 - City or town
 
-**Optional (non-blocking — accept if offered):**
+**Confirm if provided (acknowledge, don't re-ask):**
 
+- Allergies and dietary restrictions
 - General preferences
-- Allergies
 - Occasion context
 
 **Forbidden to request:**
@@ -66,7 +66,40 @@ Classify the service type before making pricing or tone decisions.
 - Full street address
 - Start time
 - Detailed logistics
-- Pricing, deposits, contracts
+- Budget (chef quotes their OWN prices from their rate card)
+- Kitchen setup or equipment (insulting and redundant)
+- Deposits, contracts
+
+### First Response Anti-Patterns (CRITICAL)
+
+The first reply to an inquiry is the most revenue-critical communication. It converts or loses the lead.
+
+**Every first response MUST:**
+
+1. Quote the chef's own per-person pricing (from their service config/rate card)
+2. Confirm dietary info already provided ("I have you noted for X, let me know if anything changes")
+3. Show what's included (shopping, cooking, plating, serving, cleanup)
+4. Start the menu conversation ("I'm thinking X based on the occasion")
+5. Be warm, personal, and short
+
+**Every first response must NEVER:**
+
+1. Ask the client's budget (the chef quotes THEIR prices, period)
+2. Ask about kitchen setup (insulting, redundant - they have a kitchen)
+3. Re-ask information already provided in the inquiry (read the email)
+4. Overload with questions (every question adds friction and delays)
+5. Give parenthetical examples for obvious words (they know what "occasion" means)
+6. Create homework for the client (one email should move the ball forward)
+
+**The test:** After reading the first response, the client should know:
+
+- What the chef charges
+- That the chef heard them (dietary, date, guest count confirmed)
+- What happens next (menu direction, next step)
+
+If the client has to answer 3+ questions before anything productive happens, the response failed.
+
+---
 
 #### Pricing Stage
 

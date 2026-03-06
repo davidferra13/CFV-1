@@ -582,6 +582,27 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Zapier dispatch failed (non-blocking):', err)
   }
 
+  // Auto-create Dinner Circle (non-blocking)
+  try {
+    const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+    const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
+    const circle = await createInquiryCircle({
+      inquiryId: inquiry.id,
+      tenantId: user.tenantId!,
+      clientName: validated.client_name,
+      clientEmail: validated.client_email || null,
+      occasion: validated.confirmed_occasion || null,
+    })
+    // Post chef's first response in the circle
+    await postFirstCircleMessage({
+      groupId: circle.groupId,
+      inquiryId: inquiry.id,
+      tenantId: user.tenantId!,
+    })
+  } catch (err) {
+    console.error('[createInquiry] Circle creation failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 
@@ -1646,6 +1667,18 @@ export async function convertInquiryToEvent(inquiryId: string) {
     }
   } catch (err) {
     console.error('[convertInquiryToEvent] Client notification failed (non-blocking):', err)
+  }
+
+  // Link inquiry's Dinner Circle to the new event (non-blocking)
+  try {
+    const { linkInquiryCircleToEvent } = await import('@/lib/hub/inquiry-circle-actions')
+    await linkInquiryCircleToEvent({
+      inquiryId: inquiry.id,
+      eventId: event.id,
+      tenantId: user.tenantId!,
+    })
+  } catch (err) {
+    console.error('[convertInquiryToEvent] Circle-event link failed (non-blocking):', err)
   }
 
   return { success: true, event }
