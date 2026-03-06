@@ -37,6 +37,7 @@ import {
 } from '@/components/inquiries/inquiries-bulk-table'
 import { AlertTriangle, Clock, TrendingUp, BarChart3 } from 'lucide-react'
 import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-bar'
+import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
 
 type InquiryFilter =
   | 'all'
@@ -507,6 +508,11 @@ export default async function InquiriesPage({
       {/* Pipeline Intelligence Summary */}
       <Suspense fallback={null}>
         <PipelineSummaryBar />
+      </Suspense>
+
+      {/* Inquiry Triage & Communication */}
+      <Suspense fallback={null}>
+        <InquiryTriageBar />
       </Suspense>
 
       {/* View wrapper: manages list/kanban toggle */}

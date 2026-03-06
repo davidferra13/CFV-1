@@ -6,6 +6,7 @@ import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledg
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
+import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 
 export const metadata: Metadata = { title: 'Finance - ChefFlow' }
 
@@ -154,6 +155,11 @@ export default async function FinancePage() {
       {/* Financial Intelligence */}
       <Suspense fallback={null}>
         <FinanceHealthBar />
+      </Suspense>
+
+      {/* Pricing Intelligence */}
+      <Suspense fallback={null}>
+        <PricingIntelligenceBar />
       </Suspense>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -31,6 +31,7 @@ import { ScheduleSection } from './_sections/schedule-section'
 import { AlertsSection } from './_sections/alerts-section'
 import { BusinessSection } from './_sections/business-section'
 import { IntelligenceSection } from './_sections/intelligence-section'
+import { ProactiveAlertsBar } from '@/components/intelligence/proactive-alerts-bar'
 
 // Section skeletons for Suspense fallbacks
 import {
@@ -241,6 +242,13 @@ export default async function ChefDashboard() {
         {/* ============================================ */}
         <Suspense fallback={<ScheduleSkeleton />}>
           <ScheduleSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
+        </Suspense>
+
+        {/* ============================================ */}
+        {/* PROACTIVE INTELLIGENCE ALERTS                 */}
+        {/* ============================================ */}
+        <Suspense fallback={null}>
+          <ProactiveAlertsBar />
         </Suspense>
 
         {/* ============================================ */}

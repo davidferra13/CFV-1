@@ -9,6 +9,7 @@ export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
 import { MenusClientWrapper } from './menus-client-wrapper'
 import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'
+import { IngredientConsolidationBar } from '@/components/intelligence/ingredient-consolidation-bar'
 
 export default async function MenusPage() {
   const user = await requireChef()
@@ -42,6 +43,11 @@ export default async function MenusPage() {
       {/* Dietary Intelligence */}
       <Suspense fallback={null}>
         <DietaryTrendsBar />
+      </Suspense>
+
+      {/* Ingredient Consolidation */}
+      <Suspense fallback={null}>
+        <IngredientConsolidationBar />
       </Suspense>
 
       <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />

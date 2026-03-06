@@ -651,6 +651,7 @@ If the chef's first message relates to these topics, pick up naturally — "Pick
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference data that appears in the sections above. You have access to:
 ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan, email inbox digest (24h), session navigation, recent actions, calendar & availability, year-to-date stats, staff roster (with utilization), equipment, goals, todos, calls, documents, artifacts, proactive alerts (deadlines, expiring quotes, stale inquiries, overdue payments, re-engagement), revenue patterns, conversion rate, expense breakdown, day-of-week patterns, service style mix, repeat client ratio, guest count trends, booking lead time, dietary intelligence, menu approval turnaround, referral sources, cash flow projection, profitability stats, quote comparison, pricing intelligence, inquiry velocity, workload capacity, and memories.
+PAGE-LEVEL INTELLIGENCE: When the chef is on a specific page, you get enriched context about what's on their screen — including intelligence bar data (capacity, seasonal forecast, pricing, triage, geographic, prep efficiency, untapped markets, ingredient consolidation, rebooking predictions, churn risk). Reference these when the chef asks questions related to what they see.
 ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
 ON CLIENT PAGES: Full event history, client notes, and client reviews.
 ON INQUIRY PAGES: Full message thread.
@@ -944,6 +945,9 @@ function buildPageIntelligence(context: RemyContext): string | null {
         `Busiest month: ${context.revenuePattern.busiestMonth} | Slowest: ${context.revenuePattern.slowestMonth} | Monthly avg: $${(context.revenuePattern.monthlyAvgCents / 100).toLocaleString()}`
       )
     }
+    lines.push(
+      'The chef can see: Financial Health Bar (cash flow, margins, vendor alerts) + Pricing Intelligence Bar (price headroom, revenue/guest, optimal pricing)'
+    )
   }
 
   if (page.startsWith('/inquiries')) {
@@ -983,6 +987,9 @@ function buildPageIntelligence(context: RemyContext): string | null {
         `Avg booking lead time: ${context.avgLeadTime.avgDays}d (median ${context.avgLeadTime.medianDays}d)`
       )
     }
+    lines.push(
+      'The chef can see: Pipeline Summary Bar (value, conversion, urgent count) + Inquiry Triage Bar (response speed, urgent count, silent clients)'
+    )
   }
 
   if (page.startsWith('/events') && !page.includes('/')) {
@@ -1016,6 +1023,9 @@ function buildPageIntelligence(context: RemyContext): string | null {
         `Guest count trend: ${context.guestCountTrend.direction} (recent avg ${context.guestCountTrend.recentAvg} vs previous ${context.guestCountTrend.previousAvg})`
       )
     }
+    lines.push(
+      'The chef can see: Financial Summary Bar + Geographic Bar (top areas, travel efficiency) + Prep Efficiency Bar + Untapped Markets Bar (growth opportunities)'
+    )
   }
 
   if (page.startsWith('/clients') && !page.match(/\/clients\/[^/]/)) {
@@ -1041,6 +1051,9 @@ function buildPageIntelligence(context: RemyContext): string | null {
           .join(', ')}`
       )
     }
+    lines.push(
+      'The chef can see: Rebooking Bar (repeat rate, upcoming/overdue rebookers) + churn risk badges in the client table'
+    )
   }
 
   if (page.startsWith('/calendar') || page.startsWith('/schedule')) {
@@ -1062,6 +1075,9 @@ function buildPageIntelligence(context: RemyContext): string | null {
         `Booking lead time: avg ${context.avgLeadTime.avgDays}d, median ${context.avgLeadTime.medianDays}d`
       )
     }
+    lines.push(
+      'The chef can see: Scheduling Insights Bar (alerts, optimal spacing, best day) + Capacity & Seasonal Bar (utilization, headroom, next month forecast)'
+    )
   }
 
   if (page.startsWith('/menus') && !page.match(/\/menus\/[^/]/)) {
@@ -1091,6 +1107,9 @@ function buildPageIntelligence(context: RemyContext): string | null {
     if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
       lines.push(`${context.pendingMenuApprovals.length} menus awaiting client approval`)
     }
+    lines.push(
+      'The chef can see: Dietary Trends Bar + Ingredient Consolidation Bar (shared ingredients, bulk-buy savings)'
+    )
   }
 
   if (page.startsWith('/quotes')) {

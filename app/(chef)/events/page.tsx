@@ -20,6 +20,8 @@ import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 import { getWeatherForEvents } from '@/lib/weather/weather-actions'
 import { EventsFinancialBar } from '@/components/intelligence/events-financial-bar'
 import { GeographicBar } from '@/components/intelligence/geographic-bar'
+import { PrepEfficiencyBar } from '@/components/intelligence/prep-efficiency-bar'
+import { UntappedMarketsBar } from '@/components/intelligence/untapped-markets-bar'
 
 type EventStatus =
   | 'all'
@@ -137,6 +139,16 @@ export default async function EventsPage({
       {/* Geographic Intelligence */}
       <Suspense fallback={null}>
         <GeographicBar />
+      </Suspense>
+
+      {/* Prep Efficiency */}
+      <Suspense fallback={null}>
+        <PrepEfficiencyBar />
+      </Suspense>
+
+      {/* Untapped Markets */}
+      <Suspense fallback={null}>
+        <UntappedMarketsBar />
       </Suspense>
 
       <Card className="p-4">
