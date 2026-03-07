@@ -1,58 +1,29 @@
-// Chef Dashboard — Suspense-streamed for instant perceived load
-// The header + priority banner render immediately (~100ms).
-// Schedule, alerts, and business sections stream in as they resolve.
-// Protected by layout via requireChef()
+// Chef Dashboard - Widget Card Layout
+// Real data visible at a glance. No accordions. No clicking to see info.
+// Grid: 4 columns desktop, 2 tablet, 1 mobile.
+// Each widget is an always-visible card showing its key metric immediately.
 
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
-import { getChefPreferences } from '@/lib/chef/actions'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
-import {
-  DEFAULT_PREFERENCES,
-  type DashboardWidgetId,
-  widgetGridClass,
-} from '@/lib/scheduling/types'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
 import { Plus } from '@/components/ui/icons'
 import type { PriorityQueue } from '@/lib/queue/types'
-import {
-  DashboardCollapseProvider,
-  DashboardCollapseControls,
-} from '@/components/dashboard/dashboard-collapse-controls'
-import { DashboardQuickSettings } from '@/components/dashboard/dashboard-quick-settings'
-import { NextActionCard } from '@/components/queue/next-action'
-import { QueueList } from '@/components/queue/queue-list'
-import { QueueSummaryBar } from '@/components/queue/queue-summary'
-import { QueueEmpty } from '@/components/queue/queue-empty'
-import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
-import { ArrowRight } from '@/components/ui/icons'
-import { ClientLookupWidget } from '@/components/dashboard/client-lookup-widget'
-import { QuickCreateStrip } from '@/components/dashboard/quick-create-strip'
-import { DashboardResetBanner } from '@/components/dashboard/dashboard-reset-banner'
-import { DashboardCategoryHeader } from '@/components/dashboard/dashboard-category-header'
+import { ShortcutStrip } from '@/components/dashboard/shortcut-strip'
+import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
+import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
 
-// Async section components (each fetches its own data)
-import { ScheduleSection } from './_sections/schedule-section'
-import { AlertsSection } from './_sections/alerts-section'
-import { BusinessSection } from './_sections/business-section'
-import { IntelligenceSection } from './_sections/intelligence-section'
-import { ProactiveAlertsBar } from '@/components/intelligence/proactive-alerts-bar'
-
-// Section skeletons for Suspense fallbacks
-import {
-  ScheduleSkeleton,
-  AlertsSkeleton,
-  QueueSkeleton,
-  BusinessSkeleton,
-  IntelligenceSkeleton,
-} from './_sections/section-skeletons'
+// New card-based sections
+import { ScheduleCards } from './_sections/schedule-cards'
+import { AlertCards } from './_sections/alerts-cards'
+import { BusinessCards } from './_sections/business-cards'
+import { IntelligenceCards } from './_sections/intelligence-cards'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 
-// Safe wrapper
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn()
@@ -83,9 +54,43 @@ const emptyQueue: PriorityQueue = {
   computedAt: new Date().toISOString(),
 }
 
-// ============================================
-// DASHBOARD PAGE
-// ============================================
+// Section loading skeletons
+function ScheduleCardsSkeleton() {
+  return (
+    <>
+      <WidgetCardSkeleton size="md" />
+      <WidgetCardSkeleton size="md" />
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+    </>
+  )
+}
+
+function AlertCardsSkeleton() {
+  return (
+    <>
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+    </>
+  )
+}
+
+function BusinessCardsSkeleton() {
+  return (
+    <>
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+    </>
+  )
+}
+
+function IntelligenceCardsSkeleton() {
+  return <WidgetCardSkeleton size="md" />
+}
 
 export default async function ChefDashboard() {
   const user = await requireChef()
@@ -93,241 +98,167 @@ export default async function ChefDashboard() {
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
-  // Only fetch what's needed for the header + priority banner (renders instantly)
-  const [preferences, queue, archetype] = await Promise.all([
-    safe('preferences', getChefPreferences, {
-      id: '',
-      chef_id: user.entityId,
-      ...DEFAULT_PREFERENCES,
-    }),
+  const [queue, archetype] = await Promise.all([
     safe('queue', getPriorityQueue, emptyQueue),
     safe('archetype', () => getCachedChefArchetype(user.entityId), null),
   ])
   const primaryAction = getDashboardPrimaryAction(archetype)
 
-  const widgetPreferences = preferences.dashboard_widgets?.length
-    ? preferences.dashboard_widgets
-    : DEFAULT_PREFERENCES.dashboard_widgets
-  const widgetEnabledRecord: Record<string, boolean> = {}
-  const widgetOrderRecord: Record<string, number> = {}
-
-  for (const [index, widget] of widgetPreferences.entries()) {
-    widgetEnabledRecord[widget.id] = widget.enabled
-    widgetOrderRecord[widget.id] = index
-  }
-
-  const isWidgetEnabled = (widgetId: DashboardWidgetId) => widgetEnabledRecord[widgetId] ?? true
-  const getWidgetOrder = (widgetId: DashboardWidgetId) =>
-    widgetOrderRecord[widgetId] ?? Number.MAX_SAFE_INTEGER
+  // Build priority queue items for the list card
+  const queueItems: ListCardItem[] = queue.items.slice(0, 5).map((item) => ({
+    id: item.id,
+    label: item.title,
+    sublabel:
+      item.context.primaryLabel +
+      (item.context.secondaryLabel ? ` - ${item.context.secondaryLabel}` : ''),
+    href: item.href,
+    status:
+      item.urgency === 'critical'
+        ? ('red' as const)
+        : item.urgency === 'high'
+          ? ('amber' as const)
+          : item.urgency === 'normal'
+            ? ('blue' as const)
+            : ('stone' as const),
+  }))
 
   return (
-    <DashboardCollapseProvider>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* ============================================ */}
-        {/* HEADER — renders instantly, full width       */}
-        {/* ============================================ */}
-        <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
-            <p className="text-sm text-stone-300 mt-0.5">
-              Good {timeOfDay}
-              {firstName ? `, ${firstName}` : ''}.
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ============================================ */}
+      {/* HEADER                                       */}
+      {/* ============================================ */}
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
+          <p className="text-sm text-stone-400 mt-0.5">
+            Good {timeOfDay}
+            {firstName ? `, ${firstName}` : ''}.
+          </p>
+        </div>
+        <div className="flex gap-2 items-center flex-wrap">
+          <Link
+            href="/briefing"
+            className="inline-flex items-center justify-center px-4 py-2 border border-brand-600 text-brand-400 rounded-lg hover:bg-brand-950 transition-colors font-medium text-sm"
+          >
+            Briefing
+          </Link>
+          <Link
+            href="/queue"
+            className="inline-flex items-center justify-center px-4 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
+          >
+            Full Queue
+          </Link>
+          <Link
+            href={primaryAction.href}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium text-sm"
+          >
+            <Plus className="h-4 w-4" />
+            {primaryAction.label}
+          </Link>
+        </div>
+      </div>
+
+      {/* ============================================ */}
+      {/* SHORTCUT STRIP                               */}
+      {/* ============================================ */}
+      <ShortcutStrip />
+
+      {/* ============================================ */}
+      {/* PRIORITY BANNER                              */}
+      {/* ============================================ */}
+      <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+        {queue.nextAction ? (
+          <Link href={queue.nextAction.href} className="block">
+            <div
+              className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-colors hover:opacity-90 ${
+                queue.nextAction.urgency === 'critical'
+                  ? 'bg-gradient-to-r from-red-950/80 to-red-900/30 border-red-800/50 text-red-200'
+                  : queue.nextAction.urgency === 'high'
+                    ? 'bg-gradient-to-r from-amber-950/80 to-amber-900/30 border-amber-800/50 text-amber-200'
+                    : 'bg-gradient-to-r from-brand-950/80 to-brand-900/30 border-brand-700/50 text-brand-200'
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{
+                    backgroundColor:
+                      queue.nextAction.urgency === 'critical'
+                        ? '#ef4444'
+                        : queue.nextAction.urgency === 'high'
+                          ? '#f59e0b'
+                          : '#e88f47',
+                  }}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{queue.nextAction.title}</p>
+                  <p className="text-xs opacity-75 mt-0.5 truncate">
+                    {queue.nextAction.context.primaryLabel}
+                    {queue.nextAction.context.secondaryLabel
+                      ? ` - ${queue.nextAction.context.secondaryLabel}`
+                      : ''}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-medium shrink-0 ml-4">Go &rarr;</span>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-3 rounded-2xl border border-green-800/40 bg-gradient-to-r from-green-950/60 to-emerald-950/30 px-5 py-4">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
+              style={{ backgroundColor: '#10b981' }}
+              aria-hidden="true"
+            />
+            <p className="text-sm font-medium text-green-300">
+              All caught up. Nothing urgent right now.
             </p>
           </div>
-          <div className="flex gap-2 items-center flex-wrap">
-            <DashboardCollapseControls />
-            <DashboardQuickSettings initialWidgets={widgetPreferences} />
-            <Link
-              href="/briefing"
-              className="inline-flex items-center justify-center px-4 py-2 border border-brand-600 text-brand-400 rounded-lg hover:bg-brand-950 transition-colors font-medium text-sm"
-            >
-              Briefing
-            </Link>
-            <Link
-              href="/queue"
-              className="inline-flex items-center justify-center px-4 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
-            >
-              Full Queue
-            </Link>
-            <Link
-              href={primaryAction.href}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium text-sm"
-            >
-              <Plus className="h-4 w-4" />
-              {primaryAction.label}
-            </Link>
-          </div>
-        </div>
-
-        {/* ============================================ */}
-        {/* RESET BANNER — for existing users            */}
-        {/* ============================================ */}
-        <DashboardResetBanner
-          enabledCount={widgetPreferences.filter((w) => w.enabled).length}
-          totalCount={widgetPreferences.length}
-        />
-
-        {/* ============================================ */}
-        {/* CLIENT QUICK LOOKUP — renders instantly      */}
-        {/* ============================================ */}
-        {isWidgetEnabled('client_lookup') && (
-          <div className="col-span-1 md:col-span-2">
-            <ClientLookupWidget />
-          </div>
         )}
-
-        {/* ============================================ */}
-        {/* QUICK-CREATE STRIP — renders instantly       */}
-        {/* ============================================ */}
-        {isWidgetEnabled('quick_create') && (
-          <div className="col-span-1 md:col-span-2">
-            <QuickCreateStrip />
-          </div>
-        )}
-
-        {/* ============================================ */}
-        {/* PRIORITY BANNER — renders instantly          */}
-        {/* ============================================ */}
-        <section data-info="next-action" className="col-span-1 md:col-span-2">
-          {queue.nextAction ? (
-            <Link href={queue.nextAction.href} className="block">
-              <div
-                className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-colors hover:opacity-90 ${
-                  queue.nextAction.urgency === 'critical'
-                    ? 'bg-gradient-to-r from-red-950/80 to-red-900/30 border-red-800/50 text-red-200'
-                    : queue.nextAction.urgency === 'high'
-                      ? 'bg-gradient-to-r from-amber-950/80 to-amber-900/30 border-amber-800/50 text-amber-200'
-                      : 'bg-gradient-to-r from-brand-950/80 to-brand-900/30 border-brand-700/50 text-brand-200'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{
-                      backgroundColor:
-                        queue.nextAction.urgency === 'critical'
-                          ? '#ef4444'
-                          : queue.nextAction.urgency === 'high'
-                            ? '#f59e0b'
-                            : '#e88f47',
-                    }}
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate">{queue.nextAction.title}</p>
-                    <p className="text-xs opacity-75 mt-0.5 truncate">
-                      {queue.nextAction.context.primaryLabel}
-                      {queue.nextAction.context.secondaryLabel
-                        ? ` · ${queue.nextAction.context.secondaryLabel}`
-                        : ''}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-xs font-medium shrink-0 ml-4">Go →</span>
-              </div>
-            </Link>
-          ) : (
-            <div className="flex items-center gap-3 rounded-2xl border border-green-800/40 bg-gradient-to-r from-green-950/60 to-emerald-950/30 px-5 py-4">
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
-                style={{ backgroundColor: '#10b981' }}
-                aria-hidden="true"
-              />
-              <p className="text-sm font-medium text-green-300">
-                All caught up. Nothing urgent right now.
-              </p>
-            </div>
-          )}
-        </section>
-
-        {/* ============================================ */}
-        {/* NEXT ACTION + QUEUE — renders instantly      */}
-        {/* ============================================ */}
-        {isWidgetEnabled('next_action') && queue.nextAction && (
-          <section
-            className={widgetGridClass('next_action')}
-            style={{ order: getWidgetOrder('next_action') }}
-          >
-            <CollapsibleWidget widgetId="next_action" title="Next Action">
-              <NextActionCard item={queue.nextAction} />
-            </CollapsibleWidget>
-          </section>
-        )}
-
-        {isWidgetEnabled('priority_queue') && (
-          <section
-            data-info="queue"
-            className={widgetGridClass('priority_queue')}
-            style={{ order: getWidgetOrder('priority_queue') }}
-          >
-            <CollapsibleWidget widgetId="priority_queue" title="Priority Queue">
-              {queue.summary.allCaughtUp ? (
-                <QueueEmpty />
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
-                      Priority Queue ({queue.summary.totalItems})
-                    </h2>
-                    <Link
-                      href="/queue"
-                      className="text-sm text-brand-600 hover:text-brand-400 font-medium"
-                    >
-                      View all <ArrowRight className="h-3.5 w-3.5 inline" />
-                    </Link>
-                  </div>
-                  <QueueSummaryBar summary={queue.summary} />
-                  <QueueList items={queue.items} limit={20} showFilters={true} />
-                </div>
-              )}
-            </CollapsibleWidget>
-          </section>
-        )}
-
-        {/* ============================================ */}
-        {/* SCHEDULE & PREP                              */}
-        {/* ============================================ */}
-        <DashboardCategoryHeader label="Schedule & Prep" />
-        <Suspense fallback={<ScheduleSkeleton />}>
-          <ScheduleSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
-        </Suspense>
-
-        {/* ============================================ */}
-        {/* PROACTIVE INTELLIGENCE ALERTS                */}
-        {/* ============================================ */}
-        <div className="col-span-1 md:col-span-2">
-          <Suspense fallback={null}>
-            <ProactiveAlertsBar />
-          </Suspense>
-        </div>
-
-        {/* ============================================ */}
-        {/* ACTION ITEMS & CLIENTS                       */}
-        {/* ============================================ */}
-        <DashboardCategoryHeader label="Action Items" />
-        <Suspense fallback={<AlertsSkeleton />}>
-          <AlertsSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
-        </Suspense>
-
-        {/* ============================================ */}
-        {/* ANALYTICS & INTELLIGENCE                     */}
-        {/* ============================================ */}
-        <DashboardCategoryHeader label="Analytics & Intelligence" />
-        <Suspense fallback={<IntelligenceSkeleton />}>
-          <IntelligenceSection
-            widgetEnabled={widgetEnabledRecord}
-            widgetOrder={widgetOrderRecord}
-          />
-        </Suspense>
-
-        {/* ============================================ */}
-        {/* BUSINESS & MONEY                             */}
-        {/* ============================================ */}
-        <DashboardCategoryHeader label="Business & Money" />
-        <Suspense fallback={<BusinessSkeleton />}>
-          <BusinessSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
-        </Suspense>
       </div>
-    </DashboardCollapseProvider>
+
+      {/* ============================================ */}
+      {/* PRIORITY QUEUE - list card                   */}
+      {/* ============================================ */}
+      {!queue.summary.allCaughtUp && (
+        <ListCard
+          widgetId="priority_queue"
+          title="Priority Queue"
+          count={queue.summary.totalItems}
+          items={queueItems}
+          href="/queue"
+          emptyMessage="All caught up!"
+        />
+      )}
+
+      {/* ============================================ */}
+      {/* SCHEDULE CARDS (streamed)                    */}
+      {/* ============================================ */}
+      <Suspense fallback={<ScheduleCardsSkeleton />}>
+        <ScheduleCards />
+      </Suspense>
+
+      {/* ============================================ */}
+      {/* INTELLIGENCE CARDS (streamed)                */}
+      {/* ============================================ */}
+      <Suspense fallback={<IntelligenceCardsSkeleton />}>
+        <IntelligenceCards />
+      </Suspense>
+
+      {/* ============================================ */}
+      {/* ALERT CARDS (streamed)                       */}
+      {/* ============================================ */}
+      <Suspense fallback={<AlertCardsSkeleton />}>
+        <AlertCards />
+      </Suspense>
+
+      {/* ============================================ */}
+      {/* BUSINESS CARDS (streamed - heaviest)         */}
+      {/* ============================================ */}
+      <Suspense fallback={<BusinessCardsSkeleton />}>
+        <BusinessCards />
+      </Suspense>
+    </div>
   )
 }
