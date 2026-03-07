@@ -286,9 +286,111 @@ Complete domain coverage. All deterministic unless noted.
 | `notifications.preferences`  | Notification settings               | 1    |
 | `document.snapshots`         | Document version history            | 1    |
 
-**Deterministic Intent Patterns:** All intelligence commands have regex patterns in `lib/ai/command-intent-parser.ts` that skip Ollama entirely. 80+ patterns covering natural language like "good morning", "revenue forecast", "what's in season", "who hasn't booked lately", "cash flow", "food cost", "who's at risk", "staff performance", etc.
+### Intelligence Commands - Batch 3 (35+ Capabilities - Gap Closure)
 
-**Implementation:** `lib/ai/remy-intelligence-actions.ts`, `lib/ai/remy-intelligence-actions-2.ts`, `lib/ai/command-intent-parser.ts`
+Complete coverage of every remaining app feature. All deterministic unless noted.
+
+#### Hub Circles
+
+| Command          | What It Does                           | Tier | File                                    |
+| ---------------- | -------------------------------------- | ---- | --------------------------------------- |
+| `circles.list`   | All circles with members, unread count | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `circles.unread` | Total unread messages across circles   | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `circles.events` | Events linked to a specific circle     | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Rate Card
+
+| Command             | What It Does                                      | Tier | File                                    |
+| ------------------- | ------------------------------------------------- | ---- | --------------------------------------- |
+| `rate_card.summary` | Rate card, default rate, avg per-head from events | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Tasks / Kanban
+
+| Command         | What It Does                        | Tier | File                                    |
+| --------------- | ----------------------------------- | ---- | --------------------------------------- |
+| `tasks.list`    | Task board items, filterable status | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `tasks.by_date` | Tasks due on a specific date        | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `tasks.overdue` | Past-due uncompleted tasks          | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Travel / Logistics
+
+| Command           | What It Does                     | Tier | File                                    |
+| ----------------- | -------------------------------- | ---- | --------------------------------------- |
+| `travel.plan`     | Travel plan for a specific event | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `travel.upcoming` | All upcoming travel legs         | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Commerce / POS
+
+| Command                   | What It Does               | Tier | File                                    |
+| ------------------------- | -------------------------- | ---- | --------------------------------------- |
+| `commerce.products`       | Active product inventory   | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `commerce.recent_sales`   | Recent POS transactions    | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `commerce.daily_report`   | Today's sales report       | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `commerce.product_report` | 30-day product performance | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `commerce.inventory_low`  | Low stock alerts           | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Daily Ops
+
+| Command       | What It Does                  | Tier | File                                    |
+| ------------- | ----------------------------- | ---- | --------------------------------------- |
+| `daily.plan`  | Today's daily operations plan | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `daily.stats` | Daily plan completion stats   | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Priority Queue
+
+| Command        | What It Does                                     | Tier | File                                    |
+| -------------- | ------------------------------------------------ | ---- | --------------------------------------- |
+| `queue.status` | Priority queue ranked by urgency, with breakdown | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Stations / Kitchen Ops
+
+| Command              | What It Does                      | Tier | File                                    |
+| -------------------- | --------------------------------- | ---- | --------------------------------------- |
+| `stations.list`      | Kitchen stations with items/comps | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `stations.detail`    | Full station detail               | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `stations.ops_log`   | Kitchen operations log            | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `stations.waste_log` | 30-day food waste summary         | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Testimonials
+
+| Command                | What It Does                         | Tier | File                                    |
+| ---------------------- | ------------------------------------ | ---- | --------------------------------------- |
+| `testimonials.list`    | All testimonials with ratings/status | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `testimonials.pending` | Testimonials awaiting approval       | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Partners / Referrals
+
+| Command                | What It Does                        | Tier | File                                    |
+| ---------------------- | ----------------------------------- | ---- | --------------------------------------- |
+| `partners.list`        | Referral partner directory          | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `partners.events`      | Events from a specific partner      | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `partners.performance` | Partners ranked by events generated | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Activity Feed
+
+| Command               | What It Does                 | Tier | File                                    |
+| --------------------- | ---------------------------- | ---- | --------------------------------------- |
+| `activity.feed`       | Recent platform activity     | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `activity.engagement` | Client engagement statistics | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### After-Action Reviews (AAR)
+
+| Command               | What It Does                    | Tier | File                                    |
+| --------------------- | ------------------------------- | ---- | --------------------------------------- |
+| `aar.list`            | Recent AARs with ratings        | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `aar.stats`           | Aggregate AAR statistics        | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `aar.events_without`  | Completed events missing an AAR | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+| `aar.forgotten_items` | Most frequently forgotten items | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+#### Waitlist
+
+| Command           | What It Does            | Tier | File                                    |
+| ----------------- | ----------------------- | ---- | --------------------------------------- |
+| `waitlist.status` | Clients on the waitlist | 1    | `lib/ai/remy-intelligence-actions-3.ts` |
+
+**Deterministic Intent Patterns:** All intelligence commands have regex patterns in `lib/ai/command-intent-parser.ts` that skip Ollama entirely. 130+ patterns covering natural language like "good morning", "revenue forecast", "what's in season", "who hasn't booked lately", "cash flow", "food cost", "who's at risk", "staff performance", "my circles", "overdue tasks", "what's urgent", "waste report", "partner performance", etc.
+
+**Implementation:** `lib/ai/remy-intelligence-actions.ts`, `lib/ai/remy-intelligence-actions-2.ts`, `lib/ai/remy-intelligence-actions-3.ts`, `lib/ai/command-intent-parser.ts`
 
 ---
 
@@ -693,4 +795,4 @@ ADMIN_EMAILS=admin@example.com
 
 ---
 
-_Last updated: 2026-03-06 by Claude Code. Update this file whenever Remy's capabilities change._
+_Last updated: 2026-03-06 by Claude Code. Batch 3 gap closure: +35 capabilities (circles, tasks, travel, commerce, stations, testimonials, partners, activity, AAR, queue, daily ops, waitlist, rate card). Update this file whenever Remy's capabilities change._

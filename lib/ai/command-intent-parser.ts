@@ -743,6 +743,25 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
         goals: '/goals',
         reviews: '/reviews',
         loyalty: '/loyalty',
+        circles: '/circles',
+        hub: '/circles',
+        'rate card': '/rate-card',
+        rates: '/rate-card',
+        tasks: '/tasks',
+        travel: '/travel',
+        commerce: '/commerce',
+        pos: '/commerce/register',
+        register: '/commerce/register',
+        'daily ops': '/daily',
+        daily: '/daily',
+        queue: '/queue',
+        stations: '/stations',
+        testimonials: '/testimonials',
+        partners: '/partners',
+        activity: '/activity',
+        consulting: '/consulting',
+        aar: '/aar',
+        waitlist: '/waitlist',
       }
       const route = routeMap[dest]
       if (!route) return null as any
@@ -1707,6 +1726,211 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
   {
     pattern: /^(?:how many|total|count)\s+(?:of\s+)?(?:my\s+)?clients?/i,
     build: makeSimpleBuild('client.count'),
+  },
+
+  // ─── Batch 3: Gap Closure — Circles, Tasks, Travel, Commerce, Stations, etc. ─
+
+  // Hub Circles
+  {
+    pattern: /^(?:show|list|my)\s+(?:hub\s+)?circles?/i,
+    build: makeSimpleBuild('circles.list'),
+  },
+  {
+    pattern: /^(?:circle|dinner\s+club)\s+(?:unread|messages?|notifications?)/i,
+    build: makeSimpleBuild('circles.unread'),
+  },
+  {
+    pattern: /^(?:circle|hub)\s+events?\s+(?:for|in)\s+(.+)/i,
+    build: makeSimpleBuild('circles.events', (m) => ({ circleName: m[1].trim() })),
+  },
+  {
+    pattern: /^(?:unread\s+)?(?:circle|hub)\s+(?:messages?|unread)/i,
+    build: makeSimpleBuild('circles.unread'),
+  },
+
+  // Rate Card
+  {
+    pattern: /^(?:rate\s+card|my\s+rates?|pricing\s+card|what\s+do\s+i\s+charge)/i,
+    build: makeSimpleBuild('rate_card.summary'),
+  },
+
+  // Tasks / Kanban
+  {
+    pattern: /^(?:show|list|my|open|pending)\s+(?:open\s+|pending\s+)?tasks?/i,
+    build: makeSimpleBuild('tasks.list'),
+  },
+  {
+    pattern: /^(?:overdue|late|missed)\s+tasks?/i,
+    build: makeSimpleBuild('tasks.overdue'),
+  },
+  {
+    pattern: /^(?:today'?s?\s+)?tasks?\s+(?:for\s+)?today/i,
+    build: makeSimpleBuild('tasks.by_date'),
+  },
+  {
+    pattern: /^tasks?\s+(?:for|on|due)\s+(.+)/i,
+    build: makeSimpleBuild('tasks.by_date', (m) => ({ date: m[1].trim() })),
+  },
+  {
+    pattern: /^what\s+(?:do\s+i\s+need\s+to\s+do|are\s+my\s+tasks?|needs?\s+doing)/i,
+    build: makeSimpleBuild('tasks.list'),
+  },
+
+  // Travel
+  {
+    pattern: /^(?:travel|logistics)\s+(?:plan|details?)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('travel.plan', (m) => ({ eventName: m[1].trim() })),
+  },
+  {
+    pattern: /^(?:upcoming|next)\s+(?:travel|trips?|legs?)/i,
+    build: makeSimpleBuild('travel.upcoming'),
+  },
+  {
+    pattern: /^(?:show|list)\s+(?:my\s+)?(?:travel|trips?|logistics)/i,
+    build: makeSimpleBuild('travel.upcoming'),
+  },
+
+  // Commerce / POS
+  {
+    pattern: /^(?:show|list|my)\s+(?:commerce\s+)?products?/i,
+    build: makeSimpleBuild('commerce.products'),
+  },
+  {
+    pattern: /^(?:recent|latest|today'?s?)\s+(?:sales?|transactions?)/i,
+    build: makeSimpleBuild('commerce.recent_sales'),
+  },
+  {
+    pattern: /^(?:daily|today'?s?)\s+(?:sales?\s+)?report/i,
+    build: makeSimpleBuild('commerce.daily_report'),
+  },
+  {
+    pattern: /^(?:product\s+)?(?:sales?\s+)?report/i,
+    build: makeSimpleBuild('commerce.product_report'),
+  },
+  {
+    pattern: /^(?:low\s+stock|out\s+of\s+stock|inventory\s+(?:low|alert))\s*(?:products?)?/i,
+    build: makeSimpleBuild('commerce.inventory_low'),
+  },
+  {
+    pattern: /^(?:what'?s?\s+selling|top\s+sellers?|best\s+sellers?)/i,
+    build: makeSimpleBuild('commerce.product_report'),
+  },
+
+  // Daily Ops
+  {
+    pattern: /^(?:daily\s+plan|today'?s?\s+plan|what'?s?\s+(?:the|my)\s+plan)/i,
+    build: makeSimpleBuild('daily.plan'),
+  },
+  {
+    pattern: /^daily\s+(?:plan\s+)?stats?/i,
+    build: makeSimpleBuild('daily.stats'),
+  },
+
+  // Priority Queue
+  {
+    pattern: /^(?:priority\s+)?queue/i,
+    build: makeSimpleBuild('queue.status'),
+  },
+  {
+    pattern: /^what'?s?\s+(?:most\s+)?(?:urgent|important|pressing)/i,
+    build: makeSimpleBuild('queue.status'),
+  },
+  {
+    pattern: /^(?:what\s+)?needs?\s+(?:my\s+)?(?:attention|action)/i,
+    build: makeSimpleBuild('queue.status'),
+  },
+
+  // Stations
+  {
+    pattern: /^(?:show|list|my)\s+(?:kitchen\s+)?stations?/i,
+    build: makeSimpleBuild('stations.list'),
+  },
+  {
+    pattern: /^station\s+(?:detail|info|status)\s+(?:for\s+)?(.+)/i,
+    build: makeSimpleBuild('stations.detail', (m) => ({ stationName: m[1].trim() })),
+  },
+  {
+    pattern: /^(?:ops?\s+)?log(?:\s+(?:for|at)\s+(.+))?/i,
+    build: makeSimpleBuild('stations.ops_log', (m) => (m[1] ? { stationName: m[1].trim() } : {})),
+  },
+  {
+    pattern: /^waste\s+(?:log|report|summary|tracking)/i,
+    build: makeSimpleBuild('stations.waste_log'),
+  },
+  {
+    pattern: /^(?:how\s+much\s+)?(?:food\s+)?waste/i,
+    build: makeSimpleBuild('stations.waste_log'),
+  },
+
+  // Testimonials
+  {
+    pattern: /^(?:show|list|my)\s+testimonials?/i,
+    build: makeSimpleBuild('testimonials.list'),
+  },
+  {
+    pattern: /^(?:pending|unapproved)\s+testimonials?/i,
+    build: makeSimpleBuild('testimonials.pending'),
+  },
+  {
+    pattern: /^(?:what\s+do\s+(?:people|guests?|clients?)\s+(?:say|think)|guest\s+feedback)/i,
+    build: makeSimpleBuild('testimonials.list'),
+  },
+
+  // Partners / Referrals
+  {
+    pattern: /^(?:show|list|my)\s+(?:referral\s+)?partners?/i,
+    build: makeSimpleBuild('partners.list'),
+  },
+  {
+    pattern: /^partner\s+(?:events?|bookings?)\s+(?:for|from)\s+(.+)/i,
+    build: makeSimpleBuild('partners.events', (m) => ({ partnerName: m[1].trim() })),
+  },
+  {
+    pattern: /^partner\s+(?:performance|analytics|stats)/i,
+    build: makeSimpleBuild('partners.performance'),
+  },
+  {
+    pattern:
+      /^(?:who\s+(?:refers|sends)\s+(?:me\s+)?(?:the\s+most|work)|top\s+(?:referral\s+)?partners?)/i,
+    build: makeSimpleBuild('partners.performance'),
+  },
+
+  // Activity Feed
+  {
+    pattern: /^(?:activity|recent\s+activity|what'?s?\s+been\s+happening)/i,
+    build: makeSimpleBuild('activity.feed'),
+  },
+  {
+    pattern: /^engagement\s+(?:stats?|metrics?|data)/i,
+    build: makeSimpleBuild('activity.engagement'),
+  },
+
+  // AAR (After-Action Reviews)
+  {
+    pattern: /^(?:show|list|recent)\s+(?:after[- ]action\s+)?reviews?|(?:recent\s+)?aars?/i,
+    build: makeSimpleBuild('aar.list'),
+  },
+  {
+    pattern: /^aar\s+stats?/i,
+    build: makeSimpleBuild('aar.stats'),
+  },
+  {
+    pattern: /^(?:events?\s+(?:without|needing|missing)\s+(?:an?\s+)?aar|unfiled\s+aars?)/i,
+    build: makeSimpleBuild('aar.events_without'),
+  },
+  {
+    pattern: /^(?:forgotten\s+items?|what\s+do\s+i\s+(?:always\s+)?forget)/i,
+    build: makeSimpleBuild('aar.forgotten_items'),
+  },
+
+  // Waitlist
+  {
+    pattern: /^(?:show|list|my)\s+waitlist/i,
+    build: makeSimpleBuild('waitlist.status'),
+  },
+  {
+    pattern: /^(?:who'?s?\s+on\s+(?:the\s+)?waitlist|waitlisted\s+clients?)/i,
+    build: makeSimpleBuild('waitlist.status'),
   },
 ]
 

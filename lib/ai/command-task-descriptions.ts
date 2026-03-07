@@ -1239,7 +1239,274 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Document Versions',
     description: 'Show version history/snapshots for a specific document.',
-    inputSchema: '{ "documentId": "string — document ID" }',
+    inputSchema: '{ "documentId": "string - document ID" }',
+  },
+
+  // ─── Batch 3: Gap Closure ─────────────────────────────────────────────────
+
+  // Hub Circles
+  {
+    type: 'circles.list',
+    tier: 1,
+    name: 'My Circles',
+    description:
+      'List all dinner circles/hub groups with member count, unread messages, and activity.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'circles.unread',
+    tier: 1,
+    name: 'Circle Unread Count',
+    description: 'Get total unread message count across all circles.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'circles.events',
+    tier: 1,
+    name: 'Circle Events',
+    description: 'List events linked to a specific circle.',
+    inputSchema: '{ "circleName": "string - circle name to look up" }',
+  },
+
+  // Rate Card
+  {
+    type: 'rate_card.summary',
+    tier: 1,
+    name: 'Rate Card Summary',
+    description:
+      'Show rate card with default rate, service types, average per-head pricing from recent events.',
+    inputSchema: '{}',
+  },
+
+  // Tasks / Kanban
+  {
+    type: 'tasks.list',
+    tier: 1,
+    name: 'Task List',
+    description:
+      'List tasks from the kanban board. Can filter by status (pending, in_progress, completed).',
+    inputSchema: '{ "status": "string - optional filter: pending, in_progress, completed" }',
+  },
+  {
+    type: 'tasks.by_date',
+    tier: 1,
+    name: 'Tasks by Date',
+    description: 'List tasks due on a specific date.',
+    inputSchema: '{ "date": "string - YYYY-MM-DD, defaults to today" }',
+  },
+  {
+    type: 'tasks.overdue',
+    tier: 1,
+    name: 'Overdue Tasks',
+    description: 'List tasks that are past due but not completed.',
+    inputSchema: '{}',
+  },
+
+  // Travel
+  {
+    type: 'travel.plan',
+    tier: 1,
+    name: 'Travel Plan',
+    description:
+      'Get the travel/logistics plan for a specific event including legs, departure/arrival times.',
+    inputSchema: '{ "eventName": "string - event occasion or ID" }',
+  },
+  {
+    type: 'travel.upcoming',
+    tier: 1,
+    name: 'Upcoming Travel',
+    description: 'List upcoming travel legs across all events.',
+    inputSchema: '{}',
+  },
+
+  // Commerce / POS
+  {
+    type: 'commerce.products',
+    tier: 1,
+    name: 'Product Inventory',
+    description: 'List active commerce products with pricing, cost, and stock levels.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'commerce.recent_sales',
+    tier: 1,
+    name: 'Recent Sales',
+    description: 'List recent POS transactions with totals and item counts.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'commerce.daily_report',
+    tier: 1,
+    name: 'Daily Sales Report',
+    description: "Today's sales report with total revenue, tax, average sale, and top products.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'commerce.product_report',
+    tier: 1,
+    name: 'Product Sales Report',
+    description:
+      'Product-level sales report for the last 30 days with units sold, revenue, and margins.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'commerce.inventory_low',
+    tier: 1,
+    name: 'Low Stock Alert',
+    description: 'List products that are at or below their reorder point.',
+    inputSchema: '{}',
+  },
+
+  // Daily Ops
+  {
+    type: 'daily.plan',
+    tier: 1,
+    name: 'Daily Plan',
+    description: "Get today's daily operations plan with events, tasks, and priorities.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'daily.stats',
+    tier: 1,
+    name: 'Daily Plan Stats',
+    description: "Get statistics on today's daily plan completion rate.",
+    inputSchema: '{}',
+  },
+
+  // Priority Queue
+  {
+    type: 'queue.status',
+    tier: 1,
+    name: 'Priority Queue',
+    description:
+      'Show the priority queue with items ranked by urgency (inquiries, events, quotes, messages).',
+    inputSchema: '{}',
+  },
+
+  // Stations
+  {
+    type: 'stations.list',
+    tier: 1,
+    name: 'Kitchen Stations',
+    description: 'List all kitchen stations with their menu items and components.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'stations.detail',
+    tier: 1,
+    name: 'Station Detail',
+    description:
+      'Get full details for a specific station including assigned menu items and components.',
+    inputSchema: '{ "stationName": "string - station name or ID" }',
+  },
+  {
+    type: 'stations.ops_log',
+    tier: 1,
+    name: 'Operations Log',
+    description:
+      'Show the kitchen operations log with recent actions, optionally filtered by station.',
+    inputSchema: '{ "stationName": "string - optional, filter by station name" }',
+  },
+  {
+    type: 'stations.waste_log',
+    tier: 1,
+    name: 'Waste Summary',
+    description: 'Show food waste summary for the last 30 days across all stations.',
+    inputSchema: '{}',
+  },
+
+  // Testimonials
+  {
+    type: 'testimonials.list',
+    tier: 1,
+    name: 'Testimonials',
+    description: 'List testimonials with ratings, approval status, and averages.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'testimonials.pending',
+    tier: 1,
+    name: 'Pending Testimonials',
+    description: 'List testimonials waiting for approval.',
+    inputSchema: '{}',
+  },
+
+  // Partners / Referrals
+  {
+    type: 'partners.list',
+    tier: 1,
+    name: 'Referral Partners',
+    description: 'List referral partners with type, status, and contact info.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'partners.events',
+    tier: 1,
+    name: 'Partner Events',
+    description: 'List events generated by a specific referral partner.',
+    inputSchema: '{ "partnerName": "string - partner name or ID" }',
+  },
+  {
+    type: 'partners.performance',
+    tier: 1,
+    name: 'Partner Performance',
+    description: 'Rank referral partners by number of events generated.',
+    inputSchema: '{}',
+  },
+
+  // Activity Feed
+  {
+    type: 'activity.feed',
+    tier: 1,
+    name: 'Activity Feed',
+    description: 'Show recent activity across the platform (events, clients, finances, etc.).',
+    inputSchema: '{}',
+  },
+  {
+    type: 'activity.engagement',
+    tier: 1,
+    name: 'Engagement Stats',
+    description: 'Show client engagement statistics and metrics.',
+    inputSchema: '{}',
+  },
+
+  // AAR (After-Action Reviews)
+  {
+    type: 'aar.list',
+    tier: 1,
+    name: 'Recent AARs',
+    description: 'List recent after-action reviews with ratings and event details.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'aar.stats',
+    tier: 1,
+    name: 'AAR Statistics',
+    description: 'Get aggregate AAR statistics (average ratings, completion rates).',
+    inputSchema: '{}',
+  },
+  {
+    type: 'aar.events_without',
+    tier: 1,
+    name: 'Events Missing AAR',
+    description: 'List completed events that still need an after-action review filed.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'aar.forgotten_items',
+    tier: 1,
+    name: 'Frequently Forgotten Items',
+    description: 'Show items that are most frequently forgotten across events (from AAR data).',
+    inputSchema: '{}',
+  },
+
+  // Waitlist
+  {
+    type: 'waitlist.status',
+    tier: 1,
+    name: 'Waitlist',
+    description: 'Show clients currently on the waitlist.',
+    inputSchema: '{}',
   },
 ]
 

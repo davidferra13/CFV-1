@@ -163,6 +163,41 @@ import {
   executeNotificationPreferences,
   executeDocumentSnapshots,
 } from '@/lib/ai/remy-intelligence-actions-2'
+import {
+  executeCirclesList,
+  executeCirclesUnread,
+  executeCircleEvents,
+  executeRateCard,
+  executeTasksList,
+  executeTasksByDate,
+  executeTasksOverdue,
+  executeTravelPlan,
+  executeTravelUpcoming,
+  executeCommerceProducts,
+  executeCommerceRecentSales,
+  executeCommerceDailyReport,
+  executeCommerceProductReport,
+  executeCommerceInventoryLow,
+  executeDailyPlan,
+  executeDailyPlanStats,
+  executePriorityQueue,
+  executeStationsList,
+  executeStationDetail,
+  executeOpsLog,
+  executeWasteLog,
+  executeTestimonialsList,
+  executeTestimonialsPending,
+  executePartnersList,
+  executePartnerEvents,
+  executePartnerPerformance,
+  executeActivityFeed,
+  executeEngagementStats,
+  executeAARList,
+  executeAARStats,
+  executeEventsWithoutAAR,
+  executeAARForgottenItems,
+  executeWaitlistStatus,
+} from '@/lib/ai/remy-intelligence-actions-3'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -1759,6 +1794,133 @@ async function executeSingleTask(
       // Document Intelligence
       case 'document.snapshots':
         data = await executeDocumentSnapshots(task.inputs)
+        break
+
+      // ─── Batch 3: Gap Closure ─────────────────────────────────────────────
+
+      // Hub Circles
+      case 'circles.list':
+        data = await executeCirclesList()
+        break
+      case 'circles.unread':
+        data = await executeCirclesUnread()
+        break
+      case 'circles.events':
+        data = await executeCircleEvents(task.inputs)
+        break
+
+      // Rate Card
+      case 'rate_card.summary':
+        data = await executeRateCard()
+        break
+
+      // Tasks / Kanban
+      case 'tasks.list':
+        data = await executeTasksList(task.inputs)
+        break
+      case 'tasks.by_date':
+        data = await executeTasksByDate(task.inputs)
+        break
+      case 'tasks.overdue':
+        data = await executeTasksOverdue()
+        break
+
+      // Travel
+      case 'travel.plan':
+        data = await executeTravelPlan(task.inputs)
+        break
+      case 'travel.upcoming':
+        data = await executeTravelUpcoming()
+        break
+
+      // Commerce / POS
+      case 'commerce.products':
+        data = await executeCommerceProducts()
+        break
+      case 'commerce.recent_sales':
+        data = await executeCommerceRecentSales()
+        break
+      case 'commerce.daily_report':
+        data = await executeCommerceDailyReport()
+        break
+      case 'commerce.product_report':
+        data = await executeCommerceProductReport()
+        break
+      case 'commerce.inventory_low':
+        data = await executeCommerceInventoryLow()
+        break
+
+      // Daily Ops
+      case 'daily.plan':
+        data = await executeDailyPlan()
+        break
+      case 'daily.stats':
+        data = await executeDailyPlanStats()
+        break
+
+      // Priority Queue
+      case 'queue.status':
+        data = await executePriorityQueue()
+        break
+
+      // Stations
+      case 'stations.list':
+        data = await executeStationsList()
+        break
+      case 'stations.detail':
+        data = await executeStationDetail(task.inputs)
+        break
+      case 'stations.ops_log':
+        data = await executeOpsLog(task.inputs)
+        break
+      case 'stations.waste_log':
+        data = await executeWasteLog()
+        break
+
+      // Testimonials
+      case 'testimonials.list':
+        data = await executeTestimonialsList()
+        break
+      case 'testimonials.pending':
+        data = await executeTestimonialsPending()
+        break
+
+      // Partners / Referrals
+      case 'partners.list':
+        data = await executePartnersList()
+        break
+      case 'partners.events':
+        data = await executePartnerEvents(task.inputs)
+        break
+      case 'partners.performance':
+        data = await executePartnerPerformance()
+        break
+
+      // Activity Feed
+      case 'activity.feed':
+        data = await executeActivityFeed()
+        break
+      case 'activity.engagement':
+        data = await executeEngagementStats()
+        break
+
+      // AAR (After-Action Reviews)
+      case 'aar.list':
+        data = await executeAARList()
+        break
+      case 'aar.stats':
+        data = await executeAARStats()
+        break
+      case 'aar.events_without':
+        data = await executeEventsWithoutAAR()
+        break
+      case 'aar.forgotten_items':
+        data = await executeAARForgottenItems()
+        break
+
+      // Waitlist
+      case 'waitlist.status':
+        data = await executeWaitlistStatus()
         break
 
       default:
