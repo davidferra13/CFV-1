@@ -41,14 +41,14 @@ const QUICK_ACTIONS = [
 
 export function QuickCreateStrip() {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+    <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1">
       {QUICK_ACTIONS.map((action) => (
         <Link
           key={action.label}
           href={action.href}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-medium transition-colors whitespace-nowrap ${action.color}`}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-white text-xs font-semibold transition-all whitespace-nowrap shadow-lg shadow-black/20 hover:scale-105 active:scale-95 ${action.color}`}
         >
-          <action.icon className="h-3.5 w-3.5" />+ {action.label}
+          <action.icon className="h-4 w-4" />+ {action.label}
         </Link>
       ))}
     </div>

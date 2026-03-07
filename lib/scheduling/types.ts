@@ -293,6 +293,196 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   vendor_costs: { category: 'system', size: 'sm', defaultEnabled: false },
 }
 
+// ============================================
+// WIDGET VISUAL STYLES (icons, category colors)
+// ============================================
+
+export interface CategoryStyle {
+  border: string
+  bg: string
+  bgExpanded: string
+  icon: string
+}
+
+export const WIDGET_CATEGORY_STYLES: Record<WidgetCategory, CategoryStyle> = {
+  today: {
+    border: '#3b82f6',
+    bg: 'rgba(59,130,246,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(59,130,246,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u{1F4C5}',
+  },
+  actions: {
+    border: '#f59e0b',
+    bg: 'rgba(245,158,11,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u26A1',
+  },
+  prep: {
+    border: '#10b981',
+    bg: 'rgba(16,185,129,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(16,185,129,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u{1F52A}',
+  },
+  money: {
+    border: '#22c55e',
+    bg: 'rgba(34,197,94,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(34,197,94,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u{1F4B0}',
+  },
+  clients: {
+    border: '#a855f7',
+    bg: 'rgba(168,85,247,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u{1F465}',
+  },
+  analytics: {
+    border: '#06b6d4',
+    bg: 'rgba(6,182,212,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(6,182,212,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u{1F4CA}',
+  },
+  collaboration: {
+    border: '#f43f5e',
+    bg: 'rgba(244,63,94,0.07)',
+    bgExpanded: 'linear-gradient(135deg, rgba(244,63,94,0.10) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u{1F91D}',
+  },
+  system: {
+    border: '#78716c',
+    bg: 'rgba(120,113,108,0.06)',
+    bgExpanded: 'linear-gradient(135deg, rgba(120,113,108,0.08) 0%, rgba(28,25,23,0.5) 100%)',
+    icon: '\u2699\uFE0F',
+  },
+}
+
+export const WIDGET_ICONS: Partial<Record<DashboardWidgetId, string>> = {
+  todays_schedule: '\u{1F4C5}',
+  daily_plan: '\u{1F4CB}',
+  next_action: '\u{1F3AF}',
+  week_strip: '\u{1F4C6}',
+  quick_create: '\u2728',
+  client_lookup: '\u{1F50D}',
+  priority_queue: '\u{1F4E5}',
+  scheduling_gaps: '\u26A0\uFE0F',
+  response_time: '\u23F1\uFE0F',
+  pending_followups: '\u{1F4E9}',
+  stuck_events: '\u{1F6A7}',
+  next_best_actions: '\u{1F4A1}',
+  live_inbox: '\u{1F4EC}',
+  upcoming_calls: '\u{1F4DE}',
+  dop_tasks: '\u2705',
+  prep_prompts: '\u{1F52A}',
+  shopping_window: '\u{1F6D2}',
+  active_shopping_list: '\u{1F4DD}',
+  quick_availability: '\u{1F4C5}',
+  payments_due: '\u{1F4B3}',
+  expiring_quotes: '\u231B',
+  quick_expense: '\u{1F9FE}',
+  invoice_pulse: '\u{1F4CA}',
+  revenue_goal: '\u{1F3AF}',
+  system_nerve_center: '\u{1F9E0}',
+  onboarding_accelerator: '\u{1F680}',
+  onboarding_checklist: '\u2705',
+  service_quality: '\u2B50',
+  business_snapshot: '\u{1F4F8}',
+  career_growth: '\u{1F4C8}',
+  hours: '\u{1F550}',
+  activity: '\u{1F4E1}',
+  business_health: '\u{1F4AA}',
+  work_surface: '\u{1F527}',
+  business_insights: '\u{1F9E0}',
+  concentration_risk: '\u2696\uFE0F',
+  insurance_health: '\u{1F6E1}\uFE0F',
+  holiday_outreach: '\u{1F384}',
+  recipe_debt: '\u{1F4D5}',
+  recipe_capture: '\u{1F4F8}',
+  invite_chef: '\u{1F468}\u200D\u{1F373}',
+  collaboration_invites: '\u{1F48C}',
+  recipe_shares: '\u{1F4E4}',
+  collaborating_on: '\u{1F91D}',
+  commerce_hub: '\u{1F3EA}',
+  inventory_health: '\u{1F4E6}',
+  vendor_costs: '\u{1F3F7}\uFE0F',
+  payments_health: '\u{1F49A}',
+  staff_operations: '\u{1F477}',
+  marketing_pipeline: '\u{1F4E3}',
+  contracts_collections: '\u{1F4C4}',
+  analytics_pulse: '\u{1F4C8}',
+  goals_tracker: '\u{1F3AF}',
+  operations_readiness: '\u{1F527}',
+  recipe_menu_engine: '\u{1F37D}\uFE0F',
+  lead_funnel_live: '\u{1F525}',
+  cooling_alerts: '\u2744\uFE0F',
+  dietary_allergy_alerts: '\u{1F95C}',
+  client_birthdays: '\u{1F382}',
+  unread_hub_messages: '\u{1F4AC}',
+  todo_list: '\u{1F4CB}',
+  wellbeing: '\u{1F9D8}',
+  inline_aar: '\u{1F4DD}',
+  pipeline_forecast: '\u{1F4C8}',
+  revenue_comparison: '\u{1F4CA}',
+  smart_hours: '\u23F0',
+  beta_program: '\u{1F9EA}',
+  prospecting_hub: '\u{1F50E}',
+  inbox_command_center: '\u{1F4E8}',
+  notifications_center: '\u{1F514}',
+  remy_status: '\u{1F916}',
+  multi_event_days: '\u{1F4C6}',
+  aar_performance: '\u{1F4DD}',
+  avg_hourly_rate: '\u{1F4B2}',
+  payout_summary: '\u{1F4B5}',
+  overdue_installments: '\u{1F6A8}',
+  dormant_clients_list: '\u{1F4A4}',
+  food_cost_trend: '\u{1F4C9}',
+  booking_seasonality: '\u{1F326}\uFE0F',
+  yoy_comparison: '\u{1F4CA}',
+  loyalty_approaching: '\u{1F31F}',
+  top_events_profit: '\u{1F3C6}',
+  takeachef_command_center: '\u{1F468}\u200D\u{1F373}',
+  cannabis_control_center: '\u{1F33F}',
+  charity_impact: '\u{1F49C}',
+  community_commands: '\u{1F310}',
+  guest_ops: '\u{1F3E0}',
+  receipts_reconciliation: '\u{1F9FE}',
+  social_planner: '\u{1F4F1}',
+  wix_intake_health: '\u{1F310}',
+  imports_sync_health: '\u{1F504}',
+  documents_compliance: '\u{1F4C2}',
+  safety_risk_watch: '\u{1F6E1}\uFE0F',
+  travel_logistics: '\u2708\uFE0F',
+  network_collab_growth: '\u{1F310}',
+  partners_referrals: '\u{1F91D}',
+  stations_ops_status: '\u{1F3ED}',
+  payments_finance_detail: '\u{1F4B3}',
+  reports_snapshot: '\u{1F4CA}',
+  task_automation: '\u{1F916}',
+  survey_testimonial_feed: '\u{1F4AC}',
+  reviews_reputation: '\u2B50',
+  client_growth_signals: '\u{1F4C8}',
+  active_clients_now: '\u{1F7E2}',
+}
+
+/** Get icon for a specific widget (falls back to category icon) */
+export function getWidgetIcon(widgetId: string): string {
+  const specific = WIDGET_ICONS[widgetId as DashboardWidgetId]
+  if (specific) return specific
+  const meta = DASHBOARD_WIDGET_META[widgetId as DashboardWidgetId]
+  return meta ? WIDGET_CATEGORY_STYLES[meta.category].icon : '\u{1F4CC}'
+}
+
+/** Get category visual style for a widget */
+export function getWidgetCategoryStyle(widgetId: string): CategoryStyle {
+  const meta = DASHBOARD_WIDGET_META[widgetId as DashboardWidgetId]
+  return meta
+    ? WIDGET_CATEGORY_STYLES[meta.category]
+    : {
+        border: '#78716c',
+        bg: 'rgba(120,113,108,0.06)',
+        bgExpanded: 'rgba(120,113,108,0.06)',
+        icon: '\u{1F4CC}',
+      }
+}
+
 /** CSS class for a widget's grid column span */
 export function widgetGridClass(widgetId: DashboardWidgetId): string {
   const meta = DASHBOARD_WIDGET_META[widgetId]

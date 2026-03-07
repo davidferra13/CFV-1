@@ -122,7 +122,7 @@ export default async function ChefDashboard() {
 
   return (
     <DashboardCollapseProvider>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* ============================================ */}
         {/* HEADER — renders instantly, full width       */}
         {/* ============================================ */}
@@ -192,12 +192,12 @@ export default async function ChefDashboard() {
           {queue.nextAction ? (
             <Link href={queue.nextAction.href} className="block">
               <div
-                className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:opacity-90 ${
+                className={`flex items-center justify-between rounded-2xl border px-5 py-4 transition-colors hover:opacity-90 ${
                   queue.nextAction.urgency === 'critical'
-                    ? 'bg-red-950 border-red-200 text-red-900'
+                    ? 'bg-gradient-to-r from-red-950/80 to-red-900/30 border-red-800/50 text-red-200'
                     : queue.nextAction.urgency === 'high'
-                      ? 'bg-amber-950 border-amber-200 text-amber-900'
-                      : 'bg-brand-950 border-brand-700 text-brand-200'
+                      ? 'bg-gradient-to-r from-amber-950/80 to-amber-900/30 border-amber-800/50 text-amber-200'
+                      : 'bg-gradient-to-r from-brand-950/80 to-brand-900/30 border-brand-700/50 text-brand-200'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -227,14 +227,14 @@ export default async function ChefDashboard() {
               </div>
             </Link>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-950 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-green-800/40 bg-gradient-to-r from-green-950/60 to-emerald-950/30 px-5 py-4">
               <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
+                className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
                 style={{ backgroundColor: '#10b981' }}
                 aria-hidden="true"
               />
-              <p className="text-sm font-medium text-green-800">
-                All caught up — nothing urgent right now.
+              <p className="text-sm font-medium text-green-300">
+                All caught up. Nothing urgent right now.
               </p>
             </div>
           )}
