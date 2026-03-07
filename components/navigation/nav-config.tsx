@@ -139,6 +139,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/goals', label: 'Goals', icon: Target, coreFeature: true },
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
+  { href: '/portfolio', label: 'Portfolio', icon: Image },
   { href: '/commerce', label: 'Commerce', icon: Store },
   { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
   { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
@@ -521,6 +522,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/dish-index', label: 'Dish Index' },
           { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
+          { href: '/nutrition', label: 'Nutritional Analysis' },
         ],
       },
       {
@@ -607,6 +609,12 @@ export const navGroups: NavGroup[] = [
         href: '/queue',
         label: 'Priority Queue',
         icon: Zap,
+      },
+      {
+        href: '/meal-prep',
+        label: 'Meal Prep',
+        icon: RefreshCw,
+        children: [{ href: '/meal-prep', label: 'Dashboard' }],
       },
       {
         href: '/operations/kitchen-rentals',
@@ -848,6 +856,7 @@ export const navGroups: NavGroup[] = [
         icon: PenNib,
         children: [
           { href: '/social/vault', label: 'Media Vault' },
+          { href: '/social/compose', label: 'Post from Event' },
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],

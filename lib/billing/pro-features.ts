@@ -187,6 +187,20 @@ export const PRO_FEATURES: ProFeature[] = [
       'Group chat, visual themes, collaborative event planning, guest profiles, polls, pinned notes',
     category: 'clients',
   },
+  {
+    slug: 'nutrition-analysis',
+    label: 'Nutritional Analysis',
+    description:
+      'Per-dish macro and calorie breakdown via Spoonacular, allergen tracking, chef overrides',
+    category: 'operations',
+  },
+  {
+    slug: 'meal-prep',
+    label: 'Meal Prep Operations',
+    description:
+      'Rotating menus, container tracking, delivery scheduling for weekly meal prep clients',
+    category: 'operations',
+  },
 ]
 
 /** Set of all Pro feature slugs — used for quick lookup. */

@@ -411,6 +411,90 @@ export async function updatePhotoCaption(
   return { success: true }
 }
 
+// ─── getPortfolioPhotos ──────────────────────────────────────────────────────
+
+/**
+ * Returns all active photos across all events for the chef's portfolio.
+ * Includes event metadata (occasion, event_date) for filtering/grouping.
+ * Ordered by created_at descending (newest first).
+ */
+export type PortfolioPhoto = EventPhoto & {
+  event_occasion: string | null
+  event_date: string | null
+}
+
+export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: photos, error } = await supabase
+    .from('event_photos')
+    .select('*, events(occasion, event_date)')
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getPortfolioPhotos] Error:', error)
+    return []
+  }
+
+  if (!photos?.length) return []
+
+  // Flatten event join data
+  const flattened = photos.map((p: any) => ({
+    ...p,
+    event_occasion: p.events?.occasion ?? null,
+    event_date: p.events?.event_date ?? null,
+    events: undefined,
+  }))
+
+  // Hydrate signed URLs
+  const paths = flattened.map((p: any) => p.storage_path)
+  const { data: signedData } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
+
+  const signedMap: Record<string, string> = {}
+  for (const s of signedData ?? []) {
+    if (s.signedUrl && s.path) signedMap[s.path] = s.signedUrl
+  }
+
+  return flattened.map((p: any) => ({
+    ...p,
+    signedUrl: signedMap[p.storage_path] ?? '',
+  }))
+}
+
+// ─── getPhotoSignedUrl ───────────────────────────────────────────────────────
+
+/**
+ * Returns a signed URL for a single storage path.
+ * Chef-only. Verifies tenant ownership.
+ */
+export async function getPhotoSignedUrl(
+  storagePath: string
+): Promise<{ url: string | null; error?: string }> {
+  const user = await requireChef()
+
+  // Verify the path belongs to this tenant (path format: {tenantId}/...)
+  if (!storagePath.startsWith(`${user.tenantId}/`)) {
+    return { url: null, error: 'Unauthorized' }
+  }
+
+  const supabase: any = createServerClient()
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
+
+  if (error) {
+    console.error('[getPhotoSignedUrl] Error:', error)
+    return { url: null, error: 'Failed to generate signed URL' }
+  }
+
+  return { url: data?.signedUrl ?? null }
+}
+
 // ─── reorderEventPhotos ───────────────────────────────────────────────────────
 
 /**
