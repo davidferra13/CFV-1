@@ -22,7 +22,12 @@ import { execSync } from 'child_process'
 
 // ── Config ──────────────────────────────────────────────────────────
 
-const BASE_URL = 'http://localhost:3100'
+// Allow --base-url flag to target beta or other environments
+const baseUrlIdx = process.argv.indexOf('--base-url')
+const BASE_URL = baseUrlIdx !== -1 && process.argv[baseUrlIdx + 1]
+  ? process.argv[baseUrlIdx + 1]
+  : 'http://localhost:3100'
+
 const VIDEO_DIR = path.resolve('docs/demo-videos')
 mkdirSync(VIDEO_DIR, { recursive: true })
 
@@ -618,6 +623,27 @@ class DemoRecorder {
     }, Math.min(100, Math.max(0, percent)))
   }
 
+  // ── Dual-context support ─────────────────────────────────────
+
+  /**
+   * Switch the recorder to drive a different page (for dual-perspective videos).
+   * Both pages must already exist in separate browser contexts.
+   *
+   * @param {import('playwright').Page} newPage - The page to switch to
+   */
+  async switchTo(newPage) {
+    this.page = newPage
+    this.initialized = false
+    await this.init()
+    // Restore cursor to center of new page
+    this.cursorX = this.format.width / 2
+    this.cursorY = this.format.height / 2
+    await this.page.evaluate(({ x, y }) => {
+      const c = document.getElementById('demo-cursor')
+      if (c) { c.style.left = x + 'px'; c.style.top = y + 'px' }
+    }, { x: this.cursorX, y: this.cursorY })
+  }
+
   // ── Internal helpers ──────────────────────────────────────────
 
   async reinjectIfNeeded() {
@@ -750,6 +776,11 @@ async function recordVideo(scenarioId, format = 'youtube') {
 // ── CLI ─────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2)
+
+// Strip --base-url from args
+const baseArgIdx = args.indexOf('--base-url')
+if (baseArgIdx !== -1) args.splice(baseArgIdx, 2)
+
 const formatIdx = args.indexOf('--format')
 let format = 'youtube'
 if (formatIdx !== -1 && args[formatIdx + 1]) {
