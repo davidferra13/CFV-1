@@ -416,6 +416,130 @@ export async function ensureExpense(
     )
 }
 
+// ─── Loyalty Config ─────────────────────────────────────────────────────────
+
+export async function ensureLoyaltyConfig(
+  admin: SupabaseClient,
+  tenantId: string,
+  config: {
+    is_active: boolean
+    points_per_dollar: number
+    points_per_event: number
+    points_per_guest: number
+    referral_points: number
+    welcome_points: number
+    earn_mode: string
+    program_mode: string
+    tier_bronze_min: number
+    tier_silver_min: number
+    tier_gold_min: number
+    tier_platinum_min: number
+    bonus_large_party_points?: number | null
+    bonus_large_party_threshold?: number | null
+  }
+): Promise<void> {
+  const { error } = await admin
+    .from('loyalty_config')
+    .upsert({ tenant_id: tenantId, ...config }, { onConflict: 'tenant_id' })
+  if (error) console.warn(`[demo-seed] Warning: Could not upsert loyalty config: ${error.message}`)
+}
+
+// ─── Loyalty Transactions ───────────────────────────────────────────────────
+
+export async function ensureLoyaltyTransaction(
+  admin: SupabaseClient,
+  tenantId: string,
+  clientId: string,
+  tx: {
+    type: string
+    points: number
+    description: string
+    eventId?: string | null
+    daysAgo: number
+  }
+): Promise<void> {
+  const { data: existing } = await admin
+    .from('loyalty_transactions')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .eq('description', tx.description)
+    .maybeSingle()
+
+  if (existing?.id) return
+
+  const { error } = await admin.from('loyalty_transactions').insert({
+    tenant_id: tenantId,
+    client_id: clientId,
+    event_id: tx.eventId ?? null,
+    type: tx.type,
+    points: tx.points,
+    description: tx.description,
+    created_at: daysAgoISO(tx.daysAgo),
+  })
+
+  if (error)
+    console.warn(`[demo-seed] Warning: Could not insert loyalty transaction: ${error.message}`)
+}
+
+// ─── Client Loyalty State ───────────────────────────────────────────────────
+
+export async function updateClientLoyalty(
+  admin: SupabaseClient,
+  clientId: string,
+  loyalty: { loyalty_points: number; loyalty_tier: string }
+): Promise<void> {
+  const { error } = await admin
+    .from('clients')
+    .update({
+      loyalty_points: loyalty.loyalty_points,
+      loyalty_tier: loyalty.loyalty_tier,
+    })
+    .eq('id', clientId)
+
+  if (error) console.warn(`[demo-seed] Warning: Could not update client loyalty: ${error.message}`)
+}
+
+// ─── Staff Assignments ──────────────────────────────────────────────────────
+
+export async function ensureStaffAssignment(
+  admin: SupabaseClient,
+  chefId: string,
+  staffMemberId: string,
+  eventId: string,
+  assignment: {
+    role_override?: string | null
+    status: string
+    scheduled_hours?: number | null
+    actual_hours?: number | null
+    notes?: string | null
+  }
+): Promise<void> {
+  const { data: existing } = await admin
+    .from('event_staff_assignments')
+    .select('id')
+    .eq('chef_id', chefId)
+    .eq('staff_member_id', staffMemberId)
+    .eq('event_id', eventId)
+    .maybeSingle()
+
+  if (existing?.id) return
+
+  const { error } = await admin.from('event_staff_assignments').insert({
+    chef_id: chefId,
+    staff_member_id: staffMemberId,
+    event_id: eventId,
+    role_override: assignment.role_override ?? null,
+    status: assignment.status,
+    scheduled_hours: assignment.scheduled_hours ?? null,
+    actual_hours: assignment.actual_hours ?? null,
+    notes: assignment.notes ?? null,
+  })
+
+  if (error)
+    console.warn(`[demo-seed] Warning: Could not insert staff assignment: ${error.message}`)
+}
+
 // ─── Calendar Entries ────────────────────────────────────────────────────────
 
 export async function ensureCalendarEntry(

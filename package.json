@@ -49,6 +49,8 @@
     "demo:load": "tsx scripts/demo-data-load.ts",
     "demo:clear": "tsx scripts/demo-data-clear.ts",
     "demo:reset": "npm run demo:clear && npm run demo:load",
+    "demo:auth": "node scripts/refresh-demo-auth.mjs",
+    "demo:full": "npm run demo:setup && npm run demo:load && npm run demo:auth",
     "inbox:reset:sync-data": "tsx scripts/reset-inbox-sync-data.ts",
     "seed:e2e": "tsx scripts/seed-e2e-remote.ts",
     "cleanup:e2e": "tsx scripts/cleanup-e2e-data.ts",

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useIsDemoMode } from '@/lib/demo-mode'
 
 const DISMISS_KEY = 'cf-cookie-consent-dismissed-until'
 const DISMISS_DAYS = 7
@@ -17,9 +18,11 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 export function CookieConsent() {
+  const isDemo = useIsDemoMode()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    if (isDemo) return
     const consent = getCookie('cookieConsent')
     if (consent) return
 

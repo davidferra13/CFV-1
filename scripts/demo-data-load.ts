@@ -24,6 +24,10 @@ const {
   DEMO_LEDGER_ENTRIES,
   DEMO_EXPENSES,
   DEMO_CALENDAR_ENTRIES,
+  DEMO_LOYALTY_CONFIG,
+  DEMO_LOYALTY_TRANSACTIONS,
+  DEMO_CLIENT_LOYALTY,
+  DEMO_STAFF_ASSIGNMENTS,
 } = require('../lib/demo/fixtures')
 
 const {
@@ -36,6 +40,10 @@ const {
   ensureLedgerEntry,
   ensureExpense,
   ensureCalendarEntry,
+  ensureLoyaltyConfig,
+  ensureLoyaltyTransaction,
+  updateClientLoyalty,
+  ensureStaffAssignment,
 } = require('../lib/demo/seed-helpers')
 
 dotenv.config({ path: '.env.local' })
@@ -144,18 +152,67 @@ async function main() {
     console.log(`  ✓ +${entry.daysOut} days: ${entry.public_note}`)
   }
 
+  // ── 10. Loyalty Config ────────────────────────────────────────────────
+  console.log(`\n[demo-load] Setting up loyalty program...`)
+  await ensureLoyaltyConfig(admin, tenantId, DEMO_LOYALTY_CONFIG)
+  console.log(`  ✓ Loyalty program configured`)
+
+  // ── 11. Loyalty Transactions ──────────────────────────────────────────
+  console.log(`\n[demo-load] Seeding ${DEMO_LOYALTY_TRANSACTIONS.length} loyalty transactions...`)
+  for (const tx of DEMO_LOYALTY_TRANSACTIONS) {
+    const cId = clientIds[tx.clientIndex]
+    const eId = tx.eventIndex !== null ? eventIds[tx.eventIndex] : null
+    await ensureLoyaltyTransaction(admin, tenantId, cId, {
+      type: tx.type,
+      points: tx.points,
+      description: tx.description,
+      eventId: eId,
+      daysAgo: tx.daysAgo,
+    })
+    console.log(`  ✓ ${tx.description} (${tx.points > 0 ? '+' : ''}${tx.points})`)
+  }
+
+  // ── 12. Client Loyalty State ──────────────────────────────────────────
+  console.log(`\n[demo-load] Updating ${DEMO_CLIENT_LOYALTY.length} client loyalty tiers...`)
+  for (const cl of DEMO_CLIENT_LOYALTY) {
+    await updateClientLoyalty(admin, clientIds[cl.clientIndex], cl)
+    const clientName = DEMO_CLIENTS[cl.clientIndex].full_name
+    console.log(`  ✓ ${clientName}: ${cl.loyalty_tier} (${cl.loyalty_points} pts)`)
+  }
+
+  // ── 13. Staff Assignments ─────────────────────────────────────────────
+  let staffMemberId: string | null = null
+  try {
+    const staffCreds = JSON.parse(readFileSync('.auth/demo-staff.json', 'utf-8'))
+    staffMemberId = staffCreds.staffMemberId
+  } catch {
+    console.warn(`\n[demo-load] .auth/demo-staff.json not found, skipping staff assignments`)
+  }
+
+  if (staffMemberId) {
+    console.log(`\n[demo-load] Seeding ${DEMO_STAFF_ASSIGNMENTS.length} staff assignments...`)
+    for (const assignment of DEMO_STAFF_ASSIGNMENTS) {
+      const eId = eventIds[assignment.eventIndex]
+      const eventName = DEMO_EVENTS[assignment.eventIndex].occasion
+      await ensureStaffAssignment(admin, chefId, staffMemberId, eId, assignment)
+      console.log(`  ✓ ${eventName} (${assignment.status})`)
+    }
+  }
+
   // ── Summary ─────────────────────────────────────────────────────────────
   console.log('')
   console.log('=== Demo Data Loaded ===')
-  console.log(`  Clients:          ${DEMO_CLIENTS.length}`)
-  console.log(`  Events:           ${DEMO_EVENTS.length}`)
-  console.log(`  Inquiries:        ${DEMO_INQUIRIES.length}`)
-  console.log(`  Menus:            ${DEMO_MENUS.length}`)
-  console.log(`  Recipes:          ${DEMO_RECIPES.length}`)
-  console.log(`  Quotes:           ${DEMO_QUOTES.length}`)
-  console.log(`  Ledger Entries:   ${DEMO_LEDGER_ENTRIES.length}`)
-  console.log(`  Expenses:         ${DEMO_EXPENSES.length}`)
-  console.log(`  Calendar Entries: ${DEMO_CALENDAR_ENTRIES.length}`)
+  console.log(`  Clients:              ${DEMO_CLIENTS.length}`)
+  console.log(`  Events:               ${DEMO_EVENTS.length}`)
+  console.log(`  Inquiries:            ${DEMO_INQUIRIES.length}`)
+  console.log(`  Menus:                ${DEMO_MENUS.length}`)
+  console.log(`  Recipes:              ${DEMO_RECIPES.length}`)
+  console.log(`  Quotes:               ${DEMO_QUOTES.length}`)
+  console.log(`  Ledger Entries:       ${DEMO_LEDGER_ENTRIES.length}`)
+  console.log(`  Expenses:             ${DEMO_EXPENSES.length}`)
+  console.log(`  Calendar Entries:     ${DEMO_CALENDAR_ENTRIES.length}`)
+  console.log(`  Loyalty Transactions: ${DEMO_LOYALTY_TRANSACTIONS.length}`)
+  console.log(`  Staff Assignments:    ${DEMO_STAFF_ASSIGNMENTS.length}`)
   console.log('')
   console.log('  Demo panel: /demo (requires DEMO_MODE_ENABLED=true)')
   console.log('  Public profile: /chef/chef-demo-showcase')

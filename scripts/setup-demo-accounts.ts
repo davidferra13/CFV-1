@@ -19,6 +19,12 @@ const DEMO_CHEF_EMAIL = 'demo@chefflow.test'
 const DEMO_CHEF_PASSWORD = 'DemoChefFlow!2026'
 const DEMO_CLIENT_EMAIL = 'demo-client@chefflow.test'
 const DEMO_CLIENT_PASSWORD = 'DemoClientFlow!2026'
+const DEMO_STAFF_EMAIL = 'demo-staff@chefflow.test'
+const DEMO_STAFF_PASSWORD = 'DemoStaffFlow!2026'
+const DEMO_PARTNER_EMAIL = 'demo-partner@chefflow.test'
+const DEMO_PARTNER_PASSWORD = 'DemoPartnerFlow!2026'
+const DEMO_CHEF_B_EMAIL = 'demo-chef-b@chefflow.test'
+const DEMO_CHEF_B_PASSWORD = 'DemoChefB!2026'
 
 function requireEnv(name: string): string {
   const value = process.env[name]
@@ -134,7 +140,7 @@ async function main() {
   if (roleError) throw new Error(`[demo-setup] Failed to upsert chef role: ${roleError.message}`)
   console.log(`[demo-setup] Chef role assigned`)
 
-  // Ensure chef preferences
+  // Ensure chef preferences (with archetype so layout doesn't show archetype selector)
   const { error: prefError } = await admin.from('chef_preferences').upsert(
     {
       chef_id: chefId,
@@ -142,6 +148,7 @@ async function main() {
       home_city: 'Boston',
       home_state: 'MA',
       network_discoverable: true,
+      archetype: 'private-chef',
     },
     { onConflict: 'chef_id' }
   )
@@ -228,6 +235,223 @@ async function main() {
   console.log(`[demo-setup] Wrote .auth/demo-client.json`)
 
   // ──────────────────────────────────────────────────────────────────────────
+  // 3. Demo Staff Member
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const staffAuthId = await ensureAuthUser(admin, {
+    email: DEMO_STAFF_EMAIL,
+    password: DEMO_STAFF_PASSWORD,
+    metadata: { role: 'staff', demo: true },
+  })
+
+  // Ensure staff_members record linked to demo chef
+  const { data: existingStaff } = await admin
+    .from('staff_members')
+    .select('id')
+    .eq('chef_id', chefId)
+    .eq('email', DEMO_STAFF_EMAIL)
+    .maybeSingle()
+  let staffMemberId: string
+
+  if (existingStaff?.id) {
+    staffMemberId = existingStaff.id as string
+    console.log(`[demo-setup] Existing staff member: ${staffMemberId}`)
+  } else {
+    const { data: inserted, error } = await admin
+      .from('staff_members')
+      .insert({
+        chef_id: chefId,
+        name: 'Maria Santos',
+        email: DEMO_STAFF_EMAIL,
+        phone: '617-555-0301',
+        role: 'sous_chef',
+        hourly_rate_cents: 3500,
+        status: 'active',
+        notes: 'Lead sous chef. 5 years experience. Specializes in pastry and garde manger.',
+      })
+      .select('id')
+      .single()
+    if (error || !inserted)
+      throw new Error(`[demo-setup] Failed to create staff member: ${error?.message}`)
+    staffMemberId = inserted.id as string
+    console.log(`[demo-setup] Created staff member: ${staffMemberId}`)
+  }
+
+  // Ensure staff role
+  const { error: staffRoleError } = await admin
+    .from('user_roles')
+    .upsert(
+      { auth_user_id: staffAuthId, role: 'staff', entity_id: staffMemberId },
+      { onConflict: 'auth_user_id' }
+    )
+  if (staffRoleError)
+    throw new Error(`[demo-setup] Failed to upsert staff role: ${staffRoleError.message}`)
+  console.log(`[demo-setup] Staff role assigned`)
+
+  // Write .auth/demo-staff.json
+  const staffState = {
+    email: DEMO_STAFF_EMAIL,
+    password: DEMO_STAFF_PASSWORD,
+    authUserId: staffAuthId,
+    staffMemberId,
+    chefId,
+    tenantId: chefId,
+  }
+  writeFileSync('.auth/demo-staff.json', JSON.stringify(staffState, null, 2))
+  console.log(`[demo-setup] Wrote .auth/demo-staff.json`)
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 4. Demo Partner (Venue)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const partnerAuthId = await ensureAuthUser(admin, {
+    email: DEMO_PARTNER_EMAIL,
+    password: DEMO_PARTNER_PASSWORD,
+    metadata: { role: 'partner', demo: true },
+  })
+
+  // Ensure referral_partners record
+  const { data: existingPartner } = await admin
+    .from('referral_partners')
+    .select('id')
+    .eq('tenant_id', chefId)
+    .eq('email', DEMO_PARTNER_EMAIL)
+    .maybeSingle()
+  let partnerId: string
+
+  if (existingPartner?.id) {
+    partnerId = existingPartner.id as string
+    console.log(`[demo-setup] Existing partner: ${partnerId}`)
+  } else {
+    const { data: inserted, error } = await admin
+      .from('referral_partners')
+      .insert({
+        tenant_id: chefId,
+        auth_user_id: partnerAuthId,
+        name: 'The Langham Boston',
+        contact_name: 'Rachel Kim',
+        email: DEMO_PARTNER_EMAIL,
+        phone: '617-555-0401',
+        partner_type: 'venue',
+        status: 'active',
+        description:
+          'Luxury hotel in the Back Bay. Refers guests seeking private dining for special occasions, corporate retreats, and intimate celebrations.',
+        website: 'https://www.langhamhotels.com/boston',
+        commission_notes: '10% referral commission on booked events',
+      })
+      .select('id')
+      .single()
+    if (error || !inserted)
+      throw new Error(`[demo-setup] Failed to create partner: ${error?.message}`)
+    partnerId = inserted.id as string
+    console.log(`[demo-setup] Created partner: ${partnerId}`)
+  }
+
+  // Ensure partner role
+  const { error: partnerRoleError } = await admin
+    .from('user_roles')
+    .upsert(
+      { auth_user_id: partnerAuthId, role: 'partner', entity_id: partnerId },
+      { onConflict: 'auth_user_id' }
+    )
+  if (partnerRoleError)
+    throw new Error(`[demo-setup] Failed to upsert partner role: ${partnerRoleError.message}`)
+  console.log(`[demo-setup] Partner role assigned`)
+
+  // Write .auth/demo-partner.json
+  const partnerState = {
+    email: DEMO_PARTNER_EMAIL,
+    password: DEMO_PARTNER_PASSWORD,
+    authUserId: partnerAuthId,
+    partnerId,
+    tenantId: chefId,
+  }
+  writeFileSync('.auth/demo-partner.json', JSON.stringify(partnerState, null, 2))
+  console.log(`[demo-setup] Wrote .auth/demo-partner.json`)
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 5. Demo Chef B (for event handoff video)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const chefBAuthId = await ensureAuthUser(admin, {
+    email: DEMO_CHEF_B_EMAIL,
+    password: DEMO_CHEF_B_PASSWORD,
+    metadata: { role: 'chef', demo: true },
+  })
+
+  const chefBFields = {
+    business_name: 'Oak & Olive Catering',
+    display_name: 'Chef Marcus Rivera',
+    email: DEMO_CHEF_B_EMAIL,
+    phone: '617-555-0501',
+    slug: 'chef-demo-b',
+    tagline: 'Modern Mediterranean cuisine for gatherings of any size',
+    bio: 'Chef Marcus Rivera specializes in Mediterranean and Middle Eastern cuisine, bringing bold flavors to corporate events and private celebrations across Greater Boston.',
+    show_website_on_public_profile: false,
+    preferred_inquiry_destination: 'both' as const,
+    subscription_status: 'active',
+    onboarding_completed_at: new Date().toISOString(),
+    timezone: 'America/New_York',
+  }
+
+  const { data: existingChefB } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('auth_user_id', chefBAuthId)
+    .maybeSingle()
+  let chefBId: string
+
+  if (existingChefB?.id) {
+    await admin.from('chefs').update(chefBFields).eq('id', existingChefB.id)
+    chefBId = existingChefB.id as string
+    console.log(`[demo-setup] Updated Chef B: ${chefBId}`)
+  } else {
+    const { data: inserted, error } = await admin
+      .from('chefs')
+      .insert({ auth_user_id: chefBAuthId, ...chefBFields })
+      .select('id')
+      .single()
+    if (error || !inserted)
+      throw new Error(`[demo-setup] Failed to create Chef B: ${error?.message}`)
+    chefBId = inserted.id as string
+    console.log(`[demo-setup] Created Chef B: ${chefBId}`)
+  }
+
+  // Chef B role
+  await admin
+    .from('user_roles')
+    .upsert(
+      { auth_user_id: chefBAuthId, role: 'chef', entity_id: chefBId },
+      { onConflict: 'auth_user_id' }
+    )
+
+  // Chef B preferences
+  await admin.from('chef_preferences').upsert(
+    {
+      chef_id: chefBId,
+      tenant_id: chefBId,
+      home_city: 'Boston',
+      home_state: 'MA',
+      network_discoverable: true,
+      archetype: 'caterer',
+    },
+    { onConflict: 'chef_id' }
+  )
+  console.log(`[demo-setup] Chef B role + preferences set`)
+
+  // Write .auth/demo-chef-b.json
+  const chefBState = {
+    email: DEMO_CHEF_B_EMAIL,
+    password: DEMO_CHEF_B_PASSWORD,
+    authUserId: chefBAuthId,
+    chefId: chefBId,
+    tenantId: chefBId,
+    slug: 'chef-demo-b',
+  }
+  writeFileSync('.auth/demo-chef-b.json', JSON.stringify(chefBState, null, 2))
+  console.log(`[demo-setup] Wrote .auth/demo-chef-b.json`)
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Summary
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -250,6 +474,25 @@ async function main() {
   console.log(`    Client ID: ${clientId}`)
   console.log(`    Tenant ID: ${chefId}`)
   console.log(`    State:     .auth/demo-client.json`)
+  console.log('')
+  console.log('  Demo Staff:')
+  console.log(`    Email:     ${DEMO_STAFF_EMAIL}`)
+  console.log(`    Password:  ${DEMO_STAFF_PASSWORD}`)
+  console.log(`    Staff ID:  ${staffMemberId}`)
+  console.log(`    State:     .auth/demo-staff.json`)
+  console.log('')
+  console.log('  Demo Partner:')
+  console.log(`    Email:     ${DEMO_PARTNER_EMAIL}`)
+  console.log(`    Password:  ${DEMO_PARTNER_PASSWORD}`)
+  console.log(`    Partner:   ${partnerId} (The Langham Boston)`)
+  console.log(`    State:     .auth/demo-partner.json`)
+  console.log('')
+  console.log('  Demo Chef B:')
+  console.log(`    Email:     ${DEMO_CHEF_B_EMAIL}`)
+  console.log(`    Password:  ${DEMO_CHEF_B_PASSWORD}`)
+  console.log(`    Chef ID:   ${chefBId}`)
+  console.log(`    Slug:      chef-demo-b`)
+  console.log(`    State:     .auth/demo-chef-b.json`)
   console.log('')
   console.log('  Public Profile: /chef/chef-demo-showcase')
   console.log('  Demo Panel:     /demo (requires DEMO_MODE_ENABLED=true)')

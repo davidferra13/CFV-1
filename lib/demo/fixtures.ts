@@ -1033,6 +1033,269 @@ export const DEMO_EXPENSES = [
   },
 ]
 
+// ─── Loyalty Config ──────────────────────────────────────────────────────────
+
+export const DEMO_LOYALTY_CONFIG = {
+  is_active: true,
+  points_per_dollar: 1,
+  points_per_event: 50,
+  points_per_guest: 5,
+  referral_points: 150,
+  welcome_points: 100,
+  earn_mode: 'all',
+  program_mode: 'points',
+  tier_bronze_min: 0,
+  tier_silver_min: 500,
+  tier_gold_min: 1500,
+  tier_platinum_min: 5000,
+  bonus_large_party_points: 100,
+  bonus_large_party_threshold: 15,
+}
+
+// ─── Loyalty Transactions ───────────────────────────────────────────────────
+// clientIndex references DEMO_CLIENTS by position
+// eventIndex references DEMO_EVENTS by position (null for non-event bonuses)
+
+export const DEMO_LOYALTY_TRANSACTIONS = [
+  // Client 0 (Sarah & Michael Chen) - VIP, 4 events worth of points
+  {
+    clientIndex: 0,
+    type: 'bonus',
+    points: 100,
+    description: 'Welcome bonus',
+    eventIndex: null,
+    daysAgo: 180,
+  },
+  {
+    clientIndex: 0,
+    type: 'earned',
+    points: 200,
+    description: 'Winter Dinner Party ($2,000)',
+    eventIndex: 0,
+    daysAgo: 45,
+  },
+  {
+    clientIndex: 0,
+    type: 'earned',
+    points: 40,
+    description: '8 guests (Winter Dinner)',
+    eventIndex: 0,
+    daysAgo: 45,
+  },
+  {
+    clientIndex: 0,
+    type: 'earned',
+    points: 50,
+    description: 'Event completion bonus',
+    eventIndex: 0,
+    daysAgo: 45,
+  },
+  {
+    clientIndex: 0,
+    type: 'bonus',
+    points: 150,
+    description: 'Referral: James Whitfield',
+    eventIndex: null,
+    daysAgo: 120,
+  },
+  {
+    clientIndex: 0,
+    type: 'bonus',
+    points: 150,
+    description: 'Referral: Dr. Marcus Washington',
+    eventIndex: null,
+    daysAgo: 90,
+  },
+  {
+    clientIndex: 0,
+    type: 'bonus',
+    points: 150,
+    description: 'Referral: David & Kim Park',
+    eventIndex: null,
+    daysAgo: 60,
+  },
+  {
+    clientIndex: 0,
+    type: 'redeemed',
+    points: -200,
+    description: 'Redeemed: complimentary wine pairing',
+    eventIndex: null,
+    daysAgo: 50,
+  },
+
+  // Client 1 (Whitfields) - regular client
+  {
+    clientIndex: 1,
+    type: 'bonus',
+    points: 100,
+    description: 'Welcome bonus',
+    eventIndex: null,
+    daysAgo: 150,
+  },
+  {
+    clientIndex: 1,
+    type: 'earned',
+    points: 150,
+    description: '25th Anniversary ($1,500)',
+    eventIndex: 1,
+    daysAgo: 30,
+  },
+  {
+    clientIndex: 1,
+    type: 'earned',
+    points: 30,
+    description: '6 guests (Anniversary)',
+    eventIndex: 1,
+    daysAgo: 30,
+  },
+  {
+    clientIndex: 1,
+    type: 'earned',
+    points: 50,
+    description: 'Event completion bonus',
+    eventIndex: 1,
+    daysAgo: 30,
+  },
+
+  // Client 2 (Anika Patel) - corporate
+  {
+    clientIndex: 2,
+    type: 'bonus',
+    points: 100,
+    description: 'Welcome bonus',
+    eventIndex: null,
+    daysAgo: 100,
+  },
+  {
+    clientIndex: 2,
+    type: 'earned',
+    points: 450,
+    description: 'Q4 Team Celebration ($4,500)',
+    eventIndex: 3,
+    daysAgo: 14,
+  },
+  {
+    clientIndex: 2,
+    type: 'earned',
+    points: 100,
+    description: '20 guests (large party bonus)',
+    eventIndex: 3,
+    daysAgo: 14,
+  },
+  {
+    clientIndex: 2,
+    type: 'earned',
+    points: 50,
+    description: 'Event completion bonus',
+    eventIndex: 3,
+    daysAgo: 14,
+  },
+
+  // Client 6 (Dr. Washington) - wine enthusiast
+  {
+    clientIndex: 6,
+    type: 'bonus',
+    points: 100,
+    description: 'Welcome bonus',
+    eventIndex: null,
+    daysAgo: 90,
+  },
+  {
+    clientIndex: 6,
+    type: 'earned',
+    points: 180,
+    description: 'Wine Pairing Dinner ($1,800)',
+    eventIndex: 2,
+    daysAgo: 21,
+  },
+  {
+    clientIndex: 6,
+    type: 'earned',
+    points: 20,
+    description: '4 guests (Wine Pairing)',
+    eventIndex: 2,
+    daysAgo: 21,
+  },
+  {
+    clientIndex: 6,
+    type: 'earned',
+    points: 50,
+    description: 'Event completion bonus',
+    eventIndex: 2,
+    daysAgo: 21,
+  },
+]
+
+// ─── Client Loyalty State ───────────────────────────────────────────────────
+// Final point balances and tiers for each client with loyalty history
+
+export const DEMO_CLIENT_LOYALTY = [
+  { clientIndex: 0, loyalty_points: 640, loyalty_tier: 'gold' },
+  { clientIndex: 1, loyalty_points: 330, loyalty_tier: 'bronze' },
+  { clientIndex: 2, loyalty_points: 700, loyalty_tier: 'silver' },
+  { clientIndex: 6, loyalty_points: 350, loyalty_tier: 'bronze' },
+]
+
+// ─── Staff Assignments ──────────────────────────────────────────────────────
+// Assigns demo staff (Maria Santos) to upcoming and recent events.
+// eventIndex references DEMO_EVENTS by position.
+
+export const DEMO_STAFF_ASSIGNMENTS = [
+  // Completed events
+  {
+    eventIndex: 0,
+    role_override: 'sous_chef',
+    status: 'completed',
+    scheduled_hours: 6,
+    actual_hours: 6.5,
+    notes: 'Handled all appetizer prep and plating. Excellent work.',
+  },
+  {
+    eventIndex: 3,
+    role_override: 'sous_chef',
+    status: 'completed',
+    scheduled_hours: 8,
+    actual_hours: 8,
+    notes: 'Managed the buffet line and salad station for 20 guests.',
+  },
+  // In-progress event
+  {
+    eventIndex: 6,
+    role_override: 'sous_chef',
+    status: 'confirmed',
+    scheduled_hours: 7,
+    actual_hours: null,
+    notes: 'Appetizer station. Arrive by 4pm for mise en place.',
+  },
+  // Upcoming confirmed
+  {
+    eventIndex: 7,
+    role_override: 'sous_chef',
+    status: 'scheduled',
+    scheduled_hours: 6,
+    actual_hours: null,
+    notes: 'Spring Dinner Party. Prep and plating.',
+  },
+  {
+    eventIndex: 8,
+    role_override: 'sous_chef',
+    status: 'scheduled',
+    scheduled_hours: 8,
+    actual_hours: null,
+    notes: 'Charity Gala. Full kitchen support for 12 guests.',
+  },
+]
+
+// ─── Partner Referrals ──────────────────────────────────────────────────────
+// Tracks referrals from The Langham to demo chef's pipeline.
+// clientIndex references DEMO_CLIENTS. eventIndex references DEMO_EVENTS (null if no event yet).
+
+export const DEMO_PARTNER_REFERRALS = [
+  { clientIndex: 9, status: 'converted', eventIndex: 8, daysAgo: 30, commission_cents: 36000 },
+  { clientIndex: 9, status: 'converted', eventIndex: 16, daysAgo: 15, commission_cents: 0 },
+  { clientIndex: 3, status: 'converted', eventIndex: 6, daysAgo: 10, commission_cents: 25000 },
+]
+
 // ─── Calendar Availability Signals ───────────────────────────────────────────
 
 export const DEMO_CALENDAR_ENTRIES = [

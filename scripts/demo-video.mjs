@@ -726,6 +726,26 @@ async function recordVideo(scenarioId, format = 'youtube') {
   }
 
   const context = await browser.newContext(contextOpts)
+
+  // Set demo mode cookie to suppress all floating overlays
+  // (cookie consent, push prompt, Remy FAB, feedback modal, etc.)
+  const baseHost = new URL(BASE_URL).hostname
+  await context.addCookies([
+    {
+      name: 'chefflow-demo-mode',
+      value: '1',
+      domain: baseHost === 'localhost' ? 'localhost' : baseHost,
+      path: '/',
+    },
+    // Also pre-accept cookies so the consent banner never appears
+    {
+      name: 'cookieConsent',
+      value: 'accepted',
+      domain: baseHost === 'localhost' ? 'localhost' : baseHost,
+      path: '/',
+    },
+  ])
+
   const page = await context.newPage()
   const recorder = new DemoRecorder(page, format)
 

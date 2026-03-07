@@ -6,9 +6,13 @@
 
 import { WifiOff, Wifi, CloudUpload, Loader2 } from '@/components/ui/icons'
 import { useOffline } from './offline-provider'
+import { useIsDemoMode } from '@/lib/demo-mode'
 
 export function OfflineStatusBar() {
+  const isDemo = useIsDemoMode()
   const { isOffline, justReconnected, pendingCount, syncProgress } = useOffline()
+
+  if (isDemo) return null
 
   // Syncing in progress
   if (syncProgress?.isSyncing) {
