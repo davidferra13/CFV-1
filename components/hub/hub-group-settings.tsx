@@ -26,10 +26,14 @@ export function HubGroupSettings({
   const [allowInvites, setAllowInvites] = useState(group.allow_member_invites)
   const [showThemePicker, setShowThemePicker] = useState(false)
   const [selectedThemeId, setSelectedThemeId] = useState(group.theme_id)
+  const [allowAnonymous, setAllowAnonymous] = useState(group.allow_anonymous_posts)
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSave = () => {
+    setError(null)
+    setSaved(false)
     startTransition(async () => {
       try {
         const updated = await updateHubGroup({
@@ -39,12 +43,13 @@ export function HubGroupSettings({
           description: description.trim() || null,
           emoji,
           allow_member_invites: allowInvites,
+          allow_anonymous_posts: allowAnonymous,
         })
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
         onUpdated?.(updated)
-      } catch {
-        // Ignore
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save settings')
       }
     })
   }
@@ -165,6 +170,54 @@ export function HubGroupSettings({
           />
         </button>
       </div>
+
+      {/* Anonymous posts */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-sm text-stone-200">Allow anonymous posts</span>
+          <p className="text-xs text-stone-500">Members can post without showing their name</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAllowAnonymous(!allowAnonymous)}
+          title={allowAnonymous ? 'Disable anonymous posts' : 'Enable anonymous posts'}
+          className={`relative h-6 w-11 rounded-full transition-colors ${
+            allowAnonymous ? 'bg-[#e88f47]' : 'bg-stone-600'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+              allowAnonymous ? 'translate-x-5' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Invite link */}
+      <div>
+        <label className="mb-1 block text-xs font-medium text-stone-400">Invite Link</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            readOnly
+            title="Invite link"
+            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/hub/g/${group.group_token}`}
+            className="flex-1 rounded-lg bg-stone-900 px-3 py-2 text-xs text-stone-400 ring-1 ring-stone-700"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/hub/g/${group.group_token}`)
+            }}
+            className="rounded-lg bg-stone-700 px-3 py-2 text-xs text-stone-300 hover:bg-stone-600"
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+
+      {/* Error / success feedback */}
+      {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
 
       {/* Save */}
       <button

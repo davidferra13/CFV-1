@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
+import { useState, useTransition } from 'react'
 import type { HubGroupMember } from '@/lib/hub/types'
+import {
+  updateMemberRole,
+  updateMemberPermissions,
+  removeMember,
+  leaveGroup,
+} from '@/lib/hub/group-actions'
 
 const ROLE_BADGES: Record<string, { label: string; color: string }> = {
   owner: { label: 'Host', color: 'bg-amber-500/20 text-amber-400' },
@@ -14,21 +21,151 @@ const ROLE_BADGES: Record<string, { label: string; color: string }> = {
   viewer: { label: 'Viewer', color: 'bg-stone-500/20 text-stone-400' },
 }
 
+type AssignableRole = 'admin' | 'member' | 'viewer'
+
+const ASSIGNABLE_ROLES: { value: AssignableRole; label: string }[] = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'member', label: 'Member' },
+  { value: 'viewer', label: 'Viewer' },
+]
+
 interface HubMemberListProps {
   members: HubGroupMember[]
+  groupId: string
   currentProfileId?: string | null
+  profileToken?: string | null
+  isOwnerOrAdmin?: boolean
+  shareLink?: string
 }
 
-export function HubMemberList({ members, currentProfileId }: HubMemberListProps) {
+export function HubMemberList({
+  members,
+  groupId,
+  currentProfileId,
+  profileToken,
+  isOwnerOrAdmin,
+  shareLink,
+}: HubMemberListProps) {
+  const [localMembers, setLocalMembers] = useState(members)
+  const [menuOpen, setMenuOpen] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleRoleChange = (memberId: string, newRole: 'admin' | 'member' | 'viewer') => {
+    if (!profileToken) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        await updateMemberRole({
+          groupId,
+          profileToken,
+          targetMemberId: memberId,
+          newRole,
+        })
+        setLocalMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
+        )
+        setMenuOpen(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update role')
+      }
+    })
+  }
+
+  const handleRemove = (memberId: string) => {
+    if (!profileToken) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        await removeMember({
+          groupId,
+          profileToken,
+          targetMemberId: memberId,
+        })
+        setLocalMembers((prev) => prev.filter((m) => m.id !== memberId))
+        setMenuOpen(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to remove member')
+      }
+    })
+  }
+
+  const handlePermissionToggle = (
+    memberId: string,
+    perm: 'can_post' | 'can_invite' | 'can_pin',
+    currentValue: boolean
+  ) => {
+    if (!profileToken) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        await updateMemberPermissions({
+          groupId,
+          profileToken,
+          targetMemberId: memberId,
+          [perm]: !currentValue,
+        })
+        setLocalMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? { ...m, [perm]: !currentValue } : m))
+        )
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update permissions')
+      }
+    })
+  }
+
+  const handleLeave = () => {
+    if (!profileToken) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        await leaveGroup({ groupId, profileToken })
+        window.location.href = '/my-hub'
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to leave group')
+      }
+    })
+  }
+
+  const handleCopyLink = async () => {
+    if (!shareLink) return
+    try {
+      await navigator.clipboard.writeText(shareLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback: select text
+    }
+  }
+
   return (
     <div className="p-4">
-      <h3 className="mb-4 text-sm font-semibold text-stone-300">👥 Members ({members.length})</h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-stone-300">Members ({localMembers.length})</h3>
+        {shareLink && (
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-1.5 rounded-full bg-stone-800 px-3 py-1.5 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200"
+          >
+            {copied ? 'Copied!' : 'Copy invite link'}
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-3 rounded-lg border border-red-900/30 bg-red-900/20 px-3 py-2 text-xs text-red-300">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-2">
-        {members.map((member) => {
+        {localMembers.map((member) => {
           const profile = member.profile
           const isCurrentUser = member.profile_id === currentProfileId
           const badge = ROLE_BADGES[member.role]
+          const canManage =
+            isOwnerOrAdmin && !isCurrentUser && member.role !== 'owner' && member.role !== 'chef'
           const initials = (profile?.display_name ?? '?')
             .split(' ')
             .map((w) => w[0])
@@ -39,7 +176,7 @@ export function HubMemberList({ members, currentProfileId }: HubMemberListProps)
           return (
             <div
               key={member.id}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-stone-800/50"
+              className="group relative flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-stone-800/50"
             >
               {/* Avatar */}
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-stone-700 text-xs font-medium text-stone-300">
@@ -69,7 +206,8 @@ export function HubMemberList({ members, currentProfileId }: HubMemberListProps)
                 </div>
                 {profile?.bio && <p className="truncate text-xs text-stone-500">{profile.bio}</p>}
                 {/* Dietary info */}
-                {profile?.known_allergies?.length || profile?.known_dietary?.length ? (
+                {(profile?.known_allergies?.length ?? 0) > 0 ||
+                (profile?.known_dietary?.length ?? 0) > 0 ? (
                   <div className="mt-0.5 flex flex-wrap gap-1">
                     {(profile?.known_allergies ?? []).map((a) => (
                       <span
@@ -91,10 +229,94 @@ export function HubMemberList({ members, currentProfileId }: HubMemberListProps)
                 ) : null}
               </div>
 
-              {/* Joined date */}
-              <span className="text-xs text-stone-600">
-                {new Date(member.joined_at).toLocaleDateString()}
-              </span>
+              {/* Manage button (owner/admin only, not on self/owner/chef) */}
+              {canManage && (
+                <div className="relative">
+                  <button
+                    onClick={() => setMenuOpen(menuOpen === member.id ? null : member.id)}
+                    className="rounded p-1 text-stone-500 opacity-0 transition-opacity hover:bg-stone-700 hover:text-stone-300 group-hover:opacity-100"
+                    title="Manage member"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
+                      <circle cx="8" cy="3" r="1.5" />
+                      <circle cx="8" cy="8" r="1.5" />
+                      <circle cx="8" cy="13" r="1.5" />
+                    </svg>
+                  </button>
+
+                  {menuOpen === member.id && (
+                    <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-lg border border-stone-700 bg-stone-800 py-1 shadow-xl">
+                      {/* Role options */}
+                      {ASSIGNABLE_ROLES.filter((r) => r.value !== member.role).map((r) => (
+                        <button
+                          key={r.value}
+                          onClick={() => handleRoleChange(member.id, r.value)}
+                          disabled={isPending}
+                          className="w-full px-3 py-1.5 text-left text-xs text-stone-300 hover:bg-stone-700 disabled:opacity-50"
+                        >
+                          Make {r.label}
+                        </button>
+                      ))}
+                      <div className="my-1 border-t border-stone-700" />
+                      {/* Permission toggles */}
+                      <div className="px-3 py-1.5">
+                        <span className="text-xs font-medium text-stone-500">Permissions</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {(['can_post', 'can_invite', 'can_pin'] as const).map((perm) => (
+                            <button
+                              key={perm}
+                              onClick={() => handlePermissionToggle(member.id, perm, member[perm])}
+                              disabled={isPending}
+                              className={`rounded-full px-2 py-0.5 text-xs transition-colors disabled:opacity-50 ${
+                                member[perm]
+                                  ? 'bg-green-500/15 text-green-400'
+                                  : 'bg-stone-700 text-stone-500'
+                              }`}
+                            >
+                              {perm === 'can_post'
+                                ? 'Post'
+                                : perm === 'can_invite'
+                                  ? 'Invite'
+                                  : 'Pin'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="my-1 border-t border-stone-700" />
+                      <button
+                        onClick={() => handleRemove(member.id)}
+                        disabled={isPending}
+                        className="w-full px-3 py-1.5 text-left text-xs text-red-400 hover:bg-stone-700 disabled:opacity-50"
+                      >
+                        Remove from circle
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Leave button for current user */}
+              {isCurrentUser && member.role !== 'owner' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Are you sure you want to leave this group?')) {
+                      handleLeave()
+                    }
+                  }}
+                  disabled={isPending}
+                  className="rounded-full px-2.5 py-1 text-xs text-red-500/70 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100 disabled:opacity-50"
+                >
+                  Leave
+                </button>
+              )}
+
+              {/* Joined date (when no manage button or on non-manageable members) */}
+              {!canManage && !isCurrentUser && (
+                <span className="text-xs text-stone-600">
+                  {new Date(member.joined_at).toLocaleDateString()}
+                </span>
+              )}
             </div>
           )
         })}
