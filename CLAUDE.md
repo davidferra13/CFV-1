@@ -364,7 +364,7 @@ When the developer says **"ship it"** (or any variation: "ship", "send it", "pus
 1. **`git add`** all modified and created files
 2. **`git commit`** with a clear, descriptive message
 3. **`git push origin <current-branch>`** — push the feature branch to GitHub ($0, Vercel ignores it)
-4. **`bash scripts/deploy-beta.sh`** — deploy to beta (Pi) so `beta.cheflowhq.com` is updated
+4. **`bash scripts/deploy-beta.sh`** — deploy to beta (local PC, port 3200) so `beta.cheflowhq.com` is updated
 5. **Report** what was committed, pushed, and deployed
 
 **This updates localhost (already has the code), GitHub (backup), AND beta (live preview). It does NOT touch Vercel/production. It costs $0.**
@@ -402,7 +402,7 @@ These steps run automatically at the end of every session, whether or not the de
 1. **Stage all changes** — `git add` every file that was modified or created
 2. **Commit** — clear, descriptive commit message
 3. **Push the current branch** — `git push origin <current-branch>` → GitHub backup, costs $0, Vercel ignores it
-4. **Deploy to beta** — `bash scripts/deploy-beta.sh` — so beta.cheflowhq.com always has the latest code
+4. **Deploy to beta** — `bash scripts/deploy-beta.sh` — builds locally and restarts beta on port 3200
 5. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
 6. **Report** — tell the developer what was committed, pushed, and deployed
 
@@ -795,6 +795,7 @@ The boundary below is **final**. Do not move files back to Gemini or add new Gem
 | Completed prompts    | `prompts/completed/`                                                             |
 | Beta server docs     | `docs/beta-server-setup.md`                                                      |
 | Beta env config      | `.env.local.beta`                                                                |
+| Beta start script    | `scripts/start-beta.ps1`                                                         |
 | Deploy to beta       | `scripts/deploy-beta.sh`                                                         |
 | Rollback beta        | `scripts/rollback-beta.sh`                                                       |
 | MC Manual panel      | `scripts/launcher/index.html` (panel-manual, live codebase scanner)              |
@@ -805,38 +806,38 @@ The boundary below is **final**. Do not move files back to Gemini or add new Gem
 
 ## 3-ENVIRONMENT ARCHITECTURE
 
-ChefFlow runs across three environments. **Never confuse them.**
+ChefFlow runs across three environments, all on the developer's PC. **Never confuse them.**
 
 ```text
-PC (localhost:3100)        → Development — only you see this
-Pi (beta.cheflowhq.com)    → Beta/staging — testers see a frozen snapshot
-Vercel (app.cheflowhq.com) → Production — public, deployed when ready
+PC localhost:3100           → Development (next dev, hot reload)
+PC localhost:3200           → Beta (next start, Cloudflare Tunnel → beta.cheflowhq.com)
+Vercel (app.cheflowhq.com) → Production (deployed when ready)
 ```
 
-### Beta Server (Raspberry Pi 5)
+### Beta Server (Local PC, port 3200)
 
-- **SSH:** `ssh pi` (key-based, user `davidferra`)
-- **App location:** `~/apps/chefflow-beta/`
-- **Process manager:** PM2 (`pm2 restart chefflow-beta`)
-- **Tunnel:** Cloudflare Tunnel → `beta.cheflowhq.com`
-- **Env config:** `.env.local.beta` on PC → copied to Pi as `.env.local` during deploy
-- **Ollama:** MASKED (permanently disabled) on Pi — all LLM work done on PC
+- **Directory:** `C:\Users\david\Documents\CFv1-beta\` (separate from dev)
+- **Process:** `next start -p 3200` (auto-starts via Windows Task Scheduler)
+- **Tunnel:** Cloudflare Tunnel (Windows service) → `beta.cheflowhq.com`
+- **Env config:** `.env.local.beta` → copied to CFv1-beta as `.env.local` during deploy
+- **Ollama:** Shared with dev on `localhost:11434` (full model, all AI features work on beta)
+- **Auto-start script:** `scripts/start-beta.ps1`
 
 ### Deploy to Beta
 
 ```bash
-bash scripts/deploy-beta.sh    # Build + push to Pi
-bash scripts/rollback-beta.sh  # Emergency rollback
+bash scripts/deploy-beta.sh    # Sync + build + restart (~2 min)
+bash scripts/rollback-beta.sh  # Redeploy previous commit
 ```
 
-The deploy script: pushes to GitHub → pulls on Pi → installs deps → builds → restarts PM2 → health check.
+The deploy script: pushes to GitHub → syncs code to CFv1-beta → builds locally → restarts beta server → health check.
 
 ### Rules
 
 - **Never deploy to beta during active development** — test locally first
 - **Beta shares the dev Supabase database** (for now) — be careful with destructive data operations
-- **Pi builds take ~8-10 minutes** — the 6 GB heap limit is required (`NODE_OPTIONS="--max-old-space-size=6144"`) — app outgrew 4 GB as of Feb 2026
-- **Pi swap is 2 GB** at `/var/swap` — needed for builds
+- **Dev and beta use different ports** — 3100 (dev) and 3200 (beta), no conflicts
+- **Both share Ollama** on port 11434 — concurrent requests handled fine
 
 ---
 

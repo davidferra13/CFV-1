@@ -47,15 +47,14 @@ try {
 
 const CONFIG = {
   devPort: 3100,
+  betaPort: 3200,
+  betaLocalUrl: 'http://localhost:3200',
   betaUrl: 'https://beta.cheflowhq.com',
-  betaHealthUrl: 'https://beta.cheflowhq.com/api/health',
+  betaHealthUrl: 'http://localhost:3200/api/health',
   prodUrl: 'https://cheflowhq.com',
   prodHealthUrl: 'https://cheflowhq.com/api/health',
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-  ollamaPiUrl: process.env.OLLAMA_PI_URL || 'http://10.0.0.177:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
-  ollamaPiModel: process.env.OLLAMA_PI_MODEL || 'qwen3:8b',
-  piSsh: 'ssh pi',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
@@ -285,11 +284,11 @@ function startLiveFeedTaps() {
     feedEvent('ollama', 'Could not tail Ollama logs — file may not exist', 'warn')
   }
 
-  // Tail PM2 logs from Pi via SSH (streaming)
+  // Tail local beta server logs
   try {
-    const betaTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
-      'pm2 logs chefflow-beta --lines 20 --raw --nostream; pm2 logs chefflow-beta --raw'], {
-      shell: false,
+    const betaLogPath = join(PROJECT_ROOT, '..', 'CFv1-beta', 'beta-server.log')
+    const betaTail = spawn('tail', ['-f', '-n', '20', betaLogPath], {
+      shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     betaTail.stdout.on('data', (d) => {
@@ -299,35 +298,11 @@ function startLiveFeedTaps() {
         if (clean) feedEvent('beta', clean, parseLogLevel(clean))
       }
     })
-    betaTail.stderr.on('data', (d) => {
-      const text = d.toString().trim()
-      if (text && !text.includes('Warning:')) feedEvent('beta', text, 'warn')
-    })
+    betaTail.stderr.on('data', () => {})
     betaTail.on('close', () => { delete liveFeedProcesses.betaTail })
     liveFeedProcesses.betaTail = betaTail
   } catch {
-    feedEvent('beta', 'Could not connect to Pi for beta logs', 'warn')
-  }
-
-  // Tail cloudflared journal from Pi via SSH
-  try {
-    const tunnelTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
-      'journalctl -u cloudflared -n 20 -f --no-pager'], {
-      shell: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    tunnelTail.stdout.on('data', (d) => {
-      const lines = d.toString().trim().split('\n')
-      for (const line of lines) {
-        const clean = line.trim().replace(ANSI_REGEX, '')
-        if (clean) feedEvent('tunnel', clean, parseLogLevel(clean))
-      }
-    })
-    tunnelTail.stderr.on('data', () => {})
-    tunnelTail.on('close', () => { delete liveFeedProcesses.tunnelTail })
-    liveFeedProcesses.tunnelTail = tunnelTail
-  } catch {
-    feedEvent('tunnel', 'Could not connect to Pi for tunnel logs', 'warn')
+    feedEvent('beta', 'Could not tail beta server logs', 'warn')
   }
 
   // System metrics — push CPU/memory every 10 seconds
@@ -619,13 +594,26 @@ async function stopDevServer() {
 }
 
 async function restartBeta() {
-  log('beta', 'Restarting beta server (PM2)...', 'info')
+  log('beta', 'Restarting beta server (local)...', 'info')
   try {
-    const { stdout } = await sshExec('pm2 restart chefflow-beta')
-    log('beta', stdout.trim() || 'PM2 restart sent', 'success')
-    // Wait a moment then health check
-    await new Promise(r => setTimeout(r, 3000))
-    const check = await httpCheck(`http://10.0.0.177:3100`, 5000)
+    // Kill existing beta server on port 3200
+    const pid = await findPidOnPort(CONFIG.betaPort)
+    if (pid) {
+      await execAsync(`taskkill /F /PID ${pid}`, { shell: 'cmd', timeout: 5000 }).catch(() => {})
+      await new Promise(r => setTimeout(r, 2000))
+    }
+    // Start beta server
+    const betaDir = join(PROJECT_ROOT, '..', 'CFv1-beta')
+    spawn('npx', ['next', 'start', '-p', String(CONFIG.betaPort)], {
+      cwd: betaDir,
+      detached: true,
+      stdio: 'ignore',
+      env: { ...process.env, NODE_ENV: 'production', PORT: String(CONFIG.betaPort) },
+    }).unref()
+    log('beta', 'Beta server starting on port ' + CONFIG.betaPort, 'info')
+    // Wait then health check
+    await new Promise(r => setTimeout(r, 5000))
+    const check = await httpCheck(CONFIG.betaLocalUrl, 5000)
     if (check.ok) {
       log('beta', 'Beta server is back online!', 'success')
     } else {
@@ -703,26 +691,17 @@ async function rollbackBeta() {
 }
 
 async function ollamaAction(target, action) {
-  const label = target === 'pc' ? 'Ollama PC' : 'Ollama Pi'
+  // Pi Ollama removed - all Ollama runs on PC now
+  const label = 'Ollama'
   log('ollama', `${action === 'start' ? 'Starting' : 'Stopping'} ${label}...`, 'info')
 
   try {
-    if (target === 'pc') {
-      if (action === 'start') {
-        spawn('ollama', ['serve'], { cwd: PROJECT_ROOT, detached: true, stdio: 'ignore', shell: true }).unref()
-        log('ollama', 'Ollama PC starting...', 'success')
-      } else {
-        await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
-        log('ollama', 'Ollama PC stopped', 'success')
-      }
+    if (action === 'start') {
+      spawn('ollama', ['serve'], { cwd: PROJECT_ROOT, detached: true, stdio: 'ignore', shell: true }).unref()
+      log('ollama', 'Ollama starting...', 'success')
     } else {
-      if (action === 'start') {
-        // Unmask first in case it was masked, then start
-        await sshExec('sudo systemctl unmask ollama 2>/dev/null; sudo systemctl start ollama')
-      } else {
-        await sshExec('sudo systemctl stop ollama')
-      }
-      log('ollama', `${label} ${action === 'start' ? 'started' : 'stopped'}`, 'success')
+      await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
+      log('ollama', 'Ollama stopped', 'success')
     }
     return { ok: true }
   } catch (err) {
@@ -2243,36 +2222,36 @@ async function getOpenInquiries() {
   }
 }
 
-// ── Pi System Monitoring ────────────────────────────────────────
+// ── Beta Server Monitoring (local PC) ───────────────────────────
 
 async function getPiStatus() {
+  // Legacy name kept for Gustav command compatibility - now checks local beta server
   try {
-    const { stdout } = await sshExec(
-      'echo "===UPTIME===" && uptime && echo "===DISK===" && df -h / && echo "===MEMORY===" && free -h && echo "===PM2===" && pm2 jlist 2>/dev/null && echo "===SERVICES===" && systemctl is-active ollama cloudflared 2>/dev/null',
-      20000
-    )
-    // Parse PM2 JSON
-    let pm2Info = 'unknown'
-    const pm2Match = stdout.match(/===PM2===\s*\n([\s\S]*?)(?:===|$)/)
-    if (pm2Match) {
-      try {
-        const pm2Data = JSON.parse(pm2Match[1].trim())
-        pm2Info = pm2Data.map(p => `${p.name}: ${p.pm2_env?.status || 'unknown'} (pid ${p.pid}, restarts: ${p.pm2_env?.restart_time || 0})`).join('\n')
-      } catch { pm2Info = pm2Match[1].trim() }
+    const betaCheck = await httpCheck(CONFIG.betaLocalUrl, 5000)
+    const pid = await findPidOnPort(CONFIG.betaPort)
+    return {
+      ok: true,
+      betaStatus: betaCheck.ok ? 'online' : 'offline',
+      betaPort: CONFIG.betaPort,
+      betaPid: pid || 'not found',
+      betaLatency: betaCheck.latency,
+      message: `Beta server: ${betaCheck.ok ? 'online' : 'offline'} on port ${CONFIG.betaPort}${pid ? ` (PID ${pid})` : ''}`,
     }
-    return { ok: true, output: stdout, pm2: pm2Info, message: 'Pi status retrieved' }
   } catch (err) {
     return { ok: false, error: err.message }
   }
 }
 
 async function getPiLogs(param) {
+  // Legacy name kept for Gustav command compatibility - now reads local beta logs
   const lines = parseInt(param) || 50
   try {
-    const { stdout } = await sshExec(`pm2 logs chefflow-beta --lines ${lines} --nostream 2>&1`, 15000)
-    return { ok: true, logs: stdout, message: `Last ${lines} lines of PM2 logs` }
+    const betaDir = join(PROJECT_ROOT, '..', 'CFv1-beta')
+    const logPath = join(betaDir, 'beta-server.log')
+    const { stdout } = await execAsync(`tail -${lines} "${logPath}"`, { timeout: 5000 })
+    return { ok: true, logs: stdout, message: `Last ${lines} lines of beta server logs` }
   } catch (err) {
-    return { ok: false, error: err.message }
+    return { ok: false, error: `Could not read beta logs: ${err.message}` }
   }
 }
 
@@ -2692,46 +2671,36 @@ async function pollUptime() {
   const betaOk = beta.status === 'fulfilled' && beta.value.ok
   const prodOk = prod.status === 'fulfilled' && prod.value.ok
 
-  let piOk = false
-  try {
-    await sshExec('echo ok', 5000)
-    piOk = true
-  } catch { /* pi unreachable */ }
-
   uptimeHistory.beta.push({ ts, ok: betaOk })
   uptimeHistory.prod.push({ ts, ok: prodOk })
-  uptimeHistory.pi.push({ ts, ok: piOk })
 
   // Trim to 24h
-  for (const key of ['beta', 'prod', 'pi']) {
+  for (const key of ['beta', 'prod']) {
     if (uptimeHistory[key].length > UPTIME_MAX_ENTRIES) {
       uptimeHistory[key] = uptimeHistory[key].slice(-UPTIME_MAX_ENTRIES)
     }
   }
 
-  // Broadcast downtime notifications via SSE — only on state transitions
+  // Broadcast downtime notifications via SSE - only on state transitions
   if (!betaOk && prevUptimeState.beta) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
   if (betaOk && !prevUptimeState.beta) feedEvent('system', 'RECOVERY: Beta server is back UP', 'info')
   if (!prodOk && prevUptimeState.prod) feedEvent('system', 'ALERT: Production is DOWN', 'error')
   if (prodOk && !prevUptimeState.prod) feedEvent('system', 'RECOVERY: Production is back UP', 'info')
-  if (!piOk && prevUptimeState.pi) feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
-  if (piOk && !prevUptimeState.pi) feedEvent('system', 'RECOVERY: Raspberry Pi is back REACHABLE', 'info')
 
   prevUptimeState.beta = betaOk
   prevUptimeState.prod = prodOk
-  prevUptimeState.pi = piOk
 
-  // Beta auto-remediation: restart PM2 after 3 consecutive failures
+  // Beta auto-remediation: restart local beta server after 3 consecutive failures
   if (!betaOk) {
     betaConsecutiveFailures++
     if (betaConsecutiveFailures >= 3 && (ts - lastBetaRemediationTs) > BETA_REMEDIATION_COOLDOWN_MS) {
       lastBetaRemediationTs = ts
-      feedEvent('system', `AUTO-REMEDIATION: Restarting beta PM2 (${betaConsecutiveFailures} consecutive failures)`, 'warn')
+      feedEvent('system', `AUTO-REMEDIATION: Restarting local beta server (${betaConsecutiveFailures} consecutive failures)`, 'warn')
       try {
-        await sshExec('source /home/davidferra/.nvm/nvm.sh && pm2 restart chefflow-beta', 30000)
-        feedEvent('system', 'AUTO-REMEDIATION: PM2 restart command sent successfully', 'info')
+        await restartBeta()
+        feedEvent('system', 'AUTO-REMEDIATION: Beta server restart initiated', 'info')
       } catch (err) {
-        feedEvent('system', `AUTO-REMEDIATION: PM2 restart failed — ${err.message}`, 'error')
+        feedEvent('system', `AUTO-REMEDIATION: Beta restart failed - ${err.message}`, 'error')
       }
     }
   } else {
@@ -5318,20 +5287,19 @@ async function getRemyErrors() {
 
 async function getBetaDeepHealth() {
   try {
-    const { stdout } = await execAsync('ssh pi "pm2 jlist && echo SEPARATOR && df -h / && echo SEPARATOR && free -m && echo SEPARATOR && uptime"', { timeout: 15000 })
-    const parts = stdout.split('SEPARATOR')
-    let pm2 = []
-    try { pm2 = JSON.parse(parts[0].trim()) } catch { /* parse fail */ }
+    const betaCheck = await httpCheck(CONFIG.betaLocalUrl, 5000)
+    const tunnelCheck = await httpCheck(CONFIG.betaUrl, 10000)
+    const pid = await findPidOnPort(CONFIG.betaPort)
     return {
-      ok: true,
-      pm2: pm2.map(p => ({ name: p.name, status: p.pm2_env?.status, restarts: p.pm2_env?.restart_time, uptime: p.pm2_env?.pm_uptime })),
-      disk: parts[1]?.trim() || 'unavailable',
-      memory: parts[2]?.trim() || 'unavailable',
-      uptime: parts[3]?.trim() || 'unavailable',
-      message: `Beta deep health: ${pm2.length} PM2 apps, ${pm2.filter(p => p.pm2_env?.status === 'online').length} online`,
+      ok: betaCheck.ok,
+      localHealth: { ok: betaCheck.ok, status: betaCheck.status, latency: betaCheck.latency },
+      tunnelHealth: { ok: tunnelCheck.ok, status: tunnelCheck.status, latency: tunnelCheck.latency },
+      pid: pid || 'not found',
+      port: CONFIG.betaPort,
+      message: `Beta: local=${betaCheck.ok ? 'UP' : 'DOWN'} (${betaCheck.latency}ms), tunnel=${tunnelCheck.ok ? 'UP' : 'DOWN'} (${tunnelCheck.latency}ms)${pid ? `, PID ${pid}` : ''}`,
     }
   } catch (err) {
-    return { ok: false, error: `SSH failed: ${err.message}` }
+    return { ok: false, error: err.message }
   }
 }
 
@@ -5786,8 +5754,8 @@ const TOOLS = {
   'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services (dev, beta, prod, Ollama, git)' },
   'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
   'health/app':       { fn: getAppHealth,                         desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running' },
-  'pi/status':        { fn: getPiStatus,                          desc: 'Get Raspberry Pi system status (uptime, disk, memory, PM2, services)' },
-  'pi/logs':          { fn: (param) => getPiLogs(param),          desc: 'Get recent PM2 logs from Pi (use pi/logs:100 for more lines)' },
+  'pi/status':        { fn: getPiStatus,                          desc: 'Get beta server status (port, PID, health check)' },
+  'pi/logs':          { fn: (param) => getPiLogs(param),          desc: 'Get recent beta server logs (use pi/logs:100 for more lines)' },
   'prod/deployments': { fn: getVercelDeployments,                 desc: 'Show recent Vercel production deployments' },
 
   // Business Data (read-only Supabase queries)
@@ -5905,7 +5873,7 @@ const TOOLS = {
   'data/event-timeline': { fn: (param) => getEventTimeline(param), desc: 'Event lifecycle timeline — all status transitions. Use data/event-timeline:event_id' },
   'remy/conversations': { fn: getRemyConversations,                desc: 'Recent Remy conversation metrics across all tenants' },
   'remy/errors':       { fn: getRemyErrors,                        desc: 'Remy error log — error metrics + abuse incidents with details' },
-  'beta/health':       { fn: getBetaDeepHealth,                    desc: 'Deep beta health — PM2 apps, disk, memory, uptime (requires Pi SSH)' },
+  'beta/health':       { fn: getBetaDeepHealth,                    desc: 'Deep beta health — local server + Cloudflare tunnel check' },
   'prod/health':       { fn: getProdHealth,                        desc: 'Production health check — status, latency, SSL' },
   'prod/analytics':    { fn: getProdAnalytics,                     desc: 'Production activity — recent main branch commits' },
   'env/validate':      { fn: validateEnv,                          desc: 'Validate all required env vars are set in .env.local' },
@@ -6401,7 +6369,6 @@ async function handleRequest(req, res) {
         beta: { port: 443, label: 'Beta', url: 'https://beta.cheflowhq.com' },
         prod: { port: 443, label: 'Production', url: 'https://cheflowhq.com' },
         ollamaPc: { port: 11434, label: 'Ollama PC', url: 'http://localhost:11434' },
-        ollamaPi: { port: 11434, label: 'Ollama Pi', url: 'http://10.0.0.177:11434' },
       },
       quickLinks: {
         supabase: 'https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz',
@@ -6411,42 +6378,20 @@ async function handleRequest(req, res) {
         beta: 'https://beta.cheflowhq.com',
         prod: 'https://cheflowhq.com',
       },
-      pi: null,
+      beta: null,
     }
-    // Fetch Pi system info (non-blocking — if Pi is down, we still return the rest)
+    // Fetch local beta server info
     try {
-      const { stdout } = await sshExec(
-        "echo RAM_START && free -m | grep Mem && echo SWAP_START && swapon --show 2>/dev/null | head -2 && echo UPTIME_START && uptime -p && echo SERVICES_START && echo ollama:$(systemctl is-active ollama 2>/dev/null || echo disabled) && echo cloudflared:$(systemctl is-active cloudflared 2>/dev/null) && echo ssh:$(systemctl is-active ssh 2>/dev/null) && echo zramswap:$(systemctl is-active zramswap 2>/dev/null) && echo pm2:$(pm2 pid chefflow-beta >/dev/null 2>&1 && echo active || echo inactive) && echo WATCHDOG_START && (test -e /dev/watchdog && echo active || echo inactive)",
-        10000
-      )
-      const lines = stdout.trim().split('\n')
-      const ramLine = lines.find(l => l.startsWith('Mem:'))
-      const uptimeLine = lines.find(l => l.startsWith('up '))
-      const services = {}
-      let inServices = false
-      for (const l of lines) {
-        if (l === 'SERVICES_START') { inServices = true; continue }
-        if (l === 'WATCHDOG_START') { inServices = false; continue }
-        if (inServices && l.includes(':')) {
-          const [svc, status] = l.split(':')
-          services[svc] = status
-        }
-      }
-      const watchdogLine = lines[lines.length - 1]
-      let ram = null
-      if (ramLine) {
-        const parts = ramLine.trim().split(/\s+/)
-        ram = { total: parts[1] + ' MB', used: parts[2] + ' MB', free: parts[3] + ' MB', available: parts[6] + ' MB' }
-      }
-      infra.pi = {
-        reachable: true,
-        ram,
-        uptime: uptimeLine || 'unknown',
-        services,
-        watchdog: watchdogLine === 'active' ? 'active' : 'inactive',
+      const betaCheck = await httpCheck(CONFIG.betaLocalUrl, 5000)
+      const pid = await findPidOnPort(CONFIG.betaPort)
+      infra.beta = {
+        running: betaCheck.ok,
+        port: CONFIG.betaPort,
+        pid: pid || null,
+        latency: betaCheck.latency,
       }
     } catch {
-      infra.pi = { reachable: false, error: 'Pi unreachable via SSH' }
+      infra.beta = { running: false, error: 'Beta server check failed' }
     }
     return json(res, infra)
   }

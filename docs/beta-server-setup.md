@@ -1,154 +1,138 @@
-# ChefFlow Beta Server — Setup & Operations Guide
+# ChefFlow Beta Server - Setup & Operations Guide
 
 ## Architecture Overview
 
-ChefFlow uses a 3-environment deployment model:
+ChefFlow uses a 3-environment deployment model, all on the developer's PC:
 
 ```
-Developer's PC (localhost:3100)     →  Development / active coding
-Raspberry Pi 5 (beta.cheflowhq.com) →  Beta testing / stable snapshot
-Vercel (app.cheflowhq.com)          →  Production / public launch
+PC localhost:3100           ->  Development (next dev, hot reload, active coding)
+PC localhost:3200           ->  Beta (next start, Cloudflare Tunnel -> beta.cheflowhq.com)
+Vercel (app.cheflowhq.com) ->  Production (deployed when ready)
 ```
 
 ### How It Works
 
-- **Development (PC):** `npm run dev` on localhost:3100. Only the developer sees this.
-- **Beta (Pi):** A frozen production build served via Cloudflare Tunnel. Updated only when the developer runs `deploy-beta`. Beta testers get a stable experience.
+- **Development (port 3100):** `npm run dev` with hot reload. Only the developer sees this.
+- **Beta (port 3200):** A frozen production build served via Cloudflare Tunnel. Updated only when the developer runs `npm run beta:deploy`. Beta testers get a stable experience at `beta.cheflowhq.com`.
 - **Production (Vercel):** Deployed when the app is ready for public release.
 
+### Why Everything Is on One Machine
+
+The beta server was originally on a Raspberry Pi 5 (8GB RAM). The app outgrew it:
+
+- Builds required 6GB heap + 2GB swap, took 8-10 minutes
+- Ollama had to be permanently disabled (not enough RAM for app + LLM)
+- Beta testers couldn't use any AI features (Remy, lead scoring, recipe parsing)
+- 10 scripts existed solely to manage Pi memory pressure and OOM recovery
+
+Moving to PC: builds take ~2 min, Ollama runs alongside beta, and beta testers see the full app.
+
 ---
 
-## Hardware
+## Directory Structure
 
-|            | Development (PC)            | Beta (Raspberry Pi 5) |
-| ---------- | --------------------------- | --------------------- |
-| CPU        | AMD Ryzen 9 7900X (12c/24t) | ARM Cortex-A76 (4c)   |
-| RAM        | 128 GB DDR5                 | 8 GB                  |
-| Storage    | 3.5 TB (NVMe SSD)           | 128 GB microSD        |
-| Network    | WiFi 7 (1.2 Gbps)           | WiFi                  |
-| Always on? | No                          | Yes                   |
-
----
-
-## Accessing the Pi
-
-```bash
-ssh pi
-# Uses ~/.ssh/config (user: davidferra, key: ~/.ssh/id_ed25519)
-# NEVER use pi@raspberrypi with password
 ```
+C:\Users\david\Documents\CFv1\        ->  Source code (dev work)
+C:\Users\david\Documents\CFv1-beta\   ->  Beta build (synced from CFv1, has its own .next and node_modules)
+```
+
+The beta directory is a separate copy to prevent the beta server from interfering with the dev server's `.next` folder, `node_modules`, or hot file changes.
 
 ---
 
 ## Deploying to Beta
 
-From the PC, run:
+From the project root:
 
 ```bash
+npm run beta:deploy
+# or
 bash scripts/deploy-beta.sh
 ```
 
 This script:
 
-1. Pushes your current branch to GitHub
-2. Pulls the latest code on the Pi
-3. Copies the beta `.env.local`
-4. Backs up the current build
-5. Stops Ollama → installs deps → builds → restarts Ollama
-6. Restarts the app via PM2
-7. Verifies with a health check
+1. Pushes current branch to GitHub (backup)
+2. Runs a database backup (non-blocking)
+3. Syncs code from CFv1 to CFv1-beta (rsync, excludes .next/node_modules/.git)
+4. Copies `.env.local.beta` as the beta `.env.local`
+5. Installs dependencies (cached, fast)
+6. Builds (`next build`, ~2 min on PC)
+7. Restarts the beta server on port 3200
+8. Health check to verify it's running
 
 ### Rolling Back
-
-If a deploy breaks the beta:
 
 ```bash
 bash scripts/rollback-beta.sh
 ```
 
-This restores the previous `.next` build and restarts PM2.
+Stashes uncommitted work, checks out the previous commit, redeploys, then restores your working directory. With 2-minute builds, this is faster than managing backup directories.
 
 ---
 
 ## Environment Config
 
-The beta environment uses `.env.local.beta` (in the project root). Key differences from dev:
+Beta uses `.env.local.beta` (in the project root). Key differences from dev:
 
-| Variable               | Dev (PC)                | Beta (Pi)                    |
+| Variable               | Dev (PC)                | Beta (PC)                    |
 | ---------------------- | ----------------------- | ---------------------------- |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3100` | `https://beta.cheflowhq.com` |
 | `NEXT_PUBLIC_APP_URL`  | `http://localhost:3100` | `https://beta.cheflowhq.com` |
-| `OLLAMA_MODEL`         | `qwen3-coder:30b`       | `qwen3:8b`                   |
+| `OLLAMA_MODEL`         | `qwen3-coder:30b`       | `qwen3-coder:30b`            |
+| `OLLAMA_MODEL_FAST`    | `qwen3:4b`              | `qwen3:4b`                   |
 | `DEMO_MODE_ENABLED`    | `true`                  | `false`                      |
 | `STRIPE_*`             | Dev keys                | Empty (no payments on beta)  |
 
+Both dev and beta share the same Ollama instance on `localhost:11434`.
+
 ---
 
-## Services Running on Pi
+## Services Running on PC
 
-| Service            | Auto-starts? | Command                              |
-| ------------------ | ------------ | ------------------------------------ |
-| ChefFlow app (PM2) | Yes          | `pm2 restart chefflow-beta`          |
-| Cloudflare Tunnel  | Yes          | `sudo systemctl restart cloudflared` |
-| Ollama             | Yes          | `sudo systemctl restart ollama`      |
+| Service           | Port  | Auto-starts? | How                                                           |
+| ----------------- | ----- | ------------ | ------------------------------------------------------------- |
+| Cloudflare Tunnel | n/a   | Yes          | Windows service (`cloudflared service install`)               |
+| Beta server       | 3200  | Yes          | Windows Task Scheduler runs `scripts/start-beta.ps1` on login |
+| Ollama            | 11434 | Yes          | Ollama's own Windows service                                  |
+| Dev server        | 3100  | No           | Manual: `npm run dev`                                         |
+| Mission Control   | 41937 | No           | Manual: `npm run dashboard`                                   |
 
-### Checking Status
+### Quick Commands
 
 ```bash
-ssh pi 'pm2 status'                    # App status
-ssh pi 'pm2 logs chefflow-beta'        # App logs
-ssh pi 'sudo systemctl status cloudflared'  # Tunnel status
-ssh pi 'sudo systemctl status ollama'  # Ollama status
+npm run beta:deploy     # Build + deploy to beta
+npm run beta:restart    # Restart beta server
+npm run beta:logs       # View beta server logs
+npm run beta:status     # Check if beta is responding
 ```
 
 ---
 
-## Maintenance
+## Cloudflare Tunnel
 
-### Log Rotation
+The tunnel routes `beta.cheflowhq.com` to `localhost:3200`.
 
-PM2 logs are automatically rotated via `pm2-logrotate`:
-
-- Max file size: 10 MB
-- Retention: 5 files
-
-### Security Updates
-
-Unattended security updates are enabled on the Pi. To manually update:
-
-```bash
-ssh pi 'sudo apt update && sudo apt upgrade -y'
-```
-
-### Swap Space
-
-The Pi has 2 GB swap configured at `/var/swap` to support the Next.js build process.
-
-### Build Notes
-
-- **Must stop Ollama before building** — the build uses ~2-4 GB RAM, Ollama uses ~5 GB
-- Build uses `NODE_OPTIONS="--max-old-space-size=4096"` for 4 GB heap
-- The deploy script handles this automatically
+- **Config:** `.cloudflared/config.yml`
+- **Tunnel ID:** `f48ab139-b448-4fd9-a431-bcf6b09902f0`
+- **Credentials:** `C:\Users\david\.cloudflared\f48ab139-b448-4fd9-a431-bcf6b09902f0.json`
+- **Runs as:** Windows service (auto-starts on boot)
 
 ---
 
 ## Troubleshooting
 
-| Problem             | Fix                                                             |
-| ------------------- | --------------------------------------------------------------- |
-| Beta site is down   | `ssh pi 'pm2 restart chefflow-beta'`                            |
-| Tunnel is down      | `ssh pi 'sudo systemctl restart cloudflared'`                   |
-| Build OOM           | Ensure Ollama is stopped: `ssh pi 'sudo systemctl stop ollama'` |
-| Auth redirect fails | Check `NEXT_PUBLIC_SITE_URL` in Pi's `.env.local`               |
-| Google OAuth fails  | Ensure `beta.cheflowhq.com` callback is in Google Cloud Console |
-| SD card full        | `ssh pi 'pm2 flush && sudo apt clean'`                          |
+| Problem               | Fix                                                          |
+| --------------------- | ------------------------------------------------------------ |
+| Beta site is down     | `npm run beta:restart`                                       |
+| Tunnel is down        | Restart cloudflared Windows service                          |
+| Auth redirect fails   | Check `NEXT_PUBLIC_SITE_URL` in `.env.local.beta`            |
+| Ollama not responding | Check Ollama Windows service, or run `ollama serve` manually |
 
 ---
 
-## Future Improvements
+## External Monitoring
 
-- [ ] Separate Supabase project for beta (isolated database)
-- [ ] Ethernet connection for Pi (more reliable than WiFi)
-- [ ] USB SSD for Pi (better than microSD for long-term server use)
-- [ ] UptimeRobot monitoring for beta.cheflowhq.com
-- [ ] Stripe test mode webhooks on beta
+- **UptimeRobot** (free tier) monitors both `app.cheflowhq.com` and `beta.cheflowhq.com`
+- Alerts via email on downtime
+- Checks from multiple global locations (not dependent on home network)

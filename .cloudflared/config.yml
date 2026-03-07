@@ -18,7 +18,7 @@ credentials-file: C:\Users\david\.cloudflared\f48ab139-b448-4fd9-a431-bcf6b09902
 
 ingress:
   - hostname: beta.cheflowhq.com
-    service: http://localhost:3100
+    service: http://localhost:3200
     originRequest:
       noTLSVerify: true
   # Catch-all rule (required by cloudflared)
