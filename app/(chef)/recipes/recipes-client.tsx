@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import type { RecipeListItem } from '@/lib/recipes/actions'
 import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
+import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -63,6 +64,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
   const [search, setSearch] = useState(searchParams.get('search') || '')
+  const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
 
   const currentCategory = searchParams.get('category') || ''
   const currentCuisine = searchParams.get('cuisine') || ''
@@ -179,9 +181,94 @@ export function RecipeLibraryClient({ recipes }: Props) {
             </button>
           ))}
         </div>
+
+        {/* View mode toggle */}
+        <div className="flex gap-1 border border-stone-600 rounded-md p-0.5">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-stone-700 text-stone-100' : 'text-stone-500 hover:text-stone-300'}`}
+            aria-label="Grid view"
+            title="Grid view"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect
+                x="1"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <rect
+                x="11"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <rect
+                x="1"
+                y="11"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <rect
+                x="11"
+                y="11"
+                width="6"
+                height="6"
+                rx="1"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => setViewMode('coverflow')}
+            className={`p-1.5 rounded ${viewMode === 'coverflow' ? 'bg-stone-700 text-stone-100' : 'text-stone-500 hover:text-stone-300'}`}
+            aria-label="Cover Flow view"
+            title="Cover Flow view"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect
+                x="5"
+                y="2"
+                width="8"
+                height="14"
+                rx="1.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M3 5L1 6.5V11.5L3 13"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M15 5L17 6.5V11.5L15 13"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Recipe Grid */}
+      {/* Cover Flow View */}
+      {viewMode === 'coverflow' && recipes.length > 0 && <RecipeCoverFlow recipes={recipes} />}
+
+      {/* Empty state (either view mode) */}
       {recipes.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -199,7 +286,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
             </div>
           </CardContent>
         </Card>
-      ) : (
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {recipes.map((recipe) => (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
@@ -267,7 +354,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
             </Link>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

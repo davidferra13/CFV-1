@@ -472,6 +472,11 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/travel`}>
             <Button variant="secondary">Travel Plan</Button>
           </Link>
+          {event.status === 'completed' && (
+            <Link href={`/events/${event.id}/story`}>
+              <Button variant="secondary">Create Story</Button>
+            </Link>
+          )}
           <Link href="/events">
             <Button variant="ghost">Back to Events</Button>
           </Link>
