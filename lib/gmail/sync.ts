@@ -851,6 +851,28 @@ async function handleExistingThread(
             console.error('[handleExistingThread] Field extraction failed (non-fatal):', extractErr)
           }
         }
+
+        // Route email reply into the Dinner Circle (non-blocking)
+        try {
+          const { routeEmailReplyToCircle } = await import('@/lib/hub/email-to-circle')
+          const convertedEventId = inquiry
+            ? ((await supabase.from('events').select('id').eq('id', linkedInquiryId).maybeSingle())
+                .data?.id ?? null)
+            : null
+
+          await routeEmailReplyToCircle({
+            inquiryId: linkedInquiryId,
+            eventId: convertedEventId,
+            senderEmail: email.from?.email || '',
+            senderName: email.from?.name || email.from?.email || 'Client',
+            emailBody: email.body,
+          })
+        } catch (circleRouteErr) {
+          console.error(
+            '[handleExistingThread] Circle routing failed (non-blocking):',
+            circleRouteErr
+          )
+        }
       }
     }
 

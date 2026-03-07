@@ -245,47 +245,21 @@ export async function uploadEventPhoto(
       // Non-fatal
     }
 
-    // Post to Dinner Circle on first photo (non-blocking)
+    // Circle-first: post photos notification on first photo (non-blocking)
     if (isFirstPhoto) {
       try {
-        const { postPhotosToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
-        await postPhotosToCircle({
+        const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+        await circleFirstNotify({
           eventId,
           tenantId: user.tenantId!,
-          photoCount: 1,
+          notificationType: 'photos_ready',
+          body: 'Photos from your event are now available! Check them out.',
+          metadata: { event_id: eventId, photo_count: 1 },
+          actionUrl: `/my-events/${eventId}`,
+          actionLabel: 'View Photos',
         })
       } catch {
         // Non-fatal
-      }
-    }
-
-    if (isFirstPhoto) {
-      try {
-        const adminSupabase = createServerClient({ admin: true })
-
-        const [{ data: client }, { data: chef }] = await Promise.all([
-          adminSupabase
-            .from('clients')
-            .select('email, full_name')
-            .eq('id', event.client_id)
-            .single(),
-          adminSupabase.from('chefs').select('business_name').eq('id', user.tenantId!).single(),
-        ])
-
-        if (client?.email && chef) {
-          const { sendPhotosReadyEmail } = await import('@/lib/email/notifications')
-          await sendPhotosReadyEmail({
-            clientEmail: client.email,
-            clientName: client.full_name,
-            chefName: chef.business_name || 'Your Chef',
-            occasion: event.occasion || 'your event',
-            eventDate: event.event_date || '',
-            photoCount: 1,
-            eventId,
-          })
-        }
-      } catch (emailErr) {
-        console.error('[uploadEventPhoto] Photos-ready email failed (non-blocking):', emailErr)
       }
     }
   }

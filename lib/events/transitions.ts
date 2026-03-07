@@ -550,14 +550,50 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
-        await sendEventCompletedEmail({
-          clientEmail: client.email,
-          clientName: client.full_name,
-          chefName,
-          eventId,
-          occasion,
-          eventDate: event.event_date,
-        })
+        // Circle-first: post completion to circle
+        try {
+          const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+          const clientFirst = client.full_name?.split(' ')[0] || ''
+          let thankYou = 'Thank you for a wonderful evening!'
+          if (clientFirst) thankYou = `Thank you for a wonderful evening, ${clientFirst}!`
+          thankYou += " I hope everyone enjoyed the meal. I'll share photos here soon."
+
+          await circleFirstNotify({
+            eventId,
+            tenantId: event.tenant_id,
+            notificationType: 'event_completed',
+            body: thankYou,
+            metadata: { event_id: eventId },
+            actionUrl: `/my-events/${eventId}`,
+            actionLabel: 'Leave a Review',
+            fallbackEmail: client.email
+              ? {
+                  to: client.email,
+                  subject: `Thank you for a wonderful evening!`,
+                  react: (await import('react')).createElement(
+                    (await import('@/lib/email/templates/event-completed')).EventCompletedEmail,
+                    {
+                      clientName: client.full_name,
+                      chefName,
+                      eventId,
+                      occasion,
+                      eventDate: event.event_date,
+                    }
+                  ),
+                }
+              : undefined,
+          })
+        } catch (cfErr) {
+          log.events.warn('Circle-first completed notify failed (non-blocking)', { error: cfErr })
+          await sendEventCompletedEmail({
+            clientEmail: client.email,
+            clientName: client.full_name,
+            chefName,
+            eventId,
+            occasion,
+            eventDate: event.event_date,
+          })
+        }
       }
 
       if (toStatus === 'cancelled') {
@@ -587,37 +623,7 @@ export async function transitionEvent({
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
 
-  // Post to Dinner Circle on confirmed + completed (non-blocking)
-  try {
-    if (toStatus === 'confirmed' && fromStatus === 'paid') {
-      const { postEventConfirmedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
-      await postEventConfirmedToCircle({
-        eventId,
-        tenantId: event.tenant_id,
-        eventDate: event.event_date,
-      })
-    }
-
-    if (toStatus === 'completed' && fromStatus === 'in_progress') {
-      const { postEventCompletedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
-      // Load client name for the thank-you message
-      const adminSupa = createServerClient({ admin: true })
-      const { data: clientForCircle } = await adminSupa
-        .from('clients')
-        .select('full_name')
-        .eq('id', event.client_id)
-        .single()
-
-      await postEventCompletedToCircle({
-        eventId,
-        tenantId: event.tenant_id,
-        clientName: clientForCircle?.full_name ?? null,
-        occasion: event.occasion ?? null,
-      })
-    }
-  } catch (circleErr) {
-    log.events.warn('Circle post failed (non-blocking)', { error: circleErr })
-  }
+  // Circle posts for confirmed + completed are now handled by circleFirstNotify() above
 
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {

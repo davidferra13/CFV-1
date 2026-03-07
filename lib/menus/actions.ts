@@ -770,11 +770,10 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     console.error('[transitionMenu] Activity log failed (non-blocking):', err)
   }
 
-  // Post menu shared to Dinner Circle (non-blocking)
+  // Circle-first: post menu shared notification (non-blocking)
   if (toStatus === 'shared') {
     try {
-      const { postMenuSharedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
-      // Look up menu name + linked event/inquiry
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
       const adminSupa = createServerClient({ admin: true })
       const { data: menuData } = await adminSupa
         .from('menus')
@@ -782,7 +781,6 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
         .eq('id', menuId)
         .single()
 
-      // Find inquiry via event if needed
       let inquiryId: string | null = null
       if (menuData?.event_id) {
         const { data: inq } = await adminSupa
@@ -794,15 +792,22 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
         inquiryId = inq?.id ?? null
       }
 
-      await postMenuSharedToCircle({
-        menuId,
-        menuName: menuData?.name || 'Menu',
-        tenantId: user.tenantId!,
+      const menuName = menuData?.name || 'Menu'
+      await circleFirstNotify({
         eventId: menuData?.event_id ?? null,
         inquiryId,
+        tenantId: user.tenantId!,
+        notificationType: 'menu_shared',
+        body: `Menu shared: ${menuName}. Take a look and let me know what you think!`,
+        metadata: {
+          menu_id: menuId,
+          menu_name: menuName,
+        },
+        actionUrl: menuData?.event_id ? `/my-events/${menuData.event_id}` : undefined,
+        actionLabel: 'View Menu',
       })
     } catch (err) {
-      console.error('[transitionMenu] Circle post failed (non-blocking):', err)
+      console.error('[transitionMenu] Circle-first notify failed (non-blocking):', err)
     }
   }
 
