@@ -104,7 +104,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
           <Link href="/recipes/ingredients">
             <Button variant="secondary">Ingredients</Button>
           </Link>
-          <Link href="/recipes/new">
+          <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
           </Link>
         </div>

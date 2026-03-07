@@ -16,6 +16,7 @@ import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
+import { ClientTourWrapper } from '@/components/onboarding/client-tour-wrapper'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -44,7 +45,9 @@ export default async function ClientLayout({ children }: { children: React.React
           <ClientSidebar userEmail={user.email} />
           <ClientMobileNav userEmail={user.email} />
           <ActivityTracker eventType="portal_login" />
-          <ClientMainContent>{children}</ClientMainContent>
+          <ClientMainContent>
+            <ClientTourWrapper>{children}</ClientTourWrapper>
+          </ClientMainContent>
           <PresenceBeacon />
           <PageInfoButton />
         </div>

@@ -125,7 +125,7 @@ export default async function EventsPage({
           <p className="text-stone-400 mt-1">Manage your events and proposals</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link data-info="new-event" href="/events/new">
+          <Link data-info="new-event" data-tour="create-event" href="/events/new">
             <Button>+ New Event</Button>
           </Link>
         </div>

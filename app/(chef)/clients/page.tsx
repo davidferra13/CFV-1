@@ -39,7 +39,9 @@ export default async function ClientsPage() {
           >
             Export CSV
           </a>
-          <Button href="/clients/new">+ Add Client</Button>
+          <Button href="/clients/new" data-tour="add-client">
+            + Add Client
+          </Button>
         </div>
       </div>
 

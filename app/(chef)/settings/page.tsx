@@ -30,6 +30,7 @@ import { GoogleReviewUrlForm } from '@/components/settings/google-review-url-for
 import { ChefBackgroundSettings } from '@/components/settings/chef-background-settings'
 import { AvailabilitySignalToggle } from '@/components/calendar/availability-signal-toggle'
 import { DemoDataManager } from '@/components/onboarding/demo-data-manager'
+import { ReplayTourButton } from '@/components/onboarding/replay-tour-button'
 import { hasDemoData } from '@/lib/onboarding/demo-data'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
@@ -782,13 +783,18 @@ export default async function SettingsPage() {
           </div>
         </SettingsCategory>
 
-        {/* ── 16. Sample Data ──────────────────────────────────── */}
+        {/* ── 16. Sample Data & Tour ───────────────────────────── */}
         <SettingsCategory
-          title="Sample Data"
-          description="Load or remove sample clients, events, and inquiries to explore ChefFlow."
+          title="Sample Data & Tour"
+          description="Load sample data to explore ChefFlow, or replay the guided product tour."
           icon="Database"
         >
-          <DemoDataManager hasDemoData={demoDataExists} />
+          <div className="space-y-4">
+            <DemoDataManager hasDemoData={demoDataExists} />
+            <div className="border-t border-stone-700 pt-4">
+              <ReplayTourButton />
+            </div>
+          </div>
         </SettingsCategory>
 
         {/* ── 17. API & Developer ──────────────────────────────── */}

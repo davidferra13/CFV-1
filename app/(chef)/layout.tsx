@@ -32,6 +32,7 @@ import {
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
+import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
 
 const PushPermissionPrompt = dynamic(
   () =>
@@ -209,7 +210,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 />
 
                 {/* Main content — offset adjusts dynamically based on sidebar state */}
-                <ChefMainContent>{children}</ChefMainContent>
+                <ChefMainContent>
+                  <ChefTourWrapper>{children}</ChefTourWrapper>
+                </ChefMainContent>
 
                 {/* Push notification permission prompt — appears after 5s if not subscribed */}
                 <PushPermissionPrompt />

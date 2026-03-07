@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation'
 import { StaffNav } from '@/components/staff/staff-nav'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
+import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
 
 export const metadata = {
   title: {
@@ -38,7 +39,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       </a>
       <StaffNav staffName={staffName} staffEmail={user.email} />
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {children}
+        <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>
       <PresenceBeacon />
     </div>
