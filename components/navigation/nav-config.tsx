@@ -130,6 +130,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
+  { href: '/rate-card', label: 'Rate Card', icon: Coins },
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/staff', label: 'Staff', icon: IdentificationBadge },
   { href: '/tasks', label: 'Tasks', icon: Kanban },
@@ -205,6 +206,11 @@ export const navGroups: NavGroup[] = [
           { href: '/quotes/expired', label: 'Expired' },
           { href: '/quotes/rejected', label: 'Rejected' },
         ],
+      },
+      {
+        href: '/rate-card',
+        label: 'Rate Card',
+        icon: Coins,
       },
       {
         href: '/proposals',

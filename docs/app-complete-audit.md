@@ -539,6 +539,18 @@
 
 **`/quotes/[id]` — Detail:** Pricing card, deposit/validity card, linked resources, transition buttons (Send/Accept/Reject/Expire/Revise/Edit/Delete), notes, status history.
 
+### 4.2b Rate Card
+
+**Route:** `/rate-card`
+
+Quick-access pricing reference designed for mobile use mid-conversation. Reads all rates from `lib/pricing/constants.ts` (single source of truth).
+
+- **Collapsible sections:** Couples Dinners, Group Dinners, Weekly/Meal Prep, Multi-Night Packages, Specialty, Add-Ons, Premiums & Surcharges, Terms & Policies
+- **Copy button per section:** copies formatted text to clipboard for pasting into texts/emails
+- **"Copy Full Rate Card" button:** copies entire rate card as formatted text
+- **No database dependency:** all data from constants, loads instantly
+- **Nav location:** Sales group (between Quotes and Proposals), also in standaloneTop shortcuts
+
 ### 4.3 Leads
 
 **Route:** `/leads` — Website form submissions with "Claim →" and "Dismiss" buttons per lead. Sub-pages: contacted, qualified, converted, archived.
