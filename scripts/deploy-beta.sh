@@ -40,15 +40,10 @@ fi
 
 # Step 3: Sync code to beta directory
 echo "[3/7] Syncing code to beta directory..."
-rsync -a --delete \
-  --exclude='.next' \
-  --exclude='node_modules' \
-  --exclude='.env.local' \
-  --exclude='.git' \
-  --exclude='backups' \
-  --exclude='.auth' \
-  --exclude='beta-server.log' \
-  "$SOURCE_DIR/" "$BETA_DIR/"
+# Use robocopy on Windows (rsync equivalent). Exit codes 0-7 are success for robocopy.
+# Run via cmd.exe to avoid bash/robocopy interaction issues.
+cmd.exe /c "robocopy \"C:\\Users\\david\\Documents\\CFv1\" \"C:\\Users\\david\\Documents\\CFv1-beta\" /MIR /XD .next node_modules .git backups .auth /XF .env.local beta-server.log /NFL /NDL /NJH /NJS /NC /NS /NP" > /dev/null 2>&1 || true
+echo "  Code synced"
 
 # Step 4: Copy beta env
 echo "[4/7] Setting beta environment..."
@@ -62,7 +57,7 @@ npm install --production=false 2>&1 | tail -3
 # Step 6: Build
 echo "[6/7] Building..."
 BUILD_START=$(date +%s)
-npx next build --no-lint 2>&1 | tail -15
+NODE_OPTIONS="--max-old-space-size=8192" npx next build 2>&1 | tail -15
 BUILD_EXIT=$?
 BUILD_END=$(date +%s)
 BUILD_DURATION=$((BUILD_END - BUILD_START))

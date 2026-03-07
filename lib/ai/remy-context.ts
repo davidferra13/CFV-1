@@ -14,10 +14,8 @@ import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-sum
 import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
 import { getClientIntelligenceContext } from '@/lib/intelligence/client-intelligence-context'
 import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
-import {
-  getServiceConfigForTenant,
-  formatServiceConfigForPrompt,
-} from '@/lib/chef-services/service-config-actions'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
+import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-types'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
