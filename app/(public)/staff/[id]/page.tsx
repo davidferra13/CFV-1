@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true },
 }
 
-export default async function StaffPortalPage({ params }: { params: { token: string } }) {
-  const result = await getStaffEventView(params.token)
+export default async function StaffPortalPage({ params }: { params: { id: string } }) {
+  const result = await getStaffEventView(params.id)
 
   if (result.state === 'invalid') {
     notFound()
@@ -53,7 +53,7 @@ export default async function StaffPortalPage({ params }: { params: { token: str
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-950 to-stone-900">
       <div className="max-w-lg mx-auto px-4 py-6">
-        <StaffEventView eventData={result.data} token={params.token} />
+        <StaffEventView eventData={result.data} token={params.id} />
       </div>
     </div>
   )
