@@ -294,16 +294,17 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   {formatCurrency(outstandingBalanceCents)}
                 </span>
               </div>
-              {outstandingBalanceCents > 0 && event.status === 'completed' && (
-                <div className="mt-3">
-                  <Link
-                    href={`/my-events/${event.id}/pay`}
-                    className="block w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm text-center"
-                  >
-                    Pay Remaining Balance
-                  </Link>
-                </div>
-              )}
+              {outstandingBalanceCents > 0 &&
+                ['paid', 'confirmed', 'in_progress', 'completed'].includes(event.status) && (
+                  <div className="mt-3">
+                    <Link
+                      href={`/my-events/${event.id}/pay`}
+                      className="block w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm text-center"
+                    >
+                      Pay Remaining Balance
+                    </Link>
+                  </div>
+                )}
             </div>
 
             {(event.deposit_amount_cents ?? 0) > 0 && (

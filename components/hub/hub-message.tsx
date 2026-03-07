@@ -6,6 +6,7 @@ import type { HubMessage, HubGuestProfile, HubPoll } from '@/lib/hub/types'
 import { addReaction, removeReaction, getMessageReaders } from '@/lib/hub/message-actions'
 import { getPoll } from '@/lib/hub/poll-actions'
 import { HubPollCard } from './hub-poll-card'
+import { HubNotificationCard } from './hub-notification-card'
 
 const QUICK_REACTIONS = ['🔥', '❤️', '😂', '🍽️', '👏', '🎉']
 
@@ -34,6 +35,11 @@ export function HubMessageBubble({
 
   const isOwn = message.author_profile_id === currentProfileId
   const author = message.author as HubGuestProfile | undefined
+
+  // Notification cards - rich actionable messages (quote, payment, etc.)
+  if (message.message_type === 'notification') {
+    return <HubNotificationCard message={message} />
+  }
 
   // System messages render differently
   if (message.message_type === 'system') {
@@ -159,6 +165,23 @@ export function HubMessageBubble({
 
           {/* Pin badge */}
           {message.is_pinned && <div className="mt-1 text-xs opacity-60">📌 Pinned</div>}
+
+          {/* Source badge (email, remy) */}
+          {message.source === 'email' && (
+            <div className="mt-1 flex items-center gap-1 text-[10px] opacity-50">
+              <svg
+                className="h-2.5 w-2.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M22 4L12 13L2 4" />
+              </svg>
+              via email
+            </div>
+          )}
 
           {/* Edited indicator */}
           {message.edited_at && <span className="mt-0.5 text-xs opacity-50">(edited)</span>}

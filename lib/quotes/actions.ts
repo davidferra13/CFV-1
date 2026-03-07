@@ -539,21 +539,68 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         occasion = evt?.occasion || null
       }
 
-      if (client?.email && chef) {
-        const { sendQuoteSentEmail } = await import('@/lib/email/notifications')
-        await sendQuoteSentEmail({
-          clientEmail: client.email,
-          clientName: client.full_name,
-          chefName: chef.business_name || 'Your Chef',
-          quoteId: id,
-          totalCents: updated.total_quoted_cents,
-          depositRequired: updated.deposit_required ?? false,
-          depositCents: updated.deposit_amount_cents,
-          occasion,
-          validUntil: updated.valid_until,
-        })
+      // Circle-first: post quote notification to circle, email points to circle
+      if (chef) {
+        const { createElement } = await import('react')
+        const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+        const chefName = chef.business_name || 'Your Chef'
+        const total = (updated.total_quoted_cents / 100).toFixed(2)
+        const perPerson = quote.price_per_person_cents
+          ? (quote.price_per_person_cents / 100).toFixed(2)
+          : null
+        const deposit = updated.deposit_amount_cents
+          ? (updated.deposit_amount_cents / 100).toFixed(2)
+          : null
 
-        // In-app notification to client (non-blocking)
+        let body = `I've sent over a quote for $${total}.`
+        if (perPerson) body += ` That's $${perPerson} per person.`
+        if (updated.deposit_required && deposit) body += ` A $${deposit} deposit secures the date.`
+
+        await circleFirstNotify({
+          eventId: updated.event_id,
+          inquiryId: updated.inquiry_id,
+          tenantId: user.tenantId!,
+          notificationType: 'quote_sent',
+          body,
+          metadata: {
+            quote_id: id,
+            total_cents: updated.total_quoted_cents,
+            per_person_cents: quote.price_per_person_cents ?? null,
+            deposit_cents: updated.deposit_amount_cents ?? null,
+          },
+          actionUrl: `/my-quotes/${id}`,
+          actionLabel: 'View & Accept Quote',
+          fallbackEmail: client?.email
+            ? {
+                to: client.email,
+                subject: `New quote from ${chefName}: $${total}`,
+                react: createElement(
+                  (await import('@/lib/email/templates/quote-sent')).QuoteSentEmail,
+                  {
+                    clientName: client.full_name,
+                    chefName,
+                    totalFormatted: `$${total}`,
+                    depositFormatted: deposit ? `$${deposit}` : null,
+                    depositRequired: updated.deposit_required ?? false,
+                    occasion,
+                    validUntil: updated.valid_until
+                      ? new Date(updated.valid_until).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      : null,
+                    quoteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-quotes`,
+                  }
+                ),
+              }
+            : undefined,
+        })
+      }
+
+      // In-app notification to client (non-blocking)
+      if (client?.email && chef) {
         try {
           const { createClientNotification } = await import('@/lib/notifications/client-actions')
           await createClientNotification({
@@ -567,7 +614,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
             inquiryId: updated.inquiry_id ?? undefined,
           })
         } catch {
-          // Non-fatal — notification failure must never block quote transition
+          // Non-fatal
         }
       }
     } catch (emailErr) {
@@ -605,24 +652,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     console.error('[transitionQuote] Activity log failed (non-blocking):', err)
   }
 
-  // Post quote sent to Dinner Circle (non-blocking)
-  if (newStatus === 'sent') {
-    try {
-      const { postQuoteSentToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
-      await postQuoteSentToCircle({
-        quoteId: id,
-        totalCents: updated.total_quoted_cents,
-        perPersonCents: quote.price_per_person_cents ?? null,
-        depositRequired: updated.deposit_required ?? false,
-        depositCents: updated.deposit_amount_cents ?? null,
-        tenantId: user.tenantId!,
-        eventId: updated.event_id,
-        inquiryId: updated.inquiry_id,
-      })
-    } catch (err) {
-      console.error('[transitionQuote] Circle post failed (non-blocking):', err)
-    }
-  }
+  // Circle post is now handled by circleFirstNotify() above (quote_sent notification)
 
   // Zapier/Make webhook dispatch (non-blocking)
   try {

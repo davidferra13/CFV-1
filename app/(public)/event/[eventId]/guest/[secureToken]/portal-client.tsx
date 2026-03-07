@@ -27,7 +27,20 @@ type ReadyPortal = {
     serviceStyle: string | null
     cannabisEnabled: boolean
     menuFinalized: boolean
-    menus: { id: string; name: string; description: string | null; service_style: string | null }[]
+    menus: {
+      id: string
+      name: string
+      description: string | null
+      service_style: string | null
+      dishes: {
+        id: string
+        course_number: number
+        course_name: string
+        description: string | null
+        dietary_tags: string[]
+        allergen_flags: string[]
+      }[]
+    }[]
     visibility: Record<string, boolean>
     guestList: { full_name: string; rsvp_status: string }[]
   }
@@ -409,12 +422,47 @@ function GuestPortalForm({
       >
         <h2 className="text-xl font-semibold text-stone-100">Menu</h2>
         {portal.event.menuFinalized ? (
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 space-y-4">
             {portal.event.menus.map((menu) => (
-              <div key={menu.id} className="rounded-lg p-3 bg-[#0e1412]">
-                <p className="text-stone-100 font-medium">{menu.name}</p>
+              <div key={menu.id} className="rounded-lg p-4 bg-[#0e1412]">
+                <p className="text-stone-100 font-medium text-lg">{menu.name}</p>
                 {menu.description && (
                   <p className="mt-1 text-sm text-stone-300">{menu.description}</p>
+                )}
+                {menu.dishes.length > 0 && (
+                  <div className="mt-3 space-y-2 border-t border-[#1e2d25] pt-3">
+                    {menu.dishes.map((dish) => (
+                      <div key={dish.id} className="pl-3 border-l-2 border-[#2e4d36]">
+                        <p className="text-xs uppercase tracking-wider text-stone-500">
+                          Course {dish.course_number}
+                        </p>
+                        <p className="text-stone-100 font-medium">{dish.course_name}</p>
+                        {dish.description && (
+                          <p className="text-sm text-stone-400 mt-0.5">{dish.description}</p>
+                        )}
+                        {(dish.dietary_tags.length > 0 || dish.allergen_flags.length > 0) && (
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            {dish.dietary_tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-xs px-2 py-0.5 rounded-full bg-[#1a2e22] text-[#8fc99a]"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {dish.allergen_flags.map((flag) => (
+                              <span
+                                key={flag}
+                                className="text-xs px-2 py-0.5 rounded-full bg-[#2e1a1a] text-[#e8a0a0]"
+                              >
+                                {flag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             ))}

@@ -22,8 +22,9 @@ export default async function PaymentPage({ params }: { params: { id: string } }
     notFound()
   }
 
-  // Verify event is in 'accepted' status
-  if (event.status !== 'accepted') {
+  // Allow payment for any post-proposal status with an outstanding balance
+  const payableStatuses = ['accepted', 'paid', 'confirmed', 'in_progress', 'completed']
+  if (!payableStatuses.includes(event.status)) {
     redirect(`/my-events/${params.id}`)
   }
 

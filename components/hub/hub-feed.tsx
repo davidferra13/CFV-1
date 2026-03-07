@@ -18,6 +18,7 @@ import {
 import { HubMessageBubble } from './hub-message'
 import { HubInput } from './hub-input'
 import { HubFileShare } from './hub-file-share'
+import { HubCreatePoll } from './hub-create-poll'
 
 interface HubFeedProps {
   groupId: string
@@ -34,6 +35,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
   const [replyTo, setReplyTo] = useState<HubMessage | null>(null)
   const [editingMessage, setEditingMessage] = useState<HubMessage | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [showPollForm, setShowPollForm] = useState(false)
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map())
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -322,6 +324,16 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
         </div>
       )}
 
+      {/* Poll creation form */}
+      {showPollForm && profileToken && (
+        <HubCreatePoll
+          groupId={groupId}
+          profileToken={profileToken}
+          onCreated={() => setShowPollForm(false)}
+          onCancel={() => setShowPollForm(false)}
+        />
+      )}
+
       {/* Edit mode */}
       {editingMessage ? (
         <HubInput
@@ -331,19 +343,43 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
           onCancelReply={() => setEditingMessage(null)}
           replyTo={{ body: 'Editing message' } as HubMessage}
         />
-      ) : profileToken ? (
+      ) : profileToken && !showPollForm ? (
         <HubInput
           onSend={handleSend}
           replyTo={replyTo}
           onCancelReply={() => setReplyTo(null)}
           onTyping={handleTyping}
-          fileShareSlot={<HubFileShare groupId={groupId} profileToken={profileToken} />}
+          fileShareSlot={
+            <div className="flex items-center gap-1">
+              <HubFileShare groupId={groupId} profileToken={profileToken} />
+              <button
+                type="button"
+                onClick={() => setShowPollForm(true)}
+                className="flex-shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-800 hover:text-stone-200"
+                title="Create a poll"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          }
         />
-      ) : (
+      ) : !showPollForm ? (
         <div className="border-t border-stone-800 p-4 text-center text-sm text-stone-500">
           Join the group to start chatting
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

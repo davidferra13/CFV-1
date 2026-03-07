@@ -246,3 +246,124 @@ Vertical 9:16 format, 15-30 seconds each. One feature, one hook, one CTA.
 | **TOTAL**              | **35** |                               |               |
 
 Make Tier 1 first. Then Tier 2. Then 3-5 as time allows.
+
+---
+
+## TIER 1.5: DUAL-PERSPECTIVE VIDEOS (two accounts, one video)
+
+These videos use split-screen or account-switching to show BOTH sides of an interaction. Chefs see what their client/partner experiences. This is the "look how professional you'll look" sell.
+
+**Technical approach:** Playwright runs two browser contexts simultaneously (two logins). The recorder switches between them, or captures side-by-side. Each context has its own auth state.
+
+### 36. Chef-to-Client: The Conversation
+
+- **The hook:** "See both sides of the conversation. In real time."
+- **Show:** Chef sends proposal (chef context) > client receives it (client context) > client reviews, asks a question > chef sees the message, responds > client accepts > chef sees acceptance notification
+- **Auth:** chef + client (dual context)
+- **Duration:** 75s
+
+### 37. Event Handoff: Chef to Chef
+
+- **The hook:** "Can't make the dinner? Hand it off in 30 seconds."
+- **Show:** Chef A views event they can't cover > initiates handoff to Chef B > Chef B gets notification > Chef B reviews event details, client history, dietary needs, menu > Chef B accepts > Chef A sees confirmation > client is notified seamlessly
+- **Auth:** chef A + chef B (dual context)
+- **Duration:** 75s
+
+### 38. What Your Client Actually Sees
+
+- **The hook:** "You hit send. Here's what they get."
+- **Show:** Chef builds quote (chef side) > hits send > cut to client portal > proposal arrives > beautiful layout with menu, pricing, terms > client accepts with one click > cut back to chef > "Accepted" badge appears
+- **Auth:** chef + client (dual context)
+- **Duration:** 60s
+
+### 39. Staff Gets Their Assignment
+
+- **The hook:** "You assign it. They see it instantly."
+- **Show:** Chef assigns staff to event (chef side) > cut to staff portal > assignment appears with tasks, station, time > staff checks off prep items > cut to chef > progress updates in real time
+- **Auth:** chef + staff (dual context)
+- **Duration:** 60s
+
+### 40. Guest RSVP Flow (Chef + Guest)
+
+- **The hook:** "Send the link. They handle the rest."
+- **Show:** Chef sends RSVP link from event (chef side) > cut to guest view > guest fills dietary form, confirms attendance > cut to chef > guest count updates, dietary needs auto-populate
+- **Auth:** chef + guest (token link, no auth)
+- **Duration:** 45s
+
+---
+
+## TIER 1.75: DINNER CIRCLE / HUB VIDEOS
+
+The Hub is a social layer no other chef platform has. Friends plan dinners together, share chefs, coordinate availability. This sells the viral loop: one client brings their whole friend group.
+
+### 41. The Dinner Circle: Plan a Dinner with Friends
+
+- **The hook:** "Your clients don't book alone. Their friends do too."
+- **Show:** Client creates a dinner group > invites 4 friends > friends join via link > group chat opens > availability grid fills in > everyone picks a date > chef gets a booking with full guest list and dietary needs
+- **Auth:** client + guest links
+- **Duration:** 90s
+
+### 42. Share Your Chef
+
+- **The hook:** "Your best marketing is your clients talking about you."
+- **Show:** Client opens "Share Your Chef" > sends referral link to friend > friend lands on chef profile > submits inquiry > chef sees new lead with "referred by" tag and source attribution
+- **Auth:** client + new prospect (public)
+- **Duration:** 60s
+
+### 43. Group Event Planning (Chef View)
+
+- **The hook:** "Six friends. Three allergies. Two vegans. One chef. Zero stress."
+- **Show:** Chef views a Hub-originated booking > sees all group members > dietary matrix (who's allergic to what, who's vegan) > builds menu that works for everyone > sends for group approval > everyone signs off
+- **Auth:** chef
+- **Duration:** 75s
+
+### 44. The Friend Pipeline
+
+- **The hook:** "One happy client. Five new ones."
+- **Show:** Client's Hub profile > their friend connections > "Share Your Chef" flow > referral lands in inquiry pipeline > lead score includes referral boost > conversion to event > loyalty points for the referrer
+- **Auth:** chef + client (dual context)
+- **Duration:** 60s
+
+### 45. Hub Notifications: Never Miss a Plan
+
+- **The hook:** "Someone's planning dinner. You should know."
+- **Show:** Hub activity feed > group invitation > availability vote reminder > date confirmed notification > chef sees the finalized booking appear in their pipeline
+- **Auth:** client
+- **Duration:** 45s
+
+---
+
+## PRODUCTION NOTE: Dual-Perspective Recording
+
+The DemoRecorder needs a minor extension for dual-context videos:
+
+```
+// Two browser contexts, two pages, one recorder that switches between them
+const chefContext = await browser.newContext({ storageState: '.auth/chef.json' })
+const clientContext = await browser.newContext({ storageState: '.auth/client.json' })
+const chefPage = await chefContext.newPage()
+const clientPage = await clientContext.newPage()
+
+// Recorder drives whichever page is "active"
+await rec.switchTo(chefPage)   // now all rec.moveTo/clickOn/caption targets chef
+await rec.switchTo(clientPage) // now targets client
+```
+
+For true split-screen, we composite in post (ffmpeg side-by-side) or use a CSS split within a single large viewport.
+
+---
+
+## Updated Summary
+
+| Tier                      | Videos | Purpose                              | Format        |
+| ------------------------- | ------ | ------------------------------------ | ------------- |
+| 1: Conversion Killers     | 5      | Turn skeptics into signups           | 16:9 YouTube  |
+| 1.5: Dual-Perspective     | 5      | Show both sides of every interaction | 16:9 YouTube  |
+| 1.75: Dinner Circle / Hub | 5      | The viral loop, social planning      | 16:9 YouTube  |
+| 2: Archetype Hooks        | 7      | "Built for YOU" per chef type        | 16:9 YouTube  |
+| 3: Feature Deep Dives     | 8      | Sell specific capabilities           | 16:9 YouTube  |
+| 4: Portal Walkthroughs    | 5      | Full tours per user type             | 16:9 YouTube  |
+| 5: Social Quick Hits      | 10     | TikTok/Reels scroll-stoppers         | 9:16 vertical |
+| **TOTAL**                 | **45** |                                      |               |
+
+Make Tier 1 first. Then 1.5 (chefs see what their clients experience). Then 1.75 (the viral social loop). Then Tier 2. Then 3-5.

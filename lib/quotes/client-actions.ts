@@ -122,18 +122,22 @@ export async function acceptQuote(quoteId: string) {
     revalidatePath('/events')
   }
 
-  // Post quote accepted to Dinner Circle (non-blocking)
+  // Circle-first: post quote accepted notification (non-blocking)
   if (quote.tenant_id) {
     try {
-      const { postQuoteAcceptedToCircle } = await import('@/lib/hub/circle-lifecycle-hooks')
-      await postQuoteAcceptedToCircle({
-        quoteId,
-        tenantId: quote.tenant_id,
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      await circleFirstNotify({
         eventId: quote.event_id,
         inquiryId: quote.inquiry_id,
+        tenantId: quote.tenant_id,
+        notificationType: 'quote_accepted',
+        body: "Quote accepted! We're locked in. Next up: finalizing the menu and confirming all the details.",
+        metadata: { quote_id: quoteId },
+        actionUrl: quote.event_id ? `/my-events/${quote.event_id}` : undefined,
+        actionLabel: quote.event_id ? 'View Event' : undefined,
       })
     } catch (circleErr) {
-      console.error('[acceptQuote] Circle post failed (non-blocking):', circleErr)
+      console.error('[acceptQuote] Circle-first notify failed (non-blocking):', circleErr)
     }
   }
 
