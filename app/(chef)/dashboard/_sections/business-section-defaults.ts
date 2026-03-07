@@ -199,7 +199,14 @@ export const emptyRevenueGoal = {
   avgBookingValueCents: 0,
   dinnersNeededThisMonth: 0,
   openDatesThisMonth: [],
+  smartOpenDatesThisMonth: [],
+  typicalBookingDays: [] as number[],
   recommendations: [],
+  monthlyPaceStatus: 'on_track' as const,
+  monthlyPaceRatio: 1,
+  annualRunRateCents: null,
+  trend: null,
+  yoy: null,
   computedAt: new Date().toISOString(),
 }
 export const emptyJournalInsights = {

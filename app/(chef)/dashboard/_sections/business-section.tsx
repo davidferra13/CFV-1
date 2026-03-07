@@ -33,6 +33,7 @@ import { MONTH_NAMES } from './business-section-defaults'
 import { loadBusinessSectionData } from './business-section-loader'
 import { buildBusinessSectionMetrics } from './business-section-metrics'
 import { BusinessSectionMobileContent } from './business-section-mobile-content'
+import { RevenueGoalWidget } from '@/components/dashboard/revenue-goal-widget'
 
 // Safe wrapper for intelligence fetches
 async function safeFetch<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -121,6 +122,18 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
               quoteCount={quoteStats.total}
               eventCount={eventCounts.ytd}
             />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {/* Revenue Goal - desktop */}
+      {isWidgetEnabled('revenue_goal') && data.revenueGoal.enabled && (
+        <section
+          className={widgetGridClass('revenue_goal')}
+          style={{ order: getWidgetOrder('revenue_goal') }}
+        >
+          <CollapsibleWidget widgetId="revenue_goal" title="Revenue Goal">
+            <RevenueGoalWidget snapshot={data.revenueGoal} />
           </CollapsibleWidget>
         </section>
       )}
