@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
 import { randomBytes } from 'crypto'
+import { revalidateTag } from 'next/cache'
 
 // ─── Fetch All Cannabis Tier Users ───────────────────────────────────────────
 
@@ -127,6 +128,7 @@ export async function grantCannabisTier(input: {
     details: { entity_id: input.entityId, notes: input.notes },
   })
 
+  revalidateTag(`cannabis-access-${input.authUserId}`)
   return { success: true }
 }
 
@@ -152,6 +154,7 @@ export async function revokeCannabisTier(authUserId: string) {
     details: {},
   })
 
+  revalidateTag(`cannabis-access-${authUserId}`)
   return { success: true }
 }
 

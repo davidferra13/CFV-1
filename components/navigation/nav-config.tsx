@@ -868,6 +868,12 @@ export const navGroups: NavGroup[] = [
         adminOnly: true,
       },
       {
+        href: '/open-tables',
+        label: 'Open Tables',
+        icon: Compass,
+        module: 'social-dining',
+      },
+      {
         href: '/reputation/mentions',
         label: 'Brand Mentions',
         icon: ShieldAlert,

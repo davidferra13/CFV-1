@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
+import { revalidateTag } from 'next/cache'
 
 // iCal feed management — enable/disable and get the feed URL.
 
@@ -59,6 +60,7 @@ export async function toggleICalFeed(enabled: boolean) {
     await supabase.from('chefs').update({ ical_feed_enabled: false }).eq('id', user.entityId)
   }
 
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 
@@ -72,6 +74,8 @@ export async function regenerateICalFeedToken() {
   await supabase.from('chefs').update({ ical_feed_token: newToken }).eq('id', user.entityId)
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3100'
+
+  revalidateTag(`chef-layout-${user.entityId}`)
 
   return {
     token: newToken,

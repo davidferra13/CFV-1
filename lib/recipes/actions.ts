@@ -12,6 +12,10 @@ import type { Database } from '@/types/database'
 
 type RecipeCategory = Database['public']['Enums']['recipe_category']
 type IngredientCategory = Database['public']['Enums']['ingredient_category']
+type RecipeRow = Database['public']['Tables']['recipes']['Row']
+type RecipeInsert = Database['public']['Tables']['recipes']['Insert']
+type CuisineType = RecipeRow['cuisine']
+type MealType = RecipeRow['meal_type']
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -197,35 +201,37 @@ export async function createRecipe(input: CreateRecipeInput) {
   const supabase = createServerClient()
   const validated = CreateRecipeSchema.parse(input)
 
+  const insertData: RecipeInsert = {
+    tenant_id: user.tenantId!,
+    name: validated.name,
+    category: validated.category as RecipeCategory,
+    method: validated.method || '',
+    method_detailed: validated.method_detailed || null,
+    description: validated.description || null,
+    notes: validated.notes || null,
+    adaptations: validated.adaptations || null,
+    prep_time_minutes: validated.prep_time_minutes || null,
+    cook_time_minutes: validated.cook_time_minutes || null,
+    total_time_minutes: validated.total_time_minutes || null,
+    yield_quantity: validated.yield_quantity || null,
+    yield_unit: validated.yield_unit || null,
+    yield_description: validated.yield_description || null,
+    dietary_tags: validated.dietary_tags || [],
+    servings: validated.servings || null,
+    calories_per_serving: validated.calories_per_serving || null,
+    difficulty: validated.difficulty || null,
+    equipment: validated.equipment || [],
+    cuisine: (validated.cuisine || null) as CuisineType,
+    meal_type: (validated.meal_type || null) as MealType,
+    season: validated.season || [],
+    occasion_tags: validated.occasion_tags || [],
+    created_by: user.id,
+    updated_by: user.id,
+  }
+
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .insert({
-      tenant_id: user.tenantId!,
-      name: validated.name,
-      category: validated.category as RecipeCategory,
-      method: validated.method || '',
-      method_detailed: validated.method_detailed || null,
-      description: validated.description || null,
-      notes: validated.notes || null,
-      adaptations: validated.adaptations || null,
-      prep_time_minutes: validated.prep_time_minutes || null,
-      cook_time_minutes: validated.cook_time_minutes || null,
-      total_time_minutes: validated.total_time_minutes || null,
-      yield_quantity: validated.yield_quantity || null,
-      yield_unit: validated.yield_unit || null,
-      yield_description: validated.yield_description || null,
-      dietary_tags: validated.dietary_tags || [],
-      servings: validated.servings || null,
-      calories_per_serving: validated.calories_per_serving || null,
-      difficulty: validated.difficulty || null,
-      equipment: validated.equipment || [],
-      cuisine: validated.cuisine || null,
-      meal_type: validated.meal_type || null,
-      season: validated.season || [],
-      occasion_tags: validated.occasion_tags || [],
-      created_by: user.id,
-      updated_by: user.id,
-    })
+    .insert(insertData)
     .select()
     .single()
 
@@ -290,11 +296,11 @@ export async function getRecipes(filters?: {
   }
 
   if (filters?.cuisine) {
-    query = query.eq('cuisine', filters.cuisine)
+    query = query.eq('cuisine', filters.cuisine as NonNullable<CuisineType>)
   }
 
   if (filters?.meal_type) {
-    query = query.eq('meal_type', filters.meal_type)
+    query = query.eq('meal_type', filters.meal_type as NonNullable<MealType>)
   }
 
   if (filters?.search) {
@@ -433,13 +439,22 @@ export async function getRecipeById(recipeId: string) {
     menuName: string
   }> = []
 
+  type LinkedEvent = {
+    id: string
+    occasion: string | null
+    event_date: string
+    status: string
+    client: { full_name: string } | null
+  }
+  type LinkedDish = {
+    menu: { event: LinkedEvent | null; name: string } | null
+  } | null
+
   for (const comp of linkedComponents || []) {
-    const dish = comp.dish as {
-      menu?: { event?: Record<string, unknown>; name?: string } | null
-    } | null
+    const dish = comp.dish as LinkedDish
     if (!dish?.menu?.event) continue
     const menu = dish.menu
-    const event = menu.event
+    const event = menu.event!
     eventHistory.push({
       eventId: event.id,
       occasion: event.occasion,
@@ -556,7 +571,7 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
   const updateData: Partial<RecipeUpdate> = { updated_by: user.id }
   if (validated.name !== undefined) updateData.name = validated.name
-  if (validated.category !== undefined) updateData.category = validated.category
+  if (validated.category !== undefined) updateData.category = validated.category as RecipeCategory
   if (validated.method !== undefined) updateData.method = validated.method
   if (validated.method_detailed !== undefined)
     updateData.method_detailed = validated.method_detailed
@@ -579,8 +594,8 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
     updateData.calories_per_serving = validated.calories_per_serving
   if (validated.difficulty !== undefined) updateData.difficulty = validated.difficulty
   if (validated.equipment !== undefined) updateData.equipment = validated.equipment
-  if (validated.cuisine !== undefined) updateData.cuisine = validated.cuisine
-  if (validated.meal_type !== undefined) updateData.meal_type = validated.meal_type
+  if (validated.cuisine !== undefined) updateData.cuisine = validated.cuisine as CuisineType
+  if (validated.meal_type !== undefined) updateData.meal_type = validated.meal_type as MealType
   if (validated.season !== undefined) updateData.season = validated.season
   if (validated.occasion_tags !== undefined) updateData.occasion_tags = validated.occasion_tags
 
@@ -1111,7 +1126,7 @@ export async function getRecipeDebt(): Promise<RecipeDebt> {
 
   for (const comp of components || []) {
     const dish = comp.dish as {
-      menu?: { event?: Record<string, unknown>; name?: string } | null
+      menu?: { event?: { id: string; event_date: string } | null } | null
     } | null
     const event = dish?.menu?.event
     if (!event?.event_date) continue
@@ -1181,7 +1196,14 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
 
   for (const comp of components || []) {
     const dish = comp.dish as {
-      menu?: { event?: Record<string, unknown>; name?: string } | null
+      menu?: {
+        event?: {
+          id: string
+          occasion: string | null
+          event_date: string
+          client: { full_name: string | null } | null
+        } | null
+      } | null
     } | null
     const event = dish?.menu?.event
     if (!event?.id || !event?.event_date) continue
@@ -1193,7 +1215,7 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
       eventId: event.id,
       eventOccasion: event.occasion ?? null,
       eventDate: event.event_date,
-      clientName: (event.client as { full_name?: string } | null)?.full_name ?? null,
+      clientName: event.client?.full_name ?? null,
     })
   }
 

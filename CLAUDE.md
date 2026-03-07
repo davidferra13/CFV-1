@@ -644,6 +644,16 @@ const tenantId = user.tenantId! // from session
 const tenantId = input.tenantId
 ```
 
+### 2b. tenant_id vs chef_id Naming Convention
+
+Both `tenant_id` and `chef_id` reference `chefs(id)` and serve the same purpose (scoping data to one chef). The naming split is historical:
+
+- **Core tables (Layers 1-4):** Use `tenant_id` (events, clients, quotes, recipes, menus, ledger_entries, ingredients, conversations, documents, etc.)
+- **Feature tables (Layer 5+):** Use `chef_id` (gmail_sync_status, chef_todos, staff_members, contracts, equipment_inventory, chef_network tables, availability_waitlist, etc.)
+- **New tables going forward:** Use `chef_id` (more descriptive since the tenant IS a chef)
+
+Do NOT rename existing columns. Just use the correct name for whichever table you're querying.
+
 ### 3. Financial State Is Derived, Never Stored
 
 Balances, profit, payment status, and food cost % are **computed from ledger entries** via database views — never written directly to a column.

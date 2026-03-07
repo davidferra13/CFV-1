@@ -188,6 +188,13 @@ export const PRO_FEATURES: ProFeature[] = [
     category: 'clients',
   },
   {
+    slug: 'social-dining',
+    label: 'Open Tables',
+    description:
+      'Social dining discovery. Clients make their dinner circles discoverable to other foodies in your network.',
+    category: 'community',
+  },
+  {
     slug: 'nutrition-analysis',
     label: 'Nutritional Analysis',
     description:

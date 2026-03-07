@@ -593,6 +593,68 @@ export async function executeWaitlistStatus() {
   }
 }
 
+// ─── Open Tables ─────────────────────────────────────────────────────────────
+
+export async function executeOpenTablesBrowse() {
+  const user = await requireChef()
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase: any = createServerClient()
+
+  const { data: tables } = await supabase
+    .from('hub_groups')
+    .select(
+      'id, name, description, display_area, display_vibe, dietary_theme, open_seats, emoji, consent_status, closes_at'
+    )
+    .eq('is_open_table', true)
+    .eq('is_active', true)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  return {
+    tables: (tables ?? []).map((t: any) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      area: t.display_area,
+      vibes: t.display_vibe ?? [],
+      dietaryThemes: t.dietary_theme ?? [],
+      openSeats: t.open_seats,
+      consentStatus: t.consent_status,
+    })),
+    totalCount: (tables ?? []).length,
+  }
+}
+
+export async function executeOpenTablesRequests() {
+  const user = await requireChef()
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase: any = createServerClient()
+
+  const { data: requests } = await supabase
+    .from('open_table_requests')
+    .select(
+      'id, group_id, requester_name, group_size, message, dietary_restrictions, status, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  return {
+    pendingRequests: (requests ?? []).map((r: any) => ({
+      id: r.id,
+      groupId: r.group_id,
+      requesterName: r.requester_name,
+      groupSize: r.group_size,
+      message: r.message,
+      dietaryRestrictions: r.dietary_restrictions ?? [],
+      requestedAt: r.created_at,
+    })),
+    totalPending: (requests ?? []).length,
+  }
+}
+
 // ─── Resolution Helpers ──────────────────────────────────────────────────────
 
 async function resolveEventId(nameOrId: string): Promise<string | null> {

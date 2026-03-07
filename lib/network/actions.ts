@@ -8,7 +8,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import {
   NETWORK_FEATURE_DEFINITIONS,
@@ -1076,6 +1076,7 @@ export async function updateChefProfile(input: UpdateProfileInput) {
 
   revalidatePath('/network')
   revalidatePath('/settings')
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 

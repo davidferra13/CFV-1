@@ -197,6 +197,8 @@ import {
   executeEventsWithoutAAR,
   executeAARForgottenItems,
   executeWaitlistStatus,
+  executeOpenTablesBrowse,
+  executeOpenTablesRequests,
 } from '@/lib/ai/remy-intelligence-actions-3'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
@@ -1921,6 +1923,20 @@ async function executeSingleTask(
       // Waitlist
       case 'waitlist.status':
         data = await executeWaitlistStatus()
+        break
+
+      // Open Tables
+      case 'open_tables.browse':
+        data = await executeOpenTablesBrowse()
+        break
+      case 'open_tables.enable':
+        data = {
+          message:
+            'Open Tables is a client-side setting. Clients can enable it from their profile page under "Social Discovery." You can view active open tables and pending join requests from your Open Tables dashboard.',
+        }
+        break
+      case 'open_tables.requests':
+        data = await executeOpenTablesRequests()
         break
 
       default:

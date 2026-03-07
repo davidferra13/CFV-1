@@ -11,6 +11,7 @@ import { ClientProfileForm } from './client-profile-form'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
 import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
+import { OpenTableToggleWrapper } from './open-table-toggle-wrapper'
 import type { Metadata } from 'next'
 import { MealCollaborationPanel } from './meal-collaboration-panel'
 
@@ -51,6 +52,9 @@ export default async function MyProfilePage() {
         <h2 className="text-lg font-semibold text-stone-100">Notification Preferences</h2>
         <ClientSignalNotificationToggle initialEnabled={signalNotifEnabled} />
       </div>
+
+      {/* Open Tables Discovery Toggle */}
+      <OpenTableToggleWrapper />
 
       {/* Feedback */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">

@@ -1644,11 +1644,12 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 
 ### Public Pages (no auth required — `/hub` in `skipAuthPaths`)
 
-| Route                    | Content                                                                                                                                                                                                        |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/hub/g/[groupToken]`    | Group view with 6 tabs: Chat (real-time feed), Events (linked events), Photos (gallery + upload), Schedule (availability polls), Notes (sticky notes), Members (list + dietary info). "My Hub" link in header. |
-| `/hub/join/[groupToken]` | Join page for first-time visitors — group name, member count, "Enter your name" input.                                                                                                                         |
-| `/hub/me/[profileToken]` | Guest profile — 3 tabs: My Dinners (event history with menus), My Groups (with unread badges), Dietary (allergies + restrictions). Edit Profile button opens inline editor.                                    |
+| Route                      | Content                                                                                                                                                                                                                                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/hub/g/[groupToken]`      | Group view with 6 tabs: Chat (real-time feed), Events (linked events), Photos (gallery + upload), Schedule (availability polls), Notes (sticky notes), Members (list + dietary info). "My Hub" link in header. Share Experience button (opens modal to select content + generate social share card). Mute toggle. |
+| `/hub/join/[groupToken]`   | Join page for first-time visitors - group name, member count, "Enter your name" input.                                                                                                                                                                                                                            |
+| `/experience/[shareToken]` | Social share card page - public, no auth. Shows frozen snapshot of a dinner circle experience: event name/emoji/theme, chef name, menu courses with dishes, photos, cover image. OG meta tags + dynamic OG image (`/api/og/experience?token=`) for social previews. CTA to book on ChefFlow.                      |
+| `/hub/me/[profileToken]`   | Guest profile — 3 tabs: My Dinners (event history with menus), My Groups (with unread badges), Dietary (allergies + restrictions). Edit Profile button opens inline editor.                                                                                                                                       |
 
 ### Client Hub Pages (client auth required — `/my-hub` routes)
 
@@ -1695,6 +1696,54 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 | `/events/[id]` (chef) | Hub link panel near Guests section — links to hub group or shows "No hub group yet". Guest Experience Panel with 7 tabs (messages, reminders, dietary, pre-event, documents, feedback, attendance) |
 | RSVP submission       | Non-blocking: auto-creates hub profile, adds event history, auto-joins group.                                                                                                                      |
 | Event completion      | Non-blocking: snapshots menu items into guest event history.                                                                                                                                       |
+
+---
+
+## 23b. OPEN TABLES (Social Dining Discovery)
+
+Pro module: `social-dining`. Clients make their dinner circles discoverable to other foodies in the chef's network. Private by default, unanimous consent required, chef approves every match.
+
+### Chef Pages (auth + Pro required)
+
+| Route          | Content                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/open-tables` | Chef dashboard with 3 tabs: **Requests** (pending join requests with approve/decline, requester info, group size, allergies, message), **Active Tables** (all open tables with consent status Live/Blocked/Pending, open seats, pending request count), **Matchmaker** (deterministic compatibility suggestions between open tables based on area, vibe overlap, dietary match, with percentage score and reasons) |
+
+### Client Pages (client auth required)
+
+| Route         | Content                                                                                                                                                                                                                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/discover`   | Browse open tables from the chef's network. Filter by area. Card grid with vibe/dietary tags, open seats. Inline join request form (name, email, group size, message, dietary restrictions, allergies).                                                                                                         |
+| `/my-profile` | **Open Table Toggle** added to profile page. Weighted toggle with amber border ("Social Discovery" label). Two-step confirmation: toggle click opens confirmation modal showing "What people will see" vs "What stays private", then setup form (area, vibes, open seats, description). Turning OFF is instant. |
+
+### Client Onboarding
+
+| Component             | Content                                                                                                                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OpenTableOnboarding` | 3-step modal: Story (what open tables are), Scenario (how it works), Control (privacy assurance). Progress dots, skip button. Final CTA: "Keep my table private" (prominent) vs "Sounds fun!" (secondary). Calls `markOpenTablesIntroSeen()`. |
+
+### Public Pages (no auth)
+
+| Route                   | Content                                                                                                                                                                                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/open-tables/[chefId]` | Public discovery page. Browse a chef's open tables without auth. Card grid with vibe/dietary tags, open seats, "I'm Interested" button links to embed inquiry form pre-filled with occasion and notes. Empty state when no tables. "Powered by ChefFlow" footer. |
+
+### Remy Integration
+
+| Command                                         | Task Type              | What it does                                       |
+| ----------------------------------------------- | ---------------------- | -------------------------------------------------- |
+| "Show open tables"                              | `open_tables.browse`   | Lists all open tables for the chef's tenant        |
+| "Open my table" / "Make my circle discoverable" | `open_tables.enable`   | Informs chef this is a client-side setting         |
+| "Pending join requests"                         | `open_tables.requests` | Shows pending join requests with requester details |
+
+### Server Actions (`lib/hub/open-table-actions.ts`)
+
+`ensureDinnerCircle`, `toggleOpenTable`, `respondToConsent`, `revokeConsent`, `getOpenTables`, `submitJoinRequest`, `reviewJoinRequest`, `getChefOpenTables`, `getPendingRequests`, `markOpenTablesIntroSeen`, `toggleOpenTablesNotify`, `getMatchSuggestions`
+
+### Navigation
+
+- Chef sidebar: "Open Tables" under Social Hub (Compass icon, `module: 'social-dining'`)
+- Client sidebar: "Discover" (Compass icon)
 
 ---
 

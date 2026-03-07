@@ -264,6 +264,7 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
   revalidatePath('/settings')
   revalidatePath('/settings/my-profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
 
   return { success: true, url: publicUrl }
 }
@@ -277,6 +278,7 @@ export async function markOnboardingComplete() {
     .update({ onboarding_completed_at: new Date().toISOString() })
     .eq('id', user.entityId)
 
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 

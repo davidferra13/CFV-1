@@ -317,6 +317,22 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       ],
     }),
   },
+  // "Show open tables" / "Open tables near me"
+  {
+    pattern: /^(?:show|list|find|browse|get)\s+(?:me\s+)?(?:the\s+)?open\s+tables?/i,
+    build: buildSimpleTask('open_tables.browse'),
+  },
+  // "Open my table" / "Open my dinner" / "Make my circle discoverable"
+  {
+    pattern:
+      /^(?:open|make|set)\s+(?:my\s+)?(?:table|dinner|circle)\s+(?:discoverable|open|public|visible)/i,
+    build: buildSimpleTask('open_tables.enable'),
+  },
+  // "How many open table requests" / "Pending join requests"
+  {
+    pattern: /^(?:how many|show|list|any|pending)\s+(?:open\s+table\s+)?(?:join\s+)?requests?/i,
+    build: buildSimpleTask('open_tables.requests'),
+  },
   // "Break-even analysis for [event]"
   {
     pattern: /^break[- ]?even\s+(?:analysis\s+)?(?:for\s+)?(.+)/i,
