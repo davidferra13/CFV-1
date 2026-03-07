@@ -3621,6 +3621,392 @@ async function getDocumentSummary() {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// HUB / CIRCLES DATA
+// ══════════════════════════════════════════════════════════════════
+
+async function getHubCircles(param) {
+  const [groupsResult, membersResult] = await Promise.all([
+    supabaseQuery('hub_groups', {
+      select: 'id,name,description,emoji,visibility,is_active,allow_member_invites,allow_anonymous_posts,message_count,last_message_at,last_message_preview,event_id,tenant_id,created_at',
+      order: 'last_message_at.desc.nullslast,created_at.desc',
+      limit: 50,
+    }),
+    supabaseQuery('hub_group_members', {
+      select: 'group_id,role,notifications_muted,last_read_at',
+      limit: 1000,
+    }),
+  ])
+  if (!groupsResult.ok) return groupsResult
+  const groups = groupsResult.data
+  const members = membersResult.ok ? membersResult.data : []
+
+  // Build member counts and role breakdown per group
+  const memberStats = {}
+  for (const m of members) {
+    if (!memberStats[m.group_id]) memberStats[m.group_id] = { total: 0, roles: {}, muted: 0 }
+    const s = memberStats[m.group_id]
+    s.total++
+    s.roles[m.role] = (s.roles[m.role] || 0) + 1
+    if (m.notifications_muted) s.muted++
+  }
+
+  let filtered = groups
+  if (param && param.trim()) {
+    const q = param.trim().toLowerCase()
+    filtered = groups.filter(g =>
+      (g.name || '').toLowerCase().includes(q) ||
+      (g.description || '').toLowerCase().includes(q)
+    )
+  }
+
+  const circles = filtered.map(g => {
+    const stats = memberStats[g.id] || { total: 0, roles: {}, muted: 0 }
+    return {
+      id: g.id,
+      name: g.name,
+      emoji: g.emoji || '',
+      description: (g.description || '').slice(0, 80),
+      visibility: g.visibility || 'public',
+      active: g.is_active,
+      memberCount: stats.total,
+      roles: stats.roles,
+      mutedCount: stats.muted,
+      messageCount: g.message_count || 0,
+      lastMessageAt: g.last_message_at?.slice(0, 16) || null,
+      lastMessagePreview: g.last_message_preview || null,
+      linkedEvent: g.event_id ? true : false,
+      tenantId: g.tenant_id || null,
+      created: g.created_at?.slice(0, 10) || '',
+    }
+  })
+
+  const activeCircles = circles.filter(c => c.active && c.messageCount > 0).length
+  const totalMembers = Object.values(memberStats).reduce((s, m) => s + m.total, 0)
+
+  return {
+    ok: true,
+    circles,
+    total: circles.length,
+    activeWithMessages: activeCircles,
+    totalMembers,
+    message: `${circles.length} circles (${activeCircles} active with messages) | ${totalMembers} total members${param ? ` | filtered by "${param}"` : ''}`,
+  }
+}
+
+async function getHubMessages(param) {
+  // param can be a group name/id filter
+  const result = await supabaseQuery('hub_messages', {
+    select: 'id,group_id,message_type,body,is_pinned,is_anonymous,media_urls,reaction_counts,reply_to_message_id,created_at,deleted_at,author_profile_id',
+    filters: ['deleted_at=is.null'],
+    order: 'created_at.desc',
+    limit: 50,
+  })
+  if (!result.ok) return result
+
+  // Get group names for context
+  const groupIds = [...new Set(result.data.map(m => m.group_id))]
+  const groupsResult = await supabaseQuery('hub_groups', {
+    select: 'id,name',
+    filters: groupIds.length ? [`id=in.(${groupIds.join(',')})`] : [],
+    limit: 50,
+  })
+  const groupNames = {}
+  if (groupsResult.ok) {
+    for (const g of groupsResult.data) groupNames[g.id] = g.name
+  }
+
+  let messages = result.data
+  if (param && param.trim()) {
+    const q = param.trim().toLowerCase()
+    messages = messages.filter(m =>
+      (m.body || '').toLowerCase().includes(q) ||
+      (groupNames[m.group_id] || '').toLowerCase().includes(q)
+    )
+  }
+
+  const byType = {}
+  const byGroup = {}
+  for (const m of messages) {
+    byType[m.message_type] = (byType[m.message_type] || 0) + 1
+    const gName = groupNames[m.group_id] || m.group_id
+    byGroup[gName] = (byGroup[gName] || 0) + 1
+  }
+
+  return {
+    ok: true,
+    messages: messages.slice(0, 25).map(m => ({
+      circle: groupNames[m.group_id] || m.group_id,
+      type: m.message_type,
+      body: (m.body || '').slice(0, 120),
+      pinned: m.is_pinned,
+      anonymous: m.is_anonymous,
+      hasMedia: (m.media_urls || []).length > 0,
+      isReply: !!m.reply_to_message_id,
+      reactions: m.reaction_counts || {},
+      posted: m.created_at?.slice(0, 16) || '',
+    })),
+    byType,
+    byGroup,
+    total: messages.length,
+    message: `${messages.length} recent messages across ${Object.keys(byGroup).length} circles${param ? ` | filtered by "${param}"` : ''}`,
+  }
+}
+
+async function getHubPolls() {
+  const [pollsResult, optionsResult, votesResult] = await Promise.all([
+    supabaseQuery('hub_polls', {
+      select: 'id,group_id,question,poll_type,is_closed,closes_at,created_at',
+      order: 'created_at.desc',
+      limit: 30,
+    }),
+    supabaseQuery('hub_poll_options', {
+      select: 'id,poll_id,label,sort_order',
+      limit: 200,
+    }),
+    supabaseQuery('hub_poll_votes', {
+      select: 'poll_id,option_id,profile_id',
+      limit: 1000,
+    }),
+  ])
+  if (!pollsResult.ok) return pollsResult
+
+  // Get group names
+  const groupIds = [...new Set(pollsResult.data.map(p => p.group_id))]
+  const groupsResult = await supabaseQuery('hub_groups', {
+    select: 'id,name',
+    filters: groupIds.length ? [`id=in.(${groupIds.join(',')})`] : [],
+    limit: 50,
+  })
+  const groupNames = {}
+  if (groupsResult.ok) {
+    for (const g of groupsResult.data) groupNames[g.id] = g.name
+  }
+
+  const options = optionsResult.ok ? optionsResult.data : []
+  const votes = votesResult.ok ? votesResult.data : []
+
+  // Build vote counts per option
+  const voteCounts = {}
+  for (const v of votes) {
+    voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1
+  }
+
+  // Group options by poll
+  const optionsByPoll = {}
+  for (const o of options) {
+    if (!optionsByPoll[o.poll_id]) optionsByPoll[o.poll_id] = []
+    optionsByPoll[o.poll_id].push({
+      label: o.label,
+      votes: voteCounts[o.id] || 0,
+    })
+  }
+
+  // Unique voters per poll
+  const votersByPoll = {}
+  for (const v of votes) {
+    if (!votersByPoll[v.poll_id]) votersByPoll[v.poll_id] = new Set()
+    votersByPoll[v.poll_id].add(v.profile_id)
+  }
+
+  const polls = pollsResult.data.map(p => ({
+    circle: groupNames[p.group_id] || p.group_id,
+    question: p.question,
+    type: p.poll_type,
+    closed: p.is_closed,
+    closesAt: p.closes_at?.slice(0, 16) || null,
+    options: (optionsByPoll[p.id] || []).sort((a, b) => b.votes - a.votes),
+    totalVoters: votersByPoll[p.id]?.size || 0,
+    totalVotes: (optionsByPoll[p.id] || []).reduce((s, o) => s + o.votes, 0),
+    created: p.created_at?.slice(0, 10) || '',
+  }))
+
+  const openPolls = polls.filter(p => !p.closed).length
+  return {
+    ok: true,
+    polls,
+    total: polls.length,
+    open: openPolls,
+    closed: polls.length - openPolls,
+    message: `${polls.length} polls (${openPolls} open, ${polls.length - openPolls} closed) | ${votes.length} total votes`,
+  }
+}
+
+async function getHubProfiles() {
+  const [profilesResult, friendsResult, membershipsResult] = await Promise.all([
+    supabaseQuery('hub_guest_profiles', {
+      select: 'id,email,display_name,avatar_url,notifications_enabled,known_allergies,known_dietary,auth_user_id,client_id,created_at',
+      order: 'created_at.desc',
+      limit: 100,
+    }),
+    supabaseQuery('hub_guest_friends', {
+      select: 'id,requester_id,addressee_id,status,created_at',
+      limit: 500,
+    }),
+    supabaseQuery('hub_group_members', {
+      select: 'profile_id,group_id',
+      limit: 1000,
+    }),
+  ])
+  if (!profilesResult.ok) return profilesResult
+
+  const friends = friendsResult.ok ? friendsResult.data : []
+  const memberships = membershipsResult.ok ? membershipsResult.data : []
+
+  // Count groups per profile
+  const groupCount = {}
+  for (const m of memberships) {
+    groupCount[m.profile_id] = (groupCount[m.profile_id] || 0) + 1
+  }
+
+  // Count friends per profile
+  const friendCount = {}
+  for (const f of friends) {
+    if (f.status === 'accepted') {
+      friendCount[f.requester_id] = (friendCount[f.requester_id] || 0) + 1
+      friendCount[f.addressee_id] = (friendCount[f.addressee_id] || 0) + 1
+    }
+  }
+
+  const profiles = profilesResult.data.map(p => ({
+    name: p.display_name,
+    email: p.email || '',
+    hasAvatar: !!p.avatar_url,
+    notificationsOn: p.notifications_enabled,
+    allergies: p.known_allergies || [],
+    dietary: p.known_dietary || [],
+    linkedToAuth: !!p.auth_user_id,
+    linkedToClient: !!p.client_id,
+    circleCount: groupCount[p.id] || 0,
+    friendCount: friendCount[p.id] || 0,
+    joined: p.created_at?.slice(0, 10) || '',
+  }))
+
+  const withNotifications = profiles.filter(p => p.notificationsOn).length
+  const linkedAccounts = profiles.filter(p => p.linkedToAuth).length
+  const pendingFriends = friends.filter(f => f.status === 'pending').length
+  const acceptedFriends = friends.filter(f => f.status === 'accepted').length
+
+  return {
+    ok: true,
+    profiles,
+    total: profiles.length,
+    withNotifications,
+    linkedAccounts,
+    friendships: { accepted: acceptedFriends, pending: pendingFriends },
+    message: `${profiles.length} hub profiles | ${withNotifications} with notifications on | ${linkedAccounts} linked accounts | ${acceptedFriends} friendships (${pendingFriends} pending)`,
+  }
+}
+
+async function getHubActivity() {
+  // Synthesize hub activity from multiple tables
+  const [messagesResult, pollsResult, membersResult, friendsResult] = await Promise.all([
+    supabaseQuery('hub_messages', {
+      select: 'id,group_id,message_type,created_at',
+      filters: ['deleted_at=is.null'],
+      order: 'created_at.desc',
+      limit: 100,
+    }),
+    supabaseQuery('hub_polls', {
+      select: 'id,group_id,created_at',
+      order: 'created_at.desc',
+      limit: 50,
+    }),
+    supabaseQuery('hub_group_members', {
+      select: 'id,group_id,joined_at',
+      order: 'joined_at.desc',
+      limit: 100,
+    }),
+    supabaseQuery('hub_guest_friends', {
+      select: 'id,status,created_at,accepted_at',
+      order: 'created_at.desc',
+      limit: 50,
+    }),
+  ])
+
+  const messages = messagesResult.ok ? messagesResult.data : []
+  const polls = pollsResult.ok ? pollsResult.data : []
+  const members = membersResult.ok ? membersResult.data : []
+  const friends = friendsResult.ok ? friendsResult.data : []
+
+  // Activity by day (last 7 days)
+  const now = Date.now()
+  const sevenDaysAgo = new Date(now - 7 * 86400000).toISOString().slice(0, 10)
+  const byDay = {}
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(now - i * 86400000).toISOString().slice(0, 10)
+    byDay[day] = { messages: 0, polls: 0, joins: 0, friendRequests: 0 }
+  }
+
+  for (const m of messages) {
+    const day = m.created_at?.slice(0, 10)
+    if (day && byDay[day]) byDay[day].messages++
+  }
+  for (const p of polls) {
+    const day = p.created_at?.slice(0, 10)
+    if (day && byDay[day]) byDay[day].polls++
+  }
+  for (const m of members) {
+    const day = m.joined_at?.slice(0, 10)
+    if (day && byDay[day]) byDay[day].joins++
+  }
+  for (const f of friends) {
+    const day = f.created_at?.slice(0, 10)
+    if (day && byDay[day]) byDay[day].friendRequests++
+  }
+
+  // Message type breakdown (all time from recent fetch)
+  const byType = {}
+  for (const m of messages) {
+    byType[m.message_type] = (byType[m.message_type] || 0) + 1
+  }
+
+  // Most active circles
+  const circleActivity = {}
+  for (const m of messages) {
+    circleActivity[m.group_id] = (circleActivity[m.group_id] || 0) + 1
+  }
+  const topCircleIds = Object.entries(circleActivity)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id]) => id)
+
+  // Get names for top circles
+  let topCircles = []
+  if (topCircleIds.length) {
+    const namesResult = await supabaseQuery('hub_groups', {
+      select: 'id,name',
+      filters: [`id=in.(${topCircleIds.join(',')})`],
+      limit: 5,
+    })
+    if (namesResult.ok) {
+      const nameMap = {}
+      for (const g of namesResult.data) nameMap[g.id] = g.name
+      topCircles = topCircleIds.map(id => ({
+        name: nameMap[id] || id,
+        recentMessages: circleActivity[id],
+      }))
+    }
+  }
+
+  const recentMessages7d = messages.filter(m => m.created_at?.slice(0, 10) >= sevenDaysAgo).length
+  const recentJoins7d = members.filter(m => m.joined_at?.slice(0, 10) >= sevenDaysAgo).length
+
+  return {
+    ok: true,
+    last7Days: byDay,
+    messageTypeBreakdown: byType,
+    topCircles,
+    summary: {
+      messagesLast7d: recentMessages7d,
+      joinsLast7d: recentJoins7d,
+      pollsCreated: polls.length,
+      friendRequests: friends.length,
+    },
+    message: `Last 7 days: ${recentMessages7d} messages, ${recentJoins7d} new members, ${polls.length} polls | Top circles: ${topCircles.map(c => c.name).join(', ') || 'none'}`,
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // TRACK 2: REMY OVERSIGHT
 // ══════════════════════════════════════════════════════════════════
 
@@ -5443,6 +5829,13 @@ const TOOLS = {
   'data/email':        { fn: getEmailDigest,                       desc: 'Email digest — Gmail sync status, recent emails, classifications, unread count' },
   'data/loyalty':      { fn: getLoyaltyOverview,                   desc: 'Loyalty program — tiers, points issued/redeemed, active rewards' },
   'data/documents':    { fn: getDocumentSummary,                   desc: 'Document library — recent docs, folders, storage usage' },
+
+  // Hub / Circles
+  'data/hub-circles':  { fn: (param) => getHubCircles(param),      desc: 'All circles with member counts, roles, activity, visibility. Use data/hub-circles:name to search' },
+  'data/hub-messages': { fn: (param) => getHubMessages(param),     desc: 'Recent hub messages across all circles. Use data/hub-messages:circle name to filter' },
+  'data/hub-polls':    { fn: getHubPolls,                          desc: 'All hub polls with options, vote counts, open/closed status' },
+  'data/hub-profiles': { fn: getHubProfiles,                       desc: 'Hub guest profiles, friend network, notification settings, linked accounts' },
+  'data/hub-activity': { fn: getHubActivity,                       desc: 'Hub engagement: messages, joins, polls, friendships over last 7 days + top circles' },
 
   // Remy Oversight (Track 2)
   'remy/metrics':      { fn: getRemyUsageMetrics,                  desc: 'Remy usage — active chefs, message counts, conversations, errors, response times' },
