@@ -9,10 +9,22 @@ import { BusinessInsightsPanel } from '@/components/ai/business-insights-panel'
 import { RevenueProjectionWidget } from '@/components/dashboard/revenue-projection-widget'
 import { ComparativePeriodsWidget } from '@/components/dashboard/comparative-periods-widget'
 import { QuickExpenseWidget } from '@/components/dashboard/quick-expense-widget'
+import { InvoicePulseWidget } from '@/components/dashboard/invoice-pulse-widget'
 import SystemNerveCenter from '@/components/dashboard/system-nerve-center'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getRevenueProjection, getComparativePeriods } from '@/lib/dashboard/actions'
-import { getRecentExpenses, getUpcomingEventsForExpense } from '@/lib/dashboard/widget-actions'
+import {
+  getRevenueProjection,
+  getComparativePeriods,
+  getUnloggedEventHours,
+  getEventsNeedingAAR,
+} from '@/lib/dashboard/actions'
+import { InlineAARWidget } from '@/components/dashboard/inline-aar-widget'
+import {
+  getRecentExpenses,
+  getUpcomingEventsForExpense,
+  getInvoicePulse,
+} from '@/lib/dashboard/widget-actions'
+import type { InvoicePulseData } from '@/lib/dashboard/widget-actions'
 import Link from 'next/link'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
 import type { RevenueProjection, ComparativePeriods } from '@/lib/dashboard/actions'
@@ -47,14 +59,28 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
   const getWidgetOrder = (id: DashboardWidgetId) => widgetOrder[id] ?? Number.MAX_SAFE_INTEGER
 
   // Fetch existing data + intelligence data + expense widget data in parallel
-  const [data, revenueProjection, comparativePeriods, recentExpenses, upcomingEventsForExpense] =
-    await Promise.all([
-      loadBusinessSectionData({ monthEnd, monthStart, now, userId: user.id }),
-      safeFetch('revenueProjection', getRevenueProjection, null as RevenueProjection | null),
-      safeFetch('comparativePeriods', getComparativePeriods, null as ComparativePeriods | null),
-      safeFetch('recentExpenses', () => getRecentExpenses(3), []),
-      safeFetch('upcomingEventsForExpense', getUpcomingEventsForExpense, []),
-    ])
+  const [
+    data,
+    revenueProjection,
+    comparativePeriods,
+    recentExpenses,
+    upcomingEventsForExpense,
+    invoicePulse,
+    unloggedEvents,
+    eventsNeedingAAR,
+  ] = await Promise.all([
+    loadBusinessSectionData({ monthEnd, monthStart, now, userId: user.id }),
+    safeFetch('revenueProjection', getRevenueProjection, null as RevenueProjection | null),
+    safeFetch('comparativePeriods', getComparativePeriods, null as ComparativePeriods | null),
+    safeFetch('recentExpenses', () => getRecentExpenses(3), []),
+    safeFetch('upcomingEventsForExpense', getUpcomingEventsForExpense, []),
+    safeFetch('invoicePulse', getInvoicePulse, {
+      invoices: [],
+      monthlyStats: { totalSentCents: 0, totalPaidCents: 0, collectionRate: 0 },
+    } as InvoicePulseData),
+    safeFetch('unloggedEvents', getUnloggedEventHours, []),
+    safeFetch('eventsNeedingAAR', getEventsNeedingAAR, []),
+  ])
   const metrics = buildBusinessSectionMetrics({ data, now })
   const { clients, eventCounts, overdueFollowUps, quoteStats } = data
   const { shouldShowOnboardingAccelerator, totalInquiryCount } = metrics
@@ -164,8 +190,27 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
         </section>
       )}
 
+      {/* Invoice Pulse */}
+      {isWidgetEnabled('invoice_pulse') && (
+        <section style={{ order: getWidgetOrder('invoice_pulse') }}>
+          <CollapsibleWidget widgetId="invoice_pulse" title="Invoice Pulse">
+            <InvoicePulseWidget
+              invoices={invoicePulse.invoices}
+              monthlyStats={invoicePulse.monthlyStats}
+            />
+          </CollapsibleWidget>
+        </section>
+      )}
+
+      {/* Inline AAR Prompt */}
+      {isWidgetEnabled('inline_aar') && eventsNeedingAAR.length > 0 && (
+        <section style={{ order: getWidgetOrder('inline_aar') }}>
+          <InlineAARWidget events={eventsNeedingAAR} />
+        </section>
+      )}
+
       {/* Analytics Sections - collapsed on mobile */}
-      <BusinessSectionMobileContent {...renderContext} />
+      <BusinessSectionMobileContent {...renderContext} unloggedEvents={unloggedEvents} />
 
       {/* AI Business Insights */}
       {isWidgetEnabled('business_insights') && (

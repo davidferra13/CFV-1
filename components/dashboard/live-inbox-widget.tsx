@@ -82,8 +82,9 @@ export function LiveInboxWidget({ initialItems, tenantId }: Props) {
       try {
         const { sendChatMessage } = await import('@/lib/chat/actions')
         await sendChatMessage({
-          conversationId: item.conversation_id!,
-          content: replyText,
+          conversation_id: item.conversation_id!,
+          message_type: 'text',
+          body: replyText,
         })
         setReplyText('')
         setExpandedId(null)

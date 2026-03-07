@@ -114,6 +114,9 @@ export const DASHBOARD_WIDGET_IDS = [
   'invoice_pulse',
   'recipe_capture',
   'client_lookup',
+  'smart_hours',
+  'inline_aar',
+  'quick_create',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -233,6 +236,9 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   invoice_pulse: 'Invoice Pulse',
   recipe_capture: 'Recipe Quick Capture',
   client_lookup: 'Client Quick Lookup',
+  smart_hours: 'Smart Hours',
+  inline_aar: 'Quick Debrief',
+  quick_create: 'Quick Create',
 }
 
 // Legacy alias kept for compatibility with older code paths.

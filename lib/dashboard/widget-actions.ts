@@ -101,10 +101,10 @@ export async function getExpiringQuotes(daysAhead = 7): Promise<ExpiringQuote[]>
     .select('id, occasion, client:clients(id, full_name)')
     .in('id', eventIds)
 
-  const eventMap = new Map((events || []).map((e: any) => [e.id, e]))
+  const eventMap = new Map(((events as any[]) || []).map((e: any) => [e.id, e]))
 
   return quotes.map((q: any) => {
-    const event = eventMap.get(q.event_id)
+    const event: any = eventMap.get(q.event_id)
     const validDate = new Date(q.valid_until)
     const daysLeft = Math.max(
       0,
@@ -609,8 +609,12 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
     .lte('event_date', cutoffStr)
     .in('status', ['draft', 'proposed'])
 
-  const booked = [...new Set((bookedEvents || []).map((e: any) => e.event_date as string))]
-  const tentative = [...new Set((tentativeEvents || []).map((e: any) => e.event_date as string))]
+  const booked: string[] = Array.from(
+    new Set((bookedEvents || []).map((e: any) => String(e.event_date)))
+  )
+  const tentative: string[] = Array.from(
+    new Set((tentativeEvents || []).map((e: any) => String(e.event_date)))
+  )
 
   return { booked, tentative }
 }
@@ -676,4 +680,218 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
   return results
     .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
     .slice(0, limit)
+}
+
+// ============================================
+// 7. Invoice Pulse
+// ============================================
+
+export interface InvoicePulseData {
+  invoices: Array<{
+    id: string
+    clientName: string
+    amountCents: number
+    status: 'draft' | 'sent' | 'overdue' | 'paid' | 'void'
+    sentAt: string | null
+    dueDate: string | null
+    eventOccasion: string
+  }>
+  monthlyStats: {
+    totalSentCents: number
+    totalPaidCents: number
+    collectionRate: number
+  }
+}
+
+export async function getInvoicePulse(): Promise<InvoicePulseData> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+
+  // Get all events with financial summaries (non-void, non-draft)
+  const { data: summaries } = await supabase
+    .from('event_financial_summary')
+    .select(
+      'event_id, quoted_price_cents, total_paid_cents, outstanding_balance_cents, payment_status'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .gt('quoted_price_cents', 0)
+
+  if (!summaries || summaries.length === 0) {
+    return {
+      invoices: [],
+      monthlyStats: { totalSentCents: 0, totalPaidCents: 0, collectionRate: 0 },
+    }
+  }
+
+  const eventIds = summaries.map((s: any) => s.event_id).filter(Boolean)
+
+  // Get events with their quotes and clients
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, status, client:clients(id, full_name, email)')
+    .eq('tenant_id', user.tenantId!)
+    .in('id', eventIds)
+    .not('status', 'in', '("draft","cancelled")')
+    .limit(10)
+
+  // Get quotes for sent_at dates
+  const { data: quotes } = await supabase
+    .from('quotes')
+    .select('event_id, sent_at, valid_until, status')
+    .eq('tenant_id', user.tenantId!)
+    .in('event_id', eventIds)
+    .in('status', ['sent', 'accepted'])
+    .order('created_at', { ascending: false })
+
+  const quoteMap = new Map<string, any>()
+  for (const q of quotes || []) {
+    if (!quoteMap.has(q.event_id)) {
+      quoteMap.set(q.event_id, q)
+    }
+  }
+
+  const invoices: InvoicePulseData['invoices'] = []
+
+  for (const e of events || []) {
+    const fin = summaries.find((s: any) => s.event_id === e.id)
+    if (!fin) continue
+
+    const quote = quoteMap.get(e.id)
+    const outstandingCents = fin.outstanding_balance_cents ?? 0
+
+    // Determine invoice status
+    let status: 'draft' | 'sent' | 'overdue' | 'paid' | 'void' = 'sent'
+    const paymentStatus = fin.payment_status as string
+
+    if (paymentStatus === 'paid') {
+      status = 'paid'
+    } else if (outstandingCents > 0) {
+      // Check if overdue: past the valid_until date of the quote or past the event date
+      const dueDate = quote?.valid_until || e.event_date
+      if (dueDate && new Date(dueDate) < now) {
+        status = 'overdue'
+      } else {
+        status = 'sent'
+      }
+    }
+
+    invoices.push({
+      id: e.id,
+      clientName: e.client?.full_name ?? 'Unknown',
+      amountCents: outstandingCents > 0 ? outstandingCents : (fin.quoted_price_cents ?? 0),
+      status,
+      sentAt: quote?.sent_at ?? null,
+      dueDate: quote?.valid_until ?? e.event_date ?? null,
+      eventOccasion: e.occasion || 'Untitled Event',
+    })
+  }
+
+  // Monthly stats: events with quotes sent this month
+  const { data: monthQuotes } = await supabase
+    .from('quotes')
+    .select('event_id, total_quoted_cents, status')
+    .eq('tenant_id', user.tenantId!)
+    .gte('sent_at', monthStart)
+    .lte('sent_at', monthEnd + 'T23:59:59')
+    .not('sent_at', 'is', null)
+
+  let totalSentCents = 0
+  let totalPaidCents = 0
+
+  const monthEventIds = (monthQuotes || []).map((q: any) => q.event_id).filter(Boolean)
+  totalSentCents = (monthQuotes || []).reduce(
+    (sum: number, q: any) => sum + (q.total_quoted_cents ?? 0),
+    0
+  )
+
+  if (monthEventIds.length > 0) {
+    const { data: monthFinancials } = await supabase
+      .from('event_financial_summary')
+      .select('event_id, total_paid_cents')
+      .eq('tenant_id', user.tenantId!)
+      .in('event_id', monthEventIds)
+
+    totalPaidCents = (monthFinancials || []).reduce(
+      (sum: number, f: any) => sum + (f.total_paid_cents ?? 0),
+      0
+    )
+  }
+
+  const collectionRate =
+    totalSentCents > 0 ? Math.round((totalPaidCents / totalSentCents) * 100) : 0
+
+  return {
+    invoices,
+    monthlyStats: { totalSentCents, totalPaidCents, collectionRate },
+  }
+}
+
+export async function sendInvoiceReminder(
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Get event + client details
+  const { data: event, error: eventErr } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, status, client:clients(id, full_name, email)')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (eventErr || !event) {
+    return { success: false, error: 'Event not found' }
+  }
+
+  const clientEmail = event.client?.email
+  if (!clientEmail) {
+    return { success: false, error: 'Client has no email address' }
+  }
+
+  // Get outstanding balance
+  const { data: fin } = await supabase
+    .from('event_financial_summary')
+    .select('outstanding_balance_cents, quoted_price_cents')
+    .eq('event_id', eventId)
+    .single()
+
+  const outstandingCents = fin?.outstanding_balance_cents ?? fin?.quoted_price_cents ?? 0
+
+  // Get chef name
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('business_name, full_name')
+    .eq('id', user.tenantId!)
+    .single()
+
+  const chefName = chef?.business_name || chef?.full_name || 'Your Chef'
+  const eventDate = event.event_date ?? ''
+  const daysUntilEvent = eventDate
+    ? Math.max(0, Math.ceil((new Date(eventDate).getTime() - Date.now()) / 86400000))
+    : 0
+
+  try {
+    await sendPaymentReminderEmail({
+      clientEmail,
+      clientName: event.client?.full_name ?? 'Client',
+      chefName,
+      occasion: event.occasion || 'Your event',
+      eventDate,
+      daysUntilEvent,
+      amountDueCents: outstandingCents,
+      depositAmountCents: null,
+      eventId,
+    })
+  } catch (err) {
+    console.error('[sendInvoiceReminder] Email send failed:', err)
+    return { success: false, error: 'Failed to send reminder email' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
 }

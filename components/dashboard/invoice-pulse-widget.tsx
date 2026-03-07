@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Receipt, AlertTriangle, CheckCircle, ArrowRight } from '@/components/ui/icons'
 import { formatCurrency } from '@/lib/utils/currency'
-import { formatDistanceToNow } from 'date-fns'
 import { sendInvoiceReminder } from '@/lib/dashboard/widget-actions'
 
 // ── Types ──────────────────────────────────────────────────────────────

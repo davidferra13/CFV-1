@@ -1477,7 +1477,7 @@ export async function createRecipeDraft(rawText: string) {
 
   const { error } = await supabase.from('recipes').insert({
     tenant_id: user.tenantId!,
-    created_by: user.userId,
+    created_by: user.id,
     name,
     notes: trimmed,
     category: 'other' as const,

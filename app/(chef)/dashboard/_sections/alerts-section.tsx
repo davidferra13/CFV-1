@@ -409,6 +409,14 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
         </section>
       )}
 
+      {isWidgetEnabled('recipe_capture') && (
+        <section style={{ order: getWidgetOrder('recipe_capture') }}>
+          <CollapsibleWidget widgetId="recipe_capture" title="Recipe Quick Capture">
+            <RecipeCaptureWidget recipeDebt={recipeDebt.total} />
+          </CollapsibleWidget>
+        </section>
+      )}
+
       {isWidgetEnabled('invite_chef') && (
         <section style={{ order: getWidgetOrder('invite_chef') }}>
           <CollapsibleWidget widgetId="invite_chef" title="Invite a Chef">

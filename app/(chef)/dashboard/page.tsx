@@ -26,6 +26,7 @@ import { QueueEmpty } from '@/components/queue/queue-empty'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { ArrowRight } from '@/components/ui/icons'
 import { ClientLookupWidget } from '@/components/dashboard/client-lookup-widget'
+import { QuickCreateStrip } from '@/components/dashboard/quick-create-strip'
 
 // Async section components (each fetches its own data)
 import { ScheduleSection } from './_sections/schedule-section'
@@ -156,6 +157,11 @@ export default async function ChefDashboard() {
         {/* CLIENT QUICK LOOKUP — renders instantly      */}
         {/* ============================================ */}
         {isWidgetEnabled('client_lookup') && <ClientLookupWidget />}
+
+        {/* ============================================ */}
+        {/* QUICK-CREATE STRIP — renders instantly       */}
+        {/* ============================================ */}
+        {isWidgetEnabled('quick_create') && <QuickCreateStrip />}
 
         {/* ============================================ */}
         {/* PRIORITY BANNER — renders instantly          */}

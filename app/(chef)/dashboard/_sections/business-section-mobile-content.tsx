@@ -33,6 +33,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import type { UnloggedEvent } from '@/lib/dashboard/actions'
 import type { BusinessSectionRenderContext } from './business-section-render-context'
 
 interface MetricRow {
@@ -91,7 +92,9 @@ function renderMetricWidget(
   )
 }
 
-export function BusinessSectionMobileContent(context: BusinessSectionRenderContext) {
+export function BusinessSectionMobileContent(
+  context: BusinessSectionRenderContext & { unloggedEvents?: UnloggedEvent[] }
+) {
   const {
     activeClients,
     aiPreferences,
@@ -800,6 +803,7 @@ export function BusinessSectionMobileContent(context: BusinessSectionRenderConte
               trackingStreak={hoursSnapshot.trackingStreak}
               todayLogged={hoursSnapshot.todayLogged}
               weekCategoryBreakdown={hoursSnapshot.weekCategoryBreakdown}
+              unloggedEvents={context.unloggedEvents}
             />
           </CollapsibleWidget>
         </section>
