@@ -6,6 +6,20 @@
    DESIGN TOKENS — CSS Custom Properties
    ============================================ */
 :root {
+  /* ── Brand color scale (RGB channels for Tailwind opacity support) ── */
+  /* Default palette: Copper and Cast Iron */
+  --brand-50: 254 249 243;
+  --brand-100: 252 240 224;
+  --brand-200: 248 221 192;
+  --brand-300: 243 197 150;
+  --brand-400: 243 197 150;
+  --brand-500: 237 168 107;
+  --brand-600: 177 92 38;
+  --brand-700: 177 92 38;
+  --brand-800: 142 74 36;
+  --brand-900: 116 64 33;
+  --brand-950: 62 32 15;
+
   /* Elevation surfaces — layered depth instead of flat void */
   --surface-0: #0c0a09; /* body / deepest background (stone-950) */
   --surface-1: #1c1917; /* recessed panels, sidebar */
@@ -15,14 +29,14 @@
   /* Card gradient — barely-perceptible top-light simulating ambient light */
   --card-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
 
-  /* Warm borders for interactive states — terracotta tint at low opacity */
-  --border-warm: rgba(232, 143, 71, 0.12);
-  --border-warm-hover: rgba(232, 143, 71, 0.25);
+  /* Warm borders — derived from brand-500 accent */
+  --border-warm: rgb(var(--brand-500) / 0.12);
+  --border-warm-hover: rgb(var(--brand-500) / 0.25);
 
-  /* Shadows — warm-tinted for brand connection */
+  /* Shadows — accent-tinted for brand connection */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(232, 143, 71, 0.06);
-  --shadow-overlay: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 143, 71, 0.08);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgb(var(--brand-500) / 0.06);
+  --shadow-overlay: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgb(var(--brand-500) / 0.08);
 
   /* Motion tokens */
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
@@ -33,12 +47,7 @@
   --duration-enter: 220ms;
   --duration-exit: 150ms;
 
-  /* Brand colors (for non-Tailwind contexts like FullCalendar) */
-  --brand-400: #f3c596;
-  --brand-500: #eda86b;
-  --brand-600: #b15c26;
-  --brand-50: #fef9f3;
-  --brand-950: #3e200f;
+  /* Text tokens */
   --text-muted: #d6d3d1;
   --text-muted-soft: #b8b1ab;
   --text-placeholder: #a8a29e;
@@ -53,7 +62,7 @@ html {
 
 /* Brand-tinted text selection */
 ::selection {
-  background-color: #3e200f;
+  background-color: rgb(var(--brand-950));
   color: #f5f5f4;
 }
 
@@ -187,12 +196,12 @@ html {
   }
   /* Text link — distinct from button orange (lighter, with underline on hover) */
   .text-link {
-    color: var(--brand-400);
+    color: rgb(var(--brand-400));
     text-decoration: none;
     transition: color var(--duration-fast);
   }
   .text-link:hover {
-    color: #f3c596; /* brand-300 */
+    color: rgb(var(--brand-300));
     text-decoration: underline;
     text-underline-offset: 2px;
   }
@@ -268,12 +277,12 @@ html {
 
 /* Container */
 .calendar-container .fc {
-  --fc-border-color: #44403c;
-  --fc-today-bg-color: var(--brand-950);
-  --fc-neutral-bg-color: #292524;
-  --fc-page-bg-color: #1c1917;
-  --fc-now-indicator-color: var(--brand-500);
-  --fc-list-event-hover-bg-color: #292524;
+  --fc-border-color: var(--surface-3);
+  --fc-today-bg-color: rgb(var(--brand-950));
+  --fc-neutral-bg-color: var(--surface-2);
+  --fc-page-bg-color: var(--surface-1);
+  --fc-now-indicator-color: rgb(var(--brand-500));
+  --fc-list-event-hover-bg-color: var(--surface-2);
   font-family:
     var(--font-inter),
     system-ui,
@@ -326,7 +335,7 @@ html {
 
 /* Today's day number */
 .calendar-container .fc .fc-day-today .fc-daygrid-day-number {
-  background-color: var(--brand-500);
+  background-color: rgb(var(--brand-500));
   color: white;
   border-radius: 9999px;
   width: 28px;
@@ -364,13 +373,13 @@ html {
 .calendar-container .fc .fc-daygrid-more-link {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--brand-500);
+  color: rgb(var(--brand-500));
   padding: 2px 6px;
   border-radius: 4px;
 }
 .calendar-container .fc .fc-daygrid-more-link:hover {
-  background-color: var(--brand-950);
-  color: var(--brand-400);
+  background-color: rgb(var(--brand-950));
+  color: rgb(var(--brand-400));
 }
 
 /* Time grid (Week / Day views) */
@@ -390,11 +399,11 @@ html {
 
 /* Now indicator (red line like Google Calendar) */
 .calendar-container .fc .fc-timegrid-now-indicator-line {
-  border-color: var(--brand-500);
+  border-color: rgb(var(--brand-500));
   border-width: 2px;
 }
 .calendar-container .fc .fc-timegrid-now-indicator-arrow {
-  border-color: var(--brand-500);
+  border-color: rgb(var(--brand-500));
   border-width: 5px;
 }
 
@@ -435,7 +444,7 @@ html {
   border-color: #292524;
 }
 .calendar-container .fc .fc-list-event-dot {
-  border-color: var(--brand-500);
+  border-color: rgb(var(--brand-500));
 }
 .calendar-container .fc .fc-list-event-title a {
   color: #e7e5e4;
@@ -1088,7 +1097,7 @@ html {
 
 /* Sidebar warm gradient — barely visible terracotta tint at top */
 .sidebar-gradient {
-  background-image: linear-gradient(180deg, rgba(232, 143, 71, 0.03) 0%, transparent 30%);
+  background-image: linear-gradient(180deg, rgb(var(--brand-500) / 0.03) 0%, transparent 30%);
 }
 
 /* ============================================
@@ -1240,14 +1249,14 @@ html {
 }
 
 .blog-link {
-  color: #e88f47;
+  color: rgb(var(--brand-500));
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.15s;
 }
 
 .blog-link:hover {
-  color: #eda86b;
+  color: rgb(var(--brand-400));
 }
 
 .blog-code-block {
@@ -1267,8 +1276,8 @@ html {
 }
 
 .blog-inline-code {
-  background: #292524;
-  color: #e88f47;
+  background: var(--surface-2);
+  color: rgb(var(--brand-500));
   padding: 0.15rem 0.4rem;
   border-radius: 0.25rem;
   font-size: 0.875em;
@@ -1583,7 +1592,7 @@ html {
   [role='menuitem']:focus-visible,
   [role='checkbox']:focus-visible,
   [role='radio']:focus-visible {
-    outline: 3px solid var(--brand-500);
+    outline: 3px solid rgb(var(--brand-500));
     outline-offset: 2px;
     border-radius: 0; /* Per WCAG guidelines: outline should not be rounded */
   }
@@ -1594,7 +1603,7 @@ html {
   }
 
   main:focus-visible {
-    outline: 3px solid var(--brand-500);
+    outline: 3px solid rgb(var(--brand-500));
     outline-offset: 2px;
   }
 
@@ -1602,7 +1611,7 @@ html {
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    outline: 2px solid var(--brand-500);
+    outline: 2px solid rgb(var(--brand-500));
     outline-offset: 1px;
   }
 }

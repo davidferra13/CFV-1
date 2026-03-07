@@ -6,6 +6,7 @@ import { IconProvider } from '@/components/ui/icon-provider'
 import { SwRegister } from '@/components/pwa/sw-register'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
+import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -100,6 +101,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+      <head>
+        <PaletteScript />
+      </head>
       <body className="font-sans">
         {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
         <a
@@ -110,12 +114,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
 
         <IconProvider>
-          <PostHogProvider>
-            <Suspense fallback={null}>
-              <PerformanceTelemetry />
-            </Suspense>
-            {children}
-          </PostHogProvider>
+          <ColorPaletteProvider>
+            <PostHogProvider>
+              <Suspense fallback={null}>
+                <PerformanceTelemetry />
+              </Suspense>
+              {children}
+            </PostHogProvider>
+          </ColorPaletteProvider>
         </IconProvider>
         <CookieConsent />
         <SwRegister />
