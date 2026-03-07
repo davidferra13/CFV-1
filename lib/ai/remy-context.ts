@@ -121,9 +121,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     // Business intelligence (cross-engine synthesis)
     businessIntelligence: healthSummary ?? undefined,
     // Service configuration (what this chef offers/doesn't offer)
-    serviceConfigPrompt: serviceConfig
-      ? await formatServiceConfigForPrompt(serviceConfig)
-      : undefined,
+    serviceConfigPrompt: serviceConfig ? formatServiceConfigForPrompt(serviceConfig) : undefined,
   }
 }
 

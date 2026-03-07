@@ -472,11 +472,11 @@ export default function MyServicesPage() {
             visible={config.charges_travel_fee}
           />
           <NumberField
-            label="Fee amount (cents)"
-            value={config.travel_fee_cents}
-            onChange={(v) => update('travel_fee_cents', v)}
-            placeholder="5000"
-            suffix="cents (5000 = $50)"
+            label="Fee amount"
+            value={config.travel_fee_cents != null ? config.travel_fee_cents / 100 : null}
+            onChange={(v) => update('travel_fee_cents', v != null ? Math.round(v * 100) : null)}
+            placeholder="50"
+            suffix="dollars"
             visible={config.charges_travel_fee}
           />
 
@@ -486,11 +486,11 @@ export default function MyServicesPage() {
             onChange={(v) => update('has_minimum_spend', v)}
           />
           <NumberField
-            label="Minimum (cents)"
-            value={config.minimum_spend_cents}
-            onChange={(v) => update('minimum_spend_cents', v)}
-            placeholder="50000"
-            suffix="cents (50000 = $500)"
+            label="Minimum amount"
+            value={config.minimum_spend_cents != null ? config.minimum_spend_cents / 100 : null}
+            onChange={(v) => update('minimum_spend_cents', v != null ? Math.round(v * 100) : null)}
+            placeholder="500"
+            suffix="dollars"
             visible={config.has_minimum_spend}
           />
 
@@ -549,6 +549,7 @@ export default function MyServicesPage() {
                 onChange={(e) => update('custom_intro_pitch', e.target.value || null)}
                 placeholder='e.g. "I handle everything from shopping to cleanup. You just show up, sit down, and enjoy the evening with your guests."'
                 rows={2}
+                maxLength={300}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm
                            focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder:text-stone-600 resize-none"
               />
@@ -565,6 +566,7 @@ export default function MyServicesPage() {
                   'e.g. "Shopping, cooking, plating, serving, and cleanup. You don\'t lift a finger."'
                 }
                 rows={2}
+                maxLength={300}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm
                            focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder:text-stone-600 resize-none"
               />
@@ -576,6 +578,7 @@ export default function MyServicesPage() {
                 onChange={(e) => update('custom_cleanup_note', e.target.value || null)}
                 placeholder='e.g. "I leave the kitchen cleaner than I found it."'
                 rows={1}
+                maxLength={200}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm
                            focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder:text-stone-600 resize-none"
               />
@@ -587,6 +590,7 @@ export default function MyServicesPage() {
                 onChange={(e) => update('custom_dietary_note', e.target.value || null)}
                 placeholder='e.g. "I take allergies very seriously. Separate prep, dedicated cutting boards, no cross-contamination."'
                 rows={2}
+                maxLength={300}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm
                            focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder:text-stone-600 resize-none"
               />
@@ -598,6 +602,7 @@ export default function MyServicesPage() {
                 onChange={(e) => update('custom_gratuity_note', e.target.value || null)}
                 placeholder='e.g. "Gratuity is never expected but always appreciated."'
                 rows={1}
+                maxLength={200}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm
                            focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder:text-stone-600 resize-none"
               />
@@ -609,6 +614,7 @@ export default function MyServicesPage() {
                 onChange={(e) => update('custom_travel_note', e.target.value || null)}
                 placeholder='e.g. "I cover the entire North Shore at no extra charge."'
                 rows={1}
+                maxLength={200}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm
                            focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder:text-stone-600 resize-none"
               />

@@ -212,7 +212,7 @@ export async function saveServiceConfig(
 
 // ─── Format for Remy System Prompt ──────────────────────────────────────────
 
-export async function formatServiceConfigForPrompt(config: ChefServiceConfig): Promise<string> {
+export function formatServiceConfigForPrompt(config: ChefServiceConfig): string {
   const lines: string[] = ['SERVICE CONFIGURATION (what this chef offers and how they operate):']
 
   // Services
@@ -231,12 +231,16 @@ export async function formatServiceConfigForPrompt(config: ChefServiceConfig): P
 
   // What they DON'T do (so Remy knows not to mention it)
   const notOffered: string[] = []
+  if (!config.offers_grocery_shopping) notOffered.push('grocery shopping')
+  if (!config.offers_cocktail_hour) notOffered.push('cocktail hour / passed appetizers')
   if (!config.offers_wine_pairings && !config.offers_bartending)
     notOffered.push('beverages/drink service')
+  if (!config.offers_dessert_course) notOffered.push('dessert course')
   if (!config.offers_tastings) notOffered.push('tastings')
+  if (!config.offers_table_setup) notOffered.push('table setup')
   if (!config.offers_serving) notOffered.push('front-of-house serving')
   if (!config.offers_cleanup) notOffered.push('cleanup')
-  if (!config.offers_table_setup) notOffered.push('table setup')
+  if (!config.offers_leftover_packaging) notOffered.push('leftover packaging')
   if (notOffered.length > 0)
     lines.push(`Does NOT offer: ${notOffered.join(', ')} (never mention these to clients)`)
 
