@@ -168,3 +168,8 @@ CON
 /docs/event-ops-kit/packets-migration-test/
 /docs/grazing-table-ops-kit/packets/*
 !/docs/grazing-table-ops-kit/packets/.gitkeep
+
+# Demo video recordings (binary, too large for git)
+docs/demo-videos/*.webm
+docs/demo-videos/*.mp4
+docs/demo-videos/_tmp/
