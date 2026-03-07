@@ -9,7 +9,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
-import { DEFAULT_PREFERENCES, type DashboardWidgetId } from '@/lib/scheduling/types'
+import {
+  DEFAULT_PREFERENCES,
+  type DashboardWidgetId,
+  widgetGridClass,
+} from '@/lib/scheduling/types'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
 import { Plus } from '@/components/ui/icons'
@@ -27,6 +31,8 @@ import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { ArrowRight } from '@/components/ui/icons'
 import { ClientLookupWidget } from '@/components/dashboard/client-lookup-widget'
 import { QuickCreateStrip } from '@/components/dashboard/quick-create-strip'
+import { DashboardResetBanner } from '@/components/dashboard/dashboard-reset-banner'
+import { DashboardCategoryHeader } from '@/components/dashboard/dashboard-category-header'
 
 // Async section components (each fetches its own data)
 import { ScheduleSection } from './_sections/schedule-section'
@@ -116,11 +122,11 @@ export default async function ChefDashboard() {
 
   return (
     <DashboardCollapseProvider>
-      <div className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* ============================================ */}
-        {/* HEADER — renders instantly                   */}
+        {/* HEADER — renders instantly, full width       */}
         {/* ============================================ */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
             <p className="text-sm text-stone-300 mt-0.5">
@@ -154,19 +160,35 @@ export default async function ChefDashboard() {
         </div>
 
         {/* ============================================ */}
+        {/* RESET BANNER — for existing users            */}
+        {/* ============================================ */}
+        <DashboardResetBanner
+          enabledCount={widgetPreferences.filter((w) => w.enabled).length}
+          totalCount={widgetPreferences.length}
+        />
+
+        {/* ============================================ */}
         {/* CLIENT QUICK LOOKUP — renders instantly      */}
         {/* ============================================ */}
-        {isWidgetEnabled('client_lookup') && <ClientLookupWidget />}
+        {isWidgetEnabled('client_lookup') && (
+          <div className="col-span-1 md:col-span-2">
+            <ClientLookupWidget />
+          </div>
+        )}
 
         {/* ============================================ */}
         {/* QUICK-CREATE STRIP — renders instantly       */}
         {/* ============================================ */}
-        {isWidgetEnabled('quick_create') && <QuickCreateStrip />}
+        {isWidgetEnabled('quick_create') && (
+          <div className="col-span-1 md:col-span-2">
+            <QuickCreateStrip />
+          </div>
+        )}
 
         {/* ============================================ */}
         {/* PRIORITY BANNER — renders instantly          */}
         {/* ============================================ */}
-        <section data-info="next-action">
+        <section data-info="next-action" className="col-span-1 md:col-span-2">
           {queue.nextAction ? (
             <Link href={queue.nextAction.href} className="block">
               <div
@@ -222,7 +244,10 @@ export default async function ChefDashboard() {
         {/* NEXT ACTION + QUEUE — renders instantly      */}
         {/* ============================================ */}
         {isWidgetEnabled('next_action') && queue.nextAction && (
-          <section style={{ order: getWidgetOrder('next_action') }}>
+          <section
+            className={widgetGridClass('next_action')}
+            style={{ order: getWidgetOrder('next_action') }}
+          >
             <CollapsibleWidget widgetId="next_action" title="Next Action">
               <NextActionCard item={queue.nextAction} />
             </CollapsibleWidget>
@@ -230,7 +255,11 @@ export default async function ChefDashboard() {
         )}
 
         {isWidgetEnabled('priority_queue') && (
-          <section data-info="queue" style={{ order: getWidgetOrder('priority_queue') }}>
+          <section
+            data-info="queue"
+            className={widgetGridClass('priority_queue')}
+            style={{ order: getWidgetOrder('priority_queue') }}
+          >
             <CollapsibleWidget widgetId="priority_queue" title="Priority Queue">
               {queue.summary.allCaughtUp ? (
                 <QueueEmpty />
@@ -256,29 +285,34 @@ export default async function ChefDashboard() {
         )}
 
         {/* ============================================ */}
-        {/* SCHEDULE — streams in (~200-500ms)           */}
+        {/* SCHEDULE & PREP                              */}
         {/* ============================================ */}
+        <DashboardCategoryHeader label="Schedule & Prep" />
         <Suspense fallback={<ScheduleSkeleton />}>
           <ScheduleSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
         </Suspense>
 
         {/* ============================================ */}
-        {/* PROACTIVE INTELLIGENCE ALERTS                 */}
+        {/* PROACTIVE INTELLIGENCE ALERTS                */}
         {/* ============================================ */}
-        <Suspense fallback={null}>
-          <ProactiveAlertsBar />
-        </Suspense>
+        <div className="col-span-1 md:col-span-2">
+          <Suspense fallback={null}>
+            <ProactiveAlertsBar />
+          </Suspense>
+        </div>
 
         {/* ============================================ */}
-        {/* ALERTS — streams in (~200-500ms)             */}
+        {/* ACTION ITEMS & CLIENTS                       */}
         {/* ============================================ */}
+        <DashboardCategoryHeader label="Action Items" />
         <Suspense fallback={<AlertsSkeleton />}>
           <AlertsSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
         </Suspense>
 
         {/* ============================================ */}
-        {/* INTELLIGENCE — streams in (~500-1000ms)      */}
+        {/* ANALYTICS & INTELLIGENCE                     */}
         {/* ============================================ */}
+        <DashboardCategoryHeader label="Analytics & Intelligence" />
         <Suspense fallback={<IntelligenceSkeleton />}>
           <IntelligenceSection
             widgetEnabled={widgetEnabledRecord}
@@ -287,8 +321,9 @@ export default async function ChefDashboard() {
         </Suspense>
 
         {/* ============================================ */}
-        {/* BUSINESS + ANALYTICS — streams in last       */}
+        {/* BUSINESS & MONEY                             */}
         {/* ============================================ */}
+        <DashboardCategoryHeader label="Business & Money" />
         <Suspense fallback={<BusinessSkeleton />}>
           <BusinessSection widgetEnabled={widgetEnabledRecord} widgetOrder={widgetOrderRecord} />
         </Suspense>

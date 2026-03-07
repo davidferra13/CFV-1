@@ -27,6 +27,7 @@ import {
 import type { InvoicePulseData } from '@/lib/dashboard/widget-actions'
 import Link from 'next/link'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import { widgetGridClass } from '@/lib/scheduling/types'
 import type { RevenueProjection, ComparativePeriods } from '@/lib/dashboard/actions'
 import { MONTH_NAMES } from './business-section-defaults'
 import { loadBusinessSectionData } from './business-section-loader'
@@ -97,7 +98,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
     <>
       {/* System Nerve Center - admin-only */}
       {isWidgetEnabled('system_nerve_center') && (
-        <section style={{ order: getWidgetOrder('system_nerve_center') }}>
+        <section
+          className={widgetGridClass('system_nerve_center')}
+          style={{ order: getWidgetOrder('system_nerve_center') }}
+        >
           <CollapsibleWidget widgetId="system_nerve_center" title="System Nerve Center">
             <SystemNerveCenter />
           </CollapsibleWidget>
@@ -106,7 +110,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Onboarding Accelerator */}
       {isWidgetEnabled('onboarding_accelerator') && shouldShowOnboardingAccelerator && (
-        <section style={{ order: getWidgetOrder('onboarding_accelerator') }}>
+        <section
+          className={widgetGridClass('onboarding_accelerator')}
+          style={{ order: getWidgetOrder('onboarding_accelerator') }}
+        >
           <CollapsibleWidget widgetId="onboarding_accelerator" title="Getting Started">
             <OnboardingAccelerator
               clientCount={clients.length}
@@ -120,7 +127,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Overdue Follow-Ups */}
       {overdueFollowUps.length > 0 && (
-        <section>
+        <section className="col-span-1 md:col-span-2">
           <Card className="border-amber-200">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -162,7 +169,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Revenue Projection - intelligence widget */}
       {isWidgetEnabled('pipeline_forecast') && revenueProjection && (
-        <section style={{ order: getWidgetOrder('pipeline_forecast') }}>
+        <section
+          className={widgetGridClass('pipeline_forecast')}
+          style={{ order: getWidgetOrder('pipeline_forecast') }}
+        >
           <CollapsibleWidget widgetId="pipeline_forecast" title="Revenue Projection">
             <RevenueProjectionWidget projection={revenueProjection} />
           </CollapsibleWidget>
@@ -171,7 +181,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Comparative Periods - intelligence widget */}
       {isWidgetEnabled('revenue_comparison') && comparativePeriods && (
-        <section style={{ order: getWidgetOrder('revenue_comparison') }}>
+        <section
+          className={widgetGridClass('revenue_comparison')}
+          style={{ order: getWidgetOrder('revenue_comparison') }}
+        >
           <CollapsibleWidget widgetId="revenue_comparison" title="Performance Comparison">
             <ComparativePeriodsWidget periods={comparativePeriods} />
           </CollapsibleWidget>
@@ -180,7 +193,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Quick Expense Capture */}
       {isWidgetEnabled('quick_expense') && (
-        <section style={{ order: getWidgetOrder('quick_expense') }}>
+        <section
+          className={widgetGridClass('quick_expense')}
+          style={{ order: getWidgetOrder('quick_expense') }}
+        >
           <CollapsibleWidget widgetId="quick_expense" title="Quick Expense">
             <QuickExpenseWidget
               upcomingEvents={upcomingEventsForExpense}
@@ -192,7 +208,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Invoice Pulse */}
       {isWidgetEnabled('invoice_pulse') && (
-        <section style={{ order: getWidgetOrder('invoice_pulse') }}>
+        <section
+          className={widgetGridClass('invoice_pulse')}
+          style={{ order: getWidgetOrder('invoice_pulse') }}
+        >
           <CollapsibleWidget widgetId="invoice_pulse" title="Invoice Pulse">
             <InvoicePulseWidget
               invoices={invoicePulse.invoices}
@@ -204,7 +223,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* Inline AAR Prompt */}
       {isWidgetEnabled('inline_aar') && eventsNeedingAAR.length > 0 && (
-        <section style={{ order: getWidgetOrder('inline_aar') }}>
+        <section
+          className={widgetGridClass('inline_aar')}
+          style={{ order: getWidgetOrder('inline_aar') }}
+        >
           <InlineAARWidget events={eventsNeedingAAR} />
         </section>
       )}
@@ -214,7 +236,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
 
       {/* AI Business Insights */}
       {isWidgetEnabled('business_insights') && (
-        <section style={{ order: getWidgetOrder('business_insights') }}>
+        <section
+          className={widgetGridClass('business_insights')}
+          style={{ order: getWidgetOrder('business_insights') }}
+        >
           <CollapsibleWidget widgetId="business_insights" title="Business Insights">
             <BusinessInsightsPanel />
           </CollapsibleWidget>

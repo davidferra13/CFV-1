@@ -3,10 +3,20 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateChefPreferences } from '@/lib/chef/actions'
-import type { DashboardWidgetId, DashboardWidgetPreference } from '@/lib/scheduling/types'
-import { DASHBOARD_WIDGET_LABELS, DEFAULT_DASHBOARD_WIDGETS } from '@/lib/scheduling/types'
+import type {
+  DashboardWidgetId,
+  DashboardWidgetPreference,
+  WidgetCategory,
+} from '@/lib/scheduling/types'
+import {
+  DASHBOARD_WIDGET_LABELS,
+  DASHBOARD_WIDGET_META,
+  DEFAULT_DASHBOARD_WIDGETS,
+  groupWidgetsByCategory,
+} from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChevronDown, ChevronRight } from '@/components/ui/icons'
 
 function cloneDefaultWidgets(): DashboardWidgetPreference[] {
   return DEFAULT_DASHBOARD_WIDGETS.map((widget) => ({ ...widget }))
@@ -29,22 +39,42 @@ export function DashboardLayoutForm({
   )
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState<Set<WidgetCategory>>(
+    new Set(['today', 'actions', 'prep', 'money', 'clients'])
+  )
 
-  const visibleWidgets = useMemo(() => widgets.filter((widget) => widget.enabled), [widgets])
-  const hiddenWidgets = useMemo(() => widgets.filter((widget) => !widget.enabled), [widgets])
+  const grouped = useMemo(() => groupWidgetsByCategory(widgets), [widgets])
 
-  const rebuildOrder = (nextWidgets: DashboardWidgetPreference[]) => {
-    const visible = nextWidgets.filter((widget) => widget.enabled)
-    const hidden = nextWidgets.filter((widget) => !widget.enabled)
-    return [...visible, ...hidden]
+  const toggleCategory = (cat: WidgetCategory) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev)
+      if (next.has(cat)) next.delete(cat)
+      else next.add(cat)
+      return next
+    })
   }
 
   const setWidgetEnabled = (widgetId: DashboardWidgetId, enabled: boolean) => {
+    setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, enabled } : w)))
+    setSuccess(false)
+    setError(null)
+  }
+
+  const setCategoryEnabled = (cat: WidgetCategory, enabled: boolean) => {
     setWidgets((prev) =>
-      rebuildOrder(prev.map((widget) => (widget.id === widgetId ? { ...widget, enabled } : widget)))
+      prev.map((w) => {
+        const meta = DASHBOARD_WIDGET_META[w.id]
+        return meta?.category === cat ? { ...w, enabled } : w
+      })
     )
     setSuccess(false)
     setError(null)
+  }
+
+  const getCategoryStats = (cat: WidgetCategory) => {
+    const catWidgets = widgets.filter((w) => DASHBOARD_WIDGET_META[w.id]?.category === cat)
+    const enabled = catWidgets.filter((w) => w.enabled).length
+    return { enabled, total: catWidgets.length }
   }
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -63,78 +93,121 @@ export function DashboardLayoutForm({
     })
   }
 
+  const totalEnabled = widgets.filter((w) => w.enabled).length
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Enabled Widgets</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-stone-500">These widgets will show on your dashboard.</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-stone-400">
+          {totalEnabled} of {widgets.length} widgets enabled
+        </p>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setWidgets((prev) => prev.map((w) => ({ ...w, enabled: false })))
+              setSuccess(false)
+              setError(null)
+            }}
+            disabled={isPending}
+          >
+            Disable All
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setWidgets(cloneDefaultWidgets())
+              setSuccess(false)
+              setError(null)
+            }}
+            disabled={isPending}
+          >
+            Reset to Defaults
+          </Button>
+        </div>
+      </div>
 
-            {visibleWidgets.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
-                No enabled widgets. Turn widgets on from the disabled list.
-              </p>
-            )}
+      <div className="space-y-3">
+        {grouped.map(({ category, label, widgets: catWidgets }) => {
+          const expanded = expandedCategories.has(category)
+          const stats = getCategoryStats(category)
+          const allEnabled = stats.enabled === stats.total
+          const noneEnabled = stats.enabled === 0
 
-            {visibleWidgets.map((widget) => (
-              <div
-                key={widget.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-stone-700 p-3"
-              >
-                <p className="text-sm font-medium text-stone-100">
-                  {DASHBOARD_WIDGET_LABELS[widget.id]}
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setWidgetEnabled(widget.id, false)}
-                >
-                  Disable
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Hidden Widgets</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-stone-500">
-              Disabled widgets stay off until you turn them back on.
-            </p>
-
-            {hiddenWidgets.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
-                All widgets are currently visible.
-              </p>
-            )}
-
-            {hiddenWidgets.map((widget) => (
-              <div
-                key={widget.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-stone-700 p-3"
-              >
-                <p className="text-sm font-medium text-stone-100">
-                  {DASHBOARD_WIDGET_LABELS[widget.id]}
-                </p>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setWidgetEnabled(widget.id, true)}
-                >
-                  Enable
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          return (
+            <Card key={category}>
+              <CardHeader className="py-3 px-4">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(category)}
+                    className="flex items-center gap-2 text-left flex-1"
+                  >
+                    {expanded ? (
+                      <ChevronDown className="h-4 w-4 text-stone-400" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-stone-400" />
+                    )}
+                    <CardTitle className="text-base">{label}</CardTitle>
+                    <span className="text-xs text-stone-500 ml-2">
+                      {stats.enabled}/{stats.total}
+                    </span>
+                  </button>
+                  <div className="flex gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCategoryEnabled(category, true)}
+                      disabled={allEnabled}
+                      className="text-xs h-7 px-2"
+                    >
+                      All On
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCategoryEnabled(category, false)}
+                      disabled={noneEnabled}
+                      className="text-xs h-7 px-2"
+                    >
+                      All Off
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              {expanded && (
+                <CardContent className="pt-0 pb-3 px-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {catWidgets.map((widget) => (
+                      <label
+                        key={widget.id}
+                        className="flex items-center gap-3 rounded-lg border border-stone-700 p-2.5 cursor-pointer hover:bg-stone-800/50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={widget.enabled}
+                          onChange={(e) => setWidgetEnabled(widget.id, e.target.checked)}
+                          className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-brand-600 focus:ring-brand-500 focus:ring-offset-0"
+                        />
+                        <span
+                          className={`text-sm ${widget.enabled ? 'text-stone-100' : 'text-stone-500'}`}
+                        >
+                          {DASHBOARD_WIDGET_LABELS[widget.id]}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )
+        })}
       </div>
 
       {error && (
@@ -145,23 +218,11 @@ export function DashboardLayoutForm({
 
       {success && (
         <div className="rounded-lg border border-green-200 bg-green-950 p-4">
-          <p className="text-sm text-green-700">Dashboard widget settings saved.</p>
+          <p className="text-sm text-green-700">Dashboard layout saved.</p>
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            setWidgets(cloneDefaultWidgets())
-            setSuccess(false)
-            setError(null)
-          }}
-          disabled={isPending}
-        >
-          Reset to Default
-        </Button>
+      <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
           {isPending ? 'Saving...' : 'Save Layout'}
         </Button>

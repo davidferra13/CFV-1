@@ -20,7 +20,7 @@ export function BannersSkeleton() {
 /** Today's schedule + week strip skeleton */
 export function ScheduleSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="col-span-1 md:col-span-2 space-y-4">
       <Card>
         <CardHeader>
           <Bone className="h-5 w-40" />
@@ -65,7 +65,7 @@ export function QueueSkeleton() {
 /** Business snapshot + analytics skeleton */
 export function BusinessSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="col-span-1 md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <Card key={i}>
@@ -109,7 +109,7 @@ export function ActivitySkeleton() {
 /** Alerts section skeleton */
 export function AlertsSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="col-span-1 md:col-span-2 space-y-3">
       <Bone className="h-12 w-full rounded-lg" />
     </div>
   )
@@ -117,7 +117,7 @@ export function AlertsSkeleton() {
 
 export function IntelligenceSkeleton() {
   return (
-    <Card>
+    <Card className="col-span-1 md:col-span-2">
       <CardHeader>
         <Bone className="h-5 w-48" />
       </CardHeader>

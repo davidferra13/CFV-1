@@ -126,10 +126,208 @@ export interface DashboardWidgetPreference {
   enabled: boolean
 }
 
+// ============================================
+// WIDGET CATEGORIES & METADATA
+// ============================================
+
+export type WidgetCategory =
+  | 'today'
+  | 'actions'
+  | 'prep'
+  | 'money'
+  | 'clients'
+  | 'analytics'
+  | 'collaboration'
+  | 'system'
+
+export type WidgetSize = 'sm' | 'lg'
+
+export const WIDGET_CATEGORY_LABELS: Record<WidgetCategory, string> = {
+  today: 'Today & This Week',
+  actions: 'Action Items',
+  prep: 'Schedule & Prep',
+  money: 'Money & Payments',
+  clients: 'Clients & Relationships',
+  analytics: 'Analytics & Intelligence',
+  collaboration: 'Collaboration & Growth',
+  system: 'System & Setup',
+}
+
+export const WIDGET_CATEGORY_ORDER: WidgetCategory[] = [
+  'today',
+  'actions',
+  'prep',
+  'money',
+  'clients',
+  'analytics',
+  'collaboration',
+  'system',
+]
+
+export interface WidgetMeta {
+  category: WidgetCategory
+  size: WidgetSize
+  defaultEnabled: boolean
+}
+
+export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
+  // Today & This Week
+  todays_schedule: { category: 'today', size: 'lg', defaultEnabled: true },
+  daily_plan: { category: 'today', size: 'lg', defaultEnabled: true },
+  next_action: { category: 'today', size: 'sm', defaultEnabled: true },
+  week_strip: { category: 'today', size: 'lg', defaultEnabled: true },
+  quick_create: { category: 'today', size: 'lg', defaultEnabled: true },
+  client_lookup: { category: 'today', size: 'lg', defaultEnabled: true },
+
+  // Action Items
+  priority_queue: { category: 'actions', size: 'lg', defaultEnabled: true },
+  scheduling_gaps: { category: 'actions', size: 'lg', defaultEnabled: true },
+  response_time: { category: 'actions', size: 'sm', defaultEnabled: true },
+  pending_followups: { category: 'actions', size: 'sm', defaultEnabled: true },
+  stuck_events: { category: 'actions', size: 'sm', defaultEnabled: true },
+  next_best_actions: { category: 'actions', size: 'sm', defaultEnabled: true },
+  live_inbox: { category: 'actions', size: 'lg', defaultEnabled: true },
+  upcoming_calls: { category: 'actions', size: 'sm', defaultEnabled: false },
+
+  // Schedule & Prep
+  dop_tasks: { category: 'prep', size: 'lg', defaultEnabled: true },
+  prep_prompts: { category: 'prep', size: 'lg', defaultEnabled: true },
+  shopping_window: { category: 'prep', size: 'sm', defaultEnabled: true },
+  active_shopping_list: { category: 'prep', size: 'sm', defaultEnabled: true },
+  quick_availability: { category: 'prep', size: 'sm', defaultEnabled: true },
+  multi_event_days: { category: 'prep', size: 'sm', defaultEnabled: false },
+
+  // Money & Payments
+  payments_due: { category: 'money', size: 'sm', defaultEnabled: true },
+  expiring_quotes: { category: 'money', size: 'sm', defaultEnabled: true },
+  quick_expense: { category: 'money', size: 'sm', defaultEnabled: true },
+  invoice_pulse: { category: 'money', size: 'sm', defaultEnabled: true },
+  overdue_installments: { category: 'money', size: 'sm', defaultEnabled: false },
+  revenue_comparison: { category: 'money', size: 'sm', defaultEnabled: false },
+  revenue_goal: { category: 'money', size: 'sm', defaultEnabled: false },
+  pipeline_forecast: { category: 'money', size: 'sm', defaultEnabled: false },
+  payout_summary: { category: 'money', size: 'sm', defaultEnabled: false },
+  avg_hourly_rate: { category: 'money', size: 'sm', defaultEnabled: false },
+  top_events_profit: { category: 'money', size: 'sm', defaultEnabled: false },
+  food_cost_trend: { category: 'money', size: 'sm', defaultEnabled: false },
+  yoy_comparison: { category: 'money', size: 'sm', defaultEnabled: false },
+  booking_seasonality: { category: 'money', size: 'sm', defaultEnabled: false },
+  inline_aar: { category: 'money', size: 'lg', defaultEnabled: true },
+  business_snapshot: { category: 'money', size: 'sm', defaultEnabled: false },
+  commerce_hub: { category: 'money', size: 'sm', defaultEnabled: false },
+  payments_health: { category: 'money', size: 'sm', defaultEnabled: false },
+  payments_finance_detail: { category: 'money', size: 'sm', defaultEnabled: false },
+  contracts_collections: { category: 'money', size: 'sm', defaultEnabled: false },
+  receipts_reconciliation: { category: 'money', size: 'sm', defaultEnabled: false },
+
+  // Clients & Relationships
+  dietary_allergy_alerts: { category: 'clients', size: 'sm', defaultEnabled: true },
+  cooling_alerts: { category: 'clients', size: 'sm', defaultEnabled: true },
+  client_birthdays: { category: 'clients', size: 'sm', defaultEnabled: false },
+  unread_hub_messages: { category: 'clients', size: 'sm', defaultEnabled: true },
+  loyalty_approaching: { category: 'clients', size: 'sm', defaultEnabled: false },
+  dormant_clients_list: { category: 'clients', size: 'sm', defaultEnabled: false },
+  active_clients_now: { category: 'clients', size: 'sm', defaultEnabled: false },
+  holiday_outreach: { category: 'clients', size: 'sm', defaultEnabled: false },
+  client_growth_signals: { category: 'clients', size: 'sm', defaultEnabled: false },
+  guest_ops: { category: 'clients', size: 'sm', defaultEnabled: false },
+
+  // Analytics & Intelligence
+  business_health: { category: 'analytics', size: 'lg', defaultEnabled: true },
+  work_surface: { category: 'analytics', size: 'lg', defaultEnabled: true },
+  business_insights: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  concentration_risk: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  insurance_health: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  aar_performance: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  service_quality: { category: 'analytics', size: 'lg', defaultEnabled: false },
+  analytics_pulse: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  goals_tracker: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  operations_readiness: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  safety_risk_watch: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  reviews_reputation: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  reports_snapshot: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  survey_testimonial_feed: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  intelligence_hub: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  wellbeing: { category: 'analytics', size: 'sm', defaultEnabled: false },
+
+  // Collaboration & Growth
+  collaboration_invites: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  recipe_shares: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  collaborating_on: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  invite_chef: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  recipe_debt: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  recipe_capture: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  network_collab_growth: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  partners_referrals: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+  community_commands: { category: 'collaboration', size: 'sm', defaultEnabled: false },
+
+  // System & Setup
+  system_nerve_center: { category: 'system', size: 'lg', defaultEnabled: false },
+  onboarding_accelerator: { category: 'system', size: 'lg', defaultEnabled: true },
+  onboarding_checklist: { category: 'system', size: 'sm', defaultEnabled: true },
+  smart_hours: { category: 'system', size: 'sm', defaultEnabled: false },
+  hours: { category: 'system', size: 'sm', defaultEnabled: false },
+  activity: { category: 'system', size: 'lg', defaultEnabled: false },
+  todo_list: { category: 'system', size: 'sm', defaultEnabled: false },
+  career_growth: { category: 'system', size: 'sm', defaultEnabled: false },
+  beta_program: { category: 'system', size: 'sm', defaultEnabled: false },
+  prospecting_hub: { category: 'system', size: 'sm', defaultEnabled: false },
+  remy_status: { category: 'system', size: 'sm', defaultEnabled: false },
+  takeachef_command_center: { category: 'system', size: 'sm', defaultEnabled: false },
+  inbox_command_center: { category: 'system', size: 'sm', defaultEnabled: false },
+  notifications_center: { category: 'system', size: 'sm', defaultEnabled: false },
+  documents_compliance: { category: 'system', size: 'sm', defaultEnabled: false },
+  task_automation: { category: 'system', size: 'sm', defaultEnabled: false },
+  cannabis_control_center: { category: 'system', size: 'sm', defaultEnabled: false },
+  charity_impact: { category: 'system', size: 'sm', defaultEnabled: false },
+  social_planner: { category: 'system', size: 'sm', defaultEnabled: false },
+  wix_intake_health: { category: 'system', size: 'sm', defaultEnabled: false },
+  imports_sync_health: { category: 'system', size: 'sm', defaultEnabled: false },
+  recipe_menu_engine: { category: 'system', size: 'sm', defaultEnabled: false },
+  lead_funnel_live: { category: 'system', size: 'sm', defaultEnabled: false },
+  travel_logistics: { category: 'system', size: 'sm', defaultEnabled: false },
+  stations_ops_status: { category: 'system', size: 'sm', defaultEnabled: false },
+  staff_operations: { category: 'system', size: 'sm', defaultEnabled: false },
+  marketing_pipeline: { category: 'system', size: 'sm', defaultEnabled: false },
+  inventory_health: { category: 'system', size: 'sm', defaultEnabled: false },
+  vendor_costs: { category: 'system', size: 'sm', defaultEnabled: false },
+}
+
+/** CSS class for a widget's grid column span */
+export function widgetGridClass(widgetId: DashboardWidgetId): string {
+  const meta = DASHBOARD_WIDGET_META[widgetId]
+  return meta?.size === 'lg' ? 'col-span-1 md:col-span-2' : 'col-span-1'
+}
+
+/** Group widget IDs by category (preserves order within each category) */
+export function groupWidgetsByCategory(
+  widgets: DashboardWidgetPreference[]
+): { category: WidgetCategory; label: string; widgets: DashboardWidgetPreference[] }[] {
+  const groups: Record<WidgetCategory, DashboardWidgetPreference[]> = {
+    today: [],
+    actions: [],
+    prep: [],
+    money: [],
+    clients: [],
+    analytics: [],
+    collaboration: [],
+    system: [],
+  }
+  for (const w of widgets) {
+    const meta = DASHBOARD_WIDGET_META[w.id]
+    if (meta) groups[meta.category].push(w)
+  }
+  return WIDGET_CATEGORY_ORDER.map((cat) => ({
+    category: cat,
+    label: WIDGET_CATEGORY_LABELS[cat],
+    widgets: groups[cat],
+  })).filter((g) => g.widgets.length > 0)
+}
+
 export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetPreference[] = DASHBOARD_WIDGET_IDS.map(
   (id) => ({
     id,
-    enabled: true,
+    enabled: DASHBOARD_WIDGET_META[id]?.defaultEnabled ?? false,
   })
 )
 

@@ -59,6 +59,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import { widgetGridClass } from '@/lib/scheduling/types'
 
 // Safe wrapper
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -203,7 +204,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
   return (
     <>
       {isWidgetEnabled('scheduling_gaps') && schedulingGaps.length > 0 && (
-        <section style={{ order: getWidgetOrder('scheduling_gaps') }}>
+        <section
+          className={widgetGridClass('scheduling_gaps')}
+          style={{ order: getWidgetOrder('scheduling_gaps') }}
+        >
           <CollapsibleWidget widgetId="scheduling_gaps" title="Scheduling Gaps">
             <div
               className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
@@ -235,7 +239,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
         (responseTimeSummary.overdue > 0 ||
           responseTimeSummary.urgent > 0 ||
           responseTimeSummary.ok > 0) && (
-          <section style={{ order: getWidgetOrder('response_time') }}>
+          <section
+            className={widgetGridClass('response_time')}
+            style={{ order: getWidgetOrder('response_time') }}
+          >
             <CollapsibleWidget widgetId="response_time" title="Response Time">
               <ResponseTimeWidget summary={responseTimeSummary} />
             </CollapsibleWidget>
@@ -243,7 +250,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
         )}
 
       {isWidgetEnabled('pending_followups') && pendingFollowUps.length > 0 && (
-        <section style={{ order: getWidgetOrder('pending_followups') }}>
+        <section
+          className={widgetGridClass('pending_followups')}
+          style={{ order: getWidgetOrder('pending_followups') }}
+        >
           <CollapsibleWidget widgetId="pending_followups" title="Pending Follow-Ups">
             <PendingFollowUpsWidget followUps={pendingFollowUps} />
           </CollapsibleWidget>
@@ -251,7 +261,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('inbox_command_center') && recurringCommandCenter.totalOpenItems > 0 && (
-        <section style={{ order: getWidgetOrder('inbox_command_center') }}>
+        <section
+          className={widgetGridClass('inbox_command_center')}
+          style={{ order: getWidgetOrder('inbox_command_center') }}
+        >
           <CollapsibleWidget widgetId="inbox_command_center" title="Recurring Collaboration">
             <Card>
               <CardHeader>
@@ -302,7 +315,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('holiday_outreach') && serializableHolidayOutreachSuggestions.length > 0 && (
-        <section style={{ order: getWidgetOrder('holiday_outreach') }}>
+        <section
+          className={widgetGridClass('holiday_outreach')}
+          style={{ order: getWidgetOrder('holiday_outreach') }}
+        >
           <CollapsibleWidget widgetId="holiday_outreach" title="Holiday Outreach">
             <HolidayOutreachPanel suggestions={serializableHolidayOutreachSuggestions} />
           </CollapsibleWidget>
@@ -311,7 +327,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
 
       {isWidgetEnabled('onboarding_checklist') &&
         onboardingProgress.completedPhases < onboardingProgress.totalPhases && (
-          <section style={{ order: getWidgetOrder('onboarding_checklist') }}>
+          <section
+            className={widgetGridClass('onboarding_checklist')}
+            style={{ order: getWidgetOrder('onboarding_checklist') }}
+          >
             <CollapsibleWidget widgetId="onboarding_checklist" title="Onboarding Checklist">
               <OnboardingChecklistWidget progress={onboardingProgress} />
             </CollapsibleWidget>
@@ -319,7 +338,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
         )}
 
       {isWidgetEnabled('upcoming_calls') && upcomingCalls.length > 0 && (
-        <section style={{ order: getWidgetOrder('upcoming_calls') }}>
+        <section
+          className={widgetGridClass('upcoming_calls')}
+          style={{ order: getWidgetOrder('upcoming_calls') }}
+        >
           <CollapsibleWidget widgetId="upcoming_calls" title="Upcoming Calls">
             <UpcomingCallsWidget calls={upcomingCalls} />
           </CollapsibleWidget>
@@ -328,7 +350,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
 
       {isWidgetEnabled('collaboration_invites') &&
         (pendingCollabInvitations as any[]).length > 0 && (
-          <section style={{ order: getWidgetOrder('collaboration_invites') }}>
+          <section
+            className={widgetGridClass('collaboration_invites')}
+            style={{ order: getWidgetOrder('collaboration_invites') }}
+          >
             <CollapsibleWidget widgetId="collaboration_invites" title="Collaboration Invitations">
               <Card>
                 <CardHeader>
@@ -347,7 +372,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
         )}
 
       {isWidgetEnabled('recipe_shares') && (pendingRecipeShares as any[]).length > 0 && (
-        <section style={{ order: getWidgetOrder('recipe_shares') }}>
+        <section
+          className={widgetGridClass('recipe_shares')}
+          style={{ order: getWidgetOrder('recipe_shares') }}
+        >
           <CollapsibleWidget widgetId="recipe_shares" title="Recipe Shares">
             <Card>
               <CardHeader>
@@ -366,7 +394,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('collaborating_on') && (collaboratingOnEvents as any[]).length > 0 && (
-        <section style={{ order: getWidgetOrder('collaborating_on') }}>
+        <section
+          className={widgetGridClass('collaborating_on')}
+          style={{ order: getWidgetOrder('collaborating_on') }}
+        >
           <CollapsibleWidget widgetId="collaborating_on" title="Collaborating On">
             <Card>
               <CardHeader>
@@ -402,7 +433,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('recipe_debt') && (
-        <section style={{ order: getWidgetOrder('recipe_debt') }}>
+        <section
+          className={widgetGridClass('recipe_debt')}
+          style={{ order: getWidgetOrder('recipe_debt') }}
+        >
           <CollapsibleWidget widgetId="recipe_debt" title="Recipe Debt">
             <RecipeDebtWidget debt={recipeDebt} />
           </CollapsibleWidget>
@@ -410,7 +444,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('recipe_capture') && (
-        <section style={{ order: getWidgetOrder('recipe_capture') }}>
+        <section
+          className={widgetGridClass('recipe_capture')}
+          style={{ order: getWidgetOrder('recipe_capture') }}
+        >
           <CollapsibleWidget widgetId="recipe_capture" title="Recipe Quick Capture">
             <RecipeCaptureWidget recipeDebt={recipeDebt.total} />
           </CollapsibleWidget>
@@ -418,7 +455,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('invite_chef') && (
-        <section style={{ order: getWidgetOrder('invite_chef') }}>
+        <section
+          className={widgetGridClass('invite_chef')}
+          style={{ order: getWidgetOrder('invite_chef') }}
+        >
           <CollapsibleWidget widgetId="invite_chef" title="Invite a Chef">
             <InviteChefCard
               chefSlug={chefProfile?.slug}
@@ -429,7 +469,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('stuck_events') && stuckEvents.length > 0 && (
-        <section style={{ order: getWidgetOrder('stuck_events') }}>
+        <section
+          className={widgetGridClass('stuck_events')}
+          style={{ order: getWidgetOrder('stuck_events') }}
+        >
           <CollapsibleWidget widgetId="stuck_events" title="Stuck Events">
             <StuckEventsWidget events={stuckEvents} />
           </CollapsibleWidget>
@@ -437,7 +480,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('next_best_actions') && nextBestActions.length > 0 && (
-        <section style={{ order: getWidgetOrder('next_best_actions') }}>
+        <section
+          className={widgetGridClass('next_best_actions')}
+          style={{ order: getWidgetOrder('next_best_actions') }}
+        >
           <CollapsibleWidget widgetId="next_best_actions" title="Client Actions">
             <NextBestActionsWidget actions={nextBestActions} />
           </CollapsibleWidget>
@@ -445,7 +491,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('cooling_alerts') && coolingClients.length > 0 && (
-        <section style={{ order: getWidgetOrder('cooling_alerts') }}>
+        <section
+          className={widgetGridClass('cooling_alerts')}
+          style={{ order: getWidgetOrder('cooling_alerts') }}
+        >
           <CollapsibleWidget widgetId="cooling_alerts" title="Cooling Relationships">
             <CoolingAlertWidget coolingClients={coolingClients} />
           </CollapsibleWidget>
@@ -453,7 +502,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('dietary_allergy_alerts') && dietaryAlerts.length > 0 && (
-        <section style={{ order: getWidgetOrder('dietary_allergy_alerts') }}>
+        <section
+          className={widgetGridClass('dietary_allergy_alerts')}
+          style={{ order: getWidgetOrder('dietary_allergy_alerts') }}
+        >
           <CollapsibleWidget widgetId="dietary_allergy_alerts" title="Dietary & Allergy Alerts">
             <DietaryAlertsWidget alerts={dietaryAlerts} />
           </CollapsibleWidget>
@@ -461,7 +513,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('payments_due') && paymentsDue.length > 0 && (
-        <section style={{ order: getWidgetOrder('payments_due') }}>
+        <section
+          className={widgetGridClass('payments_due')}
+          style={{ order: getWidgetOrder('payments_due') }}
+        >
           <CollapsibleWidget widgetId="payments_due" title="Payments Due">
             <PaymentsDueWidget payments={paymentsDue} />
           </CollapsibleWidget>
@@ -469,7 +524,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('expiring_quotes') && expiringQuotes.length > 0 && (
-        <section style={{ order: getWidgetOrder('expiring_quotes') }}>
+        <section
+          className={widgetGridClass('expiring_quotes')}
+          style={{ order: getWidgetOrder('expiring_quotes') }}
+        >
           <CollapsibleWidget widgetId="expiring_quotes" title="Expiring Quotes">
             <ExpiringQuotesWidget quotes={expiringQuotes} />
           </CollapsibleWidget>
@@ -477,7 +535,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('client_birthdays') && upcomingBirthdays.length > 0 && (
-        <section style={{ order: getWidgetOrder('client_birthdays') }}>
+        <section
+          className={widgetGridClass('client_birthdays')}
+          style={{ order: getWidgetOrder('client_birthdays') }}
+        >
           <CollapsibleWidget widgetId="client_birthdays" title="Client Birthdays">
             <ClientBirthdaysWidget birthdays={upcomingBirthdays} />
           </CollapsibleWidget>
@@ -485,7 +546,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('unread_hub_messages') && unreadHubMessages.length > 0 && (
-        <section style={{ order: getWidgetOrder('unread_hub_messages') }}>
+        <section
+          className={widgetGridClass('unread_hub_messages')}
+          style={{ order: getWidgetOrder('unread_hub_messages') }}
+        >
           <CollapsibleWidget widgetId="unread_hub_messages" title="Hub Messages">
             <UnreadHubMessagesWidget groups={unreadHubMessages} />
           </CollapsibleWidget>
@@ -493,7 +557,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('live_inbox') && inboxPreview.length > 0 && (
-        <section style={{ order: getWidgetOrder('live_inbox') }}>
+        <section
+          className={widgetGridClass('live_inbox')}
+          style={{ order: getWidgetOrder('live_inbox') }}
+        >
           <CollapsibleWidget widgetId="live_inbox" title="Live Inbox">
             <LiveInboxWidget initialItems={inboxPreview} tenantId={user.tenantId!} />
           </CollapsibleWidget>
@@ -501,7 +568,10 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
       )}
 
       {isWidgetEnabled('quick_availability') && (
-        <section style={{ order: getWidgetOrder('quick_availability') }}>
+        <section
+          className={widgetGridClass('quick_availability')}
+          style={{ order: getWidgetOrder('quick_availability') }}
+        >
           <CollapsibleWidget widgetId="quick_availability" title="Availability Check">
             <QuickAvailabilityWidget
               bookedDates={bookedDatesResult.booked}

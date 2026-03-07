@@ -13,6 +13,7 @@ import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel
 import { AllergenRiskPanel } from '@/components/ai/allergen-risk-panel'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { GuestMessagesPanel } from '@/components/events/guest-messages-panel'
+import { GuestExperiencePanel } from '@/components/sharing/guest-experience-panel'
 import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-panel'
 import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
@@ -390,6 +391,11 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
       {/* Guest Excitement Wall â€” Chef Moderation */}
       {event.status !== 'cancelled' && (guestWallMessages as any[]).length > 0 && (
         <GuestMessagesPanel messages={guestWallMessages as any[]} eventId={event.id} />
+      )}
+
+      {/* Guest Experience Panel (reminders, messages, dietary, docs, feedback, attendance) */}
+      {event.status !== 'draft' && event.status !== 'cancelled' && (
+        <GuestExperiencePanel eventId={event.id} eventStatus={event.status} />
       )}
 
       {/* Post-Event Guest Outreach (completed events only) */}

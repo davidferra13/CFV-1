@@ -33,6 +33,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import { widgetGridClass } from '@/lib/scheduling/types'
 import type { UnloggedEvent } from '@/lib/dashboard/actions'
 import type { BusinessSectionRenderContext } from './business-section-render-context'
 
@@ -65,7 +66,11 @@ function renderMetricWidget(
   if (widget.visible === false) return null
 
   return (
-    <section key={widget.id} style={{ order: getWidgetOrder(widget.id) }}>
+    <section
+      key={widget.id}
+      className={widgetGridClass(widget.id)}
+      style={{ order: getWidgetOrder(widget.id) }}
+    >
       <CollapsibleWidget widgetId={widget.id} title={widget.title}>
         <Card>
           <CardHeader>
@@ -663,7 +668,10 @@ export function BusinessSectionMobileContent(
   return (
     <>
       {isWidgetEnabled('service_quality') && (
-        <section style={{ order: getWidgetOrder('service_quality') }}>
+        <section
+          className={widgetGridClass('service_quality')}
+          style={{ order: getWidgetOrder('service_quality') }}
+        >
           <CollapsibleWidget widgetId="service_quality" title="Service Quality">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
@@ -704,7 +712,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('revenue_comparison') && (
-        <section style={{ order: getWidgetOrder('revenue_comparison') }}>
+        <section
+          className={widgetGridClass('revenue_comparison')}
+          style={{ order: getWidgetOrder('revenue_comparison') }}
+        >
           <CollapsibleWidget widgetId="revenue_comparison" title="Revenue This Month">
             <RevenueComparisonWidget
               currentMonthRevenueCents={monthRevenue.currentMonthRevenueCents}
@@ -741,7 +752,10 @@ export function BusinessSectionMobileContent(
         .map((widget) => renderMetricWidget(widget, getWidgetOrder))}
 
       {isWidgetEnabled('takeachef_command_center') && (
-        <section style={{ order: getWidgetOrder('takeachef_command_center') }}>
+        <section
+          className={widgetGridClass('takeachef_command_center')}
+          style={{ order: getWidgetOrder('takeachef_command_center') }}
+        >
           <CollapsibleWidget widgetId="takeachef_command_center" title="TakeAChef Command Center">
             <TacDashboardWidget />
           </CollapsibleWidget>
@@ -749,7 +763,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('wellbeing') && wellbeing && (
-        <section style={{ order: getWidgetOrder('wellbeing') }}>
+        <section
+          className={widgetGridClass('wellbeing')}
+          style={{ order: getWidgetOrder('wellbeing') }}
+        >
           <CollapsibleWidget widgetId="wellbeing" title="Wellbeing">
             <BurnoutIndicatorCard level={wellbeing.level} suggestion={wellbeing.suggestion} />
           </CollapsibleWidget>
@@ -757,7 +774,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('concentration_risk') && (
-        <section style={{ order: getWidgetOrder('concentration_risk') }}>
+        <section
+          className={widgetGridClass('concentration_risk')}
+          style={{ order: getWidgetOrder('concentration_risk') }}
+        >
           <CollapsibleWidget widgetId="concentration_risk" title="Revenue Concentration">
             <ConcentrationWarningCard risk={concentrationRisk} />
           </CollapsibleWidget>
@@ -765,7 +785,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('business_health') && (
-        <section style={{ order: getWidgetOrder('business_health') }}>
+        <section
+          className={widgetGridClass('business_health')}
+          style={{ order: getWidgetOrder('business_health') }}
+        >
           <CollapsibleWidget widgetId="business_health" title="Business Health">
             <BusinessHealthCard score={healthScore.score} total={healthScore.total} />
           </CollapsibleWidget>
@@ -773,7 +796,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('insurance_health') && (
-        <section style={{ order: getWidgetOrder('insurance_health') }}>
+        <section
+          className={widgetGridClass('insurance_health')}
+          style={{ order: getWidgetOrder('insurance_health') }}
+        >
           <CollapsibleWidget widgetId="insurance_health" title="Insurance Health">
             <InsuranceHealthCard policies={insurancePolicies} />
           </CollapsibleWidget>
@@ -781,7 +807,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('career_growth') && (
-        <section style={{ order: getWidgetOrder('career_growth') }}>
+        <section
+          className={widgetGridClass('career_growth')}
+          style={{ order: getWidgetOrder('career_growth') }}
+        >
           <CollapsibleWidget widgetId="career_growth" title="Career Growth">
             <ChefJournalWidget
               insights={journalInsights}
@@ -792,7 +821,7 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('hours') && (
-        <section style={{ order: getWidgetOrder('hours') }}>
+        <section className={widgetGridClass('hours')} style={{ order: getWidgetOrder('hours') }}>
           <CollapsibleWidget widgetId="hours" title="Hours">
             <HoursLogWidget
               todayMinutes={hoursSnapshot.todayMinutes}
@@ -810,7 +839,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('todo_list') && (
-        <section style={{ order: getWidgetOrder('todo_list') }}>
+        <section
+          className={widgetGridClass('todo_list')}
+          style={{ order: getWidgetOrder('todo_list') }}
+        >
           <CollapsibleWidget widgetId="todo_list" title="To-Do List">
             <ChefTodoWidget initialTodos={todos} />
           </CollapsibleWidget>
@@ -818,7 +850,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('activity') && (
-        <section style={{ order: getWidgetOrder('activity') }}>
+        <section
+          className={widgetGridClass('activity')}
+          style={{ order: getWidgetOrder('activity') }}
+        >
           <CollapsibleWidget widgetId="activity" title="Activity">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="border border-stone-700 rounded-lg p-4">
@@ -835,7 +870,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('active_clients_now') && activeClients.length > 0 && (
-        <section style={{ order: getWidgetOrder('active_clients_now') }}>
+        <section
+          className={widgetGridClass('active_clients_now')}
+          style={{ order: getWidgetOrder('active_clients_now') }}
+        >
           <CollapsibleWidget widgetId="active_clients_now" title="Active Clients Now">
             <ActiveClientsCard clients={activeClients} />
           </CollapsibleWidget>
@@ -843,7 +881,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('prospecting_hub') && userIsAdmin && prospectStats.total > 0 && (
-        <section style={{ order: getWidgetOrder('prospecting_hub') }}>
+        <section
+          className={widgetGridClass('prospecting_hub')}
+          style={{ order: getWidgetOrder('prospecting_hub') }}
+        >
           <CollapsibleWidget widgetId="prospecting_hub" title="Prospecting">
             <ProspectingWidget stats={prospectStats} hotPipelineCount={context.hotPipelineCount} />
           </CollapsibleWidget>
@@ -851,7 +892,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('beta_program') && userIsAdmin && (
-        <section style={{ order: getWidgetOrder('beta_program') }}>
+        <section
+          className={widgetGridClass('beta_program')}
+          style={{ order: getWidgetOrder('beta_program') }}
+        >
           <CollapsibleWidget widgetId="beta_program" title="Beta Program">
             <BetaTestersWidget />
           </CollapsibleWidget>
@@ -859,7 +903,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('top_events_profit') && topEvents.length > 0 && (
-        <section style={{ order: getWidgetOrder('top_events_profit') }}>
+        <section
+          className={widgetGridClass('top_events_profit')}
+          style={{ order: getWidgetOrder('top_events_profit') }}
+        >
           <CollapsibleWidget widgetId="top_events_profit" title="Top Events by Profit">
             <TopEventsProfitWidget events={topEvents} />
           </CollapsibleWidget>
@@ -868,7 +915,10 @@ export function BusinessSectionMobileContent(
 
       {isWidgetEnabled('pipeline_forecast') &&
         (pipelineForecast.expectedCents > 0 || pipelineForecast.stages.length > 0) && (
-          <section style={{ order: getWidgetOrder('pipeline_forecast') }}>
+          <section
+            className={widgetGridClass('pipeline_forecast')}
+            style={{ order: getWidgetOrder('pipeline_forecast') }}
+          >
             <CollapsibleWidget widgetId="pipeline_forecast" title="Pipeline Forecast">
               <PipelineForecastWidget forecast={pipelineForecast} />
             </CollapsibleWidget>
@@ -876,7 +926,10 @@ export function BusinessSectionMobileContent(
         )}
 
       {isWidgetEnabled('multi_event_days') && multiEventDays.length > 0 && (
-        <section style={{ order: getWidgetOrder('multi_event_days') }}>
+        <section
+          className={widgetGridClass('multi_event_days')}
+          style={{ order: getWidgetOrder('multi_event_days') }}
+        >
           <CollapsibleWidget widgetId="multi_event_days" title="Multi-Event Days">
             <MultiEventDaysWidget days={multiEventDays} />
           </CollapsibleWidget>
@@ -884,7 +937,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('aar_performance') && aarStats && aarStats.totalReviews > 0 && (
-        <section style={{ order: getWidgetOrder('aar_performance') }}>
+        <section
+          className={widgetGridClass('aar_performance')}
+          style={{ order: getWidgetOrder('aar_performance') }}
+        >
           <CollapsibleWidget widgetId="aar_performance" title="AAR Performance">
             <AARPerformanceWidget stats={aarStats} />
           </CollapsibleWidget>
@@ -892,7 +948,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('avg_hourly_rate') && (
-        <section style={{ order: getWidgetOrder('avg_hourly_rate') }}>
+        <section
+          className={widgetGridClass('avg_hourly_rate')}
+          style={{ order: getWidgetOrder('avg_hourly_rate') }}
+        >
           <CollapsibleWidget widgetId="avg_hourly_rate" title="Avg Hourly Rate">
             <AvgHourlyRateWidget rateCents={avgHourlyRate} />
           </CollapsibleWidget>
@@ -901,7 +960,10 @@ export function BusinessSectionMobileContent(
 
       {isWidgetEnabled('payout_summary') &&
         (payoutSummary.transferCount > 0 || payoutSummary.onboardingComplete) && (
-          <section style={{ order: getWidgetOrder('payout_summary') }}>
+          <section
+            className={widgetGridClass('payout_summary')}
+            style={{ order: getWidgetOrder('payout_summary') }}
+          >
             <CollapsibleWidget widgetId="payout_summary" title="Payout Summary">
               <PayoutSummaryWidget summary={payoutSummary} />
             </CollapsibleWidget>
@@ -909,7 +971,10 @@ export function BusinessSectionMobileContent(
         )}
 
       {isWidgetEnabled('revenue_goal') && revenueGoal.enabled && (
-        <section style={{ order: getWidgetOrder('revenue_goal') }}>
+        <section
+          className={widgetGridClass('revenue_goal')}
+          style={{ order: getWidgetOrder('revenue_goal') }}
+        >
           <CollapsibleWidget widgetId="revenue_goal" title="Revenue Goal">
             <RevenueGoalWidget snapshot={revenueGoal} />
           </CollapsibleWidget>
@@ -917,7 +982,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('loyalty_approaching') && loyaltyApproaching.length > 0 && (
-        <section style={{ order: getWidgetOrder('loyalty_approaching') }}>
+        <section
+          className={widgetGridClass('loyalty_approaching')}
+          style={{ order: getWidgetOrder('loyalty_approaching') }}
+        >
           <CollapsibleWidget widgetId="loyalty_approaching" title="Loyalty Rewards">
             <LoyaltyApproachingWidget clients={loyaltyApproaching} />
           </CollapsibleWidget>
@@ -925,7 +993,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('food_cost_trend') && (
-        <section style={{ order: getWidgetOrder('food_cost_trend') }}>
+        <section
+          className={widgetGridClass('food_cost_trend')}
+          style={{ order: getWidgetOrder('food_cost_trend') }}
+        >
           <CollapsibleWidget widgetId="food_cost_trend" title="Food Cost Trend">
             <FoodCostTrendWidget trend={foodCostTrend} />
           </CollapsibleWidget>
@@ -933,7 +1004,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('booking_seasonality') && seasonality.hasEnoughData && (
-        <section style={{ order: getWidgetOrder('booking_seasonality') }}>
+        <section
+          className={widgetGridClass('booking_seasonality')}
+          style={{ order: getWidgetOrder('booking_seasonality') }}
+        >
           <CollapsibleWidget widgetId="booking_seasonality" title="Booking Seasonality">
             <BookingSeasonalityWidget seasonality={seasonality} />
           </CollapsibleWidget>
@@ -942,7 +1016,10 @@ export function BusinessSectionMobileContent(
 
       {isWidgetEnabled('yoy_comparison') &&
         (yoyData.revenueMetric.currentYear > 0 || yoyData.revenueMetric.previousYear > 0) && (
-          <section style={{ order: getWidgetOrder('yoy_comparison') }}>
+          <section
+            className={widgetGridClass('yoy_comparison')}
+            style={{ order: getWidgetOrder('yoy_comparison') }}
+          >
             <CollapsibleWidget widgetId="yoy_comparison" title="Year-over-Year">
               <YoYComparisonWidget data={yoyData} />
             </CollapsibleWidget>
@@ -950,7 +1027,10 @@ export function BusinessSectionMobileContent(
         )}
 
       {isWidgetEnabled('overdue_installments') && overdueInstallments.length > 0 && (
-        <section style={{ order: getWidgetOrder('overdue_installments') }}>
+        <section
+          className={widgetGridClass('overdue_installments')}
+          style={{ order: getWidgetOrder('overdue_installments') }}
+        >
           <CollapsibleWidget widgetId="overdue_installments" title="Overdue Installments">
             <OverdueInstallmentsWidget installments={overdueInstallments} />
           </CollapsibleWidget>
@@ -958,7 +1038,10 @@ export function BusinessSectionMobileContent(
       )}
 
       {isWidgetEnabled('dormant_clients_list') && dormantClients.length > 0 && (
-        <section style={{ order: getWidgetOrder('dormant_clients_list') }}>
+        <section
+          className={widgetGridClass('dormant_clients_list')}
+          style={{ order: getWidgetOrder('dormant_clients_list') }}
+        >
           <CollapsibleWidget widgetId="dormant_clients_list" title="Dormant Clients">
             <DormantClientsWidget clients={dormantClients} />
           </CollapsibleWidget>

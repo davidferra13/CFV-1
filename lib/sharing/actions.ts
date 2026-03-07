@@ -3483,9 +3483,10 @@ export async function sendGuestMessage(input: z.infer<typeof SendGuestMessageSch
     const chefAuthUserId = await getChefAuthUserId((guest as any).tenant_id)
     if (chefAuthUserId) {
       await createNotification({
-        userId: chefAuthUserId,
+        tenantId: (guest as any).tenant_id,
+        recipientId: chefAuthUserId,
         category: 'client',
-        action: 'guest_message',
+        action: 'guest_dietary_alert',
         title: 'New message from event guest',
         body: validated.message.slice(0, 200),
         eventId: validated.eventId,
@@ -3777,7 +3778,7 @@ export async function reconcileAttendance(input: z.infer<typeof ReconcileAttenda
       .update({
         actual_attended: rec.status,
         reconciled_at: new Date().toISOString(),
-        reconciled_by: user.userId,
+        reconciled_by: user.id,
       })
       .eq('id', rec.guestId)
       .eq('event_id', validated.eventId)

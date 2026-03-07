@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import { widgetGridClass } from '@/lib/scheduling/types'
 
 // Safe wrapper
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -121,7 +122,10 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
     <>
       {/* Daily Ops Banner */}
       {isWidgetEnabled('daily_plan') && dailyPlanStats && dailyPlanStats.totalItems > 0 && (
-        <section style={{ order: getWidgetOrder('daily_plan') }}>
+        <section
+          className={widgetGridClass('daily_plan')}
+          style={{ order: getWidgetOrder('daily_plan') }}
+        >
           <CollapsibleWidget widgetId="daily_plan" title="Daily Plan">
             <DailyPlanBanner stats={dailyPlanStats} />
           </CollapsibleWidget>
@@ -130,7 +134,10 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
 
       {/* Today's Schedule */}
       {isWidgetEnabled('todays_schedule') && (
-        <section style={{ order: getWidgetOrder('todays_schedule') }}>
+        <section
+          className={widgetGridClass('todays_schedule')}
+          style={{ order: getWidgetOrder('todays_schedule') }}
+        >
           <CollapsibleWidget widgetId="todays_schedule" title="Today's Schedule">
             {todaysSchedule ? (
               <TodaysScheduleWidget
@@ -164,7 +171,11 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
 
       {/* Week Strip */}
       {isWidgetEnabled('week_strip') && weekSchedule.days.length > 0 && (
-        <section data-info="week-strip" style={{ order: getWidgetOrder('week_strip') }}>
+        <section
+          data-info="week-strip"
+          className={widgetGridClass('week_strip')}
+          style={{ order: getWidgetOrder('week_strip') }}
+        >
           <CollapsibleWidget widgetId="week_strip" title="This Week">
             <WeekStrip schedule={weekSchedule} />
           </CollapsibleWidget>
@@ -174,7 +185,10 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
       {/* DOP Task Digest */}
       {isWidgetEnabled('dop_tasks') &&
         (dopTaskDigest.totalIncomplete > 0 || dopTaskDigest.overdueCount > 0) && (
-          <section style={{ order: getWidgetOrder('dop_tasks') }}>
+          <section
+            className={widgetGridClass('dop_tasks')}
+            style={{ order: getWidgetOrder('dop_tasks') }}
+          >
             <CollapsibleWidget widgetId="dop_tasks" title="DOP Tasks">
               <DOPTaskPanel digest={dopTaskDigest} weatherByEventId={weatherByEventId} />
             </CollapsibleWidget>
@@ -183,7 +197,10 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
 
       {/* Prep Prompts */}
       {isWidgetEnabled('prep_prompts') && prepPrompts.length > 0 && (
-        <section style={{ order: getWidgetOrder('prep_prompts') }}>
+        <section
+          className={widgetGridClass('prep_prompts')}
+          style={{ order: getWidgetOrder('prep_prompts') }}
+        >
           <CollapsibleWidget widgetId="prep_prompts" title="Prep Prompts">
             <Card>
               <CardHeader>
@@ -202,7 +219,10 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
 
       {/* Shopping Window */}
       {isWidgetEnabled('shopping_window') && shoppingWindow.length > 0 && (
-        <section style={{ order: getWidgetOrder('shopping_window') }}>
+        <section
+          className={widgetGridClass('shopping_window')}
+          style={{ order: getWidgetOrder('shopping_window') }}
+        >
           <CollapsibleWidget widgetId="shopping_window" title="Shopping Window">
             <ShoppingWindowWidget items={shoppingWindow} />
           </CollapsibleWidget>
@@ -211,7 +231,10 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
 
       {/* Active Shopping List */}
       {isWidgetEnabled('active_shopping_list') && shoppingList.items.length > 0 && (
-        <section style={{ order: getWidgetOrder('active_shopping_list') }}>
+        <section
+          className={widgetGridClass('active_shopping_list')}
+          style={{ order: getWidgetOrder('active_shopping_list') }}
+        >
           <CollapsibleWidget widgetId="active_shopping_list" title="Shopping List">
             <ShoppingListWidget
               items={shoppingList.items}

@@ -9,6 +9,7 @@ import { DashboardWorkSurfaceView } from '@/components/dashboard/work-surface'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import { widgetGridClass } from '@/lib/scheduling/types'
 import type { DashboardWorkSurface } from '@/lib/workflow/types'
 
 // Safe wrapper
@@ -54,7 +55,10 @@ export async function IntelligenceSection({
   return (
     <>
       {isEnabled('work_surface') && workSurface && workSurface.summary.totalActiveEvents > 0 && (
-        <section style={{ order: getOrder('work_surface') }}>
+        <section
+          className={widgetGridClass('work_surface')}
+          style={{ order: getOrder('work_surface') }}
+        >
           <CollapsibleWidget widgetId="work_surface" title="Work Surface">
             <DashboardWorkSurfaceView surface={workSurface} />
           </CollapsibleWidget>
@@ -62,7 +66,10 @@ export async function IntelligenceSection({
       )}
 
       {isEnabled('business_health' as DashboardWidgetId) && (health || alerts) && (
-        <section style={{ order: getOrder('business_health' as DashboardWidgetId) }}>
+        <section
+          className={widgetGridClass('business_health')}
+          style={{ order: getOrder('business_health' as DashboardWidgetId) }}
+        >
           <CollapsibleWidget
             widgetId={'business_health' as DashboardWidgetId}
             title="Business Intelligence"

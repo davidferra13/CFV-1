@@ -1,8 +1,15 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { format } from 'date-fns'
-import { saveGuestEventPortalRSVP } from '@/lib/sharing/actions'
+import { useMemo, useState, useTransition } from 'react'
+import { format, differenceInDays, differenceInHours } from 'date-fns'
+import {
+  saveGuestEventPortalRSVP,
+  sendGuestMessage,
+  updateGuestAboutMe,
+  confirmGuestDietary,
+  getPublishedGuestDocuments,
+  getPreEventContent,
+} from '@/lib/sharing/actions'
 
 type PortalState = 'ready' | 'cancelled' | 'expired' | 'revoked' | 'invalid'
 
@@ -286,47 +293,13 @@ function GuestPortalForm({
 
   if (submitted && savedSummary) {
     return (
-      <div
-        className="rounded-2xl p-8"
-        style={{
-          background: 'linear-gradient(135deg, #111a15 0%, #0d1411 100%)',
-          border: '1px solid rgba(96,138,104,0.22)',
-        }}
-      >
-        <h1 className="text-2xl font-semibold text-stone-100">RSVP Recorded</h1>
-        <p className="mt-3 text-sm text-stone-300">
-          Your response is saved. <span className="font-medium">Attending:</span>{' '}
-          {savedSummary.attending_status === 'yes' ? 'Yes' : 'No'}
-          {portal.event.cannabisEnabled && (
-            <>
-              {' '}
-              <span className="font-medium">Participation:</span>{' '}
-              {savedSummary.cannabis_participation.replace(/_/g, ' ')}
-            </>
-          )}
-          .
-        </p>
-        <p className="mt-2 text-sm text-stone-300">
-          You can update your response until {format(new Date(savedSummary.editCutoff), 'PPP p')}.
-        </p>
-        <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            onClick={() => setSubmitted(false)}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-stone-100"
-            style={{ background: 'rgba(74,124,78,0.34)' }}
-          >
-            Update Response
-          </button>
-          <a
-            href="/cannabis/public"
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-stone-100 text-center"
-            style={{ background: 'rgba(44,83,55,0.42)' }}
-          >
-            Cannabis What to Expect
-          </a>
-        </div>
-      </div>
+      <PostRSVPExperience
+        eventId={eventId}
+        secureToken={secureToken}
+        portal={portal}
+        savedSummary={savedSummary}
+        onEdit={() => setSubmitted(false)}
+      />
     )
   }
 
@@ -905,5 +878,410 @@ function GuestPortalForm({
         )}
       </section>
     </form>
+  )
+}
+
+// ============================================================
+// Post-RSVP Experience (countdown + messaging + docs + about me)
+// ============================================================
+
+function PostRSVPExperience({
+  eventId,
+  secureToken,
+  portal,
+  savedSummary,
+  onEdit,
+}: {
+  eventId: string
+  secureToken: string
+  portal: ReadyPortal
+  savedSummary: {
+    attending_status: 'yes' | 'no'
+    cannabis_participation: string
+    editCutoff: string
+  }
+  onEdit: () => void
+}) {
+  const eventDate = new Date(portal.event.eventDate)
+  const now = new Date()
+  const daysUntil = differenceInDays(eventDate, now)
+  const hoursUntil = differenceInHours(eventDate, now)
+
+  const isUpcoming = daysUntil >= 0
+
+  return (
+    <div className="space-y-6">
+      {/* RSVP Confirmation + Countdown */}
+      <section
+        className="rounded-2xl p-8"
+        style={{
+          background: 'linear-gradient(135deg, #111a15 0%, #0d1411 100%)',
+          border: '1px solid rgba(96,138,104,0.22)',
+        }}
+      >
+        <h1 className="text-2xl font-semibold text-stone-100">
+          {isUpcoming ? "You're All Set!" : 'RSVP Recorded'}
+        </h1>
+        <p className="mt-3 text-sm text-stone-300">
+          <span className="font-medium">Attending:</span>{' '}
+          {savedSummary.attending_status === 'yes' ? 'Yes' : 'No'}
+          {portal.event.cannabisEnabled && (
+            <>
+              {' | '}
+              <span className="font-medium">Participation:</span>{' '}
+              {savedSummary.cannabis_participation.replace(/_/g, ' ')}
+            </>
+          )}
+        </p>
+
+        {isUpcoming && savedSummary.attending_status === 'yes' && (
+          <div className="mt-4 rounded-xl p-4 bg-[#0e1813] text-center">
+            <p className="text-3xl font-bold text-emerald-400">
+              {daysUntil > 0
+                ? `${daysUntil} day${daysUntil === 1 ? '' : 's'}`
+                : `${hoursUntil} hours`}
+            </p>
+            <p className="text-sm text-stone-400 mt-1">until your event</p>
+            <p className="text-xs text-stone-500 mt-2">
+              {format(eventDate, 'EEEE, MMMM d, yyyy')}
+              {portal.event.arrivalTime && ` at ${portal.event.arrivalTime.slice(0, 5)}`}
+            </p>
+          </div>
+        )}
+
+        <p className="mt-3 text-xs text-stone-500">
+          You can update your response until {format(new Date(savedSummary.editCutoff), 'PPP p')}.
+        </p>
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-stone-100"
+            style={{ background: 'rgba(74,124,78,0.34)' }}
+          >
+            Update Response
+          </button>
+          {portal.event.cannabisEnabled && (
+            <a
+              href="/cannabis/public"
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-stone-100 text-center"
+              style={{ background: 'rgba(44,83,55,0.42)' }}
+            >
+              Cannabis What to Expect
+            </a>
+          )}
+        </div>
+      </section>
+
+      {/* Pre-Event Info (loaded dynamically) */}
+      {isUpcoming && savedSummary.attending_status === 'yes' && (
+        <PreEventInfoSection eventId={eventId} secureToken={secureToken} />
+      )}
+
+      {/* Shared Documents */}
+      <GuestDocumentsSection eventId={eventId} secureToken={secureToken} isPreEvent={isUpcoming} />
+
+      {/* Message the Chef */}
+      {savedSummary.attending_status === 'yes' && (
+        <GuestMessageSection eventId={eventId} secureToken={secureToken} />
+      )}
+
+      {/* About Me */}
+      {portal.event.visibility.show_guest_list && savedSummary.attending_status === 'yes' && (
+        <GuestAboutMeSection eventId={eventId} secureToken={secureToken} />
+      )}
+
+      {/* Guest List (if visible) */}
+      {portal.event.visibility.show_guest_list && portal.event.guestList.length > 0 && (
+        <section
+          className="rounded-2xl p-6"
+          style={{
+            background: 'linear-gradient(135deg, #101614 0%, #0c1210 100%)',
+            border: '1px solid rgba(89,118,95,0.22)',
+          }}
+        >
+          <h2 className="text-xl font-semibold text-stone-100">Who's Coming</h2>
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-stone-300">
+            {portal.event.guestList.map((guest) => (
+              <div
+                key={`${guest.full_name}-${guest.rsvp_status}`}
+                className="flex items-center justify-between rounded-lg px-3 py-2 bg-[#0e1412]"
+              >
+                <span>{guest.full_name}</span>
+                <span
+                  className={
+                    guest.rsvp_status === 'attending'
+                      ? 'text-emerald-400'
+                      : guest.rsvp_status === 'declined'
+                        ? 'text-red-400'
+                        : 'text-stone-500'
+                  }
+                >
+                  {guest.rsvp_status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}
+
+// --- Pre-Event Info Section ---
+function PreEventInfoSection({ eventId, secureToken }: { eventId: string; secureToken: string }) {
+  const [content, setContent] = useState<Record<string, string> | null>(null)
+  const [loaded, setLoaded] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function load() {
+    startTransition(async () => {
+      try {
+        const data = await getPreEventContent(eventId, secureToken)
+        setContent(data)
+        setLoaded(true)
+      } catch {
+        setLoaded(true)
+      }
+    })
+  }
+
+  if (!loaded) {
+    load()
+    return null
+  }
+
+  if (!content || Object.values(content).every((v) => !v)) return null
+
+  const items = [
+    { label: 'Parking', value: content.parking_info },
+    { label: 'Dress Code', value: content.dress_code },
+    { label: 'What to Expect', value: content.what_to_expect },
+    { label: 'Arrival', value: content.arrival_instructions },
+    { label: 'From Your Host', value: content.custom_message },
+  ].filter((item) => item.value)
+
+  if (items.length === 0) return null
+
+  return (
+    <section
+      className="rounded-2xl p-6"
+      style={{
+        background: 'linear-gradient(135deg, #101614 0%, #0c1210 100%)',
+        border: '1px solid rgba(89,118,95,0.22)',
+      }}
+    >
+      <h2 className="text-xl font-semibold text-stone-100">Before You Arrive</h2>
+      <div className="mt-3 space-y-3">
+        {items.map((item) => (
+          <div key={item.label}>
+            <p className="text-xs uppercase tracking-wider text-stone-500">{item.label}</p>
+            <p className="text-sm text-stone-300 mt-0.5">{item.value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// --- Guest Documents Section ---
+function GuestDocumentsSection({
+  eventId,
+  secureToken,
+  isPreEvent,
+}: {
+  eventId: string
+  secureToken: string
+  isPreEvent: boolean
+}) {
+  const [docs, setDocs] = useState<any[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function load() {
+    startTransition(async () => {
+      try {
+        const data = await getPublishedGuestDocuments(eventId, secureToken)
+        setDocs(data)
+        setLoaded(true)
+      } catch {
+        setLoaded(true)
+      }
+    })
+  }
+
+  if (!loaded) {
+    load()
+    return null
+  }
+
+  const filtered = docs.filter((d) => (isPreEvent ? d.is_pre_event : !d.is_pre_event))
+  if (filtered.length === 0) return null
+
+  return (
+    <section
+      className="rounded-2xl p-6"
+      style={{
+        background: 'linear-gradient(135deg, #101614 0%, #0c1210 100%)',
+        border: '1px solid rgba(89,118,95,0.22)',
+      }}
+    >
+      <h2 className="text-xl font-semibold text-stone-100">
+        {isPreEvent ? 'Event Info' : 'From Your Chef'}
+      </h2>
+      <div className="mt-3 space-y-3">
+        {filtered.map((doc: any) => (
+          <div key={doc.id} className="rounded-lg p-3 bg-[#0e1412]">
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#1a2e22] text-[#8fc99a]">
+                {doc.document_type.replace(/_/g, ' ')}
+              </span>
+              <p className="text-stone-100 font-medium">{doc.title}</p>
+            </div>
+            {doc.description && <p className="text-sm text-stone-400 mt-1">{doc.description}</p>}
+            {doc.content_text && (
+              <p className="text-sm text-stone-300 mt-2 whitespace-pre-line">{doc.content_text}</p>
+            )}
+            {doc.file_url && (
+              <a
+                href={doc.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-emerald-400 underline mt-2 inline-block"
+              >
+                View document
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// --- Guest Message Section ---
+function GuestMessageSection({ eventId, secureToken }: { eventId: string; secureToken: string }) {
+  const [message, setMessage] = useState('')
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  function handleSend() {
+    if (!message.trim()) return
+    startTransition(async () => {
+      try {
+        await sendGuestMessage({ eventId, secureToken, message: message.trim() })
+        setSent(true)
+        setMessage('')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to send')
+      }
+    })
+  }
+
+  return (
+    <section
+      className="rounded-2xl p-6"
+      style={{
+        background: 'linear-gradient(135deg, #101614 0%, #0c1210 100%)',
+        border: '1px solid rgba(89,118,95,0.22)',
+      }}
+    >
+      <h2 className="text-xl font-semibold text-stone-100">Message the Chef</h2>
+      <p className="mt-1 text-xs text-stone-500">
+        Questions about the menu, allergies, or anything else? Send a quick note.
+      </p>
+      {sent ? (
+        <div className="mt-3 rounded-lg p-3 bg-[#0e1813] text-sm text-emerald-400">
+          Message sent! The chef will see it on their event dashboard.
+          <button
+            type="button"
+            onClick={() => setSent(false)}
+            className="block mt-2 text-xs text-stone-400 underline"
+          >
+            Send another message
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            maxLength={2000}
+            rows={3}
+            placeholder="Hi Chef, I just found out I have a shellfish allergy..."
+            className="w-full rounded-lg bg-[#0b120f] border border-[#2e3d34] px-3 py-2 text-sm text-stone-100 placeholder-stone-600"
+          />
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-stone-500">{message.length}/2000</span>
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={isPending || !message.trim()}
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-stone-100 disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #2b5d39 0%, #3f8451 100%)' }}
+            >
+              {isPending ? 'Sending...' : 'Send Message'}
+            </button>
+          </div>
+          {error && <p className="mt-2 text-sm text-amber-300">{error}</p>}
+        </div>
+      )}
+    </section>
+  )
+}
+
+// --- Guest About Me Section ---
+function GuestAboutMeSection({ eventId, secureToken }: { eventId: string; secureToken: string }) {
+  const [aboutMe, setAboutMe] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSave() {
+    startTransition(async () => {
+      try {
+        await updateGuestAboutMe({ eventId, secureToken, aboutMe: aboutMe.trim() })
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      } catch {}
+    })
+  }
+
+  return (
+    <section
+      className="rounded-2xl p-6"
+      style={{
+        background: 'linear-gradient(135deg, #101614 0%, #0c1210 100%)',
+        border: '1px solid rgba(89,118,95,0.22)',
+      }}
+    >
+      <h2 className="text-xl font-semibold text-stone-100">About You</h2>
+      <p className="mt-1 text-xs text-stone-500">
+        Optional. Share a quick intro so other guests know who you are.
+      </p>
+      <textarea
+        value={aboutMe}
+        onChange={(e) => setAboutMe(e.target.value)}
+        maxLength={500}
+        rows={2}
+        placeholder="Food lover, wine enthusiast, first time at a private dinner..."
+        className="mt-3 w-full rounded-lg bg-[#0b120f] border border-[#2e3d34] px-3 py-2 text-sm text-stone-100 placeholder-stone-600"
+      />
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-xs text-stone-500">{aboutMe.length}/500</span>
+        <div className="flex items-center gap-2">
+          {saved && <span className="text-xs text-emerald-400">Saved!</span>}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isPending}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-100 disabled:opacity-50"
+            style={{ background: 'rgba(74,124,78,0.34)' }}
+          >
+            {isPending ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </section>
   )
 }

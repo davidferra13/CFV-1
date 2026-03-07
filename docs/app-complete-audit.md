@@ -338,6 +338,14 @@
 - **Service Contract:** template-based contract management
 - **AI Contract Generator:** AI-powered contract drafting
 - **Guests & RSVPs:** share link management, RSVP tracker, photo consent summary, host message template with copy button
+- **Guest Experience Panel:** tabbed interface with 7 sections:
+  - **Messages:** guest-to-chef messages from the RSVP portal (load, read, mark as read)
+  - **Reminders:** send day-before/day-of reminders to confirmed guests
+  - **Dietary:** send 48-72hr dietary confirmation requests, view responses
+  - **Pre-Event:** customize countdown page content (parking, dress code, what to expect, arrival, custom message)
+  - **Documents:** share documents with guests (recipe cards, wine pairings, event photos, thank-you notes). Create, publish, delete
+  - **Feedback:** (completed events) send post-event feedback requests to guests, view ratings and testimonials
+  - **Attendance:** (completed/in_progress) reconcile actual attendance vs. RSVP (attended, no-show, late, left early)
 - **Event Recap:** (completed events) share link to recap page
 - **Guest Pipeline QR:** guest lead capture QR code
 - **Guest Excitement Wall:** moderated guest messages
@@ -1672,14 +1680,21 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `/social/hub-overview` | Admin-only dashboard — 6 stat cards (profiles, groups, messages, photos, stubs, seeking chef), stubs pipeline, recent activity feed. |
 
+### Guest Experience Portal (public, token-gated)
+
+| Route                                  | Content                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/event/[eventId]/guest/[secureToken]` | Full guest RSVP portal with: event details, menu with dishes (course number, name, description, dietary tags, allergen flags), RSVP yes/no, dietary restrictions, accessibility needs, cannabis participation (if enabled). After submission: countdown timer, pre-event info (parking, dress code, arrival, what to expect), shared documents, message the chef, about me bio, who's coming list |
+| `/guest-feedback/[token]`              | Post-event guest satisfaction form: 3 star ratings (overall, food, atmosphere/service), highlight text, suggestion text, testimonial consent. Token-gated, no auth                                                                                                                                                                                                                                |
+
 ### Integration Points (wired into existing pages)
 
-| Page                  | Element                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------- |
-| `/share/[token]`      | "Join the Hub" CTA shown after RSVP (creates/finds hub group, redirects to join page). |
-| `/events/[id]` (chef) | Hub link panel near Guests section — links to hub group or shows "No hub group yet".   |
-| RSVP submission       | Non-blocking: auto-creates hub profile, adds event history, auto-joins group.          |
-| Event completion      | Non-blocking: snapshots menu items into guest event history.                           |
+| Page                  | Element                                                                                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/share/[token]`      | "Join the Hub" CTA shown after RSVP (creates/finds hub group, redirects to join page).                                                                                                             |
+| `/events/[id]` (chef) | Hub link panel near Guests section — links to hub group or shows "No hub group yet". Guest Experience Panel with 7 tabs (messages, reminders, dietary, pre-event, documents, feedback, attendance) |
+| RSVP submission       | Non-blocking: auto-creates hub profile, adds event history, auto-joins group.                                                                                                                      |
+| Event completion      | Non-blocking: snapshots menu items into guest event history.                                                                                                                                       |
 
 ---
 
