@@ -1316,7 +1316,7 @@ Data privacy management. Comprehensive data export, privacy controls display, an
 
 **Route:** `/network/channels/[slug]` — Channel header with join/leave, member/post counts, channel-scoped feed.
 
-**Route:** `/community/templates` — Community-shared templates with type badges, download counts, import button (currently stub).
+**Route:** `/community/templates` — Community-shared templates with type badges, cuisine badges, download counts, import button. **Share a Template** button opens modal: select type (menu/recipe/message/quote), pick from own templates, add title/description/cuisine/occasion/tags, privacy notice. Publishes to community via `publishTemplate` server action.
 
 ---
 
@@ -1443,6 +1443,8 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | `/cannabis/events`     | Cannabis events list (strain pairings, dosage info, compliance badges)                                                                                                                                                                                |
 | `/cannabis/invite`     | Guest invitations with age verification and consent forms                                                                                                                                                                                             |
 | `/cannabis/ledger`     | Cannabis-specific ledger (separate from main financials for compliance)                                                                                                                                                                               |
+| `/cannabis/handbook`   | Full operational handbook: 7 sections (Philosophy, Extract Fundamentals, Portioning Workflow, Infusion Strategies, Guest Communication, Common Mistakes, Post-Event Calibration), table of contents, tips, scope exclusions, link to About page       |
+| `/cannabis/rsvps`      | Guest participation and intake tracking for cannabis events                                                                                                                                                                                           |
 
 ---
 
