@@ -60,6 +60,12 @@ const SECTIONS = [
     icon: '📈',
   },
   {
+    href: '/finance/revenue-per-hour',
+    label: 'Revenue Per Hour',
+    description: 'Your real effective hourly rate across all time spent per event',
+    icon: '⏱️',
+  },
+  {
     href: '/finance/tax',
     label: 'Tax Center',
     description: 'Mileage log, quarterly estimates, and accountant export',

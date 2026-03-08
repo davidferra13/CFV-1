@@ -4,8 +4,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { getEvents } from '@/lib/events/actions'
 import { getExpenses } from '@/lib/expenses/actions'
+import { getRevenuePerHour, getRevenuePerHourBenchmark } from '@/lib/finance/revenue-per-hour-actions'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
+import { RevenuePerHourCard } from '@/components/finance/revenue-per-hour-card'
 
 export const metadata: Metadata = { title: 'Finance Overview - ChefFlow' }
 
@@ -32,10 +34,12 @@ const VIEWS = [
 
 export default async function FinanceOverviewPage() {
   await requireChef()
-  const [summary, events, expenses] = await Promise.all([
+  const [summary, events, expenses, rphData, rphBenchmark] = await Promise.all([
     getTenantFinancialSummary(),
     getEvents(),
     getExpenses(),
+    getRevenuePerHour('30d'),
+    getRevenuePerHourBenchmark(),
   ])
 
   const totalExpenses = expenses.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
@@ -93,6 +97,16 @@ export default async function FinanceOverviewPage() {
           <p className="text-sm text-stone-500 mt-1">past events with unpaid balance</p>
         </Card>
       </div>
+
+      {/* Revenue Per Hour Card */}
+      <RevenuePerHourCard
+        effectiveRateCents={rphData.revenuePerHourCents}
+        cookingOnlyRateCents={rphData.cookingOnlyPerHourCents}
+        percentChange={rphBenchmark.percentChange}
+        breakdown={rphData.breakdown}
+        nonCookingPercent={rphData.nonCookingPercent}
+        eventsWithTimeData={rphData.eventsWithTimeData}
+      />
 
       <div className="grid grid-cols-3 gap-4">
         {VIEWS.map((v) => (
