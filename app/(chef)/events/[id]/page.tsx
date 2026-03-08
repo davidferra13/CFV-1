@@ -63,6 +63,7 @@ import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-
 import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
+import { PostServiceChecklistButton } from '@/components/events/post-service-checklist-button'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -788,6 +789,11 @@ export default async function EventDetailPage({
             'Next Step'
           }
         />
+      )}
+
+      {/* Post-Service Cleanup Checklist - for in_progress and completed events */}
+      {['in_progress', 'completed'].includes(event.status) && (
+        <PostServiceChecklistButton eventId={event.id} />
       )}
 
       {/* Event Transitions (Actions) */}
