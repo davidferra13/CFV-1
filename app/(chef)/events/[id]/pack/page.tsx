@@ -13,6 +13,7 @@ import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 import { PackingListClient } from '@/components/events/packing-list-client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PackPageTemplateBar } from '@/components/packing/pack-page-template-bar'
 import { format, parseISO } from 'date-fns'
 
 /**
@@ -116,6 +117,9 @@ export default async function PackPage({ params }: { params: { id: string } }) {
           </p>
         </Card>
       )}
+
+      {/* Template bar: load from template or save current list as template */}
+      <PackPageTemplateBar eventId={params.id} />
 
       {/* Interactive checklist */}
       <PackingListClient
