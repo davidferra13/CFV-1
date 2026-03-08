@@ -11,6 +11,15 @@ import {
   getPreEventContent,
 } from '@/lib/sharing/actions'
 
+/** Serializable brand data passed from the server component. */
+type ChefBrandData = {
+  mode: 'text' | 'full'
+  businessName: string
+  logoUrl: string | null
+  primaryColor: string
+  showPoweredBy: boolean
+} | null
+
 type PortalState = 'ready' | 'cancelled' | 'expired' | 'revoked' | 'invalid'
 
 type ReadyPortal = {
@@ -139,16 +148,20 @@ export function GuestEventPortalClient({
   eventId,
   secureToken,
   portal,
+  brand,
 }: {
   eventId: string
   secureToken: string
   portal: PortalPayload
+  brand?: ChefBrandData
 }) {
   if (portal.state !== 'ready') {
     return <PortalFailure portal={portal} />
   }
 
-  return <GuestPortalForm eventId={eventId} secureToken={secureToken} portal={portal} />
+  return (
+    <GuestPortalForm eventId={eventId} secureToken={secureToken} portal={portal} brand={brand} />
+  )
 }
 
 function PortalFailure({ portal }: { portal: PortalPayload }) {
@@ -188,10 +201,12 @@ function GuestPortalForm({
   eventId,
   secureToken,
   portal,
+  brand,
 }: {
   eventId: string
   secureToken: string
   portal: ReadyPortal
+  brand?: ChefBrandData
 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -298,13 +313,30 @@ function GuestPortalForm({
         secureToken={secureToken}
         portal={portal}
         savedSummary={savedSummary}
+        brand={brand}
         onEdit={() => setSubmitted(false)}
       />
     )
   }
 
+  const accentColor = brand?.primaryColor || '#2b5d39'
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      {/* Chef brand header */}
+      {brand && (
+        <div className="flex items-center gap-3 pb-2">
+          {brand.mode === 'full' && brand.logoUrl && (
+            <img
+              src={brand.logoUrl}
+              alt={brand.businessName}
+              className="h-10 w-10 rounded-lg object-cover"
+            />
+          )}
+          <span className="text-lg font-semibold text-stone-100">{brand.businessName}</span>
+        </div>
+      )}
+
       <section
         className="rounded-2xl p-6"
         style={{
@@ -866,8 +898,8 @@ function GuestPortalForm({
         <button
           type="submit"
           disabled={loading || !portal.lifecycle.canEdit}
-          className="mt-4 w-full rounded-lg px-4 py-3 text-sm font-semibold text-stone-100 disabled:opacity-55"
-          style={{ background: 'linear-gradient(135deg, #2b5d39 0%, #3f8451 100%)' }}
+          className="mt-4 w-full rounded-lg px-4 py-3 text-sm font-semibold text-white disabled:opacity-55"
+          style={{ backgroundColor: accentColor }}
         >
           {loading ? 'Saving...' : 'Submit RSVP'}
         </button>
@@ -877,6 +909,21 @@ function GuestPortalForm({
           </p>
         )}
       </section>
+
+      {/* Powered by ChefFlow footer (free tier only) */}
+      {brand?.showPoweredBy && (
+        <p className="text-center text-xs text-stone-500 pt-2">
+          Powered by{' '}
+          <a
+            href="https://cheflowhq.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-stone-400"
+          >
+            ChefFlow
+          </a>
+        </p>
+      )}
     </form>
   )
 }
@@ -890,6 +937,7 @@ function PostRSVPExperience({
   secureToken,
   portal,
   savedSummary,
+  brand,
   onEdit,
 }: {
   eventId: string
@@ -900,6 +948,7 @@ function PostRSVPExperience({
     cannabis_participation: string
     editCutoff: string
   }
+  brand?: ChefBrandData
   onEdit: () => void
 }) {
   const eventDate = new Date(portal.event.eventDate)
@@ -911,6 +960,19 @@ function PostRSVPExperience({
 
   return (
     <div className="space-y-6">
+      {/* Chef brand header */}
+      {brand && (
+        <div className="flex items-center gap-3 pb-2">
+          {brand.mode === 'full' && brand.logoUrl && (
+            <img
+              src={brand.logoUrl}
+              alt={brand.businessName}
+              className="h-10 w-10 rounded-lg object-cover"
+            />
+          )}
+          <span className="text-lg font-semibold text-stone-100">{brand.businessName}</span>
+        </div>
+      )}
       {/* RSVP Confirmation + Countdown */}
       <section
         className="rounded-2xl p-8"
@@ -1023,6 +1085,21 @@ function PostRSVPExperience({
             ))}
           </div>
         </section>
+      )}
+
+      {/* Powered by ChefFlow footer (free tier only) */}
+      {brand?.showPoweredBy && (
+        <p className="text-center text-xs text-stone-500 pt-2">
+          Powered by{' '}
+          <a
+            href="https://cheflowhq.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-stone-400"
+          >
+            ChefFlow
+          </a>
+        </p>
       )}
     </div>
   )

@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: profileUrl,
-      siteName: 'ChefFlow',
+      siteName: data.chef.display_name || 'ChefFlow',
       type: 'profile',
       ...(imageUrl ? { images: [{ url: imageUrl, alt: data.chef.display_name }] } : {}),
     },

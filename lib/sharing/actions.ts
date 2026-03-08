@@ -2942,6 +2942,7 @@ export async function getGuestEventPortal(eventId: string, secureToken: string) 
 
   return {
     state: 'ready' as const,
+    chefId: event.tenant_id as string,
     event: {
       id: event.id,
       title: event.occasion || 'Private Dinner',

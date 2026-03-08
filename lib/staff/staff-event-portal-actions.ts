@@ -384,7 +384,7 @@ export async function getStaffEventView(
       chefPhone: ch?.phone ?? null,
     }
 
-    return { state: 'ready', data }
+    return { state: 'ready', data, chefId: t.tenant_id as string }
   } catch (err) {
     console.error('[getStaffEventView] Error:', err)
     return { state: 'invalid' }
