@@ -374,6 +374,37 @@ export async function getMyBetaSurveyStatus(
   }
 }
 
+// ─── Admin: Get Survey by ID ────────────────────────────────────────────────
+
+/**
+ * Get a single survey definition by ID.
+ * Admin only.
+ */
+export async function getBetaSurveyById(surveyId: string): Promise<BetaSurveyDefinition | null> {
+  await requireAdmin()
+  const supabase: any = createAdminClient()
+
+  const { data, error } = await supabase
+    .from('beta_survey_definitions')
+    .select('*')
+    .eq('id', surveyId)
+    .single()
+
+  if (error) {
+    if (shouldLogBetaSurveyError(error)) {
+      console.error('[getBetaSurveyById]', error)
+    }
+    return null
+  }
+
+  if (!data) return null
+
+  return {
+    ...data,
+    questions: (data.questions as unknown as SurveyQuestion[]) || [],
+  } as BetaSurveyDefinition
+}
+
 // ─── Admin: Get Results ─────────────────────────────────────────────────────
 
 /**

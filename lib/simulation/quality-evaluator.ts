@@ -31,9 +31,14 @@ function evaluateInquiryParseDeterministic(
   scenario: SimScenario,
   rawOutput: unknown
 ): EvaluationResult {
-  const out = rawOutput as Record<string, unknown> | null
+  let out = rawOutput as Record<string, unknown> | null
   if (!out || typeof out !== 'object') {
     return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  // Unwrap if the LLM returned { "parsed": { ... } } instead of flat JSON
+  if ('parsed' in out && typeof out.parsed === 'object' && out.parsed !== null) {
+    out = out.parsed as Record<string, unknown>
   }
 
   const gt = scenario.groundTruth
@@ -80,8 +85,8 @@ function evaluateInquiryParseDeterministic(
     }
   }
 
-  // Check dietaryRestrictions is array (not missing)
-  const dietary = out.dietaryRestrictions
+  // Check dietaryRestrictions is array (not missing) - handle both naming conventions
+  const dietary = out.dietaryRestrictions ?? out.confirmed_dietary_restrictions
   if (!Array.isArray(dietary)) {
     score -= 10
     failures.push('dietaryRestrictions field is missing or not an array')
@@ -253,6 +258,73 @@ function evaluateQuoteDraftDeterministic(
   return { score, passed: score >= 70, failures }
 }
 
+// ── Deterministic client_parse evaluator (Formula > AI) ──────────────────────
+
+function evaluateClientParseDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  let out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  // Unwrap if the LLM returned { "parsed": { ... } } instead of flat JSON
+  if ('parsed' in out && typeof out.parsed === 'object' && out.parsed !== null) {
+    out = out.parsed as Record<string, unknown>
+  }
+
+  const gt = scenario.groundTruth
+  let score = 100
+  const failures: string[] = []
+
+  // Check name
+  const expectedName = gt.expectedName as string | null
+  const actualName = (out.fullName ?? out.full_name ?? out.name ?? null) as string | null
+  if (expectedName !== null) {
+    if (!fuzzyMatch(actualName, expectedName)) {
+      score -= 30
+      failures.push(`Name: expected "${expectedName}", got "${actualName}"`)
+    }
+  }
+
+  // Check email
+  const expectedEmail = gt.expectedEmail as string | null
+  const actualEmail = (out.email ?? null) as string | null
+  if (expectedEmail !== null) {
+    if (!actualEmail) {
+      score -= 25
+      failures.push(`Email: expected "${expectedEmail}", got null`)
+    } else if (actualEmail.toLowerCase().trim() !== expectedEmail.toLowerCase().trim()) {
+      score -= 25
+      failures.push(`Email: expected "${expectedEmail}", got "${actualEmail}"`)
+    }
+  }
+
+  // Check dietary restrictions - combine dietaryRestrictions + allergies for comparison
+  const expectedDietary = (gt.expectedDietary as string[]) ?? []
+  const actualDietary = [
+    ...((out.dietaryRestrictions ?? out.dietary_restrictions ?? []) as string[]),
+    ...((out.allergies ?? []) as string[]),
+  ]
+  if (expectedDietary.length > 0) {
+    const actualLower = actualDietary.map((d) => d.toLowerCase())
+    let missedCount = 0
+    for (const expected of expectedDietary) {
+      const expLower = expected.toLowerCase()
+      const found = actualLower.some((a) => a.includes(expLower) || expLower.includes(a))
+      if (!found) {
+        missedCount++
+        failures.push(`Dietary: missed "${expected}"`)
+      }
+    }
+    score -= missedCount * 10 // -10 per missed restriction (max -20 for typical 2 items)
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
 // ── Ollama-based evaluators (for subjective quality only) ────────────────────
 
 function buildEvaluatorPrompt(
@@ -264,31 +336,6 @@ function buildEvaluatorPrompt(
   const ctx = scenario.context as Record<string, unknown> | undefined
 
   switch (scenario.module) {
-    case 'client_parse':
-      return {
-        system: `You are an AI quality evaluator. Score how well a client note parser extracted contact information.
-Return valid JSON only.`,
-        user: `Original client note:
-${scenario.inputText}
-
-Expected ground truth:
-- Name: ${gt.expectedName}
-- Email: ${gt.expectedEmail}
-- Dietary: ${JSON.stringify(gt.expectedDietary)}
-
-Parser output:
-${outputStr}
-
-Score this extraction on a scale of 0–100. Deduct points for:
-- Missing or wrong name (-30)
-- Missing or wrong email (-25)
-- Missing dietary restrictions that were mentioned (-20)
-- Inventing contact details not in original (-30)
-- Wrong phone format when phone was present (-15)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
-      }
-
     case 'allergen_risk': {
       const expectedRisks = (gt.expectedRisks as string[]) ?? []
       return {
@@ -342,8 +389,8 @@ Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
 
 /**
  * Evaluates a pipeline output against scenario ground truth.
- * Uses deterministic checks for inquiry_parse, correspondence, quote_draft (Formula > AI).
- * Uses Ollama for subjective quality evaluation on client_parse, allergen_risk, menu_suggestions.
+ * Uses deterministic checks for inquiry_parse, client_parse, correspondence, quote_draft (Formula > AI).
+ * Uses Ollama for subjective quality evaluation on allergen_risk, menu_suggestions.
  * Returns score (0–100), passed (>=70), and specific failure reasons.
  * Never throws — returns score=0 with error on failure.
  */
@@ -359,6 +406,8 @@ export async function evaluateOutput(
   switch (scenario.module) {
     case 'inquiry_parse':
       return evaluateInquiryParseDeterministic(scenario, rawOutput)
+    case 'client_parse':
+      return evaluateClientParseDeterministic(scenario, rawOutput)
     case 'correspondence':
       return evaluateCorrespondenceDeterministic(scenario, rawOutput)
     case 'quote_draft':

@@ -71,8 +71,25 @@ Return JSON: {
       return {
         system: `You are a private chef's assistant. Extract structured client information from notes.
 Return valid JSON only — no markdown, no prose.
-Be conservative: use null for missing fields. Do not invent contact details.`,
-        user: `Extract client information from these notes:
+
+CRITICAL RULES:
+1. Only extract information EXPLICITLY stated in the notes. NEVER invent or infer.
+2. If a name is not stated, return fullName: null.
+3. If an email is not stated, return email: null.
+4. If a phone number is not stated, return phone: null.
+5. dietaryRestrictions: all food-related restrictions and preferences (vegan, gluten-free, kosher, halal, etc.)
+6. allergies: life-threatening or medical allergies only (nut allergy, shellfish allergy, celiac, etc.)
+7. A restriction can appear in BOTH fields if appropriate (e.g., "severe nut allergy" goes in both).
+8. If someone "loves vegan cooking" that is a dietary preference - put "vegan" in dietaryRestrictions.
+9. Do NOT add fields beyond what is asked for. No preferences, no referralSource, no extra fields.
+
+EXAMPLES:
+Input: "Sarah Chen, sarah@gmail.com. Severe nut allergy, loves vegan cooking."
+Output: { "fullName": "Sarah Chen", "email": "sarah@gmail.com", "phone": null, "dietaryRestrictions": ["vegan"], "allergies": ["severe nut allergy"] }
+
+Input: "New client from Instagram. Gluten-free, husband has shellfish allergy."
+Output: { "fullName": null, "email": null, "phone": null, "dietaryRestrictions": ["gluten-free"], "allergies": ["shellfish allergy"] }`,
+        user: `Extract client information from these notes. Return null for any field not explicitly present.
 
 ${scenario.inputText}
 
@@ -81,9 +98,7 @@ Return JSON: {
   "email": "string or null",
   "phone": "string or null",
   "dietaryRestrictions": ["array of strings"],
-  "allergies": ["array of strings"],
-  "preferences": "string or null",
-  "referralSource": "string or null"
+  "allergies": ["array of strings"]
 }`,
       }
 
