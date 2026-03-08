@@ -36,6 +36,7 @@ interface CachedContext {
     | 'dailyPlan'
     | 'emailDigest'
     | 'serviceConfigPrompt'
+    | 'contextWarnings'
   >
   expiresAt: number
 }
@@ -109,14 +110,18 @@ export async function loadRemyContext(
   // Tier 2b: Email digest (non-blocking, cached alongside detailed context)
   const emailDigest = await loadEmailDigest(tenantId).catch((err) => {
     console.error('[non-blocking] Email digest failed:', err)
+    contextWarnings.push('email digest')
     return undefined
   })
 
   // Tier 3: Page-specific entity context (non-blocking)
   const pageEntity = await loadPageEntityContext(supabase, tenantId, currentPage).catch((err) => {
     console.error('[non-blocking] Page entity context failed:', err)
+    contextWarnings.push('page context')
     return undefined
   })
+
+  const uniqueWarnings = [...new Set(contextWarnings)]
 
   return {
     chefName: chefProfile.businessName,
@@ -153,6 +158,7 @@ export async function loadRemyContext(
     businessIntelligence: healthSummary ?? undefined,
     // Service configuration (what this chef offers/doesn't offer)
     serviceConfigPrompt: serviceConfig ? formatServiceConfigForPrompt(serviceConfig) : undefined,
+    contextWarnings: uniqueWarnings.length > 0 ? uniqueWarnings : undefined,
   }
 }
 

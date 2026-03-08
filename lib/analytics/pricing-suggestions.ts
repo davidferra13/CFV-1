@@ -7,12 +7,13 @@ import { createServerClient } from '@/lib/supabase/server'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface PricingSuggestion {
-  status: 'ok' | 'insufficient_data'
+  status: 'ok' | 'insufficient_data' | 'error'
   similarQuoteCount: number
   minCents: number
   medianCents: number
   maxCents: number
   avgFoodCostPercent: number | null
+  errorMessage?: string
   matchCriteria: {
     pricingModel: string
     guestRangeMin: number
@@ -48,7 +49,16 @@ export async function getPricingSuggestion(params: {
 
   if (error) {
     console.error('[getPricingSuggestion]', error)
-    return noData(pricingModel, guestMin, guestMax, 0)
+    return {
+      status: 'error' as const,
+      similarQuoteCount: 0,
+      minCents: 0,
+      medianCents: 0,
+      maxCents: 0,
+      avgFoodCostPercent: null,
+      errorMessage: 'Could not load pricing data. Please try again.',
+      matchCriteria: { pricingModel, guestRangeMin: guestMin, guestRangeMax: guestMax },
+    }
   }
 
   let candidates = quotes ?? []

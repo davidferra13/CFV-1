@@ -16,12 +16,14 @@ import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+type SafeResult<T> = { data: T; failed: false } | { data: T; failed: true; label: string }
+
+async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<SafeResult<T>> {
   try {
-    return await fn()
+    return { data: await fn(), failed: false }
   } catch (err) {
     console.error(`[Dashboard/AlertCards] ${label} failed:`, err)
-    return fallback
+    return { data: fallback, failed: true, label }
   }
 }
 
@@ -45,27 +47,41 @@ const emptyOnboardingProgress: OnboardingProgress = {
 export async function AlertCards() {
   const user = await requireChef()
 
-  const [
-    responseTimeSummary,
-    pendingFollowUps,
-    stuckEvents,
-    coolingClients,
-    paymentsDue,
-    expiringQuotes,
-    schedulingGaps,
-    onboardingProgress,
-    quickRequests,
-  ] = await Promise.all([
-    safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
-    safe('pendingFollowUps', () => getStaleInquiries(5), []),
-    safe('stuckEvents', () => getStuckEvents(5), []),
-    safe('coolingClients', getCoolingClients, []),
-    safe('paymentsDue', () => getUpcomingPaymentsDue(5), []),
-    safe('expiringQuotes', () => getExpiringQuotes(7), []),
-    safe('schedulingGaps', getSchedulingGaps, []),
-    safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
-    safe('quickRequests', getQuickRequests, []),
+  const results = await Promise.all([
+    safe('Response times', getResponseTimeSummary, emptyResponseTimeSummary),
+    safe('Follow-ups', () => getStaleInquiries(5), []),
+    safe('Stuck events', () => getStuckEvents(5), []),
+    safe('Cooling clients', getCoolingClients, []),
+    safe('Payments due', () => getUpcomingPaymentsDue(5), []),
+    safe('Expiring quotes', () => getExpiringQuotes(7), []),
+    safe('Scheduling gaps', getSchedulingGaps, []),
+    safe('Onboarding', getOnboardingProgress, emptyOnboardingProgress),
+    safe('Client requests', getQuickRequests, []),
   ])
+
+  const [
+    responseTimeSummaryR,
+    pendingFollowUpsR,
+    stuckEventsR,
+    coolingClientsR,
+    paymentsDueR,
+    expiringQuotesR,
+    schedulingGapsR,
+    onboardingProgressR,
+    quickRequestsR,
+  ] = results
+
+  const responseTimeSummary = responseTimeSummaryR.data
+  const pendingFollowUps = pendingFollowUpsR.data
+  const stuckEvents = stuckEventsR.data
+  const coolingClients = coolingClientsR.data
+  const paymentsDue = paymentsDueR.data
+  const expiringQuotes = expiringQuotesR.data
+  const schedulingGaps = schedulingGapsR.data
+  const onboardingProgress = onboardingProgressR.data
+  const quickRequests = quickRequestsR.data
+
+  const failedSections = results.filter((r) => r.failed).map((r) => (r as { label: string }).label)
 
   // Response Time stat card
   const totalPending =
@@ -109,6 +125,14 @@ export async function AlertCards() {
 
   return (
     <>
+      {/* Data load failures */}
+      {failedSections.length > 0 && (
+        <div className="col-span-full px-4 py-2.5 rounded-lg bg-red-950/20 border border-red-800/20 text-xs text-red-300">
+          Could not load: {failedSections.join(', ')}. Some dashboard cards may be missing. Refresh
+          to try again.
+        </div>
+      )}
+
       {/* Response Time - stat card */}
       {totalPending > 0 && (
         <StatCard

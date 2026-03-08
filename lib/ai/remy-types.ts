@@ -355,6 +355,8 @@ export interface RemyContext {
   businessIntelligence?: string
   /** Chef service configuration — what services/policies/extras the chef offers */
   serviceConfigPrompt?: string
+  /** Context modules that failed to load (so Remy can caveat its answers) */
+  contextWarnings?: string[]
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

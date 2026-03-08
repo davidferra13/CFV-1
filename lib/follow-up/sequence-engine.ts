@@ -299,13 +299,13 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
 
   // Send email (non-blocking pattern: sendEmail already handles errors internally)
   try {
-    const sent = await sendEmail({
+    const emailResult = await sendEmail({
       to: clientEmail,
       subject: emailContent.subject,
       react: emailContent.react,
     })
 
-    if (sent) {
+    if (emailResult.success) {
       await supabase
         .from('follow_up_sends')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
@@ -315,7 +315,10 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
     } else {
       await supabase
         .from('follow_up_sends')
-        .update({ status: 'bounced', cancel_reason: 'Email send failed' })
+        .update({
+          status: 'bounced',
+          cancel_reason: emailResult.error || 'Email send failed',
+        })
         .eq('id', sendId)
       return false
     }

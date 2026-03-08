@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPipelineRevenueForecast } from '@/lib/analytics/pipeline-forecast-actions'
+import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
 
 const PipelineForecast = dynamic(
   () => import('@/components/analytics/pipeline-forecast').then((m) => m.PipelineForecast),
@@ -22,7 +23,7 @@ const PipelineForecast = dynamic(
 export const metadata: Metadata = { title: 'Pipeline Forecast - ChefFlow' }
 
 export default async function PipelineForecastPage() {
-  const user = await requireChef()
+  await requireChef()
 
   let pipelineData: Awaited<ReturnType<typeof getPipelineRevenueForecast>> | null = null
   try {
@@ -30,6 +31,14 @@ export default async function PipelineForecastPage() {
   } catch {
     pipelineData = null
   }
+  const exportRows =
+    pipelineData?.stages.map((stage) => [
+      stage.status,
+      stage.eventCount,
+      stage.totalValueCents,
+      stage.weight,
+      stage.weightedValueCents,
+    ]) ?? []
 
   return (
     <div className="space-y-6">
@@ -43,6 +52,19 @@ export default async function PipelineForecastPage() {
             Projected revenue from your active inquiries, pending quotes, and confirmed bookings.
           </p>
         </div>
+        {pipelineData && (
+          <StaticCSVDownloadButton
+            headers={[
+              'status',
+              'event_count',
+              'total_value_cents',
+              'weight',
+              'weighted_value_cents',
+            ]}
+            rows={exportRows}
+            filename="pipeline-forecast.csv"
+          />
+        )}
       </div>
 
       {pipelineData ? (

@@ -104,7 +104,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
         queued += 1
         const rsvpUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${share.token}`
         const subject = `Reminder: RSVP for ${event.occasion || 'your event'}`
-        const ok = await sendEmail({
+        const emailResult = await sendEmail({
           to: guest.email,
           subject,
           react: RSVPReminderEmail({
@@ -115,7 +115,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
           }),
         })
 
-        if (ok) {
+        if (emailResult.success) {
           sent += 1
           await ((supabase as any)
             .from('rsvp_reminder_log')
@@ -123,6 +123,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
             .eq('id', logRow.id) as any)
         } else {
           failed += 1
+          console.error('[rsvp-reminders] Email send failed:', emailResult.error)
           await ((supabase as any)
             .from('rsvp_reminder_log')
             .update({ status: 'failed' })

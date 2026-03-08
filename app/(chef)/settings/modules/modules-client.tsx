@@ -48,6 +48,7 @@ export function ModulesClient({
         } else {
           setEnabled(new Set([...CORE_MODULES, ...EXTENDED_MODULES]))
         }
+        toast.success(next ? 'Focus Mode enabled' : 'Focus Mode disabled')
         router.refresh()
       } catch (err) {
         setFocusMode(previous)
@@ -68,6 +69,7 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await updateEnabledModules(Array.from(next))
+        toast.success(next.has(slug) ? 'Module enabled' : 'Module hidden')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to update module')
@@ -82,6 +84,7 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await enableAllModules()
+        toast.success('All modules enabled')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to enable all modules')
@@ -96,6 +99,7 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await updateEnabledModules(Array.from(defaults))
+        toast.success('Modules reset to defaults')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to reset modules')
@@ -126,14 +130,14 @@ export function ModulesClient({
           <button
             onClick={handleToggleFocusMode}
             disabled={isPending}
-            className={`relative shrink-0 w-12 h-7 rounded-full transition-colors disabled:opacity-50 ${
+            className={`relative shrink-0 h-11 w-14 rounded-full transition-colors disabled:opacity-50 ${
               focusMode ? 'bg-brand-500' : 'bg-stone-600'
             }`}
             aria-label="Toggle Focus Mode"
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-stone-900 shadow transition-transform ${
-                focusMode ? 'translate-x-5' : 'translate-x-0'
+              className={`absolute left-1 top-1 h-9 w-9 rounded-full bg-stone-900 shadow transition-transform ${
+                focusMode ? 'translate-x-3' : 'translate-x-0'
               }`}
             />
           </button>
@@ -197,14 +201,14 @@ export function ModulesClient({
             <button
               onClick={selectAll}
               disabled={isPending}
-              className="text-sm px-3 py-1.5 rounded-lg border border-stone-700 dark:border-stone-700 hover:bg-stone-800 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+              className="min-h-[44px] rounded-lg border border-stone-700 px-3 py-2 text-sm transition-colors hover:bg-stone-800 disabled:opacity-50 dark:border-stone-700 dark:hover:bg-stone-800"
             >
               Select All
             </button>
             <button
               onClick={selectDefaults}
               disabled={isPending}
-              className="text-sm px-3 py-1.5 rounded-lg border border-stone-700 dark:border-stone-700 hover:bg-stone-800 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+              className="min-h-[44px] rounded-lg border border-stone-700 px-3 py-2 text-sm transition-colors hover:bg-stone-800 disabled:opacity-50 dark:border-stone-700 dark:hover:bg-stone-800"
             >
               Reset to Defaults
             </button>
@@ -256,14 +260,14 @@ export function ModulesClient({
                       <button
                         onClick={() => toggle(mod.slug)}
                         disabled={isPending}
-                        className={`relative shrink-0 w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${
+                        className={`relative shrink-0 h-11 w-14 rounded-full transition-colors disabled:opacity-50 ${
                           isOn ? 'bg-brand-500' : 'bg-stone-300 dark:bg-stone-600'
                         }`}
                         aria-label={`Toggle ${mod.label}`}
                       >
                         <span
-                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-stone-900 shadow transition-transform ${
-                            isOn ? 'translate-x-4' : 'translate-x-0'
+                          className={`absolute left-1 top-1 h-9 w-9 rounded-full bg-stone-900 shadow transition-transform ${
+                            isOn ? 'translate-x-3' : 'translate-x-0'
                           }`}
                         />
                       </button>

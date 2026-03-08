@@ -65,14 +65,20 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
       .select('id, menu_item:menu_items(id, name), servings, notes')
       .eq('event_id', eventId)
       .then((r: any) => r)
-      .catch(() => ({ data: [] })),
+      .catch((err: any) => {
+        console.error('[PreServiceChecklist] Failed to load menu items:', err)
+        return { data: [], _loadFailed: true }
+      }),
     // Staff assigned
     supabase
       .from('event_staff')
       .select('id, staff_member:staff_members(id, name, role), role_override')
       .eq('event_id', eventId)
       .then((r: any) => r)
-      .catch(() => ({ data: [] })),
+      .catch((err: any) => {
+        console.error('[PreServiceChecklist] Failed to load staff:', err)
+        return { data: [], _loadFailed: true }
+      }),
     // Custom checklist items (stored in event's unknown_fields or a separate store)
     Promise.resolve({ data: [] }),
   ])
@@ -80,8 +86,39 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   const client = clientResult.data
   const menuItems = menuResult.data ?? []
   const staffAssigned = staffResult.data ?? []
+  const menuLoadFailed = !!(menuResult as any)._loadFailed
+  const staffLoadFailed = !!(staffResult as any)._loadFailed
 
   const items: ChecklistItem[] = []
+
+  // ============================================
+  // DATA LOAD WARNINGS (show chef that data may be incomplete)
+  // ============================================
+
+  if (menuLoadFailed) {
+    items.push({
+      id: `warning-menu-load-${eventId}`,
+      category: 'safety',
+      title: 'WARNING: Menu items failed to load',
+      detail:
+        'The menu section below may be incomplete. Check the event page for full menu details.',
+      completed: false,
+      source: 'auto',
+      priority: 'critical',
+    })
+  }
+
+  if (staffLoadFailed) {
+    items.push({
+      id: `warning-staff-load-${eventId}`,
+      category: 'safety',
+      title: 'WARNING: Staff assignments failed to load',
+      detail: 'Staff section below may be incomplete. Check the event page for full staff roster.',
+      completed: false,
+      source: 'auto',
+      priority: 'critical',
+    })
+  }
 
   // ============================================
   // SAFETY ITEMS (CRITICAL - always first)

@@ -740,7 +740,7 @@ export async function sendDirectOutreach(input: {
     const renderedBody = renderTokens(input.body, tokenCtx)
     const renderedSubject = renderTokens(input.subject ?? 'A note from your chef', tokenCtx)
 
-    const ok = await sendEmail({
+    const emailResult = await sendEmail({
       to: client.email,
       subject: renderedSubject,
       react: React.createElement(CampaignEmail, {
@@ -750,8 +750,8 @@ export async function sendDirectOutreach(input: {
         unsubscribeUrl: '', // omitted for 1:1
       }),
     })
-    delivered = ok
-    if (!ok) errorMsg = 'Email delivery failed'
+    delivered = emailResult.success
+    if (!emailResult.success) errorMsg = emailResult.error || 'Email delivery failed'
   }
 
   if (input.channel === 'sms') {

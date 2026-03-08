@@ -48,7 +48,7 @@ export async function routeEmailByAction(input: RouteInput): Promise<boolean> {
       : `${APP_URL}${input.actionUrl}`
     : `${APP_URL}/dashboard`
 
-  return sendEmail({
+  const result = await sendEmail({
     to: recipientEmail,
     subject: input.title,
     react: createElement(NotificationGenericEmail, {
@@ -57,4 +57,6 @@ export async function routeEmailByAction(input: RouteInput): Promise<boolean> {
       actionUrl,
     }),
   })
+
+  return result.success
 }

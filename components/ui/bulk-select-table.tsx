@@ -32,6 +32,7 @@ export function BulkSelectTable<T extends { id: string }>({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [running, setRunning] = useState(false)
   const [pendingAction, setPendingAction] = useState<BulkAction | null>(null)
+  const selectionEnabled = bulkActions.length > 0
 
   const allSelected = items.length > 0 && selectedIds.size === items.length
   const someSelected = selectedIds.size > 0 && selectedIds.size < items.length
@@ -97,19 +98,20 @@ export function BulkSelectTable<T extends { id: string }>({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-800 bg-stone-800/60">
-              {/* Select-all checkbox */}
-              <th className="w-10 px-3 py-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  ref={(el) => {
-                    if (el) el.indeterminate = someSelected
-                  }}
-                  onChange={toggleAll}
-                  aria-label="Select all rows"
-                  className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500 cursor-pointer"
-                />
-              </th>
+              {selectionEnabled && (
+                <th className="w-10 px-3 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = someSelected
+                    }}
+                    onChange={toggleAll}
+                    aria-label="Select all rows"
+                    className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                  />
+                </th>
+              )}
               {renderHeader()}
             </tr>
           </thead>
@@ -123,16 +125,17 @@ export function BulkSelectTable<T extends { id: string }>({
                     selected ? 'bg-brand-950' : 'hover:bg-stone-800/60'
                   }`}
                 >
-                  {/* Per-row checkbox */}
-                  <td className="w-10 px-3 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      onChange={() => toggleOne(item.id)}
-                      aria-label={`Select row ${item.id}`}
-                      className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500 cursor-pointer"
-                    />
-                  </td>
+                  {selectionEnabled && (
+                    <td className="w-10 px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleOne(item.id)}
+                        aria-label={`Select row ${item.id}`}
+                        className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                      />
+                    </td>
+                  )}
                   {renderRow(item, selected)}
                 </tr>
               )
@@ -142,7 +145,7 @@ export function BulkSelectTable<T extends { id: string }>({
       </div>
 
       {/* Floating bulk-action bar */}
-      {selectedIds.size > 0 && (
+      {selectionEnabled && selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-stone-700 bg-stone-900 px-5 py-3 shadow-xl">
           <span className="text-sm font-medium text-stone-300 mr-1">
             {selectedIds.size} selected
@@ -151,7 +154,8 @@ export function BulkSelectTable<T extends { id: string }>({
             <Button
               key={action.label}
               variant={action.variant ?? 'secondary'}
-              size="sm"
+              size="md"
+              className="min-h-[44px]"
               disabled={running}
               onClick={() => handleAction(action)}
             >
@@ -160,7 +164,8 @@ export function BulkSelectTable<T extends { id: string }>({
           ))}
           <Button
             variant="ghost"
-            size="sm"
+            size="md"
+            className="min-h-[44px]"
             disabled={running}
             onClick={() => setSelectedIds(new Set())}
           >

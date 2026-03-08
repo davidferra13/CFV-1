@@ -47,6 +47,18 @@ export type DebriefBlanks = {
   eventPhotoCount: number
 }
 
+function warnDebriefActivityFailure(
+  action: string,
+  err: unknown,
+  context: Record<string, unknown>
+) {
+  console.warn('[debrief] Failed to write chef activity log', {
+    action,
+    ...context,
+    error: err instanceof Error ? err.message : String(err),
+  })
+}
+
 // ─── getEventDebriefBlanks ────────────────────────────────────────────────────
 
 /**
@@ -309,7 +321,9 @@ export async function saveClientInsights(
     summary: 'Updated client profile from post-event debrief',
     context: { eventId, fields: Object.keys(updatePayload) },
     clientId,
-  }).catch(() => {})
+  }).catch((err) => {
+    warnDebriefActivityFailure('client_updated', err, { eventId, clientId })
+  })
 
   return { success: true }
 }
@@ -418,7 +432,9 @@ export async function saveRecipeDebrief(
     entityId: recipeId,
     summary: 'Updated recipe notes from post-event debrief',
     context: { eventId, fields: Object.keys(updatePayload) },
-  }).catch(() => {})
+  }).catch((err) => {
+    warnDebriefActivityFailure('recipe_updated', err, { eventId, recipeId })
+  })
 
   return { success: true }
 }
@@ -523,7 +539,9 @@ export async function completeDebrief(
     summary: `Completed post-event debrief for ${event.occasion || 'event'}`,
     context: { eventId },
     clientId: event.client_id ?? undefined,
-  }).catch(() => {})
+  }).catch((err) => {
+    warnDebriefActivityFailure('debrief_completed', err, { eventId })
+  })
 
   return { success: true }
 }

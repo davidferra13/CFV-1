@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getReferralAnalytics } from '@/lib/analytics/referral-analytics'
+import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
 
 const ReferralAnalyticsDashboard = dynamic(
   () =>
@@ -29,6 +30,44 @@ export default async function ReferralSourcesPage() {
   await requireChef()
 
   const data = await getReferralAnalytics().catch(() => null)
+  const exportRows: Array<Array<string | number>> = data
+    ? [
+        ...data.funnel.sources.map((source) => [
+          'funnel',
+          source.source,
+          source.inquiryCount,
+          source.completedCount,
+          source.totalRevenueCents,
+          source.conversionRate,
+        ]),
+        ...data.clientAcquisition.map((source) => [
+          'client_acquisition',
+          source.source,
+          source.clientCount,
+          source.avgLifetimeValueCents,
+          source.totalLifetimeValueCents,
+          '',
+        ]),
+        ...data.topReferrers.map((referrer) => [
+          'top_referrer',
+          referrer.name,
+          referrer.clientCount,
+          referrer.eventCount,
+          referrer.totalRevenueCents,
+          '',
+        ]),
+        ...data.timeSeries.flatMap((row) =>
+          data.timeSeriesSources.map((source) => [
+            'time_series',
+            row.month,
+            source,
+            row[source] ?? 0,
+            '',
+            '',
+          ])
+        ),
+      ]
+    : []
 
   return (
     <div className="space-y-6">
@@ -42,6 +81,13 @@ export default async function ReferralSourcesPage() {
             Which sources bring the most clients, highest-value events, and best conversion rates.
           </p>
         </div>
+        {exportRows.length > 0 && (
+          <StaticCSVDownloadButton
+            headers={['section', 'label', 'value_1', 'value_2', 'value_3', 'value_4']}
+            rows={exportRows}
+            filename="referral-sources.csv"
+          />
+        )}
       </div>
 
       {data ? (

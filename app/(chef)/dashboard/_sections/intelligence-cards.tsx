@@ -7,23 +7,41 @@ import { CapacityWidget } from '@/components/dashboard/capacity-widget'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import Link from 'next/link'
 
-async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+type SafeResult<T> = { data: T; failed: false } | { data: T; failed: true; label: string }
+
+async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<SafeResult<T>> {
   try {
-    return await fn()
+    return { data: await fn(), failed: false }
   } catch (err) {
     console.error(`[Dashboard/IntelligenceCards] ${label} failed:`, err)
-    return fallback
+    return { data: fallback, failed: true, label }
   }
 }
 
 export async function IntelligenceCards() {
-  const [health, alerts, capacityData] = await Promise.all([
-    safe('health', getBusinessHealthSummary, null),
-    safe('alerts', getProactiveAlerts, null),
-    safe('capacity', () => getCapacityAnalysis(90), null),
+  const [healthResult, alertsResult, capacityResult] = await Promise.all([
+    safe('Business Health', getBusinessHealthSummary, null),
+    safe('Alerts', getProactiveAlerts, null),
+    safe('Capacity', () => getCapacityAnalysis(90), null),
   ])
 
-  if (!health && !alerts) return null
+  const health = healthResult.data
+  const alerts = alertsResult.data
+  const capacityData = capacityResult.data
+  const failedSections = [healthResult, alertsResult, capacityResult]
+    .filter((r) => r.failed)
+    .map((r) => (r as { label: string }).label)
+
+  if (!health && !alerts) {
+    if (failedSections.length > 0) {
+      return (
+        <div className="px-4 py-3 rounded-lg bg-red-950/20 border border-red-800/20 text-xs text-red-300">
+          Could not load: {failedSections.join(', ')}. Refresh to try again.
+        </div>
+      )
+    }
+    return null
+  }
 
   const criticalAlerts = alerts?.alerts.filter((a) => a.severity === 'critical') || []
   const warningAlerts = alerts?.alerts.filter((a) => a.severity === 'warning') || []
@@ -46,6 +64,12 @@ export async function IntelligenceCards() {
 
   return (
     <>
+      {failedSections.length > 0 && (
+        <div className="col-span-full px-4 py-2.5 rounded-lg bg-red-950/20 border border-red-800/20 text-xs text-red-300">
+          Could not load: {failedSections.join(', ')}. Some intelligence cards may be missing.
+        </div>
+      )}
+
       {/* Business Health - large card */}
       {health && (
         <WidgetCardShell

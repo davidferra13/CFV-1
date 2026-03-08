@@ -56,66 +56,73 @@ export default async function InvoicesPage() {
   ])
 
   const now = new Date()
-  const refundedEventIds = new Set(refundEntries.map((e: any) => e.event_id).filter(Boolean))
+  const refundedEventIds = new Set(
+    refundEntries.map((entry: any) => entry.event_id).filter(Boolean)
+  )
 
   const counts = {
-    draft: events.filter((e: any) => ['draft', 'proposed'].includes(e.status)).length,
-    sent: events.filter((e: any) => e.status === 'accepted').length,
-    paid: events.filter((e: any) =>
-      ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
+    draft: events.filter((event: any) => ['draft', 'proposed'].includes(event.status)).length,
+    sent: events.filter((event: any) => event.status === 'accepted').length,
+    paid: events.filter((event: any) =>
+      ['paid', 'confirmed', 'in_progress', 'completed'].includes(event.status)
     ).length,
     overdue: events.filter(
-      (e: any) => !['completed', 'cancelled'].includes(e.status) && new Date(e.event_date) < now
+      (event: any) =>
+        !['completed', 'cancelled'].includes(event.status) && new Date(event.event_date) < now
     ).length,
-    refunded: events.filter((e: any) => refundedEventIds.has(e.id)).length,
-    cancelled: events.filter((e: any) => e.status === 'cancelled').length,
+    refunded: events.filter((event: any) => refundedEventIds.has(event.id)).length,
+    cancelled: events.filter((event: any) => event.status === 'cancelled').length,
   }
 
   const totalRevenue = events
-    .filter((e: any) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
-    .reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
+    .filter((event: any) =>
+      ['paid', 'confirmed', 'in_progress', 'completed'].includes(event.status)
+    )
+    .reduce((sum: number, event: any) => sum + Number(event.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
       <div>
         <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
-          ← Finance
+          &larr; Finance
         </Link>
-        <div className="flex items-center justify-between mt-1">
+        <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold text-stone-100">Invoices</h1>
           <Link href="/events/new">
-            <Button size="sm">+ Create Event / Invoice</Button>
+            <Button size="md" className="min-h-[44px]">
+              + Create Event / Invoice
+            </Button>
           </Link>
         </div>
-        <p className="text-stone-500 mt-1">
-          Event invoices organized by status — invoices are per-event in ChefFlow
+        <p className="mt-1 text-stone-500">
+          Event invoices organized by status - invoices are per-event in ChefFlow
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{events.length}</p>
-          <p className="text-sm text-stone-500 mt-1">Total events / invoices</p>
+          <p className="mt-1 text-sm text-stone-500">Total events / invoices</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
-          <p className="text-sm text-stone-500 mt-1">Paid invoice value</p>
+          <p className="mt-1 text-sm text-stone-500">Paid invoice value</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-amber-700">{counts.sent + counts.draft}</p>
-          <p className="text-sm text-stone-500 mt-1">Awaiting payment</p>
+          <p className="mt-1 text-sm text-stone-500">Awaiting payment</p>
         </Card>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {STAGES.map((stage) => {
           const count = counts[stage.label.toLowerCase() as keyof typeof counts] ?? 0
           return (
             <Link key={stage.href} href={stage.href}>
-              <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center justify-between mb-1">
+              <Card className="cursor-pointer p-4 transition-shadow hover:shadow-md">
+                <div className="mb-1 flex items-center justify-between">
                   <h2 className="font-semibold text-stone-100">{stage.label}</h2>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${stage.style}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${stage.style}`}>
                     {count}
                   </span>
                 </div>

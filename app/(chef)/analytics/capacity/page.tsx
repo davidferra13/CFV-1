@@ -25,6 +25,7 @@ import {
   Sliders,
 } from 'lucide-react'
 import Link from 'next/link'
+import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
 
 export const metadata: Metadata = {
   title: 'Capacity Planning - ChefFlow',
@@ -62,23 +63,51 @@ export default async function CapacityPlanningPage() {
   }
 
   const { analysis, timeBreakdown, heatmap } = capacityData
+  const exportRows: Array<Array<string | number>> = [
+    ['summary', 'utilization_percent', analysis.utilizationPercent],
+    ['summary', 'weekly_hours_used', analysis.weeklyHoursUsed],
+    ['summary', 'weekly_hours_available', analysis.weeklyHoursAvailable],
+    ['summary', 'weekly_hours_remaining', analysis.weeklyHoursRemaining],
+    ['summary', 'burnout_risk', analysis.burnoutRisk],
+    ['summary', 'additional_events_per_week', analysis.additionalEventsPerWeek],
+    ...timeBreakdown.map((entry) => [
+      'time_breakdown',
+      entry.category,
+      Math.round((entry.minutes / 60) * 10) / 10,
+    ]),
+    ...trend.map((entry) => [
+      'weekly_trend',
+      `${entry.weekStart} to ${entry.weekEnd}`,
+      entry.hoursUsed,
+    ]),
+    ...heatmap.map((entry) => [
+      'heatmap',
+      entry.date,
+      Math.round((entry.totalMinutes / 60) * 10) / 10,
+    ]),
+  ]
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-stone-900">Capacity Planning</h1>
-          <p className="text-sm text-stone-500 mt-1">
-            Based on your last 90 days of activity
-          </p>
+          <p className="text-sm text-stone-500 mt-1">Based on your last 90 days of activity</p>
         </div>
-        <Link
-          href="/insights"
-          className="text-sm text-violet-600 hover:text-violet-700 font-medium"
-        >
-          All Intelligence
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <StaticCSVDownloadButton
+            headers={['section', 'label', 'value']}
+            rows={exportRows}
+            filename="capacity-planning.csv"
+          />
+          <Link
+            href="/insights"
+            className="inline-flex min-h-[44px] items-center text-sm font-medium text-violet-600 hover:text-violet-700"
+          >
+            All Intelligence
+          </Link>
+        </div>
       </div>
 
       {/* Top Row: Key Metrics */}
@@ -123,11 +152,14 @@ export default async function CapacityPlanningPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-stone-500">Remaining</span>
-                <span className="font-semibold text-green-600">{analysis.weeklyHoursRemaining}h</span>
+                <span className="font-semibold text-green-600">
+                  {analysis.weeklyHoursRemaining}h
+                </span>
               </div>
               {analysis.canTakeMore && (
                 <p className="text-xs text-stone-400">
-                  Room for ~{analysis.additionalEventsPerWeek} more event{analysis.additionalEventsPerWeek !== 1 ? 's' : ''}/week
+                  Room for ~{analysis.additionalEventsPerWeek} more event
+                  {analysis.additionalEventsPerWeek !== 1 ? 's' : ''}/week
                 </p>
               )}
             </div>
@@ -188,7 +220,8 @@ export default async function CapacityPlanningPage() {
               <CardTitle className="text-base">Commitments Breakdown</CardTitle>
             </div>
             <p className="text-xs text-stone-400 mt-1">
-              {analysis.commitments.recurringWeekly} recurring, {analysis.commitments.averageOneOffPerWeek} avg one-off/week
+              {analysis.commitments.recurringWeekly} recurring,{' '}
+              {analysis.commitments.averageOneOffPerWeek} avg one-off/week
             </p>
           </CardHeader>
           <CardContent>

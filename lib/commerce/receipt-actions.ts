@@ -260,7 +260,7 @@ export async function sendReceiptByEmail(input: {
   const attachmentBuffer = await generateCommerceReceiptPdf(data)
   const filename = `receipt-${data.saleNumber ?? input.saleId}.pdf`
   const paymentSummary = buildPaymentSummary(data.payments as ReceiptPaymentLine[])
-  const sent = await sendEmail({
+  const emailResult = await sendEmail({
     to: toEmail,
     subject: `Receipt ${data.saleNumber ?? snapshot.saleNumber} from ${data.businessName}`,
     react: createElement(CommerceSaleReceiptEmail, {
@@ -280,8 +280,8 @@ export async function sendReceiptByEmail(input: {
     ],
   })
 
-  if (!sent) {
-    throw new Error('Failed to send email receipt')
+  if (!emailResult.success) {
+    throw new Error(emailResult.error || 'Failed to send email receipt')
   }
 
   return { sent: true, toEmail }

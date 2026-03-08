@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTopClientsByLTV } from '@/lib/analytics/client-ltv-actions'
+import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
 
 const ClientLTVChart = dynamic(
   () => import('@/components/analytics/client-ltv-chart').then((m) => m.ClientLTVChart),
@@ -22,9 +23,19 @@ const ClientLTVChart = dynamic(
 export const metadata: Metadata = { title: 'Client Value - ChefFlow' }
 
 export default async function ClientLTVPage() {
-  const user = await requireChef()
+  await requireChef()
 
   const topClients = await getTopClientsByLTV().catch(() => [])
+  const exportRows = (topClients as any[]).map((client) => [
+    client.clientName,
+    client.clientEmail,
+    client.completedEventCount,
+    client.totalRevenueCents,
+    client.totalExpensesCents,
+    client.lifetimeValueCents,
+    client.firstEventDate,
+    client.lastEventDate,
+  ])
 
   return (
     <div className="space-y-6">
@@ -44,6 +55,22 @@ export default async function ClientLTVPage() {
         >
           View All Clients
         </Link>
+        {(topClients as any[]).length > 0 && (
+          <StaticCSVDownloadButton
+            headers={[
+              'client_name',
+              'client_email',
+              'completed_events',
+              'total_revenue_cents',
+              'total_expenses_cents',
+              'lifetime_value_cents',
+              'first_event_date',
+              'last_event_date',
+            ]}
+            rows={exportRows}
+            filename="client-ltv.csv"
+          />
+        )}
       </div>
 
       {(topClients as any[]).length > 0 ? (

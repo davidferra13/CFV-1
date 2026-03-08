@@ -1,10 +1,9 @@
-// Email Sending — Server-side utility
-// Non-blocking: errors are logged, never thrown to callers
-// All email sends are fire-and-forget side effects
+// Email sending - server-side utility
+// Non-blocking: errors are logged, never thrown to callers.
 
-import { getResendClient, FROM_EMAIL, FROM_NAME } from './resend-client'
-import { breakers } from '@/lib/resilience/circuit-breaker'
 import type { ReactElement } from 'react'
+import { breakers } from '@/lib/resilience/circuit-breaker'
+import { getResendClient, FROM_EMAIL, FROM_NAME } from './resend-client'
 
 type SendEmailParams = {
   to: string | string[]
@@ -20,10 +19,17 @@ type SendEmailParams = {
   }>
 }
 
+export type SendEmailResult = {
+  success: boolean
+  error?: string
+  skipped?: boolean
+  messageId?: string
+}
+
 /**
  * Send a transactional email via Resend.
  * Non-blocking: logs errors but never throws.
- * Returns true if sent successfully, false otherwise.
+ * Returns a structured result so callers can surface the real failure reason.
  */
 export async function sendEmail({
   to,
@@ -32,19 +38,20 @@ export async function sendEmail({
   replyTo,
   fromName,
   attachments,
-}: SendEmailParams): Promise<boolean> {
-  // Skip if Resend is not configured (dev environments without key)
+}: SendEmailParams): Promise<SendEmailResult> {
   if (!process.env.RESEND_API_KEY) {
     console.log('[sendEmail] RESEND_API_KEY not configured, skipping email')
-    return false
+    return {
+      success: false,
+      skipped: true,
+      error: 'RESEND_API_KEY is not configured',
+    }
   }
 
   try {
     const resend = getResendClient()
-
-    // Circuit breaker: trips after 5 consecutive Resend failures (60s reset)
     const senderName = fromName || FROM_NAME
-    const { error } = await breakers.resend.execute(() =>
+    const response: any = await breakers.resend.execute(() =>
       resend.emails.send({
         from: `${senderName} <${FROM_EMAIL}>`,
         to,
@@ -55,17 +62,29 @@ export async function sendEmail({
       })
     )
 
-    if (error) {
-      console.error('[sendEmail] Resend error:', error)
-      return false
+    if (response?.error) {
+      const errorMessage =
+        typeof response.error === 'string'
+          ? response.error
+          : response.error?.message || 'Resend returned an unknown error'
+      console.error('[sendEmail] Resend error:', response.error)
+      return {
+        success: false,
+        error: errorMessage,
+      }
     }
 
-    // Log subject only — never log recipient email addresses (PII)
     const recipientCount = Array.isArray(to) ? to.length : 1
-    console.log(`[sendEmail] Sent: "${subject}" → ${recipientCount} recipient(s)`)
-    return true
+    console.log(`[sendEmail] Sent: "${subject}" -> ${recipientCount} recipient(s)`)
+    return {
+      success: true,
+      messageId: response?.data?.id,
+    }
   } catch (err) {
     console.error('[sendEmail] Failed:', err)
-    return false
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    }
   }
 }
