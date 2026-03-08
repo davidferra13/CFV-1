@@ -21,7 +21,8 @@ export default async function AppearancePage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-500 mb-4">
-            Choose a color palette for your ChefFlow workspace. This only changes what you see.
+            Choose a color palette for your ChefFlow workspace. Click any palette to apply it
+            instantly. Your choice is saved automatically.
           </p>
           <ColorPalettePicker />
         </CardContent>
