@@ -33,6 +33,8 @@ import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/conflict'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import Link from 'next/link'
+import { Calculator } from 'lucide-react'
 
 type Client = {
   id: string
@@ -721,6 +723,19 @@ export function QuoteForm({
         guestCount={parseInt(guestCount) || 0}
         onSuggestedPrice={(totalCents) => setTotalAmount((totalCents / 100).toFixed(2))}
       />
+
+      {/* ── Full Pricing Calculator link ──────────────────────────────────── */}
+      <div className="flex items-center gap-2 text-sm">
+        <Calculator className="h-4 w-4 text-muted-foreground" />
+        <span className="text-muted-foreground">Not sure what to charge?</span>
+        <Link
+          href="/finance/pricing-calculator"
+          target="_blank"
+          className="font-medium text-primary hover:underline"
+        >
+          Open the full Pricing Calculator
+        </Link>
+      </div>
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}
       <Card className="overflow-hidden">
