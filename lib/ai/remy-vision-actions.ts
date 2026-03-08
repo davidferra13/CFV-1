@@ -9,16 +9,36 @@ import { Ollama } from 'ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 const VISION_MODEL = 'llava:7b' // or bakllava, minicpm-v
+const VISION_TIMEOUT_MS = 90_000
 const OLLAMA_ENDPOINTS = [
   process.env.OLLAMA_HOST || 'http://localhost:11434',
   'http://127.0.0.1:11434',
 ]
 
+function withVisionTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`Vision ${label} timed out after ${VISION_TIMEOUT_MS / 1000}s`))
+    }, VISION_TIMEOUT_MS)
+
+    promise.then(
+      (value) => {
+        clearTimeout(timeoutId)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timeoutId)
+        reject(error)
+      }
+    )
+  })
+}
+
 async function getOllamaClient(): Promise<Ollama> {
   for (const host of OLLAMA_ENDPOINTS) {
     try {
       const client = new Ollama({ host })
-      await client.list() // Quick connectivity check
+      await withVisionTimeout(client.list(), 'connectivity check')
       return client
     } catch {
       continue
@@ -64,13 +84,16 @@ Rules:
 export async function scanReceipt(imageBase64: string): Promise<ReceiptData> {
   const client = await getOllamaClient()
 
-  const response = await client.generate({
-    model: VISION_MODEL,
-    prompt: RECEIPT_PROMPT,
-    images: [imageBase64],
-    stream: false,
-    options: { temperature: 0.1, num_predict: 2000 },
-  })
+  const response = await withVisionTimeout(
+    client.generate({
+      model: VISION_MODEL,
+      prompt: RECEIPT_PROMPT,
+      images: [imageBase64],
+      stream: false,
+      options: { temperature: 0.1, num_predict: 2000 },
+    }),
+    'receipt scan'
+  )
 
   try {
     // Extract JSON from response (may have markdown fencing)
@@ -195,13 +218,16 @@ Rules:
 export async function analyzeDishPhoto(imageBase64: string): Promise<DishPhotoTags> {
   const client = await getOllamaClient()
 
-  const response = await client.generate({
-    model: VISION_MODEL,
-    prompt: DISH_PHOTO_PROMPT,
-    images: [imageBase64],
-    stream: false,
-    options: { temperature: 0.3, num_predict: 1000 },
-  })
+  const response = await withVisionTimeout(
+    client.generate({
+      model: VISION_MODEL,
+      prompt: DISH_PHOTO_PROMPT,
+      images: [imageBase64],
+      stream: false,
+      options: { temperature: 0.3, num_predict: 1000 },
+    }),
+    'dish analysis'
+  )
 
   try {
     const text = response.response.trim()

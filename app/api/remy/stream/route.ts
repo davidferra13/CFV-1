@@ -232,12 +232,15 @@ export async function POST(req: NextRequest) {
         const isOllama =
           err instanceof Error &&
           (err.message.includes('Ollama') || err.message.includes('ECONNREFUSED'))
+        const isTimeout = err instanceof Error && err.message.toLowerCase().includes('timed out')
         return new Response(
           encodeSSE({
             type: 'error',
             data: isOllama
               ? 'Vision analysis requires Ollama with the LLaVA model. Make sure Ollama is running with `ollama pull llava:7b`.'
-              : 'Failed to analyze the image. Try again or describe what you see instead.',
+              : isTimeout
+                ? 'Image analysis took too long and I stopped waiting. Try a smaller image or describe what you need.'
+                : 'Failed to analyze the image. Try again or describe what you see instead.',
           }),
           { headers: sseHeaders() }
         )
