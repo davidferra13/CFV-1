@@ -103,6 +103,7 @@ type NavCollapsibleItem = NavItem & {
   children?: NavSubItem[]
   visibility?: 'secondary' | 'advanced'
   adminOnly?: boolean
+  module?: string
 }
 type NavGroup = {
   id: string
@@ -1037,6 +1038,13 @@ export const navGroups: NavGroup[] = [
       },
       { href: '/admin/directory', label: 'Directory', icon: TreeStructure, adminOnly: true },
       { href: '/admin/reconciliation', label: 'Reconciliation', icon: Scales, adminOnly: true },
+      // Admin Super View — cross-tenant data browsing
+      { href: '/admin/recipes', label: 'All Recipes', icon: BookOpen, adminOnly: true },
+      { href: '/admin/menus', label: 'All Menus', icon: UtensilsCrossed, adminOnly: true },
+      { href: '/admin/quotes', label: 'All Quotes', icon: Receipt, adminOnly: true },
+      { href: '/admin/inquiries', label: 'All Inquiries', icon: Inbox, adminOnly: true },
+      { href: '/admin/staff', label: 'All Staff', icon: Users, adminOnly: true },
+      { href: '/admin/documents', label: 'All Documents', icon: FileText, adminOnly: true },
     ],
   },
 ]
