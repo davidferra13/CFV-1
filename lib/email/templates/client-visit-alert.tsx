@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   chefName: string
@@ -26,7 +26,7 @@ export function ClientVisitAlertEmail({ chefName, clientName, eventType, clientU
   )
 
   return (
-    <BaseLayout preview={`${clientName} is on your site`}>
+    <BaseLayout brand={brand} preview={`${clientName} is on your site`}>
       <Text style={heading}>
         {isHighIntent ? '🔥 ' : ''}
         {clientName} {actionLabel}

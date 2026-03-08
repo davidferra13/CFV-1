@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   clientName: string
@@ -34,7 +34,10 @@ export function OfflinePaymentReceiptEmail({
   const methodLabel = paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)
 
   return (
-    <BaseLayout preview={`${amountFormatted} ${paymentLabel} recorded for ${occasion}`}>
+    <BaseLayout
+      brand={brand}
+      preview={`${amountFormatted} ${paymentLabel} recorded for ${occasion}`}
+    >
       <Text style={heading}>Payment received</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

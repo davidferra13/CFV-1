@@ -3,7 +3,7 @@
 
 import { Text, Link, Hr } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 import type { DailyReportContent } from '@/lib/reports/types'
 
 type Props = {
@@ -35,7 +35,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
   const hasExpiringQuotes = content.expiringQuoteDetails.length > 0
 
   return (
-    <BaseLayout preview={`Daily Report — ${formatDate(reportDate)}`}>
+    <BaseLayout brand={brand} preview={`Daily Report — ${formatDate(reportDate)}`}>
       <Text style={heading}>Good morning, {chefName}</Text>
       <Text style={subheading}>{formatDate(reportDate)}</Text>
 

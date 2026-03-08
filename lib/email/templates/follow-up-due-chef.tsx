@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   chefName: string
@@ -27,7 +27,7 @@ export function FollowUpDueChefEmail({
   const eventLabel = occasion || 'their event'
 
   return (
-    <BaseLayout preview={`Follow-up due: ${clientName}`}>
+    <BaseLayout brand={brand} preview={`Follow-up due: ${clientName}`}>
       <Text style={heading}>Follow-up due</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

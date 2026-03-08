@@ -11,6 +11,8 @@ type SendEmailParams = {
   subject: string
   react: ReactElement
   replyTo?: string
+  /** Override the sender display name. Defaults to FROM_NAME ('CheFlow'). */
+  fromName?: string
   attachments?: Array<{
     filename: string
     content: Buffer | string
@@ -28,6 +30,7 @@ export async function sendEmail({
   subject,
   react,
   replyTo,
+  fromName,
   attachments,
 }: SendEmailParams): Promise<boolean> {
   // Skip if Resend is not configured (dev environments without key)
@@ -40,9 +43,10 @@ export async function sendEmail({
     const resend = getResendClient()
 
     // Circuit breaker: trips after 5 consecutive Resend failures (60s reset)
+    const senderName = fromName || FROM_NAME
     const { error } = await breakers.resend.execute(() =>
       resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        from: `${senderName} <${FROM_EMAIL}>`,
         to,
         subject,
         react,

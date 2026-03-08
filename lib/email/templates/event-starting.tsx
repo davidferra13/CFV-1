@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   clientName: string
@@ -25,7 +25,7 @@ export function EventStartingEmail({
   location,
 }: Props) {
   return (
-    <BaseLayout preview={`${chefName} is on the way for your ${occasion}`}>
+    <BaseLayout brand={brand} preview={`${chefName} is on the way for your ${occasion}`}>
       <Text style={heading}>Your chef is on the way</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

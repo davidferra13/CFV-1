@@ -4,7 +4,7 @@
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type PostEventReviewRequestProps = {
   clientName: string
@@ -12,6 +12,7 @@ type PostEventReviewRequestProps = {
   occasion: string
   eventDate: string
   reviewUrl: string
+  brand?: ChefBrandProps
 }
 
 export function PostEventReviewRequestEmail({
@@ -20,9 +21,10 @@ export function PostEventReviewRequestEmail({
   occasion,
   eventDate,
   reviewUrl,
+  brand,
 }: PostEventReviewRequestProps) {
   return (
-    <BaseLayout preview={`Your feedback means the world to ${chefName}`}>
+    <BaseLayout brand={brand} preview={`Your feedback means the world to ${chefName}`}>
       <Text style={heading}>How was your experience?</Text>
 
       <Text style={paragraph}>Hi {clientName},</Text>

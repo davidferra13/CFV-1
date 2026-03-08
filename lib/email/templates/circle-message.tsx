@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   recipientName: string
@@ -21,7 +21,7 @@ export function CircleMessageEmail({
   circleUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`${senderName} posted in ${groupName}`}>
+    <BaseLayout brand={brand} preview={`${senderName} posted in ${groupName}`}>
       <Text style={heading}>New message in {groupName}</Text>
       <Text style={paragraph}>Hi {recipientName},</Text>
       <Text style={paragraph}>

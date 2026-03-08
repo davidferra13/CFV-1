@@ -26,6 +26,7 @@ export type ProFeature = {
     | 'calendar'
     | 'loyalty'
     | 'commerce'
+    | 'branding'
 }
 
 export const PRO_FEATURES: ProFeature[] = [
@@ -207,6 +208,14 @@ export const PRO_FEATURES: ProFeature[] = [
     description:
       'Rotating menus, container tracking, delivery scheduling for weekly meal prep clients',
     category: 'operations',
+  },
+  // Branding
+  {
+    slug: 'remove-platform-branding',
+    label: 'White-Label Branding',
+    description:
+      'Remove "Powered by ChefFlow" from all client-facing surfaces: emails, PDFs, portals, and widgets',
+    category: 'branding',
   },
 ]
 

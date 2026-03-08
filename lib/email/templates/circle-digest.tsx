@@ -4,7 +4,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type DigestMessage = {
   authorName: string
@@ -24,7 +24,7 @@ export function CircleDigestEmail({ recipientName, groupName, messages, circleUr
   const noun = count === 1 ? 'message' : 'messages'
 
   return (
-    <BaseLayout preview={`${count} new ${noun} in ${groupName}`}>
+    <BaseLayout brand={brand} preview={`${count} new ${noun} in ${groupName}`}>
       <Text style={heading}>
         {count} new {noun} in {groupName}
       </Text>

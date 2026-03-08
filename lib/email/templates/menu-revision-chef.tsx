@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   chefName: string
@@ -23,7 +23,7 @@ export function MenuRevisionChefEmail({
   eventUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`${clientName} requested menu changes for ${occasion}`}>
+    <BaseLayout brand={brand} preview={`${clientName} requested menu changes for ${occasion}`}>
       <Text style={heading}>Menu revision requested</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

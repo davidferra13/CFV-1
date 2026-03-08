@@ -4,7 +4,7 @@
 
 import { Text, Link, Button } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   clientName: string
@@ -39,7 +39,7 @@ export function PaymentReminderEmail({
         : 'Payment reminder'
 
   return (
-    <BaseLayout preview={`${subjectHint} — ${occasion} with ${chefName}`}>
+    <BaseLayout brand={brand} preview={`${subjectHint} — ${occasion} with ${chefName}`}>
       <Text style={heading}>{headingText}</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

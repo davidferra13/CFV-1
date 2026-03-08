@@ -4,13 +4,14 @@
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type PostEventReferralAskProps = {
   clientName: string
   chefName: string
   occasion: string
   bookingUrl: string
+  brand?: ChefBrandProps
 }
 
 export function PostEventReferralAskEmail({
@@ -18,9 +19,10 @@ export function PostEventReferralAskEmail({
   chefName,
   occasion,
   bookingUrl,
+  brand,
 }: PostEventReferralAskProps) {
   return (
-    <BaseLayout preview={`Know someone who'd love a private chef experience?`}>
+    <BaseLayout brand={brand} preview={`Know someone who'd love a private chef experience?`}>
       <Text style={heading}>Share the experience</Text>
 
       <Text style={paragraph}>Hi {clientName},</Text>

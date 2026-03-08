@@ -4,7 +4,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   recipientName: string
@@ -24,7 +24,7 @@ export function CircleUpdateNotificationEmail({
   circleUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`${chefName} posted an update in ${groupName}`}>
+    <BaseLayout brand={brand} preview={`${chefName} posted an update in ${groupName}`}>
       <Text style={heading}>New update in {groupName}</Text>
       <Text style={paragraph}>Hi {recipientName},</Text>
       <Text style={paragraph}>

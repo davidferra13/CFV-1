@@ -7,6 +7,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { PDFLayout } from './pdf-layout'
+import { getChefBrand, type ChefBrand } from '@/lib/chef/brand'
+import { fetchLogoAsBase64 } from '@/lib/documents/logo-utils'
 import { format, parseISO } from 'date-fns'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -285,7 +287,12 @@ function formatCents(cents: number): string {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
+export function renderQuote(
+  pdf: PDFLayout,
+  data: QuoteDocumentData,
+  brand?: ChefBrand | null,
+  logoBase64?: string | null
+) {
   const { quote, chef, client, event, menu, cancellationPolicy } = data
 
   // Density scaling for menus with many courses
@@ -293,7 +300,11 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   if (menu.length > 9) pdf.setFontScale(0.75)
 
   // ── SECTION 1: HEADER ──────────────────────────────────────────────────────
-  pdf.title(chef.businessName, 14)
+  if (brand) {
+    pdf.brandedHeader(brand, logoBase64 ?? null)
+  } else {
+    pdf.title(chef.businessName, 14)
+  }
   pdf.space(1)
 
   // Quote metadata bar
@@ -451,6 +462,9 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
 
   // Footer
   pdf.footer(`${quote.quoteRef}  ·  ${chef.businessName}  ·  ${chef.email}`)
+  if (brand?.showPoweredBy) {
+    pdf.poweredByFooter()
+  }
 }
 
 // ─── Generate ─────────────────────────────────────────────────────────────────
@@ -459,7 +473,11 @@ export async function generateQuote(quoteId: string): Promise<Buffer> {
   const data = await fetchQuoteDocumentData(quoteId)
   if (!data) throw new Error('Cannot generate quote: quote not found or access denied')
 
+  const user = await requireChef()
+  const brand = await getChefBrand(user.tenantId!)
+  const logoBase64 = await fetchLogoAsBase64(brand.logoUrl)
+
   const pdf = new PDFLayout()
-  renderQuote(pdf, data)
+  renderQuote(pdf, data, brand, logoBase64)
   return pdf.toBuffer()
 }

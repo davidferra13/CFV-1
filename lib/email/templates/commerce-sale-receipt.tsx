@@ -1,6 +1,6 @@
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   customerName: string
@@ -20,7 +20,7 @@ export function CommerceSaleReceiptEmail({
   paymentSummary,
 }: Props) {
   return (
-    <BaseLayout preview={`Receipt ${saleNumber} from ${businessName}`}>
+    <BaseLayout brand={brand} preview={`Receipt ${saleNumber} from ${businessName}`}>
       <Text style={heading}>Your receipt</Text>
       <Text style={paragraph}>Hi {customerName},</Text>
       <Text style={paragraph}>

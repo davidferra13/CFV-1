@@ -3,7 +3,7 @@
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type EventPrepareProps = {
   clientName: string
@@ -16,6 +16,7 @@ type EventPrepareProps = {
   guestCount: number | null
   eventId: string
   appUrl: string
+  brand?: ChefBrandProps
 }
 
 export function EventPrepareEmail({
@@ -29,9 +30,10 @@ export function EventPrepareEmail({
   guestCount,
   eventId,
   appUrl,
+  brand,
 }: EventPrepareProps) {
   return (
-    <BaseLayout preview={`${chefName} is coming in 7 days — here's how to prepare`}>
+    <BaseLayout brand={brand} preview={`${chefName} is coming in 7 days — here's how to prepare`}>
       <Text style={heading}>Your event is one week away!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

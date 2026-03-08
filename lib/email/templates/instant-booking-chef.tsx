@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   chefName: string
@@ -29,7 +29,7 @@ export function InstantBookingChefEmail({
   eventUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`New instant booking from ${clientName} — ${occasion}`}>
+    <BaseLayout brand={brand} preview={`New instant booking from ${clientName} — ${occasion}`}>
       <Text style={heading}>New instant booking</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

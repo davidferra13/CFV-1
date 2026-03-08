@@ -3,6 +3,7 @@
 // Font sizes and spacing auto-compact to enforce the single-page constraint
 
 import { jsPDF } from 'jspdf'
+import type { ChefBrand } from '@/lib/chef/brand'
 
 const LETTER_WIDTH = 215.9 // mm
 const LETTER_HEIGHT = 279.4 // mm
@@ -257,6 +258,82 @@ export class PDFLayout {
     this.doc.setFont('helvetica', 'normal')
     this.doc.setTextColor(140, 140, 140)
     this.doc.text(line, LETTER_WIDTH / 2, LETTER_HEIGHT - 10, { align: 'center' })
+    this.doc.setTextColor(0, 0, 0)
+  }
+
+  /**
+   * Branded header for client-facing PDFs.
+   * If the chef has a logo: renders the logo image + business name.
+   * If no logo: renders the business name as large text.
+   * Always draws a thin accent color bar below.
+   *
+   * @param brand - ChefBrand object from getChefBrand()
+   * @param logoBase64 - Pre-fetched logo as base64 data URI (optional, pass null to skip logo)
+   */
+  brandedHeader(brand: ChefBrand, logoBase64: string | null = null) {
+    const doc = this.doc
+
+    if (logoBase64 && brand.mode === 'full') {
+      // Logo mode: render logo image left-aligned, business name to the right
+      const logoHeight = 14 // mm
+      const logoWidth = 14 // mm (square, image will be fit)
+      try {
+        doc.addImage(logoBase64, 'PNG', MARGIN_X, this.y - 2, logoWidth, logoHeight)
+      } catch {
+        // If image fails to render, fall through to text-only
+        doc.setFontSize(this.scaledSize(16))
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(0, 0, 0)
+        doc.text(brand.businessName, MARGIN_X, this.y + 6)
+        this.y += logoHeight + 2
+        this._accentBar(brand.primaryColor)
+        return
+      }
+
+      // Business name next to logo
+      doc.setFontSize(this.scaledSize(14))
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(0, 0, 0)
+      doc.text(brand.businessName, MARGIN_X + logoWidth + 4, this.y + 6)
+
+      this.y += logoHeight + 2
+    } else {
+      // Text mode: business name as the header
+      doc.setFontSize(this.scaledSize(16))
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(0, 0, 0)
+      doc.text(brand.businessName, MARGIN_X, this.y + 4)
+      this.y += 8
+    }
+
+    // Accent color bar
+    this._accentBar(brand.primaryColor)
+  }
+
+  /** Thin accent color bar spanning the content width */
+  private _accentBar(hexColor: string) {
+    const r = parseInt(hexColor.slice(1, 3), 16)
+    const g = parseInt(hexColor.slice(3, 5), 16)
+    const b = parseInt(hexColor.slice(5, 7), 16)
+    this.doc.setDrawColor(r, g, b)
+    this.doc.setLineWidth(0.8)
+    this.doc.line(MARGIN_X, this.y, LETTER_WIDTH - MARGIN_X, this.y)
+    this.y += 3
+  }
+
+  /**
+   * "Powered by ChefFlow" footer for free-tier users.
+   * Small, unobtrusive text in the bottom-right corner.
+   * Call this at the end of document rendering, only when brand.showPoweredBy is true.
+   */
+  poweredByFooter() {
+    const s = this.scaledSize(7)
+    this.doc.setFontSize(s)
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.setTextColor(160, 160, 160)
+    this.doc.text('Powered by ChefFlow', LETTER_WIDTH - MARGIN_X, LETTER_HEIGHT - 6, {
+      align: 'right',
+    })
     this.doc.setTextColor(0, 0, 0)
   }
 

@@ -3,13 +3,14 @@
 
 import { Button, Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type ClientInvitationProps = {
   clientName: string
   chefName: string
   invitationUrl: string
   expiresInDays: number
+  brand?: ChefBrandProps
 }
 
 export function ClientInvitationEmail({
@@ -17,9 +18,10 @@ export function ClientInvitationEmail({
   chefName,
   invitationUrl,
   expiresInDays,
+  brand,
 }: ClientInvitationProps) {
   return (
-    <BaseLayout preview={`${chefName} invited you to ChefFlow`}>
+    <BaseLayout brand={brand} preview={`${chefName} invited you to ChefFlow`}>
       <Text style={heading}>You&apos;re invited!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

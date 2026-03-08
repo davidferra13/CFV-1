@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   chefName: string
@@ -21,7 +21,7 @@ export function QuoteRejectedChefEmail({
   inquiryUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`${clientName} declined your quote`}>
+    <BaseLayout brand={brand} preview={`${clientName} declined your quote`}>
       <Text style={heading}>Quote declined</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

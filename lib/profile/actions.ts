@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { chefBrandTag } from '@/lib/chef/brand'
 import { z } from 'zod'
 
 const SlugSchema = z
@@ -262,6 +263,7 @@ export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPort
   revalidatePath('/settings')
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag(chefBrandTag(user.entityId))
   if (currentChef?.slug) {
     revalidatePath(`/chef/${currentChef.slug}`)
     revalidatePath(`/chef/${currentChef.slug}/inquire`)
@@ -346,6 +348,7 @@ export async function uploadChefPortalBackgroundImage(
   revalidatePath('/settings')
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag(chefBrandTag(user.entityId))
   if (currentChef?.slug) {
     revalidatePath(`/chef/${currentChef.slug}`)
     revalidatePath(`/chef/${currentChef.slug}/inquire`)

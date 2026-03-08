@@ -1,6 +1,6 @@
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type GiftCardPurchaseConfirmationEmailProps = {
   recipientEmail: string
@@ -8,6 +8,7 @@ type GiftCardPurchaseConfirmationEmailProps = {
   amountFormatted: string // e.g. "$50.00"
   code: string
   chefName: string
+  brand?: ChefBrandProps
 }
 
 export function GiftCardPurchaseConfirmationEmail({
@@ -16,11 +17,15 @@ export function GiftCardPurchaseConfirmationEmail({
   amountFormatted,
   code,
   chefName,
+  brand,
 }: GiftCardPurchaseConfirmationEmailProps) {
   const recipientLabel = recipientName ? `${recipientName} (${recipientEmail})` : recipientEmail
 
   return (
-    <BaseLayout preview={`Your ${amountFormatted} gift card for ${chefName} has been sent`}>
+    <BaseLayout
+      brand={brand}
+      preview={`Your ${amountFormatted} gift card for ${chefName} has been sent`}
+    >
       <Text style={heading}>Your gift card is on its way!</Text>
 
       <Text style={paragraph}>

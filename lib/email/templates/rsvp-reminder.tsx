@@ -6,6 +6,7 @@ type RSVPReminderEmailProps = {
   occasion?: string | null
   eventDate?: string | null
   rsvpUrl: string
+  brand?: ChefBrandProps
 }
 
 export function RSVPReminderEmail({
@@ -13,6 +14,7 @@ export function RSVPReminderEmail({
   occasion,
   eventDate,
   rsvpUrl,
+  brand,
 }: RSVPReminderEmailProps) {
   const title = occasion || 'your upcoming dinner'
   const dateLine = eventDate ? `Event date: ${eventDate}` : null

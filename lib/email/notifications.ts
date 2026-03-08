@@ -5,6 +5,7 @@
 import { parseISO } from 'date-fns'
 import { createElement } from 'react'
 import { sendEmail } from './send'
+import { getEmailBrand } from './brand-helpers'
 import { ClientInvitationEmail } from './templates/client-invitation'
 import { QuoteSentEmail } from './templates/quote-sent'
 import { EventProposedEmail } from './templates/event-proposed'
@@ -128,6 +129,7 @@ export async function sendQuoteSentEmail(params: {
   clientEmail: string
   clientName: string
   chefName: string
+  chefId?: string
   quoteId: string
   totalCents: number
   depositRequired: boolean
@@ -135,9 +137,11 @@ export async function sendQuoteSentEmail(params: {
   occasion: string | null
   validUntil: string | null
 }) {
+  const { brand, fromName } = await getEmailBrand(params.chefId)
   await sendEmail({
     to: params.clientEmail,
     subject: `New quote from ${params.chefName}: ${formatCents(params.totalCents)}`,
+    fromName,
     react: createElement(QuoteSentEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
@@ -147,6 +151,7 @@ export async function sendQuoteSentEmail(params: {
       occasion: params.occasion,
       validUntil: params.validUntil ? formatDate(params.validUntil) : null,
       quoteUrl: `${APP_URL}/my-quotes`,
+      brand,
     }),
   })
 }
@@ -157,15 +162,18 @@ export async function sendEventProposedEmail(params: {
   clientEmail: string
   clientName: string
   chefName: string
+  chefId?: string
   eventId: string
   occasion: string
   eventDate: string
   guestCount: number | null
   location: string | null
 }) {
+  const { brand, fromName } = await getEmailBrand(params.chefId)
   await sendEmail({
     to: params.clientEmail,
     subject: `Event proposal from ${params.chefName}: ${params.occasion}`,
+    fromName,
     react: createElement(EventProposedEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
@@ -174,6 +182,7 @@ export async function sendEventProposedEmail(params: {
       guestCount: params.guestCount,
       location: params.location,
       eventUrl: `${APP_URL}/my-events/${params.eventId}`,
+      brand,
     }),
   })
 }
@@ -183,6 +192,7 @@ export async function sendEventProposedEmail(params: {
 export async function sendPaymentConfirmationEmail(params: {
   clientEmail: string
   clientName: string
+  chefId?: string
   amountCents: number
   paymentType: string
   occasion: string
@@ -191,9 +201,11 @@ export async function sendPaymentConfirmationEmail(params: {
   loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
   loyaltyPoints?: number | null
 }) {
+  const { brand, fromName } = await getEmailBrand(params.chefId)
   await sendEmail({
     to: params.clientEmail,
     subject: `Payment of ${formatCents(params.amountCents)} confirmed`,
+    fromName,
     react: createElement(PaymentConfirmationEmail, {
       clientName: params.clientName,
       amountFormatted: formatCents(params.amountCents),
@@ -206,6 +218,7 @@ export async function sendPaymentConfirmationEmail(params: {
           : null,
       loyaltyTier: params.loyaltyTier ?? null,
       loyaltyPoints: params.loyaltyPoints ?? null,
+      brand,
     }),
   })
 }
@@ -237,6 +250,7 @@ export async function sendEventConfirmedEmail(params: {
   clientEmail: string
   clientName: string
   chefName: string
+  chefId?: string
   occasion: string
   eventDate: string
   serveTime: string | null
@@ -244,9 +258,11 @@ export async function sendEventConfirmedEmail(params: {
   guestCount: number | null
   eventId: string
 }) {
+  const { brand, fromName } = await getEmailBrand(params.chefId)
   await sendEmail({
     to: params.clientEmail,
     subject: `Your ${params.occasion} event is confirmed!`,
+    fromName,
     react: createElement(EventConfirmedEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
@@ -256,6 +272,7 @@ export async function sendEventConfirmedEmail(params: {
       location: params.location,
       guestCount: params.guestCount,
       calendarUrl: `${APP_URL}/api/calendar/event/${params.eventId}`,
+      brand,
     }),
   })
 }

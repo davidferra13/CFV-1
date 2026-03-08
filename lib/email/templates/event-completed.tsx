@@ -4,7 +4,7 @@
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type EventCompletedProps = {
   clientName: string
@@ -13,6 +13,7 @@ type EventCompletedProps = {
   eventDate: string
   receiptUrl: string
   reviewUrl: string
+  brand?: ChefBrandProps
 }
 
 export function EventCompletedEmail({
@@ -22,9 +23,10 @@ export function EventCompletedEmail({
   eventDate,
   receiptUrl,
   reviewUrl,
+  brand,
 }: EventCompletedProps) {
   return (
-    <BaseLayout preview={`Thank you for dining with ${chefName}`}>
+    <BaseLayout brand={brand} preview={`Thank you for dining with ${chefName}`}>
       <Text style={heading}>Thank you for a wonderful evening!</Text>
 
       <Text style={paragraph}>Hi {clientName},</Text>

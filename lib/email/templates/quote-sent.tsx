@@ -3,7 +3,7 @@
 
 import { Button, Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type QuoteSentProps = {
   clientName: string
@@ -14,6 +14,7 @@ type QuoteSentProps = {
   occasion: string | null
   validUntil: string | null
   quoteUrl: string
+  brand?: ChefBrandProps
 }
 
 export function QuoteSentEmail({
@@ -25,11 +26,12 @@ export function QuoteSentEmail({
   occasion,
   validUntil,
   quoteUrl,
+  brand,
 }: QuoteSentProps) {
   const eventLabel = occasion || 'your event'
 
   return (
-    <BaseLayout preview={`New quote from ${chefName}: ${totalFormatted}`}>
+    <BaseLayout preview={`New quote from ${chefName}: ${totalFormatted}`} brand={brand}>
       <Text style={heading}>You have a new quote</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

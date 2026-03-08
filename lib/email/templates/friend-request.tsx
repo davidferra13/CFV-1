@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   recipientName: string
@@ -13,7 +13,7 @@ type Props = {
 
 export function FriendRequestEmail({ recipientName, senderName, hubUrl }: Props) {
   return (
-    <BaseLayout preview={`${senderName} wants to connect`}>
+    <BaseLayout brand={brand} preview={`${senderName} wants to connect`}>
       <Text style={heading}>New connection request</Text>
       <Text style={paragraph}>Hi {recipientName},</Text>
       <Text style={paragraph}>

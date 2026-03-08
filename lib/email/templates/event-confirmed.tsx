@@ -3,7 +3,7 @@
 
 import { Button, Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type EventConfirmedProps = {
   clientName: string
@@ -14,6 +14,7 @@ type EventConfirmedProps = {
   location: string | null
   guestCount: number | null
   calendarUrl: string
+  brand?: ChefBrandProps
 }
 
 export function EventConfirmedEmail({
@@ -25,9 +26,10 @@ export function EventConfirmedEmail({
   location,
   guestCount,
   calendarUrl,
+  brand,
 }: EventConfirmedProps) {
   return (
-    <BaseLayout preview={`Your ${occasion} event is confirmed!`}>
+    <BaseLayout brand={brand} preview={`Your ${occasion} event is confirmed!`}>
       <Text style={heading}>Event confirmed!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

@@ -5,6 +5,8 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
+import { getChefBrand, type ChefBrand } from '@/lib/chef/brand'
+import { fetchLogoAsBase64 } from '@/lib/documents/logo-utils'
 import { format } from 'date-fns'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -207,12 +209,22 @@ function stripInlineMarkdown(text: string): string {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderContract(pdf: PDFLayout, data: ContractDocumentData) {
+export function renderContract(
+  pdf: PDFLayout,
+  data: ContractDocumentData,
+  brand?: ChefBrand | null,
+  logoBase64?: string | null
+) {
   const { contractRef, bodySnapshot, status, signedAt, signerIpPartial, chef, client, event } = data
 
   // ── HEADER ────────────────────────────────────────────────────────────────
-  pdf.title(chef.businessName, 13)
-  pdf.title('SERVICE AGREEMENT', 11)
+  if (brand) {
+    pdf.brandedHeader(brand, logoBase64 ?? null)
+    pdf.title('SERVICE AGREEMENT', 11)
+  } else {
+    pdf.title(chef.businessName, 13)
+    pdf.title('SERVICE AGREEMENT', 11)
+  }
   pdf.space(1)
 
   // Contract metadata bar
@@ -289,6 +301,9 @@ export function renderContract(pdf: PDFLayout, data: ContractDocumentData) {
 
   // Footer
   pdf.footer(`${contractRef}  ·  ${chef.businessName}  ·  ${chef.email}`)
+  if (brand?.showPoweredBy) {
+    pdf.poweredByFooter()
+  }
 }
 
 // ─── Generate ─────────────────────────────────────────────────────────────────
@@ -300,7 +315,20 @@ export async function generateContract(
   const data = await fetchContractData(contractId, owner)
   if (!data) throw new Error('Contract not found or access denied')
 
+  // Fetch chef brand for PDF header
+  const chefId = owner.chefId
+  let brand = null
+  let logoBase64 = null
+  if (chefId) {
+    try {
+      brand = await getChefBrand(chefId)
+      logoBase64 = await fetchLogoAsBase64(brand.logoUrl)
+    } catch {
+      // Non-blocking: generate PDF without branding if brand fetch fails
+    }
+  }
+
   const pdf = new PDFLayout()
-  renderContract(pdf, data)
+  renderContract(pdf, data, brand, logoBase64)
   return pdf.toBuffer()
 }

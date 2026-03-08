@@ -3,7 +3,7 @@
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type QuoteExpiringProps = {
   clientName: string
@@ -13,6 +13,7 @@ type QuoteExpiringProps = {
   totalFormatted: string // pre-formatted price string e.g. "$1,500.00"
   quoteId: string
   appUrl: string
+  brand?: ChefBrandProps
 }
 
 export function QuoteExpiringEmail({
@@ -23,11 +24,12 @@ export function QuoteExpiringEmail({
   totalFormatted,
   quoteId,
   appUrl,
+  brand,
 }: QuoteExpiringProps) {
   const occasionLabel = occasion || 'your event'
 
   return (
-    <BaseLayout preview={`Your quote for ${occasionLabel} expires in 48 hours`}>
+    <BaseLayout brand={brand} preview={`Your quote for ${occasionLabel} expires in 48 hours`}>
       <Text style={heading}>Your quote expires soon</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

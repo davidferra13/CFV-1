@@ -4,7 +4,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type InquiryReceivedProps = {
   clientName: string
@@ -12,6 +12,7 @@ type InquiryReceivedProps = {
   occasion: string
   eventDate: string | null
   circleUrl?: string
+  brand?: ChefBrandProps
 }
 
 export function InquiryReceivedEmail({
@@ -20,9 +21,10 @@ export function InquiryReceivedEmail({
   occasion,
   eventDate,
   circleUrl,
+  brand,
 }: InquiryReceivedProps) {
   return (
-    <BaseLayout preview={`${chefName} received your inquiry`}>
+    <BaseLayout brand={brand} preview={`${chefName} received your inquiry`}>
       <Text style={heading}>Inquiry received</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

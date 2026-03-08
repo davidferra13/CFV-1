@@ -3,13 +3,14 @@
 
 import { Button, Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type PaymentFailedProps = {
   clientName: string
   occasion: string
   errorMessage: string | null
   retryUrl: string
+  brand?: ChefBrandProps
 }
 
 export function PaymentFailedEmail({
@@ -17,9 +18,10 @@ export function PaymentFailedEmail({
   occasion,
   errorMessage,
   retryUrl,
+  brand,
 }: PaymentFailedProps) {
   return (
-    <BaseLayout preview={`Payment failed for ${occasion}`}>
+    <BaseLayout brand={brand} preview={`Payment failed for ${occasion}`}>
       <Text style={heading}>Payment unsuccessful</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

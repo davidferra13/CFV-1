@@ -4,13 +4,14 @@
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type PostEventSurveyEmailProps = {
   clientName: string
   chefName: string
   occasion: string
   surveyUrl: string
+  brand?: ChefBrandProps
 }
 
 export function PostEventSurveyEmail({
@@ -18,9 +19,10 @@ export function PostEventSurveyEmail({
   chefName,
   occasion,
   surveyUrl,
+  brand,
 }: PostEventSurveyEmailProps) {
   return (
-    <BaseLayout preview={`How was your ${occasion} with ${chefName}?`}>
+    <BaseLayout brand={brand} preview={`How was your ${occasion} with ${chefName}?`}>
       <Text style={heading}>How was your experience?</Text>
 
       <Text style={paragraph}>Hi {clientName},</Text>

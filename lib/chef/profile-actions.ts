@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { chefBrandTag } from '@/lib/chef/brand'
 import { z } from 'zod'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
@@ -185,6 +186,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings/profile')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag(chefBrandTag(user.entityId))
 
   return { success: true as const }
 }
@@ -265,6 +267,7 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
   revalidatePath('/settings')
   revalidatePath('/settings/my-profile')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag(chefBrandTag(user.entityId))
 
   return { success: true, url: publicUrl }
 }

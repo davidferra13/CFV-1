@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   clientName: string
@@ -14,7 +14,7 @@ type Props = {
 
 export function ContractSentEmail({ clientName, occasion, eventDate, signingUrl }: Props) {
   return (
-    <BaseLayout preview={`Your service contract is ready to sign — ${occasion}`}>
+    <BaseLayout brand={brand} preview={`Your service contract is ready to sign — ${occasion}`}>
       <Text style={heading}>Your contract is ready</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

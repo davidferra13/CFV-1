@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type Props = {
   chefName: string
@@ -25,7 +25,7 @@ export function QuoteAcceptedChefEmail({
   inquiryUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`${clientName} accepted your quote`}>
+    <BaseLayout brand={brand} preview={`${clientName} accepted your quote`}>
       <Text style={heading}>Quote accepted</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

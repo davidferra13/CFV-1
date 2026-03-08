@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type DietaryItem = { label: string; count: number }
 
@@ -31,7 +31,7 @@ export function PreEventDietarySummaryEmail({
   eventUrl,
 }: Props) {
   return (
-    <BaseLayout preview={`Dietary summary for ${occasion} on ${eventDate}`}>
+    <BaseLayout brand={brand} preview={`Dietary summary for ${occasion} on ${eventDate}`}>
       <Text style={heading}>Dietary Summary</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

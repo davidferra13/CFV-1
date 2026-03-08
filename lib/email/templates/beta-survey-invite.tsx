@@ -4,17 +4,18 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type BetaSurveyInviteProps = {
   name: string
   surveyTitle: string
   surveyUrl: string
+  brand?: ChefBrandProps
 }
 
 export function BetaSurveyInviteEmail({ name, surveyTitle, surveyUrl }: BetaSurveyInviteProps) {
   return (
-    <BaseLayout preview={`${surveyTitle} — We'd love your feedback on ChefFlow.`}>
+    <BaseLayout brand={brand} preview={`${surveyTitle} — We'd love your feedback on ChefFlow.`}>
       <Text style={heading}>Your feedback matters.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>

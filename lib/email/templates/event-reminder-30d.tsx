@@ -3,7 +3,7 @@
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout } from './base-layout'
+import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type EventReminder30dProps = {
   clientName: string
@@ -14,6 +14,7 @@ type EventReminder30dProps = {
   location: string | null
   eventId: string
   appUrl: string
+  brand?: ChefBrandProps
 }
 
 export function EventReminder30dEmail({
@@ -25,9 +26,10 @@ export function EventReminder30dEmail({
   location,
   eventId,
   appUrl,
+  brand,
 }: EventReminder30dProps) {
   return (
-    <BaseLayout preview={`Looking forward to your ${occasion} next month`}>
+    <BaseLayout brand={brand} preview={`Looking forward to your ${occasion} next month`}>
       <Text style={heading}>Looking forward to your event next month!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
