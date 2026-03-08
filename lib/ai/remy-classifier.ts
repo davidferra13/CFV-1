@@ -7,6 +7,8 @@
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { incrementAiMetric } from '@/lib/ai/ai-metrics'
+import { trySimilarityClassify } from '@/lib/ai/remy-intent-middle-layer'
 import type { MessageIntent } from '@/lib/ai/remy-types'
 
 const ClassificationSchema = z.object({
@@ -257,7 +259,16 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
   // Try deterministic classification first (instant, free, no LLM)
   const deterministic = tryDeterministicClassify(message)
   if (deterministic) {
+    incrementAiMetric('ai.classifier.regex_hit')
     return deterministic
+  }
+
+  // Middle layer: local similarity against curated intent prototypes.
+  // Cheaper and faster than a full Ollama call for ambiguous-but-common requests.
+  const similarity = trySimilarityClassify(message)
+  if (similarity) {
+    incrementAiMetric('ai.classifier.similarity_hit')
+    return similarity
   }
 
   // Log fallthrough for pattern improvement (misclassification tracking)
@@ -268,6 +279,7 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
     // Use 'complex' tier (30b conversation model) instead of 'fast' (4b)
     // to avoid model swap on 6GB VRAM. Remy streaming now uses the same tier,
     // eliminates the 60-100s model swap penalty that occurs every request.
+    incrementAiMetric('ai.classifier.ollama_hit')
     const result = await parseWithOllama(
       CLASSIFIER_SYSTEM_PROMPT,
       `Classify this message: "${message}"`,
