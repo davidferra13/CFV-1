@@ -12,6 +12,7 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { loadRemyContext } from '@/lib/ai/remy-context'
 import { determineContextScope } from '@/app/api/remy/stream/route-prompt-utils'
 import { classifyIntent, getIntentClarificationMessage } from '@/lib/ai/remy-classifier'
+import { recordRemyStageBatch, timeRemyStage } from '@/lib/ai/remy-stage-metrics'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { tryInstantAnswer } from '@/app/api/remy/stream/route-instant-answers'
@@ -1056,6 +1057,9 @@ export async function sendRemyMessage(
 
   try {
     // ─── MEMORY path (regex-only, no LLM call needed) ─────────────
+    const requestStartedAt = Date.now()
+    const stageLatencies: Record<string, number> = {}
+
     const memoryIntent = detectMemoryIntent(userMessage)
     if (memoryIntent === 'list') {
       return handleMemoryList()
@@ -1068,18 +1072,28 @@ export async function sendRemyMessage(
 
     // Determine context scope (deterministic, instant) before parallel load
     const contextScope = determineContextScope(userMessage, 'unknown')
+    const setupStartedAt = Date.now()
 
     // Run context loading, intent classification, memory loading, and focus mode check in parallel
     const [context, classification, focusMode] = await Promise.all([
-      loadRemyContext(currentPage, contextScope),
-      classifyIntent(userMessage),
-      isFocusModeEnabled().catch(() => false),
+      timeRemyStage(stageLatencies, 'setup.context', () =>
+        loadRemyContext(currentPage, contextScope)
+      ),
+      timeRemyStage(stageLatencies, 'setup.classification', () => classifyIntent(userMessage)),
+      timeRemyStage(stageLatencies, 'setup.focus_mode', () =>
+        isFocusModeEnabled().catch(() => false)
+      ),
     ])
 
-    const memories = await loadRelevantMemories(userMessage, classification.intent)
+    const memories = await timeRemyStage(stageLatencies, 'setup.memories', () =>
+      loadRelevantMemories(userMessage, classification.intent)
+    )
+    stageLatencies['setup.total'] = Date.now() - setupStartedAt
 
     const clarification = getIntentClarificationMessage(userMessage, classification)
     if (clarification) {
+      stageLatencies['request.total'] = Date.now() - requestStartedAt
+      recordRemyStageBatch(stageLatencies)
       return {
         text: clarification,
         intent: 'question',
@@ -1088,7 +1102,9 @@ export async function sendRemyMessage(
 
     // ─── COMMAND path ─────────────────────────────────────────────────
     if (classification.intent === 'command') {
-      const commandRun = await runCommand(userMessage)
+      const commandRun = await timeRemyStage(stageLatencies, 'command.run', () =>
+        runCommand(userMessage)
+      )
 
       if (commandRun.ollamaOffline) {
         throw new OllamaOfflineError('Ollama is offline', 'unreachable')
@@ -1106,6 +1122,8 @@ export async function sendRemyMessage(
       }))
 
       const text = summarizeTaskResults(tasks)
+      stageLatencies['request.total'] = Date.now() - requestStartedAt
+      recordRemyStageBatch(stageLatencies)
 
       return { text, intent: 'command', tasks }
     }
@@ -1115,7 +1133,10 @@ export async function sendRemyMessage(
       const commandInput = classification.commandPart ?? userMessage
       const questionInput = classification.questionPart ?? userMessage
 
-      const commandRun = await runCommand(commandInput)
+      const mixedLlmStartedAt = Date.now()
+      const commandRun = await timeRemyStage(stageLatencies, 'mixed.command', () =>
+        runCommand(commandInput)
+      )
 
       if (commandRun.ollamaOffline) {
         throw new OllamaOfflineError('Ollama is offline', 'unreachable')
@@ -1146,11 +1167,15 @@ export async function sendRemyMessage(
       const conversationalResult = await parseWithOllama(
         systemPrompt,
         `${history}Chef: ${questionInput}\n\nUse the turn execution context above when answering. If it already answers the chef's question, lead with that answer naturally.`,
-        RemyConversationalSchema
+        RemyConversationalSchema,
+        { taskType: 'reasoning' }
       )
 
       const taskSummary = summarizeTaskResults(tasks)
       const text = conversationalResult.response.trim() || taskSummary
+      stageLatencies['mixed.llm'] = Date.now() - mixedLlmStartedAt
+      stageLatencies['request.total'] = Date.now() - requestStartedAt
+      recordRemyStageBatch(stageLatencies)
 
       return {
         text,
@@ -1164,6 +1189,9 @@ export async function sendRemyMessage(
     if (classification.intent === 'question') {
       const instant = tryInstantAnswer(userMessage, context)
       if (instant) {
+        stageLatencies['question.instant'] = 0
+        stageLatencies['request.total'] = Date.now() - requestStartedAt
+        recordRemyStageBatch(stageLatencies)
         return {
           text: instant.text,
           intent: 'question',
@@ -1182,11 +1210,16 @@ export async function sendRemyMessage(
       conversationHistory
     )
     const history = formatConversationHistory(conversationHistory)
+    const questionLlmStartedAt = Date.now()
     const result = await parseWithOllama(
       systemPrompt,
       `${history}Chef: ${userMessage}`,
-      RemyConversationalSchema
+      RemyConversationalSchema,
+      { taskType: 'reasoning' }
     )
+    stageLatencies['question.llm'] = Date.now() - questionLlmStartedAt
+    stageLatencies['request.total'] = Date.now() - requestStartedAt
+    recordRemyStageBatch(stageLatencies)
 
     return {
       text: result.response,

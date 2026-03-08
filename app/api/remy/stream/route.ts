@@ -36,6 +36,7 @@ import {
 } from '@/lib/ai/remy-memory-actions'
 import { getFirstMentionedClientName } from '@/lib/ai/remy-entity-utils'
 import { recordRemyMetric } from '@/lib/ai/remy-metrics'
+import { recordRemyStageBatch, timeRemyStage } from '@/lib/ai/remy-stage-metrics'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { MemoryCategory } from '@/lib/ai/remy-memory-types'
 import {
@@ -76,6 +77,8 @@ async function getRemyRuntimeState(
 
 export async function POST(req: NextRequest) {
   try {
+    const requestStartedAt = Date.now()
+    const stageLatencies: Record<string, number> = {}
     const user = await requireChef()
     const runtimeState = await getRemyRuntimeState(user.tenantId!)
     if (!runtimeState.allowed) {
@@ -540,6 +543,7 @@ export async function POST(req: NextRequest) {
 
     // Determine context scope BEFORE parallel load (deterministic, instant)
     const contextScope = determineContextScope(message, 'unknown')
+    const setupStartedAt = Date.now()
 
     let context: Awaited<ReturnType<typeof loadRemyContext>>
     let classification: Awaited<ReturnType<typeof classifyIntent>>
@@ -552,16 +556,30 @@ export async function POST(req: NextRequest) {
     try {
       const [ctx, cls, profile, favChefs, mentioned, archetype, survey] = (await Promise.race([
         Promise.all([
-          loadRemyContext(currentPage, contextScope),
-          classifyIntent(message),
-          getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
-          getFavoriteChefs().catch(() => []),
-          resolveMessageEntities(message).catch((err) => {
-            console.error('[non-blocking] Entity resolution failed:', err)
-            return []
-          }),
-          getRemyArchetype().catch(() => null),
-          activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
+          timeRemyStage(stageLatencies, 'setup.context', () =>
+            loadRemyContext(currentPage, contextScope)
+          ),
+          timeRemyStage(stageLatencies, 'setup.classification', () => classifyIntent(message)),
+          timeRemyStage(stageLatencies, 'setup.profile', () =>
+            getCulinaryProfileForPrompt(user.tenantId!).catch(() => '')
+          ),
+          timeRemyStage(stageLatencies, 'setup.favorite_chefs', () =>
+            getFavoriteChefs().catch(() => [])
+          ),
+          timeRemyStage(stageLatencies, 'setup.entities', () =>
+            resolveMessageEntities(message).catch((err) => {
+              console.error('[non-blocking] Entity resolution failed:', err)
+              return []
+            })
+          ),
+          timeRemyStage(stageLatencies, 'setup.archetype', () =>
+            getRemyArchetype().catch(() => null)
+          ),
+          timeRemyStage(stageLatencies, 'setup.survey', () =>
+            activeForm === 'remy-survey'
+              ? getSurveyState().catch(() => null)
+              : Promise.resolve(null)
+          ),
         ]),
         setupTimeout,
       ])) as [
@@ -576,11 +594,10 @@ export async function POST(req: NextRequest) {
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
-      memories = await loadRelevantMemories(
-        message,
-        classification.intent,
-        getFirstMentionedClientName(mentioned)
+      memories = await timeRemyStage(stageLatencies, 'setup.memories', () =>
+        loadRelevantMemories(message, classification.intent, getFirstMentionedClientName(mentioned))
       )
+      stageLatencies['setup.total'] = Date.now() - setupStartedAt
       culinaryProfile = profile || undefined
       archetypeId = archetype
       surveyState = survey
@@ -591,6 +608,8 @@ export async function POST(req: NextRequest) {
       }
     } catch (setupErr) {
       releaseInteractiveLock()
+      stageLatencies['request.total'] = Date.now() - requestStartedAt
+      recordRemyStageBatch(stageLatencies)
       const msg = setupErr instanceof Error ? setupErr.message : String(setupErr)
       const isOllama =
         msg.includes('Ollama') || msg.includes('timeout') || msg.includes('timed out')
@@ -646,6 +665,9 @@ export async function POST(req: NextRequest) {
       const instant = tryInstantAnswer(message, context)
       if (instant) {
         releaseInteractiveLock()
+        stageLatencies['question.instant'] = 0
+        stageLatencies['request.total'] = Date.now() - requestStartedAt
+        recordRemyStageBatch(stageLatencies)
         const encoder = new TextEncoder()
         const stream = new ReadableStream({
           start(controller) {
@@ -670,6 +692,7 @@ export async function POST(req: NextRequest) {
       const chainSteps = looksLikeChain(message) ? parseTaskChain(message) : null
 
       if (chainSteps && chainSteps.length > 1) {
+        const chainStartedAt = Date.now()
         // Execute each step sequentially, combining results
         const allTasks: RemyTaskResult[] = []
         const stepSummaries: string[] = []
@@ -715,12 +738,17 @@ export async function POST(req: NextRequest) {
           },
         })
         releaseInteractiveLock()
+        stageLatencies['command.run'] = Date.now() - chainStartedAt
+        stageLatencies['request.total'] = Date.now() - requestStartedAt
+        recordRemyStageBatch(stageLatencies)
         recordRemyMetric({ category: 'general' } as any).catch(() => {})
         return new Response(stream, { headers: sseHeaders() })
       }
 
       // Single command (no chain)
-      const commandRun = await runCommand(message)
+      const commandRun = await timeRemyStage(stageLatencies, 'command.run', () =>
+        runCommand(message)
+      )
 
       if (commandRun.ollamaOffline) {
         releaseInteractiveLock()
@@ -758,6 +786,8 @@ export async function POST(req: NextRequest) {
         },
       })
       releaseInteractiveLock()
+      stageLatencies['request.total'] = Date.now() - requestStartedAt
+      recordRemyStageBatch(stageLatencies)
 
       // Record anonymous command metric (non-blocking)
       recordRemyMetric({
@@ -772,7 +802,9 @@ export async function POST(req: NextRequest) {
       const commandInput = classification.commandPart ?? message
       const questionInput = classification.questionPart ?? message
 
-      const [commandRun] = await Promise.all([runCommand(commandInput)])
+      const [commandRun] = await Promise.all([
+        timeRemyStage(stageLatencies, 'mixed.command', () => runCommand(commandInput)),
+      ])
 
       if (commandRun.ollamaOffline) {
         releaseInteractiveLock()
@@ -813,9 +845,13 @@ export async function POST(req: NextRequest) {
         mixedPrefer = 'pi'
       }
 
-      const mixedEndpoint = await routeForRemy({ preferEndpoint: mixedPrefer })
+      const mixedEndpoint = await timeRemyStage(stageLatencies, 'mixed.route', () =>
+        routeForRemy({ preferEndpoint: mixedPrefer })
+      )
       if (!mixedEndpoint) {
         releaseInteractiveLock()
+        stageLatencies['request.total'] = Date.now() - requestStartedAt
+        recordRemyStageBatch(stageLatencies)
         return new Response(
           encodeSSE({
             type: 'error',
@@ -860,6 +896,7 @@ Use the turn execution context above when answering. If it already answers the c
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         async start(controller) {
+          const mixedLlmStartedAt = Date.now()
           // Hard timeout: kill the Ollama call if it hangs
           const abortCtrl = new AbortController()
           const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
@@ -979,6 +1016,9 @@ Use the turn execution context above when answering. If it already answers the c
               encoder.encode(encodeSSE({ type: 'error', data: sanitizeErrorForClient(err) }))
             )
           } finally {
+            stageLatencies['mixed.llm'] = Date.now() - mixedLlmStartedAt
+            stageLatencies['request.total'] = Date.now() - requestStartedAt
+            recordRemyStageBatch(stageLatencies)
             clearTimeout(timeout)
             req.signal.removeEventListener('abort', onDisconnect)
             releaseInteractiveLock()
@@ -1006,9 +1046,13 @@ Use the turn execution context above when answering. If it already answers the c
       preferEndpoint = 'pi'
     }
 
-    const endpoint = await routeForRemy({ preferEndpoint })
+    const endpoint = await timeRemyStage(stageLatencies, 'question.route', () =>
+      routeForRemy({ preferEndpoint })
+    )
     if (!endpoint) {
       releaseInteractiveLock()
+      stageLatencies['request.total'] = Date.now() - requestStartedAt
+      recordRemyStageBatch(stageLatencies)
       return new Response(
         encodeSSE({
           type: 'error',
@@ -1043,6 +1087,7 @@ Use the turn execution context above when answering. If it already answers the c
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
+        const questionLlmStartedAt = Date.now()
         // Hard timeout: kill the Ollama call if it hangs
         const abortCtrl = new AbortController()
         const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
@@ -1177,6 +1222,9 @@ Use the turn execution context above when answering. If it already answers the c
             modelVersion: endpoint.model,
           }).catch(() => {})
         } finally {
+          stageLatencies['question.llm'] = Date.now() - questionLlmStartedAt
+          stageLatencies['request.total'] = Date.now() - requestStartedAt
+          recordRemyStageBatch(stageLatencies)
           clearTimeout(timeout)
           req.signal.removeEventListener('abort', onDisconnect)
           releaseInteractiveLock()
