@@ -1069,6 +1069,17 @@ export const navGroups: NavGroup[] = [
       { href: '/admin/onboarding-status', label: 'Onboarding', icon: ListChecks, adminOnly: true },
       // Platform Search
       { href: '/admin/search', label: 'Search All', icon: MagnifyingGlassPlus, adminOnly: true },
+      // Admin Super View — Gap Closure (industry-standard admin features)
+      { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard, adminOnly: true },
+      { href: '/admin/chef-health', label: 'Chef Health', icon: Activity, adminOnly: true },
+      { href: '/admin/lifecycle', label: 'Lifecycle', icon: TrendingUp, adminOnly: true },
+      { href: '/admin/errors', label: 'Errors', icon: AlertTriangle, adminOnly: true },
+      { href: '/admin/sla', label: 'Response SLA', icon: Clock, adminOnly: true },
+      { href: '/admin/jobs', label: 'Jobs', icon: Zap, adminOnly: true },
+      { href: '/admin/data-tools', label: 'Data Tools', icon: ShieldCheck, adminOnly: true },
+      { href: '/admin/sessions', label: 'Sessions', icon: Users, adminOnly: true },
+      { href: '/admin/changelog', label: 'Changelog', icon: FileText, adminOnly: true },
+      { href: '/admin/benchmarks', label: 'Benchmarks', icon: BarChart3, adminOnly: true },
     ],
   },
 ]

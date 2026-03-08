@@ -66,27 +66,37 @@ Dedicated pages that show ALL data across ALL chefs in one view. Filterable, sea
 
 **Pages built:**
 
-| Route                         | What it shows                                                                  |
-| ----------------------------- | ------------------------------------------------------------------------------ |
-| `/admin/recipes`              | All recipes across all chefs                                                   |
-| `/admin/menus`                | All menus across all chefs                                                     |
-| `/admin/quotes`               | All quotes/invoices with amounts                                               |
-| `/admin/inquiries`            | All inquiries with GOLDMINE lead scores                                        |
-| `/admin/staff`                | All staff members across all chefs                                             |
-| `/admin/documents`            | All contracts/documents                                                        |
-| `/admin/clients`              | All clients with LTV, events, View as Client + View as Chef buttons            |
-| `/admin/calendar-view`        | Unified cross-tenant calendar (30 days back, 90 forward)                       |
-| `/admin/loyalty`              | Per-chef loyalty: points issued, redeemed, outstanding                         |
-| `/admin/equipment`            | All equipment with purchase/current value                                      |
-| `/admin/allergens`            | Cross-platform dietary restrictions and allergies (safety-critical)            |
-| `/admin/remy-activity`        | Per-chef Remy usage: actions, errors, top tasks                                |
-| `/admin/gmail-sync`           | Gmail sync health per chef: synced count, errors, staleness                    |
-| `/admin/notifications`        | Global notification feed with search/filter/pagination                         |
-| `/admin/notifications-audit`  | Notification delivery audit: email/push/SMS status, failures                   |
-| `/admin/prospecting-overview` | All prospects across all chefs with stages and scores                          |
-| `/admin/activity-feed`        | Unified activity timeline across all chefs                                     |
-| `/admin/onboarding-status`    | Per-chef setup completeness (profile, Stripe, recipes, clients, events, Gmail) |
-| `/admin/search`               | Platform-wide search across chefs, clients, events, recipes, inquiries         |
+| Route                         | What it shows                                                                    |
+| ----------------------------- | -------------------------------------------------------------------------------- |
+| `/admin/recipes`              | All recipes across all chefs                                                     |
+| `/admin/menus`                | All menus across all chefs                                                       |
+| `/admin/quotes`               | All quotes/invoices with amounts                                                 |
+| `/admin/inquiries`            | All inquiries with GOLDMINE lead scores                                          |
+| `/admin/staff`                | All staff members across all chefs                                               |
+| `/admin/documents`            | All contracts/documents                                                          |
+| `/admin/clients`              | All clients with LTV, events, View as Client + View as Chef buttons              |
+| `/admin/calendar-view`        | Unified cross-tenant calendar (30 days back, 90 forward)                         |
+| `/admin/loyalty`              | Per-chef loyalty: points issued, redeemed, outstanding                           |
+| `/admin/equipment`            | All equipment with purchase/current value                                        |
+| `/admin/allergens`            | Cross-platform dietary restrictions and allergies (safety-critical)              |
+| `/admin/remy-activity`        | Per-chef Remy usage: actions, errors, top tasks                                  |
+| `/admin/gmail-sync`           | Gmail sync health per chef: synced count, errors, staleness                      |
+| `/admin/notifications`        | Global notification feed with search/filter/pagination                           |
+| `/admin/notifications-audit`  | Notification delivery audit: email/push/SMS status, failures                     |
+| `/admin/prospecting-overview` | All prospects across all chefs with stages and scores                            |
+| `/admin/activity-feed`        | Unified activity timeline across all chefs                                       |
+| `/admin/onboarding-status`    | Per-chef setup completeness (profile, Stripe, recipes, clients, events, Gmail)   |
+| `/admin/search`               | Platform-wide search across chefs, clients, events, recipes, inquiries           |
+| `/admin/subscriptions`        | Subscription status, tier, trial expiry, Stripe connected, MRR KPIs              |
+| `/admin/chef-health`          | Composite health score per chef (events, clients, activity, recency)             |
+| `/admin/lifecycle`            | Tenant lifecycle stages (new, onboarding, active, established, dormant, churned) |
+| `/admin/errors`               | Aggregated errors from notification delivery, Gmail sync, Remy, automations      |
+| `/admin/sla`                  | Inquiry response time tracking with SLA grades (A-F) per chef                    |
+| `/admin/jobs`                 | Background automation execution log with success/error rates                     |
+| `/admin/data-tools`           | GDPR data inventory per tenant (client, event, recipe, document counts)          |
+| `/admin/sessions`             | User login activity, last active dates, engagement metrics                       |
+| `/admin/changelog`            | Platform release history and version notes                                       |
+| `/admin/benchmarks`           | Cross-tenant comparison (revenue, events, conversion rate, avg event value)      |
 
 **Data queries:** `lib/admin/platform-data.ts` (uses service role to bypass RLS)
 
@@ -100,3 +110,4 @@ Dedicated pages that show ALL data across ALL chefs in one view. Filterable, sea
 - Phase 4: Chef Health & Onboarding (onboarding completeness tracker with tier display) - DONE
 - Phase 5: Intelligence & Monitoring (Remy activity, Gmail sync, notifications, prospecting, activity feed) - DONE
 - Phase 6: Platform Search & CSV Export (search bar across 5 entity types, CSV on all pages) - DONE
+- Phase 7: Industry Gap Closure (subscriptions, chef health, lifecycle, errors, SLA, jobs, GDPR tools, sessions, changelog, benchmarks) - DONE
