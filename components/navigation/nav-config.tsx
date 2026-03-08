@@ -284,6 +284,7 @@ export const navGroups: NavGroup[] = [
         icon: BarChart3,
         children: [
           { href: '/analytics', label: 'Source Analytics' },
+          { href: '/analytics/capacity', label: 'Capacity Planning' },
           { href: '/insights/time-analysis', label: 'Time Analysis', visibility: 'advanced' },
         ],
       },

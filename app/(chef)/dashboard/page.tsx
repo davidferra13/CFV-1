@@ -54,6 +54,8 @@ import { getUpcomingCalls } from '@/lib/calls/actions'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
 import { getRecipeDebt } from '@/lib/recipes/actions'
 import { RecipeDebtWidget } from '@/components/dashboard/recipe-debt-widget'
+import { CapacityWidget } from '@/components/dashboard/capacity-widget'
+import { getCapacitySnapshot } from '@/lib/analytics/capacity-actions'
 import {
   getCollaboratingOnEvents,
   getPendingCollaborationInvitations,
@@ -194,6 +196,7 @@ export default async function ChefDashboard() {
     pendingCollabInvitations,
     pendingRecipeShares,
     quoteInsights,
+    capacitySnapshot,
   ] = await Promise.all([
     safe('preferences', getChefPreferences, {
       id: '',
@@ -229,6 +232,7 @@ export default async function ChefDashboard() {
     safe('pendingCollabInvitations', getPendingCollaborationInvitations, []),
     safe('pendingRecipeShares', getPendingRecipeShares, []),
     safe('quoteInsights', getQuoteAcceptanceInsights, null),
+    safe('capacitySnapshot', getCapacitySnapshot, { utilizationPercent: 0, weeklyHoursUsed: 0, weeklyHoursAvailable: 40, burnoutRisk: 'low' as const, canTakeMore: true, additionalEventsPerWeek: 0 }),
   ])
 
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
@@ -929,6 +933,26 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {/* SECTION 10: ACTIVITY                          */}
       {/* ============================================ */}
+      {/* ============================================ */}
+      {/* SECTION: CAPACITY PLANNING                   */}
+      {/* ============================================ */}
+      {isWidgetEnabled('capacity') && (
+        <section style={{ order: getWidgetOrder('capacity') }}>
+          <Card>
+            <CardContent className="py-4">
+              <CapacityWidget
+                utilizationPercent={capacitySnapshot.utilizationPercent}
+                weeklyHoursUsed={capacitySnapshot.weeklyHoursUsed}
+                weeklyHoursAvailable={capacitySnapshot.weeklyHoursAvailable}
+                burnoutRisk={capacitySnapshot.burnoutRisk}
+                canTakeMore={capacitySnapshot.canTakeMore}
+                additionalEventsPerWeek={capacitySnapshot.additionalEventsPerWeek}
+              />
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
       {isWidgetEnabled('activity') && (
         <section className="space-y-3" style={{ order: getWidgetOrder('activity') }}>
           <div className="flex items-center justify-between">
