@@ -5,6 +5,7 @@ import { getAdminCalendarEvents } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { CalendarDays } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
@@ -51,6 +52,20 @@ export default async function AdminCalendarPage() {
             days forward)
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={events}
+          filename="admin-calendar"
+          columns={[
+            { header: 'Date', accessor: (e) => e.event_date },
+            { header: 'Occasion', accessor: (e) => e.occasion },
+            { header: 'Chef', accessor: (e) => e.chefBusinessName },
+            { header: 'Status', accessor: (e) => e.status },
+            { header: 'Guests', accessor: (e) => e.guest_count },
+          ]}
+        />
       </div>
 
       {events.length === 0 ? (

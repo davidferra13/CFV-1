@@ -5,6 +5,7 @@ import { getAdminGmailSync } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Mail } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminGmailSyncPage() {
   try {
@@ -30,6 +31,20 @@ export default async function AdminGmailSyncPage() {
             {totalSynced.toLocaleString()} emails synced · {totalErrors} errors
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={syncs}
+          filename="admin-gmail-sync"
+          columns={[
+            { header: 'Chef', accessor: (g) => g.chefBusinessName },
+            { header: 'Email', accessor: (g) => g.chefEmail },
+            { header: 'Emails Synced', accessor: (g) => g.totalSynced },
+            { header: 'Errors', accessor: (g) => g.errorCount },
+            { header: 'Last Sync', accessor: (g) => g.lastSyncedAt },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

@@ -7,6 +7,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminEmails } from '@/lib/platform/owner-account'
 import { getImpersonatedChefId } from '@/lib/auth/admin-impersonation'
+import { getImpersonatedClientId } from '@/lib/auth/client-impersonation'
 
 export type AuthUser = {
   id: string
@@ -157,15 +158,45 @@ export async function requireChef(): Promise<AuthUser> {
 /**
  * Require client role - throws if not client
  * Use in client portal pages and server actions
+ *
+ * Admin impersonation: when an admin has the client impersonation cookie set,
+ * this returns the TARGET client's context. The admin's real auth identity
+ * (user.id) is preserved. Admin must be a chef-role user with admin email.
  */
 export async function requireClient(): Promise<AuthUser> {
   const user = await getCurrentUser()
 
-  if (!user || user.role !== 'client') {
-    throw new Error('Unauthorized: Client access required')
+  // Normal client auth
+  if (user && user.role === 'client') {
+    return user
   }
 
-  return user
+  // Admin client impersonation: admin (chef role) can view as a specific client
+  if (user && user.role === 'chef') {
+    const impersonatedClientId = getImpersonatedClientId()
+    if (impersonatedClientId) {
+      const adminEmails = getAdminEmails()
+      if (adminEmails.includes(user.email.toLowerCase())) {
+        const adminClient = createAdminClient()
+        const { data: targetClient } = await adminClient
+          .from('clients')
+          .select('id, tenant_id')
+          .eq('id', impersonatedClientId)
+          .single()
+
+        if (targetClient) {
+          return {
+            ...user,
+            role: 'client',
+            entityId: impersonatedClientId,
+            tenantId: targetClient.tenant_id,
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error('Unauthorized: Client access required')
 }
 
 /**

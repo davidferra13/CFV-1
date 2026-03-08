@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getAdminActivityFeed } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Activity } from '@/components/ui/icons'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminActivityFeedPage() {
   try {
@@ -26,6 +27,19 @@ export default async function AdminActivityFeedPage() {
             Latest {feed.length} action{feed.length !== 1 ? 's' : ''} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={feed}
+          filename="admin-activity"
+          columns={[
+            { header: 'Type', accessor: (e) => e.event_type },
+            { header: 'Chef', accessor: (e) => e.chefBusinessName },
+            { header: 'Description', accessor: (e) => e.description },
+            { header: 'Timestamp', accessor: (e) => e.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

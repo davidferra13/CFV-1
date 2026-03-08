@@ -5,6 +5,7 @@ import { getAdminLoyalty } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Gift } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminLoyaltyPage() {
   try {
@@ -30,6 +31,19 @@ export default async function AdminLoyaltyPage() {
             {totalPoints.toLocaleString()} points issued · {totalRedeemed.toLocaleString()} redeemed
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={loyalty}
+          filename="admin-loyalty"
+          columns={[
+            { header: 'Chef', accessor: (l) => l.chefBusinessName },
+            { header: 'Points Issued', accessor: (l) => l.totalPointsIssued },
+            { header: 'Redeemed', accessor: (l) => l.totalRedemptions },
+            { header: 'Outstanding', accessor: (l) => l.totalPointsIssued - l.totalRedemptions },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

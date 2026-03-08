@@ -1005,6 +1005,12 @@ export const navGroups: NavGroup[] = [
         icon: BellRing,
         adminOnly: true,
       },
+      {
+        href: '/admin/notifications-audit',
+        label: 'Delivery Audit',
+        icon: BellRing,
+        adminOnly: true,
+      },
       { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh, adminOnly: true },
       { href: '/admin/users', label: 'Chefs', icon: Users, adminOnly: true },
       { href: '/admin/clients', label: 'Clients', icon: Contact, adminOnly: true },

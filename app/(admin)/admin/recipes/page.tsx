@@ -5,6 +5,7 @@ import { getAdminRecipes } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { BookOpen, AlertCircle } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminRecipesPage() {
   try {
@@ -28,6 +29,23 @@ export default async function AdminRecipesPage() {
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={recipes}
+          filename="admin-recipes"
+          columns={[
+            { header: 'Name', accessor: (r) => r.name },
+            { header: 'Chef', accessor: (r) => r.chefBusinessName },
+            { header: 'Category', accessor: (r) => r.category },
+            { header: 'Cuisine', accessor: (r) => r.cuisine_type },
+            { header: 'Servings', accessor: (r) => r.servings },
+            { header: 'Prep (min)', accessor: (r) => r.prep_time_minutes },
+            { header: 'Cook (min)', accessor: (r) => r.cook_time_minutes },
+            { header: 'Created', accessor: (r) => r.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

@@ -5,6 +5,7 @@ import { getAdminInquiries } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Inbox } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
   new: 'bg-blue-900 text-blue-700',
@@ -49,6 +50,24 @@ export default async function AdminInquiriesPage() {
             {inquiries.length} inquir{inquiries.length !== 1 ? 'ies' : 'y'} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={inquiries}
+          filename="admin-inquiries"
+          columns={[
+            { header: 'Client', accessor: (i) => i.client_name },
+            { header: 'Email', accessor: (i) => i.client_email },
+            { header: 'Chef', accessor: (i) => i.chefBusinessName },
+            { header: 'Occasion', accessor: (i) => i.occasion },
+            { header: 'Status', accessor: (i) => i.status },
+            { header: 'Lead Score', accessor: (i) => i.leadScore },
+            { header: 'Guests', accessor: (i) => i.guest_count },
+            { header: 'Event Date', accessor: (i) => i.event_date },
+            { header: 'Received', accessor: (i) => i.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

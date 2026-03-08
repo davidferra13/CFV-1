@@ -5,6 +5,7 @@ import { getAdminEquipment } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Toolbox } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 function formatCents(cents: number | null): string {
   if (!cents) return '-'
@@ -34,6 +35,29 @@ export default async function AdminEquipmentPage() {
             current value
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={equipment}
+          filename="admin-equipment"
+          columns={[
+            { header: 'Item', accessor: (e) => e.name },
+            { header: 'Chef', accessor: (e) => e.chefBusinessName },
+            { header: 'Category', accessor: (e) => e.category },
+            { header: 'Status', accessor: (e) => e.status },
+            {
+              header: 'Purchase ($)',
+              accessor: (e) =>
+                e.purchase_price_cents ? (e.purchase_price_cents / 100).toFixed(2) : '',
+            },
+            {
+              header: 'Current ($)',
+              accessor: (e) =>
+                e.current_value_cents ? (e.current_value_cents / 100).toFixed(2) : '',
+            },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

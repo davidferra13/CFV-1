@@ -5,6 +5,7 @@ import { getAdminQuotes } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Receipt } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 function formatCents(cents: number | null): string {
   if (!cents) return '-'
@@ -45,6 +46,23 @@ export default async function AdminQuotesPage() {
             value
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={quotes}
+          filename="admin-quotes"
+          columns={[
+            { header: 'Chef', accessor: (q) => q.chefBusinessName },
+            { header: 'Event', accessor: (q) => q.eventOccasion },
+            { header: 'Status', accessor: (q) => q.status },
+            {
+              header: 'Total ($)',
+              accessor: (q) => (q.total_cents ? (q.total_cents / 100).toFixed(2) : ''),
+            },
+            { header: 'Created', accessor: (q) => q.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

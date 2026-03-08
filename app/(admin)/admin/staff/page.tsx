@@ -5,6 +5,7 @@ import { getAdminStaff } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Users } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-green-900 text-green-700',
@@ -33,6 +34,21 @@ export default async function AdminStaffPage() {
             {staff.length} staff member{staff.length !== 1 ? 's' : ''} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={staff}
+          filename="admin-staff"
+          columns={[
+            { header: 'Name', accessor: (s) => s.full_name },
+            { header: 'Chef', accessor: (s) => s.chefBusinessName },
+            { header: 'Email', accessor: (s) => s.email },
+            { header: 'Role', accessor: (s) => s.role },
+            { header: 'Status', accessor: (s) => s.status },
+            { header: 'Added', accessor: (s) => s.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

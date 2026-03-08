@@ -5,6 +5,7 @@ import { getAdminMenus } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { UtensilsCrossed } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminMenusPage() {
   try {
@@ -27,6 +28,19 @@ export default async function AdminMenusPage() {
             {menus.length} menu{menus.length !== 1 ? 's' : ''} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={menus}
+          filename="admin-menus"
+          columns={[
+            { header: 'Name', accessor: (m) => m.name },
+            { header: 'Chef', accessor: (m) => m.chefBusinessName },
+            { header: 'Description', accessor: (m) => m.description },
+            { header: 'Created', accessor: (m) => m.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

@@ -644,3 +644,78 @@ export async function getAdminProspects(): Promise<AdminProspectRow[]> {
     chefBusinessName: chefMap.get(p.chef_id) ?? null,
   }))
 }
+
+// ─── Notifications Audit ─────────────────────────────────
+
+export type AdminNotificationRow = {
+  id: string
+  category: string | null
+  action: string | null
+  title: string | null
+  body: string | null
+  read_at: string | null
+  archived_at: string | null
+  created_at: string
+  tenant_id: string
+  chefBusinessName: string | null
+}
+
+export async function getAdminNotifications(): Promise<AdminNotificationRow[]> {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  const { data: notifs } = await supabase
+    .from('notifications')
+    .select('id, category, action, title, body, read_at, archived_at, created_at, tenant_id')
+    .order('created_at', { ascending: false })
+    .limit(500)
+
+  if (!notifs || notifs.length === 0) return []
+
+  const tenantIds = [...new Set(notifs.map((n) => n.tenant_id))]
+  const { data: chefs } = await supabase
+    .from('chefs')
+    .select('id, business_name')
+    .in('id', tenantIds)
+  const chefMap = new Map((chefs ?? []).map((c) => [c.id, c.business_name]))
+
+  return notifs.map((n) => ({
+    ...n,
+    chefBusinessName: chefMap.get(n.tenant_id) ?? null,
+  }))
+}
+
+export type AdminDeliveryLogRow = {
+  id: string
+  channel: string
+  status: string
+  error_message: string | null
+  sent_at: string
+  tenant_id: string
+  chefBusinessName: string | null
+}
+
+export async function getAdminDeliveryLog(): Promise<AdminDeliveryLogRow[]> {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  const { data: logs } = await supabase
+    .from('notification_delivery_log')
+    .select('id, channel, status, error_message, sent_at, tenant_id')
+    .order('sent_at', { ascending: false })
+    .limit(500)
+
+  if (!logs || logs.length === 0) return []
+
+  const tenantIds = [...new Set(logs.map((l) => l.tenant_id))]
+  const { data: chefs } = await supabase
+    .from('chefs')
+    .select('id, business_name')
+    .in('id', tenantIds)
+  const chefMap = new Map((chefs ?? []).map((c) => [c.id, c.business_name]))
+
+  return logs.map((l) => ({
+    ...l,
+    chefBusinessName: chefMap.get(l.tenant_id) ?? null,
+  }))
+}

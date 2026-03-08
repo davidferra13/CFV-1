@@ -5,6 +5,7 @@ import { getAdminAllergens } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { AlertTriangle } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminAllergensPage() {
   try {
@@ -40,6 +41,20 @@ export default async function AdminAllergensPage() {
           These require special attention during event prep.
         </div>
       )}
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={allergens}
+          filename="admin-allergens"
+          columns={[
+            { header: 'Client', accessor: (a) => a.clientName },
+            { header: 'Email', accessor: (a) => a.clientEmail },
+            { header: 'Chef', accessor: (a) => a.chefBusinessName },
+            { header: 'Allergies', accessor: (a) => a.allergies },
+            { header: 'Dietary Restrictions', accessor: (a) => a.dietaryRestrictions },
+          ]}
+        />
+      </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         {allergens.length === 0 ? (

@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { ListChecks } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 type ChefOnboarding = {
   id: string
@@ -118,6 +119,25 @@ export default async function AdminOnboardingPage() {
             {statuses.filter((s) => s.completeness === 100).length} fully set up
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={statuses}
+          filename="admin-onboarding"
+          columns={[
+            { header: 'Chef', accessor: (s) => s.business_name },
+            { header: 'Email', accessor: (s) => s.email },
+            { header: 'Tier', accessor: (s) => s.tier },
+            { header: 'Completeness', accessor: (s) => `${s.completeness}%` },
+            { header: 'Profile', accessor: (s) => (s.hasProfile ? 'Yes' : 'No') },
+            { header: 'Stripe', accessor: (s) => (s.hasStripe ? 'Yes' : 'No') },
+            { header: 'Recipes', accessor: (s) => (s.hasRecipes ? 'Yes' : 'No') },
+            { header: 'Clients', accessor: (s) => (s.hasClients ? 'Yes' : 'No') },
+            { header: 'Events', accessor: (s) => (s.hasEvents ? 'Yes' : 'No') },
+            { header: 'Gmail', accessor: (s) => (s.hasGmail ? 'Yes' : 'No') },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

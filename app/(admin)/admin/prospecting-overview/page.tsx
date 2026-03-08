@@ -5,6 +5,7 @@ import { getAdminProspects } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Target } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STAGE_COLORS: Record<string, string> = {
   lead: 'bg-blue-900 text-blue-700',
@@ -37,6 +38,21 @@ export default async function AdminProspectingPage() {
             {prospects.length} prospect{prospects.length !== 1 ? 's' : ''} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={prospects}
+          filename="admin-prospects"
+          columns={[
+            { header: 'Business', accessor: (p) => p.business_name },
+            { header: 'Contact', accessor: (p) => p.contact_name },
+            { header: 'Chef', accessor: (p) => p.chefBusinessName },
+            { header: 'Stage', accessor: (p) => p.stage },
+            { header: 'Score', accessor: (p) => p.score },
+            { header: 'Added', accessor: (p) => p.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

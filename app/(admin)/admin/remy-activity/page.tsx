@@ -5,6 +5,7 @@ import { getAdminRemyActivity } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { Bot } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminRemyActivityPage() {
   try {
@@ -30,6 +31,28 @@ export default async function AdminRemyActivityPage() {
             chef{activity.length !== 1 ? 's' : ''} using Remy
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={activity}
+          filename="admin-remy-activity"
+          columns={[
+            { header: 'Chef', accessor: (a) => a.chefBusinessName },
+            { header: 'Total Actions', accessor: (a) => a.totalActions },
+            { header: 'Success', accessor: (a) => a.successCount },
+            { header: 'Errors', accessor: (a) => a.errorCount },
+            {
+              header: 'Error Rate',
+              accessor: (a) =>
+                a.totalActions > 0
+                  ? `${((a.errorCount / a.totalActions) * 100).toFixed(1)}%`
+                  : '0%',
+            },
+            { header: 'Top Tasks', accessor: (a) => a.topTaskTypes.join(', ') },
+            { header: 'Last Action', accessor: (a) => a.lastActionAt },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

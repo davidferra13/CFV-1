@@ -5,6 +5,7 @@ import { getAdminDocuments } from '@/lib/admin/platform-data'
 import { redirect } from 'next/navigation'
 import { FileText } from '@/components/ui/icons'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 export default async function AdminDocumentsPage() {
   try {
@@ -27,6 +28,19 @@ export default async function AdminDocumentsPage() {
             {docs.length} document{docs.length !== 1 ? 's' : ''} across all chefs
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <CsvExportButton
+          data={docs}
+          filename="admin-documents"
+          columns={[
+            { header: 'Title', accessor: (d) => d.title },
+            { header: 'Chef', accessor: (d) => d.chefBusinessName },
+            { header: 'Type', accessor: (d) => d.doc_type },
+            { header: 'Created', accessor: (d) => d.created_at },
+          ]}
+        />
       </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
