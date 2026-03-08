@@ -1,6 +1,6 @@
 # ChefFlow — Complete Application Audit
 
-> **Generated:** 2026-02-23 ~6:00 PM EST (snapshot — source code may have changed since)
+> **Generated:** 2026-02-23 ~6:00 PM EST | **Last incremental update:** 2026-03-08
 > **Scope:** Every page, every button, every tab, every link, every form, every modal, every overlay, every data display, every conditional element, every navigation path in the entire ChefFlow application.
 > **Source:** Direct source code analysis of all ~265 page.tsx files and their imported components.
 >
@@ -863,6 +863,12 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 | `/staff-schedule`  | **My schedule.** Event assignments split into upcoming and past. Event name, date, times, hours, status. Read-only                                                                                                                     |
 
 **Staff nav bar:** Links to Dashboard, Tasks, Station, Recipes, Schedule + Sign Out. Responsive hamburger menu on mobile.
+
+### Public Staff Event Portal (token-based, no login)
+
+| Route                | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/staff-portal/[id]` | **Token-gated event briefing** for kitchen staff (no login required, link shared by chef). Mobile-first. Shows: event details (location, date, time), dietary alerts, staff schedule (prep/service/cleanup times), tasks with completion checkboxes (optimistic UI + rollback), hours logging form, chef contact info, Google Maps link. Three states: valid (briefing view), revoked (error), expired (error). Replaces old `/staff/[id]/page.tsx` public route. |
 
 ---
 
