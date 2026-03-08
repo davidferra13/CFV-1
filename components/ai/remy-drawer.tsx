@@ -67,6 +67,7 @@ import {
 import { useConversationManagement } from '@/lib/hooks/use-conversation-management'
 import { useRemySend } from '@/lib/hooks/use-remy-send'
 import { useKitchenMode } from '@/lib/hooks/use-kitchen-mode'
+import { useRemyProactiveAlerts } from '@/lib/hooks/use-remy-proactive-alerts'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ export function RemyDrawer() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const lastKitchenModeErrorIdRef = useRef<string | null>(null)
   const pendingImageRef = useRef<{ base64: string; intent: 'receipt' | 'dish' | 'auto' } | null>(
     null
   )
@@ -213,6 +215,16 @@ export function RemyDrawer() {
     isLoading: loading,
   })
   const { kitchenMode, isCapturing, toggleKitchenMode } = kitchenModeHook
+  const proactiveAlerts = useRemyProactiveAlerts({
+    enabled: open && drawerView === 'chat',
+    dispatchBody,
+  })
+  const {
+    loading: proactiveAlertsLoading,
+    nudges: proactiveAlertsList,
+    summary: proactiveAlertsSummary,
+    dismissAlert: dismissProactiveAlert,
+  } = proactiveAlerts
 
   // Context-aware starters
   const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
@@ -295,6 +307,18 @@ export function RemyDrawer() {
       stopSpeaking()
     }
   }, [open, stopSpeaking])
+
+  // Kitchen mode safety: stop hands-free capture if the last Remy response was an error.
+  useEffect(() => {
+    if (!kitchenMode || loading) return
+    const lastMessage = messages[messages.length - 1]
+    if (!lastMessage || lastMessage.role !== 'remy' || !lastMessage.isRetryable) return
+    if (lastKitchenModeErrorIdRef.current === lastMessage.id) return
+
+    lastKitchenModeErrorIdRef.current = lastMessage.id
+    kitchenModeHook.stopKitchenMode()
+    toast.error('Kitchen Mode paused because Remy hit an error.')
+  }, [kitchenMode, kitchenModeHook, loading, messages])
 
   // Auto-read: speak new Remy responses when auto-read is enabled
   const prevMessageCountRef = useRef(messages.length)
@@ -1021,6 +1045,96 @@ export function RemyDrawer() {
                     >
                       Dismiss
                     </button>
+                  </div>
+                )}
+
+                {(proactiveAlertsLoading || proactiveAlertsList.length > 0) && (
+                  <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/15 text-amber-300">
+                        {proactiveAlertsLoading ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Bot className="h-3.5 w-3.5" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-amber-100">
+                          {proactiveAlertsLoading
+                            ? 'Checking the rail for anything that needs attention...'
+                            : proactiveAlertsSummary}
+                        </p>
+                        {!proactiveAlertsLoading && (
+                          <p className="mt-0.5 text-xs text-amber-200/80">
+                            Before you ask, here are the items that look hottest right now.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {proactiveAlertsList.length > 0 && (
+                      <div className="space-y-2">
+                        {proactiveAlertsList.slice(0, 3).map((nudge) => (
+                          <div
+                            key={nudge.id}
+                            className="rounded-lg border border-amber-500/15 bg-stone-950/30 px-3 py-2"
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="truncate text-sm font-medium text-stone-100">
+                                    {nudge.title}
+                                  </p>
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                                      nudge.priority === 'high'
+                                        ? 'bg-red-500/15 text-red-300'
+                                        : nudge.priority === 'medium'
+                                          ? 'bg-amber-500/15 text-amber-300'
+                                          : 'bg-stone-700 text-stone-300'
+                                    }`}
+                                  >
+                                    {nudge.priority}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-xs leading-relaxed text-stone-300">
+                                  {nudge.message}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => dismissProactiveAlert(nudge.id)}
+                                className="rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-800 hover:text-stone-200"
+                                title="Dismiss this alert"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+
+                            {nudge.actionHref && nudge.actionLabel && (
+                              <div className="mt-2 flex justify-end">
+                                <Link
+                                  href={nudge.actionHref}
+                                  onClick={closeDrawer}
+                                  className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-200 transition-colors hover:bg-amber-500/25"
+                                >
+                                  <ArrowRight className="h-3 w-3" />
+                                  {nudge.actionLabel}
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+
+                        {proactiveAlertsList.length > 3 && (
+                          <p className="text-[11px] text-amber-200/75">
+                            {proactiveAlertsList.length - 3} more alert
+                            {proactiveAlertsList.length - 3 === 1 ? '' : 's'} are queued behind
+                            these.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

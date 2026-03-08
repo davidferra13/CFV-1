@@ -11,6 +11,7 @@ export interface VoiceSettings {
   rate: number
   pitch: number
   volume: number
+  autoRead: boolean
 }
 
 const VOICE_SETTINGS_KEY = 'remy-voice-settings'
@@ -19,6 +20,7 @@ const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   rate: 1,
   pitch: 1,
   volume: 1,
+  autoRead: false,
 }
 
 export { DEFAULT_VOICE_SETTINGS }
