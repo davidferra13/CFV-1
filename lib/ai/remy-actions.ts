@@ -358,7 +358,8 @@ function buildRemySystemPrompt(
   focusMode: boolean = false,
   userMessage?: string,
   isFirstMessage: boolean = false,
-  conversationHistory: RemyMessage[] = []
+  conversationHistory: RemyMessage[] = [],
+  turnExecutionContext?: string | null
 ): string {
   const parts: string[] = []
 
@@ -421,6 +422,12 @@ Use seasonal awareness naturally — mention what's in season, upcoming holidays
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
+
+  if (context.contextWarnings && context.contextWarnings.length > 0) {
+    parts.push(`\nCONTEXT LIMITATION:
+Some ChefFlow context failed to load: ${context.contextWarnings.join(', ')}.
+Do not state missing context as fact. If the chef asks about one of these areas, be explicit that your answer may be incomplete and suggest a refresh or source-page check.`)
+  }
 
   // Service configuration (what this chef offers and doesn't offer)
   if (context.serviceConfigPrompt) {
@@ -517,6 +524,12 @@ ${aars
     parts.push(`\nBUSINESS INTELLIGENCE (from 25 analytics engines — use when discussing business health, pricing, growth, or client retention):
 ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
+  }
+
+  if (turnExecutionContext) {
+    parts.push(`\nTURN EXECUTION CONTEXT:
+${turnExecutionContext}
+In this turn, these results are already real. Incorporate them naturally into your answer. Do not act like you still need to fetch them, and do not ignore them in favor of generic advice.`)
   }
 
   // Revenue pattern awareness
@@ -740,6 +753,56 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
   }
 
   return summaries.join('\n\n')
+}
+
+function truncateForPrompt(text: string, maxChars = 320): string {
+  const normalized = text.replace(/\s+/g, ' ').trim()
+  if (normalized.length <= maxChars) return normalized
+  return `${normalized.slice(0, maxChars - 1)}…`
+}
+
+function buildExecutionContextForPrompt(commandInput: string, results: RemyTaskResult[]): string {
+  if (results.length === 0) {
+    return `The command portion "${commandInput}" was attempted, but it did not return any concrete task results. Answer the chef's question directly and mention that plainly if relevant.`
+  }
+
+  const lines = [
+    `The command portion of this same chef turn has already been executed: "${commandInput}".`,
+    'Use these concrete results when answering the question portion. Lead with them if they answer the chef directly. Do not ignore them and do not switch to generic advice when exact results already exist.',
+    'EXECUTED TASK RESULTS:',
+  ]
+
+  for (const task of results.slice(0, 5)) {
+    const label = task.name || task.taskType
+    if (task.status === 'error') {
+      lines.push(`- ${label} [error]: ${truncateForPrompt(task.error ?? 'Task failed.')}`)
+      continue
+    }
+    if (task.status === 'held') {
+      lines.push(
+        `- ${label} [held]: ${truncateForPrompt(task.holdReason ?? 'Needs chef confirmation or more detail.')}`
+      )
+      continue
+    }
+    if (task.status === 'pending') {
+      const data = task.data as { clientName?: string; subject?: string } | undefined
+      const bits = ['Draft prepared and waiting for chef review']
+      if (data?.clientName) bits.push(`for ${data.clientName}`)
+      if (data?.subject) bits.push(`with subject "${data.subject}"`)
+      lines.push(`- ${label} [pending]: ${truncateForPrompt(bits.join(' ') + '.')}`)
+      continue
+    }
+
+    lines.push(`- ${label} [done]: ${truncateForPrompt(summarizeTaskResults([task]))}`)
+  }
+
+  if (results.length > 5) {
+    lines.push(
+      `- ${results.length - 5} more task result(s) were produced beyond the items listed above.`
+    )
+  }
+
+  return lines.join('\n')
 }
 
 // ─── Memory Intent Detection (regex — no LLM needed) ───────────────────────
@@ -1040,29 +1103,14 @@ export async function sendRemyMessage(
 
     // ─── MIXED path ───────────────────────────────────────────────────
     if (classification.intent === 'mixed') {
-      // Run both paths in parallel
       const commandInput = classification.commandPart ?? userMessage
       const questionInput = classification.questionPart ?? userMessage
 
-      const [commandRun, conversationalResult] = await Promise.all([
-        runCommand(commandInput),
-        (async () => {
-          const systemPrompt = buildRemySystemPrompt(
-            context,
-            memories,
-            focusMode,
-            questionInput,
-            conversationHistory.length === 0,
-            conversationHistory
-          )
-          const history = formatConversationHistory(conversationHistory)
-          return parseWithOllama(
-            systemPrompt,
-            `${history}Chef: ${questionInput}`,
-            RemyConversationalSchema
-          )
-        })(),
-      ])
+      const commandRun = await runCommand(commandInput)
+
+      if (commandRun.ollamaOffline) {
+        throw new OllamaOfflineError('Ollama is offline', 'unreachable')
+      }
 
       const tasks: RemyTaskResult[] = (commandRun.results ?? []).map((r) => ({
         taskId: r.taskId,
@@ -1075,8 +1123,25 @@ export async function sendRemyMessage(
         holdReason: r.holdReason,
       }))
 
+      const executionContext = buildExecutionContextForPrompt(commandInput, tasks)
+      const history = formatConversationHistory(conversationHistory)
+      const systemPrompt = buildRemySystemPrompt(
+        context,
+        memories,
+        focusMode,
+        questionInput,
+        conversationHistory.length === 0,
+        conversationHistory,
+        executionContext
+      )
+      const conversationalResult = await parseWithOllama(
+        systemPrompt,
+        `${history}Chef: ${questionInput}\n\nUse the turn execution context above when answering. If it already answers the chef's question, lead with that answer naturally.`,
+        RemyConversationalSchema
+      )
+
       const taskSummary = summarizeTaskResults(tasks)
-      const text = `${conversationalResult.response}\n\n${taskSummary}`
+      const text = conversationalResult.response.trim() || taskSummary
 
       return {
         text,

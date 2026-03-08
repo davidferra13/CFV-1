@@ -47,6 +47,7 @@ import {
   sseErrorResponse,
   sseHeaders,
   summarizeTaskResults,
+  buildExecutionContextForPrompt,
   ThinkingBlockFilter,
 } from './route-runtime-utils'
 import {
@@ -498,6 +499,12 @@ export async function POST(req: NextRequest) {
           `${ctx.staleInquiries.length} inquir${ctx.staleInquiries.length !== 1 ? 'ies' : 'y'} waiting for a response`
         )
       }
+      if (ctx.contextWarnings && ctx.contextWarnings.length > 0) {
+        lines.push('')
+        lines.push(
+          `Heads up: I could not load ${ctx.contextWarnings.join(', ')}. Some recommendations may be missing context until you refresh.`
+        )
+      }
 
       if (nuggets.length > 0) {
         lines.push('')
@@ -758,6 +765,17 @@ export async function POST(req: NextRequest) {
 
       const [commandRun] = await Promise.all([runCommand(commandInput)])
 
+      if (commandRun.ollamaOffline) {
+        releaseInteractiveLock()
+        return new Response(
+          encodeSSE({
+            type: 'error',
+            data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
+          }),
+          { headers: sseHeaders() }
+        )
+      }
+
       const tasks: RemyTaskResult[] = (commandRun.results ?? []).map((r) => ({
         taskId: r.taskId,
         taskType: r.taskType,
@@ -771,6 +789,7 @@ export async function POST(req: NextRequest) {
       }))
 
       const taskSummary = summarizeTaskResults(tasks)
+      const executionContext = buildExecutionContextForPrompt(commandInput, tasks)
 
       // Stream the conversational part - same load-aware routing as question path
       let mixedPrefer: 'auto' | 'pc' | 'pi' = 'auto'
@@ -797,9 +816,6 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Phase 5B: Intent-aware context scoping for mixed path
-      const mixedScope = determineContextScope(message, classification.intent)
-
       const systemPrompt = buildRemySystemPrompt(
         context,
         memories,
@@ -814,7 +830,8 @@ export async function POST(req: NextRequest) {
         surveyPromptSection,
         otherChannelDigest,
         previousSessionTopics,
-        message
+        questionInput,
+        executionContext
       )
 
       // Warn if system prompt is large enough to risk silent truncation.
@@ -828,7 +845,9 @@ export async function POST(req: NextRequest) {
       }
 
       const historyStr = formatConversationHistory(history)
-      const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
+      const mixedUserMessage = `${historyStr}Chef: ${questionInput}
+
+Use the turn execution context above when answering. If it already answers the chef's question, lead with that answer naturally.`
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         async start(controller) {
@@ -928,8 +947,8 @@ export async function POST(req: NextRequest) {
             // Parse nav suggestions from the end of the response
             const navSuggestions = extractNavSuggestions(fullResponse)
 
-            // Append task summary
-            if (taskSummary) {
+            // Safety net: if the conversational stream returned nothing, fall back to the task summary.
+            if (!fullResponse.trim() && taskSummary) {
               controller.enqueue(
                 encoder.encode(encodeSSE({ type: 'token', data: `\n\n${taskSummary}` }))
               )

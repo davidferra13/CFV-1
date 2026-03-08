@@ -97,7 +97,8 @@ export function buildRemySystemPrompt(
   surveyPromptSection?: string | null,
   otherChannelDigest?: string | null,
   previousSessionTopics?: { title: string; topics: string[]; lastActiveAt: string } | null,
-  userMessage?: string
+  userMessage?: string,
+  turnExecutionContext?: string | null
 ): string {
   const parts: string[] = []
 
@@ -159,6 +160,12 @@ export function buildRemySystemPrompt(
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
+
+  if (context.contextWarnings && context.contextWarnings.length > 0) {
+    parts.push(`\nCONTEXT LIMITATION:
+Some ChefFlow context failed to load: ${context.contextWarnings.join(', ')}.
+Do not present missing context as if it were complete. If the chef asks about one of these areas, say so plainly and advise them to refresh or verify in the source page.`)
+  }
 
   if (context.upcomingEvents && context.upcomingEvents.length > 0) {
     parts.push(`\nUPCOMING EVENTS:
@@ -849,6 +856,12 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
     parts.push(`\nBUSINESS INTELLIGENCE (synthesized from 30 analytics engines — use when discussing business health, pricing, growth, or client retention):
 ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
+  }
+
+  if (turnExecutionContext) {
+    parts.push(`\nTURN EXECUTION CONTEXT:
+${turnExecutionContext}
+In this turn, these results are already real. Incorporate them naturally into your answer. Do not act like you still need to fetch them, and do not ignore them in favor of generic advice.`)
   }
 
   // Response length calibration (deterministic — word count analysis)

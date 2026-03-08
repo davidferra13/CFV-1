@@ -523,6 +523,60 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
   return summaries.join('\n\n')
 }
 
+function truncateForPrompt(text: string, maxChars = 320): string {
+  const normalized = text.replace(/\s+/g, ' ').trim()
+  if (normalized.length <= maxChars) return normalized
+  return `${normalized.slice(0, maxChars - 1)}…`
+}
+
+function summarizeTaskForPrompt(task: RemyTaskResult): string {
+  if (task.status === 'error') {
+    return truncateForPrompt(task.error ?? 'Task failed.')
+  }
+
+  if (task.status === 'held') {
+    return truncateForPrompt(task.holdReason ?? 'Needs chef confirmation or more detail.')
+  }
+
+  if (task.status === 'pending') {
+    const data = task.data as { clientName?: string; subject?: string } | undefined
+    const bits = ['Draft prepared and waiting for chef review']
+    if (data?.clientName) bits.push(`for ${data.clientName}`)
+    if (data?.subject) bits.push(`with subject "${data.subject}"`)
+    return truncateForPrompt(bits.join(' ') + '.')
+  }
+
+  return truncateForPrompt(summarizeTaskResults([task]))
+}
+
+export function buildExecutionContextForPrompt(
+  commandInput: string,
+  results: RemyTaskResult[]
+): string {
+  if (results.length === 0) {
+    return `The command portion "${commandInput}" was attempted, but it did not return any concrete task results. Answer the chef's question directly and mention that plainly if relevant.`
+  }
+
+  const lines = [
+    `The command portion of this same chef turn has already been executed: "${commandInput}".`,
+    'Use these concrete results when answering the question portion. Lead with them if they answer the chef directly. Do not ignore them and do not switch to generic advice when exact results already exist.',
+    'EXECUTED TASK RESULTS:',
+  ]
+
+  for (const task of results.slice(0, 5)) {
+    const label = task.name || task.taskType
+    lines.push(`- ${label} [${task.status}]: ${summarizeTaskForPrompt(task)}`)
+  }
+
+  if (results.length > 5) {
+    lines.push(
+      `- ${results.length - 5} more task result(s) were produced beyond the items listed above.`
+    )
+  }
+
+  return lines.join('\n')
+}
+
 //  SSE Encoder
 
 export function encodeSSE(event: StreamEvent): string {
