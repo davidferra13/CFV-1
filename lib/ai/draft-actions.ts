@@ -8,6 +8,10 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import {
+  buildDraftContextSections,
+  type DraftEventSummary,
+} from '@/lib/ai/draft-context-formatting'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import {
   thankYouTemplate,
@@ -48,7 +52,9 @@ const EmailDraftSchema = z.object({
 async function loadClient(supabase: any, clientId: string, tenantId: string) {
   const { data } = await supabase
     .from('clients')
-    .select('id, full_name, email, vibe_notes, dietary_restrictions, allergies')
+    .select(
+      'id, full_name, email, vibe_notes, dietary_restrictions, allergies, loyalty_tier, loyalty_points'
+    )
     .eq('id', clientId)
     .eq('tenant_id', tenantId)
     .single()
@@ -64,7 +70,9 @@ async function findClientByName(supabase: any, name: string, tenantId: string) {
 
   const { data } = await supabase
     .from('clients')
-    .select('id, full_name, email, vibe_notes, dietary_restrictions, allergies')
+    .select(
+      'id, full_name, email, vibe_notes, dietary_restrictions, allergies, loyalty_tier, loyalty_points'
+    )
     .eq('tenant_id', tenantId)
     .ilike('full_name', `%${cleanName}%`)
     .limit(1)
@@ -74,7 +82,7 @@ async function findClientByName(supabase: any, name: string, tenantId: string) {
 async function loadLastEvent(supabase: any, clientId: string, tenantId: string) {
   const { data } = await supabase
     .from('events')
-    .select('id, occasion, event_date, guest_count, status, location')
+    .select('id, occasion, event_date, guest_count, status, location, payment_status')
     .eq('client_id', clientId)
     .eq('tenant_id', tenantId)
     .order('event_date', { ascending: false })
@@ -87,11 +95,43 @@ async function loadEvent(supabase: any, eventId: string, tenantId: string) {
   const { data } = await supabase
     .from('events')
     .select(
-      'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
+      'id, occasion, event_date, guest_count, status, location, payment_status, client_id, client:clients(full_name, email)'
     )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
+  return data
+}
+
+async function loadRecentEvents(supabase: any, clientId: string, tenantId: string, limit = 3) {
+  const { data } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, guest_count, status, location, payment_status')
+    .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
+    .neq('status', 'cancelled')
+    .order('event_date', { ascending: false })
+    .limit(limit)
+  return data ?? []
+}
+
+async function countClientEvents(supabase: any, clientId: string, tenantId: string) {
+  const { count } = await supabase
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
+    .neq('status', 'cancelled')
+  return count ?? 0
+}
+
+async function loadFinancialSummaryForEvent(supabase: any, eventId: string, tenantId: string) {
+  const { data } = await supabase
+    .from('event_financial_summary')
+    .select('event_id, outstanding_balance_cents, payment_status')
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
   return data
 }
 
@@ -110,6 +150,30 @@ function firstName(fullName: string | null | undefined): string {
 
 function formatDraft(subject: string, body: string): string {
   return `Subject: ${subject}\n\n${body}`
+}
+
+function toDraftEventSummary(
+  event: Record<string, unknown> | null | undefined,
+  financial?: Record<string, unknown> | null
+): DraftEventSummary | null {
+  if (!event) return null
+  return {
+    occasion: typeof event.occasion === 'string' ? event.occasion : null,
+    eventDate: typeof event.event_date === 'string' ? event.event_date : null,
+    guestCount: typeof event.guest_count === 'number' ? event.guest_count : null,
+    status: typeof event.status === 'string' ? event.status : null,
+    location: typeof event.location === 'string' ? event.location : null,
+    paymentStatus:
+      typeof financial?.payment_status === 'string'
+        ? (financial.payment_status as string)
+        : typeof event.payment_status === 'string'
+          ? (event.payment_status as string)
+          : null,
+    outstandingBalanceCents:
+      typeof financial?.outstanding_balance_cents === 'number'
+        ? (financial.outstanding_balance_cents as number)
+        : null,
+  }
 }
 
 // ============================================
@@ -146,7 +210,14 @@ export async function generateThankYouDraft(
     event = await loadLastEvent(supabase, client.id, tenantId)
   }
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const [chefName, recentEvents, totalEvents, financialSummary] = await Promise.all([
+    loadChefName(supabase, tenantId),
+    loadRecentEvents(supabase, client.id, tenantId),
+    countClientEvents(supabase, client.id, tenantId),
+    event?.id
+      ? loadFinancialSummaryForEvent(supabase, String(event.id), tenantId)
+      : Promise.resolve(null),
+  ])
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -159,12 +230,33 @@ export async function generateThankYouDraft(
 
   // Build the event description explicitly — avoid Ollama confusing event types from vibe_notes
   const eventOccasion = (event as any)?.occasion ?? 'recent event'
+  const draftContext = buildDraftContextSections({
+    client: {
+      fullName: client.full_name,
+      firstName: firstName(client.full_name),
+      vibeNotes: client.vibe_notes,
+      dietaryRestrictions: client.dietary_restrictions,
+      allergies: client.allergies,
+      loyaltyTier: client.loyalty_tier,
+      loyaltyPoints: client.loyalty_points,
+    },
+    targetEvent: toDraftEventSummary(event, financialSummary),
+    targetEventTitle: 'TARGET EVENT',
+    recentEvents: recentEvents
+      .filter((item: any) => item?.id !== (event as any)?.id)
+      .map((item: any) => toDraftEventSummary(item))
+      .filter(Boolean) as DraftEventSummary[],
+    totalEvents,
+  })
+  if (event) {
+    ;(event as any).location = `${(event as any)?.location ?? 'N/A'}\n\n${draftContext}`
+  }
 
   const { result, source } = await withAiFallback(
     () => thankYouTemplate(templateVars),
     () =>
       parseWithOllama(
-        `You are ${chefName}, a private chef writing a heartfelt thank-you note to a client after an event. First person singular "I". Warm, genuine, not generic. Reference specific details about their event. Keep it 3-4 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+        `You are ${chefName}, a private chef writing a heartfelt thank-you note to a client after an event. First person singular "I". Warm, specific, and personal, never generic. Use the context below to reference real details from the event and the relationship, but do not invent facts that are not present. Dietary notes and allergies are background context only unless they are clearly relevant to the hospitality or personalization. Keep it 3-4 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" — do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location ?? 'N/A'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
@@ -193,8 +285,12 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
   const client = await findClientByName(supabase, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
-  const chefName = await loadChefName(supabase, tenantId)
+  const [lastEvent, recentEvents, totalEvents, chefName] = await Promise.all([
+    loadLastEvent(supabase, client.id, tenantId),
+    loadRecentEvents(supabase, client.id, tenantId),
+    countClientEvents(supabase, client.id, tenantId),
+    loadChefName(supabase, tenantId),
+  ])
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -207,8 +303,25 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
     () => referralRequestTemplate(templateVars),
     () =>
       parseWithOllama(
-        `You are ${chefName}, a private chef writing a warm, non-pushy referral request to a loyal client. First person singular "I". Express gratitude first, then casually ask if they know anyone who might enjoy your services. Keep it friendly and 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a referral request for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nLast event: ${lastEvent?.occasion ?? 'recent event'} on ${lastEvent?.event_date ?? 'N/A'}\nClient notes: ${client.vibe_notes ?? 'none'}`,
+        `You are ${chefName}, a private chef writing a warm, non-pushy referral request to a loyal client. First person singular "I". Lead with gratitude, acknowledge the existing relationship, and only then make a light referral ask. Use the real client history below so the note feels earned rather than templated. Keep it friendly and 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+        `Write a referral request for ${client.full_name}.\n\n${buildDraftContextSections({
+          client: {
+            fullName: client.full_name,
+            firstName: firstName(client.full_name),
+            vibeNotes: client.vibe_notes,
+            dietaryRestrictions: client.dietary_restrictions,
+            allergies: client.allergies,
+            loyaltyTier: client.loyalty_tier,
+            loyaltyPoints: client.loyalty_points,
+          },
+          targetEvent: toDraftEventSummary(lastEvent),
+          targetEventTitle: 'MOST RECENT EVENT',
+          recentEvents: recentEvents
+            .filter((item: any) => item?.id !== lastEvent?.id)
+            .map((item: any) => toDraftEventSummary(item))
+            .filter(Boolean) as DraftEventSummary[],
+          totalEvents,
+        })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -235,8 +348,12 @@ export async function generateTestimonialRequestDraft(clientName: string): Promi
   const client = await findClientByName(supabase, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
-  const chefName = await loadChefName(supabase, tenantId)
+  const [lastEvent, recentEvents, totalEvents, chefName] = await Promise.all([
+    loadLastEvent(supabase, client.id, tenantId),
+    loadRecentEvents(supabase, client.id, tenantId),
+    countClientEvents(supabase, client.id, tenantId),
+    loadChefName(supabase, tenantId),
+  ])
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -250,11 +367,25 @@ export async function generateTestimonialRequestDraft(clientName: string): Promi
     () => testimonialRequestTemplate(templateVars),
     () =>
       parseWithOllama(
-        `You are ${chefName}, a private chef writing a friendly testimonial request to a client who recently had a great experience. First person singular "I". Express gratitude, mention why their feedback matters, and make it easy to say yes (short review, Google, or a quote you can share). 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a testimonial request for:
-Client: ${client.full_name} (first name: ${firstName(client.full_name)})
-Last event: ${lastEvent?.occasion ?? 'recent event'} on ${lastEvent?.event_date ?? 'N/A'}
-Guests: ${lastEvent?.guest_count ?? 'N/A'}`,
+        `You are ${chefName}, a private chef writing a friendly testimonial request to a client who recently had a strong experience. First person singular "I". Express gratitude, explain why their feedback matters, and make it easy to say yes. Use the actual relationship and event details below so the request sounds grounded, not boilerplate. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+        `Write a testimonial request for ${client.full_name}.\n\n${buildDraftContextSections({
+          client: {
+            fullName: client.full_name,
+            firstName: firstName(client.full_name),
+            vibeNotes: client.vibe_notes,
+            dietaryRestrictions: client.dietary_restrictions,
+            allergies: client.allergies,
+            loyaltyTier: client.loyalty_tier,
+            loyaltyPoints: client.loyalty_points,
+          },
+          targetEvent: toDraftEventSummary(lastEvent),
+          targetEventTitle: 'MOST RECENT EVENT',
+          recentEvents: recentEvents
+            .filter((item: any) => item?.id !== lastEvent?.id)
+            .map((item: any) => toDraftEventSummary(item))
+            .filter(Boolean) as DraftEventSummary[],
+          totalEvents,
+        })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -447,18 +578,32 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
   const client = await findClientByName(supabase, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  // Find events with outstanding balance
-  const { data: events } = await supabase
-    .from('events')
-    .select('id, occasion, event_date, status')
-    .eq('client_id', client.id)
-    .eq('tenant_id', tenantId)
-    .in('status', ['accepted', 'confirmed', 'completed'])
-    .order('event_date', { ascending: false })
-    .limit(1)
+  const [{ data: financialRows }, recentEvents, totalEvents, chefName] = await Promise.all([
+    supabase
+      .from('event_financial_summary')
+      .select(
+        'event_id, outstanding_balance_cents, payment_status, event_status, event_date, occasion, client_name'
+      )
+      .eq('tenant_id', tenantId)
+      .eq('client_id', client.id)
+      .gt('outstanding_balance_cents', 0)
+      .order('event_date', { ascending: false })
+      .limit(1),
+    loadRecentEvents(supabase, client.id, tenantId),
+    countClientEvents(supabase, client.id, tenantId),
+    loadChefName(supabase, tenantId),
+  ])
 
-  const lastEvent = events?.[0]
-  const chefName = await loadChefName(supabase, tenantId)
+  const lastFinancialRow = financialRows?.[0]
+  const lastEvent = lastFinancialRow
+    ? {
+        id: lastFinancialRow.event_id,
+        occasion: lastFinancialRow.occasion,
+        event_date: lastFinancialRow.event_date,
+        status: lastFinancialRow.event_status,
+        payment_status: lastFinancialRow.payment_status,
+      }
+    : await loadLastEvent(supabase, client.id, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -473,10 +618,24 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
     () =>
       parseWithOllama(
         `You are ${chefName}, a private chef writing a friendly payment reminder. First person singular "I". Be warm and professional — never threatening or aggressive. Gently reference the event and the outstanding amount. Offer to help if there are any questions. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a payment reminder for:
-Client: ${client.full_name} (first name: ${firstName(client.full_name)})
-Event: ${lastEvent?.occasion ?? 'recent event'} on ${lastEvent?.event_date ?? 'N/A'}
-Status: ${lastEvent?.status ?? 'N/A'}`,
+        `Write a payment reminder for ${client.full_name}.\n\n${buildDraftContextSections({
+          client: {
+            fullName: client.full_name,
+            firstName: firstName(client.full_name),
+            vibeNotes: client.vibe_notes,
+            dietaryRestrictions: client.dietary_restrictions,
+            allergies: client.allergies,
+            loyaltyTier: client.loyalty_tier,
+            loyaltyPoints: client.loyalty_points,
+          },
+          targetEvent: toDraftEventSummary(lastEvent, lastFinancialRow ?? null),
+          targetEventTitle: 'PAYMENT CONTEXT',
+          recentEvents: recentEvents
+            .filter((item: any) => item?.id !== lastEvent?.id)
+            .map((item: any) => toDraftEventSummary(item))
+            .filter(Boolean) as DraftEventSummary[],
+          totalEvents,
+        })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -504,8 +663,12 @@ export async function generateReEngagementDraft(clientName: string): Promise<Dra
   const client = await findClientByName(supabase, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
-  const chefName = await loadChefName(supabase, tenantId)
+  const [lastEvent, recentEvents, totalEvents, chefName] = await Promise.all([
+    loadLastEvent(supabase, client.id, tenantId),
+    loadRecentEvents(supabase, client.id, tenantId),
+    countClientEvents(supabase, client.id, tenantId),
+    loadChefName(supabase, tenantId),
+  ])
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -520,11 +683,24 @@ export async function generateReEngagementDraft(clientName: string): Promise<Dra
     () =>
       parseWithOllama(
         `You are ${chefName}, a private chef reaching out to a client you haven't heard from in a while. First person singular "I". Be warm and casual — not salesy. Reference your history together, mention something seasonal or exciting you're doing, and invite them to reconnect. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a re-engagement email for:
-Client: ${client.full_name} (first name: ${firstName(client.full_name)})
-Last event: ${lastEvent?.occasion ?? 'N/A'} on ${lastEvent?.event_date ?? 'a while ago'}
-Client notes: ${client.vibe_notes ?? 'none'}
-Preferences: ${(client.dietary_restrictions as string[] | null)?.join(', ') ?? 'none noted'}`,
+        `Write a re-engagement email for ${client.full_name}.\n\n${buildDraftContextSections({
+          client: {
+            fullName: client.full_name,
+            firstName: firstName(client.full_name),
+            vibeNotes: client.vibe_notes,
+            dietaryRestrictions: client.dietary_restrictions,
+            allergies: client.allergies,
+            loyaltyTier: client.loyalty_tier,
+            loyaltyPoints: client.loyalty_points,
+          },
+          targetEvent: toDraftEventSummary(lastEvent),
+          targetEventTitle: 'LAST EVENT ON FILE',
+          recentEvents: recentEvents
+            .filter((item: any) => item?.id !== lastEvent?.id)
+            .map((item: any) => toDraftEventSummary(item))
+            .filter(Boolean) as DraftEventSummary[],
+          totalEvents,
+        })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
