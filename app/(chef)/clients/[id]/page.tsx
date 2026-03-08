@@ -72,6 +72,8 @@ import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
+import { RebookButton } from '@/components/clients/rebook-button'
+import { clientHasCompletedEvents } from '@/lib/clients/rebook-actions'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -122,6 +124,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientNBA,
     portalTokenData,
     clientPhotos,
+    hasCompletedEvents,
   ] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
@@ -148,6 +151,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientNextBestAction(params.id).catch(() => null),
     getClientPortalToken(params.id).catch(() => ({ token: null, createdAt: null })),
     getClientPhotos(params.id).catch(() => []),
+    clientHasCompletedEvents(params.id).catch(() => false),
   ])
 
   const clientReviews = allReviews.filter((r: any) => r.client?.id === params.id)
@@ -220,6 +224,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {hasCompletedEvents && (
+            <RebookButton
+              clientId={client.id}
+              clientName={client.full_name}
+              variant="secondary"
+            />
+          )}
           <Link href={`/clients/${client.id}/recurring`}>
             <Button variant="secondary">Recurring Planning</Button>
           </Link>
@@ -245,12 +256,22 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               . Consider reaching out to re-engage.
             </p>
           </div>
-          <Link
-            href={`/clients/${client.id}#outreach`}
-            className="text-xs font-medium text-amber-800 underline shrink-0"
-          >
-            Send Message
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            {hasCompletedEvents && (
+              <RebookButton
+                clientId={client.id}
+                clientName={client.full_name}
+                variant="secondary"
+                size="sm"
+              />
+            )}
+            <Link
+              href={`/clients/${client.id}#outreach`}
+              className="text-xs font-medium text-amber-800 underline shrink-0"
+            >
+              Send Message
+            </Link>
+          </div>
         </div>
       )}
 

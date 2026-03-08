@@ -1,59 +1,62 @@
-// Relationship Cooling Alert — pure computation, no server action.
-// Identifies clients whose relationships may be going cold based on inactivity.
+// Cooling Alert Logic
+// Detects clients whose booking frequency has dropped off.
 
-export type CoolingClient = {
+export interface CoolingClient {
   clientId: string
   name: string
   lastEventDate: string | null
-  daysSinceLastEvent: number
-  tier: string
+  daysSinceLastEvent: number | null
+  tier: string | null
   suggestedAction: string
 }
 
-export function findCoolingClients(
-  clients: Array<{
-    id: string
-    name: string
-    last_event_date: string | null
-    tier?: string | null
-    intentionally_inactive?: boolean
-  }>
-): CoolingClient[] {
-  const now = new Date()
-  const cooling: CoolingClient[] = []
+interface ClientRecord {
+  id: string
+  name: string
+  last_event_date: string | null
+  tier: string | null
+  intentionally_inactive: boolean
+}
 
-  for (const client of clients) {
-    // Skip intentionally inactive clients
-    if (client.intentionally_inactive) continue
+const DEFAULT_COOLING_THRESHOLD_DAYS = 60
+const VIP_COOLING_THRESHOLD_DAYS = 45
 
-    const tier = client.tier || 'standard'
-    const threshold = tier === 'vip' ? 90 : 180
+/**
+ * Identify clients whose relationships are cooling.
+ * A client is "cooling" if they haven't booked in longer than their expected frequency.
+ * VIP clients get a shorter threshold (45 days vs 60).
+ */
+export function findCoolingClients(clients: ClientRecord[]): CoolingClient[] {
+  const now = Date.now()
+  const results: CoolingClient[] = []
 
-    let daysSinceLastEvent: number
-    if (client.last_event_date) {
-      const lastEvent = new Date(client.last_event_date)
-      const diffMs = now.getTime() - lastEvent.getTime()
-      daysSinceLastEvent = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    } else {
-      // Never had an event — use account age as proxy
-      daysSinceLastEvent = threshold + 1 // treat as cooling
-    }
+  for (const c of clients) {
+    if (c.intentionally_inactive) continue
+    if (!c.last_event_date) continue
 
-    if (daysSinceLastEvent >= threshold) {
-      const suggestedAction =
-        tier === 'vip' ? 'Invite to exclusive dinner' : 'Send a personal check-in message'
+    const lastDate = new Date(c.last_event_date).getTime()
+    const daysSince = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24))
 
-      cooling.push({
-        clientId: client.id,
-        name: client.name,
-        lastEventDate: client.last_event_date,
-        daysSinceLastEvent,
-        tier,
-        suggestedAction,
+    const threshold =
+      c.tier === 'vip' || c.tier === 'platinum' || c.tier === 'gold'
+        ? VIP_COOLING_THRESHOLD_DAYS
+        : DEFAULT_COOLING_THRESHOLD_DAYS
+
+    if (daysSince >= threshold) {
+      const isVip = c.tier === 'vip' || c.tier === 'platinum' || c.tier === 'gold'
+      results.push({
+        clientId: c.id,
+        name: c.name,
+        lastEventDate: c.last_event_date,
+        daysSinceLastEvent: daysSince,
+        tier: c.tier,
+        suggestedAction: isVip ? 'Priority Re-engage' : 'Check In',
       })
     }
   }
 
-  // Sort by most overdue first
-  return cooling.sort((a, b) => b.daysSinceLastEvent - a.daysSinceLastEvent)
+  // Sort by days since last event (most overdue first)
+  results.sort((a, b) => (b.daysSinceLastEvent ?? 0) - (a.daysSinceLastEvent ?? 0))
+
+  return results
 }

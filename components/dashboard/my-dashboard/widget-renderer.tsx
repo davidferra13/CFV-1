@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   DASHBOARD_WIDGET_LABELS,
@@ -9,6 +11,7 @@ import {
   type DashboardWidgetId,
 } from '@/lib/scheduling/types'
 import { formatCurrency } from '@/lib/utils/currency'
+import { rebookClient } from '@/lib/clients/rebook-actions'
 
 interface Props {
   widgetId: string
@@ -217,22 +220,57 @@ function CoolingAlertsContent({ data }: { data: unknown }) {
   return (
     <div>
       <p className="text-sm font-semibold text-stone-100 mb-2">Cooling Clients</p>
-      <p className="text-xs text-stone-500 mb-3">{clients.length} haven't booked in 60+ days</p>
+      <p className="text-xs text-stone-500 mb-3">{clients.length} haven&apos;t booked in 60+ days</p>
       <div className="space-y-1.5">
         {clients.slice(0, 4).map((c: any) => (
-          <Link
+          <div
             key={c.id}
-            href={`/clients/${c.id}`}
             className="flex items-center justify-between text-xs hover:bg-stone-800 rounded px-1.5 py-1 transition-colors"
           >
-            <span className="text-stone-300 truncate">{c.full_name}</span>
-            <span className="text-xs text-stone-500 shrink-0 ml-2">
-              Last: {c.last_event_date?.slice(0, 10) || 'N/A'}
-            </span>
-          </Link>
+            <Link href={`/clients/${c.id}`} className="text-stone-300 truncate flex-1">
+              {c.full_name}
+            </Link>
+            <div className="flex items-center gap-2 shrink-0 ml-2">
+              <span className="text-xs text-stone-500">
+                Last: {c.last_event_date?.slice(0, 10) || 'N/A'}
+              </span>
+              <DashboardRebookButton clientId={c.id} />
+            </div>
+          </div>
         ))}
       </div>
     </div>
+  )
+}
+
+function DashboardRebookButton({ clientId }: { clientId: string }) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
+  function handleRebook() {
+    startTransition(async () => {
+      try {
+        const result = await rebookClient(clientId)
+        if (result.success && result.eventId) {
+          router.push(`/events/${result.eventId}/edit`)
+        } else {
+          router.push(`/events/new?client_id=${clientId}`)
+        }
+      } catch {
+        router.push(`/events/new?client_id=${clientId}`)
+      }
+    })
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleRebook}
+      disabled={isPending}
+      className="text-[10px] font-medium text-brand-600 hover:text-brand-400 disabled:opacity-50"
+    >
+      {isPending ? '...' : 'Rebook'}
+    </button>
   )
 }
 
