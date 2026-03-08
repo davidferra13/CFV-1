@@ -30,20 +30,22 @@ export function getEffectiveAdminState(isAdmin: boolean, previewActive: boolean)
 // When a chef locks in to an event, only these nav groups remain visible.
 const LOCK_IN_GROUP_IDS = new Set<string>([
   'remy',
+  'sales',
   'events',
   'clients',
   'culinary',
   'operations',
   'vendors',
+  'inventory',
   'finance',
 ])
 
 export const LOCK_IN_PRIMARY_SHORTCUT_HREFS = [
   '/dashboard',
   '/inbox',
+  '/inquiries',
   '/events',
   '/clients',
-  '/chat',
   '/documents',
 ] as const
 

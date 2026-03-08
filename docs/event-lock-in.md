@@ -16,9 +16,9 @@ Event Lock-In lets a chef "lock in" to a single event, hiding all navigation tha
 
 ## What Stays Visible During Lock-In
 
-**Nav groups:** Remy, Events, Clients, Culinary, Operations, Vendors, Finance
+**Nav groups:** Remy, Sales, Events, Clients, Culinary, Operations, Vendors, Inventory, Finance
 
-**Primary shortcuts:** Dashboard, Inbox, Events, Clients, Messaging, Documents
+**Primary shortcuts:** Dashboard, Inbox, Inquiries, Events, Clients, Documents
 
 **Everything else is hidden** (not deleted, just filtered out).
 

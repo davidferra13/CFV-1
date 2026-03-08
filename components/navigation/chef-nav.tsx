@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
@@ -604,6 +604,7 @@ export function ChefSidebar({
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
@@ -620,11 +621,12 @@ export function ChefSidebar({
     setUnlockPending(true)
     try {
       await unlockEvent()
+      router.refresh()
     } catch {
-      // Non-blocking, page will refresh
+      // Non-blocking
     }
     setUnlockPending(false)
-  }, [])
+  }, [router])
 
   const primaryItems = useMemo(
     () =>
@@ -1639,6 +1641,7 @@ export function ChefMobileNav({
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
@@ -1655,11 +1658,12 @@ export function ChefMobileNav({
     setUnlockPending(true)
     try {
       await unlockEvent()
+      router.refresh()
     } catch {
-      // Non-blocking, page will refresh
+      // Non-blocking
     }
     setUnlockPending(false)
-  }, [])
+  }, [router])
 
   const primaryItems = useMemo(
     () =>
