@@ -16,6 +16,8 @@ import { getClientIntelligenceContext } from '@/lib/intelligence/client-intellig
 import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-types'
+import type { ContextScope } from '@/lib/ai/remy-context-scope'
+import { SCOPE_QUERY_GROUPS } from '@/lib/ai/remy-context-scope'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -43,34 +45,65 @@ const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
 // ─── Public Loader ──────────────────────────────────────────────────────────
 
-export async function loadRemyContext(currentPage?: string): Promise<RemyContext> {
+export async function loadRemyContext(
+  currentPage?: string,
+  scope: ContextScope = 'full'
+): Promise<RemyContext> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
+
+  const groups = SCOPE_QUERY_GROUPS[scope]
+
+  // Track context modules that failed to load
+  const contextWarnings: string[] = []
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
   const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig] = await Promise.all([
     loadChefProfile(supabase, tenantId),
     loadQuickCounts(supabase, tenantId),
-    getDailyPlanStats().catch(() => null),
-    getBusinessHealthSummary()
-      .then((s) => s.remyContext)
-      .catch(() => null),
-    getServiceConfigForTenant(tenantId).catch(() => null),
+    // Skip daily plan + health summary for greeting/minimal scopes
+    groups.has('operational') || groups.has('intelligence') || scope === 'full'
+      ? getDailyPlanStats().catch((err) => {
+          console.error('[Remy context] Daily plan failed:', err)
+          contextWarnings.push('daily plan')
+          return null
+        })
+      : Promise.resolve(null),
+    groups.has('intelligence') || scope === 'full'
+      ? getBusinessHealthSummary()
+          .then((s) => s.remyContext)
+          .catch((err) => {
+            console.error('[Remy context] Business health failed:', err)
+            contextWarnings.push('business health')
+            return null
+          })
+      : Promise.resolve(null),
+    getServiceConfigForTenant(tenantId).catch((err) => {
+      console.error('[Remy context] Service config failed:', err)
+      contextWarnings.push('service config')
+      return null
+    }),
   ])
 
-  // Tier 2: Cached for 5 minutes
+  // Tier 2: Cached for 5 minutes (scope-aware: greeting/minimal skip entirely)
   const cached = contextCache.get(tenantId)
   let detailed: CachedContext['data']
 
-  if (cached && cached.expiresAt > Date.now()) {
+  if (scope === 'greeting' || scope === 'minimal') {
+    // Greeting/minimal: skip detailed context entirely, use empty defaults
+    detailed = getEmptyDetailedContext()
+  } else if (cached && cached.expiresAt > Date.now()) {
     detailed = cached.data
   } else {
-    detailed = await loadDetailedContext(supabase, tenantId)
-    contextCache.set(tenantId, {
-      data: detailed,
-      expiresAt: Date.now() + CACHE_TTL_MS,
-    })
+    detailed = await loadDetailedContext(supabase, tenantId, scope)
+    // Only cache 'full' scope results (other scopes have partial data)
+    if (scope === 'full') {
+      contextCache.set(tenantId, {
+        data: detailed,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+      })
+    }
   }
 
   // Tier 2b: Email digest (non-blocking, cached alongside detailed context)
@@ -163,9 +196,69 @@ async function loadQuickCounts(supabase: any, tenantId: string) {
   }
 }
 
+// ─── Empty detailed context (for greeting/minimal scope) ─────────────────────
+
+function getEmptyDetailedContext() {
+  return {
+    upcomingEvents: [] as any[],
+    recentClients: [] as any[],
+    monthRevenueCents: 0,
+    pendingQuoteCount: 0,
+    calendarSummary: {
+      blockedDates: [] as any[],
+      calendarEntries: [] as any[],
+      waitlistEntries: [] as any[],
+    },
+    yearlyStats: {
+      yearRevenueCents: 0,
+      yearExpenseCents: 0,
+      totalEventsThisYear: 0,
+      completedEventsThisYear: 0,
+      avgEventRevenueCents: 0,
+      topClients: [] as any[],
+    },
+    quoteDistribution: undefined as any,
+    inquiryVelocity: undefined as any,
+    profitabilityStats: undefined as any,
+    staffRoster: [] as any[],
+    equipmentSummary: { totalItems: 0, categories: [] as string[] },
+    activeGoals: [] as any[],
+    activeTodos: [] as any[],
+    upcomingCalls: [] as any[],
+    documentSummary: { totalDocuments: 0, totalFolders: 0 },
+    recentArtifacts: [] as any[],
+    recipeStats: { totalRecipes: 0, categories: [] as string[] },
+    clientVibeNotes: [] as any[],
+    recentAARInsights: [] as any[],
+    pendingMenuApprovals: [] as any[],
+    unreadInquiryMessages: [] as any[],
+    staleInquiries: [] as any[],
+    overduePayments: [] as any[],
+    clientReengagement: [] as any[],
+    revenuePattern: undefined as any,
+    upcomingPaymentDeadlines: [] as any[],
+    expiringQuotes: [] as any[],
+    conversionRate: undefined as any,
+    expenseBreakdown: undefined as any,
+    dayOfWeekPattern: undefined as any,
+    serviceStyles: undefined as any,
+    repeatClientRatio: undefined as any,
+    guestCountTrend: undefined as any,
+    avgLeadTime: undefined as any,
+    dietaryProfile: undefined as any,
+    menuApprovalStats: undefined as any,
+    referralSources: undefined as any,
+    cashFlowProjection: undefined as any,
+  }
+}
+
 // ─── Tier 2: Detailed Context (cached 5 min) ────────────────────────────────
 
-async function loadDetailedContext(supabase: any, tenantId: string) {
+async function loadDetailedContext(supabase: any, tenantId: string, scope: ContextScope = 'full') {
+  const groups = SCOPE_QUERY_GROUPS[scope]
+  const shouldLoad = (group: string) => groups.has(group)
+  // Skip placeholder for conditional queries
+  const skip = { data: null, count: 0 }
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -254,304 +347,368 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .eq('tenant_id', tenantId)
       .in('status', ['draft', 'sent']),
 
-    // Availability blocks (next 30 days)
-    supabase
-      .from('chef_availability_blocks')
-      .select('block_date, block_type, reason')
-      .eq('chef_id', tenantId)
-      .gte('block_date', today)
-      .lte('block_date', next30)
-      .order('block_date', { ascending: true })
-      .limit(20),
+    // Availability blocks (next 30 days) [calendar]
+    shouldLoad('calendar')
+      ? supabase
+          .from('chef_availability_blocks')
+          .select('block_date, block_type, reason')
+          .eq('chef_id', tenantId)
+          .gte('block_date', today)
+          .lte('block_date', next30)
+          .order('block_date', { ascending: true })
+          .limit(20)
+      : skip,
 
-    // Calendar entries (next 30 days)
-    supabase
-      .from('chef_calendar_entries')
-      .select('title, start_date, end_date, entry_type, blocks_bookings')
-      .eq('chef_id', tenantId)
-      .gte('end_date', today)
-      .lte('start_date', next30)
-      .order('start_date', { ascending: true })
-      .limit(15),
+    // Calendar entries (next 30 days) [calendar]
+    shouldLoad('calendar')
+      ? supabase
+          .from('chef_calendar_entries')
+          .select('title, start_date, end_date, entry_type, blocks_bookings')
+          .eq('chef_id', tenantId)
+          .gte('end_date', today)
+          .lte('start_date', next30)
+          .order('start_date', { ascending: true })
+          .limit(15)
+      : skip,
 
-    // Waitlist entries (active)
-    supabase
-      .from('waitlist_entries')
-      .select('requested_date, occasion, status, client:clients(full_name)')
-      .eq('chef_id', tenantId)
-      .in('status', ['waiting', 'contacted'])
-      .order('requested_date', { ascending: true })
-      .limit(10),
+    // Waitlist entries (active) [calendar]
+    shouldLoad('calendar')
+      ? supabase
+          .from('waitlist_entries')
+          .select('requested_date, occasion, status, client:clients(full_name)')
+          .eq('chef_id', tenantId)
+          .in('status', ['waiting', 'contacted'])
+          .order('requested_date', { ascending: true })
+          .limit(10)
+      : skip,
 
-    // Staff roster
-    supabase
-      .from('staff_members')
-      .select('id, full_name, default_role, phone, status')
-      .eq('chef_id', tenantId)
-      .eq('status', 'active')
-      .order('full_name', { ascending: true })
-      .limit(20),
+    // Staff roster [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('staff_members')
+          .select('id, full_name, default_role, phone, status')
+          .eq('chef_id', tenantId)
+          .eq('status', 'active')
+          .order('full_name', { ascending: true })
+          .limit(20)
+      : skip,
 
-    // Equipment count by category
-    supabase
-      .from('equipment_items')
-      .select('id, category')
-      .eq('chef_id', tenantId)
-      .eq('status', 'active')
-      .limit(100),
+    // Equipment count by category [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('equipment_items')
+          .select('id, category')
+          .eq('chef_id', tenantId)
+          .eq('status', 'active')
+          .limit(100)
+      : skip,
 
-    // Active goals
-    supabase
-      .from('chef_goals')
-      .select('title, target_date, progress_pct, status')
-      .eq('chef_id', tenantId)
-      .in('status', ['active', 'in_progress'])
-      .order('target_date', { ascending: true })
-      .limit(10),
+    // Active goals [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('chef_goals')
+          .select('title, target_date, progress_pct, status')
+          .eq('chef_id', tenantId)
+          .in('status', ['active', 'in_progress'])
+          .order('target_date', { ascending: true })
+          .limit(10)
+      : skip,
 
-    // Active todos
-    supabase
-      .from('chef_todos')
-      .select('title, due_date, priority, status')
-      .eq('chef_id', tenantId)
-      .in('status', ['pending', 'in_progress'])
-      .order('due_date', { ascending: true })
-      .limit(10),
+    // Active todos [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('chef_todos')
+          .select('title, due_date, priority, status')
+          .eq('chef_id', tenantId)
+          .in('status', ['pending', 'in_progress'])
+          .order('due_date', { ascending: true })
+          .limit(10)
+      : skip,
 
-    // Scheduled calls (upcoming)
-    supabase
-      .from('scheduled_calls')
-      .select('scheduled_at, purpose, status, client:clients(full_name)')
-      .eq('chef_id', tenantId)
-      .gte('scheduled_at', now.toISOString())
-      .in('status', ['scheduled', 'confirmed'])
-      .order('scheduled_at', { ascending: true })
-      .limit(5),
+    // Scheduled calls (upcoming) [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('scheduled_calls')
+          .select('scheduled_at, purpose, status, client:clients(full_name)')
+          .eq('chef_id', tenantId)
+          .gte('scheduled_at', now.toISOString())
+          .in('status', ['scheduled', 'confirmed'])
+          .order('scheduled_at', { ascending: true })
+          .limit(5)
+      : skip,
 
-    // Documents count
-    supabase
-      .from('chef_documents')
-      .select('id', { count: 'exact', head: true })
-      .eq('chef_id', tenantId),
+    // Documents count [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('chef_documents')
+          .select('id', { count: 'exact', head: true })
+          .eq('chef_id', tenantId)
+      : skip,
 
-    // Folders count
-    supabase
-      .from('chef_folders')
-      .select('id', { count: 'exact', head: true })
-      .eq('chef_id', tenantId),
+    // Folders count [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('chef_folders')
+          .select('id', { count: 'exact', head: true })
+          .eq('chef_id', tenantId)
+      : skip,
 
-    // Recent Remy artifacts
-    supabase
-      .from('remy_artifacts')
-      .select('artifact_type, title, created_at')
-      .eq('chef_id', tenantId)
-      .order('created_at', { ascending: false })
-      .limit(5),
+    // Recent Remy artifacts [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('remy_artifacts')
+          .select('artifact_type, title, created_at')
+          .eq('chef_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(5)
+      : skip,
 
-    // Year revenue (ledger payments YTD)
-    supabase
-      .from('ledger_entries')
-      .select('amount_cents, client_id')
-      .eq('tenant_id', tenantId)
-      .eq('entry_type', 'payment')
-      .gte('created_at', yearStart),
+    // Year revenue (ledger payments YTD) [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('ledger_entries')
+          .select('amount_cents, client_id')
+          .eq('tenant_id', tenantId)
+          .eq('entry_type', 'payment')
+          .gte('created_at', yearStart)
+      : skip,
 
-    // Year expenses
-    supabase
-      .from('expenses')
-      .select('amount_cents')
-      .eq('tenant_id', tenantId)
-      .gte('expense_date', yearStart.split('T')[0]),
+    // Year expenses [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('expenses')
+          .select('amount_cents')
+          .eq('tenant_id', tenantId)
+          .gte('expense_date', yearStart.split('T')[0])
+      : skip,
 
-    // Year events
-    supabase
-      .from('events')
-      .select('id, status, quoted_price_cents, client:clients(full_name)')
-      .eq('tenant_id', tenantId)
-      .gte('event_date', yearStart.split('T')[0])
-      .not('status', 'eq', 'cancelled'),
+    // Year events [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('events')
+          .select('id, status, quoted_price_cents, client:clients(full_name)')
+          .eq('tenant_id', tenantId)
+          .gte('event_date', yearStart.split('T')[0])
+          .not('status', 'eq', 'cancelled')
+      : skip,
 
     // ─── Context enrichment (2026-02-28) ─────────────────────────────────
 
-    // Recipe library stats
-    supabase.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200),
+    // Recipe library stats [intelligence]
+    shouldLoad('intelligence')
+      ? supabase.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200)
+      : skip,
 
-    // Client vibe notes + dietary/allergy data (safety-critical)
-    supabase
-      .from('clients')
-      .select('full_name, vibe_notes, dietary_restrictions, allergies')
-      .eq('tenant_id', tenantId)
-      .not('vibe_notes', 'is', null)
-      .order('updated_at', { ascending: false })
-      .limit(10),
+    // Client vibe notes + dietary/allergy data (safety-critical) [client]
+    shouldLoad('client')
+      ? supabase
+          .from('clients')
+          .select('full_name, vibe_notes, dietary_restrictions, allergies')
+          .eq('tenant_id', tenantId)
+          .not('vibe_notes', 'is', null)
+          .order('updated_at', { ascending: false })
+          .limit(10)
+      : skip,
 
-    // Recent after-action reviews (lessons learned)
-    supabase
-      .from('after_action_reviews')
-      .select('event_id, overall_rating, went_well, to_improve, lessons_learned, created_at')
-      .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false })
-      .limit(3),
+    // Recent after-action reviews (lessons learned) [intelligence]
+    shouldLoad('intelligence')
+      ? supabase
+          .from('after_action_reviews')
+          .select('event_id, overall_rating, went_well, to_improve, lessons_learned, created_at')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      : skip,
 
-    // Pending menu approvals
-    supabase
-      .from('menu_approval_requests')
-      .select('id, status, client:clients(full_name), created_at')
-      .eq('tenant_id', tenantId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(5),
+    // Pending menu approvals [proactive]
+    shouldLoad('proactive')
+      ? supabase
+          .from('menu_approval_requests')
+          .select('id, status, client:clients(full_name), created_at')
+          .eq('tenant_id', tenantId)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      : skip,
 
-    // Unread inbound messages (inquiry_messages table doesn't exist — use messages table)
-    supabase
-      .from('messages')
-      .select('id, inquiry_id, direction, created_at, clients(full_name)')
-      .eq('tenant_id', tenantId)
-      .eq('direction', 'inbound')
-      .eq('read', false)
-      .order('created_at', { ascending: false })
-      .limit(10),
+    // Unread inbound messages [proactive]
+    shouldLoad('proactive')
+      ? supabase
+          .from('messages')
+          .select('id, inquiry_id, direction, created_at, clients(full_name)')
+          .eq('tenant_id', tenantId)
+          .eq('direction', 'inbound')
+          .eq('read', false)
+          .order('created_at', { ascending: false })
+          .limit(10)
+      : skip,
 
     // ─── Proactive nudges (2026-03-06) ────────────────────────────────────
 
-    // Stale inquiries (no response in >3 days) — includes lead score for urgency escalation
-    supabase
-      .from('inquiries')
-      .select('id, lead_name, updated_at, chef_likelihood, unknown_fields')
-      .eq('tenant_id', tenantId)
-      .in('status', ['new', 'awaiting_chef'])
-      .lt('updated_at', new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString())
-      .order('updated_at', { ascending: true })
-      .limit(5),
+    // Stale inquiries (no response in >3 days) [proactive]
+    shouldLoad('proactive')
+      ? supabase
+          .from('inquiries')
+          .select('id, lead_name, updated_at, chef_likelihood, unknown_fields')
+          .eq('tenant_id', tenantId)
+          .in('status', ['new', 'awaiting_chef'])
+          .lt('updated_at', new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString())
+          .order('updated_at', { ascending: true })
+          .limit(5)
+      : skip,
 
-    // Overdue payments (events past due date with outstanding balance)
-    supabase
-      .from('events')
-      .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
-      .eq('tenant_id', tenantId)
-      .gt('balance_due_cents', 0)
-      .lt('payment_due_date', today)
-      .not('status', 'eq', 'cancelled')
-      .order('payment_due_date', { ascending: true })
-      .limit(5),
+    // Overdue payments [proactive]
+    shouldLoad('proactive')
+      ? supabase
+          .from('events')
+          .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
+          .eq('tenant_id', tenantId)
+          .gt('balance_due_cents', 0)
+          .lt('payment_due_date', today)
+          .not('status', 'eq', 'cancelled')
+          .order('payment_due_date', { ascending: true })
+          .limit(5)
+      : skip,
 
-    // Client booking frequency — all completed/confirmed events with client + date
-    // Used to detect clients overdue for re-engagement based on their historical cadence
-    supabase
-      .from('events')
-      .select('client_id, event_date, client:clients(full_name)')
-      .eq('tenant_id', tenantId)
-      .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
-      .not('client_id', 'is', null)
-      .order('event_date', { ascending: true })
-      .limit(500),
+    // Client booking frequency [client]
+    shouldLoad('client')
+      ? supabase
+          .from('events')
+          .select('client_id, event_date, client:clients(full_name)')
+          .eq('tenant_id', tenantId)
+          .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
+          .not('client_id', 'is', null)
+          .order('event_date', { ascending: true })
+          .limit(500)
+      : skip,
 
-    // Monthly revenue distribution — ledger payments from past 12 months
-    // Used to identify busy/slow months for revenue pattern awareness
-    supabase
-      .from('ledger_entries')
-      .select('amount_cents, created_at')
-      .eq('tenant_id', tenantId)
-      .eq('entry_type', 'payment')
-      .gte('created_at', new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString()),
+    // Monthly revenue distribution [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('ledger_entries')
+          .select('amount_cents, created_at')
+          .eq('tenant_id', tenantId)
+          .eq('entry_type', 'payment')
+          .gte('created_at', new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString())
+      : skip,
 
-    // Upcoming payment deadlines (due within 7 days, not yet overdue)
-    supabase
-      .from('events')
-      .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
-      .eq('tenant_id', tenantId)
-      .gt('balance_due_cents', 0)
-      .gte('payment_due_date', today)
-      .lte(
-        'payment_due_date',
-        new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      )
-      .not('status', 'eq', 'cancelled')
-      .order('payment_due_date', { ascending: true })
-      .limit(5),
+    // Upcoming payment deadlines [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('events')
+          .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
+          .eq('tenant_id', tenantId)
+          .gt('balance_due_cents', 0)
+          .gte('payment_due_date', today)
+          .lte(
+            'payment_due_date',
+            new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+          )
+          .not('status', 'eq', 'cancelled')
+          .order('payment_due_date', { ascending: true })
+          .limit(5)
+      : skip,
 
-    // Expiring quotes (valid_until within 7 days)
-    supabase
-      .from('quotes')
-      .select('id, valid_until, total_cents, event:events(occasion, client:clients(full_name))')
-      .eq('tenant_id', tenantId)
-      .eq('status', 'sent')
-      .gte('valid_until', today)
-      .lte(
-        'valid_until',
-        new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      )
-      .order('valid_until', { ascending: true })
-      .limit(5),
+    // Expiring quotes [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('quotes')
+          .select('id, valid_until, total_cents, event:events(occasion, client:clients(full_name))')
+          .eq('tenant_id', tenantId)
+          .eq('status', 'sent')
+          .gte('valid_until', today)
+          .lte(
+            'valid_until',
+            new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+          )
+          .order('valid_until', { ascending: true })
+          .limit(5)
+      : skip,
 
-    // Event profitability — completed events this year with profit data
-    supabase
-      .from('event_financial_summary' as any)
-      .select(
-        'event_id, quoted_price_cents, net_revenue_cents, total_expenses_cents, profit_cents, profit_margin'
-      )
-      .eq('tenant_id', tenantId)
-      .gt('net_revenue_cents', 0)
-      .limit(50),
+    // Event profitability [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('event_financial_summary' as any)
+          .select(
+            'event_id, quoted_price_cents, net_revenue_cents, total_expenses_cents, profit_cents, profit_margin'
+          )
+          .eq('tenant_id', tenantId)
+          .gt('net_revenue_cents', 0)
+          .limit(50)
+      : skip,
 
-    // Inquiry velocity — this week vs last week
-    supabase
-      .from('inquiries')
-      .select('id, created_at')
-      .eq('tenant_id', tenantId)
-      .gte('created_at', new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
-      .limit(100),
+    // Inquiry velocity [intelligence]
+    shouldLoad('intelligence')
+      ? supabase
+          .from('inquiries')
+          .select('id, created_at')
+          .eq('tenant_id', tenantId)
+          .gte('created_at', new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false })
+          .limit(100)
+      : skip,
 
-    // Staff assignments — upcoming events (for utilization awareness)
-    supabase
-      .from('event_staff_assignments')
-      .select('staff_member_id, event:events!inner(event_date, status)')
-      .eq('chef_id', tenantId)
-      .eq('status', 'confirmed')
-      .limit(100),
+    // Staff assignments [operational]
+    shouldLoad('operational')
+      ? supabase
+          .from('event_staff_assignments')
+          .select('staff_member_id, event:events!inner(event_date, status)')
+          .eq('chef_id', tenantId)
+          .eq('status', 'confirmed')
+          .limit(100)
+      : skip,
 
-    // Conversion rate — all inquiries with their resolution status
-    supabase
-      .from('inquiries')
-      .select('id, status, created_at, channel')
-      .eq('tenant_id', tenantId)
-      .gte('created_at', yearStart)
-      .limit(500),
+    // Conversion rate [intelligence]
+    shouldLoad('intelligence')
+      ? supabase
+          .from('inquiries')
+          .select('id, status, created_at, channel')
+          .eq('tenant_id', tenantId)
+          .gte('created_at', yearStart)
+          .limit(500)
+      : skip,
 
-    // Expense breakdown — categories for this year
-    supabase
-      .from('expenses')
-      .select('category, amount_cents')
-      .eq('tenant_id', tenantId)
-      .gte('expense_date', yearStart.split('T')[0])
-      .limit(500),
+    // Expense breakdown [financial]
+    shouldLoad('financial')
+      ? supabase
+          .from('expenses')
+          .select('category, amount_cents')
+          .eq('tenant_id', tenantId)
+          .gte('expense_date', yearStart.split('T')[0])
+          .limit(500)
+      : skip,
 
-    // All events with dates, guest counts, service style, location for pattern detection
-    supabase
-      .from('events')
-      .select(
-        'id, event_date, guest_count, service_style, status, location_city, location_state, dietary_restrictions, allergies, client_id, occasion, created_at'
-      )
-      .eq('tenant_id', tenantId)
-      .not('status', 'eq', 'cancelled')
-      .order('event_date', { ascending: false })
-      .limit(200),
+    // All events pattern detection [intelligence]
+    shouldLoad('intelligence')
+      ? supabase
+          .from('events')
+          .select(
+            'id, event_date, guest_count, service_style, status, location_city, location_state, dietary_restrictions, allergies, client_id, occasion, created_at'
+          )
+          .eq('tenant_id', tenantId)
+          .not('status', 'eq', 'cancelled')
+          .order('event_date', { ascending: false })
+          .limit(200)
+      : skip,
 
-    // Menu approval turnaround
-    supabase
-      .from('menu_approval_requests')
-      .select('sent_at, responded_at, status')
-      .eq('chef_id', tenantId)
-      .not('responded_at', 'is', null)
-      .limit(50),
+    // Menu approval turnaround [intelligence]
+    shouldLoad('intelligence')
+      ? supabase
+          .from('menu_approval_requests')
+          .select('sent_at, responded_at, status')
+          .eq('chef_id', tenantId)
+          .not('responded_at', 'is', null)
+          .limit(50)
+      : skip,
 
-    // Client referral sources
-    supabase
-      .from('clients')
-      .select('id, referral_source, created_at')
-      .eq('tenant_id', tenantId)
-      .limit(500),
+    // Client referral sources [client]
+    shouldLoad('client')
+      ? supabase
+          .from('clients')
+          .select('id, referral_source, created_at')
+          .eq('tenant_id', tenantId)
+          .limit(500)
+      : skip,
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(

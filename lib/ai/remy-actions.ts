@@ -10,6 +10,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { loadRemyContext } from '@/lib/ai/remy-context'
+import { determineContextScope } from '@/app/api/remy/stream/route-prompt-utils'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
@@ -1002,9 +1003,12 @@ export async function sendRemyMessage(
     // 'delete' intent is handled client-side via deleteRemyMemory() directly
     // (the user taps the X button next to a specific memory)
 
+    // Determine context scope (deterministic, instant) before parallel load
+    const contextScope = determineContextScope(userMessage, 'unknown')
+
     // Run context loading, intent classification, memory loading, and focus mode check in parallel
     const [context, classification, memories, focusMode] = await Promise.all([
-      loadRemyContext(currentPage),
+      loadRemyContext(currentPage, contextScope),
       classifyIntent(userMessage),
       loadRelevantMemories(userMessage, undefined, undefined),
       isFocusModeEnabled().catch(() => false),

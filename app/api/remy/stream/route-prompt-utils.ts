@@ -1236,13 +1236,84 @@ function buildPageIntelligence(context: RemyContext): string | null {
   return lines.length > 0 ? lines.join('\n') : null
 }
 
-//  Context Scope (planned — currently returns 'full' for all requests)
+// ─── Context Scope (Formula > AI) ───────────────────────────────────────────
+// Determines which data sections to load from the DB and include in the prompt.
+// Runs before Ollama classification (deterministic, instant). Saves 15-25 DB
+// queries on focused messages (~70% of traffic).
+// Types and constants live in remy-context-scope.ts to avoid circular imports.
 
-export type ContextScope = 'full' | 'minimal' | 'focused'
+export type { ContextScope } from '@/lib/ai/remy-context-scope'
+export { SCOPE_QUERY_GROUPS } from '@/lib/ai/remy-context-scope'
 
-export function determineContextScope(_message: string, _intent: string): ContextScope {
-  // Future: reduce prompt size for focused queries by scoping context.
-  // For now, always return full context.
+import type { ContextScope } from '@/lib/ai/remy-context-scope'
+
+export function determineContextScope(message: string, _intent: string): ContextScope {
+  const m = message.trim()
+
+  // Greetings (exact match, short)
+  if (
+    /^(?:good\s+(?:morning|afternoon|evening)|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i.test(
+      m
+    )
+  ) {
+    return 'greeting'
+  }
+
+  // Short confirmations (yes, no, thanks, ok, etc.)
+  if (
+    /^(?:yes|no|yep|nope|nah|yeah|ok(?:ay)?|sure|thanks|thank you|got it|cool|great)\s*[!.?]*$/i.test(
+      m
+    )
+  ) {
+    return 'minimal'
+  }
+
+  // Calendar / scheduling
+  if (
+    /\b(?:calendar|schedule|availability|available|free|blocked|book(?:ed|ing)?|when\s+is|date|waitlist|time\s*(?:off|slot))\b/i.test(
+      m
+    )
+  ) {
+    return 'calendar'
+  }
+
+  // Financial
+  if (
+    /\b(?:revenue|money|income|expense|profit|payment|invoice|price|cost|budget|financial|charge|quote|bill|cash\s*flow|margin|balance|p\s*&?\s*l|tax|earning|refund|deposit)\b/i.test(
+      m
+    )
+  ) {
+    return 'financial'
+  }
+
+  // Client-focused
+  if (
+    /\b(?:client|customer|allerg(?:y|ies)|dietary|vibe|referral|re-?engage|follow.?up|inquiry|inquiries|lead(?:s|\b)|loyalty|tier|points)\b/i.test(
+      m
+    )
+  ) {
+    return 'client'
+  }
+
+  // Draft / writing
+  if (
+    /\b(?:draft|write|email|message|respond|reply|note|letter|thank.?you|cover\s+letter|follow.?up\s+(?:email|message|note))\b/i.test(
+      m
+    )
+  ) {
+    return 'draft'
+  }
+
+  // Operational
+  if (
+    /\b(?:staff|team|equipment|todo|task|goal|call|document|recipe|prep|grocery|packing|inventory|folder)\b/i.test(
+      m
+    )
+  ) {
+    return 'operational'
+  }
+
+  // Default: load everything
   return 'full'
 }
 

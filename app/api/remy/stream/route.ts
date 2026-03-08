@@ -456,7 +456,7 @@ export async function POST(req: NextRequest) {
     const GREETING_REGEX =
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i
     if (GREETING_REGEX.test(message.trim())) {
-      const ctx = await loadRemyContext(currentPage)
+      const ctx = await loadRemyContext(currentPage, 'greeting')
       const hour = new Date().getHours()
       const greetWord = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
       const lines: string[] = [`${greetWord}, chef! 👨‍🍳`]
@@ -527,6 +527,9 @@ export async function POST(req: NextRequest) {
       setTimeout(() => reject(new Error('Pre-stream setup timed out after 120s')), 120_000)
     )
 
+    // Determine context scope BEFORE parallel load (deterministic, instant)
+    const contextScope = determineContextScope(message, 'unknown')
+
     let context: Awaited<ReturnType<typeof loadRemyContext>>
     let classification: Awaited<ReturnType<typeof classifyIntent>>
     let memories: Awaited<ReturnType<typeof loadRelevantMemories>>
@@ -539,7 +542,7 @@ export async function POST(req: NextRequest) {
       const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey] = (await Promise.race(
         [
           Promise.all([
-            loadRemyContext(currentPage),
+            loadRemyContext(currentPage, contextScope),
             classifyIntent(message),
             loadRelevantMemories(message, undefined, undefined),
             getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
@@ -984,8 +987,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Phase 5B: Intent-aware context scoping — reduce prompt size for focused queries
-    const contextScope = determineContextScope(message, classification.intent)
+    // Phase 5B: Context scope already determined before parallel load (line ~531)
+    // contextScope is reused here for prompt building
 
     const systemPrompt = buildRemySystemPrompt(
       context,
