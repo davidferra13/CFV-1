@@ -11,7 +11,7 @@ import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { loadRemyContext } from '@/lib/ai/remy-context'
 import { determineContextScope } from '@/app/api/remy/stream/route-prompt-utils'
-import { classifyIntent } from '@/lib/ai/remy-classifier'
+import { classifyIntent, getIntentClarificationMessage } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { tryInstantAnswer } from '@/app/api/remy/stream/route-instant-answers'
@@ -1076,6 +1076,14 @@ export async function sendRemyMessage(
       loadRelevantMemories(userMessage, undefined, undefined),
       isFocusModeEnabled().catch(() => false),
     ])
+
+    const clarification = getIntentClarificationMessage(userMessage, classification)
+    if (clarification) {
+      return {
+        text: clarification,
+        intent: 'question',
+      }
+    }
 
     // ─── COMMAND path ─────────────────────────────────────────────────
     if (classification.intent === 'command') {

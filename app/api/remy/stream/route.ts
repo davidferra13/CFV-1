@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
 import { requireChef } from '@/lib/auth/get-user'
 import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
-import { classifyIntent } from '@/lib/ai/remy-classifier'
+import { classifyIntent, getIntentClarificationMessage } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { routeForRemy } from '@/lib/ai/llm-router'
@@ -628,6 +628,16 @@ export async function POST(req: NextRequest) {
       /(?:outstanding|payment|invoice|owe|balance|paid|unpaid|overdue|past due)/i
     if (classification.intent === 'command' && financialQueryRegex.test(message)) {
       classification = { ...classification, intent: 'question' }
+    }
+
+    const clarification = getIntentClarificationMessage(message, classification)
+    if (clarification) {
+      releaseInteractiveLock()
+      const body =
+        encodeSSE({ type: 'intent', data: 'question' }) +
+        encodeSSE({ type: 'token', data: clarification }) +
+        encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
     }
 
     //  INSTANT ANSWER PATH (Formula > AI — skip Ollama entirely for simple facts)

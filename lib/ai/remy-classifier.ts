@@ -87,6 +87,8 @@ export interface ClassificationResult {
   questionPart?: string
 }
 
+const LOW_CONFIDENCE_CLARIFICATION_THRESHOLD = 0.45
+
 // ─── Deterministic Pre-Classifier (Formula > AI) ────────────────────────────
 // Skips Ollama entirely for obvious patterns. Saves 2-5s on ~70% of messages.
 
@@ -287,4 +289,24 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
     console.error('[remy-classifier] Classification failed, defaulting to question:', err)
     return { intent: 'question', confidence: 0 }
   }
+}
+
+export function getIntentClarificationMessage(
+  message: string,
+  classification: ClassificationResult
+): string | null {
+  const trimmed = message.trim()
+  const wordCount = trimmed.split(/\s+/).filter(Boolean).length
+
+  if (classification.intent === 'mixed') return null
+  if (classification.confidence <= 0) return null
+  if (classification.confidence >= LOW_CONFIDENCE_CLARIFICATION_THRESHOLD) return null
+  if (wordCount < 4) return null
+  if (/^(hi|hey|hello|thanks|thank you|ok(ay)?|cool|sure|yes|no)\b/i.test(trimmed)) return null
+
+  if (classification.intent === 'command') {
+    return 'I think you might want me to take action, but I\'m not confident. Do you want me to do something in ChefFlow, or just answer a question? If you want action, start with something like "check," "find," "draft," or "create."'
+  }
+
+  return 'I want to make sure I route this right. Are you asking me to answer a question, or do you want me to take action in ChefFlow? If you want action, start with something like "check," "find," "draft," or "create."'
 }
