@@ -57,10 +57,10 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
       if (lockedEventId) {
         const { data: eventData } = await supabase
           .from('events')
-          .select('title, event_date')
+          .select('occasion, event_date')
           .eq('id', lockedEventId)
           .single()
-        lockedEventTitle = eventData?.title ?? null
+        lockedEventTitle = eventData?.occasion ?? null
         lockedEventDate = eventData?.event_date ?? null
       }
 
