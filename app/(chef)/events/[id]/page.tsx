@@ -115,6 +115,8 @@ import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
+import { EventLockInButton } from '@/components/events/event-lock-in-button'
+import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
 import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
@@ -212,11 +214,18 @@ export default async function EventDetailPage({
   const activeTab = (searchParams?.tab ?? 'overview') as 'overview' | 'money' | 'ops' | 'wrap'
   const user = await requireChef()
 
-  const event = await getEventById(params.id)
+  const [event, layoutData] = await Promise.all([
+    getEventById(params.id),
+    getChefLayoutData(user.entityId),
+  ])
 
   if (!event) {
     notFound()
   }
+
+  const lockedEventId = layoutData.locked_event_id
+  const isLockedToThis = lockedEventId === params.id
+  const isLockedToOther = !!lockedEventId && lockedEventId !== params.id
 
   // Get financial summary, transitions, and closure data in parallel
   const isCompletedOrBeyond = ['completed', 'in_progress'].includes(event.status)
@@ -468,11 +477,11 @@ export default async function EventDetailPage({
           {eventMenus && !['cancelled'].includes(event.status) && (
             <Link href={`/events/${event.id}/grocery-quote`}>
               <Button variant="secondary">Grocery Quote</Button>
-
+            </Link>
+          )}
           {!['draft', 'cancelled'].includes(event.status) && (
             <Link href={`/meal-prep/labels?eventId=${event.id}`}>
               <Button variant="secondary">Print Labels</Button>
-
             </Link>
           )}
           <Link href={`/events/${event.id}/travel`}>
@@ -483,6 +492,13 @@ export default async function EventDetailPage({
               <Button variant="secondary">Create Story</Button>
             </Link>
           )}
+          <EventLockInButton
+            eventId={params.id}
+            eventTitle={event.occasion || 'Event'}
+            eventDate={event.event_date}
+            isLockedToThis={isLockedToThis}
+            isLockedToOther={isLockedToOther}
+          />
           <Link href="/events">
             <Button variant="ghost">Back to Events</Button>
           </Link>

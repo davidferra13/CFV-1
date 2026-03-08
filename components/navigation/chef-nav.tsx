@@ -20,8 +20,11 @@ import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import {
   getStrictFocusGroupRank,
   isStrictFocusGroupVisible,
+  isLockInGroupVisible,
   STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS,
+  LOCK_IN_PRIMARY_SHORTCUT_HREFS,
 } from '@/lib/navigation/focus-mode-nav'
+import { unlockEvent } from '@/lib/chef/actions'
 
 import {
   LogOut,
@@ -37,6 +40,8 @@ import {
   Plus,
   Lock,
   Sparkles,
+  XCircle,
+  CalendarCheck,
 } from '@/components/ui/icons'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
@@ -581,6 +586,9 @@ export function ChefSidebar({
   enabledModules,
   isAdmin,
   focusMode,
+  lockedEventId,
+  lockedEventTitle,
+  lockedEventDate,
   userId,
   tenantId,
 }: {
@@ -588,6 +596,9 @@ export function ChefSidebar({
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
+  lockedEventId?: string | null
+  lockedEventTitle?: string | null
+  lockedEventDate?: string | null
   userId: string
   tenantId: string
 }) {
@@ -602,18 +613,36 @@ export function ChefSidebar({
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
+  const isLockedIn = Boolean(lockedEventId)
+  const [unlockPending, setUnlockPending] = useState(false)
+
+  const handleUnlock = useCallback(async () => {
+    setUnlockPending(true)
+    try {
+      await unlockEvent()
+    } catch {
+      // Non-blocking, page will refresh
+    }
+    setUnlockPending(false)
+  }, [])
+
   const primaryItems = useMemo(
     () =>
-      resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
-    [focusMode, primaryNavHrefs]
+      resolveStandaloneTop(
+        isLockedIn
+          ? [...LOCK_IN_PRIMARY_SHORTCUT_HREFS]
+          : focusMode
+            ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]
+            : primaryNavHrefs
+      ),
+    [isLockedIn, focusMode, primaryNavHrefs]
   )
   const visiblePrimaryItems = useMemo(
     () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
     [isAdmin, primaryItems]
   )
 
-  // Filter nav groups by role + focus mode.
-  // Focus Mode should simplify nav for everyone, including admins.
+  // Filter nav groups by role + focus mode + event lock-in.
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
@@ -626,6 +655,11 @@ export function ChefSidebar({
       }))
       .filter((group) => group.items.length > 0)
 
+    // Event lock-in is the strictest filter
+    if (isLockedIn) {
+      return baseGroups.filter((group) => isLockInGroupVisible(group.id, Boolean(isAdmin)))
+    }
+
     if (!focusMode) return baseGroups
     const strictGroups = baseGroups.filter((group) =>
       isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
@@ -633,7 +667,7 @@ export function ChefSidebar({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, focusMode])
+  }, [isAdmin, focusMode, isLockedIn])
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
@@ -763,16 +797,44 @@ export function ChefSidebar({
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
-      {/* Logo + notification bell + collapse toggle */}
+      {/* Logo / Lock-in header + notification bell + collapse toggle */}
       <div
         className={`flex items-center h-16 border-b border-stone-800/60 shadow-[0_1px_8px_rgba(0,0,0,0.2)] ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
-        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-          <AppLogo />
-          {!collapsed && (
-            <span className="text-lg font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
-          )}
-        </Link>
+        {isLockedIn && !collapsed ? (
+          <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+            <Link href={`/events/${lockedEventId}`} className="flex items-center gap-2 min-w-0">
+              <CalendarCheck className="w-5 h-5 text-brand-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-stone-100 truncate leading-tight">
+                  {lockedEventTitle || 'Event'}
+                </p>
+                {lockedEventDate && (
+                  <p className="text-[10px] text-stone-400 leading-tight">{lockedEventDate}</p>
+                )}
+              </div>
+            </Link>
+            <button
+              type="button"
+              onClick={handleUnlock}
+              disabled={unlockPending}
+              className="flex items-center justify-center w-7 h-7 rounded-lg text-stone-500 hover:text-stone-300 hover:bg-stone-700 transition-colors flex-shrink-0"
+              aria-label="Exit lock-in"
+              title="Exit lock-in"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
+            <AppLogo />
+            {!collapsed && (
+              <span className="text-lg font-display text-stone-100 whitespace-nowrap">
+                ChefFlow
+              </span>
+            )}
+          </Link>
+        )}
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
             {isAdmin && <OllamaStatusBadge />}
@@ -990,48 +1052,52 @@ export function ChefSidebar({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setQuickCreateOpen((prev) => !prev)}
-              aria-expanded={quickCreateOpen}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-            >
-              <Plus className="w-4 h-4 text-stone-400" />
-              <span className="flex-1 text-left">Quick Create</span>
-              <ChevronDown
-                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                  quickCreateOpen ? 'rotate-0' : '-rotate-90'
-                }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div className="space-y-0.5">
-                {filteredQuickCreateItems.map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                        active
-                          ? 'bg-brand-950 text-brand-400'
-                          : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      New {item.label}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
+            {!isLockedIn && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setQuickCreateOpen((prev) => !prev)}
+                  aria-expanded={quickCreateOpen}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                >
+                  <Plus className="w-4 h-4 text-stone-400" />
+                  <span className="flex-1 text-left">Quick Create</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                      quickCreateOpen ? 'rotate-0' : '-rotate-90'
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    {filteredQuickCreateItems.map((item) => {
+                      const Icon = item.icon
+                      const active = isItemActive(pathname, item.href, searchParams)
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                            active
+                              ? 'bg-brand-950 text-brand-400'
+                              : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          New {item.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
 
-            <RecentPagesSection />
+                <RecentPagesSection />
+              </>
+            )}
 
             <div className="border-t border-stone-800 my-2" />
 
@@ -1052,7 +1118,7 @@ export function ChefSidebar({
 
             <div className="border-t border-stone-800 my-2" />
 
-            {isAdmin && !focusMode && (
+            {isAdmin && !focusMode && !isLockedIn && (
               <SectionAccordion
                 title="Cannabis"
                 items={filteredCannabisItems}
@@ -1072,7 +1138,7 @@ export function ChefSidebar({
               />
             )}
 
-            {!focusMode && (
+            {!focusMode && !isLockedIn && (
               <SectionAccordion
                 title="Community"
                 items={filteredCommunityItems}
@@ -1092,67 +1158,71 @@ export function ChefSidebar({
               />
             )}
 
-            <div className="border-t border-stone-800 my-2" />
+            {!isLockedIn && (
+              <>
+                <div className="border-t border-stone-800 my-2" />
 
-            {/* Settings */}
-            <button
-              type="button"
-              onClick={() => setSettingsOpen((prev) => !prev)}
-              aria-expanded={settingsOpen}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-            >
-              <span className="flex-1 text-left">Settings & Tools</span>
-              <ChevronDown
-                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                  settingsOpen ? 'rotate-0' : '-rotate-90'
-                }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div className="space-y-0.5">
-                {filteredSettingsItems.map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                        active
-                          ? 'bg-brand-950 text-brand-400 border-brand-500'
-                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                      }`}
-                    >
-                      <Icon
-                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                      />
-                      {item.label}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
+                {/* Settings */}
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen((prev) => !prev)}
+                  aria-expanded={settingsOpen}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                >
+                  <span className="flex-1 text-left">Settings & Tools</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                      settingsOpen ? 'rotate-0' : '-rotate-90'
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    {filteredSettingsItems.map((item) => {
+                      const Icon = item.icon
+                      const active = isItemActive(pathname, item.href, searchParams)
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                            active
+                              ? 'bg-brand-950 text-brand-400 border-brand-500'
+                              : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+                          }`}
+                        >
+                          <Icon
+                            className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                          />
+                          {item.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
 
-            {/* Sign Out — inside nav so it's above the Remy mascot */}
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await signOut()
-                } catch (e) {
-                  console.error('[sign-out]', e)
-                }
-                window.location.href = '/'
-              }}
-              className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
-            >
-              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-              Sign Out
-            </button>
+                {/* Sign Out — inside nav so it's above the Remy mascot */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await signOut()
+                    } catch (e) {
+                      console.error('[sign-out]', e)
+                    }
+                    window.location.href = '/'
+                  }}
+                  className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
+                >
+                  <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+                  Sign Out
+                </button>
+              </>
+            )}
           </div>
         )}
       </nav>
@@ -1551,6 +1621,9 @@ export function ChefMobileNav({
   enabledModules,
   isAdmin,
   focusMode,
+  lockedEventId,
+  lockedEventTitle,
+  lockedEventDate,
   userId,
   tenantId,
 }: {
@@ -1558,6 +1631,9 @@ export function ChefMobileNav({
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
+  lockedEventId?: string | null
+  lockedEventTitle?: string | null
+  lockedEventDate?: string | null
   userId: string
   tenantId: string
 }) {
@@ -1572,10 +1648,29 @@ export function ChefMobileNav({
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
+  const isLockedIn = Boolean(lockedEventId)
+  const [unlockPending, setUnlockPending] = useState(false)
+
+  const handleUnlock = useCallback(async () => {
+    setUnlockPending(true)
+    try {
+      await unlockEvent()
+    } catch {
+      // Non-blocking, page will refresh
+    }
+    setUnlockPending(false)
+  }, [])
+
   const primaryItems = useMemo(
     () =>
-      resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
-    [focusMode, primaryNavHrefs]
+      resolveStandaloneTop(
+        isLockedIn
+          ? [...LOCK_IN_PRIMARY_SHORTCUT_HREFS]
+          : focusMode
+            ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]
+            : primaryNavHrefs
+      ),
+    [isLockedIn, focusMode, primaryNavHrefs]
   )
   const visiblePrimaryItems = useMemo(
     () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
@@ -1583,17 +1678,28 @@ export function ChefMobileNav({
   )
   const tabItems = useMemo(
     () =>
-      focusMode
-        ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
-            ...item,
-            label: item.href === '/dashboard' ? 'Home' : item.label,
-          }))
-        : mobileTabItems,
-    [focusMode]
+      isLockedIn
+        ? [
+            {
+              href: `/events/${lockedEventId}`,
+              label: 'Event',
+              icon: CalendarCheck as any,
+            },
+            ...resolveStandaloneTop(['/inbox', '/chat', '/documents']).map((item) => ({
+              ...item,
+              label: item.label,
+            })),
+          ]
+        : focusMode
+          ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
+              ...item,
+              label: item.href === '/dashboard' ? 'Home' : item.label,
+            }))
+          : mobileTabItems,
+    [isLockedIn, focusMode, lockedEventId]
   )
 
-  // Filter nav groups by role + focus mode.
-  // Focus Mode should simplify nav for everyone, including admins.
+  // Filter nav groups by role + focus mode + event lock-in.
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
@@ -1606,6 +1712,11 @@ export function ChefMobileNav({
       }))
       .filter((group) => group.items.length > 0)
 
+    // Event lock-in is the strictest filter
+    if (isLockedIn) {
+      return baseGroups.filter((group) => isLockInGroupVisible(group.id, Boolean(isAdmin)))
+    }
+
     if (!focusMode) return baseGroups
     const strictGroups = baseGroups.filter((group) =>
       isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
@@ -1613,7 +1724,7 @@ export function ChefMobileNav({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, focusMode])
+  }, [isAdmin, focusMode, isLockedIn])
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
@@ -1783,7 +1894,24 @@ export function ChefMobileNav({
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
           <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl">
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
-              <span className="font-semibold text-stone-100">Menu</span>
+              {isLockedIn ? (
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <CalendarCheck className="w-4 h-4 text-brand-500 flex-shrink-0" />
+                  <span className="font-semibold text-stone-100 truncate text-sm">
+                    {lockedEventTitle || 'Event'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleUnlock}
+                    disabled={unlockPending}
+                    className="text-[10px] font-medium text-stone-400 hover:text-stone-200 bg-stone-800 px-2 py-0.5 rounded flex-shrink-0"
+                  >
+                    Exit
+                  </button>
+                </div>
+              ) : (
+                <span className="font-semibold text-stone-100">Menu</span>
+              )}
               <button
                 type="button"
                 aria-label="Close menu"
@@ -1796,42 +1924,46 @@ export function ChefMobileNav({
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
               <div className="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-sm pb-2 space-y-2">
                 <NavFilterInput value={navFilter} onChange={setNavFilter} />
-                <button
-                  type="button"
-                  onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
-                  aria-expanded={mobileQuickCreateOpen}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-                >
-                  <Plus className="w-4 h-4 text-stone-400" />
-                  <span className="flex-1 text-left">Quick Create</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                      mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="grid grid-cols-2 gap-1">
-                    {filteredQuickCreateItems.map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={closeMenu}
-                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          {item.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
+                {!isLockedIn && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
+                      aria-expanded={mobileQuickCreateOpen}
+                      className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                    >
+                      <Plus className="w-4 h-4 text-stone-400" />
+                      <span className="flex-1 text-left">Quick Create</span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                          mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
+                        }`}
+                      />
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-200 ${
+                        mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="grid grid-cols-2 gap-1">
+                        {filteredQuickCreateItems.map((item) => {
+                          const Icon = item.icon
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={closeMenu}
+                              className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                              {item.label}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <button
@@ -1899,7 +2031,7 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {isAdmin && !focusMode && (
+              {isAdmin && !focusMode && !isLockedIn && (
                 <SectionAccordion
                   title="Cannabis"
                   items={filteredCannabisItems}
@@ -1919,7 +2051,7 @@ export function ChefMobileNav({
                 />
               )}
 
-              {!focusMode && (
+              {!focusMode && !isLockedIn && (
                 <SectionAccordion
                   title="Community"
                   items={filteredCommunityItems}
@@ -1938,51 +2070,55 @@ export function ChefMobileNav({
                   onNavigate={closeMenu}
                 />
               )}
-              <div className="border-t border-stone-800 my-2" />
+              {!isLockedIn && (
+                <>
+                  <div className="border-t border-stone-800 my-2" />
 
-              {/* Settings */}
-              <button
-                type="button"
-                onClick={() => setMobileSettingsOpen((prev) => !prev)}
-                aria-expanded={mobileSettingsOpen}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-              >
-                <span className="flex-1 text-left">Settings & Tools</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                    mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="space-y-0.5">
-                  {filteredSettingsItems.map((item) => {
-                    const Icon = item.icon
-                    const active = isItemActive(pathname, item.href, searchParams)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeMenu}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          active
-                            ? 'bg-brand-950 text-brand-400'
-                            : 'text-stone-400 hover:bg-stone-800'
-                        }`}
-                      >
-                        <Icon
-                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                        />
-                        {item.label}
-                      </Link>
-                    )
-                  })}
-                </div>
-              </div>
+                  {/* Settings */}
+                  <button
+                    type="button"
+                    onClick={() => setMobileSettingsOpen((prev) => !prev)}
+                    aria-expanded={mobileSettingsOpen}
+                    className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                  >
+                    <span className="flex-1 text-left">Settings & Tools</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                        mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="space-y-0.5">
+                      {filteredSettingsItems.map((item) => {
+                        const Icon = item.icon
+                        const active = isItemActive(pathname, item.href, searchParams)
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeMenu}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                              active
+                                ? 'bg-brand-950 text-brand-400'
+                                : 'text-stone-400 hover:bg-stone-800'
+                            }`}
+                          >
+                            <Icon
+                              className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                            />
+                            {item.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Sign Out */}
               <div className="pt-4 mt-4 border-t border-stone-800">

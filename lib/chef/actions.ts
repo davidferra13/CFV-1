@@ -411,6 +411,71 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 }
 
 // ============================================
+// EVENT LOCK-IN
+// ============================================
+
+/**
+ * Lock in to a specific event. Filters the nav to event-relevant sections only.
+ */
+export async function lockInToEvent(eventId: string) {
+  const user = await requireChef()
+  const parsed = z.string().uuid().safeParse(eventId)
+  if (!parsed.success) throw new Error('Invalid event ID')
+
+  const supabase: any = createServerClient()
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', parsed.data)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) throw new Error('Event not found')
+
+  const { data: existing } = await fromChefPreferences(supabase)
+    .select('id')
+    .eq('chef_id', user.entityId)
+    .single()
+
+  if (existing) {
+    const { error } = await fromChefPreferences(supabase)
+      .update({ locked_event_id: parsed.data })
+      .eq('chef_id', user.entityId)
+    if (error) throw new Error('Failed to lock in to event')
+  } else {
+    const { error } = await fromChefPreferences(supabase).insert({
+      chef_id: user.entityId,
+      tenant_id: user.tenantId!,
+      locked_event_id: parsed.data,
+    })
+    if (error) throw new Error('Failed to lock in to event')
+  }
+
+  revalidateTag(`chef-layout-${user.entityId}`)
+  revalidatePath('/events')
+  return { success: true }
+}
+
+/**
+ * Exit event lock-in. Restores the full navigation.
+ */
+export async function unlockEvent() {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { error } = await fromChefPreferences(supabase)
+    .update({ locked_event_id: null })
+    .eq('chef_id', user.entityId)
+
+  if (error) throw new Error('Failed to unlock event')
+
+  revalidateTag(`chef-layout-${user.entityId}`)
+  revalidatePath('/events')
+  return { success: true }
+}
+
+// ============================================
 // BUSINESS MODE
 // ============================================
 

@@ -24,6 +24,9 @@ export type ChefLayoutData = {
   primary_nav_hrefs: string[]
   enabled_modules: string[]
   focus_mode: boolean
+  locked_event_id: string | null
+  locked_event_title: string | null
+  locked_event_date: string | null
   subscription_status: string | null
 }
 
@@ -42,10 +45,24 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
           .single(),
         supabase
           .from('chef_preferences')
-          .select('primary_nav_hrefs, enabled_modules, focus_mode')
+          .select('primary_nav_hrefs, enabled_modules, focus_mode, locked_event_id')
           .eq('chef_id', chefId)
           .single(),
       ])
+
+      // If locked into an event, fetch its title and date for the sidebar header
+      let lockedEventTitle: string | null = null
+      let lockedEventDate: string | null = null
+      const lockedEventId = (prefsResult.data as any)?.locked_event_id ?? null
+      if (lockedEventId) {
+        const { data: eventData } = await supabase
+          .from('events')
+          .select('title, event_date')
+          .eq('id', lockedEventId)
+          .single()
+        lockedEventTitle = eventData?.title ?? null
+        lockedEventDate = eventData?.event_date ?? null
+      }
 
       return {
         slug: chefResult.data?.slug ?? null,
@@ -62,6 +79,9 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
           ? ((prefsResult.data as any).enabled_modules as string[])
           : [],
         focus_mode: (prefsResult.data as any)?.focus_mode ?? true,
+        locked_event_id: lockedEventId,
+        locked_event_title: lockedEventTitle,
+        locked_event_date: lockedEventDate,
         subscription_status: (chefResult.data as any)?.subscription_status ?? null,
       }
     },

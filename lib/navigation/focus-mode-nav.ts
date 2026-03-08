@@ -25,3 +25,29 @@ export function isStrictFocusGroupVisible(groupId: string, isAdmin: boolean): bo
 export function getEffectiveAdminState(isAdmin: boolean, previewActive: boolean): boolean {
   return isAdmin && !previewActive
 }
+
+// ── EVENT LOCK-IN ──
+// When a chef locks in to an event, only these nav groups remain visible.
+const LOCK_IN_GROUP_IDS = new Set<string>([
+  'remy',
+  'events',
+  'clients',
+  'culinary',
+  'operations',
+  'vendors',
+  'finance',
+])
+
+export const LOCK_IN_PRIMARY_SHORTCUT_HREFS = [
+  '/dashboard',
+  '/inbox',
+  '/events',
+  '/clients',
+  '/chat',
+  '/documents',
+] as const
+
+export function isLockInGroupVisible(groupId: string, isAdmin: boolean): boolean {
+  if (LOCK_IN_GROUP_IDS.has(groupId)) return true
+  return isAdmin && groupId === 'admin'
+}

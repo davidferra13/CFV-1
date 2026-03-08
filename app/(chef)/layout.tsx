@@ -162,6 +162,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const enabledModules =
     layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
   const focusMode = layoutData.focus_mode
+  const lockedEventId = layoutData.locked_event_id
+  const lockedEventTitle = layoutData.locked_event_title
+  const lockedEventDate = layoutData.locked_event_date
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
@@ -233,6 +236,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   enabledModules={enabledModules}
                   isAdmin={effectiveAdmin}
                   focusMode={focusMode}
+                  lockedEventId={lockedEventId}
+                  lockedEventTitle={lockedEventTitle}
+                  lockedEventDate={lockedEventDate}
                   userId={user.id}
                   tenantId={user.tenantId ?? user.entityId}
                 />
@@ -242,6 +248,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   enabledModules={enabledModules}
                   isAdmin={effectiveAdmin}
                   focusMode={focusMode}
+                  lockedEventId={lockedEventId}
+                  lockedEventTitle={lockedEventTitle}
+                  lockedEventDate={lockedEventDate}
                   userId={user.id}
                   tenantId={user.tenantId ?? user.entityId}
                 />
