@@ -163,6 +163,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/ingredients', label: 'Ingredients Database', visibility: 'advanced' },
           { href: '/culinary/costing', label: 'Costing', visibility: 'advanced' },
           { href: '/culinary/vendors', label: 'Vendor Directory', visibility: 'advanced' },
+          { href: '/culinary/plating-guides', label: 'Plating Guides', visibility: 'advanced' },
         ],
       },
       {

@@ -63,6 +63,8 @@ import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-
 import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
+import { getEventPlatingGuides } from '@/lib/recipes/plating-actions'
+import { EventPlatingGuidesPanel } from '@/components/events/event-plating-guides-panel'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -181,7 +183,7 @@ export default async function EventDetailPage({
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
 
   // Fetch operational panel data — wrapped in catch so the page works before migrations are applied
-  const [contingencyNotes, emergencyContacts, tempLogs, staffMembers, staffAssignments, menuApprovalData, prepBlocks, eventCollaborators] = await Promise.all([
+  const [contingencyNotes, emergencyContacts, tempLogs, staffMembers, staffAssignments, menuApprovalData, prepBlocks, eventCollaborators, eventPlatingGuides] = await Promise.all([
     event.status !== 'cancelled' ? getEventContingencyNotes(params.id).catch(() => []) : Promise.resolve([]),
     event.status !== 'cancelled' ? listEmergencyContacts().catch(() => []) : Promise.resolve([]),
     ['in_progress', 'completed'].includes(event.status) ? getEventTempLog(params.id).catch(() => []) : Promise.resolve([]),
@@ -190,6 +192,7 @@ export default async function EventDetailPage({
     eventMenus && event.status !== 'cancelled' ? getMenuApprovalStatus(params.id).catch(() => null) : Promise.resolve(null),
     event.status !== 'cancelled' ? getEventPrepBlocks(params.id).catch(() => []) : Promise.resolve([]),
     getEventCollaborators(params.id).catch(() => []),
+    eventMenus && event.status !== 'cancelled' ? getEventPlatingGuides(params.id).catch(() => []) : Promise.resolve([]),
   ])
 
   // For collaborating chefs (non-owners): find their row to show role context in the banner
@@ -712,6 +715,11 @@ export default async function EventDetailPage({
             assignments={staffAssignments as any}
           />
         </Card>
+      )}
+
+      {/* Plating Guides — shown when event has a menu */}
+      {eventMenus && event.status !== 'cancelled' && (eventPlatingGuides as any[]).length > 0 && (
+        <EventPlatingGuidesPanel guides={eventPlatingGuides as any} />
       )}
 
       {/* Chef Collaboration — shown to event owner on any non-cancelled event */}
