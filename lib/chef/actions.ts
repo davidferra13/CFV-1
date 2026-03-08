@@ -81,6 +81,9 @@ const UpdatePreferencesSchema = z.object({
 
   shop_day_before: z.boolean().optional(),
   dashboard_widgets: z.array(DashboardWidgetPreferenceSchema).optional(),
+  my_dashboard_widgets: z.array(z.string()).max(120).optional(),
+  my_dashboard_notes: z.string().max(5000).optional(),
+  my_dashboard_pinned_menu_id: z.string().uuid().nullable().optional(),
   primary_nav_hrefs: PrimaryNavHrefArraySchema.optional(),
 })
 
@@ -296,6 +299,14 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
     revenue_goal_custom: getRevenueGoalCustomFromUnknown(row.revenue_goal_custom),
     shop_day_before: (row.shop_day_before as boolean) ?? true,
     dashboard_widgets: getDashboardWidgetsFromUnknown(row.dashboard_widgets),
+    my_dashboard_widgets: Array.isArray(row.my_dashboard_widgets)
+      ? (row.my_dashboard_widgets as string[]).filter((id) =>
+          DASHBOARD_WIDGET_IDS.includes(id as any)
+        )
+      : [],
+    my_dashboard_notes: typeof row.my_dashboard_notes === 'string' ? row.my_dashboard_notes : '',
+    my_dashboard_pinned_menu_id:
+      typeof row.my_dashboard_pinned_menu_id === 'string' ? row.my_dashboard_pinned_menu_id : null,
     primary_nav_hrefs: getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs),
   }
 }
@@ -344,6 +355,16 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 
   if (validated.dashboard_widgets) {
     payload.dashboard_widgets = sanitizeDashboardWidgets(validated.dashboard_widgets)
+  }
+
+  if (validated.my_dashboard_widgets) {
+    // Dedupe and validate widget IDs
+    const seen = new Set<string>()
+    payload.my_dashboard_widgets = validated.my_dashboard_widgets.filter((id) => {
+      if (seen.has(id)) return false
+      seen.add(id)
+      return DASHBOARD_WIDGET_IDS.includes(id as any)
+    })
   }
 
   if (validated.primary_nav_hrefs) {

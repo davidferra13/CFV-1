@@ -1,5 +1,5 @@
-// Chef Dashboard - Widget Card Layout
-// Real data visible at a glance. No accordions. No clicking to see info.
+// Chef Dashboard - Widget Card Layout with Tabs
+// "My Dashboard" = personal customizable tab. Other tabs = curated category views.
 // Grid: 4 columns desktop, 2 tablet, 1 mobile.
 // Each widget is an always-visible card showing its key metric immediately.
 
@@ -15,8 +15,9 @@ import type { PriorityQueue } from '@/lib/queue/types'
 import { ShortcutStrip } from '@/components/dashboard/shortcut-strip'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
+import { DashboardTabs } from '@/components/dashboard/my-dashboard/dashboard-tabs'
 
-// New card-based sections
+// Card-based sections (rendered server-side, passed as slots to tabs)
 import { ScheduleCards } from './_sections/schedule-cards'
 import { AlertCards } from './_sections/alerts-cards'
 import { BusinessCards } from './_sections/business-cards'
@@ -236,32 +237,31 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* SCHEDULE CARDS (streamed)                    */}
+      {/* TABBED DASHBOARD                              */}
       {/* ============================================ */}
-      <Suspense fallback={<ScheduleCardsSkeleton />}>
-        <ScheduleCards />
-      </Suspense>
-
-      {/* ============================================ */}
-      {/* INTELLIGENCE CARDS (streamed)                */}
-      {/* ============================================ */}
-      <Suspense fallback={<IntelligenceCardsSkeleton />}>
-        <IntelligenceCards />
-      </Suspense>
-
-      {/* ============================================ */}
-      {/* ALERT CARDS (streamed)                       */}
-      {/* ============================================ */}
-      <Suspense fallback={<AlertCardsSkeleton />}>
-        <AlertCards />
-      </Suspense>
-
-      {/* ============================================ */}
-      {/* BUSINESS CARDS (streamed - heaviest)         */}
-      {/* ============================================ */}
-      <Suspense fallback={<BusinessCardsSkeleton />}>
-        <BusinessCards />
-      </Suspense>
+      <DashboardTabs
+        chefId={user.entityId}
+        scheduleContent={
+          <Suspense fallback={<ScheduleCardsSkeleton />}>
+            <ScheduleCards />
+          </Suspense>
+        }
+        alertsContent={
+          <Suspense fallback={<AlertCardsSkeleton />}>
+            <AlertCards />
+          </Suspense>
+        }
+        businessContent={
+          <Suspense fallback={<BusinessCardsSkeleton />}>
+            <BusinessCards />
+          </Suspense>
+        }
+        intelligenceContent={
+          <Suspense fallback={<IntelligenceCardsSkeleton />}>
+            <IntelligenceCards />
+          </Suspense>
+        }
+      />
     </div>
   )
 }

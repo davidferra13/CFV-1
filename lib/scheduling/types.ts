@@ -672,6 +672,11 @@ export interface ChefPreferences {
   // Dashboard customization
   dashboard_widgets: DashboardWidgetPreference[]
 
+  // My Dashboard - personal customizable tab
+  my_dashboard_widgets: string[] // ordered widget IDs for "My Dashboard" tab
+  my_dashboard_notes: string
+  my_dashboard_pinned_menu_id: string | null
+
   // Navigation customization (empty = use platform default primary shortcuts)
   primary_nav_hrefs: string[]
 }
@@ -699,6 +704,9 @@ export const DEFAULT_PREFERENCES: Omit<ChefPreferences, 'id' | 'chef_id'> = {
   revenue_goal_custom: [],
   shop_day_before: true,
   dashboard_widgets: DEFAULT_DASHBOARD_WIDGETS.map((widget) => ({ ...widget })),
+  my_dashboard_widgets: [],
+  my_dashboard_notes: '',
+  my_dashboard_pinned_menu_id: null,
   primary_nav_hrefs: [],
 }
 
