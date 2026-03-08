@@ -317,7 +317,7 @@
 #### Header
 
 - h1: event occasion, `EventStatusBadge`, date/time
-- Buttons: "Edit Event" (draft only) → `/events/[id]/edit`, "Schedule" → `/events/[id]/schedule`, "Packing List" (not draft/cancelled) → `/events/[id]/pack`, "Grocery Quote" (has menu, not cancelled) → `/events/[id]/grocery-quote`, "Travel Plan" → `/events/[id]/travel`, "Back to Events" → `/events`
+- Buttons: "Edit Event" (draft only) → `/events/[id]/edit`, "Schedule" → `/events/[id]/schedule`, "Packing List" (not draft/cancelled) → `/events/[id]/pack`, "Grocery Quote" (has menu, not cancelled) → `/events/[id]/grocery-quote`, "Print Labels" (not draft/cancelled) → `/meal-prep/labels?eventId=...`, "Travel Plan" → `/events/[id]/travel`, "Back to Events" → `/events`
 - Realtime sync component (auto-refreshes on FSM change)
 
 #### Banners (conditional)
@@ -511,6 +511,8 @@
 | `/clients/loyalty/rewards`                    | Reward codes table                                                                                                                                                                                                                         |
 | `/clients/loyalty/referrals`                  | Referral source analysis with bars + top referrer cards                                                                                                                                                                                    |
 | `/clients/presence`                           | Real-time client portal monitoring (Supabase Realtime), online count, activity stream with high-intent badges                                                                                                                              |
+| `/client-requests`                            | Chef's queue of client quick requests. Pending/approved/declined tabs. Per request: client name, date requested, guest count, occasion, notes, approve (convert to event) / decline buttons. Dashboard stat card shows pending count       |
+| `/my-events/request` (client portal)          | Client-side quick request form. Simplified booking for existing clients: date, time, guest count, occasion, notes. Skips the full inquiry flow                                                                                              |
 
 ---
 
@@ -667,6 +669,8 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 | `/finance/sales-tax`           | Sales tax panel with settings (enable/disable, state rate, local rate, filing frequency, registration #) + remittance history |
 | `/finance/planning/break-even` | Break-even calculator                                                                                                         |
 | `/finance/year-end`            | Year-end summary with revenue, expenses, tax prep, "Download for Accountant" CSV, "Email to Myself"                           |
+| `/finance/pricing-calculator`  | Pricing calculator for new chefs. Input: guest count, courses, drive distance, ingredient cost, hours. Output: recommended price with margin targets, market comparison, cost breakdown. Pure TypeScript math (no AI) |
+| `/finance/revenue-per-hour`    | Revenue per hour analysis. True hourly rate across all work types (prep, travel, shopping, cleanup, not just service). Recharts bar/line/area charts. Per-event breakdown table. Trend over time |
 
 ### 5.11 Goals
 
@@ -732,7 +736,15 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 - **`/culinary-board`** — Visual culinary vocabulary display. Board/List/Submissions(admin) views. "Add Word" dialog.
 
-### 6.10 Seasonal Palettes
+### 6.10 Beverages
+
+**`/culinary/beverages`** — Wine and beverage program. Beverage list with add form (name, type, producer, vintage, tasting notes, cost). Menu pairing editor to link beverages to dishes with pairing notes. Beverage costing separate from food costs. Drink recipe support for custom cocktails/mocktails.
+
+### 6.11 Plating Guides
+
+**`/culinary/plating-guides`** — Per-dish plating guides. Visual references, garnish specifications, plate/vessel selection notes. Staff communication tool for plating standards. Editor with structured presentation instructions per recipe.
+
+### 6.12 Seasonal Palettes
 
 - **`/settings/repertoire`** — Palette list with create button.
 - **`/settings/repertoire/[id]`** — Edit palette: season name, micro-windows (add/edit/delete), proven wins (link recipes), save/delete.
@@ -888,7 +900,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 | Culinary   | Recipe reuse rate, top recipes, dietary restrictions, menu modification/approval rates                                                           |
 | Benchmarks | → `/analytics/benchmarks`                                                                                                                        |
 
-**Sub-pages:** `/analytics/daily-report` (daily business snapshot — 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
+**Sub-pages:** `/analytics/daily-report` (daily business snapshot — 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution), `/analytics/capacity` (capacity planning: utilization %, weekly hours used/available, burnout risk assessment, what-if scenario simulator for adding clients, day-of-week heatmap, weekly trend charts. 6 Recharts components. Pure deterministic math, Formula > AI. Dashboard widget shows utilization + burnout risk).
 
 ---
 
@@ -1093,6 +1105,16 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 **`/operations/equipment`** — Owned tab (add form, per-item "Log Maintenance" button) + Rentals tab (log rental form). Maintenance alert banner.
 
 **`/operations/kitchen-rentals`** — Rental list with delete buttons + booking form (facility, date, cost, times, hours, confirmation #, address, purpose, notes).
+
+**`/shopping`** — Shopping lists hub. Create lists from events (auto-consolidates grocery items). List cards with item count, status, link to shopping mode.
+
+**`/shopping/[id]`** — Mobile shopping mode. 40px checkboxes for touch, Wake Lock API (screen stays on), items grouped by category/aisle, real-time subtotal, "Convert to Expense" button. Optimized for in-store use.
+
+**`/meal-prep/labels`** — Meal prep container label generator. Select event or manual entry. Printable grid with dish name, date prepared, use-by date, reheating instructions, allergen warnings, macros/calories. CSS @media print stylesheet with cutting guides.
+
+**`/packing-templates`** — Reusable equipment packing list templates. Create templates by event type ("Intimate dinner for 2" always needs X, Y, Z). Editor with add/remove/reorder items. Apply template to event packing list.
+
+**`PostServiceChecklistButton`** — Post-service cleanup checklist on event Ops tab (in_progress/completed events). 19 items in 4 sections (Equipment, Kitchen, Documentation, Final). Modal overlay with full-screen mobile layout. Progress bar + completion badge. localStorage persistence per event.
 
 ---
 
