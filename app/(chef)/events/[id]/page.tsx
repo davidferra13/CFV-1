@@ -224,6 +224,11 @@ export default async function EventDetailPage({
               <Button variant="secondary">Packing List</Button>
             </Link>
           )}
+          {!['draft', 'cancelled'].includes(event.status) && (
+            <Link href={`/meal-prep/labels?eventId=${event.id}`}>
+              <Button variant="secondary">Print Labels</Button>
+            </Link>
+          )}
           <Link href={`/events/${event.id}/travel`}>
             <Button variant="secondary">Travel Plan</Button>
           </Link>
