@@ -876,7 +876,8 @@ export async function POST(req: NextRequest) {
         otherChannelDigest,
         previousSessionTopics,
         questionInput,
-        executionContext
+        executionContext,
+        'mixed'
       )
 
       // Warn if system prompt is large enough to risk silent truncation.
@@ -1079,7 +1080,9 @@ Use the turn execution context above when answering. If it already answers the c
       surveyPromptSection,
       otherChannelDigest,
       previousSessionTopics,
-      message
+      message,
+      null,
+      'question'
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

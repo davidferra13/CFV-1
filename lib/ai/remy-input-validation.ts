@@ -496,6 +496,47 @@ export function sanitizeErrorForClient(
   fallback = 'Remy ran into an issue — try again in a moment.'
 ): string {
   const raw = err instanceof Error ? err.message : String(err)
+  const normalized = raw.toLowerCase()
+
+  if (
+    normalized.includes('ollama is offline') ||
+    normalized.includes('ollama needs to be running') ||
+    normalized.includes('no ollama endpoints are reachable')
+  ) {
+    return "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
+  }
+
+  if (normalized.includes('setup timed out') || normalized.includes('pre-stream setup timed out')) {
+    return "I'm taking too long to load your business context. Try again in a moment."
+  }
+
+  if (normalized.includes('task ') && normalized.includes('timed out')) {
+    return 'One part of that request took too long to finish. Try again, or split it into smaller steps.'
+  }
+
+  if (normalized.includes('missing required input')) {
+    return 'I could not parse one part of that request cleanly. Rephrase it with the client, date, or action you want.'
+  }
+
+  if (normalized.includes('calendar')) {
+    return 'I could not load your calendar data just now. Try again in a moment.'
+  }
+
+  if (normalized.includes('email')) {
+    return 'I could not load your email context just now. Try again in a moment.'
+  }
+
+  if (normalized.includes('document')) {
+    return 'I could not load your document context just now. Try again in a moment.'
+  }
+
+  if (normalized.includes('client')) {
+    return 'I could not load that client context just now. Try again in a moment.'
+  }
+
+  if (normalized.includes('event')) {
+    return 'I could not load that event context just now. Try again in a moment.'
+  }
 
   // Check if the error contains any internal patterns
   for (const pattern of INTERNAL_PATTERNS) {

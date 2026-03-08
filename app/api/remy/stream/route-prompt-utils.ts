@@ -13,6 +13,8 @@ import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage, RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 
+export type RemyPromptMode = 'question' | 'mixed'
+
 //  Navigation Route Map (auto-generated from route-registry.ts)
 const NAV_ROUTE_MAP = buildRouteMapForPrompt(true)
 
@@ -98,7 +100,8 @@ export function buildRemySystemPrompt(
   otherChannelDigest?: string | null,
   previousSessionTopics?: { title: string; topics: string[]; lastActiveAt: string } | null,
   userMessage?: string,
-  turnExecutionContext?: string | null
+  turnExecutionContext?: string | null,
+  mode: RemyPromptMode = turnExecutionContext ? 'mixed' : 'question'
 ): string {
   const parts: string[] = []
 
@@ -115,6 +118,11 @@ export function buildRemySystemPrompt(
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
+  parts.push(
+    mode === 'mixed'
+      ? "\nMODE: QUESTION + ACTION CONTEXT\nLead with the answer to the chef's question, grounded in the execution context from this turn. Do not dump raw task output back at them. Fold task results into a natural answer, then mention any action status briefly if it matters."
+      : '\nMODE: QUESTION ANSWERING\nAnswer directly from the loaded ChefFlow context. Prioritize concrete facts first, then advice or interpretation. Ask a clarifying question only if a missing detail truly blocks a reliable answer.'
+  )
 
   // Inject culinary profile if available
   if (culinaryProfile) {

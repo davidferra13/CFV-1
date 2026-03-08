@@ -360,7 +360,8 @@ function buildRemySystemPrompt(
   userMessage?: string,
   isFirstMessage: boolean = false,
   conversationHistory: RemyMessage[] = [],
-  turnExecutionContext?: string | null
+  turnExecutionContext?: string | null,
+  mode: 'question' | 'mixed' = turnExecutionContext ? 'mixed' : 'question'
 ): string {
   const parts: string[] = []
 
@@ -372,6 +373,11 @@ function buildRemySystemPrompt(
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
+  parts.push(
+    mode === 'mixed'
+      ? '\nMODE: QUESTION + ACTION CONTEXT\nUse the execution context from this turn to answer directly. Lead with the answer, not the mechanics. Mention action status only when it helps the chef decide what to do next.'
+      : '\nMODE: QUESTION ANSWERING\nAnswer from loaded ChefFlow context first. Be direct, grounded, and specific. Ask a clarifying question only when the answer would otherwise be unreliable.'
+  )
 
   // Time awareness — Remy knows when it is
   const now = new Date()
@@ -1162,7 +1168,8 @@ export async function sendRemyMessage(
         questionInput,
         conversationHistory.length === 0,
         conversationHistory,
-        executionContext
+        executionContext,
+        'mixed'
       )
       const conversationalResult = await parseWithOllama(
         systemPrompt,
@@ -1207,7 +1214,9 @@ export async function sendRemyMessage(
       focusMode,
       userMessage,
       conversationHistory.length === 0,
-      conversationHistory
+      conversationHistory,
+      null,
+      'question'
     )
     const history = formatConversationHistory(conversationHistory)
     const questionLlmStartedAt = Date.now()
