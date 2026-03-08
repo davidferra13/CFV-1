@@ -1045,6 +1045,24 @@ export const navGroups: NavGroup[] = [
       { href: '/admin/inquiries', label: 'All Inquiries', icon: Inbox, adminOnly: true },
       { href: '/admin/staff', label: 'All Staff', icon: Users, adminOnly: true },
       { href: '/admin/documents', label: 'All Documents', icon: FileText, adminOnly: true },
+      { href: '/admin/calendar-view', label: 'Calendar', icon: CalendarDays, adminOnly: true },
+      { href: '/admin/loyalty', label: 'Loyalty', icon: Gift, adminOnly: true },
+      { href: '/admin/equipment', label: 'Equipment', icon: Toolbox, adminOnly: true },
+      { href: '/admin/allergens', label: 'Allergens', icon: AlertTriangle, adminOnly: true },
+      // Intelligence & Monitoring
+      { href: '/admin/remy-activity', label: 'Remy Activity', icon: Bot, adminOnly: true },
+      { href: '/admin/gmail-sync', label: 'Gmail Sync', icon: Mail, adminOnly: true },
+      {
+        href: '/admin/prospecting-overview',
+        label: 'All Prospects',
+        icon: Target,
+        adminOnly: true,
+      },
+      { href: '/admin/activity-feed', label: 'Activity Feed', icon: Activity, adminOnly: true },
+      // Chef Health & Onboarding
+      { href: '/admin/onboarding-status', label: 'Onboarding', icon: ListChecks, adminOnly: true },
+      // Platform Search
+      { href: '/admin/search', label: 'Search All', icon: MagnifyingGlassPlus, adminOnly: true },
     ],
   },
 ]
