@@ -49,6 +49,8 @@ import { OnboardingAccelerator } from '@/components/dashboard/onboarding-acceler
 import { ChefJournalWidget } from '@/components/dashboard/chef-journal-widget'
 import { DashboardQuickSettings } from '@/components/dashboard/dashboard-quick-settings'
 import { ChefTodoWidget } from '@/components/dashboard/chef-todo-widget'
+import { getQuickRequests } from '@/lib/client-requests/actions'
+import { QuickRequestsWidget } from '@/components/client-requests/quick-requests-widget'
 import { getTodos } from '@/lib/todos/actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
@@ -194,6 +196,7 @@ export default async function ChefDashboard() {
     pendingCollabInvitations,
     pendingRecipeShares,
     quoteInsights,
+    quickRequests,
   ] = await Promise.all([
     safe('preferences', getChefPreferences, {
       id: '',
@@ -229,6 +232,7 @@ export default async function ChefDashboard() {
     safe('pendingCollabInvitations', getPendingCollaborationInvitations, []),
     safe('pendingRecipeShares', getPendingRecipeShares, []),
     safe('quoteInsights', getQuoteAcceptanceInsights, null),
+    safe('quickRequests', () => getQuickRequests({ status: 'pending' }), []),
   ])
 
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
@@ -914,6 +918,15 @@ export default async function ChefDashboard() {
             todayLogged={hoursSnapshot.todayLogged}
             weekCategoryBreakdown={hoursSnapshot.weekCategoryBreakdown}
           />
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* CLIENT QUICK REQUESTS                          */}
+      {/* ============================================ */}
+      {quickRequests.length > 0 && (
+        <section>
+          <QuickRequestsWidget requests={quickRequests} />
         </section>
       )}
 
