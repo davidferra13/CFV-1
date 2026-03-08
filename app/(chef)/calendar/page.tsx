@@ -110,7 +110,7 @@ export default async function CalendarPage({
         <CapacitySeasonalBar />
       </Suspense>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+      <div data-tour="calendar-view" className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         <div className="min-w-0">
           <AvailabilityCalendarClient
             year={year}

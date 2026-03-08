@@ -52,10 +52,10 @@ export function WelcomeModal() {
         {/* Actions */}
         <div className="px-8 pb-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={handleSkip} className="order-2 sm:order-1">
-            Skip, I will explore on my own
+            Skip for now
           </Button>
           <Button variant="primary" onClick={handleStartTour} className="order-1 sm:order-2">
-            Take the Tour
+            Show Me Around
           </Button>
         </div>
       </div>

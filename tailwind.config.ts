@@ -93,6 +93,18 @@ const config: Config = {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
+        'tour-cursor-pulse': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.9)' },
+        },
+        'tour-click-ripple': {
+          '0%': { transform: 'scale(0.5)', opacity: '1' },
+          '100%': { transform: 'scale(2.5)', opacity: '0' },
+        },
+        'tour-target-pulse': {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(232, 143, 71, 0.4)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(232, 143, 71, 0)' },
+        },
       },
       animation: {
         'fade-slide-up': 'fade-slide-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -107,6 +119,9 @@ const config: Config = {
         'remy-hat-wobble': 'remy-hat-wobble 4.5s ease-in-out infinite',
         'slide-down-fade': 'slide-down-fade 250ms cubic-bezier(0.16, 1, 0.3, 1) both',
         'scale-fade': 'scale-fade 200ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'tour-cursor-pulse': 'tour-cursor-pulse 1.2s ease-in-out infinite',
+        'tour-click-ripple': 'tour-click-ripple 1.2s ease-out infinite',
+        'tour-target-pulse': 'tour-target-pulse 2s ease-in-out infinite',
       },
     },
   },

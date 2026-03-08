@@ -758,6 +758,7 @@ export function ChefSidebar({
 
   return (
     <aside
+      data-tour="sidebar-nav"
       className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
@@ -781,6 +782,7 @@ export function ChefSidebar({
             {isAdmin && (
               <button
                 type="button"
+                data-tour="remy-button"
                 onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
                 className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
                 aria-label="Open Remy"

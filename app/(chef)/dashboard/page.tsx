@@ -127,7 +127,10 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {/* HEADER                                       */}
       {/* ============================================ */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+      <div
+        data-tour="dashboard-header"
+        className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4"
+      >
         <div>
           <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
           <p className="text-sm text-stone-400 mt-0.5">

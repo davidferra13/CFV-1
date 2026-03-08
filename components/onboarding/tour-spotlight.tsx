@@ -1,12 +1,13 @@
 'use client'
 
-// TourSpotlight - Step-by-step guided tour overlay
-// Highlights target elements with a spotlight effect and shows
-// contextual tooltips with next/prev/skip controls.
+// TourSpotlight - Interactive guided tour with spotlight, animated cursor,
+// and step-by-step walkthrough. Navigates to pages, highlights real UI
+// elements, and shows an animated cursor pointing at what to click.
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useTour } from './tour-provider'
+import { TourCursor } from './tour-cursor'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, X } from '@/components/ui/icons'
 
@@ -15,9 +16,13 @@ type Rect = { top: number; left: number; width: number; height: number }
 export function TourSpotlight() {
   const tour = useTour()
   const router = useRouter()
+  const pathname = usePathname()
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
+  const [isNavigating, setIsNavigating] = useState(false)
+  const [showContent, setShowContent] = useState(false)
   const observerRef = useRef<ResizeObserver | null>(null)
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const step = tour.currentTourStep
   const isFirst = tour.currentTourIndex === 0
@@ -37,101 +42,136 @@ export function TourSpotlight() {
     }
 
     const rect = el.getBoundingClientRect()
-    const padding = 8
+    const padding = 10
+
+    // Scroll the element into view if needed
+    const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
+    if (!isInView) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Re-measure after scroll
+      requestAnimationFrame(() => {
+        const newRect = el.getBoundingClientRect()
+        setTargetRect({
+          top: newRect.top - padding,
+          left: newRect.left - padding,
+          width: newRect.width + padding * 2,
+          height: newRect.height + padding * 2,
+        })
+      })
+      return
+    }
+
     setTargetRect({
-      top: rect.top - padding + window.scrollY,
-      left: rect.left - padding + window.scrollX,
+      top: rect.top - padding,
+      left: rect.left - padding,
       width: rect.width + padding * 2,
       height: rect.height + padding * 2,
     })
   }, [step])
 
-  // Position the tooltip relative to the target (or center if no target)
+  // Position the tooltip relative to the target
   useEffect(() => {
-    if (!step) return
+    if (!step || isNavigating) return
 
     if (!targetRect) {
-      // No target: center the tooltip
+      // No target found yet or step has no target: show tooltip centered but offset down
       setTooltipStyle({
         position: 'fixed',
-        top: '50%',
+        top: '40%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
+        width: '340px',
       })
+      setShowContent(true)
       return
     }
 
-    const tooltipWidth = 320
-    const tooltipGap = 12
-    const viewport = { w: window.innerWidth, h: window.innerHeight }
+    const tooltipWidth = 340
+    const tooltipHeight = 180
+    const gap = 16
+    const vw = window.innerWidth
+    const vh = window.innerHeight
 
     let top = 0
     let left = 0
 
-    switch (step.placement) {
-      case 'bottom':
-        top = targetRect.top + targetRect.height + tooltipGap
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
-        break
-      case 'top':
-        top = targetRect.top - tooltipGap - 160 // estimated tooltip height
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
-        break
-      case 'right':
-        top = targetRect.top + targetRect.height / 2 - 80
-        left = targetRect.left + targetRect.width + tooltipGap
-        break
-      case 'left':
-        top = targetRect.top + targetRect.height / 2 - 80
-        left = targetRect.left - tooltipWidth - tooltipGap
-        break
+    // Smart placement: try placement preference, fall back if no room
+    const placements = [step.placement, 'bottom', 'right', 'top', 'left']
+    for (const placement of placements) {
+      let fits = false
+      switch (placement) {
+        case 'bottom':
+          top = targetRect.top + targetRect.height + gap
+          left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
+          fits = top + tooltipHeight < vh
+          break
+        case 'top':
+          top = targetRect.top - gap - tooltipHeight
+          left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
+          fits = top > 0
+          break
+        case 'right':
+          top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2
+          left = targetRect.left + targetRect.width + gap
+          fits = left + tooltipWidth < vw
+          break
+        case 'left':
+          top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2
+          left = targetRect.left - tooltipWidth - gap
+          fits = left > 0
+          break
+      }
+      if (fits) break
     }
 
     // Clamp to viewport
-    left = Math.max(16, Math.min(left, viewport.w - tooltipWidth - 16))
-    top = Math.max(16, top)
+    left = Math.max(16, Math.min(left, vw - tooltipWidth - 16))
+    top = Math.max(16, Math.min(top, vh - tooltipHeight - 16))
 
     setTooltipStyle({
-      position: 'absolute',
+      position: 'fixed',
       top: `${top}px`,
       left: `${left}px`,
       width: `${tooltipWidth}px`,
     })
-  }, [targetRect, step])
 
-  // Observe target element for position changes
+    // Small delay so cursor arrives before content appears
+    setShowContent(false)
+    const timer = setTimeout(() => setShowContent(true), 400)
+    return () => clearTimeout(timer)
+  }, [targetRect, step, isNavigating])
+
+  // Watch for target element to appear (after navigation)
   useEffect(() => {
+    if (!step) return
+
+    // Clear previous watchers
+    if (checkIntervalRef.current) clearInterval(checkIntervalRef.current)
+    if (observerRef.current) observerRef.current.disconnect()
+
     measureTarget()
 
     const handleScroll = () => measureTarget()
     const handleResize = () => measureTarget()
-
     window.addEventListener('scroll', handleScroll, true)
     window.addEventListener('resize', handleResize)
 
-    // Watch for DOM changes (target might appear after navigation)
-    if (step?.target) {
-      const checkInterval = setInterval(() => {
+    // Poll for target element (it might appear after navigation/render)
+    if (step.target) {
+      checkIntervalRef.current = setInterval(() => {
         const el = document.querySelector(step.target!)
         if (el) {
           measureTarget()
-          // Use ResizeObserver if available
           if (observerRef.current) observerRef.current.disconnect()
           observerRef.current = new ResizeObserver(measureTarget)
           observerRef.current.observe(el)
-          clearInterval(checkInterval)
+          if (checkIntervalRef.current) clearInterval(checkIntervalRef.current)
         }
-      }, 200)
-
-      return () => {
-        clearInterval(checkInterval)
-        window.removeEventListener('scroll', handleScroll, true)
-        window.removeEventListener('resize', handleResize)
-        observerRef.current?.disconnect()
-      }
+      }, 150)
     }
 
     return () => {
+      if (checkIntervalRef.current) clearInterval(checkIntervalRef.current)
       window.removeEventListener('scroll', handleScroll, true)
       window.removeEventListener('resize', handleResize)
       observerRef.current?.disconnect()
@@ -140,18 +180,36 @@ export function TourSpotlight() {
 
   // Navigate to step's route if needed
   useEffect(() => {
-    if (step?.route && !window.location.pathname.startsWith(step.route)) {
-      router.push(step.route)
+    if (!step?.route) {
+      setIsNavigating(false)
+      return
     }
-  }, [step, router])
+
+    if (!pathname.startsWith(step.route)) {
+      setIsNavigating(true)
+      setShowContent(false)
+      setTargetRect(null)
+      router.push(step.route)
+
+      // Give the page time to load before looking for elements
+      const timer = setTimeout(() => setIsNavigating(false), 600)
+      return () => clearTimeout(timer)
+    } else {
+      setIsNavigating(false)
+    }
+  }, [step, router, pathname])
 
   const handleNext = useCallback(() => {
     if (step) tour.completeStep(step.id)
     tour.nextTourStep()
+    setShowContent(false)
+    setTargetRect(null)
   }, [tour, step])
 
   const handlePrev = useCallback(() => {
     tour.prevTourStep()
+    setShowContent(false)
+    setTargetRect(null)
   }, [tour])
 
   const handleSkip = useCallback(() => {
@@ -162,15 +220,11 @@ export function TourSpotlight() {
 
   return (
     <>
-      {/* Backdrop overlay */}
+      {/* Backdrop overlay - lighter than before so users can see the page */}
       <div className="fixed inset-0 z-[90]" aria-hidden="true">
-        {/* Semi-transparent overlay with cutout for target */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          style={{ minHeight: document.documentElement.scrollHeight }}
-        >
+        <svg className="fixed inset-0 w-full h-full">
           <defs>
-            <mask id="spotlight-mask">
+            <mask id="tour-spotlight-mask">
               <rect x="0" y="0" width="100%" height="100%" fill="white" />
               {targetRect && (
                 <rect
@@ -178,7 +232,7 @@ export function TourSpotlight() {
                   y={targetRect.top}
                   width={targetRect.width}
                   height={targetRect.height}
-                  rx="8"
+                  rx="12"
                   fill="black"
                 />
               )}
@@ -189,41 +243,74 @@ export function TourSpotlight() {
             y="0"
             width="100%"
             height="100%"
-            fill="rgba(0,0,0,0.6)"
-            mask="url(#spotlight-mask)"
+            fill="rgba(0,0,0,0.45)"
+            mask="url(#tour-spotlight-mask)"
           />
         </svg>
 
-        {/* Spotlight border glow */}
+        {/* Pulsing border around target */}
         {targetRect && (
           <div
-            className="absolute rounded-lg ring-2 ring-brand-500 ring-offset-2 ring-offset-transparent pointer-events-none"
+            className="fixed rounded-xl animate-tour-target-pulse pointer-events-none"
             style={{
               top: targetRect.top,
               left: targetRect.left,
               width: targetRect.width,
               height: targetRect.height,
+              border: '2px solid rgba(232, 143, 71, 0.7)',
+            }}
+          />
+        )}
+
+        {/* Click-through hole: let users interact with highlighted element */}
+        {targetRect && (
+          <div
+            className="fixed z-[91] cursor-pointer"
+            style={{
+              top: targetRect.top,
+              left: targetRect.left,
+              width: targetRect.width,
+              height: targetRect.height,
+              // This div has no background, so clicks pass through to the element behind
+            }}
+            onClick={(e) => {
+              // Let the click go through to the actual element
+              e.stopPropagation()
+              const el = step.target ? document.querySelector(step.target) : null
+              if (el && el instanceof HTMLElement) {
+                el.click()
+              }
             }}
           />
         )}
       </div>
 
+      {/* Animated cursor pointing at the target */}
+      <TourCursor targetRect={targetRect} isActive={!isNavigating && !!targetRect} />
+
       {/* Tooltip card */}
-      <div className="fixed inset-0 z-[91] pointer-events-none">
+      <div className="fixed inset-0 z-[92] pointer-events-none">
         <div
-          className="pointer-events-auto bg-stone-900 border border-stone-700 rounded-xl shadow-2xl p-4 animate-in fade-in duration-200"
+          className={`pointer-events-auto bg-stone-900/95 backdrop-blur-sm border border-stone-600 rounded-xl shadow-2xl p-5 transition-all duration-300 ${
+            showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          }`}
           style={tooltipStyle}
           role="dialog"
           aria-label={step.title}
         >
           {/* Step indicator */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-stone-400">
-              Step {tour.currentTourIndex + 1} of {tour.totalSteps}
-            </span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400">
+                Step {tour.currentTourIndex + 1} of {tour.totalSteps}
+              </span>
+              {isNavigating && (
+                <span className="text-[10px] text-stone-500 italic">navigating...</span>
+              )}
+            </div>
             <button
               onClick={handleSkip}
-              className="p-1 text-stone-400 hover:text-stone-200 rounded transition-colors"
+              className="p-1 text-stone-500 hover:text-stone-200 rounded transition-colors"
               aria-label="Close tour"
             >
               <X className="h-3.5 w-3.5" />
@@ -231,8 +318,16 @@ export function TourSpotlight() {
           </div>
 
           {/* Content */}
-          <h3 className="text-sm font-semibold text-stone-100 mb-1">{step.title}</h3>
+          <h3 className="text-sm font-semibold text-stone-100 mb-1.5">{step.title}</h3>
           <p className="text-xs text-stone-400 leading-relaxed mb-4">{step.description}</p>
+
+          {/* Action hint */}
+          {targetRect && step.target && (
+            <p className="text-[10px] text-brand-400/80 mb-3 flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+              Click the highlighted area to try it, or press Next to continue
+            </p>
+          )}
 
           {/* Navigation */}
           <div className="flex items-center justify-between">
@@ -250,12 +345,12 @@ export function TourSpotlight() {
               {tour.config.steps.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
                     i === tour.currentTourIndex
-                      ? 'bg-brand-500'
+                      ? 'bg-brand-500 w-4'
                       : i < tour.currentTourIndex
-                        ? 'bg-brand-700'
-                        : 'bg-stone-600'
+                        ? 'bg-brand-700 w-1.5'
+                        : 'bg-stone-600 w-1.5'
                   }`}
                 />
               ))}

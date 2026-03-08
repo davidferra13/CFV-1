@@ -29,7 +29,7 @@ const SHORTCUTS = [
  */
 export function ShortcutStrip() {
   return (
-    <div className="col-span-1 sm:col-span-2 md:col-span-4">
+    <div className="col-span-1 sm:col-span-2 md:col-span-4" data-tour="shortcut-strip">
       <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
         {SHORTCUTS.map((s) => (
           <Link

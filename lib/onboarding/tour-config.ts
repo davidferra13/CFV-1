@@ -1,7 +1,7 @@
 // Product Tour Configuration
-// Defines the onboarding steps for each role. Steps are ordered by priority.
-// Each step has a unique ID, display info, and a target element selector
-// for the spotlight/tooltip to highlight.
+// Defines interactive walkthrough steps for each role. Each step navigates
+// to a real page, highlights a real UI element, and shows an animated cursor
+// pointing at what to click.
 
 export type TourStepId = string
 
@@ -9,11 +9,11 @@ export type TourStep = {
   id: TourStepId
   title: string
   description: string
-  // CSS selector for the element to highlight (null = no spotlight, just checklist)
+  // CSS selector for the element to highlight (null = page overview, no spotlight)
   target: string | null
   // Where the tooltip appears relative to the target
   placement: 'top' | 'bottom' | 'left' | 'right'
-  // Route where this step is relevant (null = show on any page)
+  // Route to navigate to before showing this step
   route: string | null
   // Whether this step can be auto-completed by detecting real usage
   autoComplete: boolean
@@ -37,30 +37,51 @@ export type TourConfig = {
 export const CHEF_TOUR: TourConfig = {
   role: 'chef',
   welcomeTitle: 'Welcome to ChefFlow',
-  welcomeSubtitle: 'Your business command center. Here is a quick tour of the essentials.',
+  welcomeSubtitle:
+    'Let us walk you through the essentials. We will show you exactly where everything is.',
   welcomePoints: [
-    'Manage events, clients, and finances in one place',
-    'Get AI-powered insights from Remy, your concierge',
-    'Track every dollar with the built-in ledger',
-    'Send professional quotes and invoices to clients',
+    'We will guide you through each page with a visual walkthrough',
+    'A cursor will point to each feature as we explain it',
+    'You can click highlighted elements to try them, or skip ahead',
+    'Takes about 2 minutes. You can replay it anytime from Settings.',
   ],
   steps: [
     {
       id: 'chef.dashboard',
-      title: 'Your Dashboard',
+      title: 'Your Command Center',
       description:
-        'This is your command center. Priority alerts, upcoming events, revenue stats, and AI insights all live here.',
-      target: null,
+        'This is your dashboard. Priority alerts, upcoming events, revenue, and AI insights are all visible at a glance. No clicking required to see your numbers.',
+      target: '[data-tour="dashboard-header"]',
       placement: 'bottom',
       route: '/dashboard',
       autoComplete: true,
       completionCheck: { type: 'route_visited', value: '/dashboard' },
     },
     {
+      id: 'chef.shortcuts',
+      title: 'Quick Actions',
+      description:
+        'These shortcuts give you one-tap access to the things you do most. Briefings, inbox, calendar, and more.',
+      target: '[data-tour="shortcut-strip"]',
+      placement: 'bottom',
+      route: '/dashboard',
+      autoComplete: false,
+    },
+    {
+      id: 'chef.sidebar',
+      title: 'Your Navigation',
+      description:
+        'The sidebar has everything organized by category: Sales, Clients, Events, Culinary, Finance, and more. It collapses into a rail on smaller screens.',
+      target: '[data-tour="sidebar-nav"]',
+      placement: 'right',
+      route: '/dashboard',
+      autoComplete: false,
+    },
+    {
       id: 'chef.create_event',
       title: 'Create Your First Event',
       description:
-        'Events are the core of ChefFlow. Create one to start managing bookings, menus, and payments.',
+        'Events are the core of ChefFlow. Click this button to create one. It will walk you through date, location, menu, and pricing.',
       target: '[data-tour="create-event"]',
       placement: 'bottom',
       route: '/events',
@@ -70,49 +91,39 @@ export const CHEF_TOUR: TourConfig = {
       id: 'chef.add_client',
       title: 'Add a Client',
       description:
-        'Import your existing clients or add new ones. Their dietary restrictions, allergies, and preferences are tracked automatically.',
+        'Import existing clients or add new ones here. Their dietary restrictions, allergies, and preferences are tracked automatically across all events.',
       target: '[data-tour="add-client"]',
       placement: 'bottom',
       route: '/clients',
       autoComplete: false,
     },
     {
-      id: 'chef.send_quote',
-      title: 'Send a Quote',
-      description:
-        'Create professional quotes with line items, send them to clients, and track approval status.',
-      target: null,
-      placement: 'bottom',
-      route: null,
-      autoComplete: false,
-    },
-    {
       id: 'chef.add_recipe',
-      title: 'Add a Recipe',
+      title: 'Build Your Recipe Library',
       description:
-        'Build your recipe library with methods, timing, dietary tags, and food cost tracking.',
+        'Add your recipes here with methods, timing, dietary tags, and food cost tracking. Your recipe book is private and never shared.',
       target: '[data-tour="add-recipe"]',
       placement: 'bottom',
       route: '/recipes',
       autoComplete: false,
     },
     {
-      id: 'chef.setup_payments',
-      title: 'Set Up Payments',
+      id: 'chef.meet_remy',
+      title: 'Meet Remy, Your AI Concierge',
       description:
-        'Connect Stripe to accept payments directly from clients. Deposits, installments, and full payments are all supported.',
-      target: null,
-      placement: 'bottom',
-      route: '/settings/payments',
+        'Remy helps you with tasks like checking revenue, finding client info, drafting emails, and more. Click this button anytime to chat with Remy.',
+      target: '[data-tour="remy-button"]',
+      placement: 'right',
+      route: '/dashboard',
       autoComplete: false,
     },
     {
       id: 'chef.explore_calendar',
-      title: 'Check Your Calendar',
+      title: 'Your Calendar',
       description:
-        'See all your events on a calendar view. Drag to reschedule, click to see details.',
-      target: null,
-      placement: 'bottom',
+        'See all your events on a calendar. Day, week, and year views are available. Click any event to see its details.',
+      target: '[data-tour="calendar-view"]',
+      placement: 'left',
       route: '/calendar',
       autoComplete: true,
       completionCheck: { type: 'route_visited', value: '/calendar' },
@@ -125,20 +136,20 @@ export const CHEF_TOUR: TourConfig = {
 export const CLIENT_TOUR: TourConfig = {
   role: 'client',
   welcomeTitle: 'Welcome to Your Portal',
-  welcomeSubtitle: 'Everything about your private chef experience, in one place.',
+  welcomeSubtitle: 'Let us show you around. This is where you manage everything with your chef.',
   welcomePoints: [
-    'View and manage your upcoming events',
-    'Review and approve menus your chef prepares',
-    'Pay invoices and track your spending',
-    'Earn loyalty rewards with every booking',
+    'We will walk you through each section step by step',
+    'A cursor will point to each feature as we explain it',
+    'Click any highlighted element to try it out',
+    'Takes about a minute. You can replay anytime.',
   ],
   steps: [
     {
       id: 'client.my_events',
       title: 'Your Events',
       description:
-        'All your upcoming and past events with your chef. View details, menus, and payment status.',
-      target: null,
+        'All your upcoming and past events with your chef. View details, menus, and payment status for each one.',
+      target: '[data-tour="client-events"]',
       placement: 'bottom',
       route: '/my-events',
       autoComplete: true,
@@ -146,10 +157,10 @@ export const CLIENT_TOUR: TourConfig = {
     },
     {
       id: 'client.view_quote',
-      title: 'Review a Quote',
+      title: 'Review Quotes',
       description:
         'When your chef sends you a quote, it appears here. Review line items and approve or request changes.',
-      target: null,
+      target: '[data-tour="client-quotes"]',
       placement: 'bottom',
       route: '/my-quotes',
       autoComplete: true,
@@ -170,7 +181,7 @@ export const CLIENT_TOUR: TourConfig = {
       title: 'Loyalty Rewards',
       description:
         'Earn points with every booking. Check your tier, available rewards, and redemption history.',
-      target: null,
+      target: '[data-tour="client-rewards"]',
       placement: 'bottom',
       route: '/my-rewards',
       autoComplete: true,
@@ -181,7 +192,7 @@ export const CLIENT_TOUR: TourConfig = {
       title: 'Update Your Profile',
       description:
         'Keep your dietary restrictions, allergies, and contact info current so your chef can serve you best.',
-      target: null,
+      target: '[data-tour="client-profile"]',
       placement: 'bottom',
       route: '/my-profile',
       autoComplete: true,
@@ -195,19 +206,18 @@ export const CLIENT_TOUR: TourConfig = {
 export const STAFF_TOUR: TourConfig = {
   role: 'staff',
   welcomeTitle: 'Welcome to Staff Portal',
-  welcomeSubtitle: 'See your schedule, tasks, and recipes for upcoming events.',
+  welcomeSubtitle: 'Here is a quick walkthrough of your tools.',
   welcomePoints: [
-    'View your assigned shifts and events',
-    'Check prep tasks and station assignments',
-    'Look up recipes and plating instructions',
-    'Confirm your availability',
+    'We will show you where everything is',
+    'Your schedule, tasks, and recipes are all here',
+    'Takes less than a minute',
   ],
   steps: [
     {
       id: 'staff.dashboard',
       title: 'Your Dashboard',
       description: 'See your upcoming shifts, active tasks, and quick stats at a glance.',
-      target: null,
+      target: '[data-tour="staff-dashboard"]',
       placement: 'bottom',
       route: '/staff-dashboard',
       autoComplete: true,
@@ -218,7 +228,7 @@ export const STAFF_TOUR: TourConfig = {
       title: 'Your Schedule',
       description:
         'All your assigned shifts in one place. Confirm availability and see event details.',
-      target: null,
+      target: '[data-tour="staff-schedule"]',
       placement: 'bottom',
       route: '/staff-schedule',
       autoComplete: true,
@@ -228,7 +238,7 @@ export const STAFF_TOUR: TourConfig = {
       id: 'staff.check_tasks',
       title: 'Your Tasks',
       description: 'Prep lists, setup instructions, and task assignments for your upcoming events.',
-      target: null,
+      target: '[data-tour="staff-tasks"]',
       placement: 'bottom',
       route: '/staff-tasks',
       autoComplete: true,
@@ -238,7 +248,7 @@ export const STAFF_TOUR: TourConfig = {
       id: 'staff.browse_recipes',
       title: 'Recipe Library',
       description: 'Look up recipes, plating guides, and dietary notes for any dish on the menu.',
-      target: null,
+      target: '[data-tour="staff-recipes"]',
       placement: 'bottom',
       route: '/staff-recipes',
       autoComplete: true,
