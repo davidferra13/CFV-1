@@ -1,9 +1,7 @@
 // Scheduling Engine - Type Definitions
 // Pure types for timeline generation, DOPs, and prep prompts.
 
-// ============================================
 // CHEF PREFERENCES
-// ============================================
 
 export interface DefaultStore {
   name: string
@@ -117,6 +115,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'smart_hours',
   'inline_aar',
   'quick_create',
+  'capacity',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -126,9 +125,7 @@ export interface DashboardWidgetPreference {
   enabled: boolean
 }
 
-// ============================================
 // WIDGET CATEGORIES & METADATA
-// ============================================
 
 export type WidgetCategory =
   | 'today'
@@ -293,9 +290,7 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   vendor_costs: { category: 'system', size: 'sm', defaultEnabled: false },
 }
 
-// ============================================
 // WIDGET VISUAL STYLES (icons, category colors)
-// ============================================
 
 export interface CategoryStyle {
   border: string
@@ -627,6 +622,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   smart_hours: 'Smart Hours',
   inline_aar: 'Quick Debrief',
   quick_create: 'Quick Create',
+  capacity: 'Capacity Planning',
 }
 
 // Legacy alias kept for compatibility with older code paths.
@@ -719,9 +715,7 @@ export interface RevenueGoalCustom {
   enabled: boolean
 }
 
-// ============================================
 // ENRICHED TODAY'S SCHEDULE (Widget Intelligence)
-// ============================================
 
 export type EventPhase =
   | 'pre_event'
@@ -767,9 +761,7 @@ export interface WeatherAlert {
   message: string
 }
 
-// ============================================
 // TIMELINE
-// ============================================
 
 export type TimelineItemType =
   | 'wake'
@@ -809,9 +801,7 @@ export interface EventTimeline {
   warnings: string[]
 }
 
-// ============================================
 // DEFAULT OPERATING PROCEDURES
-// ============================================
 
 export type DOPTaskCategory = 'documents' | 'shopping' | 'prep' | 'packing' | 'admin' | 'reset'
 
@@ -851,9 +841,7 @@ export interface DOPSchedule {
   overrides: string[]
 }
 
-// ============================================
 // PREP PROMPTS
-// ============================================
 
 export type PromptUrgency = 'actionable' | 'upcoming' | 'overdue'
 export type PromptCategory = 'documents' | 'shopping' | 'prep' | 'packing' | 'admin'
@@ -871,9 +859,7 @@ export interface PrepPrompt {
   category: PromptCategory
 }
 
-// ============================================
 // SCHEDULING CONTEXT (for engine inputs)
-// ============================================
 
 export interface SchedulingEvent {
   id: string
@@ -917,9 +903,7 @@ export interface SchedulingEvent {
   hasAlcohol?: boolean
 }
 
-// ============================================
 // WEEKLY VIEW
-// ============================================
 
 export type DayType = 'event' | 'prep' | 'admin' | 'free'
 
@@ -946,9 +930,7 @@ export interface WeekSchedule {
   warnings: string[]
 }
 
-// ============================================
 // PREP BLOCKS (year/week scheduling system)
-// ============================================
 
 export type PrepBlockType =
   | 'grocery_run'
