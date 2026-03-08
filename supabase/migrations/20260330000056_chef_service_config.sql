@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS chef_service_config (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   chef_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
-  tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  tenant_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
 
   -- SERVICES I OFFER
   offers_wine_pairings boolean NOT NULL DEFAULT false,
