@@ -10,6 +10,8 @@ import {
   Monitor,
   Smartphone,
   ExternalLink,
+  QrCode,
+  Download,
 } from '@/components/ui/icons'
 
 interface Props {
@@ -293,6 +295,57 @@ export function EmbedCodePanel({ chefId }: Props) {
             </button>
           </div>
         </details>
+      </div>
+
+      {/* ── QR Code for Print ── */}
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
+        <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+          <QrCode className="h-5 w-5 text-stone-300" />
+          Your Booking QR Code
+        </h2>
+        <p className="text-sm text-stone-500">
+          Print this on business cards, table tents, menus, or leave-behind cards. Anyone who scans
+          it goes straight to your booking form.
+        </p>
+        <div className="flex items-center gap-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=M&data=${encodeURIComponent(`${origin}/embed/inquiry/${chefId}`)}`}
+            alt="Booking form QR code"
+            width={160}
+            height={160}
+            className="rounded-lg border border-stone-700 bg-white p-2"
+          />
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-medium text-stone-200">Scan to book</p>
+              <p className="text-xs text-stone-500 break-all mt-0.5">
+                {origin}/embed/inquiry/{chefId}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <a
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=M&format=png&data=${encodeURIComponent(`${origin}/embed/inquiry/${chefId}`)}`}
+                download={`chefflow-booking-qr.png`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors w-fit"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download PNG (high-res)
+              </a>
+              <a
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=M&format=svg&data=${encodeURIComponent(`${origin}/embed/inquiry/${chefId}`)}`}
+                download={`chefflow-booking-qr.svg`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-600 text-stone-300 text-sm font-medium hover:bg-stone-800 transition-colors w-fit"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download SVG (for print)
+              </a>
+            </div>
+            <p className="text-xs text-stone-600">
+              SVG scales perfectly for any print size. Use PNG for digital.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* ── Preview ── */}

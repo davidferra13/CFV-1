@@ -337,6 +337,46 @@ export class PDFLayout {
     this.doc.setTextColor(0, 0, 0)
   }
 
+  /**
+   * Embed a QR code image at the current position or a specific location.
+   * Pass a base64 data URL from generateQrDataUrl().
+   * Non-blocking: if dataUrl is null, nothing renders (QR generation failed gracefully).
+   *
+   * @param dataUrl - base64 PNG data URL from qrcode package
+   * @param size - QR image size in mm (default 22mm, ~0.9 inches)
+   * @param label - Small text label below the QR (optional)
+   * @param align - 'left' (at margin), 'right' (at right margin), or 'center'
+   */
+  qrCode(
+    dataUrl: string | null,
+    size: number = 22,
+    label?: string,
+    align: 'left' | 'right' | 'center' = 'right'
+  ) {
+    if (!dataUrl) return
+
+    let x = MARGIN_X
+    if (align === 'right') x = LETTER_WIDTH - MARGIN_X - size
+    else if (align === 'center') x = (LETTER_WIDTH - size) / 2
+
+    try {
+      this.doc.addImage(dataUrl, 'PNG', x, this.y, size, size)
+    } catch {
+      return // If image fails, skip silently
+    }
+
+    if (label) {
+      const s = this.scaledSize(7)
+      this.doc.setFontSize(s)
+      this.doc.setFont('helvetica', 'normal')
+      this.doc.setTextColor(120, 120, 120)
+      this.doc.text(label, x + size / 2, this.y + size + 3, { align: 'center' })
+      this.doc.setTextColor(0, 0, 0)
+    }
+
+    this.y += size + (label ? 5 : 0)
+  }
+
   /** Add a new page and reset Y position */
   newPage() {
     this.doc.addPage('letter')

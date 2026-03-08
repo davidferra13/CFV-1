@@ -8,11 +8,13 @@ import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
 import { getChefBrand, type ChefBrand } from '@/lib/chef/brand'
 import { fetchLogoAsBase64 } from '@/lib/documents/logo-utils'
 import { format } from 'date-fns'
+import { generateQrDataUrl, getContractPageUrl } from '@/lib/qr/qr-code'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ContractDocumentData = {
   contractRef: string
+  eventId: string | null
   bodySnapshot: string
   status: string
   signedAt: string | null
@@ -46,7 +48,7 @@ export async function fetchContractData(
     .from('event_contracts')
     .select(
       `
-      id, body_snapshot, status, signed_at, created_at, signer_ip_address, chef_id, client_id,
+      id, event_id, body_snapshot, status, signed_at, created_at, signer_ip_address, chef_id, client_id,
       events (event_date, occasion, guest_count),
       clients (full_name, email)
     `
@@ -92,6 +94,7 @@ export async function fetchContractData(
 
   return {
     contractRef,
+    eventId: contract.event_id ?? null,
     bodySnapshot: contract.body_snapshot ?? '',
     status: contract.status ?? 'draft',
     signedAt: contract.signed_at ?? null,
@@ -213,7 +216,8 @@ export function renderContract(
   pdf: PDFLayout,
   data: ContractDocumentData,
   brand?: ChefBrand | null,
-  logoBase64?: string | null
+  logoBase64?: string | null,
+  qrDataUrl?: string | null
 ) {
   const { contractRef, bodySnapshot, status, signedAt, signerIpPartial, chef, client, event } = data
 
@@ -299,6 +303,12 @@ export function renderContract(
     pdf.text('Awaiting electronic signature via ChefFlow.', 8, 'italic')
   }
 
+  // QR code — scan to view contract online
+  if (qrDataUrl) {
+    pdf.space(3)
+    pdf.qrCode(qrDataUrl, 20, 'Scan to view online', 'right')
+  }
+
   // Footer
   pdf.footer(`${contractRef}  ·  ${chef.businessName}  ·  ${chef.email}`)
   if (brand?.showPoweredBy) {
@@ -328,7 +338,17 @@ export async function generateContract(
     }
   }
 
+  // Generate QR code for the contract's online view
+  let qrDataUrl: string | null = null
+  if (data.eventId) {
+    try {
+      qrDataUrl = await generateQrDataUrl(getContractPageUrl(data.eventId))
+    } catch {
+      // Non-blocking: contract generates fine without QR
+    }
+  }
+
   const pdf = new PDFLayout()
-  renderContract(pdf, data, brand, logoBase64)
+  renderContract(pdf, data, brand, logoBase64, qrDataUrl)
   return pdf.toBuffer()
 }

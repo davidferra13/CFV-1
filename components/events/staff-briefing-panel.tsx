@@ -9,6 +9,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { generateStaffBriefing, type StaffBriefingData } from '@/lib/staff/briefing-actions'
+import { getQrCodeUrl } from '@/lib/qr/qr-code'
 
 const SERVICE_STYLE_LABELS: Record<string, string> = {
   plated: 'Plated',
@@ -263,6 +264,25 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
             </div>
           </Section>
         )}
+      </div>
+
+      {/* QR Code — scan to open live event page */}
+      <div className="flex items-center gap-3 rounded-lg border border-stone-700 bg-stone-800/50 p-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={getQrCodeUrl(
+            `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.cheflowhq.com'}/events/${eventId}`,
+            120
+          )}
+          alt="Event QR code"
+          width={60}
+          height={60}
+          className="rounded"
+        />
+        <div>
+          <p className="text-xs font-medium text-stone-300">Scan for live event details</p>
+          <p className="text-xs text-stone-500">Menu, allergies, timeline, and real-time updates</p>
+        </div>
       </div>
 
       <p className="text-xs text-stone-400 print:hidden">

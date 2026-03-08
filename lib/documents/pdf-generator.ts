@@ -7,6 +7,7 @@
 import PDFDocument from 'pdfkit'
 import type { InvoiceData } from '@/lib/events/invoice-actions'
 import { formatTaxRate } from '@/lib/tax/api-ninjas'
+import { generateQrBuffer, getInvoicePageUrl } from '@/lib/qr/qr-code'
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -77,7 +78,11 @@ function paymentMethodLabel(method: string): string {
 
 // ─── Main Generator ─────────────────────────────────────────────────────────
 
-export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
+export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
+  // Generate QR code buffer (non-blocking, no network call)
+  const qrUrl = getInvoicePageUrl(data.event.id)
+  const qrBuffer = await generateQrBuffer(qrUrl, 200)
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
       size: 'LETTER',
@@ -535,8 +540,26 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       .lineWidth(0.5)
       .stroke()
 
-    // ── FOOTER ──────────────────────────────────────────────────────────
+    // ── QR CODE ─────────────────────────────────────────────────────────
+    // Small QR in the bottom-right linking to the online invoice page.
+    // Non-blocking: if QR generation failed, the invoice still renders fine.
+    const qrSize = 64 // points (~0.9 inches)
     const footerY = PAGE_HEIGHT - MARGIN_BOTTOM - 10
+
+    if (qrBuffer) {
+      const qrX = PAGE_WIDTH - MARGIN_RIGHT - qrSize
+      const qrY = footerY - qrSize - 18
+
+      doc.image(qrBuffer, qrX, qrY, { width: qrSize, height: qrSize })
+
+      doc.font('Helvetica').fontSize(7).fillColor(TEXT_MUTED)
+      doc.text('Scan to view online', qrX, qrY + qrSize + 3, {
+        width: qrSize,
+        align: 'center',
+      })
+    }
+
+    // ── FOOTER ──────────────────────────────────────────────────────────
 
     // Orange accent line
     doc
