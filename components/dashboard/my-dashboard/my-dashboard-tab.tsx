@@ -19,6 +19,7 @@ import {
 } from '@/lib/scheduling/types'
 import { WidgetPickerModal } from './widget-picker-modal'
 import { WidgetRenderer } from './widget-renderer'
+import { TemplateCards } from './template-cards'
 import { toast } from 'sonner'
 
 interface Props {
@@ -32,6 +33,7 @@ export function MyDashboardTab({ chefId }: Props) {
   const [editMode, setEditMode] = useState(false)
   const [editWidgets, setEditWidgets] = useState<string[]>([])
   const [showPicker, setShowPicker] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
   const [notes, setNotes] = useState('')
   const [isPending, startTransition] = useTransition()
   const notesTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -162,6 +164,24 @@ export function MyDashboardTab({ chefId }: Props) {
     setShowPicker(false)
   }
 
+  // Apply a template (replaces current widgets, saves immediately)
+  const applyTemplate = (widgetIds: string[]) => {
+    startTransition(async () => {
+      try {
+        await saveMyDashboardWidgets(widgetIds)
+        setConfig((prev) => (prev ? { ...prev, widgetIds } : prev))
+        setEditWidgets(widgetIds)
+        if (widgetIds.length > 0) {
+          const data = await loadWidgetData(widgetIds)
+          setWidgetData(data)
+        }
+        toast.success('Template applied')
+      } catch {
+        toast.error('Failed to apply template')
+      }
+    })
+  }
+
   if (loading) {
     return (
       <>
@@ -205,34 +225,81 @@ export function MyDashboardTab({ chefId }: Props) {
               </Button>
             </>
           ) : (
-            <Button variant="secondary" size="sm" onClick={enterEdit} className="gap-1.5">
-              <Pencil className="h-3.5 w-3.5" />
-              Customize
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTemplates((p) => !p)}
+                className="gap-1.5"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                Templates
+              </Button>
+              <Button variant="secondary" size="sm" onClick={enterEdit} className="gap-1.5">
+                <Pencil className="h-3.5 w-3.5" />
+                Customize
+              </Button>
+            </>
           )}
         </div>
       </div>
 
-      {/* Empty state */}
+      {/* Empty state with templates */}
       {isEmpty && (
-        <div className="col-span-1 sm:col-span-2 lg:col-span-4 flex flex-col items-center justify-center py-16 rounded-2xl border border-dashed border-stone-700 bg-stone-900/50">
-          <div className="text-4xl mb-3">
-            <LayoutDashboard className="h-12 w-12 text-stone-600" />
+        <div className="col-span-1 sm:col-span-2 lg:col-span-4 space-y-6">
+          <div className="text-center py-6">
+            <LayoutDashboard className="h-10 w-10 text-stone-600 mx-auto mb-2" />
+            <h3 className="text-lg font-semibold text-stone-200 mb-1">Your personal dashboard</h3>
+            <p className="text-sm text-stone-500 max-w-md mx-auto">
+              Pick a template to get started, or build from scratch.
+            </p>
           </div>
-          <h3 className="text-lg font-semibold text-stone-200 mb-1">Your personal dashboard</h3>
-          <p className="text-sm text-stone-500 mb-4 text-center max-w-md">
-            Add the widgets you care about most. Pick from any category, arrange them how you want.
-          </p>
-          <Button
-            onClick={() => {
-              enterEdit()
-              setShowPicker(true)
+
+          <TemplateCards
+            chefArchetype={config?.chefArchetype ?? null}
+            onApply={applyTemplate}
+            isPending={isPending}
+          />
+
+          <div className="text-center pb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                enterEdit()
+                setShowPicker(true)
+              }}
+              className="gap-1.5 text-stone-400"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Or start from scratch
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Template picker (accessible from populated dashboards via toolbar) */}
+      {showTemplates && !isEmpty && (
+        <div className="col-span-1 sm:col-span-2 lg:col-span-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+              Switch to a template
+            </p>
+            <button
+              onClick={() => setShowTemplates(false)}
+              className="text-xs text-stone-500 hover:text-stone-300"
+            >
+              Close
+            </button>
+          </div>
+          <TemplateCards
+            chefArchetype={config?.chefArchetype ?? null}
+            onApply={(widgetIds) => {
+              applyTemplate(widgetIds)
+              setShowTemplates(false)
             }}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            Add Widgets
-          </Button>
+            isPending={isPending}
+          />
         </div>
       )}
 

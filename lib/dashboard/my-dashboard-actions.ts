@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getChefPreferences, updateChefPreferences } from '@/lib/chef/actions'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
 import { DASHBOARD_WIDGET_IDS } from '@/lib/scheduling/types'
 
@@ -18,15 +19,19 @@ export interface MyDashboardConfig {
   notes: string
   pinnedMenuId: string | null
   pinnedMenuName: string | null
+  chefArchetype: string | null
 }
 
 export async function getMyDashboardConfig(): Promise<MyDashboardConfig> {
-  const prefs = await getChefPreferences()
+  const user = await requireChef()
+  const [prefs, archetype] = await Promise.all([
+    getChefPreferences(),
+    getCachedChefArchetype(user.entityId).catch(() => null),
+  ])
 
   let pinnedMenuName: string | null = null
   if (prefs.my_dashboard_pinned_menu_id) {
     const supabase: any = createServerClient()
-    const user = await requireChef()
     const { data } = await supabase
       .from('menus')
       .select('name')
@@ -41,6 +46,7 @@ export async function getMyDashboardConfig(): Promise<MyDashboardConfig> {
     notes: prefs.my_dashboard_notes,
     pinnedMenuId: prefs.my_dashboard_pinned_menu_id,
     pinnedMenuName,
+    chefArchetype: archetype ?? null,
   }
 }
 
