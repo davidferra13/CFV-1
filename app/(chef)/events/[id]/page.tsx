@@ -464,9 +464,15 @@ export default async function EventDetailPage({
               <Button variant="secondary">Packing List</Button>
             </Link>
           )}
+
           {eventMenus && !['cancelled'].includes(event.status) && (
             <Link href={`/events/${event.id}/grocery-quote`}>
               <Button variant="secondary">Grocery Quote</Button>
+
+          {!['draft', 'cancelled'].includes(event.status) && (
+            <Link href={`/meal-prep/labels?eventId=${event.id}`}>
+              <Button variant="secondary">Print Labels</Button>
+
             </Link>
           )}
           <Link href={`/events/${event.id}/travel`}>
@@ -621,15 +627,15 @@ export default async function EventDetailPage({
         <EventPrepSchedule eventId={event.id} initialBlocks={prepBlocks as any} />
       )}
 
-      {/* ============================================ */}
+      {/* ===================================== */}
       {/* MOBILE TAB NAV â€” hidden on md+               */}
-      {/* ============================================ */}
+      {/* ===================================== */}
       <EventDetailMobileNav />
 
-      {/* ============================================ */}
-      {/* ============================================ */}
+      {/* ===================================== */}
+      {/* ===================================== */}
       {/* TAB: OVERVIEW — Event details, client, comms */}
-      {/* ============================================ */}
+      {/* ===================================== */}
       <EventDetailOverviewTab
         activeTab={activeTab}
         event={event}
@@ -653,7 +659,7 @@ export default async function EventDetailPage({
       />
 
       {/* TAB: MONEY â€” Financials, payments, expenses  */}
-      {/* ============================================ */}
+      {/* ===================================== */}
       <EventDetailMoneyTab
         activeTab={activeTab}
         event={event}
@@ -674,9 +680,9 @@ export default async function EventDetailPage({
         takeAChefFinance={takeAChefFinance}
       />
 
-      {/* ============================================ */}
+      {/* ===================================== */}
       {/* TAB: OPS — Staff, temps, docs, transitions   */}
-      {/* ============================================ */}
+      {/* ===================================== */}
       <EventDetailOpsTab
         activeTab={activeTab}
         event={event}
@@ -707,7 +713,7 @@ export default async function EventDetailPage({
         aiConfigured={aiConfigured}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
-      {/* ============================================ */}
+      {/* ===================================== */}
       <EventDetailWrapTab
         activeTab={activeTab}
         eventId={event.id}

@@ -485,6 +485,7 @@ html {
   animation: slide-in-from-top 0.2s ease-out;
 }
 
+<<<<<<< HEAD
 /* ============================================
    CULINARY BOARD — Word Click Animations
    Each word animates to FEEL like itself.
@@ -1613,5 +1614,43 @@ html {
   select:focus-visible {
     outline: 2px solid rgb(var(--brand-500));
     outline-offset: 1px;
+  }
+}
+
+/* ─── Meal Prep Label Print Styles ──────────────────────────────────────── */
+@media print {
+  nav, header, footer, aside,
+  .print\\:hidden,
+  [class*="print:hidden"] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .label-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.25in !important;
+    padding: 0.25in !important;
+  }
+
+  .container-label {
+    border: 1px dashed #ccc !important;
+    border-radius: 4px !important;
+    padding: 0.2in !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  .container-label:nth-child(8n) {
+    page-break-after: always;
   }
 }
