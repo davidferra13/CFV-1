@@ -6,8 +6,10 @@ import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { PDFLayout, LETTER_WIDTH, MARGIN_X, MAX_Y } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { generateQrDataUrl, getEventPageUrl } from '@/lib/qr/qr-code'
 
 export type FrontOfHouseMenuData = {
+  eventId: string
   event: {
     occasion: string | null
     event_date: string
@@ -69,6 +71,7 @@ export async function fetchFrontOfHouseMenuData(
   const clientData = event.client as unknown as { full_name: string } | null
 
   return {
+    eventId,
     event: {
       occasion: event.occasion,
       event_date: event.event_date,
@@ -129,6 +132,7 @@ export async function fetchFrontOfHouseMenuDataForClient(
   const clientData = event.client as unknown as { full_name: string } | null
 
   return {
+    eventId,
     event: {
       occasion: event.occasion,
       event_date: event.event_date,
@@ -159,7 +163,11 @@ function drawCenteredText(
   pdf.y += size * 0.38
 }
 
-export function renderFrontOfHouseMenu(pdf: PDFLayout, data: FrontOfHouseMenuData) {
+export function renderFrontOfHouseMenu(
+  pdf: PDFLayout,
+  data: FrontOfHouseMenuData,
+  qrDataUrl?: string | null
+) {
   const { event, clientName, courses } = data
 
   if (courses.length > 5) pdf.setFontScale(0.92)
@@ -230,6 +238,23 @@ export function renderFrontOfHouseMenu(pdf: PDFLayout, data: FrontOfHouseMenuDat
     }
   }
 
+  // Small QR in bottom-left corner for allergen details
+  if (qrDataUrl) {
+    const qrSize = 15 // mm, subtle
+    const qrX = MARGIN_X
+    const qrY = MAX_Y - 2
+    try {
+      pdf.doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize)
+      pdf.doc.setFont('helvetica', 'normal')
+      pdf.doc.setFontSize(6)
+      pdf.doc.setTextColor(150, 150, 150)
+      pdf.doc.text('Allergen details', qrX + qrSize / 2, qrY + qrSize + 2.5, { align: 'center' })
+      pdf.doc.setTextColor(0, 0, 0)
+    } catch {
+      // Non-blocking
+    }
+  }
+
   pdf.footer('Please notify your chef immediately about allergy concerns before service.')
 }
 
@@ -240,8 +265,15 @@ export async function generateFrontOfHouseMenu(
   const data = await fetchFrontOfHouseMenuData(eventId)
   if (!data) throw new Error('Cannot generate front-of-house menu: missing event or menu data')
 
+  let qrDataUrl: string | null = null
+  try {
+    qrDataUrl = await generateQrDataUrl(getEventPageUrl(eventId))
+  } catch {
+    // Non-blocking
+  }
+
   const pdf = new PDFLayout()
-  renderFrontOfHouseMenu(pdf, data)
+  renderFrontOfHouseMenu(pdf, data, qrDataUrl)
   if (generatedByName) pdf.generatedBy(generatedByName, 'FOH Menu')
   return pdf.toBuffer()
 }
@@ -250,7 +282,14 @@ export async function generateFrontOfHouseMenuForClient(eventId: string): Promis
   const data = await fetchFrontOfHouseMenuDataForClient(eventId)
   if (!data) throw new Error('Cannot generate front-of-house menu: missing event or menu data')
 
+  let qrDataUrl: string | null = null
+  try {
+    qrDataUrl = await generateQrDataUrl(getEventPageUrl(eventId))
+  } catch {
+    // Non-blocking
+  }
+
   const pdf = new PDFLayout()
-  renderFrontOfHouseMenu(pdf, data)
+  renderFrontOfHouseMenu(pdf, data, qrDataUrl)
   return pdf.toBuffer()
 }

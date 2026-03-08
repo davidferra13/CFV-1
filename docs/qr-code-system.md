@@ -41,12 +41,13 @@ Parameters: data URL, size in mm, optional label, alignment (left/right/center).
 
 ### Currently Implemented
 
-| Document                  | QR Points To                    | Method                                          |
-| ------------------------- | ------------------------------- | ----------------------------------------------- |
-| Invoice PDF (PDFKit)      | `/my-events/[eventId]/invoice`  | `generateQrBuffer` embedded via `doc.image()`   |
-| Contract PDF (jsPDF)      | `/my-events/[eventId]/contract` | `generateQrDataUrl` embedded via `pdf.qrCode()` |
-| Staff Briefing Panel      | `/events/[eventId]`             | `getQrCodeUrl` via `<img>` tag                  |
-| Settings > Website Widget | `/embed/inquiry/[chefId]`       | `getQrCodeUrl` via `<img>` tag + download links |
+| Document                  | QR Points To                    | Method                                            |
+| ------------------------- | ------------------------------- | ------------------------------------------------- |
+| Invoice PDF (PDFKit)      | `/my-events/[eventId]/invoice`  | `generateQrBuffer` embedded via `doc.image()`     |
+| Contract PDF (jsPDF)      | `/my-events/[eventId]/contract` | `generateQrDataUrl` embedded via `pdf.qrCode()`   |
+| Staff Briefing Panel      | `/events/[eventId]`             | `getQrCodeUrl` via `<img>` tag                    |
+| Settings > Website Widget | `/embed/inquiry/[chefId]`       | `getQrCodeUrl` via `<img>` tag + download links   |
+| FOH Menu PDF (jsPDF)      | `/events/[eventId]`             | `generateQrDataUrl` embedded via `doc.addImage()` |
 
 ### Non-Blocking Design
 
