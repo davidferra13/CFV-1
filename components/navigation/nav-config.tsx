@@ -54,6 +54,7 @@ import {
   NotebookIcon,
   Notepad,
   Package,
+  Palette,
   PenNib,
   Percent,
   Phone,
@@ -82,6 +83,7 @@ import {
   Wallet,
   Warehouse,
   WifiHigh,
+  Wine,
   Wrench,
   Zap,
 } from '@/components/ui/icons'
@@ -303,6 +305,11 @@ export const navGroups: NavGroup[] = [
           { href: '/clients/duplicates', label: 'Duplicates' },
           { href: '/clients/gift-cards', label: 'Gift Cards' },
         ],
+      },
+      {
+        href: '/client-requests',
+        label: 'Quick Requests',
+        icon: Inbox,
       },
       {
         href: '/clients/communication',
@@ -558,6 +565,18 @@ export const navGroups: NavGroup[] = [
         icon: Chalkboard,
       },
       {
+        href: '/culinary/beverages',
+        label: 'Beverages',
+        icon: Wine,
+        visibility: 'advanced' as const,
+      },
+      {
+        href: '/culinary/plating-guides',
+        label: 'Plating Guides',
+        icon: Palette,
+        visibility: 'advanced' as const,
+      },
+      {
         href: '/settings/repertoire',
         label: 'Seasonal Palettes',
         icon: Flower,
@@ -615,7 +634,15 @@ export const navGroups: NavGroup[] = [
         href: '/meal-prep',
         label: 'Meal Prep',
         icon: RefreshCw,
-        children: [{ href: '/meal-prep', label: 'Dashboard' }],
+        children: [
+          { href: '/meal-prep', label: 'Dashboard' },
+          { href: '/meal-prep/labels', label: 'Container Labels' },
+        ],
+      },
+      {
+        href: '/shopping',
+        label: 'Shopping Lists',
+        icon: ShoppingCart,
       },
       {
         href: '/operations/kitchen-rentals',
@@ -626,6 +653,11 @@ export const navGroups: NavGroup[] = [
         href: '/operations/equipment',
         label: 'Equipment',
         icon: Wrench,
+      },
+      {
+        href: '/packing-templates',
+        label: 'Packing Templates',
+        icon: Package,
       },
     ],
   },
@@ -821,6 +853,16 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/finance/pricing-calculator',
+        label: 'Pricing Calculator',
+        icon: Calculator,
+      },
+      {
+        href: '/finance/revenue-per-hour',
+        label: 'Revenue Per Hour',
+        icon: Clock,
+      },
+      {
         href: '/finance/forecast',
         label: 'Forecasting',
         icon: TrendingUp,
@@ -910,6 +952,11 @@ export const navGroups: NavGroup[] = [
           { href: '/analytics/client-ltv', label: 'Client Value' },
           { href: '/analytics/referral-sources', label: 'Referral Sources' },
         ],
+      },
+      {
+        href: '/analytics/capacity',
+        label: 'Capacity Planning',
+        icon: BarChart3,
       },
       {
         href: '/intelligence',

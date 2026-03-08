@@ -23,6 +23,7 @@ import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
 import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
+import { PostServiceChecklistButton } from '@/components/events/post-service-checklist-button'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -225,6 +226,11 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
                   : 'Next Step'
           }
         />
+      )}
+
+      {/* Post-Service Cleanup Checklist */}
+      {['in_progress', 'completed'].includes(event.status) && (
+        <PostServiceChecklistButton eventId={event.id} />
       )}
 
       {/* Event Transitions (Actions) */}

@@ -11,6 +11,7 @@ import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import { getQuickRequests } from '@/lib/client-requests/actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -53,6 +54,7 @@ export async function AlertCards() {
     expiringQuotes,
     schedulingGaps,
     onboardingProgress,
+    quickRequests,
   ] = await Promise.all([
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(5), []),
@@ -62,6 +64,7 @@ export async function AlertCards() {
     safe('expiringQuotes', () => getExpiringQuotes(7), []),
     safe('schedulingGaps', getSchedulingGaps, []),
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
+    safe('quickRequests', getQuickRequests, []),
   ])
 
   // Response Time stat card
@@ -116,6 +119,19 @@ export async function AlertCards() {
           trend={responseLabel}
           trendDirection={responseStatus}
           href="/inquiries"
+        />
+      )}
+
+      {/* Quick Requests - stat card */}
+      {(quickRequests as any[]).filter((r: any) => r.status === 'pending').length > 0 && (
+        <StatCard
+          widgetId="quick_requests"
+          title="Client Requests"
+          value={String((quickRequests as any[]).filter((r: any) => r.status === 'pending').length)}
+          subtitle="pending quick requests"
+          trendDirection="down"
+          trend="Action needed"
+          href="/client-requests"
         />
       )}
 

@@ -2,6 +2,8 @@
 
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
 import { getProactiveAlerts } from '@/lib/intelligence/proactive-alerts'
+import { getCapacityAnalysis } from '@/lib/analytics/capacity-actions'
+import { CapacityWidget } from '@/components/dashboard/capacity-widget'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import Link from 'next/link'
 
@@ -15,9 +17,10 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
 }
 
 export async function IntelligenceCards() {
-  const [health, alerts] = await Promise.all([
+  const [health, alerts, capacityData] = await Promise.all([
     safe('health', getBusinessHealthSummary, null),
     safe('alerts', getProactiveAlerts, null),
+    safe('capacity', () => getCapacityAnalysis(90), null),
   ])
 
   if (!health && !alerts) return null
@@ -130,6 +133,18 @@ export async function IntelligenceCards() {
             )}
           </div>
         </WidgetCardShell>
+      )}
+
+      {/* Capacity Planning Widget */}
+      {capacityData && (
+        <CapacityWidget
+          utilizationPercent={capacityData.analysis.utilizationPercent}
+          weeklyHoursUsed={capacityData.analysis.weeklyHoursUsed}
+          weeklyHoursAvailable={capacityData.analysis.weeklyHoursAvailable}
+          burnoutRisk={capacityData.analysis.burnoutRisk}
+          canTakeMore={capacityData.analysis.canTakeMore}
+          additionalEventsPerWeek={capacityData.analysis.additionalEventsPerWeek}
+        />
       )}
     </>
   )
