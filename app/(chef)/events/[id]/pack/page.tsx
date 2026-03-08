@@ -11,6 +11,7 @@ import { getPackingStatus } from '@/lib/packing/actions'
 import { PackingListClient } from '@/components/events/packing-list-client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PackPageTemplateBar } from '@/components/packing/pack-page-template-bar'
 import { format, parseISO } from 'date-fns'
 
 export default async function PackPage({
@@ -97,6 +98,9 @@ export default async function PackPage({
           </p>
         </Card>
       )}
+
+      {/* Template bar: load from template or save current list as template */}
+      <PackPageTemplateBar eventId={params.id} />
 
       {/* Interactive checklist */}
       <PackingListClient
