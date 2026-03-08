@@ -27,22 +27,6 @@ export function getOllamaConfig(): { baseUrl: string; model: string } {
 }
 
 /**
- * Returns the Pi Ollama endpoint URL (if configured).
- * Set OLLAMA_PI_URL in .env.local when the Raspberry Pi is online.
- * Returns null if no Pi endpoint is configured.
- */
-export function getOllamaPiUrl(): string | null {
-  return process.env.OLLAMA_PI_URL || null
-}
-
-/**
- * Returns true if a secondary (Pi) Ollama endpoint is configured.
- */
-export function isPiEndpointConfigured(): boolean {
-  return !!process.env.OLLAMA_PI_URL
-}
-
-/**
  * Returns the Ollama model for a given task-complexity tier.
  *
  * Env vars:
@@ -67,15 +51,21 @@ export function getOllamaModel(tier: ModelTier = 'standard'): string {
   }
 }
 
+/** Stub: Pi is no longer part of the project. Always returns null. */
+export function getOllamaPiUrl(): null {
+  return null
+}
+
+/** Stub: Pi is no longer part of the project. Always returns false. */
+export function isPiEndpointConfigured(): false {
+  return false
+}
+
 /**
- * Returns the right model for a specific endpoint + tier combination.
- * PC uses the powerful 30B model; Pi uses the lighter 8B model.
- * When running on the Pi, all tiers resolve to the Pi model (8B can't run 30B).
+ * Returns the right model for a given tier.
+ * Kept for backward compatibility with callers that pass an endpoint parameter.
  */
-export function getModelForEndpoint(endpoint: 'pc' | 'pi', tier: ModelTier = 'standard'): string {
-  if (endpoint === 'pi') {
-    return process.env.OLLAMA_PI_MODEL || 'qwen3:8b'
-  }
+export function getModelForEndpoint(_endpoint: 'pc' | 'pi', tier: ModelTier = 'standard'): string {
   return getOllamaModel(tier)
 }
 

@@ -41,11 +41,9 @@ import {
   OLLAMA_STREAM_MAX_TOKENS,
   OLLAMA_STREAM_TIMEOUT_MS,
   detectMemoryIntent,
-  detectPiTestIntent,
   encodeSSE,
   extractNavSuggestions,
   formatCategoryLabel,
-  handlePiTest,
   sseErrorResponse,
   sseHeaders,
   summarizeTaskResults,
@@ -244,11 +242,6 @@ export async function POST(req: NextRequest) {
           { headers: sseHeaders() }
         )
       }
-    }
-
-    //  PI TEST (admin only)
-    if (admin && detectPiTestIntent(message)) {
-      return handlePiTest()
     }
 
     //  MEMORY PATH (no streaming needed)
@@ -815,9 +808,7 @@ export async function POST(req: NextRequest) {
         surveyPromptSection,
         otherChannelDigest,
         previousSessionTopics,
-        message,
-        mixedScope,
-        recentConversationSummaries
+        message
       )
 
       // Warn if system prompt is large enough to risk silent truncation.
@@ -1010,9 +1001,7 @@ export async function POST(req: NextRequest) {
       surveyPromptSection,
       otherChannelDigest,
       previousSessionTopics,
-      message,
-      contextScope,
-      recentConversationSummaries
+      message
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

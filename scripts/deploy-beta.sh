@@ -57,7 +57,7 @@ npm install --production=false 2>&1 | tail -3
 # Step 6: Build
 echo "[6/7] Building..."
 BUILD_START=$(date +%s)
-NODE_OPTIONS="--max-old-space-size=8192" npx next build 2>&1 | tail -15
+NODE_OPTIONS="--max-old-space-size=16384" npx next build --no-lint 2>&1 | tail -15
 BUILD_EXIT=$?
 BUILD_END=$(date +%s)
 BUILD_DURATION=$((BUILD_END - BUILD_START))

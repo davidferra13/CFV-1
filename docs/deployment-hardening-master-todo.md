@@ -338,25 +338,24 @@ This section preserves every open checkbox already tracked across `docs/` and `p
 - [ ] [docs/backup-and-restore.md:148] Run manual `pg_dump` and store encrypted copy off-platform
 - [ ] [docs/backup-and-restore.md:149] Verify GDPR export works (Settings > Compliance > GDPR)
 - [ ] [docs/beta-server-setup.md:150] Separate Supabase project for beta (isolated database)
-- [ ] [docs/beta-server-setup.md:151] Ethernet connection for Pi (more reliable than WiFi)
-- [ ] [docs/beta-server-setup.md:152] USB SSD for Pi (better than microSD for long-term server use)
+- [x] ~~Ethernet/SSD for Pi~~ (OBSOLETE: Pi shelved Mar 2026, beta runs on PC)
 - [ ] [docs/beta-server-setup.md:153] UptimeRobot monitoring for beta.cheflowhq.com
 - [ ] [docs/beta-server-setup.md:154] Stripe test mode webhooks on beta
 - [ ] [docs/beta-testers.md:17] Beta server is running � `https://beta.cheflowhq.com` loads without errors
-- [ ] [docs/beta-testers.md:18] PM2 process `chefflow-beta` is healthy on Pi (`ssh pi` ? `pm2 status`)
-- [ ] [docs/beta-testers.md:19] Cloudflare Tunnel is active (`cloudflared.service` running on Pi)
+- [ ] [docs/beta-testers.md:18] Beta server is running on PC (`localhost:3200` responding)
+- [ ] [docs/beta-testers.md:19] Cloudflare Tunnel is active (Windows service routing to localhost:3200)
 - [ ] [docs/beta-testers.md:23] Beta is using **Stripe test mode**, not live keys
-- [ ] [docs/beta-testers.md:24] Verify: `.env.local` on Pi has `STRIPE_SECRET_KEY=sk_test_...` (not `sk_live_...`)
+- [ ] [docs/beta-testers.md:24] Verify: `.env.local.beta` has `STRIPE_SECRET_KEY=sk_test_...` (not `sk_live_...`)
 - [ ] [docs/beta-testers.md:25] Verify: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...` (not `pk_live_...`)
 - [ ] [docs/beta-testers.md:26] Test a payment with Stripe test card `4242 4242 4242 4242` � confirm it goes through without real charges
 - [ ] [docs/beta-testers.md:30] Confirmation emails send from beta (sign up ? check inbox)
 - [ ] [docs/beta-testers.md:31] Quote emails send from beta (create a quote ? send ? check inbox)
 - [ ] [docs/beta-testers.md:32] Inquiry notification emails fire (submit public inquiry ? chef gets notified)
-- [ ] [docs/beta-testers.md:33] If emails fail: check email provider config in `.env.local` on Pi � API keys, sender domain, etc.
-- [ ] [docs/beta-testers.md:37] Ollama is running on Pi (`ssh pi` ? `systemctl status ollama`)
+- [ ] [docs/beta-testers.md:33] If emails fail: check email provider config in `.env.local.beta` (API keys, sender domain, etc.)
+- [ ] [docs/beta-testers.md:37] Ollama is running on PC (shared with dev, localhost:11434)
 - [ ] [docs/beta-testers.md:38] Remy chat responds (open Remy ? send a message ? get a reply)
 - [ ] [docs/beta-testers.md:39] Lead scoring works (submit an inquiry ? check if score appears)
-- [ ] [docs/beta-testers.md:40] If Ollama is down: `sudo systemctl start ollama` on Pi (but remember � stop it before any builds)
+- [ ] [docs/beta-testers.md:40] If Ollama is down: start it via `ollama serve` or Windows Services
 - [ ] [docs/beta-testers.md:44] Landing page clearly communicates what ChefFlow is (a tester shouldn't need to ask "what is this?")
 - [ ] [docs/beta-testers.md:45] Sign-up form works � create a throwaway account, confirm email, log in
 - [ ] [docs/beta-testers.md:46] Password reset works � trigger a reset, receive email, set new password

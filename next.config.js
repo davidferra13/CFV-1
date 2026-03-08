@@ -28,11 +28,9 @@ const nextConfig = {
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
     process.env.NEXT_DIST_DIR || (process.env.NODE_ENV === 'development' ? '.next-dev' : '.next'),
-  // Allow LAN access in development (e.g. http://10.0.0.177:3100) so
-  // internal /_next assets are not rejected as cross-origin.
-  // Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
+  // Allow LAN access in development so internal /_next assets are not
+  // rejected as cross-origin. Add hosts via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
   allowedDevOrigins: [
-    '10.0.0.177',
     ...String(process.env.NEXT_ALLOWED_DEV_ORIGINS || '')
       .split(',')
       .map((value) => value.trim())
@@ -54,7 +52,7 @@ const nextConfig = {
   generateBuildId: async () => {
     if (process.env.ENABLE_PWA_BUILD === '1') return 'chefflow-build'
     // VERCEL_GIT_COMMIT_SHA is only available on Vercel.
-    // On Pi/local, fall back to git rev-parse or a timestamp.
+    // On local builds, fall back to git rev-parse or a timestamp.
     if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
     try {
       return require('child_process').execSync('git rev-parse --short HEAD').toString().trim()
@@ -234,7 +232,7 @@ const nextConfig = {
 
 // Sentry source-map upload and performance instrumentation.
 // withSentryConfig is a no-op if SENTRY_DSN is not set.
-// Gracefully skip if @sentry/nextjs is not installed (e.g., Pi beta builds).
+// Gracefully skip if @sentry/nextjs is not installed.
 let withSentryConfig
 try {
   withSentryConfig = require('@sentry/nextjs').withSentryConfig

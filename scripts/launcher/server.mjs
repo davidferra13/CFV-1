@@ -199,6 +199,19 @@ function getActivitySummary() {
 let devServerProcess = null
 const runningJobs = new Map()
 
+function getRunningJobsSnapshot() {
+  const jobs = {}
+  for (const [id, job] of runningJobs) {
+    jobs[id] = {
+      id: job.id,
+      status: job.status,
+      startTime: job.startTime,
+      elapsed: Date.now() - job.startTime,
+    }
+  }
+  return jobs
+}
+
 // ── Error Buffer (for aggregation — must be before feedEvent) ─────
 const errorBuffer = []
 const ERROR_BUFFER_MAX = 500
@@ -497,12 +510,11 @@ async function checkGitStatus() {
 }
 
 async function getAllStatus() {
-  const [dev, beta, prod, ollamaPc, ollamaPi, git] = await Promise.allSettled([
+  const [dev, beta, prod, ollamaPc, git] = await Promise.allSettled([
     checkDevServer(),
     checkBetaServer(),
     checkProduction(),
     checkOllama(CONFIG.ollamaPcUrl, CONFIG.ollamaPcModel),
-    checkOllama(CONFIG.ollamaPiUrl, CONFIG.ollamaPiModel),
     checkGitStatus(),
   ])
   return {
@@ -510,8 +522,9 @@ async function getAllStatus() {
     beta: beta.status === 'fulfilled' ? beta.value : { online: false },
     prod: prod.status === 'fulfilled' ? prod.value : { online: false },
     ollamaPc: ollamaPc.status === 'fulfilled' ? ollamaPc.value : { online: false },
-    ollamaPi: ollamaPi.status === 'fulfilled' ? ollamaPi.value : { online: false },
+    ollamaPi: { online: false },
     git: git.status === 'fulfilled' ? git.value : { branch: 'unknown' },
+    jobs: getRunningJobsSnapshot(),
     timestamp: Date.now(),
   }
 }
@@ -5562,8 +5575,6 @@ const INSTANT_ANSWERS = [
     action: 'remy/memories' },
   { patterns: [/^(test|run) remy/i, /^remy test/i],
     action: 'remy/test' },
-  { patterns: [/^pi (status|health|vitals)/i, /^how('s| is) (the )?pi/i, /^raspberry/i],
-    action: 'pi/status' },
   { patterns: [/^schema$/i, /^tables$/i, /^database schema/i, /^db schema/i, /^row counts/i],
     action: 'db/schema' },
   { patterns: [/^branches$/i, /^branch status/i, /^what branch/i],
@@ -5725,13 +5736,11 @@ const TOOLS = {
   // DevOps — Process Control
   'dev/start':        { fn: startDevServer,                       desc: 'Start the local Next.js dev server on port 3100' },
   'dev/stop':         { fn: stopDevServer,                        desc: 'Stop the local dev server' },
-  'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
+  'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server on PC (port 3200)' },
   'beta/deploy':      { fn: () => deployBeta(),                   desc: 'Deploy current code to beta.cheflowhq.com (takes 8-10 min)' },
   'beta/rollback':    { fn: rollbackBeta,                         desc: 'Rollback beta to previous build' },
   'ollama/pc/start':  { fn: () => ollamaAction('pc', 'start'),   desc: 'Start Ollama on the PC' },
   'ollama/pc/stop':   { fn: () => ollamaAction('pc', 'stop'),    desc: 'Stop Ollama on the PC' },
-  'ollama/pi/start':  { fn: () => ollamaAction('pi', 'start'),   desc: 'Start Ollama on the Raspberry Pi' },
-  'ollama/pi/stop':   { fn: () => ollamaAction('pi', 'stop'),    desc: 'Stop Ollama on the Raspberry Pi' },
 
   // DevOps — Git & Build
   'git/push':         { fn: gitPush,                              desc: 'Push current git branch to origin' },
@@ -5888,8 +5897,6 @@ const TOOLS = {
 async function getAvailableOllamaEndpoint() {
   const pcCheck = await httpCheck(`${CONFIG.ollamaPcUrl}/api/tags`)
   if (pcCheck.ok) return { url: CONFIG.ollamaPcUrl, model: CONFIG.ollamaPcModel, source: 'PC' }
-  const piCheck = await httpCheck(`${CONFIG.ollamaPiUrl}/api/tags`)
-  if (piCheck.ok) return { url: CONFIG.ollamaPiUrl, model: CONFIG.ollamaPiModel, source: 'Pi' }
   return null
 }
 
@@ -5922,7 +5929,6 @@ ${toolList}
 - Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : `**86${"'"}d**`}
 - Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : `**86${"'"}d**`}
 - Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
-- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : `**86${"'"}d**`}
 - Git: \`${status.git.branch}\` (${status.git.clean ? 'clean — mise en place' : `${status.git.dirty} dirty files`})
 - Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
@@ -5941,7 +5947,7 @@ ${toolList}
 ## Capability Stations
 
 ### Station 1: DevOps (Process Control)
-Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi. Pipelines: ship-it, close-out.
+Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC. Pipelines: ship-it, close-out.
 
 ### Station 2: Git & Build
 Push, commit, typecheck, full build, run tests (smoke, soak, e2e). Git diff, branch status.
@@ -5981,7 +5987,7 @@ For business AI questions (client follow-ups, draft emails, recipe lookup) — b
 - **The pass** — the monitoring dashboard, where everything gets inspected
 - **Service** — a deploy cycle or work session
 - **Clean service** — successful deploy/session with zero errors (your highest compliment)
-- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Pi, Supabase, Git)
+- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Supabase, Git)
 - **Stations** — individual systems, each one calls back
 - **Calling the pass** — status report across all stations
 - **Fire** — execute, deploy, run it
@@ -6225,12 +6231,7 @@ async function handleRequest(req, res) {
   if (path === '/api/ollama/pc/stop' && method === 'POST') {
     return json(res, await ollamaAction('pc', 'stop'))
   }
-  if (path === '/api/ollama/pi/start' && method === 'POST') {
-    return json(res, await ollamaAction('pi', 'start'))
-  }
-  if (path === '/api/ollama/pi/stop' && method === 'POST') {
-    return json(res, await ollamaAction('pi', 'stop'))
-  }
+  // Pi routes removed (Mar 2026) - all Ollama runs on PC
 
   if (path === '/api/git/push' && method === 'POST') {
     return json(res, await gitPush())
@@ -6397,11 +6398,7 @@ async function handleRequest(req, res) {
   }
 
   if (path === '/api/jobs' && method === 'GET') {
-    const jobs = {}
-    for (const [id, job] of runningJobs) {
-      jobs[id] = { id: job.id, status: job.status, startTime: job.startTime, elapsed: Date.now() - job.startTime }
-    }
-    return json(res, jobs)
+    return json(res, getRunningJobsSnapshot())
   }
 
   if (path === '/api/logs' && method === 'GET') {
@@ -6505,7 +6502,7 @@ async function handleRequest(req, res) {
 
     const endpoint = await getAvailableOllamaEndpoint()
     if (!endpoint) {
-      return json(res, { error: 'No Ollama instance available. Start Ollama on PC or Pi first.' }, 503)
+      return json(res, { error: 'No Ollama instance available. Start Ollama first.' }, 503)
     }
 
     log('chat', `Chat request via ${endpoint.source} (${endpoint.model})`, 'info')

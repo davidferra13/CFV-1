@@ -18,14 +18,7 @@ Vercel (app.cheflowhq.com) ->  Production (deployed when ready)
 
 ### Why Everything Is on One Machine
 
-The beta server was originally on a Raspberry Pi 5 (8GB RAM). The app outgrew it:
-
-- Builds required 6GB heap + 2GB swap, took 8-10 minutes
-- Ollama had to be permanently disabled (not enough RAM for app + LLM)
-- Beta testers couldn't use any AI features (Remy, lead scoring, recipe parsing)
-- 10 scripts existed solely to manage Pi memory pressure and OOM recovery
-
-Moving to PC: builds take ~2 min, Ollama runs alongside beta, and beta testers see the full app.
+All three environments run on the developer's PC (128GB RAM, AMD Ryzen). Builds take ~2 min, Ollama runs alongside beta, and beta testers see the full app including all AI features.
 
 ---
 
