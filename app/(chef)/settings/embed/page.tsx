@@ -6,6 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { EmbedCodePanel } from '@/components/settings/embed-code-panel'
+import { LoyaltySimulatorEmbedPanel } from '@/components/settings/loyalty-simulator-embed-panel'
 
 export const metadata: Metadata = { title: 'Website Widget - ChefFlow' }
 
@@ -24,12 +25,13 @@ export default async function EmbedSettingsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">Website Widget</h1>
         <p className="text-stone-400 mt-1">
-          Add a booking form to your existing website. Works on Wix, Squarespace, WordPress, and any
-          site that supports custom HTML.
+          Add a booking form or loyalty simulator to your existing website. Works on Wix,
+          Squarespace, WordPress, and any site that supports custom HTML.
         </p>
       </div>
 
       <EmbedCodePanel chefId={user.entityId} />
+      <LoyaltySimulatorEmbedPanel chefId={user.entityId} />
     </div>
   )
 }

@@ -71,6 +71,11 @@ export default async function LoyaltyDashboardPage() {
               <Button variant="ghost">Monthly Raffle</Button>
             </Link>
           )}
+          {!isOff && (
+            <Link href="/settings/embed">
+              <Button variant="ghost">Simulator Widget</Button>
+            </Link>
+          )}
           <Link href="/loyalty/learn">
             <Button variant="ghost">Learn About Loyalty</Button>
           </Link>
