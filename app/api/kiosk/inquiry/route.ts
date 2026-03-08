@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
+import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { z } from 'zod'
 
 const KioskInquirySchema = z.object({
@@ -138,6 +139,28 @@ export async function POST(request: Request) {
     if (inquiryError) {
       console.error('[kiosk/inquiry] Inquiry creation error:', inquiryError)
       return NextResponse.json({ error: 'Failed to create inquiry' }, { status: 500 })
+    }
+
+    try {
+      await recordInquiryStateTransition({
+        supabase,
+        tenantId,
+        inquiryId: inquiry.id,
+        fromStatus: null,
+        toStatus: 'new',
+        transitionedBy: null,
+        reason: 'kiosk_inquiry_submitted',
+        metadata: {
+          source: 'kiosk',
+          device_id: device.deviceId,
+          staff_member_id: parsed.staff_member_id || null,
+        },
+      })
+    } catch (transitionErr) {
+      console.error(
+        '[kiosk/inquiry] Initial inquiry transition insert failed (non-blocking):',
+        transitionErr
+      )
     }
 
     // 3. Create draft event

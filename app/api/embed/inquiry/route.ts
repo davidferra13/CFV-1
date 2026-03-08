@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { verifyTurnstileToken } from '@/lib/security/turnstile'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 
 // ── CORS headers for cross-origin embeds ──
 const corsHeaders = {
@@ -144,9 +145,9 @@ export async function POST(request: NextRequest) {
     const { data: existingClient } = await supabase
       .from('clients')
       .select('id')
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .ilike('email', clientEmail)
-      .single()
+      .maybeSingle()
 
     let clientId: string
 
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
       const { data: newClient, error: clientCreateError } = await supabase
         .from('clients')
         .insert({
-          chef_id: tenantId,
+          tenant_id: tenantId,
           full_name: clientName,
           email: clientEmail,
           phone: data.phone?.trim() || null,
@@ -259,6 +260,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Failed to create inquiry' },
         { status: 500, headers: corsHeaders }
+      )
+    }
+
+    try {
+      await recordInquiryStateTransition({
+        supabase,
+        tenantId,
+        inquiryId: inquiry.id,
+        fromStatus: null,
+        toStatus: 'new',
+        transitionedBy: null,
+        reason: 'embed_inquiry_submitted',
+        metadata: {
+          source: 'embed_widget',
+          utm_source: data.utm_source?.trim() || null,
+          utm_medium: data.utm_medium?.trim() || null,
+          utm_campaign: data.utm_campaign?.trim() || null,
+        },
+      })
+    } catch (transitionErr) {
+      console.error(
+        '[embed-inquiry] Initial inquiry transition insert failed (non-blocking):',
+        transitionErr
       )
     }
 

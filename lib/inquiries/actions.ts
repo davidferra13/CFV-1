@@ -14,6 +14,8 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
+import { getAllowedInquiryTransitions } from '@/lib/inquiries/fsm'
+import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { ScheduleRequestSchema } from '@/lib/booking/schedule-schema'
 import { checkSeriesSessionConflicts } from '@/lib/availability/actions'
 import {
@@ -56,8 +58,8 @@ type EventRow = {
 
 // Valid transitions map (matches DB trigger)
 const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
-  new: ['awaiting_client', 'declined'],
-  awaiting_client: ['awaiting_chef', 'declined', 'expired'],
+  new: ['awaiting_client', 'quoted', 'declined'],
+  awaiting_client: ['awaiting_chef', 'quoted', 'declined', 'expired'],
   awaiting_chef: ['quoted', 'declined'],
   quoted: ['confirmed', 'declined', 'expired'],
   confirmed: [], // terminal — converts to event
@@ -490,6 +492,24 @@ export async function createInquiry(input: CreateInquiryInput) {
         throw new UnknownAppError('Failed to create inquiry')
       }
 
+      try {
+        await recordInquiryStateTransition({
+          supabase,
+          tenantId: user.tenantId!,
+          inquiryId: inquiry.id,
+          fromStatus: null,
+          toStatus: 'new',
+          transitionedBy: user.id,
+          reason: 'chef_created_inquiry',
+          metadata: { source: 'chef_portal' },
+        })
+      } catch (transitionErr) {
+        console.error(
+          '[createInquiry] Initial inquiry transition insert failed (non-blocking):',
+          transitionErr
+        )
+      }
+
       revalidatePath('/inquiries')
       return { success: true, inquiry }
     },
@@ -891,8 +911,8 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
 
 /**
  * Transition inquiry status
- * Validates in app code for better error messages
- * DB trigger also enforces and auto-inserts into inquiry_state_transitions
+ * Validates in app code for better error messages.
+ * Transition rows are recorded explicitly after successful writes.
  */
 export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   const user = await requireChef()
@@ -911,7 +931,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   }
 
   const currentStatus = inquiry.status as InquiryStatus
-  const allowed = VALID_TRANSITIONS[currentStatus]
+  const allowed = getAllowedInquiryTransitions(currentStatus)
 
   if (!allowed || !allowed.includes(newStatus)) {
     throw new ValidationError(
@@ -941,6 +961,21 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   if (error) {
     console.error('[transitionInquiry] Error:', error)
     throw new UnknownAppError('Failed to transition inquiry')
+  }
+
+  try {
+    await recordInquiryStateTransition({
+      supabase,
+      tenantId: user.tenantId!,
+      inquiryId: id,
+      fromStatus: currentStatus,
+      toStatus: newStatus,
+      transitionedBy: user.id,
+      reason: null,
+      metadata: { source: 'chef_portal' },
+    })
+  } catch (transitionErr) {
+    console.error('[transitionInquiry] Transition log insert failed (non-blocking):', transitionErr)
   }
 
   revalidatePath('/inquiries')
@@ -1828,7 +1863,7 @@ export async function declineInquiry(id: string, reason?: string) {
   if (!inquiry || inquiry.deleted_at) throw new ValidationError('Inquiry not found')
 
   const currentStatus = inquiry.status as InquiryStatus
-  const allowed = VALID_TRANSITIONS[currentStatus]
+  const allowed = getAllowedInquiryTransitions(currentStatus)
   if (!allowed || !allowed.includes('declined')) {
     throw new ValidationError(`Cannot decline from status "${currentStatus}"`)
   }
@@ -1846,6 +1881,21 @@ export async function declineInquiry(id: string, reason?: string) {
   if (error) {
     console.error('[declineInquiry] Error:', error)
     throw new UnknownAppError('Failed to decline inquiry')
+  }
+
+  try {
+    await recordInquiryStateTransition({
+      supabase,
+      tenantId: user.tenantId!,
+      inquiryId: id,
+      fromStatus: currentStatus,
+      toStatus: 'declined',
+      transitionedBy: user.id,
+      reason: reason ?? null,
+      metadata: { source: 'chef_portal' },
+    })
+  } catch (transitionErr) {
+    console.error('[declineInquiry] Transition log insert failed (non-blocking):', transitionErr)
   }
 
   revalidatePath('/inquiries')

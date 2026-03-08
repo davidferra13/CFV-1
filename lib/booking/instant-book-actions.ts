@@ -16,6 +16,7 @@ import {
   buildSeriesSchedulePlan,
   getDefaultServeTimeForMealSlot,
 } from '@/lib/booking/series-planning'
+import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { z } from 'zod'
 import type Stripe from 'stripe'
 
@@ -178,6 +179,26 @@ export async function createInstantBookingCheckout(
     })
     .select('id')
     .single()
+
+  if (inquiry?.id) {
+    try {
+      await recordInquiryStateTransition({
+        supabase,
+        tenantId,
+        inquiryId: inquiry.id,
+        fromStatus: null,
+        toStatus: 'new',
+        transitionedBy: null,
+        reason: 'instant_book_submitted',
+        metadata: { source: 'instant_book', service_mode: serviceMode },
+      })
+    } catch (transitionErr) {
+      console.error(
+        '[createInstantBookCheckout] Initial inquiry transition insert failed (non-blocking):',
+        transitionErr
+      )
+    }
+  }
 
   const parsedLocation = inferLocationCityState(validated.address.trim())
   let checkoutEventId: string

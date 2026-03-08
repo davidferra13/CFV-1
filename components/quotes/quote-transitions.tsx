@@ -183,42 +183,6 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           {quote.status === 'sent' && (
             <>
               <Button
-                onClick={() =>
-                  requestPolicyConfirmation(
-                    {
-                      risk: 'medium',
-                      reversible: false,
-                      entityName: quote.id,
-                      impactPreview: 'This quote will move to accepted.',
-                      actionLabel: 'Mark Accepted',
-                    },
-                    () => handleTransition('accepted')
-                  )
-                }
-                loading={loading}
-                disabled={loading}
-              >
-                Mark Accepted
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() =>
-                  requestPolicyConfirmation(
-                    {
-                      risk: 'high',
-                      reversible: false,
-                      entityName: quote.id,
-                      impactPreview: 'This quote will be marked rejected.',
-                      actionLabel: 'Mark Rejected',
-                    },
-                    () => handleTransition('rejected')
-                  )
-                }
-                disabled={loading}
-              >
-                Mark Rejected
-              </Button>
-              <Button
                 variant="secondary"
                 onClick={() =>
                   requestPolicyConfirmation(
@@ -253,8 +217,8 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           )}
           {quote.status === 'sent' && (
             <p>
-              Quote sent to client. Waiting for their response. You can also mark it manually if
-              they respond outside the portal.
+              Quote sent to client. Waiting for their response in the client portal. If it is no
+              longer valid, mark it expired and send a revised version.
             </p>
           )}
           {quote.status === 'expired' && (

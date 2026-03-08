@@ -14,14 +14,14 @@ export default async function BookNowPage() {
   // Look up the chef's name and slug from the client's tenant
   const { data: chef } = await supabase
     .from('chefs')
-    .select('display_name, business_name, public_slug')
+    .select('display_name, business_name, booking_slug, slug')
     .eq('id', user.tenantId!)
     .single()
 
   const chefData = chef as Record<string, unknown> | null
   const chefName =
     (chefData?.display_name as string) ?? (chefData?.business_name as string) ?? 'Your Chef'
-  const chefSlug = (chefData?.public_slug as string) ?? ''
+  const chefSlug = (chefData?.booking_slug as string) ?? (chefData?.slug as string) ?? ''
 
   return (
     <div className="max-w-2xl mx-auto">

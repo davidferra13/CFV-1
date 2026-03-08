@@ -14,6 +14,8 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { shouldSyncInquiryToQuotedFromQuoteSend, type InquiryStatus } from '@/lib/inquiries/fsm'
+import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -25,6 +27,66 @@ const VALID_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
   accepted: [], // terminal
   rejected: [], // terminal
   expired: ['draft'], // can revise and resend
+}
+
+async function syncLinkedInquiryOnQuoteSent(params: {
+  supabase: any
+  inquiryId: string | null
+  tenantId: string
+  actorId: string
+  quoteId: string
+}): Promise<InquiryStatus | null> {
+  const { supabase, inquiryId, tenantId, actorId, quoteId } = params
+  if (!inquiryId) return null
+
+  const { data: inquiry, error: inquiryError } = await supabase
+    .from('inquiries')
+    .select('status')
+    .eq('id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+
+  if (inquiryError) {
+    throw inquiryError
+  }
+
+  const currentStatus = inquiry?.status as InquiryStatus | undefined
+  if (!currentStatus || !shouldSyncInquiryToQuotedFromQuoteSend(currentStatus)) {
+    return null
+  }
+
+  const { error: updateError } = await supabase
+    .from('inquiries')
+    .update({ status: 'quoted' })
+    .eq('id', inquiryId)
+    .eq('tenant_id', tenantId)
+
+  if (updateError) {
+    throw updateError
+  }
+
+  try {
+    await recordInquiryStateTransition({
+      supabase,
+      tenantId,
+      inquiryId,
+      fromStatus: currentStatus,
+      toStatus: 'quoted',
+      transitionedBy: actorId,
+      reason: 'quote_sent',
+      metadata: {
+        source: 'quote_transition',
+        quote_id: quoteId,
+      },
+    })
+  } catch (transitionErr) {
+    console.error(
+      '[transitionQuote] Inquiry transition log insert failed (non-blocking):',
+      transitionErr
+    )
+  }
+
+  return currentStatus
 }
 
 // ============================================
@@ -505,6 +567,43 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     valid_until: string | null
   }
 
+  let syncedInquiryFromStatus: InquiryStatus | null = null
+
+  if (newStatus === 'sent' && updated.inquiry_id) {
+    try {
+      syncedInquiryFromStatus = await syncLinkedInquiryOnQuoteSent({
+        supabase,
+        inquiryId: updated.inquiry_id,
+        tenantId: user.tenantId!,
+        actorId: user.id,
+        quoteId: id,
+      })
+    } catch (syncErr) {
+      console.error('[transitionQuote] Inquiry status sync failed (non-blocking):', syncErr)
+    }
+  }
+
+  if (newStatus === 'sent' && updated.inquiry_id && syncedInquiryFromStatus) {
+    try {
+      const { evaluateAutomations } = await import('@/lib/automations/engine')
+      await evaluateAutomations(user.tenantId!, 'inquiry_status_changed', {
+        entityId: updated.inquiry_id,
+        entityType: 'inquiry',
+        fields: {
+          from_status: syncedInquiryFromStatus,
+          to_status: 'quoted',
+          status: 'quoted',
+          source: 'quote_sent',
+        },
+      })
+    } catch (automationErr) {
+      console.error(
+        '[transitionQuote] Inquiry automation evaluation failed (non-blocking):',
+        automationErr
+      )
+    }
+  }
+
   // Send quote-sent email to client (non-blocking)
   if (newStatus === 'sent') {
     try {
@@ -628,6 +727,12 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   // Client-side cache invalidation
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${id}`)
+  if (updated.inquiry_id) {
+    revalidatePath('/inquiries')
+    revalidatePath(`/inquiries/${updated.inquiry_id}`)
+    revalidatePath('/my-inquiries')
+    revalidatePath(`/my-inquiries/${updated.inquiry_id}`)
+  }
 
   // Log chef activity (non-blocking)
   try {
