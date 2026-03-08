@@ -3,7 +3,8 @@
 // "View PDF" opens an inline iframe modal. ↗ opens in a new tab as a fallback.
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PdfViewerModal } from '@/components/documents/pdf-viewer-modal'
@@ -12,6 +13,8 @@ import {
   TEMPLATE_SLUG_BY_DOC_TYPE,
   type OperationalDocumentType,
 } from '@/lib/documents/template-catalog'
+import { createShoppingListFromEvent } from '@/lib/shopping/actions'
+import { toast } from 'sonner'
 
 const CONTRACT_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -53,6 +56,20 @@ function ReadinessIndicator({ ready, missing }: { ready: boolean; missing: strin
 export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSectionProps) {
   const baseUrl = `/api/documents/${eventId}`
   const [viewingDoc, setViewingDoc] = useState<{ type: string; label: string } | null>(null)
+  const [isCreatingShoppingList, startShoppingTransition] = useTransition()
+  const router = useRouter()
+
+  function handleSendToShoppingList() {
+    startShoppingTransition(async () => {
+      try {
+        const result = await createShoppingListFromEvent(eventId)
+        toast.success('Shopping list created')
+        router.push(`/shopping/${result.id}`)
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to create shopping list')
+      }
+    })
+  }
 
   const docs: DocEntry[] = [
     {
@@ -146,6 +163,17 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 >
                   Blank
                 </Button>
+                {/* Grocery list gets a "Shop" button to create mobile shopping list */}
+                {doc.type === 'grocery' && doc.ready && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleSendToShoppingList}
+                    disabled={isCreatingShoppingList}
+                  >
+                    {isCreatingShoppingList ? 'Creating...' : 'Shop'}
+                  </Button>
+                )}
 
                 {/* Packing list gets a specialized "Pack Now" interactive page */}
                 {doc.type === 'packing' && (
