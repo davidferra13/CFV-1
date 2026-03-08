@@ -3,14 +3,23 @@
 // WelcomeModal - Role-specific first-login welcome screen
 // Shows once per user, then never again. Introduces the app and offers
 // to start the guided tour or skip to exploring on their own.
+//
+// Uses createPortal to render at document.body level, escaping CSS
+// transform containing blocks that break position:fixed.
 
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useTour } from './tour-provider'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2 } from '@/components/ui/icons'
 
 export function WelcomeModal() {
   const tour = useTour()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleStartTour = useCallback(() => {
     tour.markWelcomeSeen()
@@ -21,9 +30,9 @@ export function WelcomeModal() {
     tour.markWelcomeSeen()
   }, [tour])
 
-  if (!tour.showWelcome) return null
+  if (!tour.showWelcome || !mounted) return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div
         className="w-full max-w-lg bg-stone-900 border border-stone-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300"
@@ -59,6 +68,7 @@ export function WelcomeModal() {
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

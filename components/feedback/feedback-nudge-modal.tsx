@@ -1,8 +1,12 @@
 'use client'
 
-// FeedbackNudgeModal — One-time feedback prompt shown after 7 days.
+// FeedbackNudgeModal - One-time feedback prompt shown after 7 days.
 // Fires once per browser profile. Uses localStorage to prevent re-appearance.
 // Submits to user_feedback table via server action.
+//
+// NOTE: This component lives OUTSIDE OnboardingTourProvider in the chef layout,
+// so it checks localStorage directly (not tour context) to suppress itself
+// during an active tour.
 
 import { useState, useEffect, useTransition } from 'react'
 import { submitUserFeedback, type FeedbackSentiment } from '@/lib/feedback/user-feedback-actions'
@@ -28,8 +32,10 @@ export function FeedbackNudgeModal() {
   useEffect(() => {
     try {
       if (localStorage.getItem(STORAGE_KEY)) return
+      // Don't show during an active tour walkthrough
+      if (localStorage.getItem('chefflow:tour-active') === '1') return
     } catch {
-      // localStorage unavailable — still show once this session
+      // localStorage unavailable
     }
     const timer = setTimeout(() => setVisible(true), 5000)
     return () => clearTimeout(timer)
@@ -54,7 +60,7 @@ export function FeedbackNudgeModal() {
           pageContext: '/dashboard',
         })
       } catch {
-        // Fail silently — feedback loss is acceptable
+        // Fail silently
       }
       try {
         localStorage.setItem(STORAGE_KEY, '1')
@@ -107,7 +113,7 @@ export function FeedbackNudgeModal() {
               How&apos;s ChefFlow treating you?
             </h2>
             <p className="text-stone-500 text-sm leading-relaxed">
-              You&apos;ve been using ChefFlow for a week — your honest take helps us make it better.
+              You&apos;ve been using ChefFlow for a week - your honest take helps us make it better.
             </p>
 
             {/* Sentiment picker */}

@@ -3,9 +3,14 @@
 // TourSpotlight - Interactive guided tour with spotlight, animated cursor,
 // and step-by-step walkthrough. Navigates to pages, highlights real UI
 // elements, and shows an animated cursor pointing at what to click.
+//
+// Uses createPortal to render at document.body level, escaping any CSS
+// transform containing blocks (e.g. animate-fade-slide-up on ChefMainContent)
+// that would break position:fixed viewport-relative positioning.
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { createPortal } from 'react-dom'
+import { usePathname } from 'next/navigation'
 import { useTour } from './tour-provider'
 import { TourCursor } from './tour-cursor'
 import { Button } from '@/components/ui/button'
@@ -15,8 +20,8 @@ type Rect = { top: number; left: number; width: number; height: number }
 
 export function TourSpotlight() {
   const tour = useTour()
-  const router = useRouter()
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
   const [isNavigating, setIsNavigating] = useState(false)
@@ -27,6 +32,11 @@ export function TourSpotlight() {
   const step = tour.currentTourStep
   const isFirst = tour.currentTourIndex === 0
   const isLast = tour.currentTourIndex === tour.totalSteps - 1
+
+  // Must be mounted before we can use createPortal
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Find and measure the target element
   const measureTarget = useCallback(() => {
@@ -74,7 +84,7 @@ export function TourSpotlight() {
     if (!step || isNavigating) return
 
     if (!targetRect) {
-      // No target found yet or step has no target: show tooltip centered but offset down
+      // No target: show tooltip centered
       setTooltipStyle({
         position: 'fixed',
         top: '40%',
@@ -89,13 +99,14 @@ export function TourSpotlight() {
     const tooltipWidth = 340
     const tooltipHeight = 180
     const gap = 16
-    const vw = window.innerWidth
-    const vh = window.innerHeight
+    // Use clientWidth to exclude scrollbar from viewport width
+    const vw = document.documentElement.clientWidth
+    const vh = document.documentElement.clientHeight
 
     let top = 0
     let left = 0
 
-    // Smart placement: try placement preference, fall back if no room
+    // Smart placement: try preference first, fall back if no room
     const placements = [step.placement, 'bottom', 'right', 'top', 'left']
     for (const placement of placements) {
       let fits = false
@@ -178,26 +189,29 @@ export function TourSpotlight() {
     }
   }, [step, measureTarget])
 
-  // Navigate to step's route if needed
+  // Navigate to step's route if needed (hard navigation to survive overlays)
   useEffect(() => {
     if (!step?.route) {
       setIsNavigating(false)
       return
     }
 
-    if (!pathname.startsWith(step.route)) {
+    const needsNav = !pathname.startsWith(step.route)
+    if (needsNav) {
       setIsNavigating(true)
       setShowContent(false)
       setTargetRect(null)
-      router.push(step.route)
-
-      // Give the page time to load before looking for elements
-      const timer = setTimeout(() => setIsNavigating(false), 600)
-      return () => clearTimeout(timer)
+      // Use hard navigation wrapped in setTimeout to ensure it fires
+      // outside the React render cycle. router.push doesn't reliably work
+      // when overlays are present.
+      setTimeout(() => {
+        window.location.href = step.route!
+      }, 50)
+      return
     } else {
       setIsNavigating(false)
     }
-  }, [step, router, pathname])
+  }, [step, pathname])
 
   const handleNext = useCallback(() => {
     if (step) tour.completeStep(step.id)
@@ -216,11 +230,12 @@ export function TourSpotlight() {
     tour.stopTour()
   }, [tour])
 
-  if (!tour.isTourActive || !step) return null
+  if (!mounted || !tour.isTourActive || !step) return null
 
-  return (
+  // Render via portal to escape CSS transform containing blocks
+  return createPortal(
     <>
-      {/* Backdrop overlay - lighter than before so users can see the page */}
+      {/* Backdrop overlay with spotlight cutout */}
       <div className="fixed inset-0 z-[90]" aria-hidden="true">
         <svg className="fixed inset-0 w-full h-full">
           <defs>
@@ -271,10 +286,8 @@ export function TourSpotlight() {
               left: targetRect.left,
               width: targetRect.width,
               height: targetRect.height,
-              // This div has no background, so clicks pass through to the element behind
             }}
             onClick={(e) => {
-              // Let the click go through to the actual element
               e.stopPropagation()
               const el = step.target ? document.querySelector(step.target) : null
               if (el && el instanceof HTMLElement) {
@@ -363,6 +376,7 @@ export function TourSpotlight() {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }
