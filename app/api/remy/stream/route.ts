@@ -34,6 +34,7 @@ import {
   listRemyMemories,
   addRemyMemoryManual,
 } from '@/lib/ai/remy-memory-actions'
+import { getFirstMentionedClientName } from '@/lib/ai/remy-entity-utils'
 import { recordRemyMetric } from '@/lib/ai/remy-metrics'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { MemoryCategory } from '@/lib/ai/remy-memory-types'
@@ -549,29 +550,23 @@ export async function POST(req: NextRequest) {
     let surveyState: SurveyState | null = null
 
     try {
-      const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey] = (await Promise.race(
-        [
-          Promise.all([
-            loadRemyContext(currentPage, contextScope),
-            classifyIntent(message),
-            loadRelevantMemories(message, undefined, undefined),
-            getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
-            getFavoriteChefs().catch(() => []),
-            resolveMessageEntities(message).catch((err) => {
-              console.error('[non-blocking] Entity resolution failed:', err)
-              return []
-            }),
-            getRemyArchetype().catch(() => null),
-            activeForm === 'remy-survey'
-              ? getSurveyState().catch(() => null)
-              : Promise.resolve(null),
-          ]),
-          setupTimeout,
-        ]
-      )) as [
+      const [ctx, cls, profile, favChefs, mentioned, archetype, survey] = (await Promise.race([
+        Promise.all([
+          loadRemyContext(currentPage, contextScope),
+          classifyIntent(message),
+          getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
+          getFavoriteChefs().catch(() => []),
+          resolveMessageEntities(message).catch((err) => {
+            console.error('[non-blocking] Entity resolution failed:', err)
+            return []
+          }),
+          getRemyArchetype().catch(() => null),
+          activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
+        ]),
+        setupTimeout,
+      ])) as [
         Awaited<ReturnType<typeof loadRemyContext>>,
         Awaited<ReturnType<typeof classifyIntent>>,
-        Awaited<ReturnType<typeof loadRelevantMemories>>,
         string,
         Awaited<ReturnType<typeof getFavoriteChefs>>,
         Awaited<ReturnType<typeof resolveMessageEntities>>,
@@ -581,7 +576,11 @@ export async function POST(req: NextRequest) {
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
-      memories = mems
+      memories = await loadRelevantMemories(
+        message,
+        classification.intent,
+        getFirstMentionedClientName(mentioned)
+      )
       culinaryProfile = profile || undefined
       archetypeId = archetype
       surveyState = survey

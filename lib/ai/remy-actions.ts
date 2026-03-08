@@ -1070,12 +1070,13 @@ export async function sendRemyMessage(
     const contextScope = determineContextScope(userMessage, 'unknown')
 
     // Run context loading, intent classification, memory loading, and focus mode check in parallel
-    const [context, classification, memories, focusMode] = await Promise.all([
+    const [context, classification, focusMode] = await Promise.all([
       loadRemyContext(currentPage, contextScope),
       classifyIntent(userMessage),
-      loadRelevantMemories(userMessage, undefined, undefined),
       isFocusModeEnabled().catch(() => false),
     ])
+
+    const memories = await loadRelevantMemories(userMessage, classification.intent)
 
     const clarification = getIntentClarificationMessage(userMessage, classification)
     if (clarification) {
