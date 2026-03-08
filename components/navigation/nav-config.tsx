@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
   BarChart3,
+  Calculator,
   CalendarDays,
   ClipboardCheck,
   Compass,
@@ -239,6 +240,7 @@ export const navGroups: NavGroup[] = [
         icon: DollarSign,
         children: [
           { href: '/finance', label: 'Finance (Legacy)', visibility: 'advanced' },
+          { href: '/finance/pricing-calculator', label: 'Pricing Calculator', icon: Calculator },
           { href: '/expenses', label: 'Expenses' },
           { href: '/expenses/new', label: 'Add Expense' },
           { href: '/finance/expenses', label: 'Expenses by Category', visibility: 'advanced' },
