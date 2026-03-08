@@ -11,6 +11,7 @@ import {
   isApiSkipAuthPath,
   isChefRoutePath,
   isClientRoutePath,
+  isPartnerRoutePath,
   isPublicUnauthenticatedPath,
   isStaffRoutePath,
 } from '@/lib/auth/route-policy'
@@ -141,7 +142,11 @@ export async function middleware(request: NextRequest) {
   const roleCookieName = 'chefflow-role-cache'
   const rawCachedRole = request.cookies.get(roleCookieName)?.value
   const cachedRole = rawCachedRole ? await verifyRoleCookie(rawCachedRole) : null
-  const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client' || cachedRole === 'staff'
+  const roleIsKnown =
+    cachedRole === 'chef' ||
+    cachedRole === 'client' ||
+    cachedRole === 'staff' ||
+    cachedRole === 'partner'
 
   // Helper: write the HMAC-signed role cookie onto a response, mirroring the sessionOnly flag.
   async function setRoleCookie(res: NextResponse, role: string) {
@@ -211,10 +216,11 @@ export async function middleware(request: NextRequest) {
   const isChefRoute = isChefRoutePath(pathname)
   const isClientRoute = isClientRoutePath(pathname)
   const isStaffRoute = isStaffRoutePath(pathname)
+  const isPartnerRoute = isPartnerRoutePath(pathname)
 
   // Most authenticated routes are protected by server layouts already.
   // Only perform middleware role lookups where we want immediate redirects.
-  if (!isChefRoute && !isClientRoute && !isStaffRoute) {
+  if (!isChefRoute && !isClientRoute && !isStaffRoute && !isPartnerRoute) {
     response.headers.set('x-request-id', requestId)
     return response
   }
@@ -247,6 +253,17 @@ export async function middleware(request: NextRequest) {
     // Non-staff users trying to access staff pages get redirected to their home
     if (roleData.role === 'client') {
       return redirectWithCookies(new URL('/my-events', request.url), response)
+    }
+    return redirectWithCookies(new URL('/dashboard', request.url), response)
+  }
+
+  if (isPartnerRoute && roleData.role !== 'partner') {
+    // Non-partner users trying to access partner pages get redirected to their home
+    if (roleData.role === 'client') {
+      return redirectWithCookies(new URL('/my-events', request.url), response)
+    }
+    if (roleData.role === 'staff') {
+      return redirectWithCookies(new URL('/staff-dashboard', request.url), response)
     }
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }

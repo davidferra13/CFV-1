@@ -40,6 +40,8 @@ export const STAFF_PROTECTED_PATHS = [
   '/staff-tasks',
 ] as const
 
+export const PARTNER_PROTECTED_PATHS = ['/partner'] as const
+
 // Public website and tokenized pages that must remain reachable unauthenticated.
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/pricing',
@@ -125,6 +127,10 @@ export function isClientRoutePath(pathname: string): boolean {
 
 export function isStaffRoutePath(pathname: string): boolean {
   return matchesAnyPathOrChild(pathname, STAFF_PROTECTED_PATHS)
+}
+
+export function isPartnerRoutePath(pathname: string): boolean {
+  return matchesAnyPathOrChild(pathname, PARTNER_PROTECTED_PATHS)
 }
 
 export function isPublicUnauthenticatedPath(pathname: string): boolean {
