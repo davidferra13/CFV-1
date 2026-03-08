@@ -22,6 +22,7 @@ import {
   REMY_TOPIC_GUARDRAILS,
   REMY_ANTI_INJECTION,
 } from '@/lib/ai/remy-personality'
+import { buildRouteMapForPrompt } from '@/lib/navigation/route-registry'
 import {
   validateRemyInput,
   validateMemoryContent,
@@ -54,68 +55,12 @@ const RemyConversationalSchema = z.object({
     .describe('Relevant page links to suggest'),
 })
 
-// ─── Navigation Route Map ───────────────────────────────────────────────────
+// ─── Navigation Route Map (auto-generated from route-registry.ts) ───────────
 
-const NAV_ROUTE_MAP = `
-AVAILABLE PAGES (suggest these when relevant):
-/dashboard - Dashboard overview
-/events - All events list
-/events/new - Create a new event
-/events/upcoming - Upcoming events
-/events/board - Event kanban board
-/clients - Client directory
-/clients/new - Add a new client
-/inquiries - Inquiry pipeline
-/quotes - Quotes
-/schedule - Calendar / availability
-/calendar - Calendar views
-/recipes - Recipe library
-/recipes/new - Create a new recipe
-/menus - Menu library
-/menus/new - Create a new menu
-/financials - Financial hub
-/expenses - Expense tracker
-/expenses/new - Add an expense
-/chat - Client messaging
-/staff - Staff management
-/settings - Account settings
-/settings/my-profile - Edit profile
-/settings/integrations - Integrations
-/settings/automations - Automation settings
-/aar - After-action reviews
-/reviews - Client reviews
-/analytics - Analytics & reports
-/proposals - Proposal templates
-/loyalty - Loyalty program
-/goals - Business goals
-/remy - Remy history (everything Remy has saved)
-`.trim()
+const NAV_ROUTE_MAP = buildRouteMapForPrompt(true)
 
-// Scoped route map for Focus Mode — only core workflows
-const NAV_ROUTE_MAP_FOCUS = `
-AVAILABLE PAGES (suggest these when relevant):
-/dashboard - Dashboard overview
-/events - All events list
-/events/new - Create a new event
-/events/upcoming - Upcoming events
-/events/board - Event kanban board
-/clients - Client directory
-/clients/new - Add a new client
-/inquiries - Inquiry pipeline
-/quotes - Quotes
-/schedule - Calendar / availability
-/calendar - Calendar views
-/recipes - Recipe library
-/recipes/new - Create a new recipe
-/menus - Menu library
-/menus/new - Create a new menu
-/financials - Financial hub
-/expenses - Expense tracker
-/expenses/new - Add an expense
-/chat - Client messaging
-/settings - Account settings
-/goals - Business goals
-`.trim()
+// Focus mode uses the same map for now (route-registry handles the full set)
+const NAV_ROUTE_MAP_FOCUS = NAV_ROUTE_MAP
 
 // ─── System Prompt Builder ──────────────────────────────────────────────────
 

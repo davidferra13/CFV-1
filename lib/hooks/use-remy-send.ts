@@ -222,7 +222,11 @@ export function useRemySend(config: UseRemySendConfig) {
     [messages]
   )
 
+  const cancellingRef = useRef(false)
   const handleCancel = useCallback(() => {
+    // Dedup: prevent multiple cancel calls from racing
+    if (cancellingRef.current) return
+    cancellingRef.current = true
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
@@ -230,9 +234,14 @@ export function useRemySend(config: UseRemySendConfig) {
     setLoading(false)
     setStreamingContent('')
     setStreamingIntent(undefined)
+    setElapsedSec(0)
     resetLipSync()
     dispatchBody({ type: 'RESPONSE_ENDED' })
     toast.success('Request cancelled')
+    // Reset dedup flag after a tick
+    setTimeout(() => {
+      cancellingRef.current = false
+    }, 100)
   }, [resetLipSync, setLoading, dispatchBody])
 
   const handleSend = useCallback(

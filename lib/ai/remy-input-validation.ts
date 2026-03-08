@@ -221,7 +221,7 @@ const RECIPE_GENERATION_PATTERNS = [
   // "recipe for X" (asking AI to produce a recipe)
   /\brecipe\s+for\s+(?!search|lookup|find)/i,
   // "how to cook/make X" (recipe generation by another name)
-  /\bhow\s+(to|do\s+(you|i))\s+(cook|make|prepare|bake|roast|grill|saut[eé]|braise|fry|smoke|poach)\b/i,
+  /\bhow\s+(to|do\s+(you|i))\s+(cook|make|prepare|bake|roast|grill|saut[eé]|braise|fry|smoke|poach|pressure\s+cook|sous\s+vide|slow\s+cook|blanch|steam|sear|deglaze|flamb[eé]|confit|cure|ferment|pickle)\b/i,
   // "what should I cook/make"
   /\bwhat\s+should\s+I\s+(cook|make|prepare|bake)\b/i,
   // "add a recipe" (not "add ingredient" which is also blocked separately)
@@ -443,14 +443,15 @@ export function sanitizeForPrompt(value: string | null | undefined): string {
   // Remove null bytes
   sanitized = sanitized.replace(/\0/g, '')
 
-  // Neutralize injection patterns by wrapping matched text in brackets
-  // This preserves the text for context but breaks the instruction structure
+  // Replace injection patterns with [FILTERED] to fully neutralize them
+  // Previously wrapped in brackets which still let the LLM read the injected text
   for (const pattern of INJECTION_PATTERNS) {
-    sanitized = sanitized.replace(pattern, (match) => `[${match}]`)
+    sanitized = sanitized.replace(pattern, '[FILTERED]')
   }
 
-  // Collapse excessive newlines (injection delimiter attempts)
-  sanitized = sanitized.replace(/\n{4,}/g, '\n\n\n')
+  // Collapse excessive newlines to single newline (injection delimiter attempts)
+  // Previously allowed 3 newlines which is still a delimiter attack vector
+  sanitized = sanitized.replace(/\n{2,}/g, '\n')
 
   // Cap length — no single database field should be more than 2000 chars in a prompt
   if (sanitized.length > 2000) {

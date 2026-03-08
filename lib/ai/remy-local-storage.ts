@@ -1243,18 +1243,37 @@ export async function trimConversationMessages(conversationId: string): Promise<
 
   // messages are sorted oldest-first; delete from the beginning
   const toDelete = messages.slice(0, messages.length - MAX_MESSAGES_PER_CONVERSATION)
+
+  // Count bookmarked messages being deleted so we can decrement the conversation counter
+  const bookmarkedCount = toDelete.filter((msg: any) => msg.bookmarked).length
+
   const db = await openDB()
 
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORES.messages, 'readwrite')
-    const store = tx.objectStore(STORES.messages)
+    const tx = db.transaction([STORES.messages, STORES.conversations], 'readwrite')
+    const msgStore = tx.objectStore(STORES.messages)
+    const convStore = tx.objectStore(STORES.conversations)
+
     for (const msg of toDelete) {
-      store.delete(msg.id)
+      msgStore.delete(msg.id)
     }
+
+    // Decrement bookmark count on the conversation if any bookmarked messages were trimmed
+    if (bookmarkedCount > 0) {
+      const convReq = convStore.get(conversationId)
+      convReq.onsuccess = () => {
+        const conv = convReq.result
+        if (conv) {
+          conv.bookmarkCount = Math.max(0, (conv.bookmarkCount || 0) - bookmarkedCount)
+          convStore.put(conv)
+        }
+      }
+    }
+
     tx.oncomplete = () => {
       db.close()
       console.log(
-        `[remy-storage] Trimmed ${toDelete.length} old messages from conversation ${conversationId}`
+        `[remy-storage] Trimmed ${toDelete.length} old messages from conversation ${conversationId}${bookmarkedCount ? ` (${bookmarkedCount} bookmarked)` : ''}`
       )
       resolve(toDelete.length)
     }

@@ -95,8 +95,8 @@ const COMMAND_PATTERNS: RegExp[] = [
   /^(draft|write|create|make|add|set up|build|generate|prepare)\b/i,
   // Specific actions
   /^(find|search|look up|check|show|pull up|get|grab|fetch)\b/i,
-  // Draft types
-  /^(send|email|text|message|respond|reply|decline|re-engage|celebrate)\b/i,
+  // Draft types (but NOT negated: "don't send", "do not email", etc.)
+  /^(?!(?:don'?t|do\s+not|never|stop)\s)(send|email|text|message|respond|reply|decline|re-engage|celebrate)\b/i,
   // Operational commands
   /^(scale|portion|pack|import|bulk|parse|process|log|record|schedule)\b/i,
   // Web commands
@@ -109,8 +109,8 @@ const COMMAND_PATTERNS: RegExp[] = [
   /^(here'?s a (transcript|brain dump|dump|list|note)|i (just )?got off the phone|i talked to)\b/i,
   // Attached file
   /^\[attached:/i,
-  // Update/modify actions
-  /^(update|change|modify|edit|rename|move|delete|remove|cancel)\b/i,
+  // Update/modify actions (but NOT negated)
+  /^(?!(?:don'?t|do\s+not|never|stop)\s)(update|change|modify|edit|rename|move|delete|remove|cancel)\b/i,
   // Financial commands
   /^(invoice|charge|refund|pay|bill|calculate|price|quote)\b/i,
   // Calendar/booking commands
@@ -119,6 +119,8 @@ const COMMAND_PATTERNS: RegExp[] = [
   /^(call|contact|reach out|follow up|ping|nudge|remind)\b/i,
   // List/report commands
   /^(list|print|export|download|report|pull)\b/i,
+  // "X report" format (e.g., "Revenue report", "Monthly report please")
+  /^.+\s+report\s*(please)?\s*$/i,
   // ─── Noun-led queries that are commands (no verb prefix) ───
   // "[Name] details/info/profile" → client lookup
   /^.+\s+(details?|info|information|profile)\s*$/i,
@@ -150,7 +152,7 @@ const QUESTION_PATTERNS: RegExp[] = [
   // Status checks (informational, not action)
   /^(how'?s|how is|how are|what'?s my|tell me about|give me an overview)\b/i,
   // Conversational
-  /^(thanks|thank you|got it|ok|okay|sure|sounds good|perfect|great|awesome|nice)\b/i,
+  /^(thanks|thank you|got it|ok(ay)?|sure|sounds good|perfect|great|awesome|nice|cool|alright|right on|roger|copy)\b/i,
   // Opinion / analysis
   /^(analyze|compare|explain|describe|summarize|break down|walk me through)\b/i,
   // Greetings
@@ -165,7 +167,8 @@ const QUESTION_PATTERNS: RegExp[] = [
 
 // Commands that look like questions but are actually action requests
 const QUESTION_SHAPED_COMMANDS: RegExp[] = [
-  /^(does|do)\s+\w+\s+have\s+(any\s+)?allerg/i, // "Does Sarah have any allergies?"
+  /^(does|do)\s+(?!everyone|all|any\b)\w+\s+have\s+(any\s+)?allerg/i, // "Does Sarah have any allergies?" (not "Does everyone have allergies?")
+
   /^what('?s| is)\s+\w+'?s?\s+(lifetime value|ltv)/i, // "What's Sarah's lifetime value?"
   /^how much has\b/i, // "How much has the Johnson family spent?"
   /^what do i need to pack/i, // "What do I need to pack for Saturday?"
@@ -255,6 +258,9 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
     return deterministic
   }
 
+  // Log fallthrough for pattern improvement (misclassification tracking)
+  console.log(`[remy-classifier] Regex fallthrough: "${message.slice(0, 80)}"`)
+
   // Fall through to Ollama for ambiguous messages
   try {
     // Use 'complex' tier (30b conversation model) instead of 'fast' (4b)
@@ -264,16 +270,14 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
       CLASSIFIER_SYSTEM_PROMPT,
       `Classify this message: "${message}"`,
       ClassificationSchema,
-      { modelTier: 'complex', cache: true }
+      { modelTier: 'complex', cache: true, taskType: 'classification' }
     )
 
-    // Low confidence → default to question (safe)
-    if (result.confidence < 0.6) {
-      return { intent: 'question', confidence: result.confidence }
-    }
-
+    // Low confidence: keep the LLM's actual intent but flag the confidence.
+    // Previously this overrode to 'question' which silently dropped valid command classifications.
+    // Callers can check confidence and ask for clarification if needed.
     return {
-      intent: result.intent,
+      intent: result.confidence < 0.4 ? 'question' : result.intent,
       confidence: result.confidence,
       commandPart: result.commandPart,
       questionPart: result.questionPart,

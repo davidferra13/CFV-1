@@ -8,49 +8,13 @@ import {
   REMY_ANTI_INJECTION,
 } from '@/lib/ai/remy-personality'
 import { getArchetype } from '@/lib/ai/remy-archetypes'
+import { buildRouteMapForPrompt } from '@/lib/navigation/route-registry'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage, RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 
-//  Navigation Route Map
-
-const NAV_ROUTE_MAP = `
-AVAILABLE PAGES (suggest these when relevant):
-/dashboard - Dashboard overview
-/events - All events list
-/events/new - Create a new event
-/events/upcoming - Upcoming events
-/events/board - Event kanban board
-/clients - Client directory
-/clients/new - Add a new client
-/inquiries - Inquiry pipeline
-/quotes - Quotes
-/schedule - Calendar / availability
-/calendar - Calendar views
-/recipes - Recipe library
-/recipes/new - Create a new recipe
-/menus - Menu library
-/menus/new - Create a new menu
-/financials - Financial hub
-/expenses - Expense tracker
-/expenses/new - Add an expense
-/chat - Client messaging
-/staff - Staff management
-/settings - Account settings
-/settings/my-profile - Edit profile
-/settings/integrations - Integrations
-/settings/automations - Automation settings
-/settings/culinary-profile - Culinary profile (food identity for Remy)
-/settings/favorite-chefs - Favorite chefs (culinary heroes)
-/settings/ai-privacy - Remy settings, personality archetype, privacy & data controls
-/aar - After-action reviews
-/reviews - Client reviews
-/analytics - Analytics & reports
-/proposals - Proposal templates
-/loyalty - Loyalty program
-/goals - Business goals
-/remy - Remy history (everything Remy has saved)
-`.trim()
+//  Navigation Route Map (auto-generated from route-registry.ts)
+const NAV_ROUTE_MAP = buildRouteMapForPrompt(true)
 
 // ─── Response Length Calibration (deterministic — word count analysis) ────────
 // Matches response length to the chef's message complexity. Short questions get

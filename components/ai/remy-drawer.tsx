@@ -333,6 +333,11 @@ export function RemyDrawer() {
     }
   }, [open, hasDecayedThisSession])
 
+  // Clear pending image when switching conversations (prevents sending image to wrong chat)
+  useEffect(() => {
+    pendingImageRef.current = null
+  }, [currentConversationId])
+
   // Load conversations when drawer opens for the first time
   useEffect(() => {
     if (open && !conversationsLoaded) {

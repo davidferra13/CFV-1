@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { buildTaskListForPrompt } from '@/lib/ai/command-task-descriptions'
+import { buildRouteLookupMap } from '@/lib/navigation/route-registry'
 import type { CommandPlan, PlannedTask } from '@/lib/ai/command-types'
 
 // ─── Zod Schema for Ollama Output ─────────────────────────────────────────────
@@ -113,7 +114,7 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
   // "Draft/write a [type] for [name]"
   {
     pattern:
-      /^(?:draft|write)\s+(?:a\s+)?(?:thank[- ]?you|thank you note|follow[- ]?up|referral request|testimonial request|payment reminder|re-?engagement|decline|cancellation response|cover letter)\s+(?:for|to)\s+(.+)/i,
+      /^(?:draft|write)\s+(?:a\s+)?(?:thank[- ]?you|thank you note|follow[- ]?up|referral request|testimonial request|payment reminder|re-?engagement|decline|cancellation response|cover letter)\s+(?:for|to)\s+(.+?)(?:\s+for\s+(?:being|their|the|his|her|having|always)|$)/i,
     build: (match, raw) => {
       const draftTypeMap: Record<string, string> = {
         'thank you': 'draft.thank_you',
@@ -741,42 +742,14 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     pattern: /^(?:go to|navigate to|take me to|open)\s+(?:the\s+)?(.+)/i,
     build: (match, raw) => {
       const dest = match[1].trim().toLowerCase()
+      // Auto-generated from route-registry.ts (single source of truth)
       const routeMap: Record<string, string> = {
-        dashboard: '/dashboard',
-        events: '/events',
-        clients: '/clients',
-        inquiries: '/inquiries',
-        quotes: '/quotes',
-        schedule: '/schedule',
-        calendar: '/calendar',
-        recipes: '/recipes',
-        menus: '/menus',
-        financials: '/financials',
-        expenses: '/expenses',
-        staff: '/staff',
-        settings: '/settings',
-        analytics: '/analytics',
-        goals: '/goals',
-        reviews: '/reviews',
-        loyalty: '/loyalty',
-        circles: '/circles',
+        ...buildRouteLookupMap(),
+        // Aliases not in the registry
         hub: '/circles',
-        'rate card': '/rate-card',
         rates: '/rate-card',
-        tasks: '/tasks',
-        travel: '/travel',
-        commerce: '/commerce',
         pos: '/commerce/register',
-        register: '/commerce/register',
         'daily ops': '/daily',
-        daily: '/daily',
-        queue: '/queue',
-        stations: '/stations',
-        testimonials: '/testimonials',
-        partners: '/partners',
-        activity: '/activity',
-        consulting: '/consulting',
-        aar: '/aar',
         waitlist: '/waitlist',
       }
       const route = routeMap[dest]
