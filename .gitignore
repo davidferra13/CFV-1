@@ -44,6 +44,7 @@ next-env.d.ts
 # temp/debug files
 .tmp-*
 tmp_*
+tmp-*
 
 # Supabase local development (Docker temp files)
 supabase/.temp/
