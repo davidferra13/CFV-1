@@ -33,6 +33,9 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
+import { getImpersonatedChefId } from '@/lib/auth/admin-impersonation'
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const PushPermissionPrompt = dynamic(
   () =>
@@ -82,8 +85,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   // Onboarding gate — redirect new chefs to wizard before they can access any page.
   // x-pathname is set by middleware so we can check the current path server-side
   // without an additional round-trip or breaking the App Router server component model.
+  // Skip the gate when an admin is impersonating (they need to see the chef's actual portal).
   const pathname = headers().get('x-pathname') ?? ''
-  if (!pathname.startsWith('/onboarding')) {
+  const isAdminImpersonating = !!getImpersonatedChefId()
+  if (!pathname.startsWith('/onboarding') && !isAdminImpersonating) {
     const onboardingComplete = await getOnboardingStatus().catch(() => true) // fail open
     if (!onboardingComplete) {
       redirect('/onboarding')
@@ -132,6 +137,26 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
 
+  // Admin impersonation: fetch target chef info for the banner
+  const impersonatedChefId = getImpersonatedChefId()
+  let impersonationInfo: { id: string; businessName: string | null; email: string | null } | null =
+    null
+  if (impersonatedChefId && userIsAdmin) {
+    const adminClient = createAdminClient()
+    const { data: targetChef } = await adminClient
+      .from('chefs')
+      .select('id, business_name, email')
+      .eq('id', impersonatedChefId)
+      .single()
+    if (targetChef) {
+      impersonationInfo = {
+        id: targetChef.id,
+        businessName: targetChef.business_name,
+        email: targetChef.email,
+      }
+    }
+  }
+
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
   const enabledModules =
@@ -163,6 +188,18 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   backgroundRepeat: 'no-repeat',
                 }}
               >
+                {/* Admin impersonation banner — persistent, fixed top bar */}
+                {impersonationInfo && (
+                  <>
+                    <ImpersonationBanner
+                      chefId={impersonationInfo.id}
+                      businessName={impersonationInfo.businessName}
+                      email={impersonationInfo.email}
+                    />
+                    {/* Spacer so content isn't hidden behind fixed banner */}
+                    <div className="h-10" />
+                  </>
+                )}
                 {/* Skip navigation link for keyboard/screen reader users */}
                 <a
                   href="#main-content"

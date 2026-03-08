@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Users, TrendingUp, AlertCircle } from '@/components/ui/icons'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
+import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 
 function formatCents(cents: number): string {
   if (cents === 0) return '$0'
@@ -146,13 +147,14 @@ export default async function AdminChefListPage() {
                         showScore
                       />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 flex items-center gap-3">
                       <Link
                         href={`/admin/users/${chef.id}`}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
                         View →
                       </Link>
+                      <ViewAsChefButton chefId={chef.id} />
                     </td>
                   </tr>
                 ))}

@@ -6,6 +6,7 @@ import { cache } from 'react'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminEmails } from '@/lib/platform/owner-account'
+import { getImpersonatedChefId } from '@/lib/auth/admin-impersonation'
 
 export type AuthUser = {
   id: string
@@ -96,6 +97,10 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
 /**
  * Require chef role - throws if not chef or if account is suspended.
  * Use in chef portal pages and server actions.
+ *
+ * Admin impersonation: when an admin has the impersonation cookie set,
+ * this returns the TARGET chef's context instead of the admin's own.
+ * The admin's real auth is still validated first (must be a chef + admin).
  */
 export async function requireChef(): Promise<AuthUser> {
   const user = await getCurrentUser()
@@ -116,6 +121,33 @@ export async function requireChef(): Promise<AuthUser> {
 
     if (chef?.account_status === 'suspended') {
       throw new Error('Account suspended: Contact support.')
+    }
+  }
+
+  // Admin impersonation: if the admin has selected a chef to view as,
+  // return a modified AuthUser with the target chef's tenant context.
+  // The admin's real identity (user.id) is preserved for auth,
+  // but entityId and tenantId point to the target chef.
+  const impersonatedChefId = getImpersonatedChefId()
+  if (impersonatedChefId && impersonatedChefId !== user.entityId) {
+    // Verify caller is actually an admin
+    const adminEmails = getAdminEmails()
+    if (adminEmails.includes(user.email.toLowerCase())) {
+      // Verify target chef exists
+      const adminClient = createAdminClient()
+      const { data: targetChef } = await adminClient
+        .from('chefs')
+        .select('id')
+        .eq('id', impersonatedChefId)
+        .single()
+
+      if (targetChef) {
+        return {
+          ...user,
+          entityId: impersonatedChefId,
+          tenantId: impersonatedChefId,
+        }
+      }
     }
   }
 

@@ -9,6 +9,7 @@ import { computeChefHealthScore, CHEF_TIER_LABELS } from '@/lib/chefs/health-sco
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from '@/components/ui/icons'
+import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 
 function formatCents(cents: number): string {
   return (
@@ -140,6 +141,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 year: 'numeric',
               })}
             </p>
+            <div className="mt-2">
+              <ViewAsChefButton
+                chefId={params.chefId}
+                className="text-sm bg-amber-600 hover:bg-amber-500 text-white px-4 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+              />
+            </div>
           </div>
         </div>
       </div>
