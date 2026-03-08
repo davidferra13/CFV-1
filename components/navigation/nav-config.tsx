@@ -21,6 +21,7 @@ import {
   Phone,
   Rss,
   Settings,
+  ShoppingCart,
   Target,
   Users,
   UtensilsCrossed,
@@ -170,6 +171,7 @@ export const navGroups: NavGroup[] = [
         label: 'Operations Tools',
         icon: ClipboardCheck,
         children: [
+          { href: '/shopping', label: 'Shopping Lists', icon: ShoppingCart },
           { href: '/aar', label: 'After Action Reviews' },
           { href: '/reviews', label: 'Reviews' },
           { href: '/import', label: 'Smart Import' },
