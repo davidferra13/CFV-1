@@ -93,14 +93,14 @@
 
 ### Header (always visible)
 
-| Element                                    | Type                  | What It Does                                                                                                                                                                                                                                                                               |
-| ------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| "Dashboard"                                | h1                    | Static title                                                                                                                                                                                                                                                                               |
-| "Good [morning/afternoon/evening], [name]" | Text                  | Time-of-day greeting from user session                                                                                                                                                                                                                                                     |
-| "Layout" button                            | Button → Dropdown     | Opens `DashboardQuickSettings` panel for reordering widgets. Contains: up/down arrows per widget, "Manage widget visibility" link → `/settings/dashboard`, "Collapse All"/"Expand All" toggle, Save/Close buttons. Per-widget collapse via `collapsible-widget.tsx`, state in localStorage |
-| "Full Queue"                               | Link button           | → `/queue`                                                                                                                                                                                                                                                                                 |
-| "New Event"                                | Link button (primary) | → `/events/new`                                                                                                                                                                                                                                                                            |
-| Cmd+K Global Search                        | Hotkey → Modal        | Enhanced with "Quick Actions" section (New Event, Client, Quote, Inquiry, Expense, Recipe) when query is empty or matches "new"/"create"                                                                                                                                                   |
+| Element                                    | Type                  | What It Does                                                                                                                             |
+| ------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| "Dashboard"                                | h1                    | Static title                                                                                                                             |
+| "Good [morning/afternoon/evening], [name]" | Text                  | Time-of-day greeting from user session                                                                                                   |
+| "Briefing"                                 | Link button           | → `/briefing`                                                                                                                            |
+| "Full Queue"                               | Link button           | → `/queue`                                                                                                                               |
+| Primary action (archetype-based)           | Link button (primary) | → varies by archetype (e.g. "New Event" for caterers, "New Client" for private chefs)                                                    |
+| Cmd+K Global Search                        | Hotkey → Modal        | Enhanced with "Quick Actions" section (New Event, Client, Quote, Inquiry, Expense, Recipe) when query is empty or matches "new"/"create" |
 
 ### Banners (conditional, above widgets)
 
@@ -112,6 +112,41 @@
 | **Response Time SLA**      | Any open inquiry awaiting response      | Card showing count of overdue (24h+) / urgent (4h+) / fresh inquiries + avg response time. Red/amber/green styling. Links to `/inquiries?status=new`                                                             |
 | **Pending Follow-Ups**     | Stale inquiries (3+ days quiet)         | Card listing inquiries where client hasn't responded in 3+ days. Shows client name, occasion, "Xd quiet" badge. Links to inquiry detail. Max 5 shown.                                                            |
 | **Holiday Outreach Panel** | `holidayOutreachSuggestions.length > 0` | Per holiday: expandable row with AI outreach text + "Copy" button, promo code creation form (code/discount%/expiry inputs + "Create code" button), client rows with "Send" button opening email/SMS compose form |
+
+### Tab System (DashboardTabs)
+
+Dashboard content is organized into 5 tabs via a client-side tab switcher. Header, shortcut strip, and priority banner remain above the tabs (always visible).
+
+| Tab              | Content                                                                    | Source                             |
+| ---------------- | -------------------------------------------------------------------------- | ---------------------------------- |
+| **My Dashboard** | Fully customizable personal dashboard (client component, fetches own data) | `my-dashboard-tab.tsx`             |
+| **Schedule**     | Server-rendered schedule widgets (Today's Schedule, Week Strip, etc.)      | `_sections/schedule-cards.tsx`     |
+| **Alerts**       | Server-rendered alert widgets (Follow-ups, Cooling, Stuck Events, etc.)    | `_sections/alerts-cards.tsx`       |
+| **Business**     | Server-rendered financial widgets (Revenue, Payments, Invoices, etc.)      | `_sections/business-cards.tsx`     |
+| **Intelligence** | Server-rendered AI insight widgets                                         | `_sections/intelligence-cards.tsx` |
+
+#### My Dashboard Tab
+
+| Element                              | Type               | What It Does                                                                 |
+| ------------------------------------ | ------------------ | ---------------------------------------------------------------------------- |
+| "Editing Dashboard" / "My Dashboard" | h2                 | Title changes in edit mode                                                   |
+| "Templates" button                   | Button (ghost)     | Toggles template picker panel (10 templates, archetype match highlighted)    |
+| "Customize" button                   | Button (secondary) | Enters edit mode: drag-to-reorder, up/down arrows, remove widgets            |
+| "Add Widgets" button (edit mode)     | Button (ghost)     | Opens WidgetPickerModal (120 widgets, 8 category tabs, search, multi-select) |
+| "Save" / "Cancel" (edit mode)        | Buttons            | Saves widget order to DB / reverts to saved                                  |
+| Notes scratchpad                     | Textarea           | Free-text notes, auto-saved with 1s debounce                                 |
+
+**Empty state:** Shows all 10 template cards in a grid. Archetype-matched template shown first with "Recommended for you" badge. "Or start from scratch" button opens widget picker.
+
+**Templates (10 total):**
+
+- 6 archetype-based: Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery/Pastry
+- 4 use-case: Financial Focus, Client First, Ops Command Center, Minimal
+- Each template pre-selects ~10 widgets. Applying a template saves immediately.
+
+**Widget Picker Modal:** Full-screen overlay with search bar + 8 category filter tabs (All, Schedule, Clients, Financial, Operations, Intelligence, Communication, Quick Actions). Shows all 120 widgets with icons. Already-added widgets disabled with checkmark. Multi-select + "Add Selected" button.
+
+**Widget Renderer:** 8 widgets have full data rendering (payments_due, expiring_quotes, business_snapshot, stuck_events, cooling_alerts, response_time, pending_followups, invoice_pulse). All others render as styled shortcut cards linking to their detail pages.
 
 ### Widgets (configurable show/hide/reorder via Layout settings)
 
@@ -512,7 +547,7 @@
 | `/clients/loyalty/referrals`                  | Referral source analysis with bars + top referrer cards                                                                                                                                                                                    |
 | `/clients/presence`                           | Real-time client portal monitoring (Supabase Realtime), online count, activity stream with high-intent badges                                                                                                                              |
 | `/client-requests`                            | Chef's queue of client quick requests. Pending/approved/declined tabs. Per request: client name, date requested, guest count, occasion, notes, approve (convert to event) / decline buttons. Dashboard stat card shows pending count       |
-| `/my-events/request` (client portal)          | Client-side quick request form. Simplified booking for existing clients: date, time, guest count, occasion, notes. Skips the full inquiry flow                                                                                              |
+| `/my-events/request` (client portal)          | Client-side quick request form. Simplified booking for existing clients: date, time, guest count, occasion, notes. Skips the full inquiry flow                                                                                             |
 
 ---
 
@@ -657,20 +692,20 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 5.10 Other Financial
 
-| Route                          | Content                                                                                                                       |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `/finance/recurring`           | Recurring invoice form                                                                                                        |
-| `/finance/retainers`           | Retainer list + detail + create. Detail: agreement, billing timeline, linked events, status actions                           |
-| `/finance/bank-feed`           | Bank feed panel + manual transaction form                                                                                     |
-| `/finance/cash-flow`           | 30-day cash flow forecast chart                                                                                               |
-| `/finance/forecast`            | Revenue forecast with trend + next 3 months                                                                                   |
-| `/finance/disputes`            | Dispute tracker                                                                                                               |
-| `/finance/contractors`         | 1099 contractor panel                                                                                                         |
-| `/finance/sales-tax`           | Sales tax panel with settings (enable/disable, state rate, local rate, filing frequency, registration #) + remittance history |
-| `/finance/planning/break-even` | Break-even calculator                                                                                                         |
-| `/finance/year-end`            | Year-end summary with revenue, expenses, tax prep, "Download for Accountant" CSV, "Email to Myself"                           |
+| Route                          | Content                                                                                                                                                                                                               |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/finance/recurring`           | Recurring invoice form                                                                                                                                                                                                |
+| `/finance/retainers`           | Retainer list + detail + create. Detail: agreement, billing timeline, linked events, status actions                                                                                                                   |
+| `/finance/bank-feed`           | Bank feed panel + manual transaction form                                                                                                                                                                             |
+| `/finance/cash-flow`           | 30-day cash flow forecast chart                                                                                                                                                                                       |
+| `/finance/forecast`            | Revenue forecast with trend + next 3 months                                                                                                                                                                           |
+| `/finance/disputes`            | Dispute tracker                                                                                                                                                                                                       |
+| `/finance/contractors`         | 1099 contractor panel                                                                                                                                                                                                 |
+| `/finance/sales-tax`           | Sales tax panel with settings (enable/disable, state rate, local rate, filing frequency, registration #) + remittance history                                                                                         |
+| `/finance/planning/break-even` | Break-even calculator                                                                                                                                                                                                 |
+| `/finance/year-end`            | Year-end summary with revenue, expenses, tax prep, "Download for Accountant" CSV, "Email to Myself"                                                                                                                   |
 | `/finance/pricing-calculator`  | Pricing calculator for new chefs. Input: guest count, courses, drive distance, ingredient cost, hours. Output: recommended price with margin targets, market comparison, cost breakdown. Pure TypeScript math (no AI) |
-| `/finance/revenue-per-hour`    | Revenue per hour analysis. True hourly rate across all work types (prep, travel, shopping, cleanup, not just service). Recharts bar/line/area charts. Per-event breakdown table. Trend over time |
+| `/finance/revenue-per-hour`    | Revenue per hour analysis. True hourly rate across all work types (prep, travel, shopping, cleanup, not just service). Recharts bar/line/area charts. Per-event breakdown table. Trend over time                      |
 
 ### 5.11 Goals
 
