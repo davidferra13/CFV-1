@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { PDFLayout } from './pdf-layout'
 import { getChefBrand, type ChefBrand } from '@/lib/chef/brand'
 import { fetchLogoAsBase64 } from '@/lib/documents/logo-utils'
+import { renderCostBreakdown } from '@/lib/documents/quote-breakdown-renderer'
 import { format, parseISO } from 'date-fns'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -27,6 +28,8 @@ export type QuoteDocumentData = {
     validUntil: string | null // ISO date string
     pricingNotes: string | null // "What's included" from chef's notes
     sentAt: string | null
+    showCostBreakdown: boolean
+    exclusionsNote: string | null
   }
   chef: {
     businessName: string
@@ -54,6 +57,12 @@ export type QuoteDocumentData = {
     description: string | null // FOH description (dish.description)
     componentNames: string[] // Fallback if no description
   }>
+  costBreakdown: Array<{
+    label: string
+    amountCents: number
+    percentage?: number | null
+    sourceNote?: string | null
+  }>
   cancellationPolicy: {
     cutoffDays: number
     depositRefundable: boolean
@@ -73,7 +82,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       `
       id, created_at, pricing_model, total_quoted_cents, price_per_person_cents,
       guest_count_estimated, deposit_required, deposit_amount_cents,
-      deposit_percentage, valid_until, pricing_notes, sent_at,
+      deposit_percentage, valid_until, pricing_notes, sent_at, show_cost_breakdown, exclusions_note,
       event_id, inquiry_id,
       client:clients(full_name, email, loyalty_tier, loyalty_points)
     `
@@ -112,6 +121,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   }
 
   let menuCourses: QuoteDocumentData['menu'] = []
+  let costBreakdown: QuoteDocumentData['costBreakdown'] = []
 
   if (quote.event_id) {
     const { data: event } = await supabase
@@ -244,6 +254,23 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   const shortId = quoteId.replace(/-/g, '').slice(0, 4).toUpperCase()
   const quoteRef = `QUOTE-${year}-${shortId}`
 
+  if (quote.show_cost_breakdown) {
+    const { data: lineItems } = await supabase
+      .from('quote_line_items')
+      .select('label, amount_cents, percentage, source_note')
+      .eq('quote_id', quote.id)
+      .eq('tenant_id', user.tenantId!)
+      .eq('is_visible_to_client', true)
+      .order('sort_order', { ascending: true })
+
+    costBreakdown = ((lineItems ?? []) as any[]).map((item) => ({
+      label: item.label,
+      amountCents: item.amount_cents,
+      percentage: item.percentage,
+      sourceNote: item.source_note,
+    }))
+  }
+
   return {
     quote: {
       id: quote.id,
@@ -258,6 +285,8 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       validUntil: quote.valid_until,
       pricingNotes: quote.pricing_notes,
       sentAt: quote.sent_at,
+      showCostBreakdown: quote.show_cost_breakdown ?? false,
+      exclusionsNote: quote.exclusions_note ?? null,
     },
     chef: {
       businessName: chef.business_name,
@@ -272,6 +301,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     },
     event: eventDetails,
     menu: menuCourses,
+    costBreakdown,
     cancellationPolicy: {
       cutoffDays: (chef as any).cancellation_cutoff_days ?? 15,
       depositRefundable: (chef as any).deposit_refundable ?? false,
@@ -293,7 +323,7 @@ export function renderQuote(
   brand?: ChefBrand | null,
   logoBase64?: string | null
 ) {
-  const { quote, chef, client, event, menu, cancellationPolicy } = data
+  const { quote, chef, client, event, menu, costBreakdown, cancellationPolicy } = data
 
   // Density scaling for menus with many courses
   if (menu.length > 6) pdf.setFontScale(0.85)
@@ -406,6 +436,10 @@ export function renderQuote(
     'Service total',
     `${formatCents(quote.totalQuotedCents)}${guestNote ? '  ·  ' + pricingLabel : ''}`
   )
+
+  if (quote.showCostBreakdown && costBreakdown.length > 0) {
+    renderCostBreakdown(pdf, costBreakdown, quote.exclusionsNote)
+  }
 
   if (quote.depositRequired && quote.depositAmountCents) {
     const depositLabel = quote.depositPercentage

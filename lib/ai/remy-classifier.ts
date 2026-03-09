@@ -1,4 +1,3 @@
-'use server'
 
 // Remy — Intent Classifier
 // Uses the fast Ollama model to classify messages as question vs command.

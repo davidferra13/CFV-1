@@ -100,6 +100,8 @@
     "ollama": "node scripts/ollama-control.mjs",
     "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs",
     "audit:overnight": "node scripts/overnight-audit.mjs",
+    "audit:site:full": "node scripts/site-audit-runner.mjs --mode=full",
+    "audit:site:quick": "node scripts/site-audit-runner.mjs --mode=quick",
     "audit:variant": "node scripts/overnight-audit-variant.mjs",
     "audit:a11y:markup": "node scripts/audit-a11y-markup.mjs",
     "audit:a11y:markup:strict": "node scripts/audit-a11y-markup.mjs --strict",

@@ -22,7 +22,7 @@ async function fetchQuoteDataForClient(
       `
       id, created_at, pricing_model, total_quoted_cents, price_per_person_cents,
       guest_count_estimated, deposit_required, deposit_amount_cents,
-      deposit_percentage, valid_until, pricing_notes, sent_at,
+      deposit_percentage, valid_until, pricing_notes, sent_at, show_cost_breakdown, exclusions_note,
       event_id, inquiry_id, tenant_id,
       client:clients(full_name, email, loyalty_tier, loyalty_points)
     `
@@ -61,6 +61,7 @@ async function fetchQuoteDataForClient(
   }
 
   let menuCourses: QuoteDocumentData['menu'] = []
+  let costBreakdown: QuoteDocumentData['costBreakdown'] = []
 
   if (quote.event_id) {
     const { data: event } = await supabase
@@ -182,6 +183,22 @@ async function fetchQuoteDataForClient(
   const shortId = quoteId.replace(/-/g, '').slice(0, 4).toUpperCase()
   const quoteRef = `QUOTE-${year}-${shortId}`
 
+  if (quote.show_cost_breakdown) {
+    const { data: lineItems } = await supabase
+      .from('quote_line_items')
+      .select('label, amount_cents, percentage, source_note')
+      .eq('quote_id', quote.id)
+      .eq('is_visible_to_client', true)
+      .order('sort_order', { ascending: true })
+
+    costBreakdown = ((lineItems ?? []) as any[]).map((item) => ({
+      label: item.label,
+      amountCents: item.amount_cents,
+      percentage: item.percentage,
+      sourceNote: item.source_note,
+    }))
+  }
+
   return {
     quote: {
       id: quote.id,
@@ -196,6 +213,8 @@ async function fetchQuoteDataForClient(
       validUntil: quote.valid_until,
       pricingNotes: quote.pricing_notes,
       sentAt: quote.sent_at,
+      showCostBreakdown: quote.show_cost_breakdown ?? false,
+      exclusionsNote: quote.exclusions_note ?? null,
     },
     chef: {
       businessName: chef.business_name,
@@ -210,6 +229,7 @@ async function fetchQuoteDataForClient(
     },
     event: eventDetails,
     menu: menuCourses,
+    costBreakdown,
     cancellationPolicy: {
       cutoffDays: (chef as any).cancellation_cutoff_days ?? 15,
       depositRefundable: (chef as any).deposit_refundable ?? false,

@@ -3,6 +3,8 @@
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { PostEventSummaryClient } from '@/components/events/post-event-summary-client'
+import { getReferralShareDataForClientEvent } from '@/lib/referrals/actions'
+import { getOrCreateRebookDataForClientEvent } from '@/lib/rebook/actions'
 import { notFound, redirect } from 'next/navigation'
 
 export default async function EventSummaryPage({ params }: { params: { id: string } }) {
@@ -15,6 +17,11 @@ export default async function EventSummaryPage({ params }: { params: { id: strin
   if (event.status !== 'completed') {
     redirect(`/my-events/${params.id}`)
   }
+
+  const [rebookQr, referralQr] = await Promise.all([
+    getOrCreateRebookDataForClientEvent(params.id).catch(() => null),
+    getReferralShareDataForClientEvent(params.id).catch(() => null),
+  ])
 
   return (
     <div className="py-2">
@@ -33,6 +40,8 @@ export default async function EventSummaryPage({ params }: { params: { id: strin
         transitions={event.transitions}
         financial={event.financial}
         hasPhotos={event.hasPhotos}
+        rebookQr={rebookQr}
+        referralQr={referralQr}
       />
     </div>
   )

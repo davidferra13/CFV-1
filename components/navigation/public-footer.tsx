@@ -12,6 +12,7 @@ const FOOTER_LINKS = {
     { href: '/', label: 'Home' },
     { href: '/compare', label: 'Compare' },
     { href: '/chefs', label: 'Find a Chef' },
+    { href: '/client-relationships', label: 'Client Relationships' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/contact', label: 'Contact' },
   ],

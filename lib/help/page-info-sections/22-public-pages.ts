@@ -19,6 +19,12 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
     features: ['Contact form', 'Support email', 'General inquiries'],
   },
 
+  '/client-relationships': {
+    title: 'Client Relationships',
+    description: 'How ChefFlow turns imported contacts into repeat-client and referral workflows.',
+    features: ['Relationship strategy', 'Repeat-client signals', 'Reactivation use cases'],
+  },
+
   '/pricing': {
     title: 'Pricing',
     description: 'ChefFlow pricing plans — free and professional tiers.',

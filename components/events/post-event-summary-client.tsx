@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format, parseISO } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
 import Link from 'next/link'
 import { ChevronRight, Share2, FileText, Clock, Receipt } from '@/components/ui/icons'
 
@@ -50,6 +51,16 @@ interface PostEventSummaryClientProps {
     outstandingBalanceCents: number
   } | null
   hasPhotos: boolean
+  rebookQr: {
+    url: string
+    chefName: string
+    expiresAt: string
+  } | null
+  referralQr: {
+    referralUrl: string
+    chefName: string
+    referrerName: string
+  } | null
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -97,6 +108,8 @@ export function PostEventSummaryClient({
   transitions,
   financial,
   hasPhotos,
+  rebookQr,
+  referralQr,
 }: PostEventSummaryClientProps) {
   const occasion = event.occasion || 'Private Chef Dinner'
   const shareText = `Just had an incredible private chef dinner — ${occasion}! 🌟`
@@ -302,6 +315,44 @@ export function PostEventSummaryClient({
             >
               View Event Photos
             </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {rebookQr && (
+        <Card className="mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Book Again</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DownloadableQrCard
+              url={rebookQr.url}
+              title="Re-book QR"
+              description={`Scan to send a new inquiry with your previous details already loaded. Expires ${format(new Date(rebookQr.expiresAt), 'MMMM d, yyyy')}.`}
+              downloadBaseName={`rebook-${event.id}`}
+              printTitle={`Book again with ${rebookQr.chefName}`}
+              printSubtitle={occasion}
+              openLabel="Open re-book page"
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {referralQr && (
+        <Card className="mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Share This Chef</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DownloadableQrCard
+              url={referralQr.referralUrl}
+              title="Referral QR"
+              description="Pass this along to friends so they land on the chef inquiry page with your referral attached."
+              downloadBaseName={`referral-${event.id}`}
+              printTitle={`${referralQr.referrerName} referral`}
+              printSubtitle={`Book ${referralQr.chefName}`}
+              openLabel="Open referral page"
+            />
           </CardContent>
         </Card>
       )}

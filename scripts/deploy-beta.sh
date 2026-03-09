@@ -14,6 +14,9 @@ SOURCE_DIR="C:/Users/david/Documents/CFv1"
 BETA_DIR="C:/Users/david/Documents/CFv1-beta"
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 DEPLOY_START=$(date +%s)
+RELEASE_NAME=".next-release-$(date +%Y%m%d%H%M%S)"
+RELEASE_DIR="$BETA_DIR/$RELEASE_NAME"
+BACKUP_DIR="$BETA_DIR/.next-prev"
 
 echo ""
 echo "=========================================="
@@ -57,16 +60,29 @@ npm install --production=false 2>&1 | tail -3
 # Step 6: Build
 echo "[6/7] Building..."
 BUILD_START=$(date +%s)
-NODE_OPTIONS="--max-old-space-size=16384" npx next build --no-lint 2>&1 | tail -15
-BUILD_EXIT=$?
+rm -rf "$RELEASE_DIR"
+set +e
+NEXT_DIST_DIR="$RELEASE_NAME" NODE_OPTIONS="--max-old-space-size=16384" npx next build --no-lint 2>&1 | tail -15
+BUILD_EXIT=${PIPESTATUS[0]}
+set -e
 BUILD_END=$(date +%s)
 BUILD_DURATION=$((BUILD_END - BUILD_START))
 
 if [ $BUILD_EXIT -ne 0 ]; then
+  rm -rf "$RELEASE_DIR"
   echo ""
   echo "=========================================="
   echo "  BUILD FAILED"
   echo "  Beta server unchanged (previous build still running)"
+  echo "=========================================="
+  exit 1
+fi
+
+if [ ! -f "$RELEASE_DIR/BUILD_ID" ]; then
+  echo ""
+  echo "=========================================="
+  echo "  BUILD FAILED"
+  echo "  Release directory missing BUILD_ID: $RELEASE_DIR"
   echo "=========================================="
   exit 1
 fi
@@ -83,6 +99,13 @@ if [ -n "$BETA_PID" ] && [ "$BETA_PID" != "0" ]; then
   taskkill //F //PID "$BETA_PID" 2>/dev/null || true
   sleep 2
 fi
+
+# Swap the completed release into place only after a successful build.
+rm -rf "$BACKUP_DIR"
+if [ -d "$BETA_DIR/.next" ]; then
+  mv "$BETA_DIR/.next" "$BACKUP_DIR"
+fi
+mv "$RELEASE_DIR" "$BETA_DIR/.next"
 
 # Start beta server in background
 cd "$BETA_DIR"
@@ -110,9 +133,11 @@ TOTAL=$((DEPLOY_END - DEPLOY_START))
 
 # Log deploy
 COMMIT=$(git rev-parse --short HEAD)
+mkdir -p "$SOURCE_DIR/docs"
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | branch=$BRANCH | commit=$COMMIT | build_time=$((BUILD_DURATION / 60))m$((BUILD_DURATION % 60))s | total=$((TOTAL / 60))m$((TOTAL % 60))s" >> "$SOURCE_DIR/docs/deploy-history.log"
 
 if [ "$HEALTH_OK" = true ]; then
+  rm -rf "$BACKUP_DIR"
   echo ""
   echo "=========================================="
   echo "  Deploy SUCCESS (HTTP $STATUS)"
@@ -121,6 +146,15 @@ if [ "$HEALTH_OK" = true ]; then
   echo "  Total: $((TOTAL / 60))m $((TOTAL % 60))s"
   echo "=========================================="
 else
+  echo "  Rolling back to previous build..."
+  taskkill //F //PID "$BETA_PID" 2>/dev/null || true
+  rm -rf "$BETA_DIR/.next"
+  if [ -d "$BACKUP_DIR" ]; then
+    mv "$BACKUP_DIR" "$BETA_DIR/.next"
+    cd "$BETA_DIR"
+    NODE_ENV=production nohup npx next start -p 3200 >> beta-server.log 2>&1 &
+    sleep 5
+  fi
   echo ""
   echo "=========================================="
   echo "  Deploy WARNING - Build succeeded but health check failed (HTTP $STATUS)"

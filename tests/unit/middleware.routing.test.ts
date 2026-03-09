@@ -101,6 +101,7 @@ describe('Middleware - public unauthenticated paths', () => {
   it('matches static marketing pages', () => {
     assert.equal(isPublicUnauthenticatedPath('/pricing'), true)
     assert.equal(isPublicUnauthenticatedPath('/compare'), true)
+    assert.equal(isPublicUnauthenticatedPath('/client-relationships'), true)
     assert.equal(isPublicUnauthenticatedPath('/customers'), true)
     assert.equal(isPublicUnauthenticatedPath('/blog'), true)
     assert.equal(isPublicUnauthenticatedPath('/faq'), true)

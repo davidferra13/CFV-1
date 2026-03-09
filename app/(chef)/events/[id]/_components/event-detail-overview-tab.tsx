@@ -12,8 +12,11 @@ import { MenuNutritionalPanel } from '@/components/ai/menu-nutritional-panel'
 import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel'
 import { AllergenRiskPanel } from '@/components/ai/allergen-risk-panel'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
+import { GuestInviteQrPanel } from '@/components/events/guest-invite-qr-panel'
+import { GuestFeedbackQrPanel } from '@/components/events/guest-feedback-qr-panel'
 import { GuestMessagesPanel } from '@/components/events/guest-messages-panel'
 import { GuestExperiencePanel } from '@/components/sharing/guest-experience-panel'
+import { GuestDetailVisibilityToggle } from '@/components/sharing/guest-detail-visibility-toggle'
 import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-panel'
 import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
@@ -22,10 +25,14 @@ import { WeatherPanel } from '@/components/events/weather-panel'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { HostMessageTemplate } from '@/components/sharing/host-message-template'
 import { getEventMapUrl } from '@/lib/maps/mapbox'
-import { getQrCodeUrl } from '@/lib/qr/qr-code'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
+import { getPhotoUploadUrl } from '@/lib/qr/qr-code'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
+import { PrepTimelineChef } from '@/components/events/prep-timeline-chef'
+import { DietaryConfirmationChef } from '@/components/events/dietary-confirmation-chef'
+import { LiveTrackerChef } from '@/components/events/live-tracker-chef'
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -45,6 +52,7 @@ type EventDetailOverviewTabProps = {
   chefDisplayName: string
   guestLeadCount: number
   guestWallMessages: any[]
+  guestFeedbackRequests: any[]
   messages: any[]
   templates: any[]
 }
@@ -68,6 +76,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     chefDisplayName,
     guestLeadCount,
     guestWallMessages,
+    guestFeedbackRequests,
     messages,
     templates,
   } = props
@@ -278,36 +287,63 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
         </Card>
       )}
 
+      {event.status !== 'cancelled' && event.status !== 'draft' && (
+        <Card className="p-6">
+          <h2 className="mb-4 text-xl font-semibold">Preparation Timeline</h2>
+          <PrepTimelineChef eventId={event.id} />
+        </Card>
+      )}
+
+      {event.status !== 'cancelled' && event.status !== 'draft' && event.client_id && (
+        <Card className="p-6">
+          <h2 className="mb-4 text-xl font-semibold">Dietary Confirmation</h2>
+          <DietaryConfirmationChef eventId={event.id} />
+        </Card>
+      )}
+
+      {['confirmed', 'in_progress'].includes(event.status) && (
+        <Card className="p-6">
+          <h2 className="mb-4 text-xl font-semibold">Event Day Live Tracker</h2>
+          <LiveTrackerChef eventId={event.id} />
+        </Card>
+      )}
+
       {/* Share QR Code â€” only when an active event share link exists */}
       {activeShare && shortShareUrl && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-2">Share QR</h2>
           <p className="text-sm text-stone-500 mb-4">
-            Guests scan this code to view event details, RSVP, and more.
+            Guests scan this code to view event details, RSVP, upload photos, and access the shared
+            event experience.
           </p>
-          <div className="flex items-center gap-5">
-            <div className="flex-shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={getQrCodeUrl(shortShareUrl, 150)}
-                alt="Event share QR code"
-                width={150}
-                height={150}
-                className="rounded-lg border border-stone-700 shadow-sm"
-              />
-            </div>
-            <div className="flex-1 space-y-2">
-              <p className="text-xs text-stone-300 break-all">{shortShareUrl}</p>
-              <a
-                href={fullShareUrl!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-xs text-brand-600 hover:underline"
-              >
-                Open share page â†—
-              </a>
-            </div>
-          </div>
+          <DownloadableQrCard
+            url={shortShareUrl}
+            title="Event share QR"
+            description="Use this for invitations, table cards, or follow-up materials."
+            downloadBaseName={`event-share-${event.id}`}
+            printTitle={event.occasion || 'Private Dinner'}
+            printSubtitle="Guest RSVP and event share"
+            openLabel="Open share page"
+          />
+        </Card>
+      )}
+
+      {activeShare && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-2">Photo Upload QR</h2>
+          <p className="text-sm text-stone-500 mb-4">
+            This version opens straight into guest photo uploads for table cards and post-event
+            recap materials.
+          </p>
+          <DownloadableQrCard
+            url={getPhotoUploadUrl(activeShare.token)}
+            title="Guest photo upload QR"
+            description="Guests can scan, upload photos, and view the shared gallery without digging through the full event page."
+            downloadBaseName={`photo-upload-${event.id}`}
+            printTitle={event.occasion || 'Private Dinner'}
+            printSubtitle="Share your event photos"
+            openLabel="Open photo upload page"
+          />
         </Card>
       )}
 
@@ -319,13 +355,16 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
       {/* Social Hub Link */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <EventHubLinkPanel groupToken={hubGroupToken as string | null} />
+        <EventHubLinkPanel eventId={event.id} groupToken={hubGroupToken as string | null} />
       )}
 
       {/* Guests & RSVPs */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Guests & RSVPs</h2>
+          <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <h2 className="text-xl font-semibold">Guests & RSVPs</h2>
+            <GuestDetailVisibilityToggle />
+          </div>
           <ChefGuestPanel
             eventShareId={activeShare?.id || null}
             guests={guestList as any[]}
@@ -354,6 +393,17 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               <PhotoConsentSummary guests={guestList as any[]} />
             </div>
           )}
+        </Card>
+      )}
+
+      {event.status !== 'draft' && event.status !== 'cancelled' && (guestList as any[]).length > 0 && (
+        <Card className="p-6">
+          <GuestInviteQrPanel
+            eventId={event.id}
+            eventTitle={event.occasion || 'Private Dinner'}
+            eventDate={event.event_date}
+            guests={guestList as any[]}
+          />
         </Card>
       )}
 
@@ -400,6 +450,16 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
       {/* Post-Event Guest Outreach (completed events only) */}
       {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
+
+      {/* Guest Feedback QR cards (completed events only) */}
+      {event.status === 'completed' && (
+        <Card className="p-6">
+          <GuestFeedbackQrPanel
+            eventTitle={event.occasion || 'Private Dinner'}
+            feedbackRequests={guestFeedbackRequests as any[]}
+          />
+        </Card>
+      )}
 
       {/* AI Allergen Risk Matrix */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (

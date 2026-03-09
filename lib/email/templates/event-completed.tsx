@@ -2,8 +2,9 @@
 // Sent to client when chef marks event as completed.
 // Two CTAs: view receipt (primary) and leave a review (secondary).
 
-import { Button, Text, Hr } from '@react-email/components'
+import { Button, Hr, Img, Text } from '@react-email/components'
 import * as React from 'react'
+import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { BaseLayout, type ChefBrandProps } from './base-layout'
 
 type EventCompletedProps = {
@@ -13,6 +14,7 @@ type EventCompletedProps = {
   eventDate: string
   receiptUrl: string
   reviewUrl: string
+  rebookUrl?: string | null
   brand?: ChefBrandProps
 }
 
@@ -23,8 +25,11 @@ export function EventCompletedEmail({
   eventDate,
   receiptUrl,
   reviewUrl,
+  rebookUrl,
   brand,
 }: EventCompletedProps) {
+  const rebookQrUrl = rebookUrl ? getQrCodeUrl(rebookUrl, 220) : null
+
   return (
     <BaseLayout brand={brand} preview={`Thank you for dining with ${chefName}`}>
       <Text style={heading}>Thank you for a wonderful evening!</Text>
@@ -50,6 +55,34 @@ export function EventCompletedEmail({
       <Button style={secondaryButton} href={reviewUrl}>
         Leave a Review
       </Button>
+
+      {rebookUrl && (
+        <>
+          <Hr style={divider} />
+
+          <Text style={paragraph}>
+            Ready for round two? Use the link below to book again with your last dinner details
+            already loaded.
+          </Text>
+
+          <Button style={primaryButton} href={rebookUrl}>
+            Book Again
+          </Button>
+
+          {rebookQrUrl && (
+            <>
+              <Text style={muted}>Prefer to scan? Use this QR code.</Text>
+              <Img
+                src={rebookQrUrl}
+                alt="Re-book QR code"
+                width="160"
+                height="160"
+                style={qrImage}
+              />
+            </>
+          )}
+        </>
+      )}
 
       <Text style={muted}>It only takes a minute. Thank you for choosing ChefFlow!</Text>
     </BaseLayout>
@@ -105,4 +138,10 @@ const muted = {
   fontSize: '13px',
   color: '#9ca3af',
   margin: '0',
+}
+
+const qrImage = {
+  display: 'block',
+  margin: '12px auto 24px',
+  borderRadius: '12px',
 }

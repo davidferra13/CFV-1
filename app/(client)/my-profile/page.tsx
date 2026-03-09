@@ -6,10 +6,16 @@ import {
   getMyFunQA,
   getMyMealCollaborationData,
 } from '@/lib/clients/client-profile-actions'
-import { getClientSignalNotificationPref } from '@/lib/calendar/signal-settings-actions'
+import {
+  getMyDeletionStatus,
+  getMyNotificationPreferences,
+  getMyRecentSessionHistory,
+} from '@/lib/clients/self-service-actions'
 import { ClientProfileForm } from './client-profile-form'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
-import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
+import { ClientNotificationPreferences } from '@/components/clients/client-notification-preferences'
+import { ClientAccountControls } from '@/components/clients/client-account-controls'
+import { ClientSessionHistory } from '@/components/clients/client-session-history'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { OpenTableToggleWrapper } from './open-table-toggle-wrapper'
 import type { Metadata } from 'next'
@@ -21,10 +27,19 @@ export const metadata: Metadata = {
 
 export default async function MyProfilePage() {
   await requireClient()
-  const [profile, funQAAnswers, signalNotifEnabled, mealCollab] = await Promise.all([
+  const [
+    profile,
+    funQAAnswers,
+    notificationPreferences,
+    deletionStatus,
+    recentSessions,
+    mealCollab,
+  ] = await Promise.all([
     getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
     getMyFunQA(),
-    getClientSignalNotificationPref(),
+    getMyNotificationPreferences(),
+    getMyDeletionStatus(),
+    getMyRecentSessionHistory(),
     getMyMealCollaborationData(),
   ])
 
@@ -47,14 +62,14 @@ export default async function MyProfilePage() {
 
       <FunQAForm initialAnswers={funQAAnswers} />
 
-      {/* Notification Preferences */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-stone-100">Notification Preferences</h2>
-        <ClientSignalNotificationToggle initialEnabled={signalNotifEnabled} />
-      </div>
+      <ClientNotificationPreferences initialPreferences={notificationPreferences} />
+
+      <ClientSessionHistory sessions={recentSessions} />
 
       {/* Open Tables Discovery Toggle */}
       <OpenTableToggleWrapper />
+
+      <ClientAccountControls deletionStatus={deletionStatus} />
 
       {/* Feedback */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">

@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "runner": "client-boundary",
+    "timestamp": "2026-03-09T15:53:23.309Z",
+    "totalMs": 3370614,
+    "totalTests": 20,
+    "passed": 17,
+    "failed": 3,
+    "skipped": 0,
+    "passRate": 85
+  },
+  "results": [
+    {
+      "id": "2a",
+      "name": "Plain text body (not JSON)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "2b",
+      "name": "JSON without message field",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "2c",
+      "name": "message = null",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "2d",
+      "name": "message = 42 (number)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "2e",
+      "name": "message = [\"hello\"] (array)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "2f",
+      "name": "message = {} (object)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "1a",
+      "name": "Empty string rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: The operation was aborted due to timeout"
+    },
+    {
+      "id": "1b",
+      "name": "Whitespace-only rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: The operation was aborted due to timeout"
+    },
+    {
+      "id": "1c",
+      "name": "2000-char message accepted",
+      "pass": false,
+      "severity": "medium",
+      "detail": "REJECTED: The operation was aborted due to timeout"
+    },
+    {
+      "id": "1d",
+      "name": "2001-char message rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: The operation was aborted due to timeout"
+    },
+    {
+      "id": "1e",
+      "name": "5000-char message rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected"
+    },
+    {
+      "id": "3a",
+      "name": "21 messages handled (truncated internally)",
+      "pass": false,
+      "severity": "low",
+      "detail": "FAILED: The operation was aborted due to timeout"
+    },
+    {
+      "id": "3b",
+      "name": "Invalid roles normalized (no injection)",
+      "pass": true,
+      "severity": "critical",
+      "detail": "Rejected safely: The operation was aborted due to timeout"
+    },
+    {
+      "id": "3c",
+      "name": "Malformed history entries skipped gracefully",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Error: The operation was aborted due to timeout"
+    },
+    {
+      "id": "3d",
+      "name": "String history defaults to empty array",
+      "pass": false,
+      "severity": "low",
+      "detail": "HTTP 0 | Tokens: false | Error-only: false"
+    },
+    {
+      "id": "4a",
+      "name": "Direct recipe creation request",
+      "pass": true,
+      "severity": "info",
+      "detail": "Redirected/refused appropriately"
+    },
+    {
+      "id": "4b",
+      "name": "How-to-cook with steps",
+      "pass": true,
+      "severity": "info",
+      "detail": "Redirected/refused appropriately"
+    },
+    {
+      "id": "4c",
+      "name": "What-to-cook with recipe request",
+      "pass": true,
+      "severity": "info",
+      "detail": "Redirected/refused appropriately"
+    },
+    {
+      "id": "4d",
+      "name": "Recipe search (should be allowed)",
+      "pass": true,
+      "severity": "info",
+      "detail": "Allowed: I don’t have access to a recipe book or any information about your personal recipes — that’s something only you can expl"
+    },
+    {
+      "id": "5a",
+      "name": "Ollama down → user-friendly error (no leaks)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "hasFriendlyMsg": true
+      },
+      "detail": "Error: Something went wrong — I'll be back shortly!"
+    }
+  ]
+}

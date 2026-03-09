@@ -3,6 +3,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import type { ActivityEventType } from '@/lib/activity/types'
 
 interface ActivityTrackerProps {
@@ -12,8 +13,21 @@ interface ActivityTrackerProps {
   metadata?: Record<string, unknown>
 }
 
-export function ActivityTracker({ eventType, entityType, entityId, metadata }: ActivityTrackerProps) {
+export function ActivityTracker({
+  eventType,
+  entityType,
+  entityId,
+  metadata,
+}: ActivityTrackerProps) {
+  const pathname = usePathname()
+
   useEffect(() => {
+    const payloadMetadata = {
+      page_path: pathname || undefined,
+      referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
+      ...metadata,
+    }
+
     fetch('/api/activity/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -21,12 +35,12 @@ export function ActivityTracker({ eventType, entityType, entityId, metadata }: A
         event_type: eventType,
         entity_type: entityType,
         entity_id: entityId,
-        metadata,
+        metadata: payloadMetadata,
       }),
     }).catch(() => {
       // Silently ignore tracking failures
     })
-  }, [eventType, entityType, entityId, metadata])
+  }, [entityId, entityType, eventType, metadata, pathname])
 
   return null
 }

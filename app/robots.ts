@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           '/trust/',
           '/pricing',
           '/contact',
+          '/client-relationships',
           '/privacy',
           '/terms',
           '/partner-signup',

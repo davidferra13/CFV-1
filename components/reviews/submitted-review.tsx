@@ -6,10 +6,17 @@
 import { recordGoogleReviewClick } from '@/lib/reviews/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { TipAfterReviewCard } from '@/components/reviews/tip-after-review-card'
 
 interface SubmittedReviewProps {
   review: {
     rating: number
+    food_quality_rating: number | null
+    presentation_rating: number | null
+    communication_rating: number | null
+    punctuality_rating: number | null
+    cleanup_rating: number | null
+    would_book_again: boolean | null
     feedback_text: string | null
     what_they_loved: string | null
     what_could_improve: string | null
@@ -19,6 +26,7 @@ interface SubmittedReviewProps {
   }
   eventId: string
   googleReviewUrl: string | null
+  tipAmountCents?: number
 }
 
 function StarDisplay({ rating }: { rating: number }) {
@@ -39,7 +47,26 @@ function StarDisplay({ rating }: { rating: number }) {
   )
 }
 
-export function SubmittedReview({ review, eventId, googleReviewUrl }: SubmittedReviewProps) {
+function ReviewMetric({ label, value }: { label: string; value: number | null }) {
+  if (!value) return null
+
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900/70 p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">{label}</p>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <StarDisplay rating={value} />
+        <span className="text-sm font-medium text-stone-200">{value}/5</span>
+      </div>
+    </div>
+  )
+}
+
+export function SubmittedReview({
+  review,
+  eventId,
+  googleReviewUrl,
+  tipAmountCents = 0,
+}: SubmittedReviewProps) {
   const handleGoogleReviewClick = () => {
     recordGoogleReviewClick(eventId)
   }
@@ -54,6 +81,22 @@ export function SubmittedReview({ review, eventId, googleReviewUrl }: SubmittedR
       </CardHeader>
       <CardContent className="space-y-3">
         <StarDisplay rating={review.rating} />
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <ReviewMetric label="Food quality" value={review.food_quality_rating} />
+          <ReviewMetric label="Presentation" value={review.presentation_rating} />
+          <ReviewMetric label="Communication" value={review.communication_rating} />
+          <ReviewMetric label="Punctuality" value={review.punctuality_rating} />
+          <ReviewMetric label="Cleanup" value={review.cleanup_rating} />
+        </div>
+
+        {review.would_book_again !== null && (
+          <div className="flex items-center gap-2">
+            <Badge variant={review.would_book_again ? 'success' : 'warning'}>
+              {review.would_book_again ? 'Would Book Again' : 'Would Not Book Again Yet'}
+            </Badge>
+          </div>
+        )}
 
         {review.feedback_text && <p className="text-stone-300 text-sm">{review.feedback_text}</p>}
 
@@ -75,6 +118,13 @@ export function SubmittedReview({ review, eventId, googleReviewUrl }: SubmittedR
 
         {review.display_consent && (
           <p className="text-xs text-stone-400">You consented to public display of this review.</p>
+        )}
+
+        {tipAmountCents > 0 && (
+          <div className="flex items-center gap-2">
+            <Badge variant="success">Tip Added</Badge>
+            <span className="text-sm text-stone-300">${(tipAmountCents / 100).toFixed(2)}</span>
+          </div>
         )}
 
         {/* Show Google Review CTA if they haven't clicked yet */}
@@ -110,6 +160,12 @@ export function SubmittedReview({ review, eventId, googleReviewUrl }: SubmittedR
               </svg>
               Leave a Google Review
             </a>
+          </div>
+        )}
+
+        {review.rating >= 4 && tipAmountCents <= 0 && (
+          <div className="pt-3 border-t border-stone-700">
+            <TipAfterReviewCard eventId={eventId} />
           </div>
         )}
       </CardContent>

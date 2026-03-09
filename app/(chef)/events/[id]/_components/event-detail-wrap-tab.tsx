@@ -8,6 +8,7 @@ import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
 import { GratuityPanel } from '@/components/ai/gratuity-panel'
 import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -29,6 +30,16 @@ type EventDetailWrapTabProps = {
   hasClosureStatus: boolean
   transitions: EventTransition[]
   timelineEntries: any[]
+  rebookQr: {
+    url: string
+    chefName: string
+    expiresAt: string
+  } | null
+  referralQr: {
+    referralUrl: string
+    chefName: string
+    referrerName: string
+  } | null
 }
 
 export function EventDetailWrapTab({
@@ -41,6 +52,8 @@ export function EventDetailWrapTab({
   hasClosureStatus,
   transitions,
   timelineEntries,
+  rebookQr,
+  referralQr,
 }: EventDetailWrapTabProps) {
   return (
     <EventDetailSection tab="wrap" activeTab={activeTab}>
@@ -119,6 +132,36 @@ export function EventDetailWrapTab({
               </Button>
             </form>
           </div>
+        </Card>
+      )}
+
+      {eventStatus === 'completed' && rebookQr && (
+        <Card className="p-6">
+          <h2 className="mb-4 text-xl font-semibold">Re-book QR</h2>
+          <DownloadableQrCard
+            url={rebookQr.url}
+            title="Re-book QR"
+            description={`Use this on thank-you cards or follow-up emails. The link expires ${format(new Date(rebookQr.expiresAt), 'MMMM d, yyyy')}.`}
+            downloadBaseName={`rebook-${eventId}`}
+            printTitle={`Book again with ${rebookQr.chefName}`}
+            printSubtitle="Returning client link"
+            openLabel="Open re-book page"
+          />
+        </Card>
+      )}
+
+      {eventStatus === 'completed' && referralQr && (
+        <Card className="p-6">
+          <h2 className="mb-4 text-xl font-semibold">Referral QR</h2>
+          <DownloadableQrCard
+            url={referralQr.referralUrl}
+            title="Referral QR"
+            description="Share this with the client so their friends land on your booking page with the referral attached."
+            downloadBaseName={`referral-${eventId}`}
+            printTitle={`${referralQr.referrerName} referral`}
+            printSubtitle={`Book ${referralQr.chefName}`}
+            openLabel="Open referral page"
+          />
         </Card>
       )}
 

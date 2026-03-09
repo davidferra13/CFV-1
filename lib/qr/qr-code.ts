@@ -69,6 +69,11 @@ export function getInvoicePageUrl(eventId: string): string {
   return `${getAppBaseUrl()}/my-events/${eventId}/invoice`
 }
 
+/** URL for a client's event portal page */
+export function getClientPortalUrl(eventId: string): string {
+  return `${getAppBaseUrl()}/my-events/${eventId}`
+}
+
 /** URL for a contract signing/viewing page */
 export function getContractPageUrl(eventId: string): string {
   return `${getAppBaseUrl()}/my-events/${eventId}/contract`
@@ -82,6 +87,56 @@ export function getEventPageUrl(eventId: string): string {
 /** URL for a chef's public inquiry/booking form */
 export function getInquiryFormUrl(chefId: string): string {
   return `${getAppBaseUrl()}/embed/inquiry/${chefId}`
+}
+
+/** URL for a public event share page */
+export function getEventShareUrl(token: string): string {
+  return `${getAppBaseUrl()}/share/${token}`
+}
+
+/** URL for a guest's secure RSVP portal */
+export function getGuestPortalUrl(eventId: string, secureToken: string): string {
+  return `${getAppBaseUrl()}/event/${eventId}/guest/${secureToken}`
+}
+
+/** URL for a dinner circle page */
+export function getHubGroupUrl(groupToken: string): string {
+  return `${getAppBaseUrl()}/hub/g/${groupToken}`
+}
+
+/** URL for a guest feedback page */
+export function getGuestFeedbackUrl(token: string): string {
+  return `${getAppBaseUrl()}/guest-feedback/${token}`
+}
+
+/** URL for a public rebook page */
+export function getRebookUrl(token: string): string {
+  return `${getAppBaseUrl()}/rebook/${token}`
+}
+
+/** URL for a dedicated guest photo upload page */
+export function getPhotoUploadUrl(token: string): string {
+  return `${getAppBaseUrl()}/photos/${token}`
+}
+
+/** URL for a chef's public profile */
+export function getChefProfileUrl(slug: string): string {
+  return `${getAppBaseUrl()}/chef/${slug}`
+}
+
+/** URL for a referral landing page */
+export function getReferralUrl(chefSlug: string, referralCode: string): string {
+  return `${getAppBaseUrl()}/refer/${chefSlug}?ref=${encodeURIComponent(referralCode)}`
+}
+
+/** URL for a chef-to-chef connect page */
+export function getChefConnectUrl(chefId: string): string {
+  return `${getAppBaseUrl()}/network/connect/${chefId}`
+}
+
+/** URL for a chef's public gift-card store */
+export function getGiftCardStoreUrl(slug: string): string {
+  return `${getAppBaseUrl()}/chef/${slug}/gift-cards`
 }
 
 // ─── Legacy helpers (keep for backward compat) ────────────────────────────────

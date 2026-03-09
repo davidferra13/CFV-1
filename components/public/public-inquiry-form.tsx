@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useEffect, useState, FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
@@ -13,6 +13,16 @@ interface Props {
   chefSlug: string
   chefName: string
   primaryColor: string
+  initialValues?: Partial<FormData>
+  campaignSource?: 'public_profile' | 'rebook_qr' | 'referral_qr'
+  rebookToken?: string
+  referralCode?: string
+  formTitle?: string
+  formDescription?: string
+  successTitle?: string
+  successDescription?: string
+  prefillNotice?: string | null
+  submitLabel?: string
 }
 
 interface FormData {
@@ -50,6 +60,33 @@ interface FormErrors {
   budget_exact_amount?: string
   allergy_flag?: string
   allergies_food_restrictions?: string
+}
+
+const DEFAULT_FORM_DATA: FormData = {
+  full_name: '',
+  address: '',
+  month: '',
+  day: '',
+  year: '',
+  serve_time: '',
+  email: '',
+  phone: '',
+  guest_count: '',
+  occasion: '',
+  budget_range: '',
+  budget_exact_amount: '',
+  allergy_flag: '',
+  favorite_ingredients_dislikes: '',
+  allergies_food_restrictions: '',
+  additional_notes: '',
+  website_url: '',
+}
+
+function createInitialFormData(initialValues?: Partial<FormData>): FormData {
+  return {
+    ...DEFAULT_FORM_DATA,
+    ...initialValues,
+  }
 }
 
 const MONTH_OPTIONS = [
@@ -108,33 +145,37 @@ function getBudgetMode(
   return 'unset'
 }
 
-export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
-  const [formData, setFormData] = useState<FormData>({
-    full_name: '',
-    address: '',
-    month: '',
-    day: '',
-    year: '',
-    serve_time: '',
-    email: '',
-    phone: '',
-    guest_count: '',
-    occasion: '',
-    budget_range: '',
-    budget_exact_amount: '',
-    allergy_flag: '',
-    favorite_ingredients_dislikes: '',
-    allergies_food_restrictions: '',
-    additional_notes: '',
-    website_url: '',
-  })
+export function PublicInquiryForm({
+  chefSlug,
+  chefName,
+  primaryColor,
+  initialValues,
+  campaignSource = 'public_profile',
+  rebookToken,
+  referralCode,
+  formTitle = 'Send inquiry',
+  formDescription = "Share the basics and we'll follow up.",
+  successTitle = 'Inquiry sent',
+  successDescription,
+  prefillNotice,
+  submitLabel = 'Send inquiry',
+}: Props) {
+  const [formData, setFormData] = useState<FormData>(() => createInitialFormData(initialValues))
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [returningClient, setReturningClient] = useState(false)
-  const [lookupDone, setLookupDone] = useState(false)
+  const [returningClient, setReturningClient] = useState(
+    Boolean(prefillNotice) || campaignSource === 'rebook_qr'
+  )
+  const [lookupDone, setLookupDone] = useState(Boolean(initialValues?.email) || campaignSource === 'rebook_qr')
+
+  useEffect(() => {
+    setFormData(createInitialFormData(initialValues))
+    setReturningClient(Boolean(prefillNotice) || campaignSource === 'rebook_qr')
+    setLookupDone(Boolean(initialValues?.email) || campaignSource === 'rebook_qr')
+  }, [campaignSource, initialValues, prefillNotice])
 
   // Client lookup on email blur - pre-fill returning client preferences
   const handleEmailBlur = async () => {
@@ -148,18 +189,28 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       })
       const data = await res.json()
       if (data.found && data.prefill) {
+        const dietarySummary = [
+          ...(Array.isArray(data.prefill.allergies) ? data.prefill.allergies : []),
+          ...(Array.isArray(data.prefill.dietary_restrictions)
+            ? data.prefill.dietary_restrictions
+            : []),
+        ]
+          .filter(Boolean)
+          .join(', ')
+
         setReturningClient(true)
         setFormData((prev) => ({
           ...prev,
           full_name: prev.full_name || data.prefill.full_name,
+          address: prev.address || data.prefill.address,
           phone: prev.phone || data.prefill.phone,
+          serve_time: prev.serve_time || data.prefill.serve_time,
+          guest_count: prev.guest_count || data.prefill.guest_count,
+          occasion: prev.occasion || data.prefill.occasion,
           allergies_food_restrictions:
-            prev.allergies_food_restrictions ||
-            data.prefill.allergies ||
-            data.prefill.dietary_restrictions,
+            prev.allergies_food_restrictions || dietarySummary,
           allergy_flag:
-            prev.allergy_flag ||
-            (data.prefill.allergies || data.prefill.dietary_restrictions ? 'yes' : ''),
+            prev.allergy_flag || (dietarySummary ? 'yes' : ''),
         }))
       }
       setLookupDone(true)
@@ -283,6 +334,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
 
       await submitPublicInquiry({
         chef_slug: chefSlug,
+        campaign_source: campaignSource,
+        rebook_token: rebookToken,
+        referral_code: referralCode,
         full_name: formData.full_name.trim(),
         address: formData.address.trim(),
         event_date: eventDate,
@@ -310,7 +364,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       })
 
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
-        source: 'public_profile',
+        source: campaignSource,
         budget_mode: budgetMode,
         budget_range: formData.budget_range || null,
         budget_exact_entered: budgetCents != null,
@@ -318,25 +372,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       })
 
       setShowSuccess(true)
-      setFormData({
-        full_name: '',
-        address: '',
-        month: '',
-        day: '',
-        year: '',
-        serve_time: '',
-        email: '',
-        phone: '',
-        guest_count: '',
-        occasion: '',
-        budget_range: '',
-        budget_exact_amount: '',
-        allergy_flag: '',
-        favorite_ingredients_dislikes: '',
-        allergies_food_restrictions: '',
-        additional_notes: '',
-        website_url: '',
-      })
+      setFormData(createInitialFormData())
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -374,9 +410,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-stone-100 mb-2">Inquiry sent</h2>
+          <h2 className="text-2xl font-bold text-stone-100 mb-2">{successTitle}</h2>
           <p className="text-stone-400 mb-6">
-            {chefName} will review your details and reply within 24 hours.
+            {successDescription || `${chefName} will review your details and reply within 24 hours.`}
           </p>
           <button
             type="button"
@@ -412,11 +448,15 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             />
           </div>
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-stone-100">Send inquiry</h2>
-            <p className="text-base text-stone-500 mt-2">
-              Share the basics and we&apos;ll follow up.
-            </p>
+            <h2 className="text-3xl font-semibold text-stone-100">{formTitle}</h2>
+            <p className="text-base text-stone-500 mt-2">{formDescription}</p>
           </div>
+
+          {prefillNotice && (
+            <div className="rounded-lg border border-emerald-800 bg-emerald-950/70 px-4 py-3 text-sm text-emerald-400">
+              {prefillNotice}
+            </div>
+          )}
 
           <Input
             label="Full Name"
@@ -495,7 +535,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             required
             placeholder="Email"
           />
-          {returningClient && (
+          {returningClient && !prefillNotice && (
             <p className="text-xs text-emerald-500 -mt-3">
               Welcome back! We pre-filled your details from your last booking.
             </p>
@@ -596,7 +636,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             className="w-full text-white hover:opacity-90"
             style={{ backgroundColor: primaryColor }}
           >
-            {isSubmitting ? 'Sending...' : 'Send inquiry'}
+            {isSubmitting ? 'Sending...' : submitLabel}
           </Button>
 
           <p className="text-xs text-stone-400 text-center">

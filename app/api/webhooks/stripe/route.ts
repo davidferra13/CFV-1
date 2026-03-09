@@ -449,7 +449,16 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   console.log('[handlePaymentSucceeded] Processing payment for event:', event_id)
 
   // Determine entry type based on payment_type metadata
-  const entryType = payment_type === 'deposit' ? ('deposit' as const) : ('payment' as const)
+  const isTipPayment = payment_type === 'tip'
+  const entryType =
+    payment_type === 'deposit'
+      ? ('deposit' as const)
+      : isTipPayment
+        ? ('tip' as const)
+        : ('payment' as const)
+  const entryDescription = isTipPayment
+    ? `Client tip received for event ${event_id}`
+    : `Stripe payment for event ${event_id} (${payment_type})`
 
   // 1. Append to ledger (transaction_reference = stripe event ID for idempotency)
   const result = await appendLedgerEntryFromWebhook({
@@ -458,7 +467,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     entry_type: entryType,
     amount_cents: paymentIntent.amount, // Already in cents
     payment_method: 'card',
-    description: `Stripe payment for event ${event_id} (${payment_type})`,
+    description: entryDescription,
     event_id,
     transaction_reference: event.id,
     internal_notes: `PaymentIntent: ${paymentIntent.id}`,
@@ -521,6 +530,64 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         transferErr
       )
     }
+  }
+
+  if (isTipPayment) {
+    try {
+      const amountFormatted = (paymentIntent.amount / 100).toFixed(2)
+      const [{ createNotification, getChefAuthUserId }, { createClientNotification }] =
+        await Promise.all([
+          import('@/lib/notifications/actions'),
+          import('@/lib/notifications/client-actions'),
+        ])
+
+      const chefUserId = await getChefAuthUserId(tenant_id)
+      if (chefUserId) {
+        await createNotification({
+          tenantId: tenant_id,
+          recipientId: chefUserId,
+          category: 'payment',
+          action: 'payment_received',
+          title: 'Tip received',
+          body: `$${amountFormatted} tip received`,
+          actionUrl: `/events/${event_id}`,
+          eventId: event_id,
+          clientId: client_id,
+          metadata: {
+            amount_cents: paymentIntent.amount,
+            stripe_event_id: event.id,
+            payment_type: 'tip',
+          },
+        })
+      }
+
+      await createClientNotification({
+        tenantId: tenant_id,
+        clientId: client_id,
+        category: 'payment',
+        action: 'event_paid_to_client',
+        title: 'Tip confirmed',
+        body: `Your $${amountFormatted} tip has been confirmed`,
+        actionUrl: `/my-events/${event_id}#review`,
+        eventId: event_id,
+      })
+    } catch (tipNotifErr) {
+      console.error('[handlePaymentSucceeded] Tip notification failed (non-blocking):', tipNotifErr)
+    }
+
+    try {
+      revalidatePath(`/events/${event_id}`)
+      revalidatePath(`/my-events/${event_id}`)
+      revalidatePath('/events')
+      revalidatePath('/my-events')
+    } catch (cacheErr) {
+      console.error(
+        '[handlePaymentSucceeded] Tip cache invalidation failed (non-blocking):',
+        cacheErr
+      )
+    }
+
+    return
   }
 
   // 3. Check financial summary (reuse the admin client created above)

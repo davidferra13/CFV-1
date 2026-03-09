@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
 import { updateChefPortalTheme, uploadChefPortalBackgroundImage } from '@/lib/profile/actions'
 import { updatePartner } from '@/lib/partners/actions'
 
@@ -30,12 +31,14 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 export function PublicProfileSettings({
+  currentSlug,
   currentTagline,
   currentPrimaryColor,
   currentBackgroundColor,
   currentBackgroundImageUrl,
   partners,
 }: {
+  currentSlug: string | null
   currentTagline: string | null
   currentPrimaryColor: string | null
   currentBackgroundColor: string | null
@@ -52,6 +55,11 @@ export function PublicProfileSettings({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const baseUrl =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const profileUrl = currentSlug ? `${baseUrl}/chef/${currentSlug}` : null
 
   useEffect(() => {
     if (!selectedBackgroundFile) {
@@ -186,6 +194,31 @@ export function PublicProfileSettings({
         <Button onClick={handleSaveProfile} disabled={saving}>
           {saving ? 'Saving...' : 'Save Profile'}
         </Button>
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-stone-100">Public Profile QR</h2>
+          <p className="text-sm text-stone-500 mt-1">
+            Add this QR to business cards, market signage, tasting menus, or printed leave-behinds.
+          </p>
+        </div>
+
+        {profileUrl ? (
+          <DownloadableQrCard
+            url={profileUrl}
+            title="Public chef profile"
+            description="Scans open your public profile with portfolio, partner showcase, reviews, and booking links."
+            downloadBaseName={`chef-profile-${currentSlug}`}
+            printTitle="Book this chef"
+            printSubtitle="Public ChefFlow profile"
+            openLabel="Open profile"
+          />
+        ) : (
+          <p className="text-sm text-stone-500">
+            Set up your public profile URL first. The QR will appear once your slug is available.
+          </p>
+        )}
       </Card>
 
       {/* Showcase Partners */}

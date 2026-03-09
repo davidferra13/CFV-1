@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "timestamp": "2026-03-09T16:07:40.877Z",
+    "suite": "client-resilience"
+  },
+  "summary": {
+    "total": 5,
+    "pass": 4,
+    "fail": 1
+  },
+  "tests": [
+    {
+      "name": "Bad Auth",
+      "pass": true,
+      "checks": [
+        {
+          "name": "No cookie at all",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        },
+        {
+          "name": "Garbage cookie",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        },
+        {
+          "name": "Expired session structure",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        },
+        {
+          "name": "Chef cookie (wrong role)",
+          "pass": true,
+          "detail": "HTTP 401, dataLeak=false, internalLeak=false",
+          "httpStatus": 401
+        }
+      ]
+    },
+    {
+      "name": "NAV_SUGGESTIONS Validation",
+      "pass": true,
+      "checks": [
+        {
+          "name": "nav_suggestions_present",
+          "pass": true,
+          "detail": "8/8 responses included NAV_SUGGESTIONS"
+        },
+        {
+          "name": "no_malformed_json",
+          "pass": true,
+          "detail": "All NAV_SUGGESTIONS had valid JSON"
+        },
+        {
+          "name": "all_routes_valid",
+          "pass": true,
+          "detail": "All 9 suggested routes are valid client portal paths"
+        }
+      ]
+    },
+    {
+      "name": "Max History Capacity",
+      "pass": true,
+      "checks": [
+        {
+          "name": "no_crash",
+          "pass": true,
+          "detail": "Request completed"
+        },
+        {
+          "name": "produced_response",
+          "pass": true,
+          "detail": "700 chars"
+        },
+        {
+          "name": "no_internal_leak",
+          "pass": true,
+          "detail": "Clean"
+        },
+        {
+          "name": "no_think_leak",
+          "pass": true,
+          "detail": "Clean"
+        },
+        {
+          "name": "reasonable_timing",
+          "pass": true,
+          "detail": "30704ms"
+        },
+        {
+          "name": "simple_q_with_big_history",
+          "pass": true,
+          "detail": "435 chars in 30168ms"
+        }
+      ]
+    },
+    {
+      "name": "Cold Model Load",
+      "pass": true,
+      "checks": [
+        {
+          "name": "cold_start_succeeds",
+          "pass": true,
+          "detail": "Got 579 chars in 21573ms"
+        },
+        {
+          "name": "cold_start_timing",
+          "pass": true,
+          "detail": "Warm: 29672ms, Cold: 21573ms, Slowdown: 0.7x"
+        },
+        {
+          "name": "within_timeout",
+          "pass": true,
+          "detail": "21573ms < 180000ms timeout"
+        },
+        {
+          "name": "no_think_leak",
+          "pass": true,
+          "detail": "Clean"
+        }
+      ]
+    },
+    {
+      "name": "Rate Limit Exhaustion",
+      "pass": false,
+      "checks": [
+        {
+          "name": "rate_limit_triggered",
+          "pass": false,
+          "detail": "Rate limit NEVER triggered — 15 messages went through!",
+          "severity": "critical"
+        },
+        {
+          "name": "no_premature_blocking",
+          "pass": true,
+          "detail": "First 12 messages were not rate-limited"
+        }
+      ]
+    }
+  ]
+}

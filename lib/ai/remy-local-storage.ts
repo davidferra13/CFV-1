@@ -14,6 +14,7 @@
  */
 
 import type { LocalProject, LocalTemplate, ActionLogEntry, SearchResult } from './remy-types'
+import type { ConversationSummary } from './remy-conversation-summary'
 
 const DB_NAME = 'chefflow-remy'
 const DB_VERSION = 2
@@ -23,6 +24,76 @@ const STORES = {
   projects: 'projects',
   templates: 'templates',
   actionLog: 'actionLog',
+}
+
+const SUMMARY_STORAGE_KEY = 'chefflow-remy-summaries'
+const MAX_STORED_SUMMARIES = 12
+
+type StoredConversationSummary = {
+  conversationId: string
+  title: string
+  summary: string
+  topics: string[]
+  generatedAt: string
+  lastActiveAt: string
+}
+
+type SessionTopicSummary = {
+  title: string
+  topics: string[]
+  lastActiveAt: string
+}
+
+type RecentConversationSummary = {
+  summary: string
+  generatedAt: string
+}
+
+function readStoredSummaries(): StoredConversationSummary[] {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return []
+
+  try {
+    const raw = localStorage.getItem(SUMMARY_STORAGE_KEY)
+    if (!raw) return []
+
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter(
+        (entry): entry is StoredConversationSummary =>
+          entry &&
+          typeof entry.conversationId === 'string' &&
+          typeof entry.title === 'string' &&
+          typeof entry.summary === 'string' &&
+          Array.isArray(entry.topics) &&
+          typeof entry.generatedAt === 'string' &&
+          typeof entry.lastActiveAt === 'string'
+      )
+      .sort(
+        (a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime()
+      )
+      .slice(0, MAX_STORED_SUMMARIES)
+  } catch {
+    return []
+  }
+}
+
+function writeStoredSummaries(entries: StoredConversationSummary[]): void {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
+
+  try {
+    localStorage.setItem(
+      SUMMARY_STORAGE_KEY,
+      JSON.stringify(
+        entries
+          .sort((a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime())
+          .slice(0, MAX_STORED_SUMMARIES)
+      )
+    )
+  } catch {
+    // Non-blocking: summaries are supplemental context only.
+  }
 }
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -1032,6 +1103,52 @@ export async function exportProjectJSON(projectId: string): Promise<unknown | nu
 }
 
 // ─── Auto-Suggest Project ──────────────────────────────────────────
+
+export async function saveSummary(
+  conversationId: string,
+  summary: ConversationSummary
+): Promise<void> {
+  const conversation = await getConversation(conversationId)
+  const nextEntry: StoredConversationSummary = {
+    conversationId,
+    title: conversation?.title ?? 'Recent conversation',
+    summary: summary.summary,
+    topics: summary.topics,
+    generatedAt: summary.generatedAt,
+    lastActiveAt: conversation?.updatedAt ?? summary.generatedAt,
+  }
+
+  const existing = readStoredSummaries().filter((entry) => entry.conversationId !== conversationId)
+  existing.unshift(nextEntry)
+  writeStoredSummaries(existing)
+}
+
+export async function getLastSessionSummary(
+  excludeConversationId: string | null
+): Promise<SessionTopicSummary | null> {
+  const match = readStoredSummaries().find(
+    (entry) => entry.conversationId !== excludeConversationId
+  )
+  if (!match) return null
+
+  return {
+    title: match.title,
+    topics: match.topics,
+    lastActiveAt: match.lastActiveAt,
+  }
+}
+
+export function getRecentSummaries(
+  excludeConversationId: string | null
+): RecentConversationSummary[] {
+  return readStoredSummaries()
+    .filter((entry) => entry.conversationId !== excludeConversationId)
+    .slice(0, 3)
+    .map((entry) => ({
+      summary: entry.summary,
+      generatedAt: entry.generatedAt,
+    }))
+}
 
 export const AUTO_PROJECT_RULES = [
   {

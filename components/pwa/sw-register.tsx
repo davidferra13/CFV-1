@@ -11,10 +11,12 @@ export function SwRegister() {
     const host = window.location.hostname
     const isLocalHost =
       host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host.endsWith('.local')
-    const shouldRegister = process.env.NODE_ENV === 'production' && !isLocalHost
+    const isPwaBuild = process.env.NEXT_PUBLIC_ENABLE_PWA === '1'
+    const shouldRegister = process.env.NODE_ENV === 'production' && !isLocalHost && isPwaBuild
 
     if (!shouldRegister) {
-      // Local/dev safety: remove stale SW + caches so auth/network requests hit the live dev server.
+      // When PWA is disabled, aggressively remove stale workers/caches so beta/prod clients
+      // do not serve mismatched HTML/assets from an old precache manifest.
       void navigator.serviceWorker.getRegistrations().then((registrations) => {
         registrations.forEach((registration) => {
           void registration.unregister()

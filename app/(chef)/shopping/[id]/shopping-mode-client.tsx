@@ -14,8 +14,8 @@ import {
   updateItemPrice,
   completeShoppingList,
   convertToExpense,
-  SHOPPING_CATEGORIES,
 } from '@/lib/shopping/actions'
+import { SHOPPING_CATEGORIES } from '@/lib/shopping/constants'
 import type { ShoppingList, ShoppingItem } from '@/lib/shopping/actions'
 import {
   ArrowLeft,

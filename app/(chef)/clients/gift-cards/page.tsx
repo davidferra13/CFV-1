@@ -8,11 +8,14 @@ import {
   getIncentiveStats,
   getIncentiveRedemptions,
 } from '@/lib/loyalty/voucher-actions'
+import { getChefSlug } from '@/lib/profile/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IncentiveRedemptionHistory } from '@/components/incentives/incentive-redemption-history'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
+import { getGiftCardStoreUrl } from '@/lib/qr/qr-code'
 import { IssueButton, RowActions } from './gift-cards-client-shell'
 
 export default async function GiftCardsPage() {
@@ -31,10 +34,11 @@ export default async function GiftCardsPage() {
 
   const clients = (clientsRaw || []) as { id: string; full_name: string | null }[]
 
-  const [incentives, stats, redemptions] = await Promise.all([
+  const [incentives, stats, redemptions, profile] = await Promise.all([
     getVoucherAndGiftCards(),
     getIncentiveStats(),
     getIncentiveRedemptions(),
+    getChefSlug(),
   ])
 
   return (
@@ -49,6 +53,25 @@ export default async function GiftCardsPage() {
         </div>
         <IssueButton clients={clients} />
       </div>
+
+      {profile.slug && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Gift Experience QR</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DownloadableQrCard
+              url={getGiftCardStoreUrl(profile.slug)}
+              title="Gift card storefront"
+              description="Print this anywhere you want buyers to land directly on your public gift-card purchase page."
+              downloadBaseName={`gift-cards-${profile.slug}`}
+              printTitle="Gift a private chef experience"
+              printSubtitle="ChefFlow gift card storefront"
+              openLabel="Open storefront"
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">

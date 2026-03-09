@@ -39,7 +39,12 @@ import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
 import { EventStatusRealtimeSync } from '@/components/events/event-status-realtime-sync'
-import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
+import {
+  getEventShares,
+  getEventGuests,
+  getEventRSVPSummary,
+  getGuestFeedbackForEvent,
+} from '@/lib/sharing/actions'
 import { getEventPhotosForChef } from '@/lib/events/photo-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
 import { getCancellationRefundRecommendation } from '@/lib/cancellation/refund-actions'
@@ -113,6 +118,8 @@ import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
+import { getReferralShareDataForChefEvent } from '@/lib/referrals/actions'
+import { getOrCreateRebookDataForChefEvent } from '@/lib/rebook/actions'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
 import { EventLockInButton } from '@/components/events/event-lock-in-button'
@@ -324,6 +331,9 @@ export default async function EventDetailPage({
     eventTips,
     guestLeadCount,
     guestWallMessages,
+    guestFeedbackRequests,
+    referralQrData,
+    rebookQrData,
     travelInfo,
     contingencyNotes,
     emergencyContacts,
@@ -364,6 +374,9 @@ export default async function EventDetailPage({
     getEventTips(params.id).catch(() => []),
     getEventGuestLeadCount(params.id).catch(() => 0),
     getEventMessagesForChef(params.id).catch(() => []),
+    event.status === 'completed' ? getGuestFeedbackForEvent(params.id).catch(() => []) : Promise.resolve([]),
+    event.status === 'completed' ? getReferralShareDataForChefEvent(params.id).catch(() => null) : Promise.resolve(null),
+    event.status === 'completed' ? getOrCreateRebookDataForChefEvent(params.id).catch(() => null) : Promise.resolve(null),
     (event as any).location_lat && (event as any).location_lng
       ? getChefToVenueTravel((event as any).location_lat, (event as any).location_lng)
       : Promise.resolve(null),
@@ -670,6 +683,7 @@ export default async function EventDetailPage({
         chefDisplayName={chefDisplayName}
         guestLeadCount={guestLeadCount as number}
         guestWallMessages={guestWallMessages as any[]}
+        guestFeedbackRequests={guestFeedbackRequests as any[]}
         messages={messages}
         templates={templates}
       />
@@ -740,6 +754,8 @@ export default async function EventDetailPage({
         hasClosureStatus={!!closureStatus}
         transitions={transitions as any[]}
         timelineEntries={timelineEntries}
+        rebookQr={rebookQrData}
+        referralQr={referralQrData}
       />
     </div>
   )

@@ -110,6 +110,8 @@ function makeSimpleBuild(
   })
 }
 
+const buildSimpleTask = makeSimpleBuild
+
 const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
   // "Draft/write a [type] for [name]"
   {

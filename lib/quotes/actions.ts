@@ -139,6 +139,12 @@ export async function createQuote(input: CreateQuoteInput) {
   const validated = CreateQuoteSchema.parse(input)
   const supabase: any = createServerClient()
 
+  const { data: chefDefaults } = await supabase
+    .from('chefs')
+    .select('default_show_cost_breakdown, default_exclusions_note')
+    .eq('id', user.tenantId!)
+    .single()
+
   // Verify client belongs to tenant
   const { data: client } = await supabase
     .from('clients')
@@ -188,6 +194,8 @@ export async function createQuote(input: CreateQuoteInput) {
           valid_until: validated.valid_until || null,
           pricing_notes: validated.pricing_notes || null,
           internal_notes: validated.internal_notes || null,
+          show_cost_breakdown: chefDefaults?.default_show_cost_breakdown ?? false,
+          exclusions_note: chefDefaults?.default_exclusions_note ?? null,
           created_by: user.id,
           updated_by: user.id,
         })

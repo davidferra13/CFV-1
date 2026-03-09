@@ -143,6 +143,14 @@ export default function MarketplaceChefsPage() {
                   {PRIMARY_SIGNUP_LABEL}
                 </TrackedLink>
                 <TrackedLink
+                  href="/client-relationships"
+                  analyticsName="marketplace_chefs_client_relationships"
+                  analyticsProps={{ section: 'hero' }}
+                  className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+                >
+                  See contact strategy
+                </TrackedLink>
+                <TrackedLink
                   href="/contact"
                   analyticsName="marketplace_chefs_contact"
                   analyticsProps={{ section: 'hero' }}

@@ -298,6 +298,7 @@ export async function sendEventCompletedEmail(params: {
   eventId: string
   occasion: string
   eventDate: string
+  rebookUrl?: string | null
   chefId?: string
 }) {
   const { brand, fromName } = await getEmailBrand(params.chefId)
@@ -312,6 +313,7 @@ export async function sendEventCompletedEmail(params: {
       eventDate: formatDate(params.eventDate),
       receiptUrl: `${APP_URL}/my-events/${params.eventId}`,
       reviewUrl: `${APP_URL}/my-events/${params.eventId}#review`,
+      rebookUrl: params.rebookUrl ?? null,
       brand,
     }),
   })

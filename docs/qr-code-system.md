@@ -23,9 +23,17 @@ QR codes bridge printed materials (invoices, contracts, prep lists, business car
 | `generateQrDataUrl(url, size)`     | jsPDF PDFs (returns base64 data URL) |
 | `getQrCodeUrl(data, size, format)` | Browser `<img>` tags                 |
 | `getInvoicePageUrl(eventId)`       | Invoice QR destination               |
+| `getClientPortalUrl(eventId)`      | Client portal QR destination         |
 | `getContractPageUrl(eventId)`      | Contract QR destination              |
 | `getEventPageUrl(eventId)`         | Event detail QR destination          |
 | `getInquiryFormUrl(chefId)`        | Inquiry form QR destination          |
+| `getEventShareUrl(token)`          | Public event share QR destination    |
+| `getGuestPortalUrl(eventId, token)`| Private guest RSVP QR destination    |
+| `getHubGroupUrl(groupToken)`       | Dinner circle QR destination         |
+| `getGuestFeedbackUrl(token)`       | Guest feedback QR destination        |
+| `getChefProfileUrl(slug)`          | Public chef profile QR destination   |
+| `getChefConnectUrl(chefId)`        | Chef network connect QR destination  |
+| `getGiftCardStoreUrl(slug)`        | Gift card store QR destination       |
 
 ### PDFLayout Integration
 
@@ -47,7 +55,16 @@ Parameters: data URL, size in mm, optional label, alignment (left/right/center).
 | Contract PDF (jsPDF)      | `/my-events/[eventId]/contract` | `generateQrDataUrl` embedded via `pdf.qrCode()`   |
 | Staff Briefing Panel      | `/events/[eventId]`             | `getQrCodeUrl` via `<img>` tag                    |
 | Settings > Website Widget | `/embed/inquiry/[chefId]`       | `getQrCodeUrl` via `<img>` tag + download links   |
-| FOH Menu PDF (jsPDF)      | `/events/[eventId]`             | `generateQrDataUrl` embedded via `doc.addImage()` |
+| Settings > Website Widget | `/chef/[slug]`                  | `DownloadableQrCard` public profile QR             |
+| Settings > Public Profile | `/chef/[slug]`                  | `DownloadableQrCard` public profile QR             |
+| Event detail > Client Portal | `/my-events/[eventId]`       | `DownloadableQrCard` client portal QR              |
+| Event detail > Share QR   | `/share/[token]`                | `DownloadableQrCard` public guest share QR         |
+| Event detail > Guest Invite QR | `/event/[eventId]/guest/[token]` | `QrLinkSelector` guest-specific RSVP QR      |
+| Event detail > Guest Feedback QR | `/guest-feedback/[token]` | `QrLinkSelector` guest testimonial QR              |
+| Event detail > Dinner Circle | `/hub/g/[groupToken]`         | `DownloadableQrCard` circle join QR                |
+| Chef Community > Connections | `/network/connect/[chefId]`  | `DownloadableQrCard` chef connect QR               |
+| Clients > Gift Cards      | `/chef/[slug]/gift-cards`       | `DownloadableQrCard` gift storefront QR            |
+| FOH Menu PDF (jsPDF)      | `/events/[eventId]`             | `generateQrDataUrl` embedded via `doc.addImage()` | 
 
 ### Non-Blocking Design
 

@@ -187,6 +187,24 @@ export default function Home() {
               </article>
             ))}
           </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <TrackedLink
+              href="/client-relationships"
+              analyticsName="home_marketplace_client_relationships"
+              analyticsProps={{ section: 'marketplace_strategy' }}
+              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              See the client relationship system
+            </TrackedLink>
+            <TrackedLink
+              href="/marketplace-chefs"
+              analyticsName="home_marketplace_private_sales"
+              analyticsProps={{ section: 'marketplace_strategy' }}
+              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-5 py-2.5 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              View marketplace playbook
+            </TrackedLink>
+          </div>
         </div>
       </section>
 

@@ -56,20 +56,6 @@ const CreateShoppingListSchema = z.object({
   items: z.array(ShoppingItemSchema).default([]),
 })
 
-// --- Default category ordering (matches typical grocery store layout) ---
-
-export const SHOPPING_CATEGORIES = [
-  'Produce',
-  'Protein',
-  'Dairy',
-  'Bakery',
-  'Pantry',
-  'Frozen',
-  'Beverages',
-  'Spices/Seasonings',
-  'Other',
-] as const
-
 // Map from ingredient DB categories to shopping categories
 const INGREDIENT_CATEGORY_MAP: Record<string, string> = {
   produce: 'Produce',

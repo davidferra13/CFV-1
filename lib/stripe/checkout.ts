@@ -161,3 +161,117 @@ export async function createPaymentCheckoutUrl(
 
   return session.url
 }
+
+/**
+ * Create a Stripe Checkout Session for a post-event tip.
+ * Returns the hosted checkout URL for the client portal.
+ */
+export async function createTipCheckoutUrl(
+  eventId: string,
+  tenantId: string,
+  clientId: string,
+  amountCents: number
+): Promise<string | null> {
+  if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    return null
+  }
+
+  const supabase = createServerClient({ admin: true })
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, client_id, status, occasion, client:clients(email, full_name)')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .single()
+
+  if (!event) return null
+  if (!['in_progress', 'completed'].includes(String(event.status ?? ''))) return null
+
+  const stripe = getStripe()
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+  const { getChefStripeConfig, computeApplicationFee } =
+    await import('@/lib/stripe/transfer-routing')
+  const chefConfig = await getChefStripeConfig(tenantId)
+  const requireConnect = isConnectOnboardingRequiredForPayments()
+
+  if (requireConnect && !chefConfig.canReceiveTransfers) {
+    console.warn(
+      '[createTipCheckoutUrl] Connect onboarding incomplete for tenant in required mode:',
+      tenantId
+    )
+    return null
+  }
+
+  const transferRouted = chefConfig.canReceiveTransfers && !!chefConfig.stripeAccountId
+
+  const paymentIntentData: Record<string, unknown> = {
+    metadata: {
+      event_id: eventId,
+      tenant_id: event.tenant_id,
+      client_id: event.client_id,
+      payment_type: 'tip',
+      transfer_routed: transferRouted ? 'true' : 'false',
+    },
+  }
+
+  if (transferRouted && chefConfig.stripeAccountId) {
+    paymentIntentData.transfer_data = {
+      destination: chefConfig.stripeAccountId,
+    }
+
+    const applicationFee = computeApplicationFee(
+      amountCents,
+      chefConfig.platformFeePercent,
+      chefConfig.platformFeeFixedCents
+    )
+    if (applicationFee > 0) {
+      paymentIntentData.application_fee_amount = applicationFee
+    }
+  }
+
+  const { data: chefPrefs } = await supabase
+    .from('chefs')
+    .select('apple_pay_enabled, google_pay_enabled')
+    .eq('id', tenantId)
+    .single()
+
+  const applePayOn = chefPrefs?.apple_pay_enabled !== false
+  const googlePayOn = chefPrefs?.google_pay_enabled !== false
+
+  const checkoutParams: Record<string, unknown> = {
+    mode: 'payment',
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          unit_amount: amountCents,
+          product_data: {
+            name: `${event.occasion || 'Private Chef Event'} - Tip`,
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    payment_intent_data: paymentIntentData as any,
+    success_url: `${appUrl}/my-events/${eventId}?tip=success#review`,
+    cancel_url: `${appUrl}/my-events/${eventId}?tip=cancelled#review`,
+    customer_email: (event.client as { email: string | null })?.email || undefined,
+    expires_at: Math.floor(Date.now() / 1000) + 72 * 3600,
+  }
+
+  if (!applePayOn || !googlePayOn) {
+    const types: string[] = ['card']
+    if (applePayOn) types.push('apple_pay')
+    if (googlePayOn) types.push('google_pay')
+    checkoutParams.payment_method_types = types
+  }
+
+  const session = await breakers.stripe.execute(() =>
+    stripe.checkout.sessions.create(checkoutParams as any)
+  )
+
+  return session.url
+}

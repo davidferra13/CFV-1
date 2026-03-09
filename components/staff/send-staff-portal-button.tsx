@@ -23,7 +23,7 @@ export function SendStaffPortalButton({ eventId, staffMemberId, staffName, exist
   const [isPending, startTransition] = useTransition()
 
   const portalUrl = token
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/staff/${token}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/staff-portal/${token}`
     : null
 
   function handleGenerate() {

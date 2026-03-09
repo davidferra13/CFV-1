@@ -65,6 +65,10 @@ test.describe('Public — Landing & Marketing Pages', () => {
     await assertPageLoads(page, '/contact')
   })
 
+  test('/client-relationships — feature page loads', async ({ page }) => {
+    await assertPageLoads(page, '/client-relationships')
+  })
+
   test('/privacy — privacy policy loads', async ({ page }) => {
     await assertPageLoads(page, '/privacy')
   })

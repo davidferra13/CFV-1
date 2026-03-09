@@ -40,6 +40,8 @@ import { FriendsList } from './friends-list'
 import { ContactShares } from './contact-shares'
 import { TrustedCircle } from './trusted-circle'
 import { CollabInboxPanel } from './collab-inbox'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
+import { getChefConnectUrl } from '@/lib/qr/qr-code'
 import {
   Rss,
   Hash,
@@ -203,7 +205,7 @@ export default async function NetworkPage({
           {tab === 'feed' && <FeedTab myName={myName} myAvatar={myAvatar} chefId={user.entityId} />}
           {tab === 'channels' && <ChannelsTab />}
           {tab === 'discover' && <DiscoverTab />}
-          {tab === 'connections' && <ConnectionsTab chefId={user.entityId} />}
+          {tab === 'connections' && <ConnectionsTab chefId={user.entityId} chefName={myName} />}
           {tab === 'collab' && <CollabTab focusHandoffId={focusHandoffId} />}
         </div>
       </div>
@@ -339,7 +341,7 @@ async function DiscoverTab() {
 }
 
 // ── Connections Tab ──────────────────────────────────────────
-async function ConnectionsTab({ chefId }: { chefId: string }) {
+async function ConnectionsTab({ chefId, chefName }: { chefId: string; chefName: string }) {
   const [friends, pending, contactShares, trustedCircle] = await Promise.all([
     getMyConnections(),
     getPendingRequests(),
@@ -349,6 +351,23 @@ async function ConnectionsTab({ chefId }: { chefId: string }) {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">My Connect QR</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DownloadableQrCard
+            url={getChefConnectUrl(chefId)}
+            title={`${chefName} connect card`}
+            description="Share this at pop-ups, tastings, and industry events so other chefs can connect with you in ChefFlow."
+            downloadBaseName={`chef-connect-${chefId}`}
+            printTitle={`Connect with ${chefName}`}
+            printSubtitle="ChefFlow chef network"
+            openLabel="Open connect page"
+          />
+        </CardContent>
+      </Card>
+
       {/* Search */}
       <Card>
         <CardHeader>

@@ -9,19 +9,22 @@ import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { getQuoteLineItems } from '@/lib/quotes/cost-breakdown-actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
+import { CostBreakdownEditor } from '@/components/quotes/cost-breakdown-editor'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [quote, versionHistory, timelineEntries] = await Promise.all([
+  const [quote, versionHistory, timelineEntries, quoteBreakdown] = await Promise.all([
     getQuoteById(params.id),
     getQuoteVersionHistory(params.id),
     getEntityActivityTimeline('quote', params.id),
+    getQuoteLineItems(params.id).catch(() => ({ lineItems: [] })),
   ])
 
   if (!quote) {
@@ -211,6 +214,17 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
           <p className="text-xs text-stone-300 mt-2">Visible to client when quote is sent</p>
         </Card>
       )}
+
+      <Card className="p-6">
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">Client Cost Breakdown</h2>
+        <CostBreakdownEditor
+          quoteId={quote.id}
+          totalQuotedCents={quote.total_quoted_cents}
+          initialShowCostBreakdown={quote.show_cost_breakdown ?? false}
+          initialExclusionsNote={quote.exclusions_note ?? null}
+          initialLineItems={quoteBreakdown.lineItems}
+        />
+      </Card>
 
       {quote.internal_notes && (
         <Card className="p-6">

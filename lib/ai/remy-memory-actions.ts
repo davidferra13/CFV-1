@@ -479,6 +479,48 @@ export async function addRemyMemoryManual(input: {
   })
 }
 
+export async function detectDraftFeedback(
+  userMessage: string,
+  previousTasks: Array<{ taskType?: string | null }>
+): Promise<{ learned: boolean; content?: string }> {
+  const lower = userMessage.trim().toLowerCase()
+  if (!lower) return { learned: false }
+
+  const cameFromDraft =
+    previousTasks?.some((task) => {
+      const taskType = String(task?.taskType ?? '')
+      return taskType.startsWith('draft.') || taskType.startsWith('email.')
+    }) ?? false
+
+  if (!cameFromDraft) return { learned: false }
+
+  let content: string | null = null
+
+  if (/\b(shorter|more concise|less wordy|too long)\b/i.test(lower)) {
+    content = 'Keep client-facing drafts shorter and more concise when the chef gives style feedback.'
+  } else if (/\b(more formal|more professional)\b/i.test(lower)) {
+    content = 'Use a more formal, professional tone in client-facing drafts when requested.'
+  } else if (/\b(more casual|less formal|warmer|friendlier)\b/i.test(lower)) {
+    content = 'Use a warmer, more casual tone in client-facing drafts when requested.'
+  } else if (/\b(more direct|be direct|less fluffy)\b/i.test(lower)) {
+    content = 'Keep client-facing drafts direct and avoid unnecessary filler when requested.'
+  }
+
+  if (!content) return { learned: false }
+
+  try {
+    await addRemyMemoryManual({
+      content,
+      category: 'communication_style',
+      importance: 6,
+    })
+    return { learned: true, content }
+  } catch (err) {
+    console.warn('[remy-memory] Draft feedback learning failed:', err)
+    return { learned: false }
+  }
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 async function parseWithMemoryRetries<T>(

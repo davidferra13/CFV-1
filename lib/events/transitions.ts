@@ -550,6 +550,25 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
+        let rebookUrl: string | null = null
+        try {
+          const { getOrCreateRebookDataForCompletedEvent } = await import('@/lib/rebook/actions')
+          const rebookData = await getOrCreateRebookDataForCompletedEvent(eventId)
+          rebookUrl = rebookData?.url ?? null
+        } catch (rebookErr) {
+          log.events.warn('Rebook link generation failed (non-blocking)', { error: rebookErr })
+        }
+
+        try {
+          const { awardReferralRewardForCompletedEventSystem } =
+            await import('@/lib/referrals/actions')
+          await awardReferralRewardForCompletedEventSystem(event.tenant_id, eventId)
+        } catch (referralRewardErr) {
+          log.events.warn('Referral reward award failed (non-blocking)', {
+            error: referralRewardErr,
+          })
+        }
+
         // Circle-first: post completion to circle
         try {
           const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
@@ -575,9 +594,19 @@ export async function transitionEvent({
                     {
                       clientName: client.full_name,
                       chefName,
-                      eventId,
                       occasion,
-                      eventDate: event.event_date,
+                      eventDate: new Date(`${event.event_date}T00:00:00`).toLocaleDateString(
+                        'en-US',
+                        {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        }
+                      ),
+                      receiptUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-events/${eventId}`,
+                      reviewUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-events/${eventId}#review`,
+                      rebookUrl,
                     }
                   ),
                 }
@@ -592,6 +621,7 @@ export async function transitionEvent({
             eventId,
             occasion,
             eventDate: event.event_date,
+            rebookUrl,
           })
         }
       }

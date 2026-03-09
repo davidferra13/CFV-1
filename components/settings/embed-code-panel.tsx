@@ -13,9 +13,11 @@ import {
   QrCode,
   Download,
 } from '@/components/ui/icons'
+import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
 
 interface Props {
   chefId: string
+  publicProfileSlug?: string | null
 }
 
 type EmbedMode = 'inline' | 'popup'
@@ -43,7 +45,7 @@ function getWidgetOrigin() {
   return 'https://app.cheflowhq.com'
 }
 
-export function EmbedCodePanel({ chefId }: Props) {
+export function EmbedCodePanel({ chefId, publicProfileSlug }: Props) {
   const [mode, setMode] = useState<EmbedMode>('inline')
   const [theme, setTheme] = useState<ThemeMode>('light')
   const [accent, setAccent] = useState('#e88f47')
@@ -60,6 +62,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       : `<script\n  src="${origin}/embed/chefflow-widget.js"\n  data-chef-id="${chefId}"\n  data-accent="${accent}"\n  data-theme="${theme}"\n  data-mode="popup"\n  data-button-text="${buttonText}"\n></script>`
 
   const iframeDirectCode = `<iframe\n  src="${origin}/embed/inquiry/${chefId}?accent=${encodeURIComponent(accent)}&theme=${theme}"\n  style="width:100%;min-height:900px;border:none;border-radius:16px;"\n  title="Book a Private Chef"\n  loading="lazy"\n></iframe>`
+  const publicProfileUrl = publicProfileSlug ? `${origin}/chef/${publicProfileSlug}` : null
 
   const handleCopy = async (text: string) => {
     try {
@@ -349,6 +352,28 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Preview ── */}
+      {publicProfileUrl && (
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            <QrCode className="h-5 w-5 text-stone-300" />
+            Your Public Profile QR
+          </h2>
+          <p className="text-sm text-stone-500">
+            Use this when you want people to browse your public profile before they hit the booking
+            form.
+          </p>
+          <DownloadableQrCard
+            url={publicProfileUrl}
+            title="Public chef profile"
+            description="Great for business cards, pop-ups, partner venues, and networking events."
+            downloadBaseName={`chef-profile-${publicProfileSlug}`}
+            printTitle="Book this chef"
+            printSubtitle="Public ChefFlow profile"
+            openLabel="Open profile"
+          />
+        </div>
+      )}
+
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
           <Globe className="h-5 w-5 text-stone-300" />

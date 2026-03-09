@@ -13,13 +13,20 @@ import {
   ScheduleRequestSchema,
   summarizeScheduleRequest,
 } from '@/lib/booking/schedule-schema'
+import { resolveChefByPublicSlug } from '@/lib/chefs/public-slug-resolver'
+import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { FOUNDER_EMAIL, resolveOwnerChefId } from '@/lib/platform/owner-account'
+import { createClientReferralRecord, getReferralLandingContext } from '@/lib/referrals/actions'
+import { markRebookTokenUsed } from '@/lib/rebook/actions'
 import { z } from 'zod'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
 const PublicInquirySchema = z.object({
   chef_slug: z.string().optional(),
+  campaign_source: z.enum(['public_profile', 'rebook_qr', 'referral_qr']).optional(),
+  rebook_token: z.string().optional(),
+  referral_code: z.string().optional(),
   // Required
   full_name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email required'),
@@ -81,6 +88,15 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     : null
   const serviceMode = validated.service_mode ?? 'one_off'
   const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
+  const normalizedRebookToken = validated.rebook_token?.trim() || null
+  const normalizedReferralCode = validated.referral_code?.trim().toUpperCase() || null
+  let rebookContext:
+    | {
+        tenantId: string
+        eventId: string
+        clientId: string
+      }
+    | null = null
 
   const sourceParts = [
     `Serving Time: ${validated.serve_time.trim()}`,
@@ -125,18 +141,66 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     .filter(Boolean)
     .join(' ')
 
-  // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
+  // 1. Resolve chef / campaign context
   let chef: { id: string; business_name: string | null } | null = null
-  let chefError: { message?: string } | null = null
 
-  if (validated.chef_slug) {
+  if (normalizedRebookToken) {
+    const { data: rebookToken } = await supabase
+      .from('rebook_tokens')
+      .select('tenant_id, event_id, client_id, expires_at, used_at')
+      .eq('token', normalizedRebookToken)
+      .maybeSingle()
+
+    if (!rebookToken) {
+      throw new Error('This rebook link is invalid.')
+    }
+
+    if ((rebookToken as any).used_at) {
+      throw new Error('This rebook link has already been used.')
+    }
+
+    if (new Date((rebookToken as any).expires_at) < new Date()) {
+      throw new Error('This rebook link has expired.')
+    }
+
+    rebookContext = {
+      tenantId: (rebookToken as any).tenant_id,
+      eventId: (rebookToken as any).event_id,
+      clientId: (rebookToken as any).client_id,
+    }
+
     const lookup = await supabase
       .from('chefs')
-      .select('id, business_name')
-      .eq('booking_slug', validated.chef_slug)
-      .single()
-    chef = lookup.data as { id: string; business_name: string | null } | null
-    chefError = lookup.error
+      .select('id, business_name, booking_slug, slug, public_slug')
+      .eq('id', rebookContext.tenantId)
+      .maybeSingle()
+
+    if (!lookup.data) {
+      throw new Error('Chef not found')
+    }
+
+    const requestedSlug = validated.chef_slug?.trim().toLowerCase() || ''
+    const matchedSlug =
+      !requestedSlug ||
+      [lookup.data.booking_slug, lookup.data.slug, lookup.data.public_slug]
+        .map((value) => (typeof value === 'string' ? value.trim().toLowerCase() : ''))
+        .filter(Boolean)
+        .includes(requestedSlug)
+
+    if (!matchedSlug) {
+      throw new Error('This rebook link does not match the selected chef.')
+    }
+
+    chef = {
+      id: (lookup.data as any).id,
+      business_name: (lookup.data as any).business_name ?? null,
+    }
+  } else if (validated.chef_slug) {
+    chef = await resolveChefByPublicSlug<{ id: string; business_name: string | null }>(
+      supabase,
+      validated.chef_slug,
+      'id, business_name'
+    )
   } else {
     const ownerChefId = await resolveOwnerChefId(supabase)
     if (ownerChefId) {
@@ -146,7 +210,6 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         .eq('id', ownerChefId)
         .single()
       chef = lookup.data as { id: string; business_name: string | null } | null
-      chefError = lookup.error
     }
 
     if (!chef) {
@@ -156,24 +219,44 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
         .single()
       chef = founderLookup.data as { id: string; business_name: string | null } | null
-      chefError = founderLookup.error
     }
   }
 
-  if (chefError || !chef) {
+  if (!chef) {
     throw new Error('Chef not found')
   }
 
   const tenantId = chef.id as string
   const chefName = (chef.business_name as string | null) || 'Your Chef'
+  const referralContext = await getReferralLandingContext(tenantId, normalizedReferralCode)
+  const campaignSource =
+    validated.campaign_source ??
+    (rebookContext ? 'rebook_qr' : referralContext.isValid ? 'referral_qr' : 'public_profile')
 
   // 2. Create or find existing client
   const client = await createClientFromLead(tenantId, {
     email: validated.email.toLowerCase().trim(),
     full_name: validated.full_name.trim(),
     phone: validated.phone?.trim() || null,
-    source: 'website',
+    source: referralContext.isValid ? 'referral' : 'website',
   })
+
+  if (
+    referralContext.isValid &&
+    client.created &&
+    referralContext.referrerClientId &&
+    referralContext.referrerClientId !== client.id
+  ) {
+    await supabase
+      .from('clients')
+      .update({
+        referred_by_client_id: referralContext.referrerClientId,
+        referral_source: 'referral',
+        referral_source_detail: referralContext.referrerName,
+      })
+      .eq('tenant_id', tenantId)
+      .eq('id', client.id)
+  }
 
   // Only persist exact budget cents when explicitly provided.
   const budgetCents = validated.budget_cents ?? null
@@ -203,10 +286,12 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_budget_cents: budgetCents,
       confirmed_service_expectations: serviceExpectations,
       confirmed_dietary_restrictions: allergiesList,
+      referral_source: referralContext.isValid ? 'referral' : rebookContext ? 'rebook' : null,
       source_message: sourceMessage || null,
       service_mode: serviceMode,
       schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       unknown_fields: {
+        campaign_source: campaignSource,
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),
         allergy_flag: validated.allergy_flag ?? null,
@@ -224,6 +309,12 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         menu_recommendation_lead_days:
           serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
         schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
+        rebook_token: normalizedRebookToken,
+        source_completed_event_id: rebookContext?.eventId ?? null,
+        source_client_id: rebookContext?.clientId ?? null,
+        referral_code: referralContext.isValid ? referralContext.referralCode : null,
+        referred_by_client_id: referralContext.isValid ? referralContext.referrerClientId : null,
+        referrer_name: referralContext.isValid ? referralContext.referrerName : null,
       },
       status: 'new',
     })
@@ -233,6 +324,31 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   if (inquiryError) {
     console.error('[submitPublicInquiry] Inquiry creation error:', inquiryError)
     throw new Error('Failed to create inquiry')
+  }
+
+  try {
+    await recordInquiryStateTransition({
+      supabase,
+      tenantId,
+      inquiryId: inquiry.id,
+      fromStatus: null,
+      toStatus: 'new',
+      transitionedBy: null,
+      reason: 'public_inquiry_submitted',
+      metadata: {
+        source: 'public_inquiry',
+        service_mode: serviceMode,
+        campaign_source: campaignSource,
+        rebook_token: normalizedRebookToken,
+        source_completed_event_id: rebookContext?.eventId ?? null,
+        referral_code: referralContext.isValid ? referralContext.referralCode : null,
+      },
+    })
+  } catch (transitionErr) {
+    console.error(
+      '[submitPublicInquiry] Initial inquiry transition insert failed (non-blocking):',
+      transitionErr
+    )
   }
 
   // Auto-create Dinner Circle (non-blocking)
@@ -308,11 +424,46 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     event_id: event.id,
     from_status: null,
     to_status: 'draft',
-    metadata: { action: 'auto_created_from_public_inquiry', inquiry_id: inquiry.id },
+    metadata: {
+      action: 'auto_created_from_public_inquiry',
+      inquiry_id: inquiry.id,
+      campaign_source: campaignSource,
+      source_completed_event_id: rebookContext?.eventId ?? null,
+      referral_code: referralContext.isValid ? referralContext.referralCode : null,
+    },
   })
 
   // 6. Link inquiry to the created event
   await supabase.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
+
+  if (
+    referralContext.isValid &&
+    client.created &&
+    referralContext.referrerClientId &&
+    referralContext.referrerClientId !== client.id &&
+    referralContext.referralCode
+  ) {
+    try {
+      await createClientReferralRecord({
+        tenantId,
+        referralCode: referralContext.referralCode,
+        referrerClientId: referralContext.referrerClientId,
+        referredClientId: client.id,
+        inquiryId: inquiry.id,
+        convertedEventId: event.id,
+      })
+    } catch (referralErr) {
+      console.error('[submitPublicInquiry] Referral record failed (non-blocking):', referralErr)
+    }
+  }
+
+  if (normalizedRebookToken) {
+    try {
+      await markRebookTokenUsed(normalizedRebookToken)
+    } catch (rebookErr) {
+      console.error('[submitPublicInquiry] Rebook token consume failed (non-blocking):', rebookErr)
+    }
+  }
 
   // 7. Enqueue Remy reactive AI task — auto-score lead (non-blocking)
   try {
@@ -334,6 +485,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
           serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : null,
         recurring_duration_weeks:
           serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
+        campaign_source: campaignSource,
+        source_completed_event_id: rebookContext?.eventId ?? null,
+        referral_code: referralContext.isValid ? referralContext.referralCode : null,
       },
     })
   } catch (err) {
@@ -353,6 +507,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       serviceMode,
       recurringFrequency:
         serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : undefined,
+      campaignSource,
     })
   } catch (err) {
     console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)

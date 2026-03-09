@@ -8,15 +8,13 @@ import {
   getEventInviteAnalytics,
   getEventJoinRequests,
   getEventRSVPObservabilitySignals,
-  getEventRSVPSummary,
   getEventShareInvites,
   getEventShares,
-  getEventGuests,
   getGuestCommunicationLogs,
 } from '@/lib/sharing/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,7 +24,7 @@ import CancelEventButton from './cancel-event-button'
 import { ClientFeedbackForm } from '@/components/reviews/client-feedback-form'
 import { SubmittedReview } from '@/components/reviews/submitted-review'
 import { ShareEventButton } from '@/components/sharing/share-event-button'
-import { ClientRSVPSummary } from '@/components/sharing/client-rsvp-summary'
+import { GuestDetailList } from '@/components/sharing/guest-detail-list'
 import { RSVPAdvancedPanel } from '@/components/sharing/rsvp-advanced-panel'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { getEventPhotosForClient } from '@/lib/events/photo-actions'
@@ -37,7 +35,14 @@ import { TrackedDownloadLink } from '@/components/activity/tracked-download-link
 import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
+import { ClientRefundStatus } from '@/components/events/client-refund-status'
+import { PrepTimelineClient } from '@/components/events/prep-timeline-client'
+import { LiveTrackerClient } from '@/components/events/live-tracker-client'
+import { DietaryConfirmationClient } from '@/components/events/dietary-confirmation-client'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
+import { getClientPrepTimeline } from '@/lib/events/prep-timeline-actions'
+import { getClientDietaryConfirmation } from '@/lib/events/dietary-confirmation-actions'
+import { getClientLiveStatuses } from '@/lib/events/live-tracker-actions'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -67,7 +72,13 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   return { title: event ? `${event.occasion || 'Event'} — ChefFlow` : 'Event — ChefFlow' }
 }
 
-export default async function EventDetailPage({ params }: { params: { id: string } }) {
+export default async function EventDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { tip?: string; payment?: string }
+}) {
   await requireClient()
 
   const event = await getClientEventById(params.id)
@@ -80,28 +91,47 @@ export default async function EventDetailPage({ params }: { params: { id: string
   const totalPaidCents = financial?.totalPaidCents ?? 0
   const quotedPriceCents = financial?.quotedPriceCents ?? event.quoted_price_cents ?? 0
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
+  const tipAmountCents = (event.ledgerEntries ?? [])
+    .filter((entry: any) => entry.entry_type === 'tip' && !entry.is_refund)
+    .reduce((sum: number, entry: any) => sum + Number(entry.amount_cents ?? 0), 0)
 
   // Fetch sharing and RSVP data
   const [
     shares,
-    guests,
-    rsvpSummary,
     joinRequests,
     shareInvites,
     inviteAnalytics,
     observability,
     communicationLogs,
+    prepTimeline,
+    dietaryConfirmation,
+    liveTracker,
   ] = await Promise.all([
     getEventShares(params.id),
-    getEventGuests(params.id),
-    getEventRSVPSummary(params.id),
     getEventJoinRequests(params.id),
     getEventShareInvites(params.id),
     getEventInviteAnalytics(params.id),
     getEventRSVPObservabilitySignals(params.id),
     getGuestCommunicationLogs(params.id),
+    ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(event.status)
+      ? getClientPrepTimeline(params.id)
+      : Promise.resolve({ steps: [], visibility: {} as Record<string, boolean> }),
+    !['draft', 'cancelled'].includes(event.status)
+      ? getClientDietaryConfirmation(params.id)
+      : Promise.resolve(null),
+    format(new Date(event.event_date), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ||
+    event.status === 'in_progress'
+      ? getClientLiveStatuses(params.id)
+      : Promise.resolve(null),
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
+  const showPrepTimeline = ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(
+    event.status
+  )
+  const isEventToday =
+    format(new Date(event.event_date), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+  const showLiveTrackerCard =
+    !!liveTracker && Object.values(liveTracker.visibility).some((isVisible) => isVisible)
 
   // Fetch review data and photos for completed events
   let existingReview = null
@@ -176,6 +206,18 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </Alert>
       )}
 
+      {searchParams?.tip === 'success' && (
+        <Alert variant="success" className="mb-6" title="Tip confirmed">
+          Your tip has been submitted successfully. Thank you for supporting your chef.
+        </Alert>
+      )}
+
+      {searchParams?.tip === 'cancelled' && (
+        <Alert variant="warning" className="mb-6" title="Tip checkout cancelled">
+          No tip was processed. You can try again anytime from your review section.
+        </Alert>
+      )}
+
       {/* Journey Timeline */}
       {event.status !== 'cancelled' && (
         <Card className="mb-6 overflow-hidden">
@@ -200,6 +242,28 @@ export default async function EventDetailPage({ params }: { params: { id: string
                 hasReview: event.hasReview,
               })}
             />
+          </CardContent>
+        </Card>
+      )}
+
+      {showPrepTimeline && prepTimeline.steps.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Event Preparation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PrepTimelineClient steps={prepTimeline.steps} />
+          </CardContent>
+        </Card>
+      )}
+
+      {showLiveTrackerCard && (isEventToday || event.status === 'in_progress') && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Live Event Updates</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LiveTrackerClient eventId={event.id} initialState={liveTracker} />
           </CardContent>
         </Card>
       )}
@@ -241,6 +305,15 @@ export default async function EventDetailPage({ params }: { params: { id: string
               <div className="sm:col-span-2">
                 <div className="text-sm text-stone-400 mb-1">Special Requests</div>
                 <div className="text-stone-100">{event.special_requests}</div>
+              </div>
+            )}
+
+            {dietaryConfirmation && (
+              <div className="sm:col-span-2">
+                <DietaryConfirmationClient
+                  confirmation={dietaryConfirmation.confirmation}
+                  eventDate={dietaryConfirmation.eventDate}
+                />
               </div>
             )}
           </div>
@@ -528,6 +601,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </div>
       )}
 
+      {(event.status === 'cancelled' ||
+        event.ledgerEntries.some((entry: any) => entry.entry_type === 'refund')) && (
+        <ClientRefundStatus eventId={event.id} />
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         {event.status === 'proposed' && <AcceptProposalButton eventId={event.id} />}
@@ -586,24 +664,10 @@ export default async function EventDetailPage({ params }: { params: { id: string
               observability={observability as any}
               communicationLogs={communicationLogs as any[]}
             />
-            {guests.length > 0 && (
-              <div className="pt-4 border-t border-stone-800">
-                <h4 className="text-sm font-medium text-stone-300 mb-3">Guest Responses</h4>
-                <ClientRSVPSummary
-                  guests={guests}
-                  summary={{
-                    total_guests: rsvpSummary?.total_guests ?? 0,
-                    attending_count: rsvpSummary?.attending_count ?? 0,
-                    declined_count: rsvpSummary?.declined_count ?? 0,
-                    maybe_count: rsvpSummary?.maybe_count ?? 0,
-                    pending_count: rsvpSummary?.pending_count ?? 0,
-                    waitlisted_count: (rsvpSummary as any)?.waitlisted_count ?? 0,
-                    plus_one_count: rsvpSummary?.plus_one_count ?? 0,
-                  }}
-                  originalGuestCount={event.guest_count}
-                />
-              </div>
-            )}
+            <div className="pt-4 border-t border-stone-800">
+              <h4 className="mb-3 text-sm font-medium text-stone-300">Guest Responses</h4>
+              <GuestDetailList eventId={event.id} originalGuestCount={event.guest_count} />
+            </div>
           </CardContent>
         </Card>
       )}
@@ -616,9 +680,14 @@ export default async function EventDetailPage({ params }: { params: { id: string
               review={existingReview}
               eventId={event.id}
               googleReviewUrl={googleReviewUrl}
+              tipAmountCents={tipAmountCents}
             />
           ) : (
-            <ClientFeedbackForm eventId={event.id} googleReviewUrl={googleReviewUrl} />
+            <ClientFeedbackForm
+              eventId={event.id}
+              googleReviewUrl={googleReviewUrl}
+              tipAmountCents={tipAmountCents}
+            />
           )}
         </div>
       )}

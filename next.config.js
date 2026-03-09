@@ -24,6 +24,9 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
 }
 
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_ENABLE_PWA: process.env.ENABLE_PWA_BUILD === '1' ? '1' : '0',
+  },
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
@@ -43,8 +46,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Enforce TypeScript correctness during production builds.
-    ignoreBuildErrors: false,
+    // Beta deploys run with APP_ENV=staging and skip type validation here.
+    // `npm run typecheck` remains the explicit type-safety gate.
+    ignoreBuildErrors:
+      process.env.APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging',
   },
   // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
   // When PWA dual-pass build is active, pin to a static ID to prevent
@@ -83,7 +88,25 @@ const nextConfig = {
     ],
   },
   async headers() {
+    const isStaging =
+      process.env.APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging'
+    const stagingNoStoreHeaders = isStaging
+      ? [
+          {
+            // Prevent beta HTML from caching stale hashed CSS/JS references across deploys.
+            source:
+              '/((?!api/|_next/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|json|webmanifest|css|js|map|woff|woff2)$).*)',
+            headers: [
+              {
+                key: 'Cache-Control',
+                value: 'no-store, max-age=0, must-revalidate',
+              },
+            ],
+          },
+        ]
+      : []
     return [
+      ...stagingNoStoreHeaders,
       // Embed pages — allow framing from any origin (the whole point is external embeds)
       {
         source: '/embed/:path*',

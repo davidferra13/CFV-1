@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from '@playwright/test'
 
-const PUBLIC_ROUTES = ['/', '/pricing', '/sign-in']
+const PUBLIC_ROUTES = ['/', '/pricing', '/client-relationships', '/sign-in']
 
 async function expectNoSeriousAxeViolations(page: Page) {
   const { violations } = await new AxeBuilder({ page })

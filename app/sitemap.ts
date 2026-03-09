@@ -51,6 +51,12 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.6,
   },
   {
+    url: `${BASE_URL}/client-relationships`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  },
+  {
     url: `${BASE_URL}/partner-signup`,
     lastModified: new Date(),
     changeFrequency: 'yearly',
