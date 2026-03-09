@@ -1943,6 +1943,28 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     pattern: /^(?:who'?s?\s+on\s+(?:the\s+)?waitlist|waitlisted\s+clients?)/i,
     build: makeSimpleBuild('waitlist.status'),
   },
+
+  // ─── Broad client creation fallback (catches phrasings the specific pattern above misses) ───
+  // Must be LAST so it doesn't swallow other intents. Matches any message that
+  // contains both a create-verb and "client" within proximity.
+  {
+    pattern:
+      /\b(?:create|make|add|set up|setup|start)\b[\s\S]{0,40}\b(?:a\s+)?(?:new\s+)?client\b/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_client',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: raw },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
 ]
 
 // ─── Smart Relative Date Resolver (Formula > AI) ───────────────────────────

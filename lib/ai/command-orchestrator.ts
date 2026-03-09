@@ -1196,6 +1196,12 @@ const TASK_TIMEOUT_MS: Record<string, number> = {
   'document.search': 12_000,
   'prep.timeline': 25_000,
   'ops.prep_timeline': 25_000,
+  // Brain dump + client creation use complex model with 1536 max tokens.
+  // 20s default is too short; Ollama needs 30-45s for complex parsing.
+  'agent.intake_brain_dump': 45_000,
+  'agent.create_client': 45_000,
+  'agent.intake_transcript': 45_000,
+  'agent.intake_bulk_clients': 45_000,
 }
 
 const REQUIRED_STRING_INPUTS: Record<string, string[]> = {
@@ -2163,20 +2169,21 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
         t.taskType === 'agent.intake_bulk_clients'
     )
     if (requestedClientCreate && !hasClientWriteTask) {
-      const nonDietaryTasks = plan.tasks.filter((t) => t.taskType !== 'dietary.check')
-      const nextId = `t${nonDietaryTasks.length + 1}`
-      nonDietaryTasks.push({
-        id: nextId,
-        taskType: 'agent.intake_brain_dump',
-        tier: 2,
-        confidence: 0.85,
-        inputs: { text: rawInput },
-        dependsOn: [],
-      })
+      // The parser returned wrong tasks (e.g. finance.pnl) for a client creation request.
+      // Strip ALL non-client-write tasks so the wrong task doesn't run alongside the fix.
       plan = {
         ...plan,
-        tasks: nonDietaryTasks,
-        overallConfidence: Math.max(plan.overallConfidence, 0.85),
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'agent.intake_brain_dump',
+            tier: 2,
+            confidence: 0.85,
+            inputs: { text: rawInput },
+            dependsOn: [],
+          },
+        ],
+        overallConfidence: 0.85,
       }
     }
 
