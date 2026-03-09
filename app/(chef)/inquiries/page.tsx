@@ -63,7 +63,7 @@ function getDisplayName(inquiry: {
   if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.client_name as string) || 'Unknown Lead'
+  return (unknown?.client_name as string) || 'Unknown Contact'
 }
 
 function getBudgetMode(inquiry: {
@@ -162,7 +162,9 @@ function InquiryRow({
             {inquiry.client?.id ? (
               <Badge variant="success">Client</Badge>
             ) : (
-              <Badge variant="default">Lead</Badge>
+              <Badge variant="default">
+                Lead · {formatDistanceToNow(new Date(inquiry.created_at), { addSuffix: false })}
+              </Badge>
             )}
             <InquiryStatusBadge status={inquiry.status as any} />
             <InquiryChannelBadge channel={inquiry.channel} />
@@ -338,7 +340,7 @@ async function InquiryList({
           <EmptyState
             illustration={<NoInquiriesIllustration />}
             title="No inquiries yet"
-            description="Log your first inquiry to start tracking leads from initial contact through to a booked event."
+            description="Log your first inquiry to start tracking everyone who reaches out."
             action={{ label: 'Log New Inquiry', href: '/inquiries/new' }}
           />
         ) : (
@@ -428,7 +430,7 @@ async function InquiryList({
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="h-4 w-4 text-emerald-400" />
               <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
-                Active Pipeline ({activeOpen.length})
+                Active ({activeOpen.length})
               </h2>
             </div>
             <div className="space-y-2">
@@ -510,8 +512,10 @@ export default async function InquiriesPage({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">Inquiry Pipeline</h1>
-          <p className="text-stone-400 mt-1">Track every lead from first contact to booked event</p>
+          <h1 className="text-3xl font-bold text-stone-100">Inquiries</h1>
+          <p className="text-stone-400 mt-1">
+            Everyone who has reached out, from first contact to booked event
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/analytics/funnel">
