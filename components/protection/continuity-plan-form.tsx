@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { saveContinuityPlan } from '@/lib/protection/continuity-actions'
 
 type ContinuityPlan = {
   emergency_contacts?: string
@@ -14,26 +15,30 @@ type ContinuityPlan = {
 } | null
 
 export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
-  const [emergencyContacts, setEmergencyContacts] = useState(
-    (plan as any)?.emergency_contacts ?? ''
-  )
-  const [dataAccess, setDataAccess] = useState((plan as any)?.data_access_instructions ?? '')
-  const [clientComm, setClientComm] = useState((plan as any)?.client_communication_plan ?? '')
+  const [emergencyContacts, setEmergencyContacts] = useState(plan?.emergency_contacts ?? '')
+  const [dataAccess, setDataAccess] = useState(plan?.data_access_instructions ?? '')
+  const [clientComm, setClientComm] = useState(plan?.client_communication_plan ?? '')
   const [financialInstructions, setFinancialInstructions] = useState(
-    (plan as any)?.financial_instructions ?? ''
+    plan?.financial_instructions ?? ''
   )
-  const [notes, setNotes] = useState((plan as any)?.notes ?? '')
+  const [notes, setNotes] = useState(plan?.notes ?? '')
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
 
   function handleSave() {
     startTransition(async () => {
       try {
-        // In a full implementation this would call a server action to save.
-        // For now the form renders properly and demonstrates the structure.
+        await saveContinuityPlan({
+          emergency_contacts: emergencyContacts.trim() || null,
+          data_access_instructions: dataAccess.trim() || null,
+          client_communication_plan: clientComm.trim() || null,
+          financial_instructions: financialInstructions.trim() || null,
+          notes: notes.trim() || null,
+        })
         setSaved(true)
+        toast.success('Continuity plan saved')
         setTimeout(() => setSaved(false), 2000)
-      } catch (err) {
+      } catch {
         toast.error('Failed to save continuity plan')
       }
     })
