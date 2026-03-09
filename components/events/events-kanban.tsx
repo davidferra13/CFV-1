@@ -23,7 +23,7 @@ const COLUMNS: KanbanColumn[] = [
   { key: 'draft', label: 'Draft', statuses: ['draft'], headerClass: 'bg-stone-800 text-stone-300' },
   {
     key: 'proposed',
-    label: 'Proposed',
+    label: 'Sent to Client',
     statuses: ['proposed'],
     headerClass: 'bg-violet-900 text-violet-700',
   },

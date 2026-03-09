@@ -6,7 +6,7 @@ import type { StuckEvent } from '@/lib/pipeline/stuck-events'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
-  proposed: 'Proposed',
+  proposed: 'Sent to Client',
   accepted: 'Accepted',
   paid: 'Paid',
   confirmed: 'Confirmed',

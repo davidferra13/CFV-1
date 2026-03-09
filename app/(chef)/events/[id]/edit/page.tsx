@@ -56,9 +56,9 @@ export default async function EditEventPage({ params }: { params: { id: string }
       </div>
 
       {event.status === 'proposed' && (
-        <Alert variant="warning" title="Event Already Proposed">
-          This event has already been proposed to the client. Changing financial terms may require
-          re-proposing the event.
+        <Alert variant="warning" title="Event Already Sent to Client">
+          This event has already been sent to the client. Changing financial terms may require
+          sending it again.
         </Alert>
       )}
 

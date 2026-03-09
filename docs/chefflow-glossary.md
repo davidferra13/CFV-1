@@ -57,16 +57,16 @@ The complete dictionary of every term, concept, and feature in ChefFlow.
 
 Every event moves through these states in order. Transitions are permission-gated (chef-only, client-only, or system-only).
 
-| State           | What It Means                                             |
-| --------------- | --------------------------------------------------------- |
-| **Draft**       | Chef is building the event details                        |
-| **Proposed**    | Quote sent to the client for review                       |
-| **Accepted**    | Client agreed to the quote                                |
-| **Paid**        | Deposit or payment received (triggered by Stripe webhook) |
-| **Confirmed**   | Both sides locked in; prep begins                         |
-| **In Progress** | Chef is actively cooking or serving                       |
-| **Completed**   | Event finished; final settlement, loyalty awarded         |
-| **Cancelled**   | Fell through at any point (terminal state)                |
+| Status (UI Label)  | DB Value      | What It Means                                             |
+| ------------------ | ------------- | --------------------------------------------------------- |
+| **Draft**          | `draft`       | Chef is building the event details                        |
+| **Sent to Client** | `proposed`    | Event sent to the client for review                       |
+| **Accepted**       | `accepted`    | Client agreed to the event                                |
+| **Paid**           | `paid`        | Deposit or payment received (triggered by Stripe webhook) |
+| **Confirmed**      | `confirmed`   | Both sides locked in; prep begins                         |
+| **In Progress**    | `in_progress` | Chef is actively cooking or serving                       |
+| **Completed**      | `completed`   | Event finished; final settlement, loyalty awarded         |
+| **Cancelled**      | `cancelled`   | Fell through at any point (terminal state)                |
 
 ### Readiness Gates
 

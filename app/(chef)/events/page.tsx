@@ -65,7 +65,7 @@ async function EventsList({ status }: { status: EventStatus }) {
           <EmptyState
             illustration={<NoEventsIllustration />}
             title="No events yet"
-            description="Create your first event to start managing proposals, timelines, and financials in one place."
+            description="Create your first event to start managing timelines, menus, and financials in one place."
             action={{ label: 'Create Event', href: '/events/new' }}
           />
         ) : (
@@ -122,7 +122,7 @@ export default async function EventsPage({
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Events</h1>
-          <p className="text-stone-400 mt-1">Manage your events and proposals</p>
+          <p className="text-stone-400 mt-1">All your events, from draft to done</p>
         </div>
         <div className="flex items-center gap-2">
           <Link data-info="new-event" data-tour="create-event" href="/events/new">

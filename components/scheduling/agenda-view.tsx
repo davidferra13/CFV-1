@@ -8,7 +8,7 @@ import type { CalendarEvent } from '@/lib/scheduling/actions'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
-  proposed: 'Proposed',
+  proposed: 'Sent to Client',
   accepted: 'Accepted',
   paid: 'Paid',
   confirmed: 'Confirmed',

@@ -224,9 +224,9 @@ export function EventTransitions({
               }
               loading={loading}
               disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve required items above before proposing' : undefined}
+              title={isHardBlocked ? 'Resolve required items above before sending' : undefined}
             >
-              Propose to Client
+              Send to Client
             </Button>
           )}
 
@@ -252,7 +252,7 @@ export function EventTransitions({
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve required items above before starting' : undefined}
             >
-              Mark In Progress
+              Start Event
             </Button>
           )}
 
@@ -269,7 +269,7 @@ export function EventTransitions({
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve required items above before completing' : undefined}
             >
-              Mark Completed
+              Finish Event
             </Button>
           )}
 
@@ -285,30 +285,33 @@ export function EventTransitions({
         <div className="text-sm text-stone-400 mt-4">
           {event.status === 'draft' && (
             <p>
-              Once proposed, the client will be able to view and accept this event. Make sure all
-              details are correct before proposing.
+              Once sent, the client will be able to view and accept this event. Make sure all
+              details are correct before sending.
             </p>
           )}
           {event.status === 'proposed' && (
             <p>
-              Waiting for client to accept the proposal. The event will automatically move to
-              &ldquo;Paid&rdquo; status once payment is received.
+              Waiting for the client to review and accept. The event will move to &ldquo;Paid&rdquo;
+              once payment is received.
             </p>
           )}
           {event.status === 'accepted' && (
             <p>
-              Client has accepted. Waiting for payment to be processed. The event will automatically
-              move to &ldquo;Paid&rdquo; status once payment succeeds.
+              Client accepted! Waiting for payment to come through. The event will move to
+              &ldquo;Paid&rdquo; once payment succeeds.
             </p>
           )}
           {event.status === 'paid' && (
             <p>Payment received! Confirm the event to move forward with preparations.</p>
           )}
           {event.status === 'confirmed' && (
-            <p>Event is confirmed. Mark as &ldquo;In Progress&rdquo; when the event begins.</p>
+            <p>
+              Event is confirmed and prep is underway. Start the event when you're on-site and ready
+              to go.
+            </p>
           )}
           {event.status === 'in_progress' && (
-            <p>Event is currently in progress. Mark as completed when finished.</p>
+            <p>Event is underway. Finish it when you're done and cleaned up.</p>
           )}
         </div>
       </div>

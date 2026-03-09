@@ -19,7 +19,7 @@ const TIER_STYLES: Record<StatusTier, string> = {
 const STATUS_MAP: Record<string, { label: string; tier: StatusTier }> = {
   // Events
   draft: { label: 'Draft', tier: 'neutral' },
-  proposed: { label: 'Proposed', tier: 'progress' },
+  proposed: { label: 'Sent to Client', tier: 'progress' },
   accepted: { label: 'Accepted', tier: 'pending' },
   paid: { label: 'Paid', tier: 'active' },
   confirmed: { label: 'Confirmed', tier: 'active' },

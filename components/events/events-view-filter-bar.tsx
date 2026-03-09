@@ -14,6 +14,18 @@ type EventStatus =
   | 'completed'
   | 'cancelled'
 
+const STATUS_LABELS: Record<string, string> = {
+  all: 'All',
+  draft: 'Draft',
+  proposed: 'Sent to Client',
+  accepted: 'Accepted',
+  paid: 'Paid',
+  confirmed: 'Confirmed',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+}
+
 type ViewMode = 'list' | 'kanban'
 
 export function EventsViewFilterBar({
@@ -84,11 +96,7 @@ export function EventsViewFilterBar({
                 variant={status === nextStatus ? 'primary' : 'secondary'}
                 onClick={() => setState({ status: nextStatus, view: 'list' })}
               >
-                {nextStatus === 'all'
-                  ? 'All'
-                  : nextStatus === 'in_progress'
-                    ? 'In Progress'
-                    : nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}
+                {STATUS_LABELS[nextStatus] || nextStatus}
               </Button>
             ))}
           </div>

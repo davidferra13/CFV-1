@@ -41,7 +41,7 @@ export default async function UpcomingEventsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Proposed, accepted, paid, confirmed, and in-progress events
+          Events that are active: sent, accepted, paid, confirmed, or in progress
         </p>
       </div>
 
