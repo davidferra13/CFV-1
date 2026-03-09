@@ -94,7 +94,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Stripe Payments',
       status: 'error',
-      detail: 'Not connected — clients cannot pay online',
+      detail: 'Not connected. Clients cannot pay online.',
       actionHref: '/settings',
       actionLabel: 'Connect Stripe →',
     })
@@ -102,7 +102,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Stripe Payments',
       status: 'warning',
-      detail: 'Connected but charges not yet enabled — complete Stripe onboarding',
+      detail: 'Connected but charges not yet enabled. Complete Stripe onboarding.',
       actionHref: '/settings',
       actionLabel: 'Fix in Settings →',
     })
@@ -125,7 +125,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
-      detail: 'Not connected — email scanning and auto drafts unavailable',
+      detail: 'Not connected. Email scanning and auto drafts unavailable.',
       actionHref: '/settings',
       actionLabel: 'Connect Gmail →',
     })
@@ -133,7 +133,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
-      detail: `${gmailStatus.gmail.errorCount} sync error${gmailStatus.gmail.errorCount === 1 ? '' : 's'} — check your Google connection`,
+      detail: `${gmailStatus.gmail.errorCount} sync error${gmailStatus.gmail.errorCount === 1 ? '' : 's'}. Check your Google connection.`,
       actionHref: '/settings',
       actionLabel: 'Review →',
     })

@@ -110,7 +110,7 @@ export default async function CompliancePage() {
               const { daysRemaining } = certExpiryStatus(c.expiry_date)
               return (
                 <li key={c.id} className="text-sm text-amber-800">
-                  {c.name} — {daysRemaining}d remaining (
+                  {c.name}: {daysRemaining}d remaining (
                   {format(new Date(c.expiry_date! + 'T00:00:00'), 'MMM d, yyyy')})
                 </li>
               )

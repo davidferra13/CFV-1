@@ -169,7 +169,7 @@ export default async function SettingsPage() {
         {/* ── 1b. My Services ─────────────────────────────────── */}
         <SettingsCategory
           title="My Services"
-          description="Toggle what you offer, your policies, and how Remy communicates with clients on your behalf."
+          description="Toggle what you offer, your policies, and the language ChefFlow uses across client-facing drafts."
           icon="Settings2"
           primary
         >
@@ -180,8 +180,8 @@ export default async function SettingsPage() {
             <p className="font-medium text-stone-100">Configure My Services</p>
             <p className="text-sm text-stone-500 mt-1">
               Set what you offer (cleanup, tastings, bartending, etc.), your policies (cancellation,
-              travel fees, minimums), and extras. Remy uses these settings to accurately represent
-              your business.
+              travel fees, minimums), and extras. ChefFlow uses these settings to represent your
+              business consistently.
             </p>
           </Link>
         </SettingsCategory>
@@ -189,7 +189,7 @@ export default async function SettingsPage() {
         {/* ── 2. Profile & Branding ────────────────────────────── */}
         <SettingsCategory
           title="Profile & Branding"
-          description="Manage your core business profile, public profile presentation, and portal background."
+          description="Edit your business profile, public presentation, and portal appearance."
           icon="Palette"
           primary
         >
@@ -295,7 +295,7 @@ export default async function SettingsPage() {
         {/* ── 5. Event Configuration ───────────────────────────── */}
         <SettingsCategory
           title="Event Configuration"
-          description="Customize event types, labels, and add extra fields to capture your business-specific data."
+          description="Customize event types, labels, and add fields that matter to your business."
           icon="Settings2"
           primary
         >
@@ -478,14 +478,14 @@ export default async function SettingsPage() {
       {/* GROUP C: CONNECTIONS & AI                               */}
       {/* ═══════════════════════════════════════════════════════ */}
       <SettingsGroupHeader
-        label="Connections & AI"
-        description="External services, reviews, and intelligence"
+        label="Connections & Workflow"
+        description="External services, reviews, and workflow controls"
       />
       <div className="space-y-3">
         {/* ── 9. Connected Accounts & Integrations ─────────────── */}
         <SettingsCategory
           title="Connected Accounts & Integrations"
-          description="Connect inbox and website channels, then manage system integrations."
+          description="Connect inbox and website channels, then set up integrations."
           icon="Plug"
         >
           <div className="space-y-6">
@@ -552,19 +552,19 @@ export default async function SettingsPage() {
 
         {/* ── 10. AI & Privacy ─────────────────────────────────── */}
         <SettingsCategory
-          title="AI & Privacy"
-          description="Control Remy, understand how your data is handled, and manage AI features."
-          icon="Brain"
+          title="Privacy & Data"
+          description="Review data privacy, tune how drafts work, and organize saved context."
+          icon="Shield"
         >
           <div className="space-y-3">
             <Link
               href="/settings/ai-privacy"
               className="block border border-emerald-200 rounded-lg p-4 bg-emerald-950/40 hover:bg-emerald-950 transition-colors"
             >
-              <p className="font-semibold text-emerald-900">AI Trust Center</p>
+              <p className="font-semibold text-emerald-900">Privacy & Data Center</p>
               <p className="text-sm text-emerald-700 mt-1">
-                See exactly how Remy works, where your data goes, and manage all AI controls. Walk
-                through privacy practices and delete data anytime.
+                See how drafting tools work, where your data goes, and manage privacy controls.
+                Review data practices and delete saved items anytime.
               </p>
             </Link>
             <Link
@@ -573,14 +573,14 @@ export default async function SettingsPage() {
             >
               <p className="font-medium text-stone-100">Culinary Profile</p>
               <p className="text-sm text-stone-500 mt-1">
-                Tell Remy about your cooking philosophy, signature dishes, and food identity.
+                Capture your cooking philosophy, signature dishes, and food identity.
               </p>
             </Link>
             <Link
               href="/settings/remy"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
-              <p className="font-medium text-stone-100">Remy Control Center</p>
+              <p className="font-medium text-stone-100">Workflow Control Center</p>
               <p className="text-sm text-stone-500 mt-1">
                 Set per-action approval policy rules and review server-side execution audit logs.
               </p>
@@ -725,7 +725,7 @@ export default async function SettingsPage() {
       {/* ═══════════════════════════════════════════════════════ */}
       <SettingsGroupHeader
         label="System & Account"
-        description="Developer tools, legal, and account management"
+        description="Developer tools, legal documents, and account settings"
       />
       <div className="space-y-3">
         {/* ── 15. Legal & Protection ───────────────────────────── */}
@@ -848,7 +848,7 @@ export default async function SettingsPage() {
         {/* ── 20. Account & Security ───────────────────────────── */}
         <SettingsCategory
           title="Account & Security"
-          description="Password, account-level management, and system status."
+          description="Update your password and check system status."
           icon="Lock"
         >
           <div className="space-y-3">

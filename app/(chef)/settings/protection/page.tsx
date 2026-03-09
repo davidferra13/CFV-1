@@ -65,7 +65,7 @@ export default async function ProtectionHubPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Protection Hub</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Your business protection posture at a glance — insurance, certifications, continuity, and
+          Your business protection posture at a glance: insurance, certifications, continuity, and
           crisis preparedness.
         </p>
       </div>
