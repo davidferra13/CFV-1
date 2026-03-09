@@ -31,13 +31,13 @@ const STAGES = [
   {
     href: '/finance/invoices/overdue',
     label: 'Overdue',
-    description: 'Past event date, unresolved',
+    description: 'Event happened, still unpaid',
     style: 'bg-red-900 text-red-600',
   },
   {
     href: '/finance/invoices/refunded',
     label: 'Refunded',
-    description: 'Events with refund entries',
+    description: 'Refunds issued',
     style: 'bg-purple-900 text-purple-700',
   },
   {
@@ -95,18 +95,18 @@ export default async function InvoicesPage() {
           </Link>
         </div>
         <p className="mt-1 text-stone-500">
-          Event invoices organized by status - invoices are per-event in ChefFlow
+          Every event gets an invoice. Here's where they all stand.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{events.length}</p>
-          <p className="mt-1 text-sm text-stone-500">Total events / invoices</p>
+          <p className="mt-1 text-sm text-stone-500">Total events</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
-          <p className="mt-1 text-sm text-stone-500">Paid invoice value</p>
+          <p className="mt-1 text-sm text-stone-500">Total collected</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-amber-700">{counts.sent + counts.draft}</p>

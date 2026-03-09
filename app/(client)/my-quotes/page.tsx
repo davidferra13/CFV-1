@@ -33,7 +33,7 @@ export default async function ClientQuotesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-100">My Quotes</h1>
-        <p className="text-stone-400 mt-1">Review and respond to pricing quotes from your chef</p>
+        <p className="text-stone-400 mt-1">Review and respond to quotes from your chef</p>
       </div>
 
       {/* Pending Quotes (action needed) */}

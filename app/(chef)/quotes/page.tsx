@@ -41,7 +41,7 @@ export default async function QuotesPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Quotes</h1>
-          <p className="text-stone-400 mt-1">Create and track pricing quotes for your clients</p>
+          <p className="text-stone-400 mt-1">Create and track quotes for your clients</p>
         </div>
         <Link href="/quotes/new">
           <Button className="min-h-[44px]">+ New Quote</Button>

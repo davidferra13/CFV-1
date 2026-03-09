@@ -180,7 +180,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                 )}
                 {(loyaltyDiscountCents > 0 || betaDiscount?.applied) && (
                   <tr className="bg-stone-800 border-b border-stone-700">
-                    <td className="px-4 py-3 text-stone-400 text-sm">Adjusted service subtotal</td>
+                    <td className="px-4 py-3 text-stone-400 text-sm">Subtotal after discounts</td>
                     <td className="px-4 py-3 text-right text-stone-200 text-sm">
                       {formatCents(serviceSubtotalCents)}
                     </td>
@@ -303,7 +303,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
             )}
             {(loyaltyDiscountCents > 0 || betaDiscount?.applied) && (
               <div className="flex justify-between text-sm text-stone-400">
-                <span>Adjusted service subtotal</span>
+                <span>Subtotal after discounts</span>
                 <span>{formatCents(serviceSubtotalCents)}</span>
               </div>
             )}
