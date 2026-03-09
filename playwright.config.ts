@@ -289,6 +289,49 @@ export default defineConfig({
       timeout: 30_000, // Per-test timeout (will be overridden by individual test durations)
       workers: 1, // Sequential to avoid concurrent Ollama stress
     },
+    // ── Product Tests ─────────────────────────────────────────────────────────
+    // Tiered product validation: does each feature deliver its value?
+    // Maps to docs/product-testing-roadmap.md (Tiers 0-6).
+    // Run: npm run test:product (all)
+    //      npm run test:product:chef (chef portal only)
+    //      npm run test:product:client (client portal only)
+    //      npm run test:product:public (public pages only)
+    {
+      name: 'product-chef',
+      testMatch: [
+        '**/product/00-tier0-auth.spec.ts',
+        '**/product/01-tier1-communication.spec.ts',
+        '**/product/02-tier2-lifecycle.spec.ts',
+        '**/product/03-tier3-financials.spec.ts',
+        '**/product/04-tier4-operations.spec.ts',
+        '**/product/05-tier5-intelligence.spec.ts',
+        '**/product/09-deep-chef-features.spec.ts',
+        '**/product/10-data-integrity.spec.ts',
+        '**/product/11-error-resilience.spec.ts',
+      ],
+      use: { storageState: '.auth/chef.json' },
+    },
+    {
+      name: 'product-client',
+      testMatch: ['**/product/06-client-portal.spec.ts'],
+      use: { storageState: '.auth/client.json' },
+    },
+    {
+      name: 'product-public',
+      testMatch: ['**/product/07-public-pages.spec.ts'],
+      timeout: 60_000,
+      // No storageState — unauthenticated
+    },
+    {
+      name: 'product-staff',
+      testMatch: ['**/product/12-staff-portal.spec.ts'],
+      use: { storageState: '.auth/staff.json' },
+    },
+    {
+      name: 'product-partner',
+      testMatch: ['**/product/13-partner-portal.spec.ts'],
+      use: { storageState: '.auth/partner.json' },
+    },
   ],
   webServer: {
     command: WEB_SERVER_COMMAND,
