@@ -633,11 +633,11 @@ export function ChefSidebar({
       resolveStandaloneTop(
         isLockedIn
           ? [...LOCK_IN_PRIMARY_SHORTCUT_HREFS]
-          : focusMode
+          : focusMode && !isAdmin
             ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]
             : primaryNavHrefs
       ),
-    [isLockedIn, focusMode, primaryNavHrefs]
+    [isLockedIn, focusMode, isAdmin, primaryNavHrefs]
   )
   const visiblePrimaryItems = useMemo(
     () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
@@ -662,7 +662,7 @@ export function ChefSidebar({
       return baseGroups.filter((group) => isLockInGroupVisible(group.id, Boolean(isAdmin)))
     }
 
-    if (!focusMode) return baseGroups
+    if (!focusMode || isAdmin) return baseGroups
     const strictGroups = baseGroups.filter((group) =>
       isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
     )
@@ -1120,7 +1120,7 @@ export function ChefSidebar({
 
             <div className="border-t border-stone-800 my-2" />
 
-            {isAdmin && !focusMode && !isLockedIn && (
+            {isAdmin && !isLockedIn && (
               <SectionAccordion
                 title="Cannabis"
                 items={filteredCannabisItems}
@@ -1140,7 +1140,7 @@ export function ChefSidebar({
               />
             )}
 
-            {!focusMode && !isLockedIn && (
+            {(!focusMode || isAdmin) && !isLockedIn && (
               <SectionAccordion
                 title="Community"
                 items={filteredCommunityItems}
@@ -1670,11 +1670,11 @@ export function ChefMobileNav({
       resolveStandaloneTop(
         isLockedIn
           ? [...LOCK_IN_PRIMARY_SHORTCUT_HREFS]
-          : focusMode
+          : focusMode && !isAdmin
             ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]
             : primaryNavHrefs
       ),
-    [isLockedIn, focusMode, primaryNavHrefs]
+    [isLockedIn, focusMode, isAdmin, primaryNavHrefs]
   )
   const visiblePrimaryItems = useMemo(
     () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
@@ -1694,13 +1694,13 @@ export function ChefMobileNav({
               label: item.label,
             })),
           ]
-        : focusMode
+        : focusMode && !isAdmin
           ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
               ...item,
               label: item.href === '/dashboard' ? 'Home' : item.label,
             }))
           : mobileTabItems,
-    [isLockedIn, focusMode, lockedEventId]
+    [isLockedIn, focusMode, isAdmin, lockedEventId]
   )
 
   // Filter nav groups by role + focus mode + event lock-in.
@@ -1721,7 +1721,7 @@ export function ChefMobileNav({
       return baseGroups.filter((group) => isLockInGroupVisible(group.id, Boolean(isAdmin)))
     }
 
-    if (!focusMode) return baseGroups
+    if (!focusMode || isAdmin) return baseGroups
     const strictGroups = baseGroups.filter((group) =>
       isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
     )
@@ -2035,7 +2035,7 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {isAdmin && !focusMode && !isLockedIn && (
+              {isAdmin && !isLockedIn && (
                 <SectionAccordion
                   title="Cannabis"
                   items={filteredCannabisItems}
@@ -2055,7 +2055,7 @@ export function ChefMobileNav({
                 />
               )}
 
-              {!focusMode && !isLockedIn && (
+              {(!focusMode || isAdmin) && !isLockedIn && (
                 <SectionAccordion
                   title="Community"
                   items={filteredCommunityItems}

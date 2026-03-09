@@ -206,7 +206,7 @@ export async function getReferralLandingContext(
   }
 }
 
-export async function createClientReferralRecord(input: {
+export async function createClientReferralRecord(params: {
   tenantId: string
   referralCode: string
   referrerClientId: string
@@ -216,12 +216,12 @@ export async function createClientReferralRecord(input: {
 }) {
   const supabase = createServerClient({ admin: true })
   await supabase.from('client_referrals').insert({
-    tenant_id: input.tenantId,
-    referral_code: input.referralCode,
-    referrer_client_id: input.referrerClientId,
-    referred_client_id: input.referredClientId,
-    inquiry_id: input.inquiryId,
-    converted_event_id: input.convertedEventId,
+    tenant_id: params.tenantId,
+    referral_code: params.referralCode,
+    referrer_client_id: params.referrerClientId,
+    referred_client_id: params.referredClientId,
+    inquiry_id: params.inquiryId,
+    converted_event_id: params.convertedEventId,
   })
 }
 

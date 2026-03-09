@@ -14,6 +14,17 @@ export interface TaskDescription {
 
 export const TASK_DESCRIPTIONS: TaskDescription[] = [
   {
+    type: 'client.create',
+    tier: 2,
+    name: 'Create Client',
+    description:
+      'Create a new client record with details like name, dietary restrictions, dislikes, allergies, birthday, preferences, etc. Draft only: the chef confirms before saving.',
+    inputSchema:
+      '{ "full_name": "string (required)", "email": "string (optional)", "phone": "string (optional)", "birthday": "string (optional, e.g. August, 1990-08-15, etc.)", "dietary_restrictions": "string[] (optional, e.g. [\"gluten-free\", \"vegan\"])", "allergies": "string[] (optional, e.g. [\"shellfish\", \"peanuts\"])", "dislikes": "string[] (optional, e.g. [\"black pepper\", \"cilantro\"])", "favorite_cuisines": "string[] (optional)", "spice_tolerance": "string (optional: none, mild, medium, hot, very_hot)", "partner_name": "string (optional)", "children": "string[] (optional)", "address": "string (optional)", "occupation": "string (optional)", "company_name": "string (optional)", "preferred_contact_method": "string (optional: phone, email, text, instagram)" }',
+    tierNote:
+      'Tier 2: Creates a draft. Show the extracted details to the chef for confirmation before saving.',
+  },
+  {
     type: 'client.search',
     tier: 1,
     name: 'Find Client',

@@ -11,7 +11,7 @@ import { getCircleForContext, getCircleForEvent, getChefHubProfileId } from './c
 
 // ─── Menu Shared ─────────────────────────────────────────────────────────────
 
-export async function postMenuSharedToCircle(input: {
+export async function postMenuSharedToCircle(params: {
   menuId: string
   menuName: string
   tenantId: string
@@ -19,12 +19,12 @@ export async function postMenuSharedToCircle(input: {
   inquiryId?: string | null
 }): Promise<void> {
   const circle = await getCircleForContext({
-    eventId: input.eventId,
-    inquiryId: input.inquiryId,
+    eventId: params.eventId,
+    inquiryId: params.inquiryId,
   })
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
   const supabase = createServerClient({ admin: true })
@@ -32,17 +32,17 @@ export async function postMenuSharedToCircle(input: {
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
-    body: `Menu shared: ${input.menuName}. Take a look and let me know what you think!`,
+    body: `Menu shared: ${params.menuName}. Take a look and let me know what you think!`,
     metadata: {
       system_event_type: 'menu_shared',
-      menu_id: input.menuId,
+      menu_id: params.menuId,
     },
   })
 }
 
 // ─── Quote Sent ──────────────────────────────────────────────────────────────
 
-export async function postQuoteSentToCircle(input: {
+export async function postQuoteSentToCircle(params: {
   quoteId: string
   totalCents: number
   perPersonCents?: number | null
@@ -53,24 +53,24 @@ export async function postQuoteSentToCircle(input: {
   inquiryId?: string | null
 }): Promise<void> {
   const circle = await getCircleForContext({
-    eventId: input.eventId,
-    inquiryId: input.inquiryId,
+    eventId: params.eventId,
+    inquiryId: params.inquiryId,
   })
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
-  const total = (input.totalCents / 100).toFixed(2)
+  const total = (params.totalCents / 100).toFixed(2)
   let body = `I've sent over a quote for $${total}.`
 
-  if (input.perPersonCents) {
-    const pp = (input.perPersonCents / 100).toFixed(2)
+  if (params.perPersonCents) {
+    const pp = (params.perPersonCents / 100).toFixed(2)
     body += ` That's $${pp} per person.`
   }
 
-  if (input.depositRequired && input.depositCents) {
-    const dep = (input.depositCents / 100).toFixed(2)
+  if (params.depositRequired && params.depositCents) {
+    const dep = (params.depositCents / 100).toFixed(2)
     body += ` A $${dep} deposit secures the date.`
   }
 
@@ -84,27 +84,27 @@ export async function postQuoteSentToCircle(input: {
     body,
     metadata: {
       system_event_type: 'quote_sent',
-      quote_id: input.quoteId,
-      total_cents: input.totalCents,
+      quote_id: params.quoteId,
+      total_cents: params.totalCents,
     },
   })
 }
 
 // ─── Quote Accepted ──────────────────────────────────────────────────────────
 
-export async function postQuoteAcceptedToCircle(input: {
+export async function postQuoteAcceptedToCircle(params: {
   quoteId: string
   tenantId: string
   eventId?: string | null
   inquiryId?: string | null
 }): Promise<void> {
   const circle = await getCircleForContext({
-    eventId: input.eventId,
-    inquiryId: input.inquiryId,
+    eventId: params.eventId,
+    inquiryId: params.inquiryId,
   })
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
   const supabase = createServerClient({ admin: true })
@@ -115,27 +115,27 @@ export async function postQuoteAcceptedToCircle(input: {
     body: "Quote accepted! We're locked in. Next up: finalizing the menu and confirming all the details.",
     metadata: {
       system_event_type: 'quote_accepted',
-      quote_id: input.quoteId,
+      quote_id: params.quoteId,
     },
   })
 }
 
 // ─── Payment Received ────────────────────────────────────────────────────────
 
-export async function postPaymentReceivedToCircle(input: {
+export async function postPaymentReceivedToCircle(params: {
   eventId: string
   tenantId: string
   amountCents: number
   paymentType: string
 }): Promise<void> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
-  const amount = (input.amountCents / 100).toFixed(2)
-  const typeLabel = input.paymentType === 'deposit' ? 'Deposit' : 'Payment'
+  const amount = (params.amountCents / 100).toFixed(2)
+  const typeLabel = params.paymentType === 'deposit' ? 'Deposit' : 'Payment'
 
   const supabase = createServerClient({ admin: true })
   await supabase.from('hub_messages').insert({
@@ -145,27 +145,27 @@ export async function postPaymentReceivedToCircle(input: {
     body: `${typeLabel} of $${amount} received. Thank you!`,
     metadata: {
       system_event_type: 'payment_received',
-      event_id: input.eventId,
-      amount_cents: input.amountCents,
-      payment_type: input.paymentType,
+      event_id: params.eventId,
+      amount_cents: params.amountCents,
+      payment_type: params.paymentType,
     },
   })
 }
 
 // ─── Event Confirmed ─────────────────────────────────────────────────────────
 
-export async function postEventConfirmedToCircle(input: {
+export async function postEventConfirmedToCircle(params: {
   eventId: string
   tenantId: string
   eventDate: string | null
 }): Promise<void> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
-  const datePart = input.eventDate ? ` for ${input.eventDate}` : ''
+  const datePart = params.eventDate ? ` for ${params.eventDate}` : ''
 
   const supabase = createServerClient({ admin: true })
   await supabase.from('hub_messages').insert({
@@ -175,28 +175,28 @@ export async function postEventConfirmedToCircle(input: {
     body: `Event confirmed${datePart}! Prep is underway. I'll share the full plan here soon.`,
     metadata: {
       system_event_type: 'event_confirmed',
-      event_id: input.eventId,
+      event_id: params.eventId,
     },
   })
 }
 
 // ─── Arrival Notification ────────────────────────────────────────────────────
 
-export async function postArrivalToCircle(input: {
+export async function postArrivalToCircle(params: {
   eventId: string
   tenantId: string
   arrivalTime?: string | null
   message?: string | null
 }): Promise<void> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
-  let body = input.message || "I'm on my way!"
-  if (input.arrivalTime && !input.message) {
-    body = `I'm on my way! Arriving at ${input.arrivalTime}.`
+  let body = params.message || "I'm on my way!"
+  if (params.arrivalTime && !params.message) {
+    body = `I'm on my way! Arriving at ${params.arrivalTime}.`
   }
 
   const supabase = createServerClient({ admin: true })
@@ -207,23 +207,23 @@ export async function postArrivalToCircle(input: {
     body,
     metadata: {
       system_event_type: 'chef_arrival',
-      event_id: input.eventId,
+      event_id: params.eventId,
     },
   })
 }
 
 // ─── Event Completed (Immediate Thank-You) ───────────────────────────────────
 
-export async function postEventCompletedToCircle(input: {
+export async function postEventCompletedToCircle(params: {
   eventId: string
   tenantId: string
   clientName?: string | null
   occasion?: string | null
 }): Promise<void> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
   // Load chef first name for a personal touch
@@ -231,11 +231,11 @@ export async function postEventCompletedToCircle(input: {
   const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name')
-    .eq('id', input.tenantId)
+    .eq('id', params.tenantId)
     .single()
 
   const chefFirst = (chef?.display_name || chef?.business_name || 'Chef').split(' ')[0]
-  const clientFirst = input.clientName?.split(' ')[0] || ''
+  const clientFirst = params.clientName?.split(' ')[0] || ''
 
   let body = 'Thank you for a wonderful evening!'
   if (clientFirst) {
@@ -251,26 +251,26 @@ export async function postEventCompletedToCircle(input: {
     body,
     metadata: {
       system_event_type: 'event_completed',
-      event_id: input.eventId,
+      event_id: params.eventId,
     },
   })
 }
 
 // ─── Photos Shared ───────────────────────────────────────────────────────────
 
-export async function postPhotosToCircle(input: {
+export async function postPhotosToCircle(params: {
   eventId: string
   tenantId: string
   photoCount: number
 }): Promise<void> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
-  const noun = input.photoCount === 1 ? 'photo' : 'photos'
-  const body = `${input.photoCount} ${noun} from your event are now available! Check your event page to see them.`
+  const noun = params.photoCount === 1 ? 'photo' : 'photos'
+  const body = `${params.photoCount} ${noun} from your event are now available! Check your event page to see them.`
 
   const supabase = createServerClient({ admin: true })
   await supabase.from('hub_messages').insert({
@@ -280,23 +280,23 @@ export async function postPhotosToCircle(input: {
     body,
     metadata: {
       system_event_type: 'photos_shared',
-      event_id: input.eventId,
-      photo_count: input.photoCount,
+      event_id: params.eventId,
+      photo_count: params.photoCount,
     },
   })
 }
 
 // ─── Prep Update (Free-Form) ─────────────────────────────────────────────────
 
-export async function postPrepUpdateToCircle(input: {
+export async function postPrepUpdateToCircle(params: {
   eventId: string
   tenantId: string
   update: string
 }): Promise<void> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) return
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) return
 
   const supabase = createServerClient({ admin: true })
@@ -304,10 +304,10 @@ export async function postPrepUpdateToCircle(input: {
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'text',
-    body: input.update,
+    body: params.update,
     metadata: {
       system_event_type: 'prep_update',
-      event_id: input.eventId,
+      event_id: params.eventId,
     },
   })
 }

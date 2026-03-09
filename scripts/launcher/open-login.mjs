@@ -126,6 +126,48 @@ function getAccount(role) {
   return accounts[role]
 }
 
+async function signInViaFetch(email, password) {
+  const resp = await fetch(`${BASE_URL}/api/e2e/auth`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+
+  if (!resp.ok) {
+    const body = await resp.text()
+    throw new Error(`Auth failed (${resp.status}): ${body}`)
+  }
+
+  // Extract Set-Cookie headers for Playwright context
+  const setCookies = resp.headers.getSetCookie?.() || []
+  const cookies = []
+  for (const raw of setCookies) {
+    const parts = raw.split(';').map(s => s.trim())
+    const [nameVal, ...attrs] = parts
+    const eqIdx = nameVal.indexOf('=')
+    if (eqIdx === -1) continue
+    const name = nameVal.slice(0, eqIdx)
+    const value = nameVal.slice(eqIdx + 1)
+
+    const cookie = { name, value, domain: 'localhost', path: '/' }
+    for (const attr of attrs) {
+      const lower = attr.toLowerCase()
+      if (lower.startsWith('path=')) cookie.path = attr.slice(5)
+      if (lower === 'secure') cookie.secure = true
+      if (lower === 'httponly') cookie.httpOnly = true
+      if (lower.startsWith('samesite=')) {
+        const val = attr.slice(9).toLowerCase()
+        if (val === 'strict') cookie.sameSite = 'Strict'
+        else if (val === 'none') cookie.sameSite = 'None'
+        else cookie.sameSite = 'Lax'
+      }
+    }
+    cookies.push(cookie)
+  }
+
+  return cookies
+}
+
 async function main() {
   const role = process.argv[2]
   if (!role) {
@@ -157,21 +199,18 @@ async function main() {
   let page = null
 
   try {
+    // Sign in via Node.js fetch (bypasses Playwright browser network issues)
+    console.log('[open-login] Signing in via fetch...')
+    const cookies = await signInViaFetch(account.email, account.password)
+    console.log(`[open-login] Auth OK, got ${cookies.length} cookies`)
+
+    // Launch browser and inject auth cookies
     browser = await launchIncognitoBrowser()
-    const context = browser.contexts()[0] || (await browser.newContext())
-    page = await context.newPage()
-
-    console.log('[open-login] Signing in...')
-    const resp = await page.request.post(`${BASE_URL}/api/e2e/auth`, {
-      data: { email: account.email, password: account.password },
-      timeout: 20_000,
-    })
-
-    if (!resp.ok()) {
-      const body = await resp.text()
-      await keepBrowserOpenForManualRecovery(page, browser, `Auth failed (${resp.status()}): ${body}`)
-      return
+    const context = await browser.newContext()
+    if (cookies.length > 0) {
+      await context.addCookies(cookies)
     }
+    page = await context.newPage()
 
     console.log(`[open-login] Navigating to ${account.portal}...`)
     await page.goto(`${BASE_URL}${account.portal}`, { timeout: 60_000 })

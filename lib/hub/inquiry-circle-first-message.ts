@@ -14,7 +14,7 @@ import { generateFirstResponse } from '@/lib/templates/inquiry-first-response'
  * Post the first response message in a Dinner Circle on behalf of the chef.
  * Called as a non-blocking side effect after circle creation.
  */
-export async function postFirstCircleMessage(input: {
+export async function postFirstCircleMessage(params: {
   groupId: string
   inquiryId: string
   tenantId: string
@@ -25,8 +25,8 @@ export async function postFirstCircleMessage(input: {
   const { data: inquiry } = await supabase
     .from('inquiries')
     .select('*, clients(full_name)')
-    .eq('id', input.inquiryId)
-    .eq('tenant_id', input.tenantId)
+    .eq('id', params.inquiryId)
+    .eq('tenant_id', params.tenantId)
     .single()
 
   if (!inquiry) return
@@ -36,9 +36,9 @@ export async function postFirstCircleMessage(input: {
     supabase
       .from('chefs')
       .select('display_name, business_name, auth_user_id')
-      .eq('id', input.tenantId)
+      .eq('id', params.tenantId)
       .single(),
-    getServiceConfigForTenant(input.tenantId),
+    getServiceConfigForTenant(params.tenantId),
   ])
 
   const chef = chefData.data
@@ -73,7 +73,7 @@ export async function postFirstCircleMessage(input: {
     const { data: member } = await supabase
       .from('hub_group_members')
       .select('profile_id')
-      .eq('group_id', input.groupId)
+      .eq('group_id', params.groupId)
       .eq('role', 'chef')
       .single()
 
@@ -84,7 +84,7 @@ export async function postFirstCircleMessage(input: {
 
   // Post the first response as a message in the circle
   await supabase.from('hub_messages').insert({
-    group_id: input.groupId,
+    group_id: params.groupId,
     author_profile_id: chefProfileId,
     message_type: 'text',
     body: response.body,

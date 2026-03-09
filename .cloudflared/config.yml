@@ -6,15 +6,15 @@
 #
 # Setup (one-time):
 #   1. cloudflared tunnel login        → authorize with Cloudflare
-#   2. cloudflared tunnel create chefflow-beta  → creates the tunnel
-#   3. cloudflared tunnel route dns chefflow-beta beta.cheflowhq.com
+#   2. cloudflared tunnel create chefflow-beta-pc  → creates the tunnel
+#   3. cloudflared tunnel route dns chefflow-beta-pc beta.cheflowhq.com
 #
 # Run:
 #   npm run beta:named
 # =============================================================================
 
-tunnel: f48ab139-b448-4fd9-a431-bcf6b09902f0
-credentials-file: C:\Users\david\.cloudflared\f48ab139-b448-4fd9-a431-bcf6b09902f0.json
+tunnel: f38df8e8-3b6d-463d-b39b-a9265ea5ebcd
+credentials-file: C:\Users\david\.cloudflared\f38df8e8-3b6d-463d-b39b-a9265ea5ebcd.json
 
 ingress:
   - hostname: beta.cheflowhq.com

@@ -636,8 +636,10 @@ export default async function SettingsPage() {
             href="/settings/appearance"
             className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-100">Theme</p>
-            <p className="text-sm text-stone-500 mt-1">Switch between light and dark mode.</p>
+            <p className="font-medium text-stone-100">Theme & Color Palette</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Choose a food-inspired color palette and switch between light and dark mode.
+            </p>
           </Link>
         </SettingsCategory>
 

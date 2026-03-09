@@ -210,6 +210,75 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       }
     },
   },
+  // "Create/make/add a client named [name] ..."
+  {
+    pattern:
+      /^(?:please\s+)?(?:create|make|add)\s+(?:me\s+)?(?:a\s+)?(?:new\s+)?client\s+(?:named?\s+|called\s+)?(.+)/i,
+    build: (_match, raw) => {
+      // Extract the name (first part before "who", "with", comma, or known field keywords)
+      const rest = _match[1].trim()
+      const nameMatch = rest.match(
+        /^(.+?)(?:\s+(?:who|with|,|\.|birthday|allergies?|dislikes?|dietary|hates?|loves?|prefers?))/i
+      )
+      const fullName = nameMatch ? nameMatch[1].trim() : rest.split(/[,.]|\s{2,}/)[0].trim()
+
+      // Parse known fields from the rest of the message
+      const inputs: Record<string, unknown> = { full_name: fullName }
+
+      // Birthday
+      const birthdayMatch = raw.match(
+        /birthday\s+(?:is\s+)?(?:in\s+)?(\w+(?:\s+\d{1,2})?(?:,?\s*\d{4})?)/i
+      )
+      if (birthdayMatch) inputs.birthday = birthdayMatch[1].trim()
+
+      // Dislikes / hates
+      const dislikesMatch = raw.match(
+        /(?:hates?|dislikes?)\s+(.+?)(?:\.|,\s*(?:birthday|allergies?|loves?|prefers?)|$)/i
+      )
+      if (dislikesMatch) {
+        inputs.dislikes = dislikesMatch[1]
+          .split(/,\s*|(?:\s+and\s+)/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      }
+
+      // Allergies
+      const allergyMatch = raw.match(
+        /(?:allergic to|allergies?(?:\s+(?:to|are|include))?)\s+(.+?)(?:\.|,\s*(?:birthday|dislikes?|hates?|loves?)|$)/i
+      )
+      if (allergyMatch) {
+        inputs.allergies = allergyMatch[1]
+          .split(/,\s*|(?:\s+and\s+)/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      }
+
+      // Dietary restrictions
+      const dietaryMatch = raw.match(
+        /(?:dietary\s+restrictions?|is\s+(?:a\s+)?)(vegan|vegetarian|gluten[- ]?free|kosher|halal|pescatarian|keto|paleo)/gi
+      )
+      if (dietaryMatch) {
+        inputs.dietary_restrictions = dietaryMatch.map((s: string) =>
+          s.replace(/^(?:dietary\s+restrictions?\s*:?\s*|is\s+(?:a\s+)?)/i, '').trim()
+        )
+      }
+
+      return {
+        rawInput: raw,
+        overallConfidence: 0.95,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'client.create',
+            tier: 2,
+            confidence: 0.95,
+            inputs,
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
   // "Create an event for [name] on [date]"
   {
     pattern: /^(?:create|make|add|set up)\s+(?:an?\s+)?event\s+(?:for\s+)?(.+)/i,

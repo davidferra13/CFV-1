@@ -708,7 +708,21 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
     }
 
     if (task.status === 'pending') {
-      summaries.push(`I've drafted "${name}" for your review — check the card below.`)
+      const pendingData = task.data as
+        | { draftText?: string; summary?: string; clientName?: string }
+        | undefined
+      if (pendingData?.draftText) {
+        const label = pendingData.clientName ? ` for ${pendingData.clientName}` : ''
+        summaries.push(
+          `I've drafted "${name}"${label} for your review - edit before sending:\n\n${pendingData.draftText}`
+        )
+      } else if (pendingData?.summary) {
+        summaries.push(
+          `Here's what I'll create for your review:\n\n${pendingData.summary}\n\nConfirm and I'll save it, or tell me what to change.`
+        )
+      } else {
+        summaries.push(`I've drafted "${name}" for your review - check the card below.`)
+      }
       continue
     }
 

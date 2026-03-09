@@ -13,7 +13,7 @@ import { createServerClient } from '@/lib/supabase/server'
  * Called as a non-blocking side effect from inquiry creation flows.
  * Returns the group token for the shareable public link.
  */
-export async function createInquiryCircle(input: {
+export async function createInquiryCircle(params: {
   inquiryId: string
   tenantId: string
   clientName: string
@@ -26,7 +26,7 @@ export async function createInquiryCircle(input: {
   const { data: existing } = await supabase
     .from('hub_groups')
     .select('id, group_token')
-    .eq('inquiry_id', input.inquiryId)
+    .eq('inquiry_id', params.inquiryId)
     .eq('is_active', true)
     .single()
 
@@ -36,7 +36,7 @@ export async function createInquiryCircle(input: {
   const { data: chef } = await supabase
     .from('chefs')
     .select('id, business_name, display_name, auth_user_id')
-    .eq('id', input.tenantId)
+    .eq('id', params.tenantId)
     .single()
 
   const chefName = chef?.business_name ?? chef?.display_name ?? 'Chef'
@@ -71,8 +71,8 @@ export async function createInquiryCircle(input: {
   // --- Get or create client hub profile ---
   let clientProfileId: string | null = null
 
-  if (input.clientEmail) {
-    const normalized = input.clientEmail.toLowerCase().trim()
+  if (params.clientEmail) {
+    const normalized = params.clientEmail.toLowerCase().trim()
     const { data: existingClient } = await supabase
       .from('hub_guest_profiles')
       .select('id')
@@ -86,8 +86,8 @@ export async function createInquiryCircle(input: {
     const { data: newClient } = await supabase
       .from('hub_guest_profiles')
       .insert({
-        display_name: input.clientName || 'Guest',
-        email: input.clientEmail,
+        display_name: params.clientName || 'Guest',
+        email: params.clientEmail,
       })
       .select('id')
       .single()
@@ -96,16 +96,16 @@ export async function createInquiryCircle(input: {
   }
 
   // --- Create the group ---
-  const groupName = input.occasion
-    ? `${input.occasion} with ${input.clientName || 'Guest'}`
-    : `Dinner with ${input.clientName || 'Guest'}`
+  const groupName = params.occasion
+    ? `${params.occasion} with ${params.clientName || 'Guest'}`
+    : `Dinner with ${params.clientName || 'Guest'}`
 
   const { data: group, error } = await supabase
     .from('hub_groups')
     .insert({
       name: groupName,
-      inquiry_id: input.inquiryId,
-      tenant_id: input.tenantId,
+      inquiry_id: params.inquiryId,
+      tenant_id: params.tenantId,
       created_by_profile_id: chefProfileId,
       emoji: '🍽️',
     })
@@ -161,7 +161,7 @@ export async function getInquiryCircleToken(inquiryId: string): Promise<string |
  * Link an inquiry's circle to an event when the inquiry converts.
  * Called as a non-blocking side effect from convertInquiryToEvent().
  */
-export async function linkInquiryCircleToEvent(input: {
+export async function linkInquiryCircleToEvent(params: {
   inquiryId: string
   eventId: string
   tenantId: string
@@ -170,7 +170,7 @@ export async function linkInquiryCircleToEvent(input: {
 
   await supabase
     .from('hub_groups')
-    .update({ event_id: input.eventId })
-    .eq('inquiry_id', input.inquiryId)
-    .eq('tenant_id', input.tenantId)
+    .update({ event_id: params.eventId })
+    .eq('inquiry_id', params.inquiryId)
+    .eq('tenant_id', params.tenantId)
 }

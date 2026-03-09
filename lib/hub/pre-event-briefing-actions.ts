@@ -10,16 +10,16 @@ import { generatePreEventBriefing } from '@/lib/templates/pre-event-briefing'
 // chef, and service config to build the deterministic briefing message.
 // ---------------------------------------------------------------------------
 
-export async function postPreEventBriefing(input: {
+export async function postPreEventBriefing(params: {
   eventId: string
   tenantId: string
 }): Promise<{ success: boolean; error?: string }> {
-  const circle = await getCircleForEvent(input.eventId)
+  const circle = await getCircleForEvent(params.eventId)
   if (!circle) {
     return { success: false, error: 'No Dinner Circle found for this event' }
   }
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) {
     return { success: false, error: 'Chef hub profile not found' }
   }
@@ -33,10 +33,10 @@ export async function postPreEventBriefing(input: {
       .select(
         'event_date, serve_time, arrival_time, occasion, guest_count, location_name, location_address, client_id'
       )
-      .eq('id', input.eventId)
-      .eq('tenant_id', input.tenantId)
+      .eq('id', params.eventId)
+      .eq('tenant_id', params.tenantId)
       .single(),
-    supabase.from('chefs').select('display_name, business_name').eq('id', input.tenantId).single(),
+    supabase.from('chefs').select('display_name, business_name').eq('id', params.tenantId).single(),
   ])
 
   const event = eventResult.data
@@ -57,8 +57,8 @@ export async function postPreEventBriefing(input: {
   const { data: menu } = await supabase
     .from('menus')
     .select('id, name')
-    .eq('event_id', input.eventId)
-    .eq('tenant_id', input.tenantId)
+    .eq('event_id', params.eventId)
+    .eq('tenant_id', params.tenantId)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle()
@@ -91,7 +91,7 @@ export async function postPreEventBriefing(input: {
   const { data: inquiry } = await supabase
     .from('inquiries')
     .select('confirmed_dietary_restrictions')
-    .eq('converted_to_event_id', input.eventId)
+    .eq('converted_to_event_id', params.eventId)
     .limit(1)
     .maybeSingle()
 
@@ -103,7 +103,7 @@ export async function postPreEventBriefing(input: {
   let whatToHaveReady: string[] = []
   try {
     const { getServiceConfigForTenant } = await import('@/lib/chef-services/service-config-actions')
-    const config = await getServiceConfigForTenant(input.tenantId)
+    const config = await getServiceConfigForTenant(params.tenantId)
     if (config) {
       if (config.requires_oven) whatToHaveReady.push('Oven available and working')
       if (config.requires_stovetop) whatToHaveReady.push('Stovetop available')
@@ -138,7 +138,7 @@ export async function postPreEventBriefing(input: {
     body,
     metadata: {
       system_event_type: 'pre_event_briefing',
-      event_id: input.eventId,
+      event_id: params.eventId,
     },
   })
 

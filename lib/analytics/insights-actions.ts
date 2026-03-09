@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Clientele Intelligence Server Actions
 // Statistics across all dimensions: dining patterns, occasions, client demographics,
 // seasonal trends, retention, financials, and operational efficiency.

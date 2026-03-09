@@ -497,7 +497,8 @@ export async function detectDraftFeedback(
   let content: string | null = null
 
   if (/\b(shorter|more concise|less wordy|too long)\b/i.test(lower)) {
-    content = 'Keep client-facing drafts shorter and more concise when the chef gives style feedback.'
+    content =
+      'Keep client-facing drafts shorter and more concise when the chef gives style feedback.'
   } else if (/\b(more formal|more professional)\b/i.test(lower)) {
     content = 'Use a more formal, professional tone in client-facing drafts when requested.'
   } else if (/\b(more casual|less formal|warmer|friendlier)\b/i.test(lower)) {
@@ -576,7 +577,7 @@ async function resolveClientIdByName(
 
 async function saveOrReinforceMemory(
   supabase: any,
-  input: {
+  payload: {
     tenantId: string
     category: MemoryCategory
     content: string
@@ -586,13 +587,17 @@ async function saveOrReinforceMemory(
     sourceMessage?: string | null
   }
 ): Promise<{ id: string }> {
-  const contentHash = hashContent(input.content)
-  const importance = getDeterministicImportance(input.content, input.category, input.importance)
+  const contentHash = hashContent(payload.content)
+  const importance = getDeterministicImportance(
+    payload.content,
+    payload.category,
+    payload.importance
+  )
 
   const { data: existing } = await supabase
     .from('remy_memories')
     .select('id, access_count, importance')
-    .eq('tenant_id', input.tenantId)
+    .eq('tenant_id', payload.tenantId)
     .eq('content_hash', contentHash)
     .eq('is_active', true)
     .maybeSingle()
@@ -612,14 +617,14 @@ async function saveOrReinforceMemory(
   const { data, error } = await supabase
     .from('remy_memories')
     .insert({
-      tenant_id: input.tenantId,
-      category: input.category,
-      content: input.content.trim(),
+      tenant_id: payload.tenantId,
+      category: payload.category,
+      content: payload.content.trim(),
       importance,
       content_hash: contentHash,
-      related_client_id: input.relatedClientId ?? null,
-      source_artifact_id: input.sourceArtifactId ?? null,
-      source_message: input.sourceMessage ?? null,
+      related_client_id: payload.relatedClientId ?? null,
+      source_artifact_id: payload.sourceArtifactId ?? null,
+      source_message: payload.sourceMessage ?? null,
     })
     .select('id')
     .single()
@@ -630,7 +635,7 @@ async function saveOrReinforceMemory(
       const { data: duplicate } = await supabase
         .from('remy_memories')
         .select('id, access_count')
-        .eq('tenant_id', input.tenantId)
+        .eq('tenant_id', payload.tenantId)
         .eq('content_hash', contentHash)
         .eq('is_active', true)
         .maybeSingle()

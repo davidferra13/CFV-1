@@ -60,31 +60,31 @@ interface CircleFirstInput {
  * If no circle exists, sends the fallback email (same as current behavior).
  * This function is always non-blocking: wrap in try/catch at the call site.
  */
-export async function circleFirstNotify(input: CircleFirstInput): Promise<void> {
+export async function circleFirstNotify(params: CircleFirstInput): Promise<void> {
   const circle = await getCircleForContext({
-    eventId: input.eventId,
-    inquiryId: input.inquiryId,
+    eventId: params.eventId,
+    inquiryId: params.inquiryId,
   })
 
   if (!circle) {
     // No circle - send standalone fallback email if provided
-    if (input.fallbackEmail) {
+    if (params.fallbackEmail) {
       const { sendEmail } = await import('@/lib/email/send')
       await sendEmail({
-        to: input.fallbackEmail.to,
-        subject: input.fallbackEmail.subject,
-        react: input.fallbackEmail.react,
+        to: params.fallbackEmail.to,
+        subject: params.fallbackEmail.subject,
+        react: params.fallbackEmail.react,
       })
     }
     console.warn(
-      `[circle-first] No circle found for event=${input.eventId} inquiry=${input.inquiryId}, used fallback email`
+      `[circle-first] No circle found for event=${params.eventId} inquiry=${params.inquiryId}, used fallback email`
     )
     return
   }
 
-  const chefProfileId = await getChefHubProfileId(input.tenantId)
+  const chefProfileId = await getChefHubProfileId(params.tenantId)
   if (!chefProfileId) {
-    console.warn(`[circle-first] No hub profile for chef tenant=${input.tenantId}`)
+    console.warn(`[circle-first] No hub profile for chef tenant=${params.tenantId}`)
     return
   }
 
@@ -95,12 +95,12 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'notification',
-    notification_type: input.notificationType,
-    body: input.body,
+    notification_type: params.notificationType,
+    body: params.body,
     source: 'system',
-    action_url: input.actionUrl ?? null,
-    action_label: input.actionLabel ?? null,
-    system_metadata: input.metadata ?? null,
+    action_url: params.actionUrl ?? null,
+    action_label: params.actionLabel ?? null,
+    system_metadata: params.metadata ?? null,
   })
 
   // 2. Email members a short notification pointing to the circle
@@ -108,9 +108,9 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     groupId: circle.groupId,
     groupToken: circle.groupToken,
     authorProfileId: chefProfileId,
-    tenantId: input.tenantId,
-    notificationType: input.notificationType,
-    messagePreview: input.body,
+    tenantId: params.tenantId,
+    notificationType: params.notificationType,
+    messagePreview: params.body,
   })
 }
 
@@ -118,7 +118,7 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
  * Send short notification emails to circle members about a lifecycle update.
  * Respects the same throttle and preferences as regular circle message notifications.
  */
-async function notifyMembersOfUpdate(input: {
+async function notifyMembersOfUpdate(payload: {
   groupId: string
   groupToken: string
   authorProfileId: string
@@ -130,17 +130,17 @@ async function notifyMembersOfUpdate(input: {
     const supabase = createServerClient({ admin: true })
 
     const [groupResult, membersResult, chefResult] = await Promise.all([
-      supabase.from('hub_groups').select('name').eq('id', input.groupId).single(),
+      supabase.from('hub_groups').select('name').eq('id', payload.groupId).single(),
       supabase
         .from('hub_group_members')
         .select(
           'profile_id, notifications_muted, last_notified_at, notify_email, hub_guest_profiles(id, email, display_name, notifications_enabled, auth_user_id)'
         )
-        .eq('group_id', input.groupId),
+        .eq('group_id', payload.groupId),
       supabase
         .from('chefs')
         .select('display_name, business_name')
-        .eq('id', input.tenantId)
+        .eq('id', payload.tenantId)
         .single(),
     ])
 
@@ -150,8 +150,8 @@ async function notifyMembersOfUpdate(input: {
 
     if (!group) return
 
-    const circleUrl = `${APP_URL}/hub/g/${input.groupToken}`
-    const label = NOTIFICATION_LABELS[input.notificationType] ?? 'Update'
+    const circleUrl = `${APP_URL}/hub/g/${payload.groupToken}`
+    const label = NOTIFICATION_LABELS[payload.notificationType] ?? 'Update'
     const now = Date.now()
 
     const { sendEmail } = await import('@/lib/email/send')
@@ -161,7 +161,7 @@ async function notifyMembersOfUpdate(input: {
     const { sendPushNotification } = await import('@/lib/push/send')
 
     for (const member of members) {
-      if (member.profile_id === input.authorProfileId) continue
+      if (member.profile_id === payload.authorProfileId) continue
       if (member.notifications_muted) continue
 
       const profile = member.hub_guest_profiles as unknown as {
@@ -191,7 +191,7 @@ async function notifyMembersOfUpdate(input: {
             chefName,
             groupName: group.name,
             updateLabel: label,
-            updatePreview: input.messagePreview.slice(0, 200),
+            updatePreview: payload.messagePreview.slice(0, 200),
             circleUrl,
           }),
         })
@@ -199,7 +199,7 @@ async function notifyMembersOfUpdate(input: {
         await supabase
           .from('hub_group_members')
           .update({ last_notified_at: new Date().toISOString() })
-          .eq('group_id', input.groupId)
+          .eq('group_id', payload.groupId)
           .eq('profile_id', member.profile_id)
       }
 
@@ -211,7 +211,7 @@ async function notifyMembersOfUpdate(input: {
             subs.map((sub) =>
               sendPushNotification(sub, {
                 title: `${label} from ${chefName}`,
-                body: input.messagePreview.slice(0, 120),
+                body: payload.messagePreview.slice(0, 120),
                 icon: '/icon-192.png',
                 action_url: circleUrl,
               })

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -98,7 +97,7 @@ function daysBetween(a: string | null, b: string | null): number | null {
 
 export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
@@ -138,7 +137,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
 
 export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('quotes')
@@ -172,7 +171,7 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
 
 export async function getGhostRateStats(): Promise<GhostRateStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
@@ -199,7 +198,7 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
 
 export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('events')
@@ -255,7 +254,7 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
 
 export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
@@ -284,7 +283,7 @@ export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
 
 export async function getNegotiationStats(): Promise<NegotiationStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('quotes')
@@ -334,7 +333,7 @@ export async function getNegotiationStats(): Promise<NegotiationStats> {
 
 export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find first outbound message per inquiry
   const { data: inquiries } = await supabase
