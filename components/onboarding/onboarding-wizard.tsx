@@ -14,6 +14,7 @@ import type { LaunchStatus } from '@/lib/onboarding/launch-status'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import type { ConnectAccountStatus } from '@/lib/stripe/connect'
 import type { ChefFullProfile } from '@/lib/chef/profile-actions'
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 function toSlug(name: string): string {
   return name
@@ -62,6 +63,13 @@ function Step1({
 }) {
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
+
+  const isDirty = displayName !== (profile?.display_name ?? '') || bio !== (profile?.bio ?? '')
+
+  function confirmSkip() {
+    if (isDirty && !window.confirm('You have unsaved changes. Skip anyway?')) return
+    onSkip()
+  }
 
   return (
     <div className="space-y-6">
@@ -121,7 +129,7 @@ function Step1({
         >
           Save &amp; Continue
         </Button>
-        <Button variant="ghost" onClick={onSkip} disabled={saving}>
+        <Button variant="ghost" onClick={confirmSkip} disabled={saving}>
           Skip for now
         </Button>
       </div>
@@ -141,7 +149,15 @@ function Step2({
   saving: boolean
 }) {
   const [tagline, setTagline] = useState(profile?.tagline ?? '')
-  const [color, setColor] = useState('#18181b')
+  const initialColor = profile?.portal_primary_color ?? '#18181b'
+  const [color, setColor] = useState(initialColor)
+
+  const isDirty = tagline !== (profile?.tagline ?? '') || color !== initialColor
+
+  function confirmSkip() {
+    if (isDirty && !window.confirm('You have unsaved changes. Skip anyway?')) return
+    onSkip()
+  }
 
   return (
     <div className="space-y-6">
@@ -196,7 +212,7 @@ function Step2({
         >
           Save &amp; Continue
         </Button>
-        <Button variant="ghost" onClick={onSkip} disabled={saving}>
+        <Button variant="ghost" onClick={confirmSkip} disabled={saving}>
           Skip for now
         </Button>
       </div>
@@ -244,11 +260,17 @@ function Step3({
     }
   }, [slug, checkSlug])
 
+  const slugSuffixes = ['-chef', '-kitchen', '-studio', '-meals']
+  const slugSuggestions =
+    slugStatus === 'taken' && slug
+      ? slugSuffixes.map((suffix) => `${slug}${suffix}`.slice(0, 50))
+      : []
+
   const statusMessage: Record<SlugStatus, { text: string; color: string } | null> = {
     idle: null,
     checking: { text: 'Checking availability...', color: 'text-stone-400' },
     available: { text: 'Available!', color: 'text-green-600' },
-    taken: { text: 'Already taken - try another', color: 'text-red-600' },
+    taken: { text: 'Already taken. Try one of these:', color: 'text-red-600' },
     invalid: {
       text: 'Only lowercase letters, numbers, and hyphens (min 3 chars)',
       color: 'text-amber-600',
@@ -286,6 +308,21 @@ function Step3({
           <p className={`text-xs ${statusMessage[slugStatus]!.color}`}>
             {statusMessage[slugStatus]!.text}
           </p>
+        )}
+
+        {slugSuggestions.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {slugSuggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => setSlug(suggestion)}
+                className="rounded-full border border-stone-300 bg-stone-50 px-3 py-1 text-xs text-stone-600 hover:border-brand-500 hover:text-brand-600 transition-colors"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -596,13 +633,26 @@ export function OnboardingWizard({
   progress,
 }: OnboardingWizardProps) {
   const router = useRouter()
-  const [step, setStep] = useState(initialStep)
+  const [step, setStep] = useState(() => {
+    if (initialStep === 1) {
+      trackEvent(ANALYTICS_EVENTS.ONBOARDING_WIZARD_STARTED)
+    }
+    return initialStep
+  })
   const [isPending, startTransition] = useTransition()
   const [stepError, setStepError] = useState<string | null>(null)
 
   function goNext() {
     setStepError(null)
     setStep((s) => Math.min(TOTAL_STEPS, s + 1))
+  }
+
+  function handleSkip() {
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_WIZARD_STEP_SKIPPED, {
+      step,
+      step_name: ['', 'profile', 'branding', 'slug', 'stripe', 'summary'][step] ?? 'unknown',
+    })
+    goNext()
   }
 
   function goBack() {
@@ -616,6 +666,10 @@ export function OnboardingWizard({
         await updateChefFullProfile({
           display_name: displayName || undefined,
           bio: bio || undefined,
+        })
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_WIZARD_STEP_COMPLETED, {
+          step: 1,
+          step_name: 'profile',
         })
         goNext()
       } catch (err) {
@@ -631,6 +685,10 @@ export function OnboardingWizard({
           tagline: tagline || undefined,
           portal_primary_color: /^#[0-9a-fA-F]{6}$/.test(color) ? color : undefined,
         })
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_WIZARD_STEP_COMPLETED, {
+          step: 2,
+          step_name: 'branding',
+        })
         goNext()
       } catch (err) {
         setStepError(err instanceof Error ? err.message : 'Failed to save branding')
@@ -642,6 +700,10 @@ export function OnboardingWizard({
     startTransition(async () => {
       try {
         await updateChefSlug(slug)
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_WIZARD_STEP_COMPLETED, {
+          step: 3,
+          step_name: 'slug',
+        })
         goNext()
       } catch (err) {
         setStepError(err instanceof Error ? err.message : 'Failed to save URL')
@@ -653,6 +715,7 @@ export function OnboardingWizard({
     startTransition(async () => {
       try {
         await markOnboardingComplete()
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_WIZARD_FINISHED, { destination })
         router.push(destination === 'hub' ? '/onboarding' : '/dashboard')
       } catch {
         toast.error('Failed to complete onboarding')
@@ -678,7 +741,7 @@ export function OnboardingWizard({
               <Step1
                 profile={profile}
                 onSaveAndContinue={handleProfileSave}
-                onSkip={goNext}
+                onSkip={handleSkip}
                 saving={isPending}
               />
             )}
@@ -686,7 +749,7 @@ export function OnboardingWizard({
               <Step2
                 profile={profile}
                 onSaveAndContinue={handleBrandingSave}
-                onSkip={goNext}
+                onSkip={handleSkip}
                 saving={isPending}
               />
             )}
@@ -694,7 +757,7 @@ export function OnboardingWizard({
               <Step3
                 profile={profile}
                 onSaveAndContinue={handleSlugSave}
-                onSkip={goNext}
+                onSkip={handleSkip}
                 saving={isPending}
               />
             )}

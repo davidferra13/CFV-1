@@ -49,13 +49,12 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress> {
 
   const profileDone = !!(chefRow.data?.business_name && chefRow.data?.display_name)
   const clientsDone = (clients.count ?? 0) > 0
-  const loyaltyDone = loyaltyConfig.data !== null
+  const loyaltyDone = loyaltyConfig.data?.is_active === true
   const recipesDone = (recipes.count ?? 0) > 0
   const staffDone = (staff.count ?? 0) > 0
 
-  const completedPhases = [profileDone, clientsDone, loyaltyDone, recipesDone, staffDone].filter(
-    Boolean
-  ).length
+  const phases = [profileDone, clientsDone, loyaltyDone, recipesDone, staffDone]
+  const completedPhases = phases.filter(Boolean).length
 
   return {
     profile: profileDone,
@@ -64,6 +63,6 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress> {
     recipes: { done: recipesDone, count: recipes.count ?? 0 },
     staff: { done: staffDone, count: staff.count ?? 0 },
     completedPhases,
-    totalPhases: 5,
+    totalPhases: phases.length,
   }
 }

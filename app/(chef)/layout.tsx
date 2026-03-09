@@ -88,6 +88,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   // Skip the gate when an admin is impersonating (they need to see the chef's actual portal).
   const pathname = headers().get('x-pathname') ?? ''
   const isAdminImpersonating = !!getImpersonatedChefId()
+  // If pathname is empty (middleware failed), still check onboarding status rather than
+  // silently skipping the gate. Only bypass for /onboarding routes or admin impersonation.
   if (!pathname.startsWith('/onboarding') && !isAdminImpersonating) {
     const onboardingComplete = await getOnboardingStatus().catch(() => true) // fail open
     if (!onboardingComplete) {

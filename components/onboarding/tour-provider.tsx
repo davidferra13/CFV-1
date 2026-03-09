@@ -129,6 +129,21 @@ export function OnboardingTourProvider({ config, initialProgress, children }: Pr
   // Current tour step
   const currentTourStep = isTourActive ? (config.steps[currentTourIndex] ?? null) : null
 
+  // Dev-mode: warn when tour target selectors don't match any DOM elements
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+    const timer = setTimeout(() => {
+      config.steps.forEach((step) => {
+        if (step.target && !document.querySelector(step.target)) {
+          console.warn(
+            `[tour] Step "${step.id}" targets "${step.target}" but no matching element exists on this page`
+          )
+        }
+      })
+    }, 2000) // wait for page to render
+    return () => clearTimeout(timer)
+  }, [pathname, config.steps])
+
   // Auto-complete route-based steps
   useEffect(() => {
     const autoSteps = config.steps.filter(

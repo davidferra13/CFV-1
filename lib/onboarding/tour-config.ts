@@ -65,7 +65,8 @@ export const CHEF_TOUR: TourConfig = {
       target: '[data-tour="shortcut-strip"]',
       placement: 'bottom',
       route: '/dashboard',
-      autoComplete: false,
+      autoComplete: true,
+      completionCheck: { type: 'route_visited', value: '/dashboard' },
     },
     {
       id: 'chef.sidebar',
@@ -75,7 +76,8 @@ export const CHEF_TOUR: TourConfig = {
       target: '[data-tour="sidebar-nav"]',
       placement: 'right',
       route: '/dashboard',
-      autoComplete: false,
+      autoComplete: true,
+      completionCheck: { type: 'route_visited', value: '/dashboard' },
     },
     {
       id: 'chef.create_event',
@@ -85,7 +87,8 @@ export const CHEF_TOUR: TourConfig = {
       target: '[data-tour="create-event"]',
       placement: 'bottom',
       route: '/events',
-      autoComplete: false,
+      autoComplete: true,
+      completionCheck: { type: 'route_visited', value: '/events' },
     },
     {
       id: 'chef.add_client',
@@ -95,7 +98,8 @@ export const CHEF_TOUR: TourConfig = {
       target: '[data-tour="add-client"]',
       placement: 'bottom',
       route: '/clients',
-      autoComplete: false,
+      autoComplete: true,
+      completionCheck: { type: 'route_visited', value: '/clients' },
     },
     {
       id: 'chef.add_recipe',
@@ -105,7 +109,8 @@ export const CHEF_TOUR: TourConfig = {
       target: '[data-tour="add-recipe"]',
       placement: 'bottom',
       route: '/recipes',
-      autoComplete: false,
+      autoComplete: true,
+      completionCheck: { type: 'route_visited', value: '/recipes' },
     },
     {
       id: 'chef.meet_remy',
@@ -115,7 +120,8 @@ export const CHEF_TOUR: TourConfig = {
       target: '[data-tour="remy-button"]',
       placement: 'right',
       route: '/dashboard',
-      autoComplete: false,
+      autoComplete: true,
+      completionCheck: { type: 'route_visited', value: '/dashboard' },
     },
     {
       id: 'chef.explore_calendar',
@@ -165,16 +171,6 @@ export const CLIENT_TOUR: TourConfig = {
       route: '/my-quotes',
       autoComplete: true,
       completionCheck: { type: 'route_visited', value: '/my-quotes' },
-    },
-    {
-      id: 'client.make_payment',
-      title: 'Make a Payment',
-      description:
-        'Pay deposits or full invoices securely through Stripe. Your payment history is always available.',
-      target: null,
-      placement: 'bottom',
-      route: null,
-      autoComplete: false,
     },
     {
       id: 'client.check_rewards',

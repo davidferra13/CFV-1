@@ -51,6 +51,14 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
 
   function handleSaveConfig() {
     setConfigError(null)
+    if (config.tier_gold_min <= config.tier_silver_min) {
+      setConfigError('Gold threshold must be higher than Silver')
+      return
+    }
+    if (config.tier_platinum_min <= config.tier_gold_min) {
+      setConfigError('Platinum threshold must be higher than Gold')
+      return
+    }
     startTransition(async () => {
       try {
         await updateLoyaltyConfig({
@@ -218,7 +226,9 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                     }))
                   }
                 />
-                <p className="text-xs text-stone-400">One-time bonus on portal signup</p>
+                <p className="text-xs text-stone-400">
+                  One-time bonus awarded when a new client creates their portal account
+                </p>
               </div>
             </div>
 

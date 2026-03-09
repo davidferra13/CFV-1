@@ -54,6 +54,15 @@ export const ANALYTICS_EVENTS = {
   FEATURE_USED: 'feature_used',
   SEARCH_PERFORMED: 'search_performed',
 
+  // Onboarding
+  ONBOARDING_WIZARD_STARTED: 'onboarding_wizard_started',
+  ONBOARDING_WIZARD_STEP_COMPLETED: 'onboarding_wizard_step_completed',
+  ONBOARDING_WIZARD_STEP_SKIPPED: 'onboarding_wizard_step_skipped',
+  ONBOARDING_WIZARD_FINISHED: 'onboarding_wizard_finished',
+  ONBOARDING_HUB_PHASE_STARTED: 'onboarding_hub_phase_started',
+  ONBOARDING_HUB_PHASE_COMPLETED: 'onboarding_hub_phase_completed',
+  ONBOARDING_ARCHETYPE_SELECTED: 'onboarding_archetype_selected',
+
   // Performance telemetry
   PERF_WEB_VITAL: 'perf_web_vital',
   PERF_ROUTE_TRANSITION: 'perf_route_transition',

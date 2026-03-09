@@ -147,34 +147,61 @@ export function OnboardingHub({
           </div>
         </div>
 
-        <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-stone-900 to-stone-950">
-          <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-200">
-                Next recommended step
-              </p>
-              <h2 className="text-2xl font-semibold text-stone-100">
-                {nextPhase ? nextPhase.label : 'Start running the workspace'}
-              </h2>
-              <p className="max-w-2xl text-sm text-stone-300">
-                {nextPhase
-                  ? nextPhase.description
-                  : 'Core launch and migration are done. Head to the dashboard and use the live workflow.'}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href={nextPhase?.href ?? '/dashboard'}>
-                <Button variant="primary">
-                  {nextPhase ? nextPhase.ctaLabel : 'Go to Dashboard'}
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button variant="secondary">Dashboard</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        {progress.completedPhases === progress.totalPhases ? (
+          <Card className="border-green-500/30 bg-gradient-to-br from-green-500/10 via-stone-900 to-stone-950">
+            <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-green-200">
+                  All set
+                </p>
+                <h2 className="text-2xl font-semibold text-stone-100">
+                  Your business is fully loaded into ChefFlow
+                </h2>
+                <p className="max-w-2xl text-sm text-stone-300">
+                  Clients, recipes, loyalty, and staff are all in place. Head to your dashboard and
+                  start running your operations.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/dashboard">
+                  <Button variant="primary">
+                    Go to Dashboard
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-stone-900 to-stone-950">
+            <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-200">
+                  Next recommended step
+                </p>
+                <h2 className="text-2xl font-semibold text-stone-100">
+                  {nextPhase ? nextPhase.label : 'Start running the workspace'}
+                </h2>
+                <p className="max-w-2xl text-sm text-stone-300">
+                  {nextPhase
+                    ? nextPhase.description
+                    : 'Core launch and migration are done. Head to the dashboard and use the live workflow.'}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link href={nextPhase?.href ?? '/dashboard'}>
+                  <Button variant="primary">
+                    {nextPhase ? nextPhase.ctaLabel : 'Go to Dashboard'}
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button variant="secondary">Dashboard</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
           <Card className="border-stone-800 bg-stone-900">
