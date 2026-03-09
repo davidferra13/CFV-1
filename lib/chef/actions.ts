@@ -358,12 +358,13 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   }
 
   if (validated.my_dashboard_widgets) {
-    // Dedupe and validate widget IDs
+    // Dedupe widget IDs (My Dashboard uses its own widget ID set,
+    // separate from the legacy DASHBOARD_WIDGET_IDS)
     const seen = new Set<string>()
     payload.my_dashboard_widgets = validated.my_dashboard_widgets.filter((id) => {
       if (seen.has(id)) return false
       seen.add(id)
-      return DASHBOARD_WIDGET_IDS.includes(id as any)
+      return true
     })
   }
 
