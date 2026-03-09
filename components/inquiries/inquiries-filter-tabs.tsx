@@ -45,10 +45,10 @@ export function InquiriesFilterTabs({
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'new', label: 'New' },
-    { value: 'awaiting_client', label: 'Awaiting Client' },
-    { value: 'awaiting_chef', label: 'Awaiting Chef' },
-    { value: 'quoted', label: 'Quoted' },
-    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'awaiting_chef', label: 'Needs Response' },
+    { value: 'awaiting_client', label: 'Waiting for Reply' },
+    { value: 'quoted', label: 'Quote Sent' },
+    { value: 'confirmed', label: 'Ready to Book' },
     { value: 'closed', label: 'Declined / Expired' },
   ]
 

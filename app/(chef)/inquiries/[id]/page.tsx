@@ -66,7 +66,7 @@ function getDisplayName(inquiry: {
   if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.client_name as string) || 'Unknown Lead'
+  return (unknown?.client_name as string) || 'Unknown Contact'
 }
 
 function getDisplayEmail(inquiry: {
@@ -299,7 +299,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           </p>
         </div>
         <Link href="/inquiries">
-          <Button variant="ghost">Back to Pipeline</Button>
+          <Button variant="ghost">Back to Inquiries</Button>
         </Link>
       </div>
 
@@ -325,7 +325,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* Missing Facts Warning */}
       {missingFacts.length > 0 && inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
         <div className="bg-amber-950 border border-amber-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-amber-800">Missing confirmed facts:</p>
+          <p className="text-sm font-medium text-amber-800">Missing event details:</p>
           <div className="flex gap-2 mt-2 flex-wrap">
             {missingFacts.map((fact) => (
               <Badge key={fact} variant="warning">
@@ -334,7 +334,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             ))}
           </div>
           <p className="text-xs text-amber-600 mt-2">
-            These need to be confirmed before converting to an event.
+            These need to be confirmed before creating the event.
           </p>
         </div>
       )}
@@ -560,7 +560,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     <span className="text-stone-400 text-sm">Not linked to a client record</span>
                     <InquiryAddClientButton
                       inquiryId={inquiry.id}
-                      prefillName={name !== 'Unknown Lead' ? name : undefined}
+                      prefillName={name !== 'Unknown Contact' ? name : undefined}
                       prefillEmail={email ?? undefined}
                       prefillPhone={phone ?? undefined}
                     />
@@ -579,7 +579,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
         {/* Confirmed Facts */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Confirmed Facts</h2>
+          <h2 className="text-xl font-semibold mb-4">Event Details</h2>
           <dl className="space-y-3">
             <div>
               <dt className="text-sm font-medium text-stone-500">Event Date</dt>
@@ -589,7 +589,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     {format(new Date(inquiry.confirmed_date), 'EEEE, MMMM d, yyyy')}
                   </span>
                 ) : (
-                  <span className="text-stone-400 italic">Not confirmed</span>
+                  <span className="text-stone-400 italic">Not yet known</span>
                 )}
               </dd>
             </div>
@@ -599,7 +599,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 {inquiry.confirmed_guest_count ? (
                   <span className="text-stone-100">{inquiry.confirmed_guest_count} guests</span>
                 ) : (
-                  <span className="text-stone-400 italic">Not confirmed</span>
+                  <span className="text-stone-400 italic">Not yet known</span>
                 )}
               </dd>
             </div>
@@ -609,7 +609,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 {inquiry.confirmed_location ? (
                   <span className="text-stone-100">{inquiry.confirmed_location}</span>
                 ) : (
-                  <span className="text-stone-400 italic">Not confirmed</span>
+                  <span className="text-stone-400 italic">Not yet known</span>
                 )}
               </dd>
             </div>
@@ -621,7 +621,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     {formatCurrency(inquiry.confirmed_budget_cents)}
                   </span>
                 ) : (
-                  <span className="text-stone-400 italic">Not confirmed</span>
+                  <span className="text-stone-400 italic">Not yet known</span>
                 )}
               </dd>
             </div>
@@ -656,7 +656,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Pipeline Management */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Pipeline</h2>
+        <h2 className="text-xl font-semibold mb-4">Follow-up</h2>
         {inquiry.next_action_required || inquiry.follow_up_due_at ? (
           <dl className="space-y-3">
             {inquiry.next_action_required && (
@@ -837,7 +837,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-3">Printed Documents</h2>
           <p className="text-stone-500 text-sm">
-            Documents will be available once this inquiry converts to a confirmed event.
+            Documents will be available once this inquiry becomes a booked event.
           </p>
         </Card>
       )}

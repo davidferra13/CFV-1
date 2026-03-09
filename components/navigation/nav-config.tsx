@@ -8,7 +8,6 @@ import {
   BarChart3,
   BellRing,
   BookOpen,
-  Bot,
   Broadcast,
   Calculator,
   CalendarCheck,
@@ -120,20 +119,24 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // Primary always-visible shortcuts (top of sidebar)
 // coreFeature: true = shown in Focus Mode. false/undefined = hidden in Focus Mode, shown when OFF.
 // adminOnly items are always hidden for non-admins regardless of Focus Mode.
+// All available shortcuts (chefs can pick from these in Settings > Navigation).
+// The first 10 (up to Menus) are the defaults for new signups.
 export const standaloneTop: NavItem[] = [
+  // ── Default shortcuts (shown for new chefs) ──
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
   { href: '/briefing', label: 'Briefing', icon: ClipboardCheck, coreFeature: true },
-  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true, adminOnly: true },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
   { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
   { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText, coreFeature: true },
-  { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
-  { href: '/circles', label: 'Circles', icon: MessagesSquare, coreFeature: true },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
   { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
+  // ── Additional shortcuts (available via Settings > Navigation) ──
+  { href: '/commands', label: 'Commands', icon: Broadcast, coreFeature: true, adminOnly: true },
+  { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
+  { href: '/circles', label: 'Circles', icon: MessagesSquare, coreFeature: true },
   { href: '/rate-card', label: 'Rate Card', icon: Coins },
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/staff', label: 'Staff', icon: IdentificationBadge },
@@ -145,33 +148,27 @@ export const standaloneTop: NavItem[] = [
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
   { href: '/portfolio', label: 'Portfolio', icon: Image },
   { href: '/commerce', label: 'Commerce', icon: Store },
-  { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
-  { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
-  { href: '/commerce/table-service', label: 'Table Service', icon: UtensilsCrossed },
-  { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
-  { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
-  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3 },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
-// Organized by chef workflow: AI → Sell → Plan → Cook → Stock → Money → Grow → Protect
+// Organized by chef workflow: Commands → Sell → Plan → Cook → Stock → Money → Grow → Protect
 export const navGroups: NavGroup[] = [
-  // ─── REMY (AI Assistant) ───
+  // ─── COMMANDS ───
   {
     id: 'remy',
-    label: 'Remy',
-    icon: Bot,
+    label: 'Commands',
+    icon: Broadcast,
     items: [
       {
         href: '/commands',
-        label: 'Ask Remy',
-        icon: Bot,
+        label: 'Command Center',
+        icon: Broadcast,
         adminOnly: true,
-        children: [{ href: '/remy', label: 'Conversation History' }],
+        children: [{ href: '/remy', label: 'Workspace History' }],
       },
       {
         href: '/settings/ai-privacy',
-        label: 'AI Privacy & Settings',
+        label: 'Privacy & Data',
         icon: ShieldCheck,
         adminOnly: true,
       },
@@ -190,12 +187,12 @@ export const navGroups: NavGroup[] = [
         label: 'Inquiries',
         icon: ChatTeardropText,
         children: [
-          { href: '/inquiries/awaiting-response', label: 'Awaiting Response' },
-          { href: '/inquiries/awaiting-client-reply', label: 'Awaiting Client' },
-          { href: '/inquiries/menu-drafting', label: 'Menu Drafting' },
-          { href: '/inquiries/sent-to-client', label: 'Sent to Client' },
+          { href: '/inquiries?status=new', label: 'New' },
+          { href: '/inquiries?status=awaiting_chef', label: 'Needs Response' },
+          { href: '/inquiries?status=awaiting_client', label: 'Waiting for Reply' },
+          { href: '/inquiries?status=quoted', label: 'Quote Sent' },
+          { href: '/inquiries?status=confirmed', label: 'Ready to Book' },
           { href: '/inquiries/new', label: 'Log New Inquiry' },
-          { href: '/inquiries/declined', label: 'Declined' },
         ],
       },
       {
@@ -249,7 +246,7 @@ export const navGroups: NavGroup[] = [
         icon: Crosshair,
         adminOnly: true,
         children: [
-          { href: '/prospecting/scrub', label: 'AI Scrub' },
+          { href: '/prospecting/scrub', label: 'Lead Research' },
           { href: '/prospecting/queue', label: 'Call Queue' },
           { href: '/prospecting/scripts', label: 'Call Scripts' },
         ],
@@ -268,20 +265,6 @@ export const navGroups: NavGroup[] = [
         href: '/testimonials',
         label: 'Testimonials',
         icon: Star,
-      },
-    ],
-  },
-
-  // ─── CONSULTING (pricing, positioning, and offer design) ───
-  {
-    id: 'consulting',
-    label: 'Consulting',
-    icon: Compass,
-    items: [
-      {
-        href: '/consulting',
-        label: 'Consulting Hub',
-        icon: Compass,
       },
     ],
   },
@@ -1221,7 +1204,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: Settings,
     context: 'Settings',
   },
-  { href: '/settings/ai-privacy', label: 'AI & Privacy', icon: ShieldCheck, context: 'Settings' },
+  { href: '/settings/ai-privacy', label: 'Privacy & Data', icon: ShieldCheck, context: 'Settings' },
   { href: '/settings/api-keys', label: 'API Keys', icon: Settings, context: 'Settings' },
   { href: '/settings/webhooks', label: 'Webhooks', icon: Settings, context: 'Settings' },
   {
@@ -1352,7 +1335,11 @@ function buildPrimaryShortcutOptions(): PrimaryShortcutOption[] {
 
 const PRIMARY_SHORTCUT_OPTIONS: PrimaryShortcutOption[] = buildPrimaryShortcutOptions()
 
-export const DEFAULT_PRIMARY_SHORTCUT_HREFS = standaloneTop.map((item) => item.href)
+// Default shortcuts for new chefs: first 10 items in standaloneTop (before the "Additional" section)
+const DEFAULT_SHORTCUT_COUNT = 10
+export const DEFAULT_PRIMARY_SHORTCUT_HREFS = standaloneTop
+  .slice(0, DEFAULT_SHORTCUT_COUNT)
+  .map((item) => item.href)
 
 export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[] {
   const byHref = new Map(PRIMARY_SHORTCUT_OPTIONS.map((item) => [item.href, item] as const))
@@ -1369,7 +1356,7 @@ export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[
   }
 
   if (resolved.length > 0) return resolved
-  return standaloneTop
+  return standaloneTop.slice(0, DEFAULT_SHORTCUT_COUNT)
 }
 
 export function getPrimaryShortcutOptions() {

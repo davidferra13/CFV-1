@@ -20,7 +20,7 @@ function getDisplayName(inquiry: {
   if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.client_name as string) || 'Unknown Lead'
+  return (unknown?.client_name as string) || 'Unknown Contact'
 }
 
 export default async function AwaitingResponsePage() {

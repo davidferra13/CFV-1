@@ -169,8 +169,8 @@ export function InquiryTransitions({
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actions</h2>
         <p className="text-stone-500">
-          This inquiry has been converted to{' '}
-          {inquiry.service_mode === 'multi_day' ? 'a series of events.' : 'an event.'}
+          This inquiry has been booked{' '}
+          {inquiry.service_mode === 'multi_day' ? 'as an event series.' : 'as an event.'}
         </p>
         <Button
           variant="secondary"
@@ -234,7 +234,7 @@ export function InquiryTransitions({
                   loading={loading}
                   disabled={loading}
                 >
-                  Mark Awaiting Client
+                  I've Responded
                 </Button>
                 {canRelease && (
                   <Button
@@ -339,7 +339,7 @@ export function InquiryTransitions({
                   loading={loading}
                   disabled={loading}
                 >
-                  Mark Confirmed
+                  Client Accepted
                 </Button>
                 <Button
                   variant="secondary"
@@ -360,7 +360,7 @@ export function InquiryTransitions({
 
             {inquiry.status === 'confirmed' && !inquiry.converted_to_event_id && (
               <Button onClick={handleConvert} loading={loading} disabled={loading}>
-                {inquiry.service_mode === 'multi_day' ? 'Convert to Series' : 'Convert to Event'}
+                {inquiry.service_mode === 'multi_day' ? 'Create Event Series' : 'Create Event'}
               </Button>
             )}
 
@@ -375,31 +375,26 @@ export function InquiryTransitions({
           <div className="text-sm text-stone-400">
             {inquiry.status === 'new' && (
               <p>
-                New inquiry needs a response. Mark as &ldquo;Awaiting Client&rdquo; once
-                you&rsquo;ve reached out.
+                New inquiry. Click &ldquo;I&rsquo;ve Responded&rdquo; once you&rsquo;ve reached out.
               </p>
             )}
             {inquiry.status === 'awaiting_client' && (
-              <p>
-                You&rsquo;ve responded. Waiting for the client to reply with details or
-                confirmation.
-              </p>
+              <p>You&rsquo;ve responded. Waiting for the client to reply.</p>
             )}
             {inquiry.status === 'awaiting_chef' && (
-              <p>Client has replied. Review their details and send a quote when ready.</p>
+              <p>Client replied. Review their details and send a quote when ready.</p>
             )}
             {inquiry.status === 'quoted' && (
-              <p>Quote sent. Waiting for client to accept or decline.</p>
+              <p>Quote sent. Waiting for the client to accept or decline.</p>
             )}
             {inquiry.status === 'confirmed' && (
               <p>
-                Client confirmed!{' '}
+                Client accepted!{' '}
                 {inquiry.service_mode === 'multi_day'
-                  ? 'Convert to a series to generate the multi-day schedule.'
-                  : 'Convert to an event to start the booking lifecycle.'}
-                {!inquiry.client_id && ' Note: Link a client first before converting.'}
-                {!inquiry.confirmed_date &&
-                  ' Note: Confirm the event date first before converting.'}
+                  ? 'Create an event series to start planning.'
+                  : 'Create an event to start planning.'}
+                {!inquiry.client_id && ' Link a client first before creating the event.'}
+                {!inquiry.confirmed_date && ' Confirm the event date first.'}
               </p>
             )}
             {inquiry.status === 'expired' && (

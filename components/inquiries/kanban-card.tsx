@@ -67,7 +67,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
       {/* Client name + stuck badge */}
       <div className="flex items-start justify-between gap-1">
         <p className="font-semibold text-stone-100 text-sm leading-snug truncate flex-1">
-          {inquiry.client_name || 'Unknown Lead'}
+          {inquiry.client_name || 'Unknown Contact'}
         </p>
         {isStuck && (
           <span className="shrink-0 text-[10px] font-medium text-red-600 bg-red-900 px-1.5 py-0.5 rounded">

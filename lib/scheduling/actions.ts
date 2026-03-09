@@ -844,7 +844,7 @@ export async function getCalendarEvents(
         extendedProps: {
           eventId: inquiry.id,
           occasion: inquiry.confirmed_occasion,
-          clientName: (inquiry.client as any)?.full_name ?? 'Unknown Lead',
+          clientName: (inquiry.client as any)?.full_name ?? 'Unknown Contact',
           guestCount: inquiry.confirmed_guest_count ?? 0,
           status: inquiry.status,
           prepStatus: 'not_started',

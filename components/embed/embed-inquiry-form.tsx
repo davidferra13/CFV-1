@@ -678,7 +678,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
 
           {/* Budget */}
           <div>
-            <label style={labelStyle}>Target Investment (Estimate) *</label>
+            <label style={labelStyle}>Budget *</label>
             <select
               style={inputStyle}
               name="budget_range"

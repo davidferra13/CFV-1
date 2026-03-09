@@ -78,7 +78,7 @@ export function QuickConvertButton({
   return (
     <button
       className="text-stone-500 hover:text-emerald-400 transition-colors p-1 rounded"
-      title="Convert to client"
+      title="Save as client"
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()

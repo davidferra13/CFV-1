@@ -73,16 +73,16 @@ type Props = {
 const CHEF_STEPS: { status: InquiryStatus; label: string }[] = [
   { status: 'new', label: 'Received' },
   { status: 'awaiting_client', label: 'Responded' },
-  { status: 'awaiting_chef', label: 'Awaiting Reply' },
-  { status: 'quoted', label: 'Quoted' },
-  { status: 'confirmed', label: 'Confirmed' },
+  { status: 'awaiting_chef', label: 'They Replied' },
+  { status: 'quoted', label: 'Quote Sent' },
+  { status: 'confirmed', label: 'Ready to Book' },
 ]
 
 const CLIENT_STEPS: { status: InquiryStatus; label: string }[] = [
   { status: 'new', label: 'Received' },
   { status: 'awaiting_client', label: 'In Review' },
-  { status: 'quoted', label: 'Quoted' },
-  { status: 'confirmed', label: 'Confirmed' },
+  { status: 'quoted', label: 'Quote Sent' },
+  { status: 'confirmed', label: 'Ready to Book' },
 ]
 
 // Status order for computing pipeline progress
