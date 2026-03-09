@@ -15,6 +15,7 @@ import { getInquiryUrgencies } from '@/lib/analytics/response-time-actions'
 import { computeCompleteness } from '@/lib/leads/completeness'
 import { CompletenessRing } from '@/components/inquiries/completeness-ring'
 import { QuickDismissButton } from '@/components/inquiries/quick-dismiss-button'
+import { QuickConvertButton } from '@/components/inquiries/quick-convert-button'
 import { quickDismissInquiry } from '@/lib/inquiries/actions'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
@@ -215,6 +216,14 @@ function InquiryRow({
           )}
         </div>
         <div className="text-right flex-shrink-0 flex items-start gap-2">
+          {OPEN_STATUSES.has(inquiry.status) && !inquiry.client?.id && (
+            <QuickConvertButton
+              inquiryId={inquiry.id}
+              contactName={inquiry.contact_name}
+              contactEmail={inquiry.contact_email}
+              contactPhone={inquiry.contact_phone}
+            />
+          )}
           {OPEN_STATUSES.has(inquiry.status) && (
             <QuickDismissButton inquiryId={inquiry.id} onDismiss={quickDismissInquiry} />
           )}

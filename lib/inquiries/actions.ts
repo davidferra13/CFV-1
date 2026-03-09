@@ -1972,6 +1972,69 @@ export async function quickDismissInquiry(
   }
 }
 
+/**
+ * Bulk convert inquiries to clients.
+ * For each inquiry, uses its contact_email to create or link a client.
+ * Skips inquiries that already have a linked client or have no email.
+ */
+export async function bulkConvertToClients(
+  inquiryIds: string[]
+): Promise<{ converted: number; skipped: number; errors: string[] }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  let converted = 0
+  let skipped = 0
+  const errors: string[] = []
+
+  for (const id of inquiryIds) {
+    try {
+      const { data: inquiry } = await supabase
+        .from('inquiries')
+        .select('id, client_id, contact_name, contact_email, contact_phone')
+        .eq('id', id)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (!inquiry) {
+        errors.push(`Inquiry ${id} not found`)
+        continue
+      }
+
+      if (inquiry.client_id) {
+        skipped++
+        continue
+      }
+
+      if (!inquiry.contact_email) {
+        skipped++
+        continue
+      }
+
+      const { addClientFromInquiry } = await import('@/lib/clients/actions')
+      const result = await addClientFromInquiry({
+        full_name: inquiry.contact_name || 'Unknown',
+        email: inquiry.contact_email,
+        phone: inquiry.contact_phone || undefined,
+        inquiryId: id,
+      })
+
+      if (result.success) {
+        converted++
+      } else {
+        errors.push(`${inquiry.contact_name || id}: ${result.error}`)
+      }
+    } catch (err: any) {
+      errors.push(`${id}: ${err?.message || 'Unknown error'}`)
+    }
+  }
+
+  revalidatePath('/inquiries')
+  revalidatePath('/clients')
+
+  return { converted, skipped, errors }
+}
+
 // ============================================
 // 11. LOST REASON ANALYTICS
 // ============================================
