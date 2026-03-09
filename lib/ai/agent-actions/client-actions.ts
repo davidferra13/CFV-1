@@ -19,8 +19,12 @@ const ParsedClientSchema = z.object({
   full_name: z.string(),
   email: z.string().optional(),
   phone: z.string().optional(),
+  birthday: z.string().optional(),
   dietary_restrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
+  dislikes: z.array(z.string()).optional(),
+  favorite_cuisines: z.array(z.string()).optional(),
+  spice_tolerance: z.enum(['none', 'mild', 'medium', 'hot', 'very_hot']).optional(),
   occupation: z.string().optional(),
   notes: z.string().optional(),
   address: z.string().optional(),
@@ -29,7 +33,8 @@ const ParsedClientSchema = z.object({
 
 async function parseClientFromText(description: string) {
   const systemPrompt = `You extract structured client data from natural language descriptions.
-Extract any of these fields: full_name, email, phone, dietary_restrictions (array), allergies (array), occupation, notes, address, preferred_contact_method (phone/email/text/instagram).
+Extract any of these fields: full_name, email, phone, birthday (month or date string), dietary_restrictions (array), allergies (array), dislikes (array - foods they hate or dislike), favorite_cuisines (array), spice_tolerance (none/mild/medium/hot/very_hot), occupation, notes, address, preferred_contact_method (phone/email/text/instagram).
+"hates X" or "doesn't like X" = dislikes. "allergic to X" = allergies. "gluten-free/vegan/etc" = dietary_restrictions.
 Return ONLY valid JSON. If a field is not mentioned, omit it.`
 
   return parseWithOllama(systemPrompt, description, ParsedClientSchema, { modelTier: 'standard' })
@@ -106,6 +111,22 @@ export const clientAgentActions: AgentActionDefinition[] = [
       if (parsed.allergies?.length) {
         fields.push({ label: 'Allergies', value: parsed.allergies.join(', '), editable: true })
       }
+      if (parsed.dislikes?.length) {
+        fields.push({ label: 'Dislikes', value: parsed.dislikes.join(', '), editable: true })
+      }
+      if (parsed.birthday) {
+        fields.push({ label: 'Birthday', value: parsed.birthday, editable: true })
+      }
+      if (parsed.favorite_cuisines?.length) {
+        fields.push({
+          label: 'Favorite Cuisines',
+          value: parsed.favorite_cuisines.join(', '),
+          editable: true,
+        })
+      }
+      if (parsed.spice_tolerance) {
+        fields.push({ label: 'Spice Tolerance', value: parsed.spice_tolerance, editable: true })
+      }
       if (parsed.occupation)
         fields.push({ label: 'Occupation', value: parsed.occupation, editable: true })
       if (parsed.address) fields.push({ label: 'Address', value: parsed.address, editable: true })
@@ -161,8 +182,18 @@ export const clientAgentActions: AgentActionDefinition[] = [
         full_name: fullName,
         email,
         phone,
+        birthday: typeof payload.birthday === 'string' ? payload.birthday : undefined,
         dietary_restrictions: payload.dietary_restrictions as string[] | undefined,
         allergies: payload.allergies as string[] | undefined,
+        dislikes: payload.dislikes as string[] | undefined,
+        favorite_cuisines: payload.favorite_cuisines as string[] | undefined,
+        spice_tolerance: payload.spice_tolerance as
+          | 'none'
+          | 'mild'
+          | 'medium'
+          | 'hot'
+          | 'very_hot'
+          | undefined,
         occupation: payload.occupation ? String(payload.occupation) : undefined,
         address: payload.address ? String(payload.address) : undefined,
         vibe_notes: notes ? `Created by Remy intake: ${notes}` : undefined,

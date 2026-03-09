@@ -10,7 +10,7 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { parseCommandIntent } from '@/lib/ai/command-intent-parser'
 import { getAgentAction, isAgentAction } from '@/lib/ai/agent-registry'
 import { ensureAgentActionsRegistered } from '@/lib/ai/agent-actions'
-import { searchClientsByName, getClients, getClientById, createClient } from '@/lib/clients/actions'
+import { searchClientsByName, getClients, getClientById } from '@/lib/clients/actions'
 import { getEvents, getEventById } from '@/lib/events/actions'
 import { getInquiries, getInquiryById } from '@/lib/inquiries/actions'
 import { getRecipes } from '@/lib/recipes/actions'
@@ -202,94 +202,6 @@ import {
 } from '@/lib/ai/remy-intelligence-actions-3'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
-
-async function executeClientCreate(inputs: Record<string, unknown>) {
-  const fullName = String(inputs.full_name ?? inputs.name ?? '').trim()
-  if (!fullName) {
-    return { error: 'Client name is required. Please include a name.' }
-  }
-
-  // Build the client data from whatever the LLM extracted
-  const clientData: Record<string, unknown> = { full_name: fullName }
-
-  // Simple string fields
-  const stringFields = [
-    'email',
-    'phone',
-    'preferred_name',
-    'birthday',
-    'partner_name',
-    'address',
-    'occupation',
-    'company_name',
-    'wine_beverage_preferences',
-    'family_notes',
-  ] as const
-  for (const field of stringFields) {
-    if (inputs[field]) clientData[field] = String(inputs[field])
-  }
-
-  // Enum fields
-  if (inputs.preferred_contact_method) {
-    clientData.preferred_contact_method = String(inputs.preferred_contact_method)
-  }
-  if (inputs.spice_tolerance) {
-    clientData.spice_tolerance = String(inputs.spice_tolerance)
-  }
-
-  // Array fields
-  const arrayFields = [
-    'dietary_restrictions',
-    'allergies',
-    'dislikes',
-    'favorite_cuisines',
-    'favorite_dishes',
-    'dietary_protocols',
-    'children',
-  ] as const
-  for (const field of arrayFields) {
-    if (inputs[field]) {
-      const val = inputs[field]
-      clientData[field] = Array.isArray(val) ? val.map(String) : [String(val)]
-    }
-  }
-
-  // This is tier 2, so we return the draft for chef confirmation.
-  // The actual createClient call happens when the chef approves.
-  return {
-    draftType: 'client_create',
-    draftData: clientData,
-    summary: formatClientDraftSummary(clientData),
-  }
-}
-
-function formatClientDraftSummary(data: Record<string, unknown>): string {
-  const lines: string[] = [`New client: ${data.full_name}`]
-  if (data.email) lines.push(`Email: ${data.email}`)
-  if (data.phone) lines.push(`Phone: ${data.phone}`)
-  if (data.birthday) lines.push(`Birthday: ${data.birthday}`)
-  if (data.dietary_restrictions) {
-    const arr = data.dietary_restrictions as string[]
-    if (arr.length > 0) lines.push(`Dietary restrictions: ${arr.join(', ')}`)
-  }
-  if (data.allergies) {
-    const arr = data.allergies as string[]
-    if (arr.length > 0) lines.push(`Allergies: ${arr.join(', ')}`)
-  }
-  if (data.dislikes) {
-    const arr = data.dislikes as string[]
-    if (arr.length > 0) lines.push(`Dislikes: ${arr.join(', ')}`)
-  }
-  if (data.favorite_cuisines) {
-    const arr = data.favorite_cuisines as string[]
-    if (arr.length > 0) lines.push(`Favorite cuisines: ${arr.join(', ')}`)
-  }
-  if (data.spice_tolerance) lines.push(`Spice tolerance: ${data.spice_tolerance}`)
-  if (data.partner_name) lines.push(`Partner: ${data.partner_name}`)
-  if (data.address) lines.push(`Address: ${data.address}`)
-  if (data.occupation) lines.push(`Occupation: ${data.occupation}`)
-  return lines.join('\n')
-}
 
 async function executeClientSearch(inputs: Record<string, unknown>) {
   const query = String(inputs.query ?? '')
@@ -1484,9 +1396,6 @@ async function executeSingleTask(
         }
 
         switch (task.taskType) {
-          case 'client.create':
-            data = await executeClientCreate(task.inputs)
-            break
           case 'client.search':
             data = await executeClientSearch(task.inputs)
             break
