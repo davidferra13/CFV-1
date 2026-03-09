@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   BarChart3,
   BellRing,
+  Bot,
   BookOpen,
   Broadcast,
   Calculator,
@@ -383,12 +384,12 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         href: '/events/upcoming',
-        label: 'Event Status',
+        label: 'My Events',
         icon: CalendarDays,
         children: [
           { href: '/events/new', label: 'Create Event' },
           { href: '/events/board', label: 'Kanban Board' },
-          { href: '/events/awaiting-deposit', label: 'Awaiting Deposit' },
+          { href: '/events/awaiting-deposit', label: 'Deposit Pending' },
           { href: '/events/confirmed', label: 'Confirmed' },
           { href: '/events/completed', label: 'Completed' },
           { href: '/events/cancelled', label: 'Cancelled' },
