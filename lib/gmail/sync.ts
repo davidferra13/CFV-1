@@ -19,7 +19,7 @@ import {
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { extractAndScoreEmail, scoreInquiryFields } from './extract-inquiry-fields'
-import { createClientFromLead } from '@/lib/clients/actions'
+// createClientFromLead import removed - inquiries no longer auto-create clients
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { isCommTriageEnabled } from '@/lib/features'
 import { isTakeAChefEmail, parseTakeAChefEmail } from './take-a-chef-parser'
@@ -486,25 +486,9 @@ async function handleInquiry(
     const leadEmail = email.from.email
     const clientPhone = detFields.client_phone || ollamaPhone || null
 
-    // Find or create client from lead data
-    let clientId: string | null = null
-
-    try {
-      const clientResult = await createClientFromLead(tenantId, {
-        email: leadEmail,
-        full_name: leadName,
-        phone: clientPhone,
-        dietary_restrictions:
-          detFields.confirmed_dietary_restrictions.length > 0
-            ? detFields.confirmed_dietary_restrictions
-            : null,
-        source: 'email',
-      })
-      clientId = clientResult.id
-    } catch (clientErr) {
-      // Non-fatal: inquiry still gets created, just without client link
-      console.error('[handleInquiry] Client creation failed:', clientErr)
-    }
+    // Store lead contact info on the inquiry (no auto-client creation).
+    // Chef can convert to a full client record later from the inquiry detail page.
+    const clientId: string | null = null
 
     // Store lead data + lead score in unknown_fields
     const unknownFields: Record<string, unknown> = {
@@ -531,6 +515,9 @@ async function handleInquiry(
         tenant_id: tenantId,
         channel: 'email' as const,
         client_id: clientId,
+        contact_name: leadName,
+        contact_email: leadEmail,
+        contact_phone: clientPhone,
         first_contact_at: email.date
           ? new Date(email.date).toISOString()
           : new Date().toISOString(),
@@ -1025,25 +1012,9 @@ async function handleTacNewInquiry(
     return
   }
 
-  // Create client record
-  let clientId: string | null = null
-  try {
-    const clientResult = await createClientFromLead(tenantId, {
-      full_name: inquiry.clientName,
-      email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
-      phone: null,
-      dietary_restrictions: inquiry.dietaryRestrictions
-        ? inquiry.dietaryRestrictions
-            .split(/[\n,]/)
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : null,
-      source: 'take_a_chef',
-    })
-    clientId = clientResult.id
-  } catch (clientErr) {
-    console.error('[TakeAChef] Client creation failed (non-fatal):', clientErr)
-  }
+  // Store contact info on the inquiry (no auto-client creation).
+  // TakeAChef inquiries don't have real emails anyway (placeholder was used before).
+  const clientId: string | null = null
 
   // Calculate budget in cents from price range + guest count
   let budgetCents: number | null = null
@@ -1102,6 +1073,9 @@ async function handleTacNewInquiry(
       tenant_id: tenantId,
       channel: 'take_a_chef' as const,
       client_id: clientId,
+      contact_name: inquiry.clientName,
+      contact_email: null,
+      contact_phone: null,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: inquiry.eventDate,
       confirmed_guest_count: inquiry.guestCountNumber,
@@ -1958,20 +1932,8 @@ async function handleYhangryNewInquiry(
     return
   }
 
-  // Create client record — name comes from Yhangry later, use placeholder
-  let clientId: string | null = null
-  try {
-    const clientResult = await createClientFromLead(tenantId, {
-      full_name: inquiry.clientName || 'Yhangry Client',
-      email: `yhangry-${Date.now()}@placeholder.cheflowhq.com`,
-      phone: null,
-      dietary_restrictions: null,
-      source: 'yhangry',
-    })
-    clientId = clientResult.id
-  } catch (clientErr) {
-    console.error('[Yhangry] Client creation failed (non-fatal):', clientErr)
-  }
+  // Store contact info on the inquiry (no auto-client creation).
+  const clientId: string | null = null
 
   // Compute lead score from parsed platform fields
   const yhangryLeadScore = scoreInquiryFields({
@@ -2006,6 +1968,9 @@ async function handleYhangryNewInquiry(
       tenant_id: tenantId,
       channel: 'yhangry',
       client_id: clientId,
+      contact_name: inquiry.clientName || 'Yhangry Client',
+      contact_email: null,
+      contact_phone: null,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: inquiry.eventDate,
       confirmed_location: inquiry.location,
@@ -2459,25 +2424,8 @@ async function handleGenericNewLead(
     return
   }
 
-  // Create client record
-  let clientId: string | null = null
-  try {
-    const clientResult = await createClientFromLead(tenantId, {
-      full_name: fields.clientName,
-      email: `${platform}-${Date.now()}@placeholder.cheflowhq.com`,
-      phone: null,
-      dietary_restrictions: fields.dietaryRestrictions
-        ? fields.dietaryRestrictions
-            .split(/[\n,]/)
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : null,
-      source: channelValue,
-    })
-    clientId = clientResult.id
-  } catch (clientErr) {
-    console.error(`[${displayName}] Client creation failed (non-fatal):`, clientErr)
-  }
+  // Store contact info on the inquiry (no auto-client creation).
+  const clientId: string | null = null
 
   // Compute lead score from parsed platform fields
   const platformLeadScore = scoreInquiryFields({
@@ -2521,6 +2469,9 @@ async function handleGenericNewLead(
       tenant_id: tenantId,
       channel: channelValue as any,
       client_id: clientId,
+      contact_name: fields.clientName,
+      contact_email: null,
+      contact_phone: null,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: fields.eventDate,
       confirmed_guest_count: fields.guestCount,

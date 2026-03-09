@@ -7,7 +7,7 @@
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
-import { createClientFromLead } from '@/lib/clients/actions'
+// createClientFromLead import removed - inquiries no longer auto-create clients
 import {
   BookingServiceModeSchema,
   ScheduleRequestSchema,
@@ -16,7 +16,7 @@ import {
 import { resolveChefByPublicSlug } from '@/lib/chefs/public-slug-resolver'
 import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { FOUNDER_EMAIL, resolveOwnerChefId } from '@/lib/platform/owner-account'
-import { createClientReferralRecord, getReferralLandingContext } from '@/lib/referrals/actions'
+import { getReferralLandingContext } from '@/lib/referrals/actions'
 import { markRebookTokenUsed } from '@/lib/rebook/actions'
 import { z } from 'zod'
 
@@ -90,13 +90,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
   const normalizedRebookToken = validated.rebook_token?.trim() || null
   const normalizedReferralCode = validated.referral_code?.trim().toUpperCase() || null
-  let rebookContext:
-    | {
-        tenantId: string
-        eventId: string
-        clientId: string
-      }
-    | null = null
+  let rebookContext: {
+    tenantId: string
+    eventId: string
+    clientId: string
+  } | null = null
 
   const sourceParts = [
     `Serving Time: ${validated.serve_time.trim()}`,
@@ -233,30 +231,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     validated.campaign_source ??
     (rebookContext ? 'rebook_qr' : referralContext.isValid ? 'referral_qr' : 'public_profile')
 
-  // 2. Create or find existing client
-  const client = await createClientFromLead(tenantId, {
-    email: validated.email.toLowerCase().trim(),
-    full_name: validated.full_name.trim(),
-    phone: validated.phone?.trim() || null,
-    source: referralContext.isValid ? 'referral' : 'website',
-  })
-
-  if (
-    referralContext.isValid &&
-    client.created &&
-    referralContext.referrerClientId &&
-    referralContext.referrerClientId !== client.id
-  ) {
-    await supabase
-      .from('clients')
-      .update({
-        referred_by_client_id: referralContext.referrerClientId,
-        referral_source: 'referral',
-        referral_source_detail: referralContext.referrerName,
-      })
-      .eq('tenant_id', tenantId)
-      .eq('id', client.id)
-  }
+  // 2. Store contact info on the inquiry (no auto-client creation).
+  // Chef can convert to a full client record later from the inquiry detail page.
+  const contactName = validated.full_name.trim()
+  const contactEmail = validated.email.toLowerCase().trim()
+  const contactPhone = validated.phone?.trim() || null
 
   // Only persist exact budget cents when explicitly provided.
   const budgetCents = validated.budget_cents ?? null
@@ -277,7 +256,10 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     .insert({
       tenant_id: tenantId,
       channel: 'website',
-      client_id: client.id,
+      client_id: null,
+      contact_name: contactName,
+      contact_email: contactEmail,
+      contact_phone: contactPhone,
       first_contact_at: new Date().toISOString(),
       confirmed_date: validated.event_date || null,
       confirmed_guest_count: validated.guest_count,
@@ -395,7 +377,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     .from('events')
     .insert({
       tenant_id: tenantId,
-      client_id: client.id,
+      client_id: null,
       inquiry_id: inquiry.id,
       event_date: validated.event_date,
       serve_time: validated.serve_time.trim(),
@@ -436,26 +418,8 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   // 6. Link inquiry to the created event
   await supabase.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
-  if (
-    referralContext.isValid &&
-    client.created &&
-    referralContext.referrerClientId &&
-    referralContext.referrerClientId !== client.id &&
-    referralContext.referralCode
-  ) {
-    try {
-      await createClientReferralRecord({
-        tenantId,
-        referralCode: referralContext.referralCode,
-        referrerClientId: referralContext.referrerClientId,
-        referredClientId: client.id,
-        inquiryId: inquiry.id,
-        convertedEventId: event.id,
-      })
-    } catch (referralErr) {
-      console.error('[submitPublicInquiry] Referral record failed (non-blocking):', referralErr)
-    }
-  }
+  // Referral record creation is deferred to the "Convert to Client" flow.
+  // The referral context is stored in unknown_fields so it can be applied later.
 
   if (normalizedRebookToken) {
     try {
@@ -496,7 +460,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   try {
     const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
-    await onInquiryCreated(tenantId, inquiry.id, client.id, {
+    await onInquiryCreated(tenantId, inquiry.id, null, {
       channel: 'website',
       clientName: validated.full_name,
       occasion: validated.occasion ?? undefined,

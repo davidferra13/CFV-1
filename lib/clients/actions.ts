@@ -1304,6 +1304,14 @@ export async function addClientFromInquiry(input: {
         .eq('id', input.inquiryId)
         .eq('tenant_id', user.tenantId!)
 
+      // Also link any events created from this inquiry
+      await supabase
+        .from('events')
+        .update({ client_id: existing.id })
+        .eq('inquiry_id', input.inquiryId)
+        .eq('tenant_id', user.tenantId!)
+        .is('client_id', null)
+
       revalidatePath(`/inquiries/${input.inquiryId}`)
       revalidatePath('/clients')
       return { success: true, clientId: existing.id }
@@ -1332,6 +1340,14 @@ export async function addClientFromInquiry(input: {
       .update({ client_id: client.id })
       .eq('id', input.inquiryId)
       .eq('tenant_id', user.tenantId!)
+
+    // Also link any events that were created from this inquiry (they have client_id = null)
+    await supabase
+      .from('events')
+      .update({ client_id: client.id })
+      .eq('inquiry_id', input.inquiryId)
+      .eq('tenant_id', user.tenantId!)
+      .is('client_id', null)
 
     revalidatePath(`/inquiries/${input.inquiryId}`)
     revalidatePath('/clients')

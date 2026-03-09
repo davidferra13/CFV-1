@@ -60,8 +60,10 @@ import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
+  contact_name: string | null
   unknown_fields: unknown
 }): string {
+  if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_name as string) || 'Unknown Lead'
@@ -69,8 +71,10 @@ function getDisplayName(inquiry: {
 
 function getDisplayEmail(inquiry: {
   client: { email: string } | null
+  contact_email: string | null
   unknown_fields: unknown
 }): string | null {
+  if (inquiry.contact_email) return inquiry.contact_email
   if (inquiry.client?.email) return inquiry.client.email
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_email as string) || null
@@ -78,8 +82,10 @@ function getDisplayEmail(inquiry: {
 
 function getDisplayPhone(inquiry: {
   client: { phone: string | null } | null
+  contact_phone: string | null
   unknown_fields: unknown
 }): string | null {
+  if (inquiry.contact_phone) return inquiry.contact_phone
   if (inquiry.client?.phone) return inquiry.client.phone
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_phone as string) || null

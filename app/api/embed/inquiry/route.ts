@@ -137,45 +137,11 @@ export async function POST(request: NextRequest) {
     const tenantId = chef.id as string
     const chefName = (chef.business_name as string | null) || 'Your Chef'
 
-    // 2. Create or find existing client (idempotent by email)
+    // Store contact info on the inquiry (no auto-client creation).
+    // Chef can convert to a full client record later from the inquiry detail page.
     const clientEmail = data.email.toLowerCase().trim()
     const clientName = data.full_name.trim()
-
-    // Check for existing client under this chef
-    const { data: existingClient } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .ilike('email', clientEmail)
-      .maybeSingle()
-
-    let clientId: string
-
-    if (existingClient) {
-      clientId = existingClient.id
-    } else {
-      const { data: newClient, error: clientCreateError } = await supabase
-        .from('clients')
-        .insert({
-          tenant_id: tenantId,
-          full_name: clientName,
-          email: clientEmail,
-          phone: data.phone?.trim() || null,
-          referral_source: 'website',
-          address: data.address?.trim() || null,
-        })
-        .select('id')
-        .single()
-
-      if (clientCreateError || !newClient) {
-        console.error('[embed-inquiry] Client creation error:', clientCreateError)
-        return NextResponse.json(
-          { error: 'Failed to process inquiry' },
-          { status: 500, headers: corsHeaders }
-        )
-      }
-      clientId = newClient.id
-    }
+    const clientPhone = data.phone?.trim() || null
 
     // 3. Build source message from optional fields
     const sourceParts = [
@@ -224,7 +190,10 @@ export async function POST(request: NextRequest) {
       .insert({
         tenant_id: tenantId,
         channel: 'website',
-        client_id: clientId,
+        client_id: null,
+        contact_name: clientName,
+        contact_email: clientEmail,
+        contact_phone: clientPhone,
         first_contact_at: new Date().toISOString(),
         confirmed_date: data.event_date || null,
         confirmed_guest_count: data.guest_count,
@@ -292,7 +261,7 @@ export async function POST(request: NextRequest) {
         .from('events')
         .insert({
           tenant_id: tenantId,
-          client_id: clientId,
+          client_id: null,
           inquiry_id: inquiry.id,
           event_date: data.event_date,
           serve_time: data.serve_time.trim(),
@@ -392,7 +361,7 @@ export async function POST(request: NextRequest) {
     // 8. Enqueue Remy AI lead scoring (non-blocking)
     try {
       const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
-      await onInquiryCreated(tenantId, inquiry.id, clientId, {
+      await onInquiryCreated(tenantId, inquiry.id, null, {
         channel: 'website',
         clientName,
         occasion: data.occasion ?? undefined,

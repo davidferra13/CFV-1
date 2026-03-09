@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { createClientFromLead } from '@/lib/clients/actions'
+// createClientFromLead import removed - inquiries no longer auto-create clients
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
@@ -79,46 +79,12 @@ export async function captureTakeAChefBooking(
     ].filter(Boolean)
     const sourceMessage = sourceParts.join('\n')
 
-    // 3. Find or create client
-    let clientId: string | null = null
-    let clientCreated = false
-
-    if (validated.email) {
-      try {
-        const clientResult = await createClientFromLead(tenantId, {
-          email: validated.email.toLowerCase().trim(),
-          full_name: validated.full_name.trim(),
-          phone: validated.phone?.trim() || null,
-          dietary_restrictions: dietaryList,
-          source: 'take_a_chef',
-        })
-        clientId = clientResult.id
-        clientCreated = clientResult.created
-      } catch (clientErr) {
-        console.error('[captureTakeAChefBooking] Client creation failed (non-fatal):', clientErr)
-      }
-    } else {
-      // No email — create a minimal client record with placeholder email
-      const { data: newClient } = await supabase
-        .from('clients')
-        .insert({
-          tenant_id: tenantId,
-          full_name: validated.full_name.trim(),
-          email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
-          phone: validated.phone?.trim() || null,
-          dietary_restrictions: dietaryList || [],
-          allergies: [],
-          status: 'active' as const,
-          referral_source: 'take_a_chef' as const,
-        })
-        .select('id')
-        .single()
-
-      if (newClient) {
-        clientId = newClient.id
-        clientCreated = true
-      }
-    }
+    // 3. Store contact info on the inquiry (no auto-client creation).
+    // Chef can convert to a full client record later from the inquiry detail page.
+    const contactName = validated.full_name.trim()
+    const contactEmail = validated.email?.toLowerCase().trim() || null
+    const contactPhone = validated.phone?.trim() || null
+    const clientId: string | null = null
 
     // 4. Create inquiry
     const { data: inquiry, error: inquiryError } = await supabase
@@ -127,6 +93,9 @@ export async function captureTakeAChefBooking(
         tenant_id: tenantId,
         channel: 'take_a_chef' as const,
         client_id: clientId,
+        contact_name: contactName,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
         first_contact_at: new Date().toISOString(),
         confirmed_date: validated.event_date,
         confirmed_guest_count: validated.guest_count,

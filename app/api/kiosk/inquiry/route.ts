@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClientFromLead } from '@/lib/clients/actions'
+// createClientFromLead import removed - inquiries no longer auto-create clients
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { z } from 'zod'
@@ -87,23 +87,11 @@ export async function POST(request: Request) {
       )
     }
 
-    // 1. Create or find client (use email if provided, otherwise phone as identifier)
-    // For phone-only submissions, use a unique placeholder email to avoid collisions
-    const clientEmail =
-      email || `kiosk-${Date.now()}-${phone?.replace(/\D/g, '')}@placeholder.chefflow.local`
-
-    let client: { id: string }
-    try {
-      client = await createClientFromLead(tenantId, {
-        email: clientEmail.toLowerCase(),
-        full_name: parsed.full_name.trim(),
-        phone: phone || null,
-        source: 'kiosk',
-      })
-    } catch (clientErr) {
-      console.error('[kiosk/inquiry] Client creation failed:', clientErr)
-      return NextResponse.json({ error: 'Failed to create client record' }, { status: 500 })
-    }
+    // Store contact info on the inquiry (no auto-client creation).
+    // Chef can convert to a full client record later from the inquiry detail page.
+    const contactName = parsed.full_name.trim()
+    const contactEmail = email || null
+    const contactPhone = phone || null
 
     // 2. Create inquiry
     const sourceMessage = [
@@ -120,7 +108,10 @@ export async function POST(request: Request) {
       .insert({
         tenant_id: tenantId,
         channel: 'kiosk',
-        client_id: client.id,
+        client_id: null,
+        contact_name: contactName,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
         first_contact_at: new Date().toISOString(),
         confirmed_date: parsed.event_date,
         confirmed_guest_count: parsed.party_size,
@@ -168,7 +159,7 @@ export async function POST(request: Request) {
       .from('events')
       .insert({
         tenant_id: tenantId,
-        client_id: client.id,
+        client_id: null,
         inquiry_id: inquiry.id,
         event_date: parsed.event_date,
         serve_time: 'TBD',
