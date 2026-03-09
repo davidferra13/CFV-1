@@ -33,6 +33,7 @@ import {
   Activity,
   BookTemplate,
   List,
+  MoreHorizontal,
   Bookmark,
   Check,
   Copy,
@@ -99,8 +100,10 @@ export function RemyDrawer() {
     'chat' | 'list' | 'search' | 'actions' | 'templates'
   >('chat')
   const [showCapabilities, setShowCapabilities] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
 
+  const moreMenuRef = useRef<HTMLDivElement>(null)
   const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)
   const drawerDragCleanupRef = useRef<(() => void) | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -269,6 +272,18 @@ export function RemyDrawer() {
       setTimeout(() => textareaRef.current?.focus(), 100)
     }
   }, [open])
+
+  // Close more-menu on outside click
+  useEffect(() => {
+    if (!showMoreMenu) return
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showMoreMenu])
 
   // Ollama health check — detect limited mode
   const [ollamaOnline, setOllamaOnline] = useState(true)
@@ -656,65 +671,6 @@ export function RemyDrawer() {
               {drawerView === 'chat' && (
                 <>
                   <button
-                    onClick={() => setSoundEnabled((prev) => !prev)}
-                    className="text-white/80 hover:text-white transition-colors p-1"
-                    title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
-                    aria-label={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
-                  >
-                    {soundEnabled ? (
-                      <Volume2 className="h-4 w-4" />
-                    ) : (
-                      <VolumeX className="h-4 w-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setShowVoiceSettings((prev) => !prev)}
-                    className={`transition-colors p-1 ${showVoiceSettings ? 'text-white' : 'text-white/80 hover:text-white'}`}
-                    title="Voice settings"
-                    aria-label="Voice settings"
-                  >
-                    <Settings2 className="h-4 w-4" />
-                  </button>
-                  {supportsVoice && (
-                    <button
-                      type="button"
-                      onClick={toggleKitchenMode}
-                      className={`transition-colors p-1 ${
-                        kitchenMode
-                          ? 'text-green-400 animate-pulse'
-                          : 'text-white/80 hover:text-white'
-                      }`}
-                      title={
-                        kitchenMode
-                          ? 'Kitchen Mode on — say "Hey Remy"'
-                          : 'Kitchen Mode (hands-free)'
-                      }
-                      aria-label={kitchenMode ? 'Disable Kitchen Mode' : 'Enable Kitchen Mode'}
-                    >
-                      <Mic className="h-4 w-4" />
-                    </button>
-                  )}
-                  {currentConversationId && (
-                    <>
-                      <button
-                        onClick={handleExport}
-                        className="text-white/80 hover:text-white transition-colors p-1"
-                        title="Export conversation"
-                        aria-label="Export conversation"
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={handleSendToSupport}
-                        className="text-white/80 hover:text-white transition-colors p-1"
-                        title="Send to Support"
-                        aria-label="Send to Support"
-                      >
-                        <Headphones className="h-4 w-4" />
-                      </button>
-                    </>
-                  )}
-                  <button
                     onClick={() => handleNewConversation()}
                     className="text-white/80 hover:text-white transition-colors p-1"
                     title="New conversation"
@@ -722,9 +678,99 @@ export function RemyDrawer() {
                   >
                     <Plus className="h-4.5 w-4.5" />
                   </button>
+                  {/* Overflow menu for utility actions */}
+                  <div ref={moreMenuRef} className="relative">
+                    <button
+                      onClick={() => setShowMoreMenu((prev) => !prev)}
+                      className={`relative text-white/80 hover:text-white transition-colors p-1 ${showMoreMenu ? 'text-white' : ''}`}
+                      title="More options"
+                      aria-label="More options"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                      {kitchenMode && (
+                        <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                      )}
+                    </button>
+                    {showMoreMenu && (
+                      <div className="absolute right-0 top-full mt-1 w-52 rounded-lg bg-stone-800 border border-stone-600 shadow-xl z-50 py-1">
+                        <button
+                          onClick={() => {
+                            setSoundEnabled((prev) => !prev)
+                            setShowMoreMenu(false)
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-stone-200 hover:bg-white/10 transition-colors"
+                        >
+                          {soundEnabled ? (
+                            <Volume2 className="h-4 w-4 shrink-0" />
+                          ) : (
+                            <VolumeX className="h-4 w-4 shrink-0" />
+                          )}
+                          {soundEnabled ? 'Mute notifications' : 'Enable notifications'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowVoiceSettings((prev) => !prev)
+                            setShowMoreMenu(false)
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-stone-200 hover:bg-white/10 transition-colors"
+                        >
+                          <Settings2 className="h-4 w-4 shrink-0" />
+                          Voice settings
+                        </button>
+                        {supportsVoice && (
+                          <button
+                            onClick={() => {
+                              toggleKitchenMode()
+                              setShowMoreMenu(false)
+                            }}
+                            className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors hover:bg-white/10 ${kitchenMode ? 'text-green-400' : 'text-stone-200'}`}
+                          >
+                            <Mic className="h-4 w-4 shrink-0" />
+                            {kitchenMode ? 'Kitchen Mode (on)' : 'Kitchen Mode'}
+                          </button>
+                        )}
+                        {currentConversationId && (
+                          <>
+                            <div className="border-t border-stone-700 my-1" />
+                            <button
+                              onClick={() => {
+                                handleExport()
+                                setShowMoreMenu(false)
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-stone-200 hover:bg-white/10 transition-colors"
+                            >
+                              <Download className="h-4 w-4 shrink-0" />
+                              Export conversation
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleSendToSupport()
+                                setShowMoreMenu(false)
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-stone-200 hover:bg-white/10 transition-colors"
+                            >
+                              <Headphones className="h-4 w-4 shrink-0" />
+                              Send to Support
+                            </button>
+                          </>
+                        )}
+                        <div className="border-t border-stone-700 my-1" />
+                        <button
+                          onClick={() => {
+                            setShowCapabilities(!showCapabilities)
+                            setShowMoreMenu(false)
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-stone-200 hover:bg-white/10 transition-colors"
+                        >
+                          <Info className="h-4 w-4 shrink-0" />
+                          What can Remy do?
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
-              {/* View tabs — icon buttons for 5 views */}
+              {/* View tabs - icon buttons for 5 views */}
               <div className="flex items-center gap-0.5 border-l border-white/20 ml-1 pl-1">
                 {[
                   { view: 'chat' as const, icon: MessageSquare, title: 'Chat' },
@@ -749,13 +795,6 @@ export function RemyDrawer() {
                     <Icon className="h-3.5 w-3.5" />
                   </button>
                 ))}
-                <button
-                  onClick={() => setShowCapabilities(!showCapabilities)}
-                  className={`p-1 rounded transition-colors ${showCapabilities ? 'text-white bg-white/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
-                  title="What can Remy do?"
-                >
-                  <Info className="h-3.5 w-3.5" />
-                </button>
               </div>
               <button
                 onClick={closeDrawer}
