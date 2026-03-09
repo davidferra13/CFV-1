@@ -43,6 +43,7 @@ export function ClientConnections({
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [removingId, setRemovingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Add form state
@@ -132,6 +133,7 @@ export function ClientConnections({
   }
 
   async function handleRemove(connectionId: string) {
+    setRemovingId(connectionId)
     setSaving(true)
     setError(null)
     try {
@@ -141,6 +143,7 @@ export function ClientConnections({
       setError(e instanceof Error ? e.message : 'Failed to remove connection')
     } finally {
       setSaving(false)
+      setRemovingId(null)
     }
   }
 
@@ -249,7 +252,7 @@ export function ClientConnections({
                         disabled={saving}
                         className="text-red-600 hover:text-red-700 hover:bg-red-950"
                       >
-                        Remove
+                        {removingId === conn.id ? 'Removing...' : 'Remove'}
                       </Button>
                     </div>
                   </div>

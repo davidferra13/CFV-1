@@ -21,6 +21,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from '@/components/ui/icons'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
@@ -94,6 +95,19 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
 export function ClientSidebar({ userEmail }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+    } catch (e) {
+      console.error('[sign-out]', e)
+      setSigningOut(false)
+      return
+    }
+    window.location.href = '/'
+  }
 
   return (
     <aside
@@ -211,21 +225,19 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
         ) : null}
         <button
           type="button"
-          onClick={async () => {
-            try {
-              await signOut()
-            } catch (e) {
-              console.error('[sign-out]', e)
-            }
-            window.location.href = '/'
-          }}
-          title={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
+          onClick={handleSignOut}
+          disabled={signingOut}
+          title={collapsed ? (signingOut ? 'Signing out...' : 'Sign Out') : undefined}
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors disabled:opacity-50 ${
             collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
           }`}
         >
-          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-          {!collapsed && 'Sign Out'}
+          {signingOut ? (
+            <Loader2 className="w-[18px] h-[18px] flex-shrink-0 animate-spin" />
+          ) : (
+            <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+          )}
+          {!collapsed && (signingOut ? 'Signing out...' : 'Sign Out')}
         </button>
       </div>
     </aside>
@@ -235,8 +247,21 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
 export function ClientMobileNav({ userEmail }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
   const closeMenu = () => setMenuOpen(false)
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+    } catch (e) {
+      console.error('[sign-out]', e)
+      setSigningOut(false)
+      return
+    }
+    window.location.href = '/'
+  }
 
   return (
     <>
@@ -319,18 +344,16 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>
                 <button
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await signOut()
-                    } catch (e) {
-                      console.error('[sign-out]', e)
-                    }
-                    window.location.href = '/'
-                  }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 disabled:opacity-50"
                 >
-                  <LogOut className="w-[18px] h-[18px]" />
-                  Sign Out
+                  {signingOut ? (
+                    <Loader2 className="w-[18px] h-[18px] animate-spin" />
+                  ) : (
+                    <LogOut className="w-[18px] h-[18px]" />
+                  )}
+                  {signingOut ? 'Signing out...' : 'Sign Out'}
                 </button>
               </div>
             </nav>

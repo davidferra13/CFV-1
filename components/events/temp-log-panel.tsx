@@ -128,9 +128,9 @@ export function TempLogPanel({
               <button
                 onClick={() => handleDelete(log.id)}
                 disabled={deleting === log.id}
-                className="text-xs text-stone-300 hover:text-red-500 mt-1"
+                className="text-xs text-stone-300 hover:text-red-500 mt-1 disabled:opacity-50"
               >
-                {deleting === log.id ? '…' : '✕'}
+                {deleting === log.id ? 'Deleting...' : '✕'}
               </button>
             </div>
           ))}

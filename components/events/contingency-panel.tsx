@@ -32,6 +32,7 @@ export function ContingencyPanel({
   const [editing, setEditing] = useState<string | null>(null) // scenario_type being edited
   const [form, setForm] = useState({ mitigation_notes: '', backup_contact_id: '' })
   const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const noteMap = Object.fromEntries(initialNotes.map((n) => [n.scenario_type, n]))
@@ -69,11 +70,14 @@ export function ContingencyPanel({
   }
 
   async function handleDelete(id: string) {
+    setDeletingId(id)
     try {
       await deleteContingencyNote(id)
       router.refresh()
     } catch {
       /* silent */
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -122,9 +126,10 @@ export function ContingencyPanel({
                     )}
                     <button
                       onClick={() => handleDelete(existing.id)}
-                      className="text-xs text-stone-300 hover:text-red-500 mt-1"
+                      disabled={deletingId === existing.id}
+                      className="text-xs text-stone-300 hover:text-red-500 mt-1 disabled:opacity-50"
                     >
-                      Remove
+                      {deletingId === existing.id ? 'Removing...' : 'Remove'}
                     </button>
                   </div>
                 )}

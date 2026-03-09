@@ -59,6 +59,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [scheduledHours, setScheduledHours] = useState('')
   const [loading, setLoading] = useState(false)
+  const [removingId, setRemovingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recordingHoursFor, setRecordingHoursFor] = useState<string | null>(null)
   const [actualHoursInput, setActualHoursInput] = useState('')
@@ -91,6 +92,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
   }
 
   async function handleRemove(assignmentId: string) {
+    setRemovingId(assignmentId)
     setLoading(true)
     try {
       await removeStaffFromEvent(assignmentId, eventId)
@@ -99,6 +101,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
       setError(err instanceof Error ? err.message : 'Failed to remove staff')
     } finally {
       setLoading(false)
+      setRemovingId(null)
     }
   }
 
@@ -163,7 +166,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
                       onClick={() => handleRemove(a.id)}
                       disabled={loading}
                     >
-                      ×
+                      {removingId === a.id ? 'Removing...' : '×'}
                     </Button>
                   )}
                 </div>

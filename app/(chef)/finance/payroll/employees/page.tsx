@@ -19,13 +19,18 @@ function formatCurrency(cents: number): string {
 
 export default function PayrollEmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [editing, setEditing] = useState<Employee | null>(null)
   const [showTerminated, setShowTerminated] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   function reload() {
-    listEmployees(showTerminated).then(setEmployees)
+    setLoading(true)
+    listEmployees(showTerminated).then((data) => {
+      setEmployees(data)
+      setLoading(false)
+    })
   }
 
   useEffect(() => {
@@ -180,7 +185,14 @@ export default function PayrollEmployeesPage() {
                   </td>
                 </tr>
               ))}
-              {employees.length === 0 && (
+              {loading && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-stone-400">
+                    Loading employees...
+                  </td>
+                </tr>
+              )}
+              {!loading && employees.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-stone-400">
                     No employees found.

@@ -39,9 +39,9 @@ import {
   Search,
   Plus,
   Lock,
-  Sparkles,
   XCircle,
   CalendarCheck,
+  Loader2,
 } from '@/components/ui/icons'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
@@ -465,7 +465,7 @@ function NavGroupSection({
               href="/settings/billing"
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Lock className="w-3.5 h-3.5" />
               Upgrade to unlock
             </Link>
           </div>
@@ -616,6 +616,19 @@ export function ChefSidebar({
   const [navFilter, setNavFilter] = useState('')
   const isLockedIn = Boolean(lockedEventId)
   const [unlockPending, setUnlockPending] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = useCallback(async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+    } catch (e) {
+      console.error('[sign-out]', e)
+      setSigningOut(false)
+      return
+    }
+    window.location.href = '/'
+  }, [])
 
   const handleUnlock = useCallback(async () => {
     setUnlockPending(true)
@@ -672,10 +685,13 @@ export function ChefSidebar({
   }, [isAdmin, focusMode, isLockedIn])
   const groupEntries = useMemo(
     () =>
-      accessibleGroups.map((group) => ({
-        group,
-        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
-      })),
+      accessibleGroups
+        // Hide module-locked groups entirely for non-admins
+        .filter((group) => isAdmin || !enabledSet || !group.module || enabledSet.has(group.module))
+        .map((group) => ({
+          group,
+          isLocked: false,
+        })),
     [accessibleGroups, enabledSet, isAdmin]
   )
   const filteredGroupEntries = useMemo(
@@ -990,19 +1006,17 @@ export function ChefSidebar({
             {/* Sign Out — inside nav so it's above the Remy mascot */}
             <button
               type="button"
-              onClick={async () => {
-                try {
-                  await signOut()
-                } catch (e) {
-                  console.error('[sign-out]', e)
-                }
-                window.location.href = '/'
-              }}
+              onClick={handleSignOut}
+              disabled={signingOut}
               title="Sign Out"
               aria-label="Sign Out"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors disabled:opacity-50"
             >
-              <LogOut className="w-[18px] h-[18px]" />
+              {signingOut ? (
+                <Loader2 className="w-[18px] h-[18px] animate-spin" />
+              ) : (
+                <LogOut className="w-[18px] h-[18px]" />
+              )}
             </button>
           </div>
         ) : (
@@ -1210,18 +1224,16 @@ export function ChefSidebar({
                 {/* Sign Out — inside nav so it's above the Remy mascot */}
                 <button
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await signOut()
-                    } catch (e) {
-                      console.error('[sign-out]', e)
-                    }
-                    window.location.href = '/'
-                  }}
-                  className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent disabled:opacity-50"
                 >
-                  <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-                  Sign Out
+                  {signingOut ? (
+                    <Loader2 className="w-[18px] h-[18px] flex-shrink-0 animate-spin" />
+                  ) : (
+                    <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+                  )}
+                  {signingOut ? 'Signing out...' : 'Sign Out'}
                 </button>
               </>
             )}
@@ -1325,7 +1337,7 @@ function SectionAccordion({
               onClick={onNavigate}
               className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Lock className="w-3.5 h-3.5" />
               Upgrade to unlock
             </Link>
           </div>
@@ -1433,7 +1445,7 @@ function MobileGroupSection({
               onClick={onNavigate}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Lock className="w-3.5 h-3.5" />
               Upgrade to unlock
             </Link>
           </div>
@@ -1653,6 +1665,19 @@ export function ChefMobileNav({
   const [navFilter, setNavFilter] = useState('')
   const isLockedIn = Boolean(lockedEventId)
   const [unlockPending, setUnlockPending] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = useCallback(async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+    } catch (e) {
+      console.error('[sign-out]', e)
+      setSigningOut(false)
+      return
+    }
+    window.location.href = '/'
+  }, [])
 
   const handleUnlock = useCallback(async () => {
     setUnlockPending(true)
@@ -1731,10 +1756,13 @@ export function ChefMobileNav({
   }, [isAdmin, focusMode, isLockedIn])
   const groupEntries = useMemo(
     () =>
-      accessibleGroups.map((group) => ({
-        group,
-        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
-      })),
+      accessibleGroups
+        // Hide module-locked groups entirely for non-admins
+        .filter((group) => isAdmin || !enabledSet || !group.module || enabledSet.has(group.module))
+        .map((group) => ({
+          group,
+          isLocked: false,
+        })),
     [accessibleGroups, enabledSet, isAdmin]
   )
   const filteredGroupEntries = useMemo(
@@ -2128,18 +2156,16 @@ export function ChefMobileNav({
               <div className="pt-4 mt-4 border-t border-stone-800">
                 <button
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await signOut()
-                    } catch (e) {
-                      console.error('[sign-out]', e)
-                    }
-                    window.location.href = '/'
-                  }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 disabled:opacity-50"
                 >
-                  <LogOut className="w-[18px] h-[18px]" />
-                  Sign Out
+                  {signingOut ? (
+                    <Loader2 className="w-[18px] h-[18px] animate-spin" />
+                  ) : (
+                    <LogOut className="w-[18px] h-[18px]" />
+                  )}
+                  {signingOut ? 'Signing out...' : 'Sign Out'}
                 </button>
               </div>
             </nav>
