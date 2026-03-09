@@ -8,7 +8,7 @@ import {
   Calendar,
   RefreshCw,
   Gift,
-  Sparkles,
+  Users,
   Heart,
 } from '@/components/ui/icons'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
@@ -23,7 +23,7 @@ const ACTION_ICONS: Record<
   schedule_event: Calendar,
   request_feedback: Heart,
   send_birthday: Gift,
-  ask_referral: Sparkles,
+  ask_referral: Users,
   reach_out: MessageCircle,
   none: ArrowRight,
 }

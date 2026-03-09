@@ -1,6 +1,6 @@
 'use client'
 
-import { TrendingUp, TrendingDown, Minus, Sparkles } from '@/components/ui/icons'
+import { TrendingUp, TrendingDown, Minus, PlusCircle } from '@/components/ui/icons'
 import { type HolidayYoYRow } from '@/lib/analytics/seasonality'
 
 interface HolidayYoYTableProps {
@@ -16,7 +16,7 @@ function formatCents(cents: number): string {
 function TrendIcon({ trend }: { trend: HolidayYoYRow['trend'] }) {
   if (trend === 'up') return <TrendingUp className="h-3.5 w-3.5 text-green-600" />
   if (trend === 'down') return <TrendingDown className="h-3.5 w-3.5 text-red-500" />
-  if (trend === 'new') return <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+  if (trend === 'new') return <PlusCircle className="h-3.5 w-3.5 text-amber-500" />
   return <Minus className="h-3.5 w-3.5 text-stone-400" />
 }
 

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { suggestPhotoTags, confirmPhotoTag } from '@/lib/events/photo-tagging-actions'
-import { Image, Sparkles, Check, X, Tag } from '@/components/ui/icons'
+import { Image, Bot, Check, X, Tag } from '@/components/ui/icons'
 
 type Photo = {
   id: string
@@ -255,7 +255,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                       disabled={state.loading}
                       loading={state.loading}
                     >
-                      <Sparkles className="h-3.5 w-3.5" />
+                      <Bot className="h-3.5 w-3.5" />
                       {state.loading ? 'Analyzing...' : 'Suggest Tags'}
                     </Button>
                     {hasUnsavedChanges && state.confirmedTags.length > 0 && (

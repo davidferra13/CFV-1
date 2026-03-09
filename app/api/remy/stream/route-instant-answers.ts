@@ -1439,7 +1439,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       /^(?:(?:what'?s?\s+on\s+)?my\s+(?:todo|task)\s*(?:list)?|(?:show|list)\s+(?:my\s+)?(?:todos?|tasks?)|pending\s+(?:todos?|tasks?)|what\s+(?:do\s+i\s+)?need\s+to\s+do)/i,
     answer: (ctx) => {
       if (!ctx.activeTodos || ctx.activeTodos.length === 0) {
-        return { text: 'No pending tasks. Enjoy the clean slate! ✨' }
+        return { text: 'No pending tasks. Enjoy the clean slate.' }
       }
       const lines = [
         `**${ctx.activeTodos.length} pending task${ctx.activeTodos.length !== 1 ? 's' : ''}:**\n`,

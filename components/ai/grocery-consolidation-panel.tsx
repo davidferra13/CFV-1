@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ShoppingCart, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { ShoppingCart, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -52,7 +52,7 @@ export function GroceryConsolidationPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Consolidate
               </>
             )}

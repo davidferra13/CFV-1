@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Sparkles,
+  Bot,
   ChevronRight,
   ChevronLeft,
   Loader2,
@@ -531,7 +531,7 @@ export function PushDinnerBuilder() {
           <div className="border border-stone-700 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-600" />
+                <Bot className="w-4 h-4 text-brand-600" />
                 <span className="text-sm font-medium text-stone-300">Dinner Pitch</span>
                 <Badge variant={conceptDraft ? 'warning' : 'info'}>
                   {conceptDraft ? 'Draft' : 'Auto'}
@@ -547,7 +547,7 @@ export function PushDinnerBuilder() {
                   {conceptLoading ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
-                    <Sparkles className="w-3 h-3" />
+                    <Bot className="w-3 h-3" />
                   )}
                   {conceptLoading ? 'Drafting...' : 'Auto Draft'}
                 </Button>
@@ -843,7 +843,7 @@ export function PushDinnerBuilder() {
               {draftsLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Sparkles className="w-3.5 h-3.5" />
+                <Bot className="w-3.5 h-3.5" />
               )}
               {draftsLoading ? 'Generating...' : 'Generate All Drafts'}
             </Button>

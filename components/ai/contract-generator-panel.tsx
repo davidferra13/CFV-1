@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { FileText, Download, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateContract, type GeneratedContract } from '@/lib/ai/contract-generator'
@@ -53,7 +53,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Generate Contract
               </>
             )}

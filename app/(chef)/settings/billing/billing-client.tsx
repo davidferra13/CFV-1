@@ -13,8 +13,8 @@ import {
   Clock,
   AlertTriangle,
   CreditCard,
+  Crown,
   Star,
-  Sparkles,
   X,
 } from '@/components/ui/icons'
 
@@ -85,7 +85,7 @@ export function BillingClient({ status, upgraded }: Props) {
       {/* Post-upgrade success message */}
       {upgraded && (
         <div className="rounded-xl bg-green-950 border border-green-200 p-4 flex items-center gap-3">
-          <Sparkles size={18} className="text-green-600 shrink-0" />
+          <CheckCircle2 size={18} className="text-green-600 shrink-0" />
           <p className="text-sm font-medium text-green-800">
             Welcome to ChefFlow Pro! Your subscription is now active.
           </p>
@@ -195,7 +195,7 @@ export function BillingClient({ status, upgraded }: Props) {
         <div className="rounded-xl border-2 border-brand-600 bg-gradient-to-b from-brand-50/50 to-white p-6">
           <div className="flex items-center gap-2 mb-4">
             <h3 className="text-base font-semibold text-stone-100">Pro</h3>
-            <Sparkles size={14} className="text-brand-500" />
+            <Crown size={14} className="text-brand-500" />
           </div>
           <p className="text-xs text-stone-500 mb-3">Everything in Free, plus:</p>
           <div className="space-y-3">
@@ -210,7 +210,7 @@ export function BillingClient({ status, upgraded }: Props) {
                       key={feature.slug}
                       className="flex items-start gap-2.5 text-sm text-stone-300"
                     >
-                      <Sparkles size={12} className="shrink-0 text-brand-500 mt-0.5" />
+                      <Crown size={12} className="shrink-0 text-brand-500 mt-0.5" />
                       {feature.label}
                     </li>
                   ))}
@@ -222,7 +222,7 @@ export function BillingClient({ status, upgraded }: Props) {
           {!isPro && (
             <form action={redirectToCheckout} className="mt-5">
               <Button type="submit" variant="primary" className="w-full">
-                <Sparkles size={15} className="mr-2" />
+                <Crown size={15} className="mr-2" />
                 Upgrade to Pro
               </Button>
             </form>

@@ -8,7 +8,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Sparkles, Lock, Focus, Eye, EyeOff } from '@/components/ui/icons'
+import { Crown, Lock, Focus, Eye, EyeOff } from '@/components/ui/icons'
 import { MODULES } from '@/lib/billing/modules'
 import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
@@ -238,7 +238,7 @@ export function ModulesClient({
                         </h3>
                         {isProModule && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-900 text-brand-400 dark:bg-brand-900 dark:text-brand-300">
-                            <Sparkles size={10} />
+                            <Crown size={10} />
                             Pro
                           </span>
                         )}

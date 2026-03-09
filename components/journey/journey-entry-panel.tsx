@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState, useTransition } from 'react'
-import { BookOpen, Link2, MapPin, Pencil, Plus, Sparkles, Trash2 } from '@/components/ui/icons'
+import { BookOpen, Lightbulb, Link2, MapPin, Pencil, Plus, Trash2 } from '@/components/ui/icons'
 import {
   createChefJourneyEntry,
   deleteChefJourneyEntry,
@@ -532,7 +532,7 @@ export function JourneyEntryPanel({
                     key={`${entry.id}-idea-${index}`}
                     className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-[11px]"
                   >
-                    <Sparkles className="w-3 h-3" />
+                    <Lightbulb className="w-3 h-3" />
                     {idea}
                   </span>
                 ))}

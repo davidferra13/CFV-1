@@ -8,7 +8,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTour } from './tour-provider'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Circle, ChevronDown, ChevronUp, X, Sparkles } from '@/components/ui/icons'
+import { CheckCircle2, Circle, ChevronDown, ChevronUp, X } from '@/components/ui/icons'
 
 export function TourChecklist() {
   const tour = useTour()
@@ -32,7 +32,7 @@ export function TourChecklist() {
       {/* Header */}
       <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-brand-500" />
+          <CheckCircle2 className="h-4 w-4 text-brand-500" />
           <span className="text-sm font-semibold text-stone-200">Getting Started</span>
           <span className="text-xs text-stone-400 bg-stone-700 px-2 py-0.5 rounded-full">
             {tour.completedCount}/{tour.totalSteps}

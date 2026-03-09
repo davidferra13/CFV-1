@@ -6,7 +6,7 @@ import {
   ChevronRight,
   ChevronLeft,
   StickyNote,
-  Sparkles,
+  Brain,
   Pin,
   User,
   Plus,
@@ -77,7 +77,7 @@ export function ChatSidebar({
           {notes.length > 0 && <span className="text-[10px] text-stone-400">{notes.length}</span>}
           {initialInsights.length > 0 && (
             <>
-              <Sparkles className="w-4 h-4 text-amber-400 mt-1" />
+              <Brain className="w-4 h-4 text-amber-400 mt-1" />
               <span className="text-[10px] text-amber-500">{initialInsights.length}</span>
             </>
           )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bot, MessageSquare, Brain, ShieldCheck, Trash2, Sparkles } from '@/components/ui/icons'
+import { Bot, MessageSquare, Brain, ShieldCheck, Trash2 } from '@/components/ui/icons'
 import { CommandCenterClient } from '@/components/ai/command-center-client'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
 import { DataControls } from '@/components/ai-privacy/data-controls'
@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 // ─── Tab Config ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'chat', label: 'Chat', icon: Sparkles },
+  { id: 'chat', label: 'Chat', icon: Bot },
   { id: 'history', label: 'History', icon: MessageSquare },
   { id: 'memory', label: 'Memory', icon: Brain },
   { id: 'settings', label: 'Settings', icon: ShieldCheck },

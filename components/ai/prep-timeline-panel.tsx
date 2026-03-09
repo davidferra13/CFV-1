@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ListOrdered, Loader2, Sparkles, AlertCircle } from '@/components/ui/icons'
+import { ListOrdered, Loader2, Bot, AlertCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generatePrepTimeline, type PrepTimeline } from '@/lib/ai/prep-timeline'
@@ -40,7 +40,7 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Generate Prep Plan
               </>
             )}

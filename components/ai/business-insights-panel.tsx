@@ -4,7 +4,7 @@ import { useState } from 'react'
 import {
   BarChart3,
   Loader2,
-  Sparkles,
+  Bot,
   TrendingUp,
   TrendingDown,
   AlertCircle,
@@ -67,7 +67,7 @@ export function BusinessInsightsPanel() {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Get Insights
               </>
             )}

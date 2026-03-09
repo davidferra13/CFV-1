@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { FormEvent, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Camera, Lightbulb, MapPin, Plus, Sparkles, Trash2 } from '@/components/ui/icons'
+import { BookOpen, Camera, Lightbulb, MapPin, Plus, Trash2 } from '@/components/ui/icons'
 import { createChefJourney, deleteChefJourney } from '@/lib/journey/actions'
 import type {
   ChefJourneyInsights,
@@ -476,7 +476,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                             key={`${journey.id}-idea-${index}`}
                             className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-[11px]"
                           >
-                            <Sparkles className="w-3 h-3" />
+                            <Lightbulb className="w-3 h-3" />
                             {idea}
                           </span>
                         ))}

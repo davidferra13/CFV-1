@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Share2, Copy, Loader2, Sparkles } from '@/components/ui/icons'
+import { Share2, Copy, Loader2, Bot } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -71,7 +71,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3 h-3 mr-1" />
+                  <Bot className="w-3 h-3 mr-1" />
                   Generate
                 </>
               )}

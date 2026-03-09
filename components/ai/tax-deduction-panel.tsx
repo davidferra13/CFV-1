@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Receipt, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { Receipt, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -46,7 +46,7 @@ export function TaxDeductionPanel() {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Scan Deductions
               </>
             )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Printer, Copy, Loader2, Sparkles } from '@/components/ui/icons'
+import { Users, Printer, Copy, Loader2, Bot } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAIStaffBriefing, type AIStaffBriefing } from '@/lib/ai/staff-briefing-ai'
@@ -52,7 +52,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Generate Briefing
               </>
             )}

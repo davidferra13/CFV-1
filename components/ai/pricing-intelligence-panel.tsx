@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp, AlertTriangle, Loader2, Sparkles } from '@/components/ui/icons'
+import { TrendingUp, AlertTriangle, Loader2, Bot } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -66,7 +66,7 @@ export function PricingIntelligencePanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Analyze Pricing
               </>
             )}

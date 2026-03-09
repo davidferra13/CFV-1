@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import {
-  Sparkles,
+  Brain,
   Check,
   X,
   Calendar,
@@ -77,7 +77,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
   return (
     <div className="px-3 pb-3">
       <div className="flex items-center gap-1.5 mb-2">
-        <Sparkles className="w-3 h-3 text-amber-500" />
+        <Brain className="w-3 h-3 text-amber-500" />
         <span className="text-xs font-medium text-amber-700">Smart Suggestions</span>
         <span className="text-[10px] text-amber-500">({insights.length})</span>
       </div>

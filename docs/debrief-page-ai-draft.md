@@ -23,7 +23,7 @@ were already fully implemented. No new page was needed.
 
 In the "Notes to self" section of the Reflection tab:
 
-- When `outcomeNotes` is empty, shows a "✨ Draft with AI" button next to the label
+- When `outcomeNotes` is empty, shows an "Auto Draft" button next to the label
 - On click: calls `generateDebriefDraft`, populates textarea with draft text
 - Loading state: "⏳ Drafting..."
 - Error state: "Try again" (red, auto-resets after 3s)

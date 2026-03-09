@@ -1,9 +1,9 @@
 import {
   ArrowRight,
   CheckCircle2,
+  Clock,
   MinusCircle,
   ShieldCheck,
-  Sparkles,
   XCircle,
 } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
@@ -71,7 +71,7 @@ function ComparisonPill({ cell }: { cell: ComparisonCell }) {
   if (cell.state === 'pilot') {
     return (
       <span className="inline-flex items-center gap-2 text-sm text-stone-200">
-        <Sparkles className={iconClass} />
+        <Clock className={iconClass} />
         {cell.note}
       </span>
     )

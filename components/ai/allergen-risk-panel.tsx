@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ShieldAlert, CheckCircle, AlertTriangle, Loader2, Sparkles } from '@/components/ui/icons'
+import { ShieldAlert, CheckCircle, AlertTriangle, Loader2, Bot } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getEventAllergenRisk, type AllergenRiskResult } from '@/lib/ai/allergen-risk'
@@ -62,7 +62,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Run Analysis
               </>
             )}

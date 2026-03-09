@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Recycle, Loader2, Sparkles, DollarSign } from '@/components/ui/icons'
+import { Recycle, Loader2, Bot, DollarSign } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -53,7 +53,7 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Find Matches
               </>
             )}

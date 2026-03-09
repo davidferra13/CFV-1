@@ -188,7 +188,7 @@ Worse performance at 12 concurrent
 
 ### 1. Popup Notification (Windows)
 
-- **Title:** ✨ Variant Test Complete!
+- **Title:** Variant Test Complete!
 - **Body:** 12 concurrent users, 2 hours sustained load finished
 - **Sound:** System notification chime
 

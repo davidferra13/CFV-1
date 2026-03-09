@@ -19,7 +19,6 @@ import {
   Clock,
   AlertTriangle,
   Star,
-  Sparkles,
   Utensils,
 } from '@/components/ui/icons'
 import { getMuseData, type MuseData } from '@/lib/games/menu-muse-actions'
@@ -711,7 +710,7 @@ export default function MenuMusePage() {
               {data.ideas.testing.length > 0 && (
                 <div>
                   <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
-                    <Sparkles className="h-4 w-4 text-amber-500" /> Currently Testing
+                    <Lightbulb className="h-4 w-4 text-amber-500" /> Currently Testing
                   </h3>
                   <div className="grid gap-2">
                     {data.ideas.testing.map((idea) => (

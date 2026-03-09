@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Apple, Loader2, Sparkles } from '@/components/ui/icons'
+import { Apple, Loader2, Bot } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getMenuNutritionalSummary, type MenuNutritionalSummary } from '@/lib/ai/menu-nutritional'
@@ -39,7 +39,7 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Estimate Nutrition
               </>
             )}

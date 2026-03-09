@@ -494,10 +494,10 @@ Contains `<PushDinnerBuilder />` -- a **5-step wizard** (detailed below).
 
 **AI Concept Draft section:**
 
-- **Icon:** Sparkles (brand-600)
+- **Icon:** Bot (brand-600)
 - **Label:** "Dinner Pitch"
 - **Badge:** "Auto" (variant `info`) or "Draft" (variant `warning`)
-- **Auto Draft button (conditional: no concept yet):** `<Button variant="secondary">` with Sparkles icon -- label "Auto Draft" (or "Drafting..." with spinner), disabled when no occasion or loading
+- **Auto Draft button (conditional: no concept yet):** `<Button variant="secondary">` with Bot icon -- label "Auto Draft" (or "Drafting..." with spinner), disabled when no occasion or loading
 - **Reset button (conditional: concept exists):** `<Button variant="ghost">` -- label "Reset", clears concept
 - **Editable textarea (conditional: concept exists):** `<textarea>`, 5 rows, prefilled with AI-generated hook + description + CTA
 - **Placeholder text (conditional: no concept):** "Select an occasion above, then click Auto Draft..."
@@ -565,7 +565,7 @@ Contains `<PushDinnerBuilder />` -- a **5-step wizard** (detailed below).
 
 **Control buttons:**
 
-- **Generate All Drafts button:** `<Button variant="secondary">` with Sparkles icon -- label "Generate All Drafts" (or "Generating..." with spinner)
+- **Generate All Drafts button:** `<Button variant="secondary">` with Bot icon -- label "Generate All Drafts" (or "Generating..." with spinner)
 - **Approve All button (conditional: unapproved drafts with body exist):** `<Button variant="secondary">` with Check icon -- label "Approve All"
 - **Approved count badge (conditional):** Badge "{N} approved" (variant `success`)
 

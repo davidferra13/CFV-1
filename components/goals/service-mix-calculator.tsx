@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useRef } from 'react'
-import { Minus, Plus, Sparkles } from '@/components/ui/icons'
+import { Minus, Plus, Bot } from '@/components/ui/icons'
 import type { ChefGoal, ServiceType, ServiceSlotClientMatch } from '@/lib/goals/types'
 import { computeServiceMixPlan, formatDollars } from '@/lib/goals/service-mix-utils'
 import { getClientMatchesForServiceType, autoSuggestMix } from '@/lib/goals/service-mix-actions'
@@ -144,7 +144,7 @@ export function ServiceMixCalculator({
               onClick={handleAutoSuggest}
               disabled={autoSuggestPending || serviceTypes.length === 0}
             >
-              <Sparkles className="h-4 w-4 mr-1.5" />
+              <Bot className="h-4 w-4 mr-1.5" />
               {autoSuggestPending ? 'Calculating…' : 'Auto-suggest mix'}
             </Button>
           </div>

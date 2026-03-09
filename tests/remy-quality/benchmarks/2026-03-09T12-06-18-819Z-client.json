@@ -626,7 +626,7 @@
         "tokenCount": 170
       },
       "responseLength": 730,
-      "response": "Hey Alice! I'd love to help you plan that weekend getaway with 3 dinners and 2 brunches 🍽️\n\nI don't see any upcoming events in your dashboard yet, but I can definitely help you book those meals. Since you're looking for multiple meals, we'll want to set up a custom package.\n\nFor your weekend getaway, I'd suggest:\n- **3 dinner services** (think: seared scallops, herb-crusted lamb, or braised short rib)\n- **2 brunch services** (perhaps: fluffy pancakes with berry compote, or savory French toast with goat cheese)\n\nWould you like me to walk you through the booking process? You can start by heading to the **Book Now** page to select your dates and meal preferences ✨\n\nNAV_SUGGESTIONS: [{\"label\":\"Book Now\",\"href\":\"/book-now\"}]",
+      "response": "Hey Alice! I'd love to help you plan that weekend getaway with 3 dinners and 2 brunches 🍽️\n\nI don't see any upcoming events in your dashboard yet, but I can definitely help you book those meals. Since you're looking for multiple meals, we'll want to set up a custom package.\n\nFor your weekend getaway, I'd suggest:\n- **3 dinner services** (think: seared scallops, herb-crusted lamb, or braised short rib)\n- **2 brunch services** (perhaps: fluffy pancakes with berry compote, or savory French toast with goat cheese)\n\nWould you like me to walk you through the booking process? You can start by heading to the **Book Now** page to select your dates and meal preferences.\n\nNAV_SUGGESTIONS: [{\"label\":\"Book Now\",\"href\":\"/book-now\"}]",
       "error": null
     },
     {
@@ -1731,7 +1731,7 @@
         "tokenCount": 148
       },
       "responseLength": 683,
-      "response": "Your **TEST Draft Birthday Dinner** on **April 23, 2026** is currently in draft status — so we can absolutely adjust the menu to a 7-course tasting! 🎉\n\nChef is excited to create something special for your celebration, and a tasting menu is a wonderful choice for a birthday dinner. The 7-course format allows for a beautiful journey through flavors and textures — think of it like a culinary story arc 📖\n\nYou can update your menu preferences on your **My Events** page — just open the event and make your changes. If you'd like, I can walk you through the current tasting menu options or help you finalize the details ✨\n\nNAV_SUGGESTIONS: [{\"label\":\"My Events\",\"href\":\"/my-events\"}]",
+      "response": "Your **TEST Draft Birthday Dinner** on **April 23, 2026** is currently in draft status — so we can absolutely adjust the menu to a 7-course tasting! 🎉\n\nChef is excited to create something special for your celebration, and a tasting menu is a wonderful choice for a birthday dinner. The 7-course format allows for a beautiful journey through flavors and textures — think of it like a culinary story arc 📖\n\nYou can update your menu preferences on your **My Events** page — just open the event and make your changes. If you'd like, I can walk you through the current tasting menu options or help you finalize the details.\n\nNAV_SUGGESTIONS: [{\"label\":\"My Events\",\"href\":\"/my-events\"}]",
       "error": null
     },
     {
@@ -3164,7 +3164,7 @@
         "tokenCount": 171
       },
       "responseLength": 732,
-      "response": "Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is set for **6 guests** — and the price includes **everything** from ingredients to cleanup! 🎉\n\nThat means **yes**, the cost covers all groceries, specialty ingredients, and even the chef’s time in the kitchen. You're getting a full-service experience — from sourcing the finest produce to plating the dishes. 🥬✨\n\nChef will handle all the prep, cooking, and cleanup, so you can focus on enjoying the evening with your guests. The menu is still in draft form, but it's shaping up to be a delicious one — and I'm excited to share more details when it's ready! 🍽️\n\nWant me to walk you through the full menu? 🤤  \nNAV_SUGGESTIONS: [{\"label\":\"My Events\",\"href\":\"/my-events\"}]",
+      "response": "Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is set for **6 guests** — and the price includes **everything** from ingredients to cleanup! 🎉\n\nThat means **yes**, the cost covers all groceries, specialty ingredients, and even the chef’s time in the kitchen. You're getting a full-service experience — from sourcing the finest produce to plating the dishes. 🥬\n\nChef will handle all the prep, cooking, and cleanup, so you can focus on enjoying the evening with your guests. The menu is still in draft form, but it's shaping up to be a delicious one — and I'm excited to share more details when it's ready! 🍽️\n\nWant me to walk you through the full menu? 🤤  \nNAV_SUGGESTIONS: [{\"label\":\"My Events\",\"href\":\"/my-events\"}]",
       "error": null
     },
     {
@@ -3328,7 +3328,7 @@
         "tokenCount": 126
       },
       "responseLength": 536,
-      "response": "Hey Alice! I can’t check if there are discounts for booking multiple events — that’s something you’d want to discuss directly with Chef. They handle all the loyalty and discount details, so I’d recommend heading over to the **My Chat** page to message them about your plans 📩\n\nIf you're looking to book your next event, you can also check out the **Book Now** page — and with your bronze tier, you're just 100 points away from silver! ✨\n\nNAV_SUGGESTIONS: [{\"label\":\"My Chat\",\"href\":\"/my-chat\"}, {\"label\":\"Book Now\",\"href\":\"/book-now\"}]",
+      "response": "Hey Alice! I can’t check if there are discounts for booking multiple events — that’s something you’d want to discuss directly with Chef. They handle all the loyalty and discount details, so I’d recommend heading over to the **My Chat** page to message them about your plans 📩\n\nIf you're looking to book your next event, you can also check out the **Book Now** page — and with your bronze tier, you're just 100 points away from silver!\n\nNAV_SUGGESTIONS: [{\"label\":\"My Chat\",\"href\":\"/my-chat\"}, {\"label\":\"Book Now\",\"href\":\"/book-now\"}]",
       "error": null
     },
     {
@@ -3692,7 +3692,7 @@
         "tokenCount": 135
       },
       "responseLength": 579,
-      "response": "Your food will be prepped right in your **100 E2E Test Street** venue — Chef will set up their kitchen station there so you get the full experience without any extra hassle. 🍳\n\nSince this is a **draft** event for your birthday dinner on **April 23rd**, we’re still locking in the final details, but you can expect the prep to happen in your space. That means you’ll have the full control and comfort of your own home or venue while Chef handles all the cooking magic ✨\n\nWant me to walk you through the full menu? 🍽️\n\nNAV_SUGGESTIONS: [{\"label\":\"My Events\",\"href\":\"/my-events\"}]",
+      "response": "Your food will be prepped right in your **100 E2E Test Street** venue — Chef will set up their kitchen station there so you get the full experience without any extra hassle. 🍳\n\nSince this is a **draft** event for your birthday dinner on **April 23rd**, we’re still locking in the final details, but you can expect the prep to happen in your space. That means you’ll have the full control and comfort of your own home or venue while Chef handles all the cooking magic.\n\nWant me to walk you through the full menu? 🍽️\n\nNAV_SUGGESTIONS: [{\"label\":\"My Events\",\"href\":\"/my-events\"}]",
       "error": null
     },
     {

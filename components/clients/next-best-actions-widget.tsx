@@ -1,14 +1,7 @@
 // Next Best Actions Widget — shows top 5 client actions needed on the dashboard
 
 import Link from 'next/link'
-import {
-  ArrowRight,
-  MessageCircle,
-  Calendar,
-  RefreshCw,
-  Gift,
-  Sparkles,
-} from '@/components/ui/icons'
+import { ArrowRight, MessageCircle, Calendar, RefreshCw, Gift, Users } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 
@@ -20,7 +13,7 @@ const ACTION_ICONS: Partial<
   re_engage: RefreshCw,
   schedule_event: Calendar,
   send_birthday: Gift,
-  ask_referral: Sparkles,
+  ask_referral: Users,
   reach_out: MessageCircle,
 }
 

@@ -10,44 +10,47 @@
 
 ## Summary
 
-| Metric | Value |
-|--------|-------|
-| **Pass Rate** | 29.0% (29/100) |
-| **Failures** | 71 |
-| **Avg Response Time** | 105087ms |
-| **Median Response Time** | 108027ms |
-| **P95 Response Time** | 168644ms |
-| **Avg First Token** | 89897ms |
-| **Median First Token** | 93417ms |
-| **Avg Tokens/Response** | 147 |
-| **Avg Tokens/sec** | 2.0 |
+| Metric                   | Value          |
+| ------------------------ | -------------- |
+| **Pass Rate**            | 29.0% (29/100) |
+| **Failures**             | 71             |
+| **Avg Response Time**    | 105087ms       |
+| **Median Response Time** | 108027ms       |
+| **P95 Response Time**    | 168644ms       |
+| **Avg First Token**      | 89897ms        |
+| **Median First Token**   | 93417ms        |
+| **Avg Tokens/Response**  | 147            |
+| **Avg Tokens/sec**       | 2.0            |
 
 ---
 
 ## Category Breakdown
 
-| Category | Pass | Fail | Rate |
-|----------|------|------|------|
-| booking_inquiries | 7 | 8 | 47% |
-| dietary_allergies | 5 | 10 | 33% |
-| menu_food | 8 | 12 | 40% |
-| guest_count | 4 | 3 | 57% |
-| pricing_payments | 2 | 11 | 15% |
-| event_logistics | 3 | 12 | 20% |
-| communication_status | 0 | 7 | 0% |
-| post_event_rebooking | 0 | 8 | 0% |
+| Category             | Pass | Fail | Rate |
+| -------------------- | ---- | ---- | ---- |
+| booking_inquiries    | 7    | 8    | 47%  |
+| dietary_allergies    | 5    | 10   | 33%  |
+| menu_food            | 8    | 12   | 40%  |
+| guest_count          | 4    | 3    | 57%  |
+| pricing_payments     | 2    | 11   | 15%  |
+| event_logistics      | 3    | 12   | 20%  |
+| communication_status | 0    | 7    | 0%   |
+| post_event_rebooking | 0    | 8    | 0%   |
 
 ---
 
 ## Failures
 
 ### #2: How much does a dinner for 10 cost?
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 134571ms (max: 120000ms)
 
 **Response:**
+
 ```
 I don’t have the specific quote for a dinner for 10 in my context — that would be in your **My Quotes** page. You can check there for the full breakdown of costs, including ingredients, service, and any additional fees 💳
 
@@ -57,16 +60,19 @@ NAV_SUGGESTIONS: [{"label":"My Quotes","href":"/my-quotes"}, {"label":"Book Now"
 ```
 
 ### #3: Are you available next weekend?
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 159867ms (max: 120000ms)
 
 **Response:**
+
 ```
 I'm checking my schedule for next weekend — let me see what's available for you 📅
 
-Based on what I can see, I don't have any confirmed events scheduled for next weekend, so I'm available for a new booking! 
+Based on what I can see, I don't have any confirmed events scheduled for next weekend, so I'm available for a new booking!
 
 If you're thinking about planning something, you can check out the **Book Now** page to see what dates work best for you 🗓️
 
@@ -76,12 +82,15 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 ### #5: Can I book the same chef I had last time?
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 148342ms (max: 120000ms)
 
 **Response:**
+
 ```
 Absolutely — you can book the same chef for your next event! Since your last event was the **TEST Completed New Years Dinner** on **2026-02-07**, your chef is already assigned to you. 🎉
 
@@ -91,14 +100,17 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 ### #6: I need to cancel my event on March 15
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 131972ms (max: 120000ms)
 
 **Response:**
+
 ```
-I don't see any event scheduled for March 15 in your upcoming events — the only draft event I can see is your **TEST Birthday Dinner on April 23** at 100 E2E Test Street. 
+I don't see any event scheduled for March 15 in your upcoming events — the only draft event I can see is your **TEST Birthday Dinner on April 23** at 100 E2E Test Street.
 
 Could you be referring to that one? If so, I can help you with updating or canceling it — just let me know how you'd like to proceed. You can manage the event details on your **My Events** page 📋
 
@@ -106,12 +118,15 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #8: I want to change the date from the 10th to the 17th
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 138645ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your event is currently in **draft** status, which means we can still make changes to the date. The event is set for **April 23, 2026**, and you'd like to move it to **April 17, 2026** — I can help you update that!
 
@@ -123,25 +138,31 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #9: How far in advance do I need to book?
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #10: Do you do corporate lunches?
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 131563ms (max: 120000ms)
 
 **Response:**
+
 ```
-Hey Alice! I don't see any corporate lunch events in your upcoming or past events — but I'd be happy to help you explore that option! 
+Hey Alice! I don't see any corporate lunch events in your upcoming or past events — but I'd be happy to help you explore that option!
 
 We do offer private chef services for corporate events, and I can help you book something that fits your needs. Whether it's a casual lunch or a more formal affair, we can customize the menu and service style to match your company's vibe.
 
@@ -151,12 +172,15 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 ### #11: I want a chef for a weekend getaway — 3 dinners and 2 brunches
+
 **Category:** booking_inquiries
 
 **Failed checks:**
+
 - timing: 136794ms (max: 120000ms)
 
 **Response:**
+
 ```
 Hey Alice! I'd love to help you plan that weekend getaway with 3 dinners and 2 brunches 🍽️
 
@@ -166,18 +190,21 @@ For your weekend getaway, I'd suggest:
 - **3 dinner services** (think: seared scallops, herb-crusted lamb, or braised short rib)
 - **2 brunch services** (perhaps: fluffy pancakes with berry compote, or savory French toast with goat cheese)
 
-Would you like me to walk you through the booking process? You can start by heading to the **Book Now** page to select your dates and meal preferences ✨
+Would you like me to walk you through the booking process? You can start by heading to the **Book Now** page to select your dates and meal preferences.
 
 NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 ### #18: Everything needs to be gluten-free
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - timing: 161931ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is all set to be gluten-free — Chef has your dietary note front and center. 🎉
 
@@ -189,61 +216,76 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #19: I'm lactose intolerant but can handle hard cheeses
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - timing: 154377ms (max: 120000ms)
 
 **Response:**
+
 ```
-Your **draft birthday dinner** on **April 23, 2026**, is all set to go — and I've made sure your **lactose intolerance** is front and center in the planning. Chef will be working around your dietary needs, including noting that you can handle **hard cheeses**. 
+Your **draft birthday dinner** on **April 23, 2026**, is all set to go — and I've made sure your **lactose intolerance** is front and center in the planning. Chef will be working around your dietary needs, including noting that you can handle **hard cheeses**.
 
-You're all set for **6 guests** at your event on **100 E2E Test Street**. The menu is still in draft form, but we’re making sure nothing sneaky gets into your meal — especially anything with soft cheeses or dairy-heavy sauces. 
+You're all set for **6 guests** at your event on **100 E2E Test Street**. The menu is still in draft form, but we’re making sure nothing sneaky gets into your meal — especially anything with soft cheeses or dairy-heavy sauces.
 
-Want me to walk you through the full menu? 🍽️  
+Want me to walk you through the full menu? 🍽️
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #20: One guest keeps strictly kosher
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #22: Someone has a shellfish allergy — not just preference, anaphylaxis
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #23: Can you do keto for me and regular for everyone else?
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #25: My son has celiac — cross contamination is a concern
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - timing: 133312ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your upcoming **TEST Draft Birthday Dinner on 2026-04-23** is set for 6 guests — and I've flagged your son's celiac disease in the system. Chef has your allergy notes front and center, and they're experienced with managing cross-contamination concerns 🚫🍳
 
@@ -255,60 +297,75 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #26: No nuts of any kind at the table
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #28: We're mostly vegetarian but two people eat meat
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #29: I'm pregnant — no raw fish, no soft cheese
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #30: Can you handle multiple allergies at the same table? We're a complicated group
+
 **Category:** dietary_allergies
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #32: Can we add a pasta course?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 141804ms (max: 120000ms)
 
 **Response:**
-```
-Hey Alice! I'd be happy to help you add a pasta course to your upcoming birthday dinner on April 23rd. 
 
-Currently, your event is in **draft** status, which means we can still make changes to the menu. The event is set for 6 guests at your address on 100 E2E Test Street. 
+```
+Hey Alice! I'd be happy to help you add a pasta course to your upcoming birthday dinner on April 23rd.
+
+Currently, your event is in **draft** status, which means we can still make changes to the menu. The event is set for 6 guests at your address on 100 E2E Test Street.
 
 You can update the menu directly on your **My Events** page — just open the event and you'll see options to add or modify courses. Since you're adding a pasta course, I'd recommend checking if there are any dietary restrictions we should consider for your guests.
 
@@ -318,12 +375,15 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #33: I want to change the dessert to something chocolate
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 129050ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your birthday dinner on **April 23, 2026**, is currently in **draft** status — which means we can still make changes to the menu! 🎉
 
@@ -335,23 +395,29 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #35: I want Mediterranean food
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #36: Can I see the menu options before I commit?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 170537ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is still in draft status, so the menu hasn't been locked in yet — but I'd be happy to walk you through the options! 🎉
 
@@ -363,12 +429,15 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #37: Can we add appetizers and cocktail hour bites?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 128837ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is currently set for **6 guests** at **100 E2E Test Street** — and I’d be happy to help you add some appetizers and cocktail hour bites! 🎉
 
@@ -380,23 +449,29 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #38: Can we swap the fish for chicken on the main?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #41: I want comfort food — mac and cheese, short ribs, that kind of thing
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 141580ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is shaping up to be a cozy celebration! 🎉 I can already picture the creamy, golden **mac and cheese** with a crispy breadcrumb top — Chef’s got that perfectly balanced, indulgent comfort food vibe down to a science 🧀
 
@@ -408,34 +483,43 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #42: Can the chef do sushi?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #45: I want farm-to-table — seasonal, local ingredients
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #47: We want French bistro style
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 168644ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026** is shaping up to be a lovely French bistro experience 🍽️
 
@@ -447,16 +531,19 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #48: Can we do a brunch instead of dinner?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - timing: 179271ms (max: 120000ms)
 
 **Response:**
-```
-Your event is currently set for a **dinner** on **April 23, 2026** — but I can help you switch it to a brunch if you'd like! 
 
-Since it's still in **draft** status, we can easily make that change. Just let me know what time you'd prefer for the brunch, and I can help update the details for you. 
+```
+Your event is currently set for a **dinner** on **April 23, 2026** — but I can help you switch it to a brunch if you'd like!
+
+Since it's still in **draft** status, we can easily make that change. Just let me know what time you'd prefer for the brunch, and I can help update the details for you.
 
 You can also check out your event on the **My Events** page to make any adjustments — or if you'd like, I can walk you through the full menu options for a brunch experience 🍽️
 
@@ -464,86 +551,107 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #50: Can you do a dessert-only event? Like a pastry tasting?
+
 **Category:** menu_food
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #52: We're down to 8 instead of 12 — two couples dropped out
+
 **Category:** guest_count
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #54: One guest cancelled last minute
+
 **Category:** guest_count
 
 **Failed checks:**
+
 - timing: 166900ms (max: 120000ms)
 
 **Response:**
+
 ```
-Your **TEST Birthday Dinner** on **April 23, 2026**, is currently in **draft** status with **6 guests** confirmed.  
+Your **TEST Birthday Dinner** on **April 23, 2026**, is currently in **draft** status with **6 guests** confirmed.
 
-No problem — you can easily update your guest count by opening the event on your **My Events** page 📋  
-Chef will be notified automatically, and your menu and preparations will adjust accordingly.  
+No problem — you can easily update your guest count by opening the event on your **My Events** page 📋
+Chef will be notified automatically, and your menu and preparations will adjust accordingly.
 
-Want me to walk you through the full menu? 🍽️  
-It’s a **6-course tasting menu** with dishes like **seared scallops with cauliflower purée** and **braised lamb shank** — both Chef’s specialties 🤤  
+Want me to walk you through the full menu? 🍽️
+It’s a **6-course tasting menu** with dishes like **seared scallops with cauliflower purée** and **braised lamb shank** — both Chef’s specialties 🤤
 
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #57: Is there a minimum guest count?
+
 **Category:** guest_count
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #58: How much will this cost total?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #59: Can I see my quote?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #61: When is my next payment due?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - timing: 124726ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your next payment is due on **April 23, 2026** — that's the date of your upcoming birthday dinner 🎉
 
@@ -555,14 +663,17 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"},{"label":"My Eve
 ```
 
 ### #62: Can I pay in installments instead of all at once?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - timing: 144413ms (max: 120000ms)
 
 **Response:**
+
 ```
-Hey Alice! I understand you're looking into payment options for your upcoming birthday dinner. 
+Hey Alice! I understand you're looking into payment options for your upcoming birthday dinner.
 
 Unfortunately, I don't have specific details about installment payment plans in your account. For payment arrangements like分期付款, it's best to check your **My Spending** page where you can see your invoices and payment history. That'll show you what options are available for your event.
 
@@ -572,63 +683,78 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"}, {"label":"My Ch
 ```
 
 ### #63: I need a receipt for the deposit I paid
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #64: Can you send me an invoice?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - request_success: HTTP 401
 
 **Response:**
+
 ```
 HTTP 401
 ```
 
 ### #65: What's included in the price? Groceries too?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - timing: 163147ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is set for **6 guests** — and the price includes **everything** from ingredients to cleanup! 🎉
 
-That means **yes**, the cost covers all groceries, specialty ingredients, and even the chef’s time in the kitchen. You're getting a full-service experience — from sourcing the finest produce to plating the dishes. 🥬✨
+That means **yes**, the cost covers all groceries, specialty ingredients, and even the chef’s time in the kitchen. You're getting a full-service experience — from sourcing the finest produce to plating the dishes. 🥬
 
 Chef will handle all the prep, cooking, and cleanup, so you can focus on enjoying the evening with your guests. The menu is still in draft form, but it's shaping up to be a delicious one — and I'm excited to share more details when it's ready! 🍽️
 
-Want me to walk you through the full menu? 🤤  
+Want me to walk you through the full menu? 🤤
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #66: Is there a service charge on top?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #67: How do I tip the chef?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - timing: 159911ms (max: 120000ms)
 
 **Response:**
+
 ```
 Tipping the chef is a lovely gesture and totally optional — but if you'd like to, you can add a tip when you're reviewing your event details. Once your event is confirmed, you'll see a section in your **My Events** page where you can add a gratuity. It's a great way to show your appreciation for the meal and service 🍽️
 
@@ -638,23 +764,29 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Chat",
 ```
 
 ### #68: The price seems higher than what we discussed
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #70: What's your cancellation refund policy?
+
 **Category:** pricing_payments
 
 **Failed checks:**
+
 - timing: 129324ms (max: 120000ms)
 
 **Response:**
+
 ```
 Hey Alice! I'm happy to help with that — and I want to make sure you have all the info you need.
 
@@ -666,34 +798,43 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}]
 ```
 
 ### #71: What time will the chef arrive?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #72: What equipment does the chef need me to have?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #74: How long does the dinner service take start to finish?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - timing: 151025ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your dinner service on **April 23rd** is scheduled to start at **7:00 PM** and will take approximately **3 hours** from start to finish. That means you can expect to enjoy a full evening of dining, from the first bite of your appetizer to the final dessert, with plenty of time to savor each course.
 
@@ -705,27 +846,33 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #75: Does the chef clean up after?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #77: Where will the food be prepped?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - timing: 120937ms (max: 120000ms)
 
 **Response:**
+
 ```
 Your food will be prepped right in your **100 E2E Test Street** venue — Chef will set up their kitchen station there so you get the full experience without any extra hassle. 🍳
 
-Since this is a **draft** event for your birthday dinner on **April 23rd**, we’re still locking in the final details, but you can expect the prep to happen in your space. That means you’ll have the full control and comfort of your own home or venue while Chef handles all the cooking magic ✨
+Since this is a **draft** event for your birthday dinner on **April 23rd**, we’re still locking in the final details, but you can expect the prep to happen in your space. That means you’ll have the full control and comfort of your own home or venue while Chef handles all the cooking magic.
 
 Want me to walk you through the full menu? 🍽️
 
@@ -733,243 +880,309 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 ### #78: What time should I tell guests to arrive?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #80: It's a surprise party — can the chef come early and set up before the guest of honor arrives?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #81: Do you bring plates and silverware or do I use mine?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #82: We don't have a gas stove, only electric — is that okay?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #83: Can the chef do a live cooking station so guests can watch?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #84: We have a dog — will that be a problem in the kitchen?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #85: Parking is tricky at our place — where should the chef park?
+
 **Category:** event_logistics
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #86: Has the chef confirmed my event?
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #87: I sent a message 2 days ago and haven't heard back
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #88: Can I talk to the chef directly?
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #89: Can you pass along that we want to add a cheese course?
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #90: What's the status of my booking?
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #91: I approved the menu but want to make one more change
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #92: When will I get the finalized menu?
+
 **Category:** communication_status
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #93: The dinner was incredible — how do I leave a review?
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #94: I want to book the same chef again for next month
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #95: I want the exact same everything — menu, time, setup
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #96: There was an issue with one of the dishes — who do I talk to?
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #97: Can I get the recipe for that risotto?
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #98: How many events have I booked with you total?
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #99: Do you have a loyalty program or repeat client perks?
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
 
 ### #100: I want to refer a friend — do you have a referral program?
+
 **Category:** post_event_rebooking
 
 **Failed checks:**
+
 - request_success: Request timeout
 
 **Response:**
+
 ```
 Request timeout
 ```
@@ -987,6 +1200,7 @@ Request timeout
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I'd be happy to help you book that private chef for Saturday night 🎉
 
@@ -1013,6 +1227,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"},{"label":"Book Now",
 **Score:** 88%
 
 **Response:**
+
 ```
 I don’t have the specific quote for a dinner for 10 in my context — that would be in your **My Quotes** page. You can check there for the full breakdown of costs, including ingredients, service, and any additional fees 💳
 
@@ -1022,6 +1237,7 @@ NAV_SUGGESTIONS: [{"label":"My Quotes","href":"/my-quotes"}, {"label":"Book Now"
 ```
 
 **Check Details:**
+
 - ✓ min_length: 494 chars (min: 20)
 - ✓ max_length: 494 chars (max: 3000)
 - ✗ timing: 134571ms (max: 120000ms)
@@ -1042,10 +1258,11 @@ NAV_SUGGESTIONS: [{"label":"My Quotes","href":"/my-quotes"}, {"label":"Book Now"
 **Score:** 88%
 
 **Response:**
+
 ```
 I'm checking my schedule for next weekend — let me see what's available for you 📅
 
-Based on what I can see, I don't have any confirmed events scheduled for next weekend, so I'm available for a new booking! 
+Based on what I can see, I don't have any confirmed events scheduled for next weekend, so I'm available for a new booking!
 
 If you're thinking about planning something, you can check out the **Book Now** page to see what dates work best for you 🗓️
 
@@ -1055,6 +1272,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 554 chars (min: 20)
 - ✓ max_length: 554 chars (max: 3000)
 - ✗ timing: 159867ms (max: 120000ms)
@@ -1075,10 +1293,11 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Oh, what a wonderful celebration you're planning! 🎉 85 guests is a lovely number for a wedding reception — that's going to be such a grand affair.
 
-I don't see any wedding events in your upcoming list yet, but I'd be happy to help you plan this special occasion. Your **My Events** page is where you can book your wedding reception — you'll want to select the "Wedding Reception" event type there. 
+I don't see any wedding events in your upcoming list yet, but I'd be happy to help you plan this special occasion. Your **My Events** page is where you can book your wedding reception — you'll want to select the "Wedding Reception" event type there.
 
 Since this is a big one, I'd recommend starting with your **Book Now** page to get the process rolling. You can also check out your **My Quotes** page to see what's available for larger events like this.
 
@@ -1098,6 +1317,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}, {"label":"My Events",
 **Score:** 88%
 
 **Response:**
+
 ```
 Absolutely — you can book the same chef for your next event! Since your last event was the **TEST Completed New Years Dinner** on **2026-02-07**, your chef is already assigned to you. 🎉
 
@@ -1107,6 +1327,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 416 chars (min: 20)
 - ✓ max_length: 416 chars (max: 3000)
 - ✗ timing: 148342ms (max: 120000ms)
@@ -1127,8 +1348,9 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 **Score:** 88%
 
 **Response:**
+
 ```
-I don't see any event scheduled for March 15 in your upcoming events — the only draft event I can see is your **TEST Birthday Dinner on April 23** at 100 E2E Test Street. 
+I don't see any event scheduled for March 15 in your upcoming events — the only draft event I can see is your **TEST Birthday Dinner on April 23** at 100 E2E Test Street.
 
 Could you be referring to that one? If so, I can help you with updating or canceling it — just let me know how you'd like to proceed. You can manage the event details on your **My Events** page 📋
 
@@ -1136,6 +1358,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 431 chars (min: 20)
 - ✓ max_length: 431 chars (max: 3000)
 - ✗ timing: 131972ms (max: 120000ms)
@@ -1156,6 +1379,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your dinner is currently scheduled for **April 23, 2026** — that’s a **Thursday**. I can’t make changes directly, but you can update the date on the **My Events** page. Just open the event and edit the date to next Friday — Chef will be notified automatically 📋
 
@@ -1175,6 +1399,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your event is currently in **draft** status, which means we can still make changes to the date. The event is set for **April 23, 2026**, and you'd like to move it to **April 17, 2026** — I can help you update that!
 
@@ -1186,6 +1411,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 693 chars (min: 20)
 - ✓ max_length: 693 chars (max: 3000)
 - ✗ timing: 138645ms (max: 120000ms)
@@ -1208,6 +1434,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1221,8 +1448,9 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
-Hey Alice! I don't see any corporate lunch events in your upcoming or past events — but I'd be happy to help you explore that option! 
+Hey Alice! I don't see any corporate lunch events in your upcoming or past events — but I'd be happy to help you explore that option!
 
 We do offer private chef services for corporate events, and I can help you book something that fits your needs. Whether it's a casual lunch or a more formal affair, we can customize the menu and service style to match your company's vibe.
 
@@ -1232,6 +1460,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 603 chars (min: 20)
 - ✓ max_length: 603 chars (max: 3000)
 - ✗ timing: 131563ms (max: 120000ms)
@@ -1252,6 +1481,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Hey Alice! I'd love to help you plan that weekend getaway with 3 dinners and 2 brunches 🍽️
 
@@ -1261,12 +1491,13 @@ For your weekend getaway, I'd suggest:
 - **3 dinner services** (think: seared scallops, herb-crusted lamb, or braised short rib)
 - **2 brunch services** (perhaps: fluffy pancakes with berry compote, or savory French toast with goat cheese)
 
-Would you like me to walk you through the booking process? You can start by heading to the **Book Now** page to select your dates and meal preferences ✨
+Would you like me to walk you through the booking process? You can start by heading to the **Book Now** page to select your dates and meal preferences.
 
 NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 730 chars (min: 20)
 - ✓ max_length: 730 chars (max: 3000)
 - ✗ timing: 136794ms (max: 120000ms)
@@ -1287,6 +1518,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I'm excited to help with your upcoming birthday dinner on April 23rd — it's going to be a great celebration! 🎉
 
@@ -1308,8 +1540,9 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
-Oh, a 30-person office party — that sounds like a fantastic celebration! 🎉 I don't see this event in your current list, but I'd be happy to help you plan it. 
+Oh, a 30-person office party — that sounds like a fantastic celebration! 🎉 I don't see this event in your current list, but I'd be happy to help you plan it.
 
 Since you're looking for catering, I'd recommend checking out the **Book Now** page to see what options are available for your party size. You can also review your **My Events** page to see if there's a draft for this party already — if not, we can get one started for you.
 
@@ -1329,6 +1562,7 @@ NAV_SUGGESTIONS: [{"label":"Book Now","href":"/book-now"}, {"label":"My Events",
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I'd love to help you think through your booking — you're in great hands with Chef 🍽️
 
@@ -1350,6 +1584,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Ah, great question! A **tasting menu** is like a culinary journey — it's a curated sequence of small, beautifully plated dishes that showcase the chef's creativity and seasonal ingredients. Think of it as a story told through food, with each course building on the last. It's intimate, refined, and perfect for special occasions. 🎭
 
@@ -1371,8 +1606,9 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
-Oh, I completely understand how important that is — **peanut allergies** can be life-threatening, and I'm glad you're being so careful about it. 
+Oh, I completely understand how important that is — **peanut allergies** can be life-threatening, and I'm glad you're being so careful about it.
 
 Your upcoming **TEST Draft Birthday Dinner on April 23rd** is currently in draft status, so we can absolutely make sure the menu is adjusted to keep your daughter safe. Chef has your allergy notes on file, and they're already planning around it. You can update the guest count or menu preferences on your **My Events** page — just open the event and edit the details. 📋
 
@@ -1392,6 +1628,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026** is set for **6 guests** — and I've noted that **2 of your guests are vegan**. That’s completely doable, and Chef will make sure there are delicious plant-based options that shine just as much as the rest of the menu 🌱
 
@@ -1413,6 +1650,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is all set to be gluten-free — Chef has your dietary note front and center. 🎉
 
@@ -1424,6 +1662,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 643 chars (min: 20)
 - ✓ max_length: 643 chars (max: 3000)
 - ✗ timing: 161931ms (max: 120000ms)
@@ -1444,16 +1683,18 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
-Your **draft birthday dinner** on **April 23, 2026**, is all set to go — and I've made sure your **lactose intolerance** is front and center in the planning. Chef will be working around your dietary needs, including noting that you can handle **hard cheeses**. 
+Your **draft birthday dinner** on **April 23, 2026**, is all set to go — and I've made sure your **lactose intolerance** is front and center in the planning. Chef will be working around your dietary needs, including noting that you can handle **hard cheeses**.
 
-You're all set for **6 guests** at your event on **100 E2E Test Street**. The menu is still in draft form, but we’re making sure nothing sneaky gets into your meal — especially anything with soft cheeses or dairy-heavy sauces. 
+You're all set for **6 guests** at your event on **100 E2E Test Street**. The menu is still in draft form, but we’re making sure nothing sneaky gets into your meal — especially anything with soft cheeses or dairy-heavy sauces.
 
-Want me to walk you through the full menu? 🍽️  
+Want me to walk you through the full menu? 🍽️
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 601 chars (min: 20)
 - ✓ max_length: 601 chars (max: 3000)
 - ✗ timing: 154377ms (max: 120000ms)
@@ -1476,6 +1717,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1489,12 +1731,13 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is all set to go — and I’ve made a note of your request for **halal meat options**. Chef will be sure to source halal-certified proteins for the menu, so you can feel confident that everything will be prepared to your standards 🥩
 
 I’ll make sure your allergy and dietary notes are front and center in the menu planning — no details overlooked ✅
 
-Want me to walk you through the full menu options for your event? 🍽️  
+Want me to walk you through the full menu options for your event? 🍽️
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
@@ -1511,6 +1754,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1526,6 +1770,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1539,6 +1784,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is all set to go — and I've made a note of your diabetic guest's dietary needs. Chef will be preparing a **low-sugar menu** for them, with careful attention to ingredient choices and portion control. We’re making sure everyone at your table enjoys a delicious and safe meal 🍽️
 
@@ -1560,6 +1806,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your upcoming **TEST Draft Birthday Dinner on 2026-04-23** is set for 6 guests — and I've flagged your son's celiac disease in the system. Chef has your allergy notes front and center, and they're experienced with managing cross-contamination concerns 🚫🍳
 
@@ -1571,6 +1818,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 714 chars (min: 20)
 - ✓ max_length: 714 chars (max: 3000)
 - ✗ timing: 133312ms (max: 120000ms)
@@ -1593,6 +1841,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1606,6 +1855,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is set for **6 guests** — and I've noted that one person is pescatarian 🐟
 
@@ -1627,6 +1877,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1642,6 +1893,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1657,6 +1909,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1670,6 +1923,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is still in draft status, so the menu hasn't been finalized yet 📝
 
@@ -1691,10 +1945,11 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
-```
-Hey Alice! I'd be happy to help you add a pasta course to your upcoming birthday dinner on April 23rd. 
 
-Currently, your event is in **draft** status, which means we can still make changes to the menu. The event is set for 6 guests at your address on 100 E2E Test Street. 
+```
+Hey Alice! I'd be happy to help you add a pasta course to your upcoming birthday dinner on April 23rd.
+
+Currently, your event is in **draft** status, which means we can still make changes to the menu. The event is set for 6 guests at your address on 100 E2E Test Street.
 
 You can update the menu directly on your **My Events** page — just open the event and you'll see options to add or modify courses. Since you're adding a pasta course, I'd recommend checking if there are any dietary restrictions we should consider for your guests.
 
@@ -1704,6 +1959,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 656 chars (min: 20)
 - ✓ max_length: 656 chars (max: 3000)
 - ✗ timing: 141804ms (max: 120000ms)
@@ -1724,6 +1980,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your birthday dinner on **April 23, 2026**, is currently in **draft** status — which means we can still make changes to the menu! 🎉
 
@@ -1735,6 +1992,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 628 chars (min: 20)
 - ✓ max_length: 628 chars (max: 3000)
 - ✗ timing: 129050ms (max: 120000ms)
@@ -1755,12 +2013,13 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026** is currently in draft status — so we can absolutely adjust the menu to a 7-course tasting! 🎉
 
 Chef is excited to create something special for your celebration, and a tasting menu is a wonderful choice for a birthday dinner. The 7-course format allows for a beautiful journey through flavors and textures — think of it like a culinary story arc 📖
 
-You can update your menu preferences on your **My Events** page — just open the event and make your changes. If you'd like, I can walk you through the current tasting menu options or help you finalize the details ✨
+You can update your menu preferences on your **My Events** page — just open the event and make your changes. If you'd like, I can walk you through the current tasting menu options or help you finalize the details.
 
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
@@ -1778,6 +2037,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1791,6 +2051,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is still in draft status, so the menu hasn't been locked in yet — but I'd be happy to walk you through the options! 🎉
 
@@ -1802,6 +2063,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 716 chars (min: 20)
 - ✓ max_length: 716 chars (max: 3000)
 - ✗ timing: 170537ms (max: 120000ms)
@@ -1822,6 +2084,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is currently set for **6 guests** at **100 E2E Test Street** — and I’d be happy to help you add some appetizers and cocktail hour bites! 🎉
 
@@ -1833,6 +2096,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 712 chars (min: 20)
 - ✓ max_length: 712 chars (max: 3000)
 - ✗ timing: 128837ms (max: 120000ms)
@@ -1855,6 +2119,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1868,6 +2133,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **birthday dinner on April 23rd** is still in **draft** status, so the menu isn't locked in yet — but I can give you some general wine pairing wisdom based on what we typically offer 🍷
 
@@ -1889,12 +2155,13 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I'd be happy to help you plan a BBQ-style cookout — that sounds like a fantastic idea for a casual, fun gathering! 🍔
 
-I see you have a **draft event** scheduled for **April 23, 2026** at your test address — but it's currently just a draft, so we can definitely shape it into the perfect BBQ experience. 
+I see you have a **draft event** scheduled for **April 23, 2026** at your test address — but it's currently just a draft, so we can definitely shape it into the perfect BBQ experience.
 
-For a BBQ cookout, we'd want to focus on items like **smoky ribs**, **grilled chicken**, **brisket**, and classic sides like **mac and cheese** and **corn on the cob**. We can also include a **signature sauce** or two — maybe a spicy BBQ or a tangy mustard-based one. 
+For a BBQ cookout, we'd want to focus on items like **smoky ribs**, **grilled chicken**, **brisket**, and classic sides like **mac and cheese** and **corn on the cob**. We can also include a **signature sauce** or two — maybe a spicy BBQ or a tangy mustard-based one.
 
 Want me to walk you through the full menu options for your BBQ event? 🍽️
 
@@ -1912,6 +2179,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your **draft birthday dinner** on **April 23, 2026**, is shaping up to be a cozy celebration! 🎉 I can already picture the creamy, golden **mac and cheese** with a crispy breadcrumb top — Chef’s got that perfectly balanced, indulgent comfort food vibe down to a science 🧀
 
@@ -1923,6 +2191,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 632 chars (min: 20)
 - ✓ max_length: 632 chars (max: 3000)
 - ✗ timing: 141580ms (max: 120000ms)
@@ -1945,6 +2214,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -1958,6 +2228,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your Italian-themed dinner is set for **April 23, 2026** at your venue on 100 E2E Test Street — that's just under 6 weeks away! 🎉
 
@@ -1979,10 +2250,11 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I see you're thinking about a seafood boil — that sounds like such a fun and festive option! 🦐
 
-Unfortunately, I don't have any details about a seafood boil in your upcoming events — your **TEST Draft Birthday Dinner** on April 23rd is still in draft status, and I don't have a menu yet for that. 
+Unfortunately, I don't have any details about a seafood boil in your upcoming events — your **TEST Draft Birthday Dinner** on April 23rd is still in draft status, and I don't have a menu yet for that.
 
 If you're looking to add a seafood boil to your patio celebration, I'd recommend checking out your **My Events** page to see if you can update your menu or add that dish. You can also message Chef directly through **My Chat** to discuss custom options 📩
 
@@ -2004,6 +2276,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Chat",
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2017,6 +2290,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Chat",
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I can definitely tell you that your chef is *very* capable of creating an authentic Indian curry spread — they’ve got experience with a wide range of cuisines and love bringing bold, aromatic flavors to life 🌶️
 
@@ -2038,6 +2312,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026** is shaping up to be a lovely French bistro experience 🍽️
 
@@ -2049,6 +2324,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 625 chars (min: 20)
 - ✓ max_length: 625 chars (max: 3000)
 - ✗ timing: 168644ms (max: 120000ms)
@@ -2069,10 +2345,11 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
-```
-Your event is currently set for a **dinner** on **April 23, 2026** — but I can help you switch it to a brunch if you'd like! 
 
-Since it's still in **draft** status, we can easily make that change. Just let me know what time you'd prefer for the brunch, and I can help update the details for you. 
+```
+Your event is currently set for a **dinner** on **April 23, 2026** — but I can help you switch it to a brunch if you'd like!
+
+Since it's still in **draft** status, we can easily make that change. Just let me know what time you'd prefer for the brunch, and I can help update the details for you.
 
 You can also check out your event on the **My Events** page to make any adjustments — or if you'd like, I can walk you through the full menu options for a brunch experience 🍽️
 
@@ -2080,6 +2357,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 536 chars (min: 20)
 - ✓ max_length: 536 chars (max: 3000)
 - ✗ timing: 179271ms (max: 120000ms)
@@ -2100,10 +2378,11 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your last event was the **TEST Completed New Years Dinner on 2026-02-07** — I don't have the specific menu details from that event in my context, but I can help you recreate it! 🎉
 
-Since you're looking for the exact same menu, I'd suggest checking your event details on the **My Events** page — that'll show you the full spread from last time. If you'd like, I can also walk you through how to book the same menu for your next event. 
+Since you're looking for the exact same menu, I'd suggest checking your event details on the **My Events** page — that'll show you the full spread from last time. If you'd like, I can also walk you through how to book the same menu for your next event.
 
 You can also review your **My Quotes** page to see if there's a recurring menu option or a similar quote for your upcoming event.
 
@@ -2123,6 +2402,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Quotes
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2136,6 +2416,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Quotes
 **Score:** 100%
 
 **Response:**
+
 ```
 Your birthday dinner on **April 23, 2026** is currently in **draft** status — which means we can still make changes to the guest count! 🎉
 
@@ -2159,6 +2440,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2172,6 +2454,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your dinner on **April 23, 2026** is set for **6 guests** — I've updated that to **15 guests** for you ✅
 
@@ -2193,19 +2476,21 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
-Your **TEST Birthday Dinner** on **April 23, 2026**, is currently in **draft** status with **6 guests** confirmed.  
+Your **TEST Birthday Dinner** on **April 23, 2026**, is currently in **draft** status with **6 guests** confirmed.
 
-No problem — you can easily update your guest count by opening the event on your **My Events** page 📋  
-Chef will be notified automatically, and your menu and preparations will adjust accordingly.  
+No problem — you can easily update your guest count by opening the event on your **My Events** page 📋
+Chef will be notified automatically, and your menu and preparations will adjust accordingly.
 
-Want me to walk you through the full menu? 🍽️  
-It’s a **6-course tasting menu** with dishes like **seared scallops with cauliflower purée** and **braised lamb shank** — both Chef’s specialties 🤤  
+Want me to walk you through the full menu? 🍽️
+It’s a **6-course tasting menu** with dishes like **seared scallops with cauliflower purée** and **braised lamb shank** — both Chef’s specialties 🤤
 
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 580 chars (min: 20)
 - ✓ max_length: 580 chars (max: 3000)
 - ✗ timing: 166900ms (max: 120000ms)
@@ -2226,10 +2511,11 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is currently in draft status — so we're still putting the final touches on the details 🎉
 
-Regarding your kids under 10 — **yes, we do charge full price for all guests**, including children. That’s because our pricing includes the full experience: menu, service, and all the chef’s attention, regardless of age. 
+Regarding your kids under 10 — **yes, we do charge full price for all guests**, including children. That’s because our pricing includes the full experience: menu, service, and all the chef’s attention, regardless of age.
 
 If you’d like to adjust the guest count or discuss any dietary needs for the little ones, you can update that on your **My Events** page 📋
 
@@ -2247,6 +2533,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! Great question — I don't have the exact maximum guest count for your chef's services in my context, but I can tell you that your **draft birthday dinner** on **April 23, 2026**, is currently set for **6 guests**.
 
@@ -2268,6 +2555,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2283,6 +2571,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2298,6 +2587,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2311,6 +2601,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026** is currently in draft status — meaning it's being prepared but not yet confirmed. To proceed with payment, you'll need to **confirm the event first**.
 
@@ -2332,6 +2623,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"},{"label":"My Spendin
 **Score:** 88%
 
 **Response:**
+
 ```
 Your next payment is due on **April 23, 2026** — that's the date of your upcoming birthday dinner 🎉
 
@@ -2343,6 +2635,7 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"},{"label":"My Eve
 ```
 
 **Check Details:**
+
 - ✓ min_length: 506 chars (min: 20)
 - ✓ max_length: 506 chars (max: 3000)
 - ✗ timing: 124726ms (max: 120000ms)
@@ -2363,8 +2656,9 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"},{"label":"My Eve
 **Score:** 88%
 
 **Response:**
+
 ```
-Hey Alice! I understand you're looking into payment options for your upcoming birthday dinner. 
+Hey Alice! I understand you're looking into payment options for your upcoming birthday dinner.
 
 Unfortunately, I don't have specific details about installment payment plans in your account. For payment arrangements like分期付款, it's best to check your **My Spending** page where you can see your invoices and payment history. That'll show you what options are available for your event.
 
@@ -2374,6 +2668,7 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"}, {"label":"My Ch
 ```
 
 **Check Details:**
+
 - ✓ min_length: 687 chars (min: 20)
 - ✓ max_length: 687 chars (max: 3000)
 - ✗ timing: 144413ms (max: 120000ms)
@@ -2396,6 +2691,7 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"}, {"label":"My Ch
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2411,6 +2707,7 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"}, {"label":"My Ch
 **Error:** HTTP 401
 
 **Check Details:**
+
 - ✗ request_success: HTTP 401
 
 ---
@@ -2424,18 +2721,20 @@ NAV_SUGGESTIONS: [{"label":"My Spending","href":"/my-spending"}, {"label":"My Ch
 **Score:** 88%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** on **April 23, 2026**, is set for **6 guests** — and the price includes **everything** from ingredients to cleanup! 🎉
 
-That means **yes**, the cost covers all groceries, specialty ingredients, and even the chef’s time in the kitchen. You're getting a full-service experience — from sourcing the finest produce to plating the dishes. 🥬✨
+That means **yes**, the cost covers all groceries, specialty ingredients, and even the chef’s time in the kitchen. You're getting a full-service experience — from sourcing the finest produce to plating the dishes. 🥬
 
 Chef will handle all the prep, cooking, and cleanup, so you can focus on enjoying the evening with your guests. The menu is still in draft form, but it's shaping up to be a delicious one — and I'm excited to share more details when it's ready! 🍽️
 
-Want me to walk you through the full menu? 🤤  
+Want me to walk you through the full menu? 🤤
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 732 chars (min: 20)
 - ✓ max_length: 732 chars (max: 3000)
 - ✗ timing: 163147ms (max: 120000ms)
@@ -2458,6 +2757,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2471,6 +2771,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Tipping the chef is a lovely gesture and totally optional — but if you'd like to, you can add a tip when you're reviewing your event details. Once your event is confirmed, you'll see a section in your **My Events** page where you can add a gratuity. It's a great way to show your appreciation for the meal and service 🍽️
 
@@ -2480,6 +2781,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Chat",
 ```
 
 **Check Details:**
+
 - ✓ min_length: 630 chars (min: 20)
 - ✓ max_length: 630 chars (max: 3000)
 - ✗ timing: 159911ms (max: 120000ms)
@@ -2502,6 +2804,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Chat",
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2515,10 +2818,11 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}, {"label":"My Chat",
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! I can’t check if there are discounts for booking multiple events — that’s something you’d want to discuss directly with Chef. They handle all the loyalty and discount details, so I’d recommend heading over to the **My Chat** page to message them about your plans 📩
 
-If you're looking to book your next event, you can also check out the **Book Now** page — and with your bronze tier, you're just 100 points away from silver! ✨
+If you're looking to book your next event, you can also check out the **Book Now** page — and with your bronze tier, you're just 100 points away from silver!
 
 NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}, {"label":"Book Now","href":"/book-now"}]
 ```
@@ -2534,6 +2838,7 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}, {"label":"Book Now","hr
 **Score:** 88%
 
 **Response:**
+
 ```
 Hey Alice! I'm happy to help with that — and I want to make sure you have all the info you need.
 
@@ -2545,6 +2850,7 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 588 chars (min: 20)
 - ✓ max_length: 588 chars (max: 3000)
 - ✗ timing: 129324ms (max: 120000ms)
@@ -2567,6 +2873,7 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2582,6 +2889,7 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2595,6 +2903,7 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Hey Alice! Great question — **Chef brings everything** for your event, including all pots, pans, utensils, and equipment. You don't need to worry about providing anything kitchen-related. Everything is covered in your booking, from the ingredients to the cleanup. 🧑‍🍳
 
@@ -2616,6 +2925,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your dinner service on **April 23rd** is scheduled to start at **7:00 PM** and will take approximately **3 hours** from start to finish. That means you can expect to enjoy a full evening of dining, from the first bite of your appetizer to the final dessert, with plenty of time to savor each course.
 
@@ -2627,6 +2937,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 589 chars (min: 20)
 - ✓ max_length: 589 chars (max: 3000)
 - ✗ timing: 151025ms (max: 120000ms)
@@ -2649,6 +2960,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2662,8 +2974,9 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
-Not at all! Chef is super adaptable and has worked in kitchens of all sizes — from cozy apartments to grand estates. As long as there’s enough space for the prep and a reliable power source, they’ve got you covered. 
+Not at all! Chef is super adaptable and has worked in kitchens of all sizes — from cozy apartments to grand estates. As long as there’s enough space for the prep and a reliable power source, they’ve got you covered.
 
 For your **TEST Draft Birthday Dinner on 2026-04-23**, Chef will work around your space constraints to make sure everything runs smoothly. If you have any specific setup needs or limitations, just let Chef know directly via the **My Chat** page 📩
 
@@ -2681,10 +2994,11 @@ NAV_SUGGESTIONS: [{"label":"My Chat","href":"/my-chat"}]
 **Score:** 88%
 
 **Response:**
+
 ```
 Your food will be prepped right in your **100 E2E Test Street** venue — Chef will set up their kitchen station there so you get the full experience without any extra hassle. 🍳
 
-Since this is a **draft** event for your birthday dinner on **April 23rd**, we’re still locking in the final details, but you can expect the prep to happen in your space. That means you’ll have the full control and comfort of your own home or venue while Chef handles all the cooking magic ✨
+Since this is a **draft** event for your birthday dinner on **April 23rd**, we’re still locking in the final details, but you can expect the prep to happen in your space. That means you’ll have the full control and comfort of your own home or venue while Chef handles all the cooking magic.
 
 Want me to walk you through the full menu? 🍽️
 
@@ -2692,6 +3006,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
 
 **Check Details:**
+
 - ✓ min_length: 579 chars (min: 20)
 - ✓ max_length: 579 chars (max: 3000)
 - ✗ timing: 120937ms (max: 120000ms)
@@ -2714,6 +3029,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2727,12 +3043,13 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Score:** 100%
 
 **Response:**
+
 ```
 Your **TEST Draft Birthday Dinner** is currently set for **April 23, 2026**, at **6 guests** — and it's in **draft** status, so we can definitely adjust the venue details! 🎉
 
 Right now, the event is listed as being held at **100 E2E Test Street**, but since you're asking about an outdoor deck setting, that’s totally doable. Just let me know if you'd like to update the venue to an outdoor space — and I can help you make that change on your **My Events** page 📋
 
-Want me to walk you through how to update the venue or check out your event details? 
+Want me to walk you through how to update the venue or check out your event details?
 
 NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 ```
@@ -2750,6 +3067,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2765,6 +3083,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2780,6 +3099,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2795,6 +3115,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2810,6 +3131,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2825,6 +3147,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2840,6 +3163,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2855,6 +3179,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2870,6 +3195,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2885,6 +3211,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2900,6 +3227,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2915,6 +3243,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2930,6 +3259,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2945,6 +3275,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2960,6 +3291,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2975,6 +3307,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -2990,6 +3323,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -3005,6 +3339,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -3020,6 +3355,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -3035,6 +3371,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
@@ -3050,7 +3387,7 @@ NAV_SUGGESTIONS: [{"label":"My Events","href":"/my-events"}]
 **Error:** Request timeout
 
 **Check Details:**
+
 - ✗ request_success: Request timeout
 
 ---
-

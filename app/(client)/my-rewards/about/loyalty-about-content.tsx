@@ -46,7 +46,7 @@ export function LoyaltyAboutContent({ simulatorConfig, simulatorRewards, initial
 
       {/* ─── Quick Feature Cards ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <GuideBrandCard icon="✨" title="Earn Automatically">
+        <GuideBrandCard icon="🪙" title="Earn Automatically">
           Points are awarded every time your chef completes an event. No cards to scan, no codes to
           remember — it just happens.
         </GuideBrandCard>

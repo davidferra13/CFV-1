@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Sparkles } from '@/components/ui/icons'
+import { Star } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { getTemplatesForChef, type DashboardTemplate } from '@/lib/dashboard/dashboard-templates'
 import {
@@ -64,7 +64,7 @@ function TemplateCard({
             <p className="text-sm font-semibold text-stone-100">{template.name}</p>
             {isRecommended && (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-400 mt-0.5">
-                <Sparkles className="h-3 w-3" />
+                <Star className="h-3 w-3" />
                 Recommended for you
               </span>
             )}

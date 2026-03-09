@@ -700,7 +700,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   ) : draftState === 'error' ? (
                     <span className="text-red-500">Try again</span>
                   ) : (
-                    <>✨ Auto Draft</>
+                    <>Auto Draft</>
                   )}
                 </button>
               )}

@@ -38,7 +38,7 @@ while ((Get-Date) - $StartTime -lt [TimeSpan]::FromSeconds($MaxWaitSeconds)) {
     if ($null -eq $PlaywrightRunning) {
         Write-Host ""
         Write-Host "════════════════════════════════════════════════════════════════"
-        Write-Host "✨ VARIANT TEST COMPLETED!"
+        Write-Host "VARIANT TEST COMPLETED!"
         Write-Host "════════════════════════════════════════════════════════════════"
         Write-Host "Completion time: $(Get-Date)"
         Write-Host ""
@@ -54,7 +54,7 @@ while ((Get-Date) - $StartTime -lt [TimeSpan]::FromSeconds($MaxWaitSeconds)) {
 <toast duration="long">
     <visual>
         <binding template="ToastText02">
-            <text id="1">✨ Variant Test Complete!</text>
+            <text id="1">Variant Test Complete!</text>
             <text id="2">12 concurrent users, 2 hours sustained load finished. Results ready for analysis.</text>
         </binding>
     </visual>

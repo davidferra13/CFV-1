@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DollarSign, Loader2, Sparkles } from '@/components/ui/icons'
+import { DollarSign, Loader2, Bot } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { draftGratuityFraming, type GratuityFramingDraft } from '@/lib/ai/gratuity-framing'
@@ -46,7 +46,7 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Get Guidance
               </>
             )}

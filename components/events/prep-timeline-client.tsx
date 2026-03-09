@@ -7,7 +7,7 @@ import {
   Flame,
   Package,
   ShoppingCart,
-  Sparkles,
+  Trash2,
   Utensils,
   Wrench,
 } from '@/components/ui/icons'
@@ -37,7 +37,7 @@ const iconMap: Record<PrepTimelineStepKey, any> = {
   setup: Wrench,
   cooking: Flame,
   serving: Utensils,
-  cleanup: Sparkles,
+  cleanup: Trash2,
   complete: CheckCircle,
 }
 
@@ -86,12 +86,16 @@ export function PrepTimelineClient({ steps }: PrepTimelineClientProps) {
               >
                 {isComplete ? <CheckCircle className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
               </div>
-              {index < steps.length - 1 && <div className="mt-2 h-full min-h-8 w-px bg-stone-800" />}
+              {index < steps.length - 1 && (
+                <div className="mt-2 h-full min-h-8 w-px bg-stone-800" />
+              )}
             </div>
 
             <div className="flex-1 pb-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h4 className="font-medium text-stone-100">{PREP_TIMELINE_LABELS[step.step_key]}</h4>
+                <h4 className="font-medium text-stone-100">
+                  {PREP_TIMELINE_LABELS[step.step_key]}
+                </h4>
                 {getStatusBadge(step.status)}
               </div>
               {timestamp && <p className="mt-1 text-xs text-stone-400">{timestamp}</p>}

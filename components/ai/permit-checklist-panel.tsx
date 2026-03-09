@@ -1,13 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  ClipboardCheck,
-  Loader2,
-  Sparkles,
-  AlertTriangle,
-  CheckCircle,
-} from '@/components/ui/icons'
+import { ClipboardCheck, Loader2, Bot, AlertTriangle, CheckCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -48,7 +42,7 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Generate Checklist
               </>
             )}

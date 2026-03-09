@@ -879,7 +879,7 @@ Per-reward display:
 **Tab Bar (4 tabs):**
 | Tab | Icon | Label | Details |
 |-----|------|-------|---------|
-| 1 | Sparkles | Chat | Default active tab |
+| 1 | Bot | Chat | Default active tab |
 | 2 | MessageSquare | History | - |
 | 3 | Brain | Memory | - |
 | 4 | ShieldCheck | Settings | - |

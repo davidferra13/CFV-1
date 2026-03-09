@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Brain, Loader2, Sparkles, User } from '@/components/ui/icons'
+import { Brain, Loader2, Bot, User } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -43,7 +43,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Build Profile
               </>
             )}

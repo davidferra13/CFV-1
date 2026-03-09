@@ -5,7 +5,6 @@ import {
   ClipboardList,
   Repeat,
   ShieldCheck,
-  Sparkles,
   Users,
 } from '@/components/ui/icons'
 import { PublicPageView } from '@/components/analytics/public-page-view'
@@ -158,8 +157,8 @@ export default function ClientRelationshipsPage() {
               </h1>
               <p className="mt-6 max-w-3xl text-[1.05rem] leading-8 text-stone-300 md:text-lg">
                 Most private-chef dinners are naturally one-off. ChefFlow is built to help chefs
-                recognize which contacts are actually worth building around, preserve the memory that
-                makes the second booking easier, and turn old lists into repeat direct revenue.
+                recognize which contacts are actually worth building around, preserve the memory
+                that makes the second booking easier, and turn old lists into repeat direct revenue.
               </p>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-400">
                 This is not about blasting everyone in a spreadsheet. It is about knowing who is
@@ -258,8 +257,8 @@ export default function ClientRelationshipsPage() {
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-7 text-stone-400">
-              A recurring client strategy is really a set of small, repeatable plays tied to
-              context and timing.
+              A recurring client strategy is really a set of small, repeatable plays tied to context
+              and timing.
             </p>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -320,7 +319,7 @@ export default function ClientRelationshipsPage() {
       <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-2 text-center sm:px-6 md:pb-20 lg:px-8">
         <div className="rounded-3xl border border-stone-700 bg-stone-900/80 px-6 py-10 shadow-[var(--shadow-card)] md:px-10">
           <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-            <Sparkles className="h-4 w-4" />
+            <Repeat className="h-4 w-4" />
             Operating Loop
           </p>
           <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">

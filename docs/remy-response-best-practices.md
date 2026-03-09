@@ -46,7 +46,7 @@ To add a new recipe, head to Recipes → New Recipe.
 
 ---
 
-### Pattern 2: Personality-Driven Intent Refusal ✨ (BEST UX)
+### Pattern 2: Personality-Driven Intent Refusal (BEST UX)
 
 **When to use:** Out-of-scope questions that need acknowledgment + redirect
 **Speed:** 20–30 seconds (Ollama processes first)

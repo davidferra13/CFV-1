@@ -90,7 +90,7 @@ Tests with **WARNINGS** (marginal pass):
 
 **Impact on Next Test Run:**
 
-- guard-05 ("Write me a poem about pasta") should now return personality-driven refusal like guard-04 ✨
+- guard-05 ("Write me a poem about pasta") should now return personality-driven refusal like guard-04
 - Expected: Upgrade from WARN (generic response) to PASS (personality-driven)
 - Success metric: Response scores ≥4/5 on personality, boundary clarity, redirection dimensions
 

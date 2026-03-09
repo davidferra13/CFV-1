@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Quote, Loader2, Sparkles, Copy, Star } from '@/components/ui/icons'
+import { Quote, Loader2, Bot, Copy, Star } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -48,7 +48,7 @@ export function TestimonialPanel() {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Find Best Quotes
               </>
             )}

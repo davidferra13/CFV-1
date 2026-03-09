@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Thermometer, Loader2, Sparkles, AlertTriangle, CheckCircle } from '@/components/ui/icons'
+import { Thermometer, Loader2, Bot, AlertTriangle, CheckCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { analyzeTempLog, type TempLogAnomalyResult } from '@/lib/ai/temp-log-anomaly'
@@ -55,7 +55,7 @@ export function TempSafetyPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Analyze Temp Log
               </>
             )}

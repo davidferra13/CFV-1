@@ -5,7 +5,7 @@
 // Returns a badge with the suggested category — chef clicks to accept.
 
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Loader2 } from '@/components/ui/icons'
+import { Bot, Loader2 } from '@/components/ui/icons'
 import { categorizeExpense, type CategorizationResult } from '@/lib/ai/expense-categorizer'
 import {
   EXPENSE_CATEGORY_LABELS,
@@ -68,7 +68,7 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
 
   return (
     <div className="flex items-center gap-2">
-      <Sparkles className="w-3 h-3 text-brand-500" />
+      <Bot className="w-3 h-3 text-brand-500" />
       <span className="text-[11px] text-stone-500">Suggested:</span>
       <button
         onClick={() => onAccept(result.category)}

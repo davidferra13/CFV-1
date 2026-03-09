@@ -8,14 +8,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Check,
-  Copy,
-  Image as ImageIcon,
-  Sparkles,
-  Loader2,
-  CheckCircle,
-} from '@/components/ui/icons'
+import { Check, Copy, Image as ImageIcon, Bot, Loader2, CheckCircle } from '@/components/ui/icons'
 import {
   createPostFromEvent,
   generateCaption,
@@ -325,7 +318,7 @@ export function EventPostComposer({
                 {generating ? (
                   <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
                 ) : (
-                  <Sparkles className="w-4 h-4 mr-1.5" />
+                  <Bot className="w-4 h-4 mr-1.5" />
                 )}
                 {generating ? 'Generating...' : 'Generate Caption'}
               </Button>

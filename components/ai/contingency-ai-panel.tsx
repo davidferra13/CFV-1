@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Shield, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { Shield, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateContingencyPlans, type ContingencyAIResult } from '@/lib/ai/contingency-ai'
@@ -46,7 +46,7 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Generate Plans
               </>
             )}

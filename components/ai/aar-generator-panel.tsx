@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, Loader2, Sparkles, CheckCircle, AlertCircle } from '@/components/ui/icons'
+import { ClipboardList, Loader2, Bot, CheckCircle, AlertCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAARDraft, type AARDraft } from '@/lib/ai/aar-generator'
@@ -41,7 +41,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-3 h-3 mr-1" />
+                <Bot className="w-3 h-3 mr-1" />
                 Generate AAR Draft
               </>
             )}
