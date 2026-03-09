@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BookOpen, Plus, ArrowRight, X } from '@/components/ui/icons'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { createRecipe, type RecipeListItem } from '@/lib/recipes/actions'
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 const CATEGORIES = [
   'sauce',
@@ -66,6 +67,10 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
   const [recipes, setRecipes] = useState<RecipeListItem[]>(initialRecipes)
   const [error, setError] = useState<string | null>(null)
   const [tagInput, setTagInput] = useState('')
+
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_STARTED, { phase: 'recipes' })
+  }, [])
 
   function set<K extends keyof typeof EMPTY_FORM>(field: K, value: (typeof EMPTY_FORM)[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -135,6 +140,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           occasion_tags: [],
         }
         setRecipes((prev) => [newEntry, ...prev])
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, { phase: 'recipes' })
         setForm(EMPTY_FORM)
         setTagInput('')
         router.refresh()

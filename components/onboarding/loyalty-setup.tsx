@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Star, Plus, Check, ArrowRight, AlertTriangle } from '@/components/ui/icons'
@@ -16,6 +16,7 @@ import {
   type LoyaltyConfig,
   type LoyaltyReward,
 } from '@/lib/loyalty/actions'
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 type Client = {
   id: string
@@ -37,6 +38,10 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('config')
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_STARTED, { phase: 'loyalty' })
+  }, [])
 
   // ─── Config state ───────────────────────────────────────────────
   const [config, setConfig] = useState({
@@ -69,6 +74,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           welcome_points: config.welcome_points,
           is_active: true,
         })
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, { phase: 'loyalty' })
         setConfigSaved(true)
         router.refresh()
       } catch (e) {

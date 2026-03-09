@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { UserPlus, ArrowRight } from '@/components/ui/icons'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { createStaffMember } from '@/lib/staff/actions'
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 type StaffMember = {
   id: string
@@ -44,6 +45,10 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
   const [staff, setStaff] = useState<StaffMember[]>(initialStaff)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_STARTED, { phase: 'staff' })
+  }, [])
+
   function set(field: keyof typeof EMPTY_FORM, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -68,6 +73,7 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
           hourly_rate_cents: rateCents,
           notes: form.notes.trim() || undefined,
         })
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, { phase: 'staff' })
         setStaff((prev) => [
           ...prev,
           {

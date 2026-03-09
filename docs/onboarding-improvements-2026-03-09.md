@@ -52,8 +52,8 @@
 | `onboarding_wizard_step_completed` | Step saved successfully (with step number and name)                      |
 | `onboarding_wizard_step_skipped`   | Skip button clicked (with step number and name)                          |
 | `onboarding_wizard_finished`       | `markOnboardingComplete()` succeeds (with destination: hub or dashboard) |
-| `onboarding_hub_phase_started`     | (Defined, not yet wired - available for future use)                      |
-| `onboarding_hub_phase_completed`   | (Defined, not yet wired - available for future use)                      |
+| `onboarding_hub_phase_started`     | Hub sub-page mounts (with phase: clients/loyalty/recipes/staff)          |
+| `onboarding_hub_phase_completed`   | Successful save in hub sub-page (with phase name, method for CSV)        |
 | `onboarding_archetype_selected`    | Archetype confirmed (with archetype ID)                                  |
 
 ## CSV import details

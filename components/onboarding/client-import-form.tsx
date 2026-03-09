@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { UserPlus, ArrowRight, X } from '@/components/ui/icons'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { importClientDirect } from '@/lib/clients/import-actions'
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 type ImportedClient = {
   id: string
@@ -99,6 +100,10 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
   const [csvImporting, setCsvImporting] = useState(false)
   const [csvImported, setCsvImported] = useState(0)
 
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_STARTED, { phase: 'clients' })
+  }, [])
+
   function set(field: keyof typeof EMPTY_FORM, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -155,6 +160,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
           lifetime_value_cents: valueCents,
         })
         setClients((prev) => [...prev, result.client])
+        trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, { phase: 'clients' })
         setForm(EMPTY_FORM)
         setTagInput({ dietary: '', allergy: '' })
         router.refresh()
@@ -222,6 +228,13 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
       }
     }
 
+    if (imported > 0) {
+      trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, {
+        phase: 'clients',
+        method: 'csv',
+        count: imported,
+      })
+    }
     setCsvImporting(false)
     setCsvRows([])
     router.refresh()
