@@ -630,7 +630,7 @@ export default async function MyEventsPage() {
     quotes: (
       <ClientDashboardWidgetShell
         title="Quotes"
-        description="Track pending quote approvals and accepted proposals."
+        description="Quotes from your chef that need your review."
       >
         {quotes.length > 0 ? (
           <div className="space-y-4">
@@ -1519,11 +1519,11 @@ export default async function MyEventsPage() {
     ),
     assistant: (
       <ClientDashboardWidgetShell
-        title="Assistant"
-        description="Ask Remy about upcoming events, menus, and payment status."
+        title="Event Questions"
+        description="Get quick answers about upcoming events, menus, and payment status."
       >
         <p className="text-sm text-stone-400">
-          Remy is available on this page when this widget is enabled.
+          Use this widget to look up details about your events and plans.
         </p>
       </ClientDashboardWidgetShell>
     ),

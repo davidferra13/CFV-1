@@ -686,7 +686,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/inventory/transactions',
-        label: 'Transaction Ledger',
+        label: 'Stock Movements',
         icon: Receipt,
       },
       {

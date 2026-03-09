@@ -51,11 +51,11 @@ export const CLIENT_DASHBOARD_WIDGET_LABELS: Record<ClientDashboardWidgetId, str
   dinner_circle: 'Dinner Circle',
   spending: 'Spending',
   profile_health: 'Profile Health',
-  rsvp_ops: 'RSVP Operations',
+  rsvp_ops: 'Guest RSVPs',
   documents: 'Documents',
   book_again: 'Book Again',
   feedback: 'Feedback',
-  assistant: 'Assistant',
+  assistant: 'Event Questions',
 }
 
 export const CLIENT_DASHBOARD_WIDGET_DESCRIPTIONS: Record<ClientDashboardWidgetId, string> = {
@@ -68,10 +68,10 @@ export const CLIENT_DASHBOARD_WIDGET_DESCRIPTIONS: Record<ClientDashboardWidgetI
   messages: 'Conversation and unread message visibility.',
   dinner_circle: 'Groups, friends, and social planning activity.',
   spending: 'Recent spend and trend snapshot.',
-  profile_health: 'Profile completion and readiness checks.',
-  rsvp_ops: 'Guest sharing and RSVP management summary.',
+  profile_health: 'How complete your profile is and what to fill in next.',
+  rsvp_ops: 'Guest sharing and RSVP tracking.',
   documents: 'Quick access to calendars, menus, and receipts.',
   book_again: 'Start a new booking quickly.',
   feedback: 'Post-event review and survey follow-through.',
-  assistant: 'Client-side AI assistant access.',
+  assistant: 'Quick answers about upcoming events, menus, and payment status.',
 }

@@ -69,7 +69,7 @@ function getStatusBadge(status: EventStatus) {
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const event = await getClientEventById(params.id)
-  return { title: event ? `${event.occasion || 'Event'} — ChefFlow` : 'Event — ChefFlow' }
+  return { title: event ? `${event.occasion || 'Event'} - ChefFlow` : 'Event - ChefFlow' }
 }
 
 export default async function EventDetailPage({
