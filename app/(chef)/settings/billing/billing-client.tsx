@@ -41,7 +41,7 @@ const FREE_FEATURES = [
 
 // Group Pro features by category for display
 const PRO_CATEGORIES = [
-  { label: 'AI Assistant (Remy)', features: PRO_FEATURES.filter((f) => f.category === 'ai') },
+  { label: 'Command Center & Drafting', features: PRO_FEATURES.filter((f) => f.category === 'ai') },
   {
     label: 'Analytics & Insights',
     features: PRO_FEATURES.filter((f) => f.category === 'analytics'),

@@ -16,6 +16,7 @@ import { markBetaSignupOnboardedByEmail } from '@/lib/beta/actions'
 import { sendEmail } from '@/lib/email/send'
 import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
 import { seedDefaultBudgetQualificationAutomations } from '@/lib/automations/seed'
+import { signRoleCookie } from '@/lib/auth/signed-cookie'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -68,9 +69,52 @@ const BETA_TRIAL_DAYS =
   Number.isFinite(parsedBetaTrialDays) && parsedBetaTrialDays > 0
     ? parsedBetaTrialDays
     : DEFAULT_TRIAL_DAYS
+const ROLE_COOKIE_NAME = 'chefflow-role-cache'
+const ROLE_COOKIE_MAX_AGE_SECONDS = 300
+const PORTAL_DESTINATIONS = {
+  chef: '/dashboard',
+  client: '/my-events',
+  staff: '/staff-dashboard',
+  partner: '/partner/dashboard',
+} as const
+
+type PortalRole = keyof typeof PORTAL_DESTINATIONS
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
+}
+
+function isPortalRole(role: unknown): role is PortalRole {
+  return role === 'chef' || role === 'client' || role === 'staff' || role === 'partner'
+}
+
+async function resolvePostSignInDestination(
+  supabase: any,
+  userId: string
+): Promise<{ role: PortalRole | null; destination: string }> {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('auth_user_id', userId)
+    .single()
+
+  if (error) {
+    if ((error as any)?.code === 'PGRST116') {
+      return { role: null, destination: '/auth/role-selection' }
+    }
+
+    log.auth.warn('Post sign-in role lookup failed; falling back to landing page', {
+      error,
+      context: { userId },
+    })
+    return { role: null, destination: '/' }
+  }
+
+  if (!isPortalRole(data?.role)) {
+    return { role: null, destination: '/auth/role-selection' }
+  }
+
+  return { role: data.role, destination: PORTAL_DESTINATIONS[data.role] }
 }
 
 function isBetaRef(signupRef?: string): boolean {
@@ -453,7 +497,7 @@ export async function signIn(input: SignInInput) {
   const cookieStore = cookies()
 
   // Clear stale role cache so middleware regenerates it with the correct maxAge
-  cookieStore.delete('chefflow-role-cache')
+  cookieStore.delete(ROLE_COOKIE_NAME)
 
   if (!validated.rememberMe) {
     // Session-only cookie (no maxAge) — cleared when browser closes.
@@ -469,8 +513,20 @@ export async function signIn(input: SignInInput) {
     cookieStore.delete('chefflow-session-only')
   }
 
+  const routing = await resolvePostSignInDestination(supabase, data.user.id)
+
+  if (routing.role) {
+    cookieStore.set(ROLE_COOKIE_NAME, await signRoleCookie(routing.role), {
+      maxAge: validated.rememberMe ? ROLE_COOKIE_MAX_AGE_SECONDS : undefined,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    })
+  }
+
   revalidatePath('/', 'layout')
-  return { success: true, user: data.user }
+  return { success: true, user: data.user, destination: routing.destination }
 }
 
 /**

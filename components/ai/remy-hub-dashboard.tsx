@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bot, MessageSquare, Brain, ShieldCheck, Trash2 } from '@/components/ui/icons'
+import { Broadcast, History, Bookmark, ShieldCheck, Trash2 } from '@/components/ui/icons'
 import { CommandCenterClient } from '@/components/ai/command-center-client'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
 import { DataControls } from '@/components/ai-privacy/data-controls'
@@ -20,10 +20,10 @@ import { Badge } from '@/components/ui/badge'
 // ─── Tab Config ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'chat', label: 'Chat', icon: Bot },
-  { id: 'history', label: 'History', icon: MessageSquare },
-  { id: 'memory', label: 'Memory', icon: Brain },
-  { id: 'settings', label: 'Settings', icon: ShieldCheck },
+  { id: 'chat', label: 'Commands', icon: Broadcast },
+  { id: 'history', label: 'History', icon: History },
+  { id: 'memory', label: 'Saved Context', icon: Bookmark },
+  { id: 'settings', label: 'Privacy', icon: ShieldCheck },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -87,10 +87,10 @@ function MemoryTab() {
   if (memories.length === 0) {
     return (
       <div className="text-center py-12">
-        <Brain className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+        <Bookmark className="w-10 h-10 text-stone-300 mx-auto mb-3" />
         <p className="text-sm text-stone-500">
-          Remy hasn&apos;t formed any memories yet. Start a conversation and Remy will remember
-          important details automatically.
+          No saved context yet. ChefFlow starts saving useful details once you begin using the
+          command center.
         </p>
       </div>
     )
@@ -100,8 +100,8 @@ function MemoryTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-stone-500">
-          {memories.length} memor{memories.length === 1 ? 'y' : 'ies'} — Remy uses these to
-          personalize conversations.
+          {memories.length} saved item{memories.length === 1 ? '' : 's'} — used to personalize
+          drafts and suggestions.
         </p>
       </div>
       <div className="space-y-2">
@@ -110,7 +110,7 @@ function MemoryTab() {
             key={m.id}
             className="flex items-start gap-3 rounded-lg border border-stone-700 bg-stone-900 p-3 group"
           >
-            <Brain className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0" />
+            <Bookmark className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-stone-200">{m.content}</p>
               <div className="flex items-center gap-2 mt-1.5">
@@ -124,7 +124,7 @@ function MemoryTab() {
               onClick={() => handleDelete(m.id)}
               disabled={deleting === m.id}
               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-stone-400 hover:text-red-500 hover:bg-red-950 transition-all disabled:opacity-50"
-              aria-label="Delete memory"
+              aria-label="Delete saved item"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -187,7 +187,7 @@ function SettingsTab() {
             : 'border-stone-700 bg-stone-800'
         }`}
       >
-        <Bot
+        <ShieldCheck
           className={`h-5 w-5 shrink-0 ${prefs.remy_enabled ? 'text-emerald-600' : 'text-stone-400'}`}
         />
         <div>
@@ -195,15 +195,15 @@ function SettingsTab() {
             className={`text-sm font-medium ${prefs.remy_enabled ? 'text-emerald-900' : 'text-stone-300'}`}
           >
             {prefs.remy_enabled
-              ? "Remy is active and running on ChefFlow's private infrastructure."
-              : 'Remy is currently disabled.'}
+              ? "Workflow tools are active and running on ChefFlow's private infrastructure."
+              : 'Workflow tools are currently turned off.'}
           </p>
           <p
             className={`text-xs mt-0.5 ${prefs.remy_enabled ? 'text-emerald-700' : 'text-stone-500'}`}
           >
             {prefs.remy_enabled
-              ? 'Your data stays within ChefFlow. Nothing is sent to third-party AI services.'
-              : 'Your existing AI data is preserved. Enable Remy from the controls below.'}
+              ? 'Your data stays within ChefFlow. Nothing is sent to outside processing services.'
+              : 'Your existing saved data stays in place until you choose to delete it.'}
           </p>
         </div>
       </div>
@@ -211,9 +211,7 @@ function SettingsTab() {
       {/* How It Works */}
       <details className="rounded-xl border border-stone-700 bg-stone-900">
         <summary className="cursor-pointer px-5 py-4">
-          <span className="text-sm font-semibold text-stone-100">
-            How It Works — Data Flow Diagram
-          </span>
+          <span className="text-sm font-semibold text-stone-100">How Data Flows</span>
         </summary>
         <div className="border-t border-stone-700 p-5">
           <DataFlowAnimated />
@@ -228,14 +226,14 @@ function SettingsTab() {
         <h3 className="font-semibold text-stone-100">Our Promise</h3>
         <div className="text-sm text-stone-400 space-y-2">
           <p>
-            <strong>We will never:</strong> Send your data to external AI services, use your data to
-            train any model, share your information with third parties, or make it difficult to
-            delete your data.
+            <strong>We will never:</strong> send your data to outside providers, reuse your data for
+            secondary purposes, share your information with third parties, or make it hard to delete
+            your data.
           </p>
           <p>
-            <strong>We will always:</strong> Process AI on ChefFlow&apos;s own servers, give you
-            complete visibility into what Remy knows, let you delete any or all data instantly, and
-            respect your choice to opt out entirely.
+            <strong>We will always:</strong> process these tools on ChefFlow&apos;s own
+            infrastructure, show you what has been saved, let you delete any or all data instantly,
+            and respect your choice to opt out entirely.
           </p>
         </div>
       </div>
@@ -253,19 +251,19 @@ export function RemyHubDashboard() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-900 border border-brand-700">
-          <Bot className="w-6 h-6 text-brand-600" />
+          <Broadcast className="w-6 h-6 text-brand-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-stone-100">Remy</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-stone-100">Command Center</h1>
           <p className="text-sm text-stone-500">
-            Your AI assistant — research, drafts, memory, and task execution
+            Commands, drafts, saved context, and task execution in one place
           </p>
         </div>
       </div>
 
       {/* Tab Bar */}
       <div className="border-b border-stone-700">
-        <nav className="flex gap-1 -mb-px" aria-label="Remy tabs">
+        <nav className="flex gap-1 -mb-px" aria-label="Command Center tabs">
           {TABS.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -293,7 +291,7 @@ export function RemyHubDashboard() {
         {activeTab === 'chat' && (
           <div>
             <p className="text-sm text-stone-500 mb-4">
-              Tell Remy what you need. Multi-step commands run in parallel — drafts always need your
+              Describe what you need. Multi-step requests run in parallel — drafts always need your
               approval before anything goes out.
             </p>
             <CommandCenterClient />

@@ -215,7 +215,7 @@ export function RemyConciergeSection() {
             Tell me your bottleneck.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
-            Ask Remy about your workflow and get a direct answer.
+            Describe your workflow and get a direct answer.
           </p>
         </div>
 
@@ -303,8 +303,6 @@ export function RemyConciergeSection() {
               )}
             </button>
           </div>
-
-          <p className="mt-2 text-center text-xs text-stone-400">Powered by ChefFlow AI</p>
 
           {/* CTA after conversation */}
           {messages.length >= 4 && !isStreaming && (

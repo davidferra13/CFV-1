@@ -1,23 +1,19 @@
 'use client'
 
-// Onboarding Wizard — 5-step setup for new chefs
-// Steps: Profile → Branding → Public URL → Payments → Done
-// Each step saves immediately so progress is preserved if the chef
-// navigates away (e.g., to Stripe and back).
-
 import { useState, useTransition, useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { CheckCircle2, Circle, ArrowRight } from '@/components/ui/icons'
 import { markOnboardingComplete, updateChefFullProfile } from '@/lib/chef/profile-actions'
 import { updateChefSlug, updateChefPortalTheme } from '@/lib/profile/actions'
 import { createConnectAccountLink } from '@/lib/stripe/connect'
 import { checkSlugAvailability } from '@/lib/onboarding/actions'
+import type { LaunchStatus } from '@/lib/onboarding/launch-status'
+import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import type { ConnectAccountStatus } from '@/lib/stripe/connect'
 import type { ChefFullProfile } from '@/lib/chef/profile-actions'
-
-// ─── Slug util (pure, client-side) ────────────────────────────────────────────
 
 function toSlug(name: string): string {
   return name
@@ -31,31 +27,27 @@ function toSlug(name: string): string {
     .slice(0, 50)
 }
 
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-
 const TOTAL_STEPS = 5
 
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = Math.round((current / total) * 100)
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-center mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium text-stone-500">
           Step {current} of {total}
         </span>
         <span className="text-sm font-medium text-stone-500">{pct}%</span>
       </div>
-      <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
+      <div className="h-2 overflow-hidden rounded-full bg-stone-200">
         <div
-          className="h-full bg-brand-600 rounded-full transition-all duration-300"
+          className="h-full rounded-full bg-brand-600 transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
     </div>
   )
 }
-
-// ─── Step 1: Profile ──────────────────────────────────────────────────────────
 
 function Step1({
   profile,
@@ -80,7 +72,7 @@ function Step1({
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="displayName" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="displayName" className="mb-1 block text-sm font-medium text-stone-700">
             Display name
           </label>
           <input
@@ -89,7 +81,7 @@ function Step1({
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={profile?.business_name ?? 'Chef Maria'}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <p className="mt-1 text-xs text-stone-400">
             Defaults to your business name if left blank
@@ -97,7 +89,7 @@ function Step1({
         </div>
 
         <div>
-          <label htmlFor="bio" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="bio" className="mb-1 block text-sm font-medium text-stone-700">
             Bio
           </label>
           <textarea
@@ -106,8 +98,8 @@ function Step1({
             onChange={(e) => setBio(e.target.value)}
             rows={4}
             maxLength={1200}
-            placeholder="Tell clients a bit about your cooking style, background, and what makes your events special…"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-none"
+            placeholder="Tell clients a bit about your cooking style, background, and what makes your events special..."
+            className="w-full resize-none rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <p className="mt-1 text-xs text-stone-400">{bio.length}/1200</p>
         </div>
@@ -115,7 +107,7 @@ function Step1({
         <p className="text-xs text-stone-400">
           Profile photo can be added in{' '}
           <a href="/settings/my-profile" className="underline">
-            Settings → My Profile
+            Settings - My Profile
           </a>
           .
         </p>
@@ -136,8 +128,6 @@ function Step1({
     </div>
   )
 }
-
-// ─── Step 2: Branding ─────────────────────────────────────────────────────────
 
 function Step2({
   profile,
@@ -164,7 +154,7 @@ function Step2({
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="tagline" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="tagline" className="mb-1 block text-sm font-medium text-stone-700">
             Tagline
           </label>
           <input
@@ -174,12 +164,12 @@ function Step2({
             onChange={(e) => setTagline(e.target.value)}
             maxLength={160}
             placeholder="Restaurant-quality dining in your home"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         <div>
-          <label htmlFor="brandColor" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="brandColor" className="mb-1 block text-sm font-medium text-stone-700">
             Brand color
           </label>
           <div className="flex items-center gap-3">
@@ -188,9 +178,9 @@ function Step2({
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="h-10 w-16 rounded border border-stone-300 cursor-pointer"
+              className="h-10 w-16 cursor-pointer rounded border border-stone-300"
             />
-            <span className="text-sm text-stone-600 font-mono">{color}</span>
+            <span className="font-mono text-sm text-stone-600">{color}</span>
           </div>
           <p className="mt-1 text-xs text-stone-400">
             Used for buttons and accents in your client portal
@@ -213,8 +203,6 @@ function Step2({
     </div>
   )
 }
-
-// ─── Step 3: Public URL ───────────────────────────────────────────────────────
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
 
@@ -258,9 +246,9 @@ function Step3({
 
   const statusMessage: Record<SlugStatus, { text: string; color: string } | null> = {
     idle: null,
-    checking: { text: 'Checking availability…', color: 'text-stone-400' },
+    checking: { text: 'Checking availability...', color: 'text-stone-400' },
     available: { text: 'Available!', color: 'text-green-600' },
-    taken: { text: 'Already taken — try another', color: 'text-red-600' },
+    taken: { text: 'Already taken - try another', color: 'text-red-600' },
     invalid: {
       text: 'Only lowercase letters, numbers, and hyphens (min 3 chars)',
       color: 'text-amber-600',
@@ -280,8 +268,8 @@ function Step3({
         <label htmlFor="slug" className="block text-sm font-medium text-stone-700">
           Profile URL
         </label>
-        <div className="flex items-center border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500">
-          <span className="px-3 py-2 text-sm text-stone-400 bg-stone-50 border-r border-stone-300 whitespace-nowrap">
+        <div className="flex items-center overflow-hidden rounded-lg border border-stone-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500">
+          <span className="whitespace-nowrap border-r border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-400">
             cheflowhq.com/chef/
           </span>
           <input
@@ -318,8 +306,6 @@ function Step3({
   )
 }
 
-// ─── Step 4: Stripe Connect ────────────────────────────────────────────────────
-
 function Step4({
   connectStatus,
   onContinue,
@@ -350,25 +336,25 @@ function Step4({
       </div>
 
       {connectStatus.connected ? (
-        <div className="bg-green-950 border border-green-200 rounded-xl p-4 space-y-2">
+        <div className="space-y-2 rounded-xl border border-green-200 bg-green-50 p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-green-800">
-            <span className="text-green-500">✓</span>
+            <span className="text-green-500">OK</span>
             Stripe account connected
           </div>
           <div className="flex items-center gap-2 text-sm text-green-700">
-            <span className="text-green-500">✓</span>
-            Charges enabled — ready to accept payments
+            <span className="text-green-500">OK</span>
+            Charges enabled - ready to accept payments
           </div>
           <div className="flex items-center gap-2 text-sm text-green-700">
-            <span className="text-green-500">✓</span>
-            Payouts enabled — funds transfer to your bank
+            <span className="text-green-500">OK</span>
+            Payouts enabled - funds transfer to your bank
           </div>
         </div>
       ) : connectStatus.pending ? (
         <div className="space-y-4">
-          <div className="bg-amber-950 border border-amber-200 rounded-xl p-4">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm text-amber-800">
-              Your Stripe account was created but onboarding isn&apos;t complete yet. Click below to
+              Your Stripe account was created but onboarding is not complete yet. Click below to
               continue where you left off.
             </p>
           </div>
@@ -378,19 +364,19 @@ function Step4({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
             <ul className="space-y-2 text-sm text-stone-600">
               <li className="flex items-start gap-2">
-                <span className="text-brand-600 font-bold mt-0.5">→</span>
+                <span className="mt-0.5 font-bold text-brand-600">-</span>
                 Direct deposits to your bank account
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-brand-600 font-bold mt-0.5">→</span>
+                <span className="mt-0.5 font-bold text-brand-600">-</span>
                 Automatic payouts on your schedule
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-brand-600 font-bold mt-0.5">→</span>
-                Takes about 5 minutes — bank-level security
+                <span className="mt-0.5 font-bold text-brand-600">-</span>
+                Takes about 5 minutes with bank-level security
               </li>
             </ul>
           </div>
@@ -404,82 +390,210 @@ function Step4({
       <button
         type="button"
         onClick={onContinue}
-        className="block text-sm text-stone-400 hover:text-stone-600 underline"
+        className="block text-sm text-stone-400 underline hover:text-stone-600"
       >
         {connectStatus.connected
           ? 'Continue to finish'
-          : 'Skip for now — connect later in Settings'}
+          : 'Skip for now - connect later in Settings'}
       </button>
     </div>
   )
 }
 
-// ─── Step 5: Done ─────────────────────────────────────────────────────────────
-
 function Step5({
+  launchStatus,
+  progress,
   connectStatus,
   onFinish,
+  onGoToDashboard,
   finishing,
 }: {
+  launchStatus: LaunchStatus
+  progress: OnboardingProgress
   connectStatus: ConnectAccountStatus
   onFinish: () => void
+  onGoToDashboard: () => void
   finishing: boolean
 }) {
+  const nextActions = [
+    {
+      key: 'clients',
+      label: 'Import your clients',
+      done: progress.clients.done,
+      detail: progress.clients.done
+        ? progress.clients.count === 1
+          ? '1 client already imported.'
+          : `${progress.clients.count} clients already imported.`
+        : 'Bring in the contacts and history you already have.',
+    },
+    {
+      key: 'recipes',
+      label: 'Build your recipe library',
+      done: progress.recipes.done,
+      detail: progress.recipes.done
+        ? progress.recipes.count === 1
+          ? '1 recipe already saved.'
+          : `${progress.recipes.count} recipes already saved.`
+        : 'Add the dishes you actually cook so events stay accurate.',
+    },
+    {
+      key: 'loyalty',
+      label: 'Set up loyalty',
+      done: progress.loyalty.done,
+      detail: progress.loyalty.done
+        ? 'Rewards and tiers are configured.'
+        : 'Seed your tiers, rewards, and historical balances.',
+    },
+    {
+      key: 'staff',
+      label: 'Add regular staff',
+      done: progress.staff.done,
+      detail: progress.staff.done
+        ? progress.staff.count === 1
+          ? '1 staff member already added.'
+          : `${progress.staff.count} staff members already added.`
+        : 'Optional, but worth doing if you schedule a team.',
+    },
+  ]
+
+  const launchItems = [
+    {
+      key: 'profile',
+      label: 'Profile',
+      done: launchStatus.profileDone,
+      detail: launchStatus.profileDone
+        ? `Ready as ${launchStatus.displayName}`
+        : 'Still worth tightening in My Profile.',
+    },
+    {
+      key: 'url',
+      label: 'Public URL',
+      done: launchStatus.publicUrlDone,
+      detail: launchStatus.publicUrlDone
+        ? `chef/${launchStatus.slug}`
+        : 'Claim it from Public Profile settings when you are ready.',
+    },
+    {
+      key: 'payments',
+      label: 'Stripe payouts',
+      done: launchStatus.paymentsDone,
+      detail: launchStatus.paymentsDone
+        ? 'Ready to take deposits and payouts.'
+        : 'Can be finished later from Stripe Connect settings.',
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <div>
-        <div className="text-4xl mb-3">🎉</div>
-        <h2 className="text-2xl font-bold text-stone-900">You&apos;re All Set!</h2>
+        <div className="mb-3 text-4xl">Success</div>
+        <h2 className="text-2xl font-bold text-stone-900">Core launch is finished</h2>
         <p className="mt-1 text-stone-500">
-          Your ChefFlow account is ready. Here&apos;s what&apos;s been configured:
+          Your workspace exists. Move into the setup hub so ChefFlow learns your real clients,
+          recipes, loyalty data, and team.
         </p>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm text-stone-700 bg-stone-50 rounded-lg px-3 py-2">
-          <span className="text-green-500">✓</span>
-          Profile and branding set up
+      <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-stone-900">Launch status</h3>
+          <span className="text-xs font-medium text-stone-500">
+            {launchStatus.completedSteps}/{launchStatus.totalSteps} ready
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-stone-700 bg-stone-50 rounded-lg px-3 py-2">
-          <span className="text-green-500">✓</span>
-          Public profile URL configured
-        </div>
-        <div
-          className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
-            connectStatus.connected ? 'text-stone-700 bg-stone-50' : 'text-amber-700 bg-amber-950'
-          }`}
-        >
-          {connectStatus.connected ? (
-            <>
-              <span className="text-green-500">✓</span> Stripe payments connected
-            </>
-          ) : (
-            <>
-              <span className="text-amber-500">!</span> Stripe not connected — add later in Settings
-            </>
-          )}
+        <div className="space-y-2">
+          {launchItems.map((item) => (
+            <div
+              key={item.key}
+              className="flex items-start gap-2 rounded-lg bg-white px-3 py-2 text-sm text-stone-700"
+            >
+              {item.done ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              ) : (
+                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              )}
+              <div className="min-w-0">
+                <p className="font-medium text-stone-900">{item.label}</p>
+                <p className="text-stone-500">{item.detail}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      <Button variant="primary" size="lg" className="w-full" loading={finishing} onClick={onFinish}>
-        Go to Dashboard
-      </Button>
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-stone-900">What happens next</h3>
+          <span className="text-xs font-medium text-stone-500">
+            {nextActions.filter((item) => item.done).length}/{nextActions.length} started
+          </span>
+        </div>
+        <div className="space-y-2">
+          {nextActions.map((item) => (
+            <div
+              key={item.key}
+              className="flex items-start gap-2 rounded-lg bg-white/80 px-3 py-2 text-sm text-stone-700"
+            >
+              {item.done ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              ) : (
+                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+              )}
+              <div className="min-w-0">
+                <p className="font-medium text-stone-900">{item.label}</p>
+                <p className="text-stone-500">{item.detail}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          variant="primary"
+          size="lg"
+          className="w-full sm:flex-1"
+          loading={finishing}
+          onClick={onFinish}
+        >
+          Continue to Setup Hub
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="lg"
+          className="w-full sm:w-auto"
+          disabled={finishing}
+          onClick={onGoToDashboard}
+        >
+          Go to Dashboard
+        </Button>
+      </div>
+
+      {!connectStatus.connected && (
+        <p className="text-sm text-stone-500">
+          Nothing gets locked if Stripe is still pending. You can finish payouts later from
+          Settings.
+        </p>
+      )}
     </div>
   )
 }
-
-// ─── Main Wizard ──────────────────────────────────────────────────────────────
 
 interface OnboardingWizardProps {
   profile: ChefFullProfile | null
   connectStatus: ConnectAccountStatus
   initialStep?: number
+  launchStatus: LaunchStatus
+  progress: OnboardingProgress
 }
 
 export function OnboardingWizard({
   profile,
   connectStatus,
   initialStep = 1,
+  launchStatus,
+  progress,
 }: OnboardingWizardProps) {
   const router = useRouter()
   const [step, setStep] = useState(initialStep)
@@ -535,24 +649,31 @@ export function OnboardingWizard({
     })
   }
 
-  function handleFinish() {
+  function handleFinish(destination: 'hub' | 'dashboard' = 'hub') {
     startTransition(async () => {
       try {
         await markOnboardingComplete()
-        router.push('/dashboard')
-      } catch (err) {
+        router.push(destination === 'hub' ? '/onboarding' : '/dashboard')
+      } catch {
         toast.error('Failed to complete onboarding')
       }
     })
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
       <div className="w-full max-w-xl">
         <ProgressBar current={step} total={TOTAL_STEPS} />
+        <div className="mb-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          <p className="text-sm font-semibold text-stone-900">Quick launch first.</p>
+          <p className="mt-1 text-sm text-stone-600">
+            This five-minute pass gets your profile, URL, and payouts into a usable state. After
+            that, the setup hub walks you through importing clients, recipes, loyalty, and staff.
+          </p>
+        </div>
 
         <Card>
-          <CardContent className="pt-8 pb-8">
+          <CardContent className="pb-8 pt-8">
             {step === 1 && (
               <Step1
                 profile={profile}
@@ -579,14 +700,21 @@ export function OnboardingWizard({
             )}
             {step === 4 && <Step4 connectStatus={connectStatus} onContinue={goNext} />}
             {step === 5 && (
-              <Step5 connectStatus={connectStatus} onFinish={handleFinish} finishing={isPending} />
+              <Step5
+                launchStatus={launchStatus}
+                progress={progress}
+                connectStatus={connectStatus}
+                onFinish={() => handleFinish('hub')}
+                onGoToDashboard={() => handleFinish('dashboard')}
+                finishing={isPending}
+              />
             )}
 
             {stepError && <p className="mt-4 text-sm text-red-600">{stepError}</p>}
           </CardContent>
 
           {step > 1 && step < TOTAL_STEPS && (
-            <div className="px-6 pb-6 border-t border-stone-100 pt-4">
+            <div className="border-t border-stone-100 px-6 pb-6 pt-4">
               <Button variant="ghost" onClick={goBack}>
                 Back
               </Button>

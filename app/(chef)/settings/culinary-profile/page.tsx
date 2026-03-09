@@ -83,8 +83,8 @@ export default function CulinaryProfilePage() {
       </div>
 
       <p className="text-stone-400 mb-6">
-        Help Remy understand your food identity. These answers shape how Remy talks about food,
-        suggests dishes, and understands your style. Answer as many or as few as you like — you can
+        Capture your food identity in one place. These answers shape how ChefFlow frames dishes,
+        drafts language, and reflects your style. Answer as many or as few as you like — you can
         always come back.
       </p>
 
@@ -154,7 +154,7 @@ export default function CulinaryProfilePage() {
 
         {saved && (
           <span className="text-sm text-green-600">
-            Remy will use your updated profile in future conversations.
+            Your updated profile will be used in future drafts and conversations.
           </span>
         )}
       </div>

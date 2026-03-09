@@ -1,6 +1,6 @@
-import { Bot, Mail, TrendingUp, Heart, BookOpen } from '@/components/ui/icons'
+import { Layers, Mail, TrendingUp, Heart, BookOpen } from '@/components/ui/icons'
 
-const AI_FEATURES = [
+const FEATURE_HIGHLIGHTS = [
   {
     icon: Mail,
     title: 'Email drafts',
@@ -31,10 +31,10 @@ export function MeetRemySection() {
       <div className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
         <div className="mb-10 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-950 text-brand-400">
-            <Bot className="h-6 w-6" />
+            <Layers className="h-6 w-6" />
           </div>
           <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-            Built-in AI assistant
+            Built-in workflow support
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
             Move faster on admin work while you stay in control. You review everything before it
@@ -43,7 +43,7 @@ export function MeetRemySection() {
         </div>
 
         <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
-          {AI_FEATURES.map((feature) => {
+          {FEATURE_HIGHLIGHTS.map((feature) => {
             const Icon = feature.icon
             return (
               <div

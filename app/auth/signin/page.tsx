@@ -50,7 +50,8 @@ function SignInForm() {
   const searchParams = useMemo(() => rawSearchParams ?? new URLSearchParams(), [rawSearchParams])
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-
+  const [busyPhase, setBusyPhase] = useState<'idle' | 'credentials' | 'routing' | 'google'>('idle')
+  const [showSlowNotice, setShowSlowNotice] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<SignInInput>({
@@ -60,6 +61,8 @@ function SignInForm() {
   })
   const showGoogleAuth = isGoogleAuthButtonEnabled()
   const redirectPath = safeRedirectPath(searchParams.get('redirect'))
+  const isBusy = loading || googleLoading
+
   useEffect(() => {
     const callbackError = searchParams.get('error')
     const callbackMessage = searchParams.get('message')
@@ -67,21 +70,34 @@ function SignInForm() {
     setMessage(callbackMessage || null)
   }, [searchParams])
 
+  useEffect(() => {
+    if (!isBusy) {
+      setShowSlowNotice(false)
+      return
+    }
+
+    const timer = window.setTimeout(() => setShowSlowNotice(true), 4000)
+    return () => window.clearTimeout(timer)
+  }, [isBusy])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
     setLoading(true)
+    setBusyPhase('credentials')
 
     try {
-      await signIn(formData)
-      router.push(redirectPath)
-      router.refresh()
+      const result = await signIn(formData)
+      setBusyPhase('routing')
+      const destination = redirectPath === '/' ? result.destination : redirectPath
+      router.replace(destination)
+      return
     } catch (err) {
       const error = err as Error
-      setError(normalizeAuthErrorMessage(error.message))
-    } finally {
       setLoading(false)
+      setBusyPhase('idle')
+      setError(normalizeAuthErrorMessage(error.message))
     }
   }
 
@@ -89,15 +105,30 @@ function SignInForm() {
     setError(null)
     setMessage(null)
     setGoogleLoading(true)
+    setBusyPhase('google')
     try {
       await signInWithGoogle(redirectPath)
       // signInWithGoogle redirects, so no navigation or state change is needed here on success
     } catch (err) {
       const error = err as Error
+      setBusyPhase('idle')
       setError(normalizeGoogleOAuthErrorMessage(normalizeAuthErrorMessage(error.message)))
       setGoogleLoading(false)
     }
   }
+
+  const busyTitle =
+    busyPhase === 'routing'
+      ? 'Loading your workspace...'
+      : busyPhase === 'google'
+        ? 'Redirecting to Google...'
+        : 'Signing you in...'
+  const busyBody =
+    busyPhase === 'routing'
+      ? 'Your account is authenticated. Beta is opening the right dashboard now.'
+      : busyPhase === 'google'
+        ? 'Please keep this tab open while we hand off to Google sign-in.'
+        : 'Please keep this tab open while we verify your account.'
 
   return (
     <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 relative overflow-hidden">
@@ -111,8 +142,26 @@ function SignInForm() {
           <p className="text-stone-400 mt-2">Sign in to your account</p>
         </div>
 
-        <Card>
-          <form onSubmit={handleSubmit}>
+        <Card className="relative overflow-hidden">
+          {isBusy && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-stone-950/85 px-6 text-center backdrop-blur-sm">
+              <div role="status" aria-live="polite" className="max-w-xs space-y-3">
+                <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-stone-700 border-t-brand-500" />
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-stone-100">{busyTitle}</p>
+                  <p className="text-sm text-stone-300">{busyBody}</p>
+                </div>
+                {showSlowNotice && (
+                  <p className="text-xs text-amber-200">
+                    This is taking longer than normal on beta, but the sign-in request is still in
+                    progress.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} aria-busy={isBusy}>
             <CardHeader>
               <CardTitle>Sign In</CardTitle>
             </CardHeader>
@@ -127,6 +176,7 @@ function SignInForm() {
                 label="Email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                disabled={isBusy}
                 required
                 autoComplete="email"
               />
@@ -136,6 +186,7 @@ function SignInForm() {
                 label="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                disabled={isBusy}
                 required
                 autoComplete="current-password"
               />
@@ -150,6 +201,7 @@ function SignInForm() {
                     type="checkbox"
                     checked={formData.rememberMe}
                     onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                    disabled={isBusy}
                     className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
                   />
                   <span className="text-sm text-stone-400">Stay signed in</span>
@@ -166,7 +218,7 @@ function SignInForm() {
 
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" variant="primary" className="w-full" loading={loading}>
-                Sign In
+                {loading ? 'Signing In...' : 'Sign In'}
               </Button>
 
               {showGoogleAuth && (
@@ -188,7 +240,7 @@ function SignInForm() {
                     loading={googleLoading}
                   >
                     <Chrome className="mr-2 h-4 w-4" />
-                    Sign in with Google
+                    {googleLoading ? 'Opening Google...' : 'Sign in with Google'}
                   </Button>
                 </>
               )}

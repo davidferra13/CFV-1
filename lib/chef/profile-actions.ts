@@ -76,6 +76,7 @@ export type ChefFullProfile = {
   website_url: string | null
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
+  slug: string | null
 }
 
 export async function getChefFullProfile(): Promise<ChefFullProfile> {
@@ -94,6 +95,7 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
       google_review_url,
       profile_image_url,
       logo_url,
+      slug,
       website_url,
       show_website_on_public_profile,
       preferred_inquiry_destination
@@ -107,7 +109,7 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     const fallback = await supabase
       .from('chefs')
       .select(
-        'business_name, display_name, bio, phone, tagline, google_review_url, profile_image_url'
+        'business_name, display_name, bio, phone, tagline, google_review_url, profile_image_url, slug'
       )
       .eq('id', user.entityId)
       .single()
@@ -132,6 +134,7 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     website_url: data.website_url ?? null,
     show_website_on_public_profile: data.show_website_on_public_profile ?? true,
     preferred_inquiry_destination: data.preferred_inquiry_destination ?? 'both',
+    slug: data.slug ?? null,
   }
 }
 

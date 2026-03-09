@@ -54,8 +54,8 @@ const PRICING_APPLICATION_JSON_LD = {
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       description: IS_PUBLIC_LAUNCH
-        ? `Automation, AI, and growth workflows with a ${PRO_TRIAL_DAYS}-day free trial.`
-        : 'Automation, AI, and growth workflows available during beta onboarding.',
+        ? `Automation, drafting, and growth workflows with a ${PRO_TRIAL_DAYS}-day free trial.`
+        : 'Automation, drafting, and growth workflows available during beta onboarding.',
     },
   ],
 }

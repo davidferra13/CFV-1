@@ -90,7 +90,7 @@ const PRO_CATEGORY_ORDER: ProFeature['category'][] = [
 ]
 
 const PRO_CATEGORY_LABELS: Record<ProFeature['category'], string> = {
-  ai: 'AI and assistant workflows',
+  ai: 'Drafting and workflow tools',
   analytics: 'Analytics and reporting',
   finance: 'Advanced finance workflows',
   marketing: 'Marketing and outreach',
@@ -143,7 +143,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     ctaHref: '/auth/signup',
     highlighted: true,
     points: [
-      'Everything in Free plus AI assistant access and advanced automations',
+      'Everything in Free plus drafting tools and advanced automations',
       'Commerce engine, marketing tools, and custom reporting',
       'Integrations layer for workflows like Zapier and external systems',
       'Best fit for operators running frequent volume or complex service models',
@@ -243,8 +243,8 @@ export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
     label: 'Automation and growth',
     rows: [
       {
-        capability: 'Remy AI assistant',
-        detail: 'AI drafting and assistant workflows for faster execution.',
+        capability: 'Command Center',
+        detail: 'Drafting, workflow support, and faster execution in one place.',
         values: {
           free: { state: 'not_included', note: 'Pro only' },
           pro: { state: 'included', note: 'Included' },

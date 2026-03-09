@@ -30,22 +30,22 @@ export type ProFeature = {
 }
 
 export const PRO_FEATURES: ProFeature[] = [
-  // AI
+  // Drafting & insights
   {
     slug: 'remy',
-    label: 'Remy AI Assistant',
-    description: 'Your AI sous chef for business operations',
+    label: 'Command Center',
+    description: 'Built-in drafting, planning, and workflow support',
     category: 'ai',
   },
   {
     slug: 'ai-parsing',
-    label: 'AI Document Parsing',
-    description: 'Smart parsing of inquiries, receipts, and recipes',
+    label: 'Smart Document Parsing',
+    description: 'Structured parsing of inquiries, receipts, and recipes',
     category: 'ai',
   },
   {
     slug: 'ai-insights',
-    label: 'AI Business Insights',
+    label: 'Business Insights',
     description: 'Automated business intelligence and recommendations',
     category: 'ai',
   },

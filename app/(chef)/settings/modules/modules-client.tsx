@@ -122,7 +122,7 @@ export function ModulesClient({
               <h3 className="text-base font-semibold text-stone-100">Focus Mode</h3>
               <p className="text-sm text-stone-400 mt-0.5">
                 {focusMode
-                  ? 'Strict Focus Mode is active: only Remy, Sales, Events, and Clients groups are shown (plus Admin when available), with fixed shortcuts.'
+                  ? 'Strict Focus Mode is active: only Commands, Sales, Events, and Clients groups are shown (plus Admin when available), with fixed shortcuts.'
                   : 'All modules visible. Turn on Focus Mode to enforce a strict simplified sidebar.'}
               </p>
             </div>
@@ -156,7 +156,7 @@ export function ModulesClient({
                 { label: 'Inquiries', desc: 'Primary shortcut' },
                 { label: 'Events', desc: 'Primary shortcut' },
                 { label: 'Clients', desc: 'Primary shortcut' },
-                { label: 'Remy group', desc: 'Visible in strict Focus Mode' },
+                { label: 'Commands group', desc: 'Visible in strict Focus Mode' },
                 { label: 'Sales group', desc: 'Visible in strict Focus Mode' },
                 { label: 'Events group', desc: 'Visible in strict Focus Mode' },
                 { label: 'Clients group', desc: 'Visible in strict Focus Mode' },
