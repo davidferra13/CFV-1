@@ -1,4 +1,4 @@
-// Recipe Book — Library Page
+// Recipe Book - Library Page
 // Browse, search, and filter the chef's recipe collection
 // Seasonal banner at top shows active season's creative thesis and micro-window alerts.
 

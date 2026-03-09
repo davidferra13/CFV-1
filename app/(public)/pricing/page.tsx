@@ -211,8 +211,8 @@ export default function PricingPage() {
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
               This model keeps tiering clear: Free for the core business layer every working chef
-              needs, Pro for leverage and automation, Scale for rollout support when complexity
-              grows past one operator.
+              needs, Pro for automation and growth, Scale for rollout support when complexity grows
+              past one operator.
             </p>
           </div>
           <div className="mt-6 grid gap-4 lg:grid-cols-3">

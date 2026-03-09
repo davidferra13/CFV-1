@@ -287,7 +287,7 @@ function SignUpForm() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-          <p className="text-stone-400 mt-2">Manage your chef work, your way</p>
+          <p className="text-stone-400 mt-2">Run your chef business, your way</p>
         </div>
 
         <Card>
@@ -303,9 +303,7 @@ function SignUpForm() {
                   This signup is linked to your beta invitation and will be tracked automatically.
                 </Alert>
               )}
-              <Alert variant="info">
-                Recommended: create your account with email and password.
-              </Alert>
+              <Alert variant="info">Create your account with email and password.</Alert>
 
               <Input
                 type="email"

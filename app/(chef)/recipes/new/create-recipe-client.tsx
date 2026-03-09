@@ -356,7 +356,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
           <CardContent className="space-y-4">
             {!aiConfigured && (
               <Alert variant="warning">
-                Smart import is not configured. Contact your administrator to enable this feature.
+                Smart import is not set up. Contact your administrator to enable this feature.
               </Alert>
             )}
             <Textarea

@@ -85,7 +85,7 @@ const CONTACT_PLAYS = [
   },
   {
     eyebrow: 'Referral Growth',
-    title: 'Treat happy clients like network nodes.',
+    title: 'Turn happy clients into your referral network.',
     description:
       'Some contacts will never book monthly, but they will send friends, family, house guests, and company teams if you follow up the right way.',
   },

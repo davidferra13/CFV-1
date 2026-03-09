@@ -461,10 +461,10 @@ export function RecipeDetailClient({ recipe }: Props) {
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
 
-      {/* Nutrition (on-demand — fetches USDA data when chef clicks) */}
+      {/* Nutrition (on-demand, fetches USDA data when chef clicks) */}
       <NutritionPanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
-      {/* Allergen Detection (on-demand — uses Edamam API when chef clicks) */}
+      {/* Allergen Detection (on-demand, uses Edamam API when chef clicks) */}
       <AllergenBadgePanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
       {/* Method */}
@@ -875,7 +875,7 @@ export function RecipeDetailClient({ recipe }: Props) {
           )}
           {!logLoaded && !showLogForm && (
             <p className="text-sm text-stone-500 text-center py-4">
-              Click &quot;Load History&quot; to see past production entries.
+              Click &quot;Load History&quot; to see past batches.
             </p>
           )}
           {logLoaded && productionLog.length > 0 && (
