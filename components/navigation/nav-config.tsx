@@ -100,6 +100,7 @@ type NavSubItem = {
   label: string
   icon?: LucideIcon
   visibility?: 'secondary' | 'advanced'
+  module?: string
 }
 type NavCollapsibleItem = NavItem & {
   children?: NavSubItem[]
