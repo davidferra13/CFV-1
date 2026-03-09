@@ -56,6 +56,9 @@ export const emptyInquiryStats = {
   confirmed: 0,
   declined: 0,
   expired: 0,
+  total: 0,
+  linked: 0,
+  conversionRate: 0,
 }
 export const emptyInquiryBudgetMix: DashboardInquiryBudgetMix = {
   exact: 0,

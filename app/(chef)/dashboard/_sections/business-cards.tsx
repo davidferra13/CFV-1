@@ -140,7 +140,11 @@ export async function BusinessCards() {
           widgetId="lead_funnel_live"
           title="Lead Funnel"
           value={String(openInquiries)}
-          subtitle="open inquiries"
+          subtitle={
+            inquiryStats.conversionRate > 0
+              ? `${inquiryStats.conversionRate}% conversion (${inquiryStats.linked}/${inquiryStats.total})`
+              : 'open inquiries'
+          }
           trend={
             hotPipeline > 0
               ? `${hotPipeline} hot leads`

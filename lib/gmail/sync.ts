@@ -19,7 +19,7 @@ import {
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { extractAndScoreEmail, scoreInquiryFields } from './extract-inquiry-fields'
-// createClientFromLead import removed - inquiries no longer auto-create clients
+import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { isCommTriageEnabled } from '@/lib/features'
 import { isTakeAChefEmail, parseTakeAChefEmail } from './take-a-chef-parser'
@@ -486,9 +486,9 @@ async function handleInquiry(
     const leadEmail = email.from.email
     const clientPhone = detFields.client_phone || ollamaPhone || null
 
-    // Store lead contact info on the inquiry (no auto-client creation).
-    // Chef can convert to a full client record later from the inquiry detail page.
-    const clientId: string | null = null
+    // Auto-link if this email belongs to an existing client (read-only, no INSERT).
+    // Otherwise leave unlinked; chef can convert later from the inquiry detail page.
+    const clientId = await findExistingClientByEmail(supabase, tenantId, leadEmail)
 
     // Store lead data + lead score in unknown_fields
     const unknownFields: Record<string, unknown> = {

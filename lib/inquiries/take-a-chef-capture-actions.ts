@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-// createClientFromLead import removed - inquiries no longer auto-create clients
+import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
@@ -79,12 +79,13 @@ export async function captureTakeAChefBooking(
     ].filter(Boolean)
     const sourceMessage = sourceParts.join('\n')
 
-    // 3. Store contact info on the inquiry (no auto-client creation).
-    // Chef can convert to a full client record later from the inquiry detail page.
+    // 3. Store contact info on the inquiry. Auto-link if already a client.
     const contactName = validated.full_name.trim()
     const contactEmail = validated.email?.toLowerCase().trim() || null
     const contactPhone = validated.phone?.trim() || null
-    const clientId: string | null = null
+    const clientId = contactEmail
+      ? await findExistingClientByEmail(supabase, tenantId, contactEmail)
+      : null
 
     // 4. Create inquiry
     const { data: inquiry, error: inquiryError } = await supabase

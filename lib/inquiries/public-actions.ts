@@ -7,7 +7,7 @@
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
-// createClientFromLead import removed - inquiries no longer auto-create clients
+import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import {
   BookingServiceModeSchema,
   ScheduleRequestSchema,
@@ -231,11 +231,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     validated.campaign_source ??
     (rebookContext ? 'rebook_qr' : referralContext.isValid ? 'referral_qr' : 'public_profile')
 
-  // 2. Store contact info on the inquiry (no auto-client creation).
-  // Chef can convert to a full client record later from the inquiry detail page.
+  // 2. Store contact info on the inquiry. Auto-link if already a client (read-only check).
   const contactName = validated.full_name.trim()
   const contactEmail = validated.email.toLowerCase().trim()
   const contactPhone = validated.phone?.trim() || null
+  const existingClientId = await findExistingClientByEmail(supabase, tenantId, contactEmail)
 
   // Only persist exact budget cents when explicitly provided.
   const budgetCents = validated.budget_cents ?? null
@@ -256,7 +256,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     .insert({
       tenant_id: tenantId,
       channel: 'website',
-      client_id: null,
+      client_id: existingClientId,
       contact_name: contactName,
       contact_email: contactEmail,
       contact_phone: contactPhone,
@@ -377,7 +377,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     .from('events')
     .insert({
       tenant_id: tenantId,
-      client_id: null,
+      client_id: existingClientId,
       inquiry_id: inquiry.id,
       event_date: validated.event_date,
       serve_time: validated.serve_time.trim(),
@@ -460,7 +460,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   try {
     const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
-    await onInquiryCreated(tenantId, inquiry.id, null, {
+    await onInquiryCreated(tenantId, inquiry.id, existingClientId, {
       channel: 'website',
       clientName: validated.full_name,
       occasion: validated.occasion ?? undefined,

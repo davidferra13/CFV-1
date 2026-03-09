@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-// createClientFromLead import removed - inquiries no longer auto-create clients
+import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { z } from 'zod'
@@ -87,11 +87,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Store contact info on the inquiry (no auto-client creation).
-    // Chef can convert to a full client record later from the inquiry detail page.
+    // Store contact info on the inquiry. Auto-link if already a client (read-only check).
     const contactName = parsed.full_name.trim()
     const contactEmail = email || null
     const contactPhone = phone || null
+    const existingClientId = contactEmail
+      ? await findExistingClientByEmail(supabase, tenantId, contactEmail)
+      : null
 
     // 2. Create inquiry
     const sourceMessage = [
@@ -108,7 +110,7 @@ export async function POST(request: Request) {
       .insert({
         tenant_id: tenantId,
         channel: 'kiosk',
-        client_id: null,
+        client_id: existingClientId,
         contact_name: contactName,
         contact_email: contactEmail,
         contact_phone: contactPhone,
@@ -159,7 +161,7 @@ export async function POST(request: Request) {
       .from('events')
       .insert({
         tenant_id: tenantId,
-        client_id: null,
+        client_id: existingClientId,
         inquiry_id: inquiry.id,
         event_date: parsed.event_date,
         serve_time: 'TBD',

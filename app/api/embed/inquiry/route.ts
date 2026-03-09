@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { verifyTurnstileToken } from '@/lib/security/turnstile'
+import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 
@@ -137,11 +138,11 @@ export async function POST(request: NextRequest) {
     const tenantId = chef.id as string
     const chefName = (chef.business_name as string | null) || 'Your Chef'
 
-    // Store contact info on the inquiry (no auto-client creation).
-    // Chef can convert to a full client record later from the inquiry detail page.
+    // Store contact info on the inquiry. Auto-link if already a client (read-only check).
     const clientEmail = data.email.toLowerCase().trim()
     const clientName = data.full_name.trim()
     const clientPhone = data.phone?.trim() || null
+    const existingClientId = await findExistingClientByEmail(supabase, tenantId, clientEmail)
 
     // 3. Build source message from optional fields
     const sourceParts = [
@@ -190,7 +191,7 @@ export async function POST(request: NextRequest) {
       .insert({
         tenant_id: tenantId,
         channel: 'website',
-        client_id: null,
+        client_id: existingClientId,
         contact_name: clientName,
         contact_email: clientEmail,
         contact_phone: clientPhone,
@@ -261,7 +262,7 @@ export async function POST(request: NextRequest) {
         .from('events')
         .insert({
           tenant_id: tenantId,
-          client_id: null,
+          client_id: existingClientId,
           inquiry_id: inquiry.id,
           event_date: data.event_date,
           serve_time: data.serve_time.trim(),
@@ -361,7 +362,7 @@ export async function POST(request: NextRequest) {
     // 8. Enqueue Remy AI lead scoring (non-blocking)
     try {
       const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
-      await onInquiryCreated(tenantId, inquiry.id, null, {
+      await onInquiryCreated(tenantId, inquiry.id, existingClientId, {
         channel: 'website',
         clientName,
         occasion: data.occasion ?? undefined,

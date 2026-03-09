@@ -1731,7 +1731,10 @@ export async function getInquiryStats() {
   const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!)
+    let query = supabase
+      .from('inquiries')
+      .select('status, client_id')
+      .eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -1759,14 +1762,25 @@ export async function getInquiryStats() {
     expired: 0,
   }
 
+  let linkedCount = 0
   for (const inquiry of inquiries || []) {
     const status = inquiry.status as InquiryStatus
     if (status in stats) {
       stats[status]++
     }
+    if (inquiry.client_id) {
+      linkedCount++
+    }
   }
 
-  return stats
+  const total = inquiries?.length ?? 0
+
+  return {
+    ...stats,
+    total,
+    linked: linkedCount,
+    conversionRate: total > 0 ? Math.round((linkedCount / total) * 100) : 0,
+  }
 }
 
 // ============================================
@@ -1941,6 +1955,21 @@ export async function declineInquiry(id: string, reason?: string) {
   revalidatePath(`/my-inquiries/${id}`)
 
   return { success: true }
+}
+
+/**
+ * Quick dismiss an inquiry from the list (sets to declined with "dismissed" reason).
+ * Returns { success, error } instead of throwing, for use in client components.
+ */
+export async function quickDismissInquiry(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await declineInquiry(id, 'Dismissed from inbox')
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to dismiss' }
+  }
 }
 
 // ============================================

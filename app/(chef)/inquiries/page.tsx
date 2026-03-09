@@ -14,6 +14,8 @@ import { LeadScoreBadge } from '@/components/inquiries/lead-score-badge'
 import { getInquiryUrgencies } from '@/lib/analytics/response-time-actions'
 import { computeCompleteness } from '@/lib/leads/completeness'
 import { CompletenessRing } from '@/components/inquiries/completeness-ring'
+import { QuickDismissButton } from '@/components/inquiries/quick-dismiss-button'
+import { quickDismissInquiry } from '@/lib/inquiries/actions'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import {
@@ -156,6 +158,11 @@ function InquiryRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-stone-100">{name}</span>
+            {inquiry.client?.id ? (
+              <Badge variant="success">Client</Badge>
+            ) : (
+              <Badge variant="default">Lead</Badge>
+            )}
             <InquiryStatusBadge status={inquiry.status as any} />
             <InquiryChannelBadge channel={inquiry.channel} />
             {urgency && !urgency.hasResponse && (
@@ -208,6 +215,9 @@ function InquiryRow({
           )}
         </div>
         <div className="text-right flex-shrink-0 flex items-start gap-2">
+          {OPEN_STATUSES.has(inquiry.status) && (
+            <QuickDismissButton inquiryId={inquiry.id} onDismiss={quickDismissInquiry} />
+          )}
           {completeness && OPEN_STATUSES.has(inquiry.status) && (
             <CompletenessRing completeness={completeness} />
           )}
