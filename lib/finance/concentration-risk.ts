@@ -5,7 +5,9 @@ export type ConcentrationRisk = {
   topClientId: string
   topClientName: string
   topClientRevenuePct: number // 0-100
+  top3RevenuePct: number // 0-100 — sum of top 3 clients
   riskLevel: 'safe' | 'moderate' | 'high' // safe <30%, moderate 30-50%, high >50%
+  top3RiskLevel: 'safe' | 'concentrated' // concentrated when top 3 > 70%
   distribution: Array<{
     clientId: string
     name: string
@@ -43,11 +45,17 @@ export function computeConcentrationRisk(
     riskLevel = 'high'
   }
 
+  // Top-3 concentration: sum of top 3 clients as % of total
+  const top3RevenuePct = distribution.slice(0, 3).reduce((sum, d) => sum + d.revenuePct, 0)
+  const top3RiskLevel: 'safe' | 'concentrated' = top3RevenuePct > 70 ? 'concentrated' : 'safe'
+
   return {
     topClientId: top.clientId,
     topClientName: top.name,
     topClientRevenuePct: top.revenuePct,
+    top3RevenuePct: Math.round(top3RevenuePct * 10) / 10,
     riskLevel,
+    top3RiskLevel,
     distribution,
   }
 }
