@@ -885,7 +885,7 @@ export function ChefSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto pt-3 pb-6 mb-28 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto pt-3 pb-4 custom-scrollbar flex flex-col">
         {/* ── COLLAPSED / RAIL MODE ── */}
         {collapsed ? (
           <div className="flex flex-col items-center gap-1 px-1">
@@ -1002,22 +1002,6 @@ export function ChefSidebar({
                 </Link>
               )
             })}
-
-            {/* Sign Out — inside nav so it's above the Remy mascot */}
-            <button
-              type="button"
-              onClick={handleSignOut}
-              disabled={signingOut}
-              title="Sign Out"
-              aria-label="Sign Out"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors disabled:opacity-50"
-            >
-              {signingOut ? (
-                <Loader2 className="w-[18px] h-[18px] animate-spin" />
-              ) : (
-                <LogOut className="w-[18px] h-[18px]" />
-              )}
-            </button>
           </div>
         ) : (
           /* ── EXPANDED MODE ── */
@@ -1220,25 +1204,31 @@ export function ChefSidebar({
                     })}
                   </div>
                 </div>
-
-                {/* Sign Out — inside nav so it's above the Remy mascot */}
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent disabled:opacity-50"
-                >
-                  {signingOut ? (
-                    <Loader2 className="w-[18px] h-[18px] flex-shrink-0 animate-spin" />
-                  ) : (
-                    <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-                  )}
-                  {signingOut ? 'Signing out...' : 'Sign Out'}
-                </button>
               </>
             )}
           </div>
         )}
+
+        {/* Sign Out - pushed to bottom with spacer */}
+        <div className={`mt-auto ${collapsed ? 'px-1 pt-4' : 'px-3 pt-6'}`}>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            title={collapsed ? (signingOut ? 'Signing out...' : 'Sign Out') : undefined}
+            aria-label="Sign Out"
+            className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors disabled:opacity-50 ${
+              collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
+            }`}
+          >
+            {signingOut ? (
+              <Loader2 className="w-[18px] h-[18px] flex-shrink-0 animate-spin" />
+            ) : (
+              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+            )}
+            {!collapsed && (signingOut ? 'Signing out...' : 'Sign Out')}
+          </button>
+        </div>
       </nav>
     </aside>
   )
@@ -1909,6 +1899,7 @@ export function ChefMobileNav({
             )}
             <NotificationBell />
             <button
+              data-tour="chef-mobile-menu-toggle"
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-700"
@@ -1924,7 +1915,10 @@ export function ChefMobileNav({
       {menuOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl">
+          <div
+            data-tour="chef-mobile-menu-panel"
+            className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl"
+          >
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
               {isLockedIn ? (
                 <div className="flex items-center gap-2 min-w-0 flex-1">
