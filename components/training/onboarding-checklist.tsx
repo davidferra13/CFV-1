@@ -1,7 +1,7 @@
 'use client'
 
 import type { SOP, TrainingStatus } from '@/lib/training/sop-actions'
-import { SOP_CATEGORY_LABELS } from '@/lib/training/sop-actions'
+import { SOP_CATEGORY_LABELS } from '@/lib/training/sop-shared'
 
 type Props = {
   role: string

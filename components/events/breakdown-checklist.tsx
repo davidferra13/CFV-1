@@ -11,10 +11,9 @@ import { toast } from 'sonner'
 import {
   toggleBreakdownItem,
   markBreakdownComplete,
-  CATEGORY_LABELS,
   type BreakdownItemStatus,
-  type BreakdownCategory,
 } from '@/lib/events/breakdown-actions'
+import { CATEGORY_LABELS, type BreakdownCategory } from '@/lib/events/breakdown-shared'
 
 interface BreakdownChecklistProps {
   eventId: string

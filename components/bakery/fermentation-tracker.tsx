@@ -9,11 +9,9 @@ import {
   getRecentLogs,
   getAverageTimes,
   type FermentationLog,
-  type FermentationStage,
   type AverageTime,
-  STAGE_LABELS,
-  STAGE_ORDER,
 } from '@/lib/bakery/fermentation-actions'
+import { STAGE_LABELS, STAGE_ORDER, type FermentationStage } from '@/lib/bakery/fermentation-shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

@@ -1,20 +1,11 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { type SOPCategory } from '@/lib/training/sop-shared'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 // Types
-
-export type SOPCategory =
-  | 'food_safety'
-  | 'opening_closing'
-  | 'recipes'
-  | 'equipment'
-  | 'customer_service'
-  | 'cleaning'
-  | 'emergency'
-  | 'general'
 
 export type StaffRole = 'cook' | 'server' | 'manager' | 'driver' | 'all'
 
@@ -53,18 +44,6 @@ export type ComplianceRow = {
   staff_member_id: string
   staff_name: string
   statuses: Record<string, 'complete' | 'outdated' | 'pending'>
-}
-
-// Category labels for display
-export const SOP_CATEGORY_LABELS: Record<SOPCategory, string> = {
-  food_safety: 'Food Safety',
-  opening_closing: 'Opening / Closing',
-  recipes: 'Recipes',
-  equipment: 'Equipment',
-  customer_service: 'Customer Service',
-  cleaning: 'Cleaning',
-  emergency: 'Emergency',
-  general: 'General',
 }
 
 // CRUD

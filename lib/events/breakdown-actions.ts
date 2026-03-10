@@ -4,6 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import type { BreakdownCategory } from '@/lib/events/breakdown-shared'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -16,8 +17,6 @@ export interface BreakdownItem {
   label: string
   category: BreakdownCategory
 }
-
-export type BreakdownCategory = 'equipment' | 'cleanup' | 'venue' | 'rentals' | 'staff' | 'admin'
 
 export interface BreakdownItemStatus {
   key: string
@@ -87,8 +86,6 @@ const CATEGORY_LABELS: Record<BreakdownCategory, string> = {
   staff: 'Staff',
   admin: 'Admin',
 }
-
-export { CATEGORY_LABELS }
 
 // ============================================
 // ACTIONS

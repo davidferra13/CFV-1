@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import type { SOP, ComplianceRow, SOPCategory } from '@/lib/training/sop-actions'
-import { SOP_CATEGORY_LABELS } from '@/lib/training/sop-actions'
+import type { SOP, ComplianceRow } from '@/lib/training/sop-actions'
+import { SOP_CATEGORY_LABELS, type SOPCategory } from '@/lib/training/sop-shared'
 
 type Props = {
   sops: SOP[]

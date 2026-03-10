@@ -1,13 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import {
-  createSOP,
-  deleteSOP,
-  type SOP,
-  type SOPCategory,
-  SOP_CATEGORY_LABELS,
-} from '@/lib/training/sop-actions'
+import { createSOP, deleteSOP, type SOP } from '@/lib/training/sop-actions'
+import { SOP_CATEGORY_LABELS, type SOPCategory } from '@/lib/training/sop-shared'
 
 const CATEGORIES: SOPCategory[] = [
   'food_safety',

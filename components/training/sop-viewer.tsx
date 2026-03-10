@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { markSOPComplete, type SOP, SOP_CATEGORY_LABELS } from '@/lib/training/sop-actions'
+import { markSOPComplete, type SOP } from '@/lib/training/sop-actions'
+import { SOP_CATEGORY_LABELS } from '@/lib/training/sop-shared'
 
 type Props = {
   sop: SOP
