@@ -9,8 +9,9 @@
 
 import { test as base, expect, Browser } from '@playwright/test'
 import { readFileSync } from 'fs'
+import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = TEST_BASE_URL
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

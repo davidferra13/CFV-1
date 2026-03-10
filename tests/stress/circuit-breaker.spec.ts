@@ -18,8 +18,9 @@
 import { test, expect } from '@playwright/test'
 import * as path from 'path'
 import * as fs from 'fs'
+import { TEST_API_BASE_URL } from '../helpers/runtime-base-url'
 
-const API_BASE = 'http://localhost:3100'
+const API_BASE = TEST_API_BASE_URL
 const REPORT_DIR = path.join(process.cwd(), 'data', 'stress-reports')
 
 interface CircuitBreakerTestResult {
@@ -173,15 +174,17 @@ class CircuitBreakerTest {
       },
       phases: this.results,
       interpretation: {
-        phase1Normal: this.results[0]?.verdict === 'pass' ? 'Normal operation: ✅ PASS' : 'Normal operation: ❌ FAIL',
+        phase1Normal:
+          this.results[0]?.verdict === 'pass'
+            ? 'Normal operation: ✅ PASS'
+            : 'Normal operation: ❌ FAIL',
         phase2Recovery:
           this.results[1]?.verdict === 'pass'
             ? 'Recovery after stress: ✅ PASS'
             : 'Recovery after stress: ❌ FAIL',
-        verdict:
-          this.results.every((r) => r.verdict === 'pass')
-            ? 'PASS: System handles stress and recovers gracefully'
-            : 'FAIL: System degradation under stress',
+        verdict: this.results.every((r) => r.verdict === 'pass')
+          ? 'PASS: System handles stress and recovers gracefully'
+          : 'FAIL: System degradation under stress',
       },
     }
 
@@ -196,13 +199,17 @@ class CircuitBreakerTest {
     console.log('============================================================')
     console.log('Phase 1 - Normal Operation:')
     console.log(`  Requests: ${this.results[0]?.requestCount}`)
-    console.log(`  Success: ${this.results[0]?.successCount}, Failures: ${this.results[0]?.failureCount}`)
+    console.log(
+      `  Success: ${this.results[0]?.successCount}, Failures: ${this.results[0]?.failureCount}`
+    )
     console.log(`  Avg Latency: ${this.results[0]?.avgLatencyMs}ms`)
     console.log(`  Verdict: ${report.interpretation.phase1Normal}`)
     console.log()
     console.log('Phase 2 - Recovery:')
     console.log(`  Requests: ${this.results[1]?.requestCount}`)
-    console.log(`  Success: ${this.results[1]?.successCount}, Failures: ${this.results[1]?.failureCount}`)
+    console.log(
+      `  Success: ${this.results[1]?.successCount}, Failures: ${this.results[1]?.failureCount}`
+    )
     console.log(`  Avg Latency: ${this.results[1]?.avgLatencyMs}ms`)
     console.log(`  Verdict: ${report.interpretation.phase2Recovery}`)
     console.log()

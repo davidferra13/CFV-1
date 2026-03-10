@@ -13,7 +13,7 @@
  *   node tests/remy-quality/harness/client-quality-runner.mjs
  *
  * Prerequisites:
- *   - Dev server running on port 3100
+ *   - Test target reachable via TEST_BASE_URL / PLAYWRIGHT_BASE_URL
  *   - Ollama running with qwen3:30b loaded
  *   - Client test account seeded (.auth/seed-ids.json)
  */
@@ -22,6 +22,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
+import { TEST_BASE_URL } from '../../helpers/runtime-base-url.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -29,7 +30,7 @@ const ROOT = path.resolve(__dirname, '../../..')
 
 // ─── Configuration ─────────────────────────────────────────────────────────
 
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = TEST_BASE_URL
 const API_ENDPOINT = '/api/remy/client'
 const PROJECT_REF = 'luefkpakzvxcsqroxyhz'
 const RATE_LIMIT_DELAY_MS = 6500 // ~9/min to stay safely under 12/min client rate limit

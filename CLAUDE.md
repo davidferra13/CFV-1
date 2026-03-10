@@ -28,6 +28,8 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ## Quick Reference
 
+- **Definition of done:** a feature is only done when it is verified in the real UI, honest about failure, and protected against drift. See `docs/definition-of-done.md`
+
 - **Stack:** Next.js · Supabase · Stripe — multi-tenant private chef platform
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
@@ -305,6 +307,30 @@ Report findings in the same format as `docs/zero-hallucination-audit.md`. Update
 ### Why This Exists
 
 A private chef platform handles real money, real clients, real dietary restrictions (allergies can be life-threatening), and real business decisions. When the dashboard says "$0 revenue," a chef might think their business is failing. When a notification toggle says "on" but was never saved, a chef misses a $5,000 booking. When a dietary note appears saved but wasn't persisted, someone could have an allergic reaction. **Every lie the UI tells has real consequences.** Zero tolerance.
+
+---
+
+## AGGRESSIVE DEFINITION OF DONE
+
+`docs/definition-of-done.md` is the repo-wide quality bar. Agents must follow it by default.
+
+Hard rule: `built` is not `done`.
+
+A feature is not done unless all of the following are true:
+
+- It was verified in the real app after implementation.
+- It handles failure honestly instead of faking success or falling back to misleading UI.
+- It has automated protection against likely drift points.
+- The visible UI, copy, guidance, and progress states match reality exactly.
+
+Special rule for onboarding, tours, and guided overlays:
+
+- Every configured step must point to a real element that exists on the actual page.
+- Missing targets must fail closed for the team, not degrade into fake guidance for the user.
+- Visiting a route is not proof that a user completed the step.
+- A tour is not done without an automated target-existence check and a full manual walkthrough pass.
+
+If the system can quietly lie, drift, or mark progress complete without proof, it is not done.
 
 ---
 

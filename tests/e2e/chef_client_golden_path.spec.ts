@@ -1,7 +1,8 @@
 import { test, expect } from '../helpers/fixtures'
 import { createClient } from '@supabase/supabase-js'
+import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = TEST_BASE_URL
 const TRANSIENT_500_TEXT = /internal server error/i
 
 function requireEnv(name: string): string {

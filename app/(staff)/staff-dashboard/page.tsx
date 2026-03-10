@@ -52,7 +52,7 @@ export default async function StaffDashboardPage({
   return (
     <div className="space-y-6">
       {/* Welcome header */}
-      <div>
+      <div data-tour="staff-dashboard">
         <h1 className="text-2xl font-bold text-stone-100">
           Welcome, {profile?.name ?? 'Team Member'}
         </h1>

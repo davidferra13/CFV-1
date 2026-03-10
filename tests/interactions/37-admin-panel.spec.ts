@@ -55,10 +55,7 @@ function requireAdminAuth() {
   )
 }
 
-async function gotoAdminPage(
-  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
-  url: string
-) {
+async function gotoAdminPage(page: Parameters<Parameters<typeof test>[1]>[0]['page'], url: string) {
   let lastResponse: Awaited<ReturnType<typeof page.goto>> = null
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
@@ -238,7 +235,7 @@ test.describe('Admin — Non-Admin Access Blocked', () => {
     // Create fresh context with no cookies
     const ctx = await browser.newContext()
     const page = await ctx.newPage()
-    const resp = await page.goto('http://localhost:3100/admin')
+    const resp = await page.goto('/admin')
     await page.waitForLoadState('networkidle')
     const status = resp?.status() ?? 0
     const url = page.url()

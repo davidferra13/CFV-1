@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { execSync, spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { TEST_BASE_URL } from '../../helpers/runtime-base-url.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -27,7 +28,7 @@ const PROJECT_ROOT = join(__dirname, '..', '..', '..')
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = TEST_BASE_URL
 const CLIENT_ENDPOINT = `${BASE_URL}/api/remy/client`
 const OLLAMA_URL = 'http://localhost:11434'
 const INTER_REQUEST_DELAY_MS = 6500 // stay under 12/min rate limit

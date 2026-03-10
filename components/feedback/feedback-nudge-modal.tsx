@@ -11,6 +11,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import { submitUserFeedback, type FeedbackSentiment } from '@/lib/feedback/user-feedback-actions'
 import { useIsDemoMode } from '@/lib/demo-mode'
+import { isAnyTourActiveInStorage } from '@/lib/onboarding/tour-storage'
 
 const STORAGE_KEY = 'chefflow:feedback-nudge-done'
 
@@ -33,7 +34,7 @@ export function FeedbackNudgeModal() {
     try {
       if (localStorage.getItem(STORAGE_KEY)) return
       // Don't show during an active tour walkthrough
-      if (localStorage.getItem('chefflow:tour-active') === '1') return
+      if (isAnyTourActiveInStorage(localStorage)) return
     } catch {
       // localStorage unavailable
     }

@@ -7,7 +7,16 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
-import type { BEOData, BEOCourse, BEOStaffMember, BEOFinancials } from './types'
+import type {
+  BEOData,
+  BEOCourse,
+  BEOStaffMember,
+  BEOFinancials,
+  BEOEquipmentItem,
+  BEOVendorDelivery,
+  BEOStationAssignment,
+  BEOBreakdownTask,
+} from './types'
 
 // Re-export types for consumers
 export type {
@@ -17,6 +26,10 @@ export type {
   BEOStaffMember,
   BEOFinancials,
   BEOTimeline,
+  BEOEquipmentItem,
+  BEOVendorDelivery,
+  BEOStationAssignment,
+  BEOBreakdownTask,
 } from './types'
 
 // ─── generateBEO ──────────────────────────────────────────────────────────────
@@ -149,6 +162,77 @@ export async function generateBEO(
     }
   }
 
+  // ── Enhanced BEO: Equipment Checklist (graceful if table doesn't exist) ──
+  let equipmentChecklist: BEOEquipmentItem[] = []
+  try {
+    const { data: equipData } = await supabase
+      .from('event_equipment_checklist')
+      .select('item_name, quantity, source, category')
+      .eq('event_id', eventId)
+      .order('category')
+
+    if (equipData) {
+      equipmentChecklist = equipData.map((e: any) => ({
+        name: e.item_name || e.name || 'Unknown',
+        quantity: e.quantity ?? 1,
+        source: e.source || 'In-house',
+        category: e.category || 'General',
+      }))
+    }
+  } catch (err) {
+    // Table may not exist yet; BEO still generates
+    console.warn('[generateBEO] Equipment checklist not available:', err)
+  }
+
+  // ── Enhanced BEO: Vendor Deliveries (graceful if table doesn't exist) ──
+  let vendorDeliveries: BEOVendorDelivery[] = []
+  try {
+    const { data: vendorData } = await supabase
+      .from('event_vendor_deliveries')
+      .select('delivery_time, vendor_name, delivery_type, items, contact_info')
+      .eq('event_id', eventId)
+      .order('delivery_time')
+
+    if (vendorData) {
+      vendorDeliveries = vendorData.map((v: any) => ({
+        deliveryTime: v.delivery_time || null,
+        vendorName: v.vendor_name || 'Unknown Vendor',
+        deliveryType: v.delivery_type || 'Delivery',
+        items: v.items || '',
+        contactInfo: v.contact_info || null,
+      }))
+    }
+  } catch (err) {
+    console.warn('[generateBEO] Vendor deliveries not available:', err)
+  }
+
+  // ── Enhanced BEO: Station Assignments (graceful if table doesn't exist) ──
+  let stationAssignments: BEOStationAssignment[] = []
+  try {
+    const { data: stationData } = await supabase
+      .from('event_station_assignments')
+      .select('station_name, staff_name, role_notes')
+      .eq('event_id', eventId)
+      .order('station_name')
+
+    if (stationData) {
+      stationAssignments = stationData.map((s: any) => ({
+        stationName: s.station_name || 'Unnamed Station',
+        staffName: s.staff_name || 'Unassigned',
+        roleNotes: s.role_notes || null,
+      }))
+    }
+  } catch (err) {
+    console.warn('[generateBEO] Station assignments not available:', err)
+  }
+
+  // ── Enhanced BEO: Breakdown Timeline (deterministic based on event type) ──
+  const breakdownTimeline: BEOBreakdownTask[] = generateBreakdownTimeline(
+    event.service_style,
+    event.guest_count || 0,
+    event.alcohol_being_served
+  )
+
   const eventDate = event.event_date
   let formattedDate: string
   try {
@@ -217,7 +301,102 @@ export async function generateBEO(
 
     financials,
 
+    equipmentChecklist,
+    vendorDeliveries,
+    stationAssignments,
+    breakdownTimeline,
+
     generatedAt: new Date().toISOString(),
     version: options.includeFinancials ? 'full' : 'kitchen',
   }
+}
+
+// ─── Breakdown Timeline Generator (deterministic) ────────────────────────────
+
+function generateBreakdownTimeline(
+  serviceStyle: string | null,
+  guestCount: number,
+  hasAlcohol: boolean | null
+): BEOBreakdownTask[] {
+  const tasks: BEOBreakdownTask[] = []
+  let order = 1
+
+  // Base minutes scale with guest count
+  const scaleFactor = Math.max(1, Math.ceil(guestCount / 50))
+
+  tasks.push({
+    order: order++,
+    task: 'Stop service, begin clearing tables',
+    estimatedMinutes: 10,
+    responsible: 'Servers',
+  })
+
+  tasks.push({
+    order: order++,
+    task: 'Clear and sort dishware, glassware, flatware',
+    estimatedMinutes: 15 * scaleFactor,
+    responsible: 'Dishwashers / Servers',
+  })
+
+  tasks.push({
+    order: order++,
+    task: 'Break down kitchen / cooking stations',
+    estimatedMinutes: 20 * scaleFactor,
+    responsible: 'Kitchen Staff',
+  })
+
+  tasks.push({
+    order: order++,
+    task: 'Clean cooking surfaces, equipment, and prep areas',
+    estimatedMinutes: 15 * scaleFactor,
+    responsible: 'Kitchen Staff',
+  })
+
+  if (hasAlcohol) {
+    tasks.push({
+      order: order++,
+      task: 'Break down bar, secure remaining alcohol',
+      estimatedMinutes: 15,
+      responsible: 'Bartenders',
+    })
+  }
+
+  if (serviceStyle === 'buffet' || serviceStyle === 'stations') {
+    tasks.push({
+      order: order++,
+      task: 'Disassemble buffet / station displays',
+      estimatedMinutes: 15 * scaleFactor,
+      responsible: 'All Staff',
+    })
+  }
+
+  tasks.push({
+    order: order++,
+    task: 'Pack and organize rental items for pickup',
+    estimatedMinutes: 15,
+    responsible: 'All Staff',
+  })
+
+  tasks.push({
+    order: order++,
+    task: 'Final floor sweep and trash removal',
+    estimatedMinutes: 10,
+    responsible: 'All Staff',
+  })
+
+  tasks.push({
+    order: order++,
+    task: 'Load out equipment and supplies to vehicles',
+    estimatedMinutes: 20 * scaleFactor,
+    responsible: 'All Staff',
+  })
+
+  tasks.push({
+    order: order++,
+    task: 'Final walkthrough and handoff with venue/client',
+    estimatedMinutes: 10,
+    responsible: 'Chef',
+  })
+
+  return tasks
 }

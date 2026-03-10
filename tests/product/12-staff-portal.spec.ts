@@ -5,6 +5,12 @@
 // Run: npx playwright test -p product-staff
 
 import { test, expect } from '../helpers/fixtures'
+import { STAFF_TOUR } from '../../lib/onboarding/tour-config'
+import {
+  primeCleanTourState,
+  resetTourProgress,
+  runGroundedTour,
+} from '../helpers/onboarding-grounding'
 
 // Dev server cold-compiles pages on first visit. Give generous timeouts.
 test.setTimeout(60_000)
@@ -66,5 +72,12 @@ test.describe('Staff Portal — Core Pages', () => {
     }
 
     expect(errors).toHaveLength(0)
+  })
+
+  test('staff onboarding stays grounded to the live staff portal', async ({ page, seedIds }) => {
+    test.setTimeout(180_000)
+    await resetTourProgress(seedIds.staffAuthId)
+    await primeCleanTourState(page, 'staff')
+    await runGroundedTour(page, STAFF_TOUR, '/staff-dashboard')
   })
 })

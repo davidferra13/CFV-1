@@ -5,11 +5,11 @@ import { resolveGoogleOAuthCallbackUrl } from '../../lib/supabase/client'
 describe('resolveGoogleOAuthCallbackUrl', () => {
   it('prefers configured NEXT_PUBLIC_SITE_URL origin over browser origin', () => {
     const callback = resolveGoogleOAuthCallbackUrl('/auth/role-selection', {
-      siteUrl: 'http://localhost:3100',
-      browserOrigin: 'http://localhost:3200',
+      siteUrl: 'https://beta.cheflowhq.com',
+      browserOrigin: 'https://preview.cheflowhq.com',
     })
 
-    assert.equal(callback, 'http://localhost:3100/auth/callback?next=%2Fauth%2Frole-selection')
+    assert.equal(callback, 'https://beta.cheflowhq.com/auth/callback?next=%2Fauth%2Frole-selection')
   })
 
   it('keeps query params in next path', () => {

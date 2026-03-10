@@ -1,5 +1,6 @@
 import { test, expect } from '../helpers/fixtures'
 import type { Page } from '@playwright/test'
+import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 test.describe.configure({ timeout: 60_000 })
 
@@ -8,7 +9,7 @@ async function setCookieConsent(page: Page) {
     {
       name: 'cookieConsent',
       value: 'declined',
-      url: 'http://localhost:3100',
+      url: TEST_BASE_URL,
     },
   ])
 }
@@ -195,7 +196,7 @@ test.describe('QOL Maturity - Phase 1/2', () => {
       {
         name: 'cookieConsent',
         value: 'declined',
-        url: 'http://localhost:3100',
+        url: TEST_BASE_URL,
       },
     ])
 

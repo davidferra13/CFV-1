@@ -11,8 +11,9 @@
 import { test, expect } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
+import { TEST_API_BASE_URL } from '../helpers/runtime-base-url'
 
-const API_BASE = 'http://localhost:3100'
+const API_BASE = TEST_API_BASE_URL
 const REPORT_DIR = path.join(process.cwd(), 'data', 'access-control-reports')
 
 // Test accounts from .auth/seed-ids.json
@@ -305,8 +306,7 @@ test.describe('Tenant Isolation & Access Control Audit', () => {
 
       const hasData = !!(data && typeof data === 'object' && Object.keys(data).length > 0)
       const passed =
-        testCase.expectStatus.includes(response.status) &&
-        (!testCase.expectNoData || !hasData)
+        testCase.expectStatus.includes(response.status) && (!testCase.expectNoData || !hasData)
 
       const curl = `curl -X ${testCase.method} "${url}" -H "Cookie: auth-token=${authToken}"${
         testCase.body ? ` -d '${JSON.stringify(testCase.body)}'` : ''
@@ -443,7 +443,10 @@ test.describe('Tenant Isolation & Access Control Audit', () => {
     const jsonPath = path.join(REPORT_DIR, `access-control-${timestamp}.json`)
 
     fs.writeFileSync(mdPath, markdown)
-    fs.writeFileSync(jsonPath, JSON.stringify({ timestamp, results, summary: { passed, failed, critical, high } }, null, 2))
+    fs.writeFileSync(
+      jsonPath,
+      JSON.stringify({ timestamp, results, summary: { passed, failed, critical, high } }, null, 2)
+    )
 
     console.log(`\n` + '='.repeat(70))
     console.log('ACCESS CONTROL AUDIT COMPLETE')

@@ -701,7 +701,7 @@ export function ChefSidebar({
           group: filterNavGroup(group, navFilter),
           isLocked,
         }))
-        .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
+        .filter((entry) => Boolean(entry.group)) as Array<{ group: NavGroup; isLocked: boolean }>,
     [groupEntries, navFilter]
   )
   const filteredPrimaryItems = useMemo(() => {
@@ -1762,7 +1762,7 @@ export function ChefMobileNav({
           group: filterNavGroup(group, navFilter),
           isLocked,
         }))
-        .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
+        .filter((entry) => Boolean(entry.group)) as Array<{ group: NavGroup; isLocked: boolean }>,
     [groupEntries, navFilter]
   )
   const filteredPrimaryItems = useMemo(() => {

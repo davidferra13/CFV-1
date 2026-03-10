@@ -108,7 +108,43 @@ export type BEOData = {
   // Financials (only populated when includeFinancials is true)
   financials: BEOFinancials | null
 
+  // Enhanced BEO sections (caterer archetype)
+  equipmentChecklist: BEOEquipmentItem[]
+  vendorDeliveries: BEOVendorDelivery[]
+  stationAssignments: BEOStationAssignment[]
+  breakdownTimeline: BEOBreakdownTask[]
+
   // Generated metadata
   generatedAt: string
   version: 'full' | 'kitchen'
+}
+
+// ─── Enhanced BEO Types ──────────────────────────────────────────────────────
+
+export type BEOEquipmentItem = {
+  name: string
+  quantity: number
+  source: string
+  category: string
+}
+
+export type BEOVendorDelivery = {
+  deliveryTime: string | null
+  vendorName: string
+  deliveryType: string
+  items: string
+  contactInfo: string | null
+}
+
+export type BEOStationAssignment = {
+  stationName: string
+  staffName: string
+  roleNotes: string | null
+}
+
+export type BEOBreakdownTask = {
+  order: number
+  task: string
+  estimatedMinutes: number
+  responsible: string
 }

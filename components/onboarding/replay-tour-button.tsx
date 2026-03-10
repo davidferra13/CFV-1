@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { resetTourProgress } from '@/lib/onboarding/tour-actions'
+import { clearLegacyTourStorage, clearTourStorageForRole } from '@/lib/onboarding/tour-storage'
 
 export function ReplayTourButton() {
   const router = useRouter()
@@ -17,6 +18,14 @@ export function ReplayTourButton() {
     startTransition(async () => {
       try {
         await resetTourProgress()
+        try {
+          clearTourStorageForRole('chef', window.localStorage)
+          clearTourStorageForRole('client', window.localStorage)
+          clearTourStorageForRole('staff', window.localStorage)
+          clearLegacyTourStorage(window.localStorage)
+        } catch {
+          // Storage cleanup is best-effort.
+        }
         setDone(true)
         // Redirect to dashboard so the welcome modal shows again
         router.push('/dashboard')

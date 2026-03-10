@@ -45,7 +45,7 @@ export default async function MyProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <div>
+      <div data-tour="client-profile">
         <h1 className="text-3xl font-bold text-stone-100">My Profile</h1>
         <p className="text-stone-400 mt-1">
           Keep your info up to date so your chef can deliver the best experience.

@@ -1,4 +1,5 @@
 import { chromium } from '@playwright/test'
+import { TEST_BASE_URL } from './helpers/runtime-base-url'
 
 async function main() {
   const browser = await chromium.launch({ headless: true })
@@ -14,7 +15,7 @@ async function main() {
   })
 
   console.log('Navigating to sign-in...')
-  await page.goto('http://localhost:3100/auth/signin', { timeout: 30_000 })
+  await page.goto(`${TEST_BASE_URL}/auth/signin`, { timeout: 30_000 })
   console.log(`Status: ${page.url()}`)
 
   // Wait for JS to load

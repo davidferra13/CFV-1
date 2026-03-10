@@ -19,7 +19,9 @@ export default async function StaffTasksPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-stone-100">My Tasks</h1>
+      <div data-tour="staff-tasks">
+        <h1 className="text-2xl font-bold text-stone-100">My Tasks</h1>
+      </div>
 
       {dateKeys.length === 0 ? (
         <Card>

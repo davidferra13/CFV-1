@@ -15,7 +15,7 @@
  *   node tests/remy-quality/harness/boundary-runner.mjs
  *
  * Prerequisites:
- *   - Dev server running on port 3100
+ *   - Test target reachable via TEST_BASE_URL / PLAYWRIGHT_BASE_URL
  */
 
 import fs from 'fs'
@@ -23,10 +23,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
 import { generateReports, printSummary } from './report-generator.mjs'
+import { TEST_BASE_URL } from '../../helpers/runtime-base-url.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..', '..', '..')
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = TEST_BASE_URL
 
 // ─── Environment & Auth ─────────────────────────────────────────────────────
 
@@ -423,12 +424,12 @@ async function main() {
   console.log('╚═══════════════════════════════════════════════════════════╝')
   console.log('')
 
-  // Check dev server
+  // Check target app
   try {
     await fetch(`${BASE_URL}`, { redirect: 'manual' })
-    console.log('  ✓ Dev server running')
+    console.log(`  ✓ Test target reachable (${BASE_URL})`)
   } catch {
-    console.error('ERROR: Dev server not running on port 3100')
+    console.error(`ERROR: Test target not reachable at ${BASE_URL}`)
     process.exit(1)
   }
 

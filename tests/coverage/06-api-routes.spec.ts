@@ -9,6 +9,7 @@
 // Uses chef storageState (set by coverage-api project in playwright.config.ts).
 
 import { test, expect } from '../helpers/fixtures'
+import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ''
 
@@ -82,7 +83,7 @@ test.describe('API — Document Routes Reject Unauthenticated', () => {
   }) => {
     // Use a fresh API request context with an empty storage state.
     const api = await playwright.request.newContext({
-      baseURL: baseURL ?? 'http://localhost:3100',
+      baseURL: baseURL ?? TEST_BASE_URL,
       storageState: { cookies: [], origins: [] },
     })
     const resp = await api.get(`/api/documents/invoice/${seedIds.eventIds.completed}`, {

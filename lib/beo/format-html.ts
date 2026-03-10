@@ -315,6 +315,10 @@ export function formatBEOAsHTML(beo: BEOData): string {
   ${notesHTML}
   ${otherHTML}
   ${financialsHTML}
+  ${buildEquipmentChecklistHTML(beo, escape)}
+  ${buildVendorDeliveriesHTML(beo, escape, formatTime)}
+  ${buildStationAssignmentsHTML(beo, escape)}
+  ${buildBreakdownTimelineHTML(beo, escape)}
 
   <div class="beo-footer">
     ${escape(beo.chef.businessName)} | ${escape(beo.chef.email)}${beo.chef.phone ? ` | ${escape(beo.chef.phone)}` : ''}

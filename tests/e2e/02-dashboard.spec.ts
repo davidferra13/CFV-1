@@ -4,6 +4,12 @@
 
 import { test, expect } from '../helpers/fixtures'
 import { ROUTES } from '../helpers/test-utils'
+import { CHEF_TOUR } from '../../lib/onboarding/tour-config'
+import {
+  primeCleanTourState,
+  resetTourProgress,
+  runGroundedTour,
+} from '../helpers/onboarding-grounding'
 
 test.describe('Chef Dashboard', () => {
   test('dashboard page loads', async ({ page }) => {
@@ -43,5 +49,25 @@ test.describe('Chef Dashboard', () => {
     await page.goto(ROUTES.chefDashboard)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
+  })
+})
+
+test.describe('Chef Onboarding Grounding', () => {
+  test('desktop tour stays grounded to the live chef UI', async ({ page, seedIds }) => {
+    test.setTimeout(180_000)
+    await resetTourProgress(seedIds.chefAuthId)
+    await primeCleanTourState(page, 'chef')
+    await runGroundedTour(page, CHEF_TOUR, ROUTES.chefDashboard)
+  })
+
+  test.describe('mobile', () => {
+    test.use({ viewport: { width: 390, height: 844 } })
+
+    test('mobile tour stays grounded to the live chef UI', async ({ page, seedIds }) => {
+      test.setTimeout(180_000)
+      await resetTourProgress(seedIds.chefAuthId)
+      await primeCleanTourState(page, 'chef')
+      await runGroundedTour(page, CHEF_TOUR, ROUTES.chefDashboard)
+    })
   })
 })

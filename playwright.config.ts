@@ -1,7 +1,8 @@
 // Adapted from legacy BillyBob8 patterns for Next.js + Supabase
 //
-// Default base URL is http://localhost:3100.
-// Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when isolation is needed.
+// Default base URL is https://beta.cheflowhq.com.
+// Local targets must be explicitly opted into with PLAYWRIGHT_ALLOW_LOCAL=true.
+// Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when needed.
 //
 // Projects:
 //   smoke              — unauthenticated, no globalSetup dependency (tests/smoke/)
@@ -23,8 +24,22 @@ function envFlag(value: string | undefined, fallback: boolean): boolean {
   return normalized === '1' || normalized === 'true' || normalized === 'yes'
 }
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
-const WEB_SERVER_COMMAND = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'npm run dev'
+function isLocalBaseUrl(url: string): boolean {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i.test(url)
+}
+
+const DEFAULT_REMOTE_BASE_URL = 'https://beta.cheflowhq.com'
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || DEFAULT_REMOTE_BASE_URL
+const ALLOW_LOCAL_TARGET = envFlag(process.env.PLAYWRIGHT_ALLOW_LOCAL, false)
+
+if (isLocalBaseUrl(BASE_URL) && !ALLOW_LOCAL_TARGET) {
+  throw new Error(
+    `Local Playwright targets are disabled by default. Set PLAYWRIGHT_BASE_URL to ${DEFAULT_REMOTE_BASE_URL} or opt into localhost with PLAYWRIGHT_ALLOW_LOCAL=true.`
+  )
+}
+
+const WEB_SERVER_COMMAND =
+  process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || (isLocalBaseUrl(BASE_URL) ? 'npm run dev' : '')
 const RUN_ID = process.env.PLAYWRIGHT_RUN_ID || `pw-${process.pid}-${Date.now()}`
 const OUTPUT_DIR = process.env.PLAYWRIGHT_OUTPUT_DIR || `test-results/${RUN_ID}`
 const DEV_DIST_DIR = process.env.NEXT_DIST_DIR || `.next-dev-${RUN_ID}`
@@ -333,15 +348,17 @@ export default defineConfig({
       use: { storageState: '.auth/partner.json' },
     },
   ],
-  webServer: {
-    command: WEB_SERVER_COMMAND,
-    url: BASE_URL,
-    reuseExistingServer: REUSE_EXISTING_SERVER,
-    timeout: 120_000,
-    env: {
-      ...process.env,
-      DISABLE_AUTH_RATE_LIMIT_FOR_E2E: 'true',
-      NEXT_DIST_DIR: DEV_DIST_DIR,
-    },
-  },
+  webServer: WEB_SERVER_COMMAND
+    ? {
+        command: WEB_SERVER_COMMAND,
+        url: BASE_URL,
+        reuseExistingServer: REUSE_EXISTING_SERVER,
+        timeout: 120_000,
+        env: {
+          ...process.env,
+          DISABLE_AUTH_RATE_LIMIT_FOR_E2E: 'true',
+          NEXT_DIST_DIR: DEV_DIST_DIR,
+        },
+      }
+    : undefined,
 })

@@ -14,8 +14,9 @@
 import { test, expect } from '@playwright/test'
 import * as path from 'path'
 import * as fs from 'fs'
+import { TEST_API_BASE_URL } from '../helpers/runtime-base-url'
 
-const API_BASE = 'http://localhost:3100'
+const API_BASE = TEST_API_BASE_URL
 const REPORT_DIR = path.join(process.cwd(), 'data', 'stress-reports')
 
 interface PriorityTestResult {
@@ -59,15 +60,11 @@ class TaskPriorityTest {
     console.log(`[priority-test] Authenticated as ${this.agentEmail}`)
   }
 
-  async sendRequest(
-    taskId: string,
-    priority: 'on_demand' | 'batch'
-  ): Promise<PriorityTestResult> {
+  async sendRequest(taskId: string, priority: 'on_demand' | 'batch'): Promise<PriorityTestResult> {
     const startTime = Date.now()
 
     // Map priority to endpoint
-    const endpoint =
-      priority === 'on_demand' ? 'api/remy/public' : 'api/remy/background'
+    const endpoint = priority === 'on_demand' ? 'api/remy/public' : 'api/remy/background'
 
     try {
       const response = await fetch(`${API_BASE}/${endpoint}`, {
@@ -153,7 +150,9 @@ class TaskPriorityTest {
 
     // Find median completion times
     const batchMedian = batchDurations.sort((a, b) => a - b)[Math.floor(batchDurations.length / 2)]
-    const onDemandMedian = onDemandDurations.sort((a, b) => a - b)[Math.floor(onDemandDurations.length / 2)]
+    const onDemandMedian = onDemandDurations.sort((a, b) => a - b)[
+      Math.floor(onDemandDurations.length / 2)
+    ]
 
     // Count how many ON_DEMAND tasks completed before the last BATCH task
     const lastBatchCompletionTime = Math.max(...batchResults.map((r) => r.endTime))
@@ -176,7 +175,8 @@ class TaskPriorityTest {
         medianMs: batchMedian,
         minMs: Math.min(...batchDurations),
         maxMs: Math.max(...batchDurations),
-        successRate: batchResults.filter((r) => r.status === 'success').length / batchResults.length,
+        successRate:
+          batchResults.filter((r) => r.status === 'success').length / batchResults.length,
       },
       onDemand: {
         count: onDemandResults.length,
@@ -184,14 +184,17 @@ class TaskPriorityTest {
         medianMs: onDemandMedian,
         minMs: Math.min(...onDemandDurations),
         maxMs: Math.max(...onDemandDurations),
-        successRate: onDemandResults.filter((r) => r.status === 'success').length / onDemandResults.length,
+        successRate:
+          onDemandResults.filter((r) => r.status === 'success').length / onDemandResults.length,
       },
       priorityVerification: {
         onDemandMedian,
         batchMedian,
         onDemandIsFasterMedian: onDemandMedian < batchMedian,
         onDemandBeforeLastBatch: onDemandBeforeLast,
-        percentOnDemandBeforeLastBatch: Math.round((onDemandBeforeLast / onDemandResults.length) * 100),
+        percentOnDemandBeforeLastBatch: Math.round(
+          (onDemandBeforeLast / onDemandResults.length) * 100
+        ),
         verdict:
           onDemandMedian < batchMedian && onDemandBeforeLast >= 45
             ? 'PASS: High-priority tasks processed before low-priority'
@@ -208,14 +211,22 @@ class TaskPriorityTest {
     console.log('\n============================================================')
     console.log('TASK PRIORITY TEST REPORT')
     console.log('============================================================')
-    console.log(`BATCH tasks:     ${report.batch.count} requests, avg=${report.batch.avgMs}ms, median=${report.batch.medianMs}ms`)
-    console.log(`ON_DEMAND tasks: ${report.onDemand.count} requests, avg=${report.onDemand.avgMs}ms, median=${report.onDemand.medianMs}ms`)
+    console.log(
+      `BATCH tasks:     ${report.batch.count} requests, avg=${report.batch.avgMs}ms, median=${report.batch.medianMs}ms`
+    )
+    console.log(
+      `ON_DEMAND tasks: ${report.onDemand.count} requests, avg=${report.onDemand.avgMs}ms, median=${report.onDemand.medianMs}ms`
+    )
     console.log()
     console.log('Priority Verification:')
     console.log(`  ON_DEMAND median: ${onDemandMedian}ms`)
     console.log(`  BATCH median: ${batchMedian}ms`)
-    console.log(`  ON_DEMAND is faster: ${report.priorityVerification.onDemandIsFasterMedian ? '✅ YES' : '❌ NO'}`)
-    console.log(`  ON_DEMAND tasks completed before last BATCH: ${onDemandBeforeLast}/50 (${report.priorityVerification.percentOnDemandBeforeLastBatch}%)`)
+    console.log(
+      `  ON_DEMAND is faster: ${report.priorityVerification.onDemandIsFasterMedian ? '✅ YES' : '❌ NO'}`
+    )
+    console.log(
+      `  ON_DEMAND tasks completed before last BATCH: ${onDemandBeforeLast}/50 (${report.priorityVerification.percentOnDemandBeforeLastBatch}%)`
+    )
     console.log()
     console.log(`${report.priorityVerification.verdict}`)
     console.log('============================================================')

@@ -6,8 +6,9 @@
 
 import { test, expect, type Page } from '@playwright/test'
 import { readFileSync } from 'fs'
+import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
-const BASE_URL = 'http://localhost:3100'
+const BASE_URL = TEST_BASE_URL
 const SCREENSHOT_DIR = 'test-screenshots'
 
 // Agent credentials

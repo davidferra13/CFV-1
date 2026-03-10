@@ -4,6 +4,12 @@
 
 import { test, expect } from '../helpers/fixtures'
 import { ROUTES } from '../helpers/test-utils'
+import { CLIENT_TOUR } from '../../lib/onboarding/tour-config'
+import {
+  primeCleanTourState,
+  resetTourProgress,
+  runGroundedTour,
+} from '../helpers/onboarding-grounding'
 
 test.describe('Client Portal', () => {
   test('client can reach /my-events without redirect', async ({ page }) => {
@@ -79,5 +85,12 @@ test.describe('Client Portal', () => {
     await expect(page).not.toHaveURL(/auth\/signin/)
     // Page should load without crashing
     await expect(page.getByText(/internal server error|500/i)).not.toBeVisible()
+  })
+
+  test('client onboarding stays grounded to the live client portal', async ({ page, seedIds }) => {
+    test.setTimeout(180_000)
+    await resetTourProgress(seedIds.clientAuthId)
+    await primeCleanTourState(page, 'client')
+    await runGroundedTour(page, CLIENT_TOUR, ROUTES.clientEvents)
   })
 })

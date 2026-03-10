@@ -1,27 +1,37 @@
 // Product Tour Configuration
-// Defines interactive walkthrough steps for each role. Each step navigates
-// to a real page, highlights a real UI element, and shows an animated cursor
-// pointing at what to click.
+// Every step must point at a real, intentional onboarding hook in the live UI.
 
 export type TourStepId = string
+export type TourPlacement = 'top' | 'bottom' | 'left' | 'right'
+export type TourInteractionMode = 'observe' | 'click'
+export type TourViewport = 'any' | 'desktop' | 'mobile'
+
+export type TourPrepareAction = {
+  type: 'click'
+  target: string | string[]
+  delayMs?: number
+}
 
 export type TourStep = {
   id: TourStepId
   title: string
   description: string
-  // CSS selector for the element to highlight (null = page overview, no spotlight)
-  target: string | null
-  // Where the tooltip appears relative to the target
-  placement: 'top' | 'bottom' | 'left' | 'right'
-  // Route to navigate to before showing this step
-  route: string | null
-  // Whether this step can be auto-completed by detecting real usage
-  autoComplete: boolean
-  // The action/page that completes this step (for auto-detection)
-  completionCheck?: {
-    type: 'route_visited' | 'element_exists' | 'manual'
-    value?: string
-  }
+  // CSS selector(s) for the element to highlight. The first verified match wins.
+  target: string | string[]
+  placement: TourPlacement
+  // Route that must be loaded before showing the step.
+  route: string
+  // Most steps should require an exact page match. Prefix is only for nested flows.
+  routeMatch?: 'exact' | 'prefix'
+  // Whether the highlighted target is informational or should be clicked.
+  interactionMode?: TourInteractionMode
+  // Optional actions to run before verifying the target. Used for mobile menus,
+  // accordions, tabs, and other conditional UI that must be opened first.
+  prepare?: TourPrepareAction[]
+  // Limit a step to a viewport family when the UI differs across breakpoints.
+  viewport?: TourViewport
+  // Verification timeout before the step is blocked and skipped.
+  timeoutMs?: number
 }
 
 export type TourConfig = {
@@ -32,228 +42,220 @@ export type TourConfig = {
   steps: TourStep[]
 }
 
-// ─── Chef Tour ────────────────────────────────────────────────────────────────
-
 export const CHEF_TOUR: TourConfig = {
   role: 'chef',
   welcomeTitle: 'Welcome to ChefFlow',
   welcomeSubtitle:
-    'Let us walk you through the essentials. We will show you exactly where everything is.',
+    'This walkthrough only points to real interface elements that are currently on screen.',
   welcomePoints: [
-    'We will guide you through each page with a visual walkthrough',
-    'A cursor will point to each feature as we explain it',
-    'You can click highlighted elements to try them, or skip ahead',
-    'Takes about 2 minutes. You can replay it anytime from Settings.',
+    'Each step verifies the page before it shows',
+    'Only visible, grounded interface targets are highlighted',
+    'The tour skips anything that is not available in your current UI state',
+    'You can replay it later from Settings',
   ],
   steps: [
     {
       id: 'chef.dashboard',
-      title: 'Your Command Center',
+      title: 'Your Dashboard',
       description:
-        'This is your dashboard. Priority alerts, upcoming events, revenue, and AI insights are all visible at a glance. No clicking required to see your numbers.',
+        'Start here for your daily view of priorities, quick actions, and the rest of the portal.',
       target: '[data-tour="dashboard-header"]',
       placement: 'bottom',
       route: '/dashboard',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/dashboard' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'chef.shortcuts',
       title: 'Quick Actions',
       description:
-        'These shortcuts give you one-tap access to the things you do most. Briefings, inbox, calendar, and more.',
+        'This shortcut strip gives you direct access to the core working areas you will use most.',
       target: '[data-tour="shortcut-strip"]',
       placement: 'bottom',
       route: '/dashboard',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/dashboard' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'chef.sidebar',
-      title: 'Your Navigation',
+      title: 'Navigation',
       description:
-        'The sidebar has everything organized by category: Sales, Clients, Events, Culinary, Finance, and more. It collapses into a rail on smaller screens.',
-      target: '[data-tour="sidebar-nav"]',
+        'Your main navigation is where ChefFlow groups the rest of the product by workflow area.',
+      target: ['[data-tour="sidebar-nav"]', '[data-tour="chef-mobile-menu-panel"]'],
       placement: 'right',
       route: '/dashboard',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/dashboard' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
+      prepare: [
+        {
+          type: 'click',
+          target: '[data-tour="chef-mobile-menu-toggle"]',
+          delayMs: 150,
+        },
+      ],
+      timeoutMs: 3000,
     },
     {
       id: 'chef.create_event',
-      title: 'Create Your First Event',
+      title: 'Create an Event',
       description:
-        'Events are the core of ChefFlow. Click this button to create one. It will walk you through date, location, menu, and pricing.',
+        'Use this action to start a new event workflow with date, location, menu, and pricing.',
       target: '[data-tour="create-event"]',
       placement: 'bottom',
       route: '/events',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/events' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'chef.add_client',
       title: 'Add a Client',
       description:
-        'Import existing clients or add new ones here. Their dietary restrictions, allergies, and preferences are tracked automatically across all events.',
+        'This action takes you into client management so you can add or import the people you serve.',
       target: '[data-tour="add-client"]',
       placement: 'bottom',
       route: '/clients',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/clients' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'chef.add_recipe',
       title: 'Build Your Recipe Library',
       description:
-        'Add your recipes here with methods, timing, dietary tags, and food cost tracking. Your recipe book is private and never shared.',
+        'Create recipes here so ChefFlow can support production, menus, and cost tracking.',
       target: '[data-tour="add-recipe"]',
       placement: 'bottom',
       route: '/recipes',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/recipes' },
-    },
-    {
-      id: 'chef.meet_remy',
-      title: 'Meet Remy, Your AI Concierge',
-      description:
-        'Remy helps you with tasks like checking revenue, finding client info, drafting emails, and more. Click this button anytime to chat with Remy.',
-      target: '[data-tour="remy-button"]',
-      placement: 'right',
-      route: '/dashboard',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/dashboard' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'chef.explore_calendar',
-      title: 'Your Calendar',
+      title: 'Calendar',
       description:
-        'See all your events on a calendar. Day, week, and year views are available. Click any event to see its details.',
+        'The calendar gives you a schedule view of events and availability across your business.',
       target: '[data-tour="calendar-view"]',
       placement: 'left',
       route: '/calendar',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/calendar' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
   ],
 }
 
-// ─── Client Tour ──────────────────────────────────────────────────────────────
-
 export const CLIENT_TOUR: TourConfig = {
   role: 'client',
-  welcomeTitle: 'Welcome to Your Portal',
-  welcomeSubtitle: 'Let us show you around. This is where you manage everything with your chef.',
+  welcomeTitle: 'Welcome to Your Client Portal',
+  welcomeSubtitle:
+    'This walkthrough follows the real pages in your portal, one verified step at a time.',
   welcomePoints: [
-    'We will walk you through each section step by step',
-    'A cursor will point to each feature as we explain it',
-    'Click any highlighted element to try it out',
-    'Takes about a minute. You can replay anytime.',
+    'Each step is tied to a live page section',
+    'Only current, visible interface sections are highlighted',
+    'Nothing is shown from assumptions or hidden states',
+    'You can replay this tour later if you want a refresher',
   ],
   steps: [
     {
       id: 'client.my_events',
-      title: 'Your Events',
+      title: 'My Events',
       description:
-        'All your upcoming and past events with your chef. View details, menus, and payment status for each one.',
+        'This page is your main hub for upcoming bookings, event activity, and dashboard widgets.',
       target: '[data-tour="client-events"]',
       placement: 'bottom',
       route: '/my-events',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/my-events' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'client.view_quote',
-      title: 'Review Quotes',
+      title: 'My Quotes',
       description:
-        'When your chef sends you a quote, it appears here. Review line items and approve or request changes.',
+        'Use this page to review quotes from your chef and respond when a proposal is ready.',
       target: '[data-tour="client-quotes"]',
       placement: 'bottom',
       route: '/my-quotes',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/my-quotes' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'client.check_rewards',
-      title: 'Loyalty Rewards',
+      title: 'Rewards',
       description:
-        'Earn points with every booking. Check your tier, available rewards, and redemption history.',
+        'This page shows your loyalty progress, available rewards, and recent rewards activity.',
       target: '[data-tour="client-rewards"]',
       placement: 'bottom',
       route: '/my-rewards',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/my-rewards' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'client.update_profile',
-      title: 'Update Your Profile',
-      description:
-        'Keep your dietary restrictions, allergies, and contact info current so your chef can serve you best.',
+      title: 'Profile',
+      description: 'Keep your personal details and dining preferences up to date on this page.',
       target: '[data-tour="client-profile"]',
       placement: 'bottom',
       route: '/my-profile',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/my-profile' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
   ],
 }
 
-// ─── Staff Tour ───────────────────────────────────────────────────────────────
-
 export const STAFF_TOUR: TourConfig = {
   role: 'staff',
-  welcomeTitle: 'Welcome to Staff Portal',
-  welcomeSubtitle: 'Here is a quick walkthrough of your tools.',
+  welcomeTitle: 'Welcome to the Staff Portal',
+  welcomeSubtitle: 'This walkthrough stays grounded in the live staff tools you can actually use.',
   welcomePoints: [
-    'We will show you where everything is',
-    'Your schedule, tasks, and recipes are all here',
-    'Takes less than a minute',
+    'Every step checks the real page before it appears',
+    'Only visible staff portal sections are highlighted',
+    'Conditional or missing UI is skipped instead of guessed',
+    'Replay is available if you need the walkthrough again',
   ],
   steps: [
     {
       id: 'staff.dashboard',
-      title: 'Your Dashboard',
-      description: 'See your upcoming shifts, active tasks, and quick stats at a glance.',
+      title: 'Dashboard',
+      description:
+        'This page gives you the top-level view of today, your assignments, and your stations.',
       target: '[data-tour="staff-dashboard"]',
       placement: 'bottom',
       route: '/staff-dashboard',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/staff-dashboard' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'staff.view_schedule',
-      title: 'Your Schedule',
-      description:
-        'All your assigned shifts in one place. Confirm availability and see event details.',
+      title: 'Schedule',
+      description: 'Use this page to see your upcoming event assignments and their current status.',
       target: '[data-tour="staff-schedule"]',
       placement: 'bottom',
       route: '/staff-schedule',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/staff-schedule' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'staff.check_tasks',
-      title: 'Your Tasks',
-      description: 'Prep lists, setup instructions, and task assignments for your upcoming events.',
+      title: 'Tasks',
+      description:
+        'This page groups your assigned work by day so you can track what still needs attention.',
       target: '[data-tour="staff-tasks"]',
       placement: 'bottom',
       route: '/staff-tasks',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/staff-tasks' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
     {
       id: 'staff.browse_recipes',
-      title: 'Recipe Library',
-      description: 'Look up recipes, plating guides, and dietary notes for any dish on the menu.',
+      title: 'Recipes',
+      description:
+        'This page gives staff access to the working recipe library and station-filtered views.',
       target: '[data-tour="staff-recipes"]',
       placement: 'bottom',
       route: '/staff-recipes',
-      autoComplete: true,
-      completionCheck: { type: 'route_visited', value: '/staff-recipes' },
+      routeMatch: 'exact',
+      interactionMode: 'observe',
     },
   ],
 }
-
-// ─── Lookup ───────────────────────────────────────────────────────────────────
 
 export const TOUR_CONFIGS: Record<string, TourConfig> = {
   chef: CHEF_TOUR,

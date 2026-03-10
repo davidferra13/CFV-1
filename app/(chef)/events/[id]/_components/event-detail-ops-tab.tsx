@@ -24,6 +24,8 @@ import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
 import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
 import { PostServiceChecklistButton } from '@/components/events/post-service-checklist-button'
+import { EventEquipmentChecklist } from '@/components/events/event-equipment-checklist'
+import { StationStaffAssignment } from '@/components/events/station-staff-assignment'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -55,6 +57,9 @@ type EventDetailOpsTabProps = {
   eventMenus: string | false | null
   unrecordedComponents: any[]
   aiConfigured: boolean
+  equipmentChecklist: any
+  stationAssignments: any[]
+  unassignedStaff: any[]
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -86,6 +91,9 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     eventMenus,
     unrecordedComponents,
     aiConfigured,
+    equipmentChecklist,
+    stationAssignments,
+    unassignedStaff,
   } = props
 
   return (
@@ -136,6 +144,18 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
         </Card>
       )}
 
+      {/* Equipment Checklist */}
+      {!['draft', 'cancelled'].includes(event.status) && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Equipment Checklist</h2>
+          <EventEquipmentChecklist
+            eventId={event.id}
+            initialChecklist={equipmentChecklist}
+            showReturn={['completed'].includes(event.status)}
+          />
+        </Card>
+      )}
+
       {/* Event Staff */}
       {!['draft', 'cancelled'].includes(event.status) && (
         <Card className="p-6">
@@ -144,6 +164,18 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
             eventId={event.id}
             roster={staffMembers as any}
             assignments={staffAssignments as any}
+          />
+        </Card>
+      )}
+
+      {/* Station Assignments */}
+      {!['draft', 'cancelled'].includes(event.status) && stationAssignments.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Station Assignments</h2>
+          <StationStaffAssignment
+            eventId={event.id}
+            stations={stationAssignments}
+            unassignedStaff={unassignedStaff}
           />
         </Card>
       )}

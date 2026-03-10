@@ -5,24 +5,19 @@
 // Collapsible, dismissible, with progress bar.
 
 import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { useTour } from './tour-provider'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Circle, ChevronDown, ChevronUp, X } from '@/components/ui/icons'
 
 export function TourChecklist() {
   const tour = useTour()
-  const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const handleStepClick = useCallback(
-    (stepId: string, route: string | null) => {
-      if (route) {
-        router.push(route)
-      }
-      tour.completeStep(stepId)
+    (stepId: string) => {
+      tour.startTour(stepId)
     },
-    [router, tour]
+    [tour]
   )
 
   if (!tour.showChecklist) return null
@@ -73,7 +68,7 @@ export function TourChecklist() {
               return (
                 <li key={step.id}>
                   <button
-                    onClick={() => handleStepClick(step.id, step.route)}
+                    onClick={() => handleStepClick(step.id)}
                     className={`w-full text-left px-4 py-2.5 flex items-start gap-3 hover:bg-stone-800 transition-colors ${
                       isDone ? 'opacity-60' : ''
                     }`}

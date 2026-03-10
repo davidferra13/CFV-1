@@ -123,6 +123,11 @@ import { getOrCreateRebookDataForChefEvent } from '@/lib/rebook/actions'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
 import { EventLockInButton } from '@/components/events/event-lock-in-button'
+import { getEventEquipmentChecklist } from '@/lib/events/event-equipment-actions'
+import {
+  getEventStationAssignments,
+  getUnassignedStaff,
+} from '@/lib/events/station-assignment-actions'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
@@ -430,6 +435,30 @@ export default async function EventDetailPage({
       }
     })(),
     getTakeAChefEventFinance(params.id).catch(() => null),
+    // Equipment checklist + station assignments
+    !['draft', 'cancelled'].includes(event.status)
+      ? getEventEquipmentChecklist(params.id).catch(() => ({
+          cooking: [],
+          serving: [],
+          transport: [],
+          setup: [],
+          cleaning: [],
+          other: [],
+        }))
+      : Promise.resolve({
+          cooking: [],
+          serving: [],
+          transport: [],
+          setup: [],
+          cleaning: [],
+          other: [],
+        }),
+    !['draft', 'cancelled'].includes(event.status)
+      ? getEventStationAssignments(params.id).catch(() => [])
+      : Promise.resolve([]),
+    !['draft', 'cancelled'].includes(event.status)
+      ? getUnassignedStaff(params.id).catch(() => [])
+      : Promise.resolve([]),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)

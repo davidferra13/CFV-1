@@ -26,7 +26,9 @@ export default async function StaffSchedulePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-stone-100">My Schedule</h1>
+      <div data-tour="staff-schedule">
+        <h1 className="text-2xl font-bold text-stone-100">My Schedule</h1>
+      </div>
 
       {/* Upcoming assignments */}
       <Card>
