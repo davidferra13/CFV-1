@@ -12,6 +12,8 @@ import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getQuickRequests } from '@/lib/client-requests/actions'
+import { getCertExpiryAlerts, type CertExpiryAlert } from '@/lib/protection/cert-alert-actions'
+import { CertExpiryBanner } from '@/components/protection/cert-expiry-banner'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -57,6 +59,7 @@ export async function AlertCards() {
     safe('Scheduling gaps', getSchedulingGaps, []),
     safe('Onboarding', getOnboardingProgress, emptyOnboardingProgress),
     safe('Client requests', getQuickRequests, []),
+    safe('Cert expiry', getCertExpiryAlerts, []),
   ])
 
   const [
@@ -69,6 +72,7 @@ export async function AlertCards() {
     schedulingGapsR,
     onboardingProgressR,
     quickRequestsR,
+    certExpiryR,
   ] = results
 
   const responseTimeSummary = responseTimeSummaryR.data
@@ -80,6 +84,7 @@ export async function AlertCards() {
   const schedulingGaps = schedulingGapsR.data
   const onboardingProgress = onboardingProgressR.data
   const quickRequests = quickRequestsR.data
+  const certExpiryAlerts = certExpiryR.data as CertExpiryAlert[]
 
   const failedSections = results.filter((r) => r.failed).map((r) => (r as { label: string }).label)
 
@@ -132,6 +137,9 @@ export async function AlertCards() {
           to try again.
         </div>
       )}
+
+      {/* Certification Expiry - banner */}
+      {certExpiryAlerts.length > 0 && <CertExpiryBanner alerts={certExpiryAlerts} />}
 
       {/* Response Time - stat card */}
       {totalPending > 0 && (

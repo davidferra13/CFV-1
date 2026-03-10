@@ -18,6 +18,8 @@ import { CallPrepPanel } from '@/components/calls/call-prep-panel'
 import { CallOutcomeForm } from '@/components/calls/call-outcome-form'
 import { CallStatusActions } from '@/components/calls/call-status-actions'
 import { CallTypeBadge } from '@/components/calls/call-type-badge'
+import { PreCallBrief } from '@/components/calls/pre-call-brief'
+import { generatePreCallBrief } from '@/lib/calls/pre-call-brief-actions'
 
 type Props = { params: { id: string } }
 
@@ -45,6 +47,14 @@ export default async function CallDetailPage({ params }: Props) {
   const call = await getCall(params.id)
 
   if (!call) notFound()
+
+  // Generate pre-call intelligence brief (non-blocking, best-effort)
+  let brief = null
+  try {
+    brief = await generatePreCallBrief(params.id)
+  } catch (err) {
+    console.error('[CallDetail] Pre-call brief generation failed:', err)
+  }
 
   const contact = getContactLabel(call)
   const isTerminal = ['completed', 'no_show', 'cancelled'].includes(call.status)
@@ -159,6 +169,13 @@ export default async function CallDetailPage({ params }: Props) {
       <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
         <CallPrepPanel call={call} />
       </div>
+
+      {/* Intelligence Brief */}
+      {brief && (
+        <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
+          <PreCallBrief brief={brief} />
+        </div>
+      )}
 
       {/* Outcome */}
       {(call.status === 'scheduled' ||
