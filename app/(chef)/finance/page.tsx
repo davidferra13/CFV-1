@@ -113,6 +113,12 @@ const SECTIONS = [
     description: 'Recurring service agreements — monthly billing, event tracking',
     icon: '🔁',
   },
+  {
+    href: '/finance/food-cost',
+    label: 'Food Cost Tracker',
+    description: 'Live food cost % tracking against your target (industry benchmark: 28-35%)',
+    icon: '🥩',
+  },
 ]
 
 export default async function FinancePage() {
