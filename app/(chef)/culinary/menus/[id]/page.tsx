@@ -57,7 +57,11 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
 
       {/* Recipe Scaling Section */}
       <div className="border-t border-stone-700 pt-6">
-        <MenuScalingPanel menuId={params.id} initialGuestCount={initialGuestCount} />
+        <MenuScalingPanel
+          menuId={params.id}
+          eventId={menu.event_id}
+          initialGuestCount={initialGuestCount}
+        />
       </div>
 
       {/* Beverage Pairings Section */}
