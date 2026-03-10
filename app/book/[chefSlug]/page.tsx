@@ -1,12 +1,14 @@
-// Public Chef Booking Page — /book/[chefSlug]
+// Public Chef Booking Page - /book/[chefSlug]
 // No authentication required.
-// Shows chef headline, availability calendar, then booking form on date select.
-// Supports dual booking model: inquiry-first or instant-book.
+// Calendly-style multi-step flow: Service -> Date -> Time -> Details -> Confirm
+// Falls back to legacy 2-step flow (Date -> Form) when no event types are configured.
 
 import { notFound } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { BookingFlow } from '@/components/booking/booking-flow'
 import { BookingPageClient } from './booking-page-client'
+import type { PublicEventType } from '@/lib/booking/event-types-actions'
 
 type ChefPublicProfile = {
   id: string
@@ -46,6 +48,26 @@ const getChefForBooking = unstable_cache(
   { revalidate: 300, tags: ['chef-booking-profile'] }
 )
 
+const getEventTypes = unstable_cache(
+  async (chefId: string): Promise<PublicEventType[]> => {
+    const supabase = createAdminClient()
+
+    const { data } = await supabase
+      .from('booking_event_types')
+      .select(
+        'id, name, description, duration_minutes, price_cents, guest_count_min, guest_count_max'
+      )
+      .eq('chef_id', chefId)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
+
+    return (data as PublicEventType[]) ?? []
+  },
+  ['chef-booking-event-types'],
+  { revalidate: 300, tags: ['chef-booking-profile'] }
+)
+
 export default async function BookingPage({ params }: { params: { chefSlug: string } }) {
   const chef = await getChefForBooking(params.chefSlug)
 
@@ -62,14 +84,17 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
     depositFixedCents: chef.booking_deposit_fixed_cents,
   }
 
+  // Load event types (may be empty for chefs who haven't configured them)
+  const eventTypes = await getEventTypes(chef.id)
+  const hasEventTypes = eventTypes.length > 0
+  const chefName = chef.business_name || 'Private Chef'
+
   return (
-    <div className="min-h-screen bg-stone-800">
+    <div className="min-h-screen bg-stone-900">
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
         {/* Chef Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-stone-100">
-            {chef.business_name || 'Private Chef'}
-          </h1>
+          <h1 className="text-3xl font-bold text-stone-100">{chefName}</h1>
           {chef.booking_headline && (
             <p className="text-lg text-stone-400">{chef.booking_headline}</p>
           )}
@@ -78,9 +103,31 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
           )}
         </div>
 
-        <div className="bg-stone-900 rounded-xl border border-stone-700 p-6 shadow-sm">
-          <BookingPageClient chefSlug={params.chefSlug} bookingConfig={bookingConfig} />
+        <div className="bg-stone-800 rounded-xl border border-stone-700 p-6 shadow-lg">
+          {hasEventTypes ? (
+            <BookingFlow
+              chefSlug={params.chefSlug}
+              chefName={chefName}
+              eventTypes={eventTypes}
+              bookingConfig={bookingConfig}
+            />
+          ) : (
+            <BookingPageClient chefSlug={params.chefSlug} bookingConfig={bookingConfig} />
+          )}
         </div>
+
+        {/* Powered by ChefFlow */}
+        <p className="text-center text-xs text-stone-600">
+          Powered by{' '}
+          <a
+            href="https://cheflowhq.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-stone-500 hover:text-stone-400 transition-colors"
+          >
+            ChefFlow
+          </a>
+        </p>
       </div>
     </div>
   )
