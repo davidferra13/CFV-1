@@ -12,7 +12,7 @@ import {
   type LaborForecastResult,
   type ServiceStyle,
   type MenuComplexity,
-} from '@/lib/staff/labor-forecast-actions'
+} from '@/lib/staff/labor-forecast-shared'
 import { formatCurrency } from '@/lib/utils/currency'
 
 const SERVICE_STYLES: { value: ServiceStyle; label: string }[] = [

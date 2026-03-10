@@ -3,11 +3,8 @@
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  recordTemperature,
-  TEMPERATURE_LOCATIONS,
-  type TempLogEntry,
-} from '@/lib/haccp/compliance-log-actions'
+import { recordTemperature, type TempLogEntry } from '@/lib/haccp/compliance-log-actions'
+import { TEMPERATURE_LOCATIONS } from '@/lib/haccp/compliance-log-shared'
 
 type Props = {
   date: string

@@ -106,7 +106,7 @@ export async function getWeatherForecast(
 
 // ---- Deterministic Demand Multiplier (Formula > AI) ----
 
-export function calculateDemandMultiplier(weather: WeatherDay, date: string): DemandAdjustment {
+function calculateDemandMultiplier(weather: WeatherDay, date: string): DemandAdjustment {
   let multiplier = 1.0
   const reasons: string[] = []
 

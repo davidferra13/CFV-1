@@ -9,11 +9,13 @@ import { formatCurrency } from '@/lib/utils/currency'
 import {
   getBudgetVariance,
   setBudget,
+  type BudgetSummary,
+} from '@/lib/finance/budget-variance-actions'
+import {
   BUDGET_CATEGORIES,
   BUDGET_CATEGORY_LABELS,
-  type BudgetSummary,
   type BudgetCategory,
-} from '@/lib/finance/budget-variance-actions'
+} from '@/lib/finance/budget-variance-shared'
 
 type Props = {
   initialData: BudgetSummary | null

@@ -1,34 +1,14 @@
 'use server'
 
-import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireChef } from '@/lib/auth/get-user'
+import {
+  BUDGET_CATEGORIES,
+  BUDGET_CATEGORY_LABELS,
+  type BudgetCategory,
+} from '@/lib/finance/budget-variance-shared'
+import { createServerClient } from '@/lib/supabase/server'
 
-// ─── Types ───────────────────────────────────────────────────────
-
-export const BUDGET_CATEGORIES = [
-  'food_cost',
-  'labor',
-  'marketing',
-  'equipment',
-  'travel',
-  'supplies',
-  'other',
-] as const
-
-export type BudgetCategory = (typeof BUDGET_CATEGORIES)[number]
-
-export const BUDGET_CATEGORY_LABELS: Record<BudgetCategory, string> = {
-  food_cost: 'Food & Ingredients',
-  labor: 'Labor',
-  marketing: 'Marketing',
-  equipment: 'Equipment',
-  travel: 'Travel',
-  supplies: 'Supplies',
-  other: 'Other',
-}
-
-// Maps budget categories to expense categories for actuals lookup
 const BUDGET_TO_EXPENSE_MAP: Record<BudgetCategory, string[]> = {
   food_cost: ['groceries', 'alcohol', 'specialty_items'],
   labor: ['labor'],
@@ -70,8 +50,6 @@ export type YearlyBudgetRow = {
   varianceCents: number
 }
 
-// ─── Actions ─────────────────────────────────────────────────────
-
 export async function setBudget(month: string, category: BudgetCategory, budgetCents: number) {
   const user = await requireChef()
   const supabase: any = createServerClient()
@@ -87,7 +65,9 @@ export async function setBudget(month: string, category: BudgetCategory, budgetC
     { onConflict: 'chef_id,month,category' }
   )
 
-  if (error) throw new Error(`Failed to set budget: ${error.message}`)
+  if (error) {
+    throw new Error(`Failed to set budget: ${error.message}`)
+  }
 
   revalidatePath('/finance/budget')
 }
@@ -102,7 +82,9 @@ export async function getBudgets(month: string) {
     .eq('chef_id', user.tenantId!)
     .eq('month', month)
 
-  if (error) throw new Error(`Failed to fetch budgets: ${error.message}`)
+  if (error) {
+    throw new Error(`Failed to fetch budgets: ${error.message}`)
+  }
 
   return data ?? []
 }
@@ -111,16 +93,16 @@ export async function getBudgetVariance(month: string): Promise<BudgetSummary> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Get budgets for month
   const { data: budgets, error: budgetError } = await supabase
     .from('chef_budgets')
     .select('category, budget_cents')
     .eq('chef_id', user.tenantId!)
     .eq('month', month)
 
-  if (budgetError) throw new Error(`Failed to fetch budgets: ${budgetError.message}`)
+  if (budgetError) {
+    throw new Error(`Failed to fetch budgets: ${budgetError.message}`)
+  }
 
-  // Get actual expenses for the month
   const startDate = `${month}-01`
   const endOfMonth = new Date(parseInt(month.split('-')[0]), parseInt(month.split('-')[1]), 0)
   const endDate = `${month}-${String(endOfMonth.getDate()).padStart(2, '0')}`
@@ -132,32 +114,34 @@ export async function getBudgetVariance(month: string): Promise<BudgetSummary> {
     .gte('expense_date', startDate)
     .lte('expense_date', endDate)
 
-  if (expError) throw new Error(`Failed to fetch expenses: ${expError.message}`)
+  if (expError) {
+    throw new Error(`Failed to fetch expenses: ${expError.message}`)
+  }
 
-  // Sum actuals per expense category
   const actualsByExpCat: Record<string, number> = {}
-  for (const exp of expenses ?? []) {
-    actualsByExpCat[exp.category] = (actualsByExpCat[exp.category] || 0) + (exp.amount_cents || 0)
+  for (const expense of expenses ?? []) {
+    actualsByExpCat[expense.category] =
+      (actualsByExpCat[expense.category] || 0) + (expense.amount_cents || 0)
   }
 
-  // Build budget map
   const budgetMap: Record<string, number> = {}
-  for (const b of budgets ?? []) {
-    budgetMap[b.category] = b.budget_cents
+  for (const budget of budgets ?? []) {
+    budgetMap[budget.category] = budget.budget_cents
   }
 
-  // Build rows
-  const rows: BudgetVarianceRow[] = BUDGET_CATEGORIES.map((cat) => {
-    const budgetCents = budgetMap[cat] || 0
-    const expCats = BUDGET_TO_EXPENSE_MAP[cat]
-    const actualCents = expCats.reduce((sum, ec) => sum + (actualsByExpCat[ec] || 0), 0)
+  const rows: BudgetVarianceRow[] = BUDGET_CATEGORIES.map((category) => {
+    const budgetCents = budgetMap[category] || 0
+    const actualCents = BUDGET_TO_EXPENSE_MAP[category].reduce(
+      (sum, expenseCategory) => sum + (actualsByExpCat[expenseCategory] || 0),
+      0
+    )
     const varianceCents = budgetCents - actualCents
     const variancePercent =
       budgetCents > 0 ? ((actualCents - budgetCents) / budgetCents) * 100 : null
 
     return {
-      category: cat,
-      categoryLabel: BUDGET_CATEGORY_LABELS[cat],
+      category,
+      categoryLabel: BUDGET_CATEGORY_LABELS[category],
       budgetCents,
       actualCents,
       varianceCents,
@@ -165,8 +149,8 @@ export async function getBudgetVariance(month: string): Promise<BudgetSummary> {
     }
   })
 
-  const totalBudgetCents = rows.reduce((s, r) => s + r.budgetCents, 0)
-  const totalActualCents = rows.reduce((s, r) => s + r.actualCents, 0)
+  const totalBudgetCents = rows.reduce((sum, row) => sum + row.budgetCents, 0)
+  const totalActualCents = rows.reduce((sum, row) => sum + row.actualCents, 0)
 
   return {
     month,
@@ -180,22 +164,19 @@ export async function getBudgetVariance(month: string): Promise<BudgetSummary> {
 export async function getYearlyBudgetSummary(year: number): Promise<YearlyBudgetRow[]> {
   const user = await requireChef()
   const supabase: any = createServerClient()
-
   const results: YearlyBudgetRow[] = []
 
-  for (let m = 1; m <= 12; m++) {
-    const month = `${year}-${String(m).padStart(2, '0')}`
+  for (let monthNumber = 1; monthNumber <= 12; monthNumber++) {
+    const month = `${year}-${String(monthNumber).padStart(2, '0')}`
 
-    // Get budgets
     const { data: budgets } = await supabase
       .from('chef_budgets')
       .select('budget_cents')
       .eq('chef_id', user.tenantId!)
       .eq('month', month)
 
-    // Get expenses
     const startDate = `${month}-01`
-    const endOfMonth = new Date(year, m, 0)
+    const endOfMonth = new Date(year, monthNumber, 0)
     const endDate = `${month}-${String(endOfMonth.getDate()).padStart(2, '0')}`
 
     const { data: expenses } = await supabase
@@ -206,11 +187,11 @@ export async function getYearlyBudgetSummary(year: number): Promise<YearlyBudget
       .lte('expense_date', endDate)
 
     const totalBudgetCents = (budgets ?? []).reduce(
-      (s: number, b: any) => s + (b.budget_cents || 0),
+      (sum: number, budget: any) => sum + (budget.budget_cents || 0),
       0
     )
     const totalActualCents = (expenses ?? []).reduce(
-      (s: number, e: any) => s + (e.amount_cents || 0),
+      (sum: number, expense: any) => sum + (expense.amount_cents || 0),
       0
     )
 

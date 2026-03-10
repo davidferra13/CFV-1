@@ -11,12 +11,12 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
   scaleMenuForGuests,
-  getStoreSectionLabel,
   type MenuScalingResult,
   type ScaledDish,
   type ScaledComponent,
   type ConsolidatedIngredient,
 } from '@/lib/scaling/recipe-scaling'
+import { getStoreSectionLabel } from '@/lib/scaling/store-sections'
 import { calculatePortions, type PortionCalculation } from '@/lib/scaling/portioning'
 import {
   generatePrepTimeline,

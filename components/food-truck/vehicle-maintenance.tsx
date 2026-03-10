@@ -3,12 +3,14 @@
 import { useState, useTransition } from 'react'
 import {
   type MaintenanceEntry,
-  type MaintenanceType,
   type CreateMaintenanceInput,
   createMaintenanceEntry,
   deleteMaintenanceEntry,
-  getMaintenanceTypeLabel,
 } from '@/lib/food-truck/vehicle-maintenance-actions'
+import {
+  getMaintenanceTypeLabel,
+  type MaintenanceType,
+} from '@/lib/food-truck/vehicle-maintenance-shared'
 
 // ---- Constants ----
 

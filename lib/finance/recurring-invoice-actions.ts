@@ -208,7 +208,11 @@ export async function createRecurringSchedule(
 }
 
 // Backward-compatible alias
-export const createRecurringInvoice = createRecurringSchedule
+export async function createRecurringInvoice(
+  input: z.infer<typeof CreateSchema>
+): Promise<RecurringInvoice> {
+  return createRecurringSchedule(input)
+}
 
 export async function updateRecurringSchedule(
   input: z.infer<typeof UpdateSchema>
@@ -247,7 +251,11 @@ export async function updateRecurringSchedule(
 }
 
 // Backward-compatible alias
-export const updateRecurringInvoice = updateRecurringSchedule
+export async function updateRecurringInvoice(
+  input: z.infer<typeof UpdateSchema>
+): Promise<RecurringInvoice> {
+  return updateRecurringSchedule(input)
+}
 
 export async function pauseRecurringSchedule(id: string): Promise<void> {
   const user = await requireChef()
@@ -264,7 +272,9 @@ export async function pauseRecurringSchedule(id: string): Promise<void> {
 }
 
 // Backward-compatible alias
-export const pauseRecurringInvoice = pauseRecurringSchedule
+export async function pauseRecurringInvoice(id: string): Promise<void> {
+  return pauseRecurringSchedule(id)
+}
 
 export async function resumeRecurringSchedule(id: string): Promise<void> {
   const user = await requireChef()

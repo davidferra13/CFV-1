@@ -2,7 +2,7 @@
 // Small colored badges for displaying allergen/dietary info on product cards,
 // menu displays, and KDS tickets. Reusable across the app.
 
-import { ALLERGENS, DIETARY_FLAGS } from '@/lib/commerce/allergen-actions'
+import { ALLERGENS, DIETARY_FLAGS } from '@/lib/commerce/allergen-config'
 
 type AllergenBadgesProps = {
   allergens: string[]

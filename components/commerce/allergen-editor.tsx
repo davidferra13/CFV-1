@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { updateProductAllergens, ALLERGENS, DIETARY_FLAGS } from '@/lib/commerce/allergen-actions'
+import { updateProductAllergens } from '@/lib/commerce/allergen-actions'
+import { ALLERGENS, DIETARY_FLAGS } from '@/lib/commerce/allergen-config'
 
 type Props = {
   productId: string
