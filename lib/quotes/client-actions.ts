@@ -156,6 +156,24 @@ export async function acceptQuote(quoteId: string) {
     })
   }
 
+  // Auto-send deposit request if deposit is required (non-blocking)
+  if (
+    quote.tenant_id &&
+    quote.deposit_required &&
+    quote.deposit_amount_cents &&
+    quote.deposit_amount_cents > 0
+  ) {
+    try {
+      const { triggerDepositRequestOnAcceptance } =
+        await import('@/lib/finance/deposit-automation-actions')
+      triggerDepositRequestOnAcceptance(quote.tenant_id, quoteId).catch((err) => {
+        console.error('[acceptQuote] Deposit request trigger failed (non-blocking):', err)
+      })
+    } catch (importErr) {
+      console.error('[acceptQuote] Deposit automation import failed (non-blocking):', importErr)
+    }
+  }
+
   return { success: true }
 }
 

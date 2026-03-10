@@ -131,6 +131,8 @@ export type NotificationAction =
   | 'raffle_winner'
   | 'raffle_new_round'
   | 'raffle_drawn_chef'
+  // Deposit automation
+  | 'deposit_request_sent'
 
 export type Notification = {
   id: string
@@ -317,6 +319,9 @@ export const NOTIFICATION_CONFIG: Record<
   raffle_winner: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
   raffle_new_round: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
   raffle_drawn_chef: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
+
+  // Deposit automation
+  deposit_request_sent: { category: 'payment', icon: 'CreditCard', toastByDefault: true },
 }
 
 // Category display names for preferences UI
