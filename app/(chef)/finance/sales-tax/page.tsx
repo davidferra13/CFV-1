@@ -85,12 +85,18 @@ export default async function SalesTaxPage() {
 
       <SalesTaxPanel summary={summary} unremittedEvents={unremitted} remittances={remittances} />
 
-      <div className="pt-2">
+      <div className="pt-2 flex flex-col sm:flex-row gap-3">
         <Link
           href="/finance/sales-tax/remittances"
           className="text-sm text-brand-600 hover:underline"
         >
           View full remittance history →
+        </Link>
+        <Link
+          href="/finance/sales-tax/jurisdictions"
+          className="text-sm text-brand-600 hover:underline"
+        >
+          Manage tax jurisdictions & filings →
         </Link>
       </div>
     </div>
