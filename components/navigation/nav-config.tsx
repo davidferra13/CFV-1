@@ -622,6 +622,7 @@ export const navGroups: NavGroup[] = [
         icon: RefreshCw,
         children: [
           { href: '/meal-prep', label: 'Dashboard' },
+          { href: '/meal-prep/containers', label: 'Container Inventory' },
           { href: '/meal-prep/delivery', label: 'Delivery Route' },
           { href: '/meal-prep/labels', label: 'Container Labels' },
         ],

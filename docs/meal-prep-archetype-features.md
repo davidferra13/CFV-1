@@ -65,3 +65,74 @@ Three features added for the Meal Prep archetype: label printing from meal prep 
 - Distinguishes meal prep auto-recorded entries from manual entries
 
 **Data source:** Uses existing `served_dish_history` table (no new migration needed). Meal prep entries get notes indicating source.
+
+---
+
+## Feature 4: Container Inventory Management (2026-03-10)
+
+Full lifecycle tracking for meal prep containers.
+
+### Database
+
+- `container_inventory` table: tracks container types (6 types), materials (4 options), stock levels, costs
+- `container_transactions` table: logs every purchase, deploy, return, retire, and lost event
+- Both tables use `chef_id` tenant scoping with RLS
+
+### Server Actions (`lib/meal-prep/container-actions.ts`)
+
+- `addContainerType()`: create a new container type with initial stock
+- `updateContainerType()`: update container properties, auto-recalculates availability
+- `getContainerInventory()`: list all container types with current counts
+- `recordTransaction()`: log a transaction and update inventory counts
+- `getContainerHistory()`: transaction log with joined container and client names
+- `getContainersByClient()`: net deployed containers per client
+- `getLowStockAlerts()`: container types where available < 20% of total
+
+### UI (`components/meal-prep/container-dashboard.tsx`)
+
+- Summary cards, per-type cards with availability bar, quick actions, transaction log
+
+### Page: `/meal-prep/containers` (added to nav)
+
+## Feature 5: Client Preference Questionnaire (2026-03-10)
+
+Structured onboarding form for meal prep clients.
+
+### Database
+
+- `client_meal_prep_preferences` table: comprehensive preferences per chef-client pair
+
+### Server Actions (`lib/meal-prep/preference-questionnaire-actions.ts`)
+
+- `saveClientMealPrepPreferences()`: upserts all preference fields
+- `getClientMealPrepPreferences()`: retrieves saved preferences
+- `generatePreferenceLink()`: creates a shareable link
+
+### UI (`components/meal-prep/preference-form.tsx`)
+
+- Multi-section form: Dietary, Household, Meal Preferences, Delivery, Budget & Notes
+- Toggle chips for multi-select, radio buttons for single select
+
+## Feature 6: Nutritional Tracking (2026-03-10)
+
+Recipe-level nutritional data with weekly macro balancing. All math is deterministic (Formula > AI).
+
+### Database
+
+- `recipe_nutrition` table: per-recipe macro data
+
+### Server Actions (`lib/meal-prep/nutrition-actions.ts`)
+
+- `setRecipeNutrition()`: manual entry per recipe
+- `getRecipeNutrition()`: retrieve nutrition for one recipe
+- `getWeeklyNutritionSummary()`: aggregates macros across a rotation week
+- `checkMacroBalance()`: deterministic check against calorie/protein targets
+
+### UI (`components/meal-prep/nutrition-summary.tsx`)
+
+- Weekly totals with daily averages, macro balance progress bars, per-meal breakdown
+
+### Migration
+
+- File: `supabase/migrations/20260331000009_meal_prep_containers_preferences_nutrition.sql`
+- Additive only: 3 new tables, no changes to existing tables
