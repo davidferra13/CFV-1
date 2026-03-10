@@ -10,8 +10,7 @@ import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
-  { href: '/compare', label: 'Compare' },
-  { href: '/chefs', label: 'Find a Chef' },
+  { href: '/about', label: 'About' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },

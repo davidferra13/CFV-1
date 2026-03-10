@@ -7,6 +7,12 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
     features: ['Platform overview', 'Feature highlights', 'Sign up or sign in'],
   },
 
+  '/about': {
+    title: 'About ChefFlow',
+    description: 'The story behind ChefFlow and who built it.',
+    features: ['Founder story', 'What ChefFlow is and is not', 'Sign up or get in touch'],
+  },
+
   '/chefs': {
     title: 'Chef Directory',
     description: 'Browse available chefs for your next event.',
@@ -17,12 +23,6 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
     title: 'Contact Us',
     description: 'Get in touch with the ChefFlow team.',
     features: ['Contact form', 'Support email', 'General inquiries'],
-  },
-
-  '/client-relationships': {
-    title: 'Client Relationships',
-    description: 'How ChefFlow turns imported contacts into repeat-client and referral workflows.',
-    features: ['Relationship strategy', 'Repeat-client signals', 'Reactivation use cases'],
   },
 
   '/pricing': {

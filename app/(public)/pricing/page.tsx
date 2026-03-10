@@ -10,35 +10,15 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  FUNCTION_BUCKETS,
   PRICING_COMPARISON_SECTIONS,
   PRICING_FAQS,
   PRICING_PLANS,
-  PRO_FEATURE_AREAS,
   type ComparisonCell,
   type ComparisonCellState,
   type PricingPlanId,
 } from '@/lib/billing/pricing-catalog'
 
 const PLAN_COLUMNS: PricingPlanId[] = ['free', 'pro', 'scale']
-
-const MARKETPLACE_FIT_POINTS = [
-  {
-    title: 'Keep the booking channel that already works',
-    description:
-      'ChefFlow is designed for chefs who still use marketplaces, referrals, and direct leads at the same time.',
-  },
-  {
-    title: 'Pay for the layer the marketplace does not own',
-    description:
-      'Client memory, service ops, prep documents, follow-up, repeat-booking systems, and true margin visibility live in ChefFlow.',
-  },
-  {
-    title: 'Grow beyond one booked dinner at a time',
-    description:
-      'Use ChefFlow to turn platform demand into an owned client base with better records, better follow-up, and better profit discipline.',
-  },
-]
 
 function getCellTone(state: ComparisonCellState) {
   if (state === 'included') return 'text-green-400'
@@ -90,54 +70,23 @@ export default function PricingPage() {
 
   return (
     <div>
+      {/* Hero */}
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[780px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
-        <div className="pointer-events-none absolute -right-16 top-8 h-[260px] w-[260px] rounded-full bg-brand-800/25 blur-[70px]" />
         <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full border border-brand-700/80 bg-stone-900/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-              Built for Marketplace-Driven Private Chefs
-            </p>
-            <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-100">
-              Pricing for chefs who want to own more than the marketplace does.
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="fluid-display-xl font-display tracking-tight text-stone-100">
+              Simple pricing. Start free.
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
-              Start free to centralize the business layer around your existing booking channels.
-              Upgrade when you want stronger automation, better follow-up, and deeper visibility
-              into repeat business and margins.
-            </p>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-stone-400">
-              ChefFlow is an independent platform built to complement your current booking channels.
+            <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-stone-300 md:text-lg">
+              Everything you need to track clients, events, and money is free. Upgrade when you want
+              help with the admin work.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-12 md:py-16">
-        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
-          <div className="max-w-3xl">
-            <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
-              Why chefs pay for ChefFlow and still keep the marketplace
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
-              The marketplace can keep doing lead flow and booking mechanics. ChefFlow is where you
-              keep the client, the process, and the economics of the business.
-            </p>
-          </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {MARKETPLACE_FIT_POINTS.map((point) => (
-              <div
-                key={point.title}
-                className="rounded-xl border border-stone-700 bg-stone-900/80 p-5"
-              >
-                <h3 className="text-lg font-semibold text-stone-100">{point.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-stone-300">{point.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      {/* Plan cards */}
       <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid gap-5 lg:grid-cols-3">
           {PRICING_PLANS.map((plan, index) => (
@@ -199,54 +148,15 @@ export default function PricingPage() {
         </div>
         <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs text-muted-soft">
           <ShieldCheck className="h-3.5 w-3.5 text-brand-300" />
-          Trial and paid users both use the same product - no hidden feature branch.
+          Same product on every plan. Free and paid use the exact same app.
         </p>
       </section>
 
+      {/* Feature comparison */}
       <section className="container mx-auto px-4 pb-14 md:pb-20">
-        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
-          <div className="max-w-3xl">
-            <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
-              How we organize platform functions
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
-              This model keeps tiering clear: Free for the core business layer every working chef
-              needs, Pro for automation and growth, Scale for rollout support when complexity grows
-              past one operator.
-            </p>
-          </div>
-          <div className="mt-6 grid gap-4 lg:grid-cols-3">
-            {FUNCTION_BUCKETS.map((bucket, index) => (
-              <div
-                key={bucket.id}
-                className="animate-fade-slide-up rounded-xl border border-stone-700 bg-stone-900/80 p-5"
-                style={{ animationDelay: `${index * 70}ms` }}
-              >
-                <h3 className="text-lg font-semibold text-stone-100">{bucket.label}</h3>
-                <p className="mt-2 text-xs uppercase tracking-[0.08em] text-brand-300">
-                  Placement rule
-                </p>
-                <p className="mt-1.5 text-sm text-stone-300">{bucket.rule}</p>
-                <ul className="mt-4 space-y-2">
-                  {bucket.items.map((item) => (
-                    <li key={item} className="text-sm text-stone-300">
-                      - {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-4 pb-14 md:pb-20">
-        <h2 className="text-center fluid-title-md font-display text-stone-100">
+        <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
           Full feature comparison
         </h2>
-        <p className="mx-auto mt-3 max-w-3xl text-center text-sm leading-relaxed text-stone-300 md:text-base">
-          The matrix below is the source-of-truth view for what belongs in each tier today.
-        </p>
         <div className="mt-6 overflow-x-auto rounded-2xl border border-stone-700 bg-stone-900/70">
           <table className="min-w-[920px] w-full border-collapse">
             <thead>
@@ -290,120 +200,53 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 pb-14 md:pb-20">
-        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
-          <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
-            Pro function map by domain
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
-            This is the current catalog of Pro domains, grouped so teams can quickly decide where
-            new features should live.
-          </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {PRO_FEATURE_AREAS.map((area) => (
-              <div
-                key={area.label}
-                className="rounded-xl border border-stone-700 bg-stone-900/80 p-4"
+      {/* FAQ + Final CTA */}
+      <section className="border-t border-stone-700/50 bg-stone-900/40">
+        <div className="container mx-auto px-4 py-14 md:py-20">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
+              Common questions
+            </h2>
+            <div className="mt-6 space-y-3">
+              {PRICING_FAQS.map((faq) => (
+                <details
+                  key={faq.question}
+                  className="group rounded-xl border border-stone-700 bg-stone-900/70 p-4"
+                >
+                  <summary className="cursor-pointer list-none pr-4 text-sm font-semibold text-stone-100">
+                    {faq.question}
+                  </summary>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-300">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-14 text-center">
+            <h2 className="text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
+              {isBeta ? 'Join the beta.' : 'Start free today.'}
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-stone-300">
+              No credit card required. Cancel anytime.
+            </p>
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <TrackedLink
+                href={PRIMARY_SIGNUP_HREF}
+                analyticsName="pricing_bottom_start_free"
+                analyticsProps={{ section: 'pricing_bottom_cta' }}
+                className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               >
-                <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-brand-300">
-                  {area.label}
-                </h3>
-                <ul className="mt-3 space-y-2">
-                  {area.features.map((feature) => (
-                    <li key={feature} className="text-sm text-stone-300">
-                      - {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-4 pb-14 md:pb-20">
-        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
-          <h2 className="text-2xl font-display text-stone-100 md:text-3xl">Need verification?</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-300 md:text-base">
-            Review our trust materials and platform comparisons to see how ChefFlow fits beside
-            marketplace-led booking workflows. We only publish verified customer testimonials.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <TrackedLink
-              href="/trust"
-              analyticsName="pricing_proof_trust"
-              analyticsProps={{ section: 'pricing_proof' }}
-              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-            >
-              Review trust center
-            </TrackedLink>
-            <TrackedLink
-              href="/compare"
-              analyticsName="pricing_proof_compare"
-              analyticsProps={{ section: 'pricing_proof' }}
-              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
-            >
-              Compare alternatives
-            </TrackedLink>
-            <TrackedLink
-              href="/contact"
-              analyticsName="pricing_proof_contact"
-              analyticsProps={{ section: 'pricing_proof' }}
-              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
-            >
-              Talk to us
-            </TrackedLink>
-          </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-4 pb-14 md:pb-20">
-        <div className="mx-auto max-w-3xl">
-          <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
-            Common questions
-          </h2>
-          <div className="mt-6 space-y-3">
-            {PRICING_FAQS.map((faq) => (
-              <details
-                key={faq.question}
-                className="group rounded-xl border border-stone-700 bg-stone-900/70 p-4"
+                {isBeta ? 'Join beta waitlist' : 'Start Free'}
+              </TrackedLink>
+              <TrackedLink
+                href="/contact"
+                analyticsName="pricing_bottom_talk_to_sales"
+                analyticsProps={{ section: 'pricing_bottom_cta' }}
+                className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
               >
-                <summary className="cursor-pointer list-none pr-4 text-sm font-semibold text-stone-100">
-                  {faq.question}
-                </summary>
-                <p className="mt-2 text-sm leading-relaxed text-stone-300">{faq.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-stone-700/50 bg-stone-900/40">
-        <div className="container mx-auto px-4 py-14 text-center md:py-20">
-          <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
-            Start by owning the business layer around the booking.
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
-            Launch on Free, move to Pro when follow-up and automation become the bottleneck, and use
-            Scale when your chef operation needs guided rollout support.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
-              analyticsName="pricing_bottom_start_free"
-              analyticsProps={{ section: 'pricing_bottom_cta' }}
-              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-            >
-              {isBeta ? 'Join beta waitlist' : 'Start Free'}
-            </TrackedLink>
-            <TrackedLink
-              href="/contact"
-              analyticsName="pricing_bottom_talk_to_sales"
-              analyticsProps={{ section: 'pricing_bottom_cta' }}
-              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
-            >
-              Talk to Sales
-            </TrackedLink>
+                Talk to the founder
+              </TrackedLink>
+            </div>
           </div>
         </div>
       </section>

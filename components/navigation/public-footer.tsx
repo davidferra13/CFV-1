@@ -10,11 +10,10 @@ import {
 const FOOTER_LINKS = {
   product: [
     { href: '/', label: 'Home' },
-    { href: '/compare', label: 'Compare' },
-    { href: '/chefs', label: 'Find a Chef' },
-    { href: '/client-relationships', label: 'Client Relationships' },
+    { href: '/about', label: 'About' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/contact', label: 'Contact' },
+    { href: '/chefs', label: 'Chef Directory' },
   ],
   resources: [
     { href: '/blog', label: 'Blog' },
@@ -45,8 +44,7 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            Built for {PLATFORM_AUDIENCE_LABEL}. Keep marketplace demand flowing while ChefFlow runs
-            your client memory, service ops, follow-up, and payments in one workspace.
+            Built for {PLATFORM_AUDIENCE_LABEL}. {PLATFORM_SHORT_DESCRIPTION}
           </p>
           <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-500/80">
             Ops for Artists

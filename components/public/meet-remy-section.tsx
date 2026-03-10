@@ -4,22 +4,26 @@ const FEATURE_HIGHLIGHTS = [
   {
     icon: Mail,
     title: 'Email drafts',
-    description: 'Thank-you notes, follow-ups, and referral asks drafted for your review.',
+    description:
+      'Thank-you notes, follow-ups, and referral asks. Remy drafts them, you review before sending.',
   },
   {
     icon: TrendingUp,
-    title: 'Margin analysis',
-    description: 'Food cost, revenue, and expense breakdowns for every event.',
+    title: 'Profit breakdown',
+    description:
+      'Ask "how did the Johnson dinner do?" and get food cost, revenue, and what you actually kept.',
   },
   {
     icon: Heart,
-    title: 'Client preferences',
-    description: 'Dietary needs, allergies, and preferences captured in one place.',
+    title: 'Client memory',
+    description:
+      'Remy knows your clients. Allergies, past menus, preferences. Ask before you plan.',
   },
   {
     icon: BookOpen,
     title: 'Recipe search',
-    description: 'Search your recipes by ingredient, cuisine, or event type.',
+    description:
+      'Find your own recipes by ingredient, cuisine, or event type. Your recipe book, searchable.',
   },
 ]
 
@@ -34,11 +38,11 @@ export function MeetRemySection() {
             <Layers className="h-6 w-6" />
           </div>
           <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-            Built-in workflow support
+            Your admin assistant, built in
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
-            Move faster on admin work while you stay in control. You review everything before it
-            goes out.
+            Remy handles the admin side so you can focus on cooking. You review everything before it
+            goes out. Nothing sends without your approval.
           </p>
         </div>
 

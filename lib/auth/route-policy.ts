@@ -45,12 +45,11 @@ export const PARTNER_PROTECTED_PATHS = ['/partner'] as const
 // Public website and tokenized pages that must remain reachable unauthenticated.
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/pricing',
-  '/compare',
+  '/about',
   '/customers',
   '/faq',
   '/blog',
   '/contact',
-  '/client-relationships',
   '/privacy',
   '/terms',
   '/trust',
@@ -71,7 +70,6 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/partner-signup',
   '/partner-report',
   '/chefs',
-  '/marketplace-chefs',
   '/open-tables',
   '/network/connect',
   '/survey',

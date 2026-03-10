@@ -104,9 +104,12 @@ export default function ContactPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Talk with ChefFlow</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">
+            Questions? Let's talk.
+          </h1>
           <p className="text-lg md:text-xl text-stone-300">
-            Questions on setup, pricing, or workflow? We respond within 1 business day.
+            I'm David, the chef who built ChefFlow. Ask me anything about the product, pricing, or
+            how it fits your workflow.
           </p>
         </div>
       </section>
@@ -138,9 +141,7 @@ export default function ContactPage() {
                         </svg>
                         <div>
                           <h4 className="font-semibold text-green-900 mb-1">Message sent!</h4>
-                          <p className="text-green-700 text-sm">
-                            We&apos;ll respond within 1 business day.
-                          </p>
+                          <p className="text-green-700 text-sm">I&apos;ll get back to you soon.</p>
                         </div>
                       </div>
                     </div>
@@ -278,7 +279,7 @@ export default function ContactPage() {
                       <div>
                         <h4 className="font-semibold text-stone-100 mb-1">Response time</h4>
                         <p className="text-stone-300 text-sm">
-                          Typical response: within 24 hours on business days
+                          I usually reply the same day. If I'm cooking, next morning at the latest.
                         </p>
                       </div>
                     </div>
