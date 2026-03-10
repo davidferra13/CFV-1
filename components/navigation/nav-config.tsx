@@ -447,6 +447,11 @@ export const navGroups: NavGroup[] = [
         icon: UtensilsCrossed,
       },
       {
+        href: '/commerce/kds',
+        label: 'Kitchen Display',
+        icon: Kanban,
+      },
+      {
         href: '/commerce/products',
         label: 'Products',
         icon: Package,
