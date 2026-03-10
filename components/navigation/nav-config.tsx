@@ -304,6 +304,7 @@ export const navGroups: NavGroup[] = [
           { href: '/clients/communication/notes', label: 'Client Notes' },
           { href: '/clients/communication/follow-ups', label: 'Follow-Ups' },
           { href: '/clients/communication/upcoming-touchpoints', label: 'Upcoming Touchpoints' },
+          { href: '/clients/outreach', label: 'Outreach & Referrals' },
         ],
       },
       {

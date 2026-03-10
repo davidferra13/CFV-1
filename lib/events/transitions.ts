@@ -847,6 +847,18 @@ export async function transitionEvent({
     }
   }
 
+  // Trigger post-event referral request sequence (non-blocking)
+  // Checks eligibility (relationship quality, cooldown) and logs the request.
+  if (toStatus === 'completed' && fromStatus === 'in_progress') {
+    try {
+      const { triggerPostEventReferralRequest } =
+        await import('@/lib/outreach/referral-sequence-actions')
+      await triggerPostEventReferralRequest(eventId, event.tenant_id)
+    } catch (err) {
+      log.events.warn('Post-event referral trigger failed (non-blocking)', { error: err })
+    }
+  }
+
   // Enqueue Inngest post-event follow-up sequence (non-blocking)
   // Sends thank-you (3d), review request (7d), and referral ask (14d) emails.
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
