@@ -5,7 +5,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { listMealPrepPrograms } from '@/lib/meal-prep/program-actions'
 import { MealPrepDashboard } from '@/components/meal-prep/meal-prep-dashboard'
 import { Button } from '@/components/ui/button'
-import { Plus, Truck } from '@/components/ui/icons'
+import { Plus, Truck, ShoppingCart, ListChecks } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Meal Prep - ChefFlow' }
 
@@ -25,7 +25,19 @@ export default async function MealPrepPage() {
             Manage rotating menus, deliveries, and containers for your meal prep clients.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link href="/meal-prep/shopping">
+            <Button variant="secondary" size="sm">
+              <ShoppingCart className="w-4 h-4 mr-1" />
+              Batch Shopping
+            </Button>
+          </Link>
+          <Link href="/meal-prep/cooking-day">
+            <Button variant="secondary" size="sm">
+              <ListChecks className="w-4 h-4 mr-1" />
+              Cooking Day
+            </Button>
+          </Link>
           <Link href="/meal-prep/delivery">
             <Button variant="secondary" size="sm">
               <Truck className="w-4 h-4 mr-1" />
