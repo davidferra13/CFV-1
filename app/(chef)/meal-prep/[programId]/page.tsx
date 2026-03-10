@@ -6,9 +6,11 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { getMealPrepProgram, getMealPrepWeeks } from '@/lib/meal-prep/program-actions'
 import { WeeklyPlanner } from '@/components/meal-prep/weekly-planner'
+import { RotationCalendar } from '@/components/meal-prep/rotation-calendar'
 import { ProgramStatusControls } from './status-controls'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, User, Calendar, Truck, Package } from '@/components/ui/icons'
+import { Button } from '@/components/ui/button'
+import { ChevronLeft, User, Calendar, Truck, Package, LayoutGrid } from '@/components/ui/icons'
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -132,7 +134,27 @@ export default async function MealPrepProgramPage({ params }: Props) {
         </dl>
       </div>
 
-      {/* Weekly planner */}
+      {/* Meal Plan Builder link */}
+      <div className="flex justify-end">
+        <Button
+          variant="primary"
+          size="sm"
+          href={`/meal-prep/${params.programId}/plan?week=${program.current_rotation_week}`}
+        >
+          <LayoutGrid className="w-4 h-4" />
+          Open Meal Plan Builder
+        </Button>
+      </div>
+
+      {/* Rotation Calendar */}
+      <RotationCalendar
+        programId={program.id}
+        weeks={weeks}
+        currentRotationWeek={program.current_rotation_week}
+        totalRotationWeeks={program.rotation_weeks}
+      />
+
+      {/* Weekly planner (existing) */}
       <WeeklyPlanner program={program} weeks={weeks} menus={availableMenus} />
     </div>
   )
