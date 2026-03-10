@@ -117,6 +117,25 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
         />
       )}
 
+      {/* BEO (Banquet Event Order) */}
+      {!['draft', 'cancelled'].includes(event.status) && (
+        <Card className="p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold">Banquet Event Order</h2>
+              <p className="text-sm text-stone-500 mt-1">
+                Printable event order with menu, staff, timeline, and notes.
+              </p>
+            </div>
+            <Link href={`/events/${event.id}/beo`}>
+              <Button variant="ghost" size="sm">
+                View BEO
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       {/* Event Staff */}
       {!['draft', 'cancelled'].includes(event.status) && (
         <Card className="p-6">

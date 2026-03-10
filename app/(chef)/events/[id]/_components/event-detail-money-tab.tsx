@@ -97,6 +97,11 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Financial Summary</h2>
           <div className="flex items-center gap-2">
+            <Link href={`/events/${event.id}/beo`}>
+              <Button variant="ghost" size="sm">
+                BEO
+              </Button>
+            </Link>
             <Link href={`/events/${event.id}/invoice`}>
               <Button variant="ghost" size="sm">
                 View Invoice
