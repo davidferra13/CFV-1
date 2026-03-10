@@ -123,7 +123,11 @@ export default async function GuestProfilePage({ params }: { params: { id: strin
       />
 
       {/* Reservations */}
-      <ReservationForm guestId={guest.id} reservations={guest.reservations} />
+      <ReservationForm
+        guestId={guest.id}
+        guestName={guest.name}
+        reservations={guest.reservations}
+      />
 
       {/* Notes & Edit */}
       <Card>

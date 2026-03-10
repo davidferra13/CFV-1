@@ -22,10 +22,11 @@ interface Reservation {
 
 interface ReservationFormProps {
   guestId: string
+  guestName?: string
   reservations: Reservation[]
 }
 
-export function ReservationForm({ guestId, reservations }: ReservationFormProps) {
+export function ReservationForm({ guestId, guestName, reservations }: ReservationFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,11 +45,11 @@ export function ReservationForm({ guestId, reservations }: ReservationFormProps)
     setError(null)
     try {
       await createReservation({
-        guest_id: guestId,
-        reservation_date: resDate,
-        reservation_time: resTime || undefined,
-        party_size: partySize ? parseInt(partySize) : undefined,
-        table_number: tableNumber || undefined,
+        guestId: guestId,
+        guestName: guestName || 'Guest',
+        date: resDate,
+        time: resTime || '18:00',
+        partySize: partySize ? parseInt(partySize) : 1,
         notes: notes || undefined,
       })
       setShowForm(false)
