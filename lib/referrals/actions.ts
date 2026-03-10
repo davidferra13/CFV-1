@@ -299,3 +299,212 @@ export async function awardReferralRewardForCompletedEventSystem(
 ) {
   return awardReferralRewardForTenantEvent(tenantId, eventId)
 }
+
+// ============================================
+// REFERRAL STATS (client-facing)
+// ============================================
+
+export type ReferralStats = {
+  referralCode: string | null
+  referralUrl: string | null
+  totalReferrals: number
+  completedReferrals: number
+  totalPointsEarned: number
+  referrals: Array<{
+    id: string
+    referredName: string | null
+    createdAt: string
+    eventCompleted: boolean
+    pointsAwarded: number
+  }>
+}
+
+/**
+ * Get referral stats for the current client.
+ * Shows how many friends they've referred, completed events, and points earned.
+ */
+export async function getClientReferralStats(): Promise<ReferralStats> {
+  const user = await requireClient()
+  const supabase = createServerClient({ admin: true })
+
+  // Get client's referral code
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, referral_code, tenant_id')
+    .eq('id', user.entityId!)
+    .single()
+
+  if (!client) {
+    return {
+      referralCode: null,
+      referralUrl: null,
+      totalReferrals: 0,
+      completedReferrals: 0,
+      totalPointsEarned: 0,
+      referrals: [],
+    }
+  }
+
+  // Ensure referral code exists
+  const typedClient = await ensureReferralCodeForClient(supabase, client.tenant_id, client.id)
+
+  // Fetch chef for URL building
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('id, slug, booking_slug, display_name, business_name')
+    .eq('id', client.tenant_id)
+    .maybeSingle()
+
+  const typedChef = chef as ReferralChefRow | null
+  const chefSlug = typedChef ? buildChefSlug(typedChef) : ''
+  const referralCode = typedClient?.referral_code ?? null
+
+  let referralUrl: string | null = null
+  if (chefSlug && referralCode) {
+    referralUrl = getReferralUrl(chefSlug, referralCode)
+  }
+
+  // Fetch all referrals by this client
+  const { data: referrals } = await supabase
+    .from('client_referrals')
+    .select(
+      `
+      id,
+      referred_client_id,
+      converted_event_id,
+      reward_points_awarded,
+      reward_awarded_at,
+      created_at,
+      referred_client:clients!client_referrals_referred_client_id_fkey(full_name)
+    `
+    )
+    .eq('referrer_client_id', user.entityId!)
+    .eq('tenant_id', client.tenant_id)
+    .order('created_at', { ascending: false })
+
+  const referralList = (referrals ?? []).map((r: any) => ({
+    id: r.id,
+    referredName: r.referred_client?.full_name ?? null,
+    createdAt: r.created_at,
+    eventCompleted: !!r.reward_awarded_at,
+    pointsAwarded: r.reward_points_awarded ?? 0,
+  }))
+
+  const completedReferrals = referralList.filter((r) => r.eventCompleted).length
+  const totalPointsEarned = referralList.reduce((sum, r) => sum + r.pointsAwarded, 0)
+
+  return {
+    referralCode,
+    referralUrl,
+    totalReferrals: referralList.length,
+    completedReferrals,
+    totalPointsEarned,
+    referrals: referralList,
+  }
+}
+
+// ============================================
+// CHEF REFERRAL DASHBOARD
+// ============================================
+
+export type ChefReferralDashboard = {
+  totalReferrals: number
+  completedReferrals: number
+  pendingReferrals: number
+  totalPointsAwarded: number
+  topReferrers: Array<{
+    clientId: string
+    clientName: string | null
+    referralCount: number
+    pointsEarned: number
+  }>
+  recentReferrals: Array<{
+    id: string
+    referrerName: string | null
+    referredName: string | null
+    createdAt: string
+    eventCompleted: boolean
+    pointsAwarded: number
+  }>
+}
+
+/**
+ * Get the chef's referral program dashboard data.
+ * Shows all referral activity across clients.
+ */
+export async function getChefReferralDashboard(): Promise<ChefReferralDashboard> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: referrals } = await supabase
+    .from('client_referrals')
+    .select(
+      `
+      id,
+      referrer_client_id,
+      referred_client_id,
+      reward_points_awarded,
+      reward_awarded_at,
+      created_at,
+      referrer:clients!client_referrals_referrer_client_id_fkey(full_name),
+      referred:clients!client_referrals_referred_client_id_fkey(full_name)
+    `
+    )
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  const all = referrals ?? []
+  const completed = all.filter((r: any) => !!r.reward_awarded_at)
+  const totalPointsAwarded = all.reduce(
+    (sum: number, r: any) => sum + (r.reward_points_awarded ?? 0),
+    0
+  )
+
+  // Build top referrers
+  const referrerMap = new Map<
+    string,
+    { clientName: string | null; count: number; points: number }
+  >()
+  for (const r of all) {
+    const rid = (r as any).referrer_client_id
+    const existing = referrerMap.get(rid)
+    if (existing) {
+      existing.count++
+      existing.points += (r as any).reward_points_awarded ?? 0
+    } else {
+      referrerMap.set(rid, {
+        clientName: (r as any).referrer?.full_name ?? null,
+        count: 1,
+        points: (r as any).reward_points_awarded ?? 0,
+      })
+    }
+  }
+
+  const topReferrers = [...referrerMap.entries()]
+    .map(([clientId, data]) => ({
+      clientId,
+      clientName: data.clientName,
+      referralCount: data.count,
+      pointsEarned: data.points,
+    }))
+    .sort((a, b) => b.referralCount - a.referralCount)
+    .slice(0, 10)
+
+  const recentReferrals = all.slice(0, 20).map((r: any) => ({
+    id: r.id,
+    referrerName: r.referrer?.full_name ?? null,
+    referredName: r.referred?.full_name ?? null,
+    createdAt: r.created_at,
+    eventCompleted: !!r.reward_awarded_at,
+    pointsAwarded: r.reward_points_awarded ?? 0,
+  }))
+
+  return {
+    totalReferrals: all.length,
+    completedReferrals: completed.length,
+    pendingReferrals: all.length - completed.length,
+    totalPointsAwarded,
+    topReferrers,
+    recentReferrals,
+  }
+}

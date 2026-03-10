@@ -753,6 +753,14 @@ export async function transitionEvent({
     } catch (err) {
       log.events.warn('Google Calendar delete failed (non-blocking)', { error: err })
     }
+
+    // Remove auto-blocked calendar entry (non-blocking)
+    try {
+      const { removeEventDateBlock } = await import('@/lib/calendar/auto-block')
+      await removeEventDateBlock(eventId, event.tenant_id)
+    } catch (err) {
+      log.events.warn('Calendar auto-block removal failed (non-blocking)', { error: err })
+    }
   }
 
   // Fire automations (non-blocking)

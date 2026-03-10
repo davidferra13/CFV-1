@@ -15,6 +15,7 @@ import { RewardCard } from './reward-card'
 import { ClientIncentiveList } from '@/components/incentives/client-incentive-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { HowToEarnPanel } from '@/components/loyalty/how-to-earn-panel'
+import { ReferralCard } from '@/components/referrals/referral-card'
 
 export const metadata: Metadata = { title: 'My Rewards - ChefFlow' }
 
@@ -87,7 +88,9 @@ export default async function MyRewardsPage() {
   if (status.programMode === 'off') {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
+        <h1 data-tour="client-rewards" className="text-3xl font-bold text-stone-100">
+          Rewards
+        </h1>
         <Alert variant="info">
           Your chef hasn&rsquo;t enabled a loyalty program yet. Check back later!
         </Alert>
@@ -128,7 +131,7 @@ export default async function MyRewardsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex justify-between items-start">
+      <div data-tour="client-rewards" className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
           <p className="text-stone-400 mt-1">
@@ -271,6 +274,9 @@ export default async function MyRewardsPage() {
           )}
         </>
       )}
+
+      {/* Refer a Friend */}
+      <ReferralCard />
 
       {/* Gift Cards & Vouchers */}
       <Card>
