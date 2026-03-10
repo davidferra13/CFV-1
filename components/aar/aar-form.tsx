@@ -2,12 +2,15 @@
 // Quick ratings first (two taps), forgotten items second, text notes optional
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
+import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
+import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { UNSAVED_STATE } from '@/lib/save-state/model'
 import { createAAR, updateAAR } from '@/lib/aar/actions'
 import type { CreateAARInput, UpdateAARInput } from '@/lib/aar/actions'
 import type { ChecklistItem } from '@/lib/checklist/actions'
@@ -122,6 +125,53 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Detect unsaved changes
+  const isDirty = useMemo(() => {
+    if (isEditing) {
+      return (
+        calmRating !== (existingAAR?.calm_rating ?? 0) ||
+        prepRating !== (existingAAR?.preparation_rating ?? 0) ||
+        whatWentWell !== (existingAAR?.what_went_well ?? '') ||
+        whatWentWrong !== (existingAAR?.what_went_wrong ?? '') ||
+        menuNotes !== (existingAAR?.menu_performance_notes ?? '') ||
+        clientNotes !== (existingAAR?.client_behavior_notes ?? '') ||
+        siteNotes !== (existingAAR?.site_notes ?? '') ||
+        couldHaveDoneEarlier !== (existingAAR?.could_have_done_earlier ?? '')
+      )
+    }
+    // New form: dirty if any field has content
+    return (
+      calmRating !== 0 ||
+      prepRating !== 0 ||
+      forgottenItems.size > 0 ||
+      otherForgotten.trim() !== '' ||
+      couldHaveDoneEarlier.trim() !== '' ||
+      whatWentWell.trim() !== '' ||
+      whatWentWrong.trim() !== '' ||
+      menuNotes.trim() !== '' ||
+      clientNotes.trim() !== '' ||
+      siteNotes.trim() !== ''
+    )
+  }, [
+    isEditing,
+    existingAAR,
+    calmRating,
+    prepRating,
+    forgottenItems,
+    otherForgotten,
+    couldHaveDoneEarlier,
+    whatWentWell,
+    whatWentWrong,
+    menuNotes,
+    clientNotes,
+    siteNotes,
+  ])
+
+  const unsavedGuard = useUnsavedChangesGuard({
+    isDirty,
+    saveState: UNSAVED_STATE,
+  })
 
   useEffect(() => {
     setActiveForm(isEditing ? 'Edit After-Action Review' : 'New After-Action Review')
@@ -341,7 +391,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
         <Button
           type="button"
           variant="ghost"
-          onClick={() => router.push(`/events/${eventId}`)}
+          onClick={() => unsavedGuard.requestNavigation(() => router.push(`/events/${eventId}`))}
           disabled={loading}
         >
           Cancel
@@ -355,6 +405,13 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           {isEditing ? 'Update Review' : 'File Review'}
         </Button>
       </div>
+
+      <UnsavedChangesDialog
+        open={unsavedGuard.open}
+        canSaveDraft={false}
+        onStay={unsavedGuard.onStay}
+        onLeave={unsavedGuard.onLeave}
+      />
     </form>
   )
 }

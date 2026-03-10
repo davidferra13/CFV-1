@@ -96,27 +96,32 @@ export function TakeAChefCaptureTool() {
     setError(null)
     setMessage(null)
     startTransition(async () => {
-      const response = await saveTakeAChefPageCapture({
-        captureType,
-        pageUrl,
-        pageTitle,
-        pageText,
-        pageLinks,
-        notes,
-      })
+      try {
+        const response = await saveTakeAChefPageCapture({
+          captureType,
+          pageUrl,
+          pageTitle,
+          pageText,
+          pageLinks,
+          notes,
+        })
 
-      if (!response.success) {
-        setError(response.error || 'Failed to save page capture')
-        return
+        if (!response.success) {
+          setError(response.error || 'Failed to save page capture')
+          return
+        }
+
+        setResult({
+          inquiryId: response.inquiryId,
+          eventId: response.eventId,
+          inquiryCreated: response.inquiryCreated,
+          summary: response.summary,
+        })
+        setMessage(response.summary || 'Marketplace page saved to ChefFlow.')
+      } catch (err) {
+        console.error('[take-a-chef-capture] Save failed:', err)
+        setError('Something went wrong saving the capture. Please try again.')
       }
-
-      setResult({
-        inquiryId: response.inquiryId,
-        eventId: response.eventId,
-        inquiryCreated: response.inquiryCreated,
-        summary: response.summary,
-      })
-      setMessage(response.summary || 'Marketplace page saved to ChefFlow.')
     })
   }
 

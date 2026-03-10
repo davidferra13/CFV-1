@@ -20,10 +20,24 @@ function todayISO() {
  * Minimal expense entry modal — amount, category, vendor, date, description.
  * Stays open after save for rapid entry. "Done" closes it.
  */
+function getLastUsed<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const val = localStorage.getItem(key)
+    return val !== null ? (val as unknown as T) : fallback
+  } catch {
+    return fallback
+  }
+}
+
 export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {
   const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState<ExpenseCategory>('groceries')
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'venmo' | 'other'>('card')
+  const [category, setCategory] = useState<ExpenseCategory>(
+    () => getLastUsed('quick-expense-last-category', 'groceries') as ExpenseCategory
+  )
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'venmo' | 'other'>(
+    () => getLastUsed('quick-expense-last-payment', 'card') as 'cash' | 'card' | 'venmo' | 'other'
+  )
   const [vendor, setVendor] = useState('')
   const [description, setDescription] = useState('')
   const [expenseDate, setExpenseDate] = useState(todayISO)
@@ -49,8 +63,7 @@ export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {
 
   const resetForm = () => {
     setAmount('')
-    setCategory('groceries')
-    setPaymentMethod('card')
+    // Keep category and payment method (user's last choice persists)
     setVendor('')
     setDescription('')
     setExpenseDate(todayISO())
@@ -81,6 +94,12 @@ export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {
       try {
         await createExpense(input)
         toast.success(`Expense saved: $${(cents / 100).toFixed(2)}`)
+        try {
+          localStorage.setItem('quick-expense-last-category', category)
+          localStorage.setItem('quick-expense-last-payment', paymentMethod)
+        } catch {
+          /* localStorage unavailable */
+        }
         resetForm()
         setTimeout(() => amountRef.current?.focus(), 50)
       } catch (err: any) {

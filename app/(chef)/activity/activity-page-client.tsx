@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { ChefActivityDomain, ChefActivityEntry, ResumeItem } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import type { ActivityActorFilter, ActivityEvent } from '@/lib/activity/types'
@@ -95,11 +96,51 @@ export function ActivityPageClient({
   initialBreadcrumbSessions = [],
   initialBreadcrumbCursor = null,
 }: ActivityPageClientProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('summary')
-  const [activeTab, setActiveTab] = useState<ActivityTab>('my')
-  const [activeDomain, setActiveDomain] = useState<ChefActivityDomain | null>(null)
-  const [actorFilter, setActorFilter] = useState<ActivityActorFilter>('all')
-  const [timeRange, setTimeRange] = useState<TimeRange>('7')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Read filter state from URL params (bookmarkable, survives refresh)
+  const viewMode = (searchParams?.get('view') as ViewMode) || 'summary'
+  const activeTab = (searchParams?.get('tab') as ActivityTab) || 'my'
+  const activeDomain = (searchParams?.get('domain') as ChefActivityDomain) || null
+  const actorFilter = (searchParams?.get('actor') as ActivityActorFilter) || 'all'
+  const timeRange = (searchParams?.get('range') as TimeRange) || '7'
+
+  // Update URL params without full page reload
+  const setFilter = useCallback(
+    (key: string, value: string | null) => {
+      const params = new URLSearchParams(searchParams?.toString() ?? '')
+      if (value === null || value === '') {
+        params.delete(key)
+      } else {
+        params.set(key, value)
+      }
+      const qs = params.toString()
+      router.replace(`/activity${qs ? `?${qs}` : ''}`, { scroll: false })
+    },
+    [router, searchParams]
+  )
+
+  const setViewMode = useCallback(
+    (v: ViewMode) => setFilter('view', v === 'summary' ? null : v),
+    [setFilter]
+  )
+  const setActiveTab = useCallback(
+    (t: ActivityTab) => setFilter('tab', t === 'my' ? null : t),
+    [setFilter]
+  )
+  const setActiveDomain = useCallback(
+    (d: ChefActivityDomain | null) => setFilter('domain', d),
+    [setFilter]
+  )
+  const setActorFilter = useCallback(
+    (a: ActivityActorFilter) => setFilter('actor', a === 'all' ? null : a),
+    [setFilter]
+  )
+  const setTimeRange = useCallback(
+    (r: TimeRange) => setFilter('range', r === '7' ? null : r),
+    [setFilter]
+  )
   const [chefActivity, setChefActivity] = useState<ChefActivityEntry[]>(initialChefActivity)
   const [clientActivity, setClientActivity] = useState<ActivityEvent[]>(initialClientActivity)
   const [chefCursor, setChefCursor] = useState<string | null>(initialChefCursor)

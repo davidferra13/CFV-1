@@ -4,7 +4,7 @@
 // Steps: 1. Select Service -> 2. Pick Date -> 3. Pick Time -> 4. Your Details -> 5. Confirm -> 6. Success
 // Zero friction: no account required, auto timezone detection, mobile-first.
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { ServiceSelector } from '@/components/booking/service-selector'
 import { BookingDatePicker } from '@/components/booking/date-picker'
 import { TimeSlots } from '@/components/booking/time-slots'
@@ -41,6 +41,18 @@ export function BookingFlow({ chefSlug, chefName, eventTypes, bookingConfig }: P
   const [formData, setFormData] = useState<BookingFormData | null>(null)
 
   const hasEventTypes = eventTypes.length > 0
+
+  // Warn user before closing tab if they have unsaved booking data
+  const hasUnsavedData = step === 'details' || step === 'confirm' || formData !== null
+  useEffect(() => {
+    if (!hasUnsavedData) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hasUnsavedData])
 
   const handleServiceSelect = useCallback((eventType: PublicEventType) => {
     setSelectedEventType(eventType)

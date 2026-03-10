@@ -237,7 +237,7 @@ export function RemyDrawer() {
   // Restore saved drawer width from sessionStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('remy-drawer-width')
+      const saved = localStorage.getItem('remy-drawer-width')
       if (saved) {
         const w = parseInt(saved, 10)
         if (w >= DRAWER_MIN_WIDTH && w <= DRAWER_MAX_WIDTH) setDrawerWidth(w)
@@ -410,7 +410,7 @@ export function RemyDrawer() {
 
       const onMouseUp = () => {
         drawerResizingRef.current = null
-        sessionStorage.setItem('remy-drawer-width', String(latestW))
+        localStorage.setItem('remy-drawer-width', String(latestW))
         cleanup()
       }
 

@@ -26,7 +26,15 @@ export function WidgetPickerModal({ currentWidgets, onAdd, onClose }: Props) {
   const [mounted, setMounted] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState<WidgetCategory | 'all'>('all')
+  const [activeCategory, setActiveCategory] = useState<WidgetCategory | 'all'>(() => {
+    if (typeof window === 'undefined') return 'all'
+    try {
+      const saved = localStorage.getItem('widget-picker-last-category')
+      return (saved as WidgetCategory | 'all') || 'all'
+    } catch {
+      return 'all'
+    }
+  })
 
   const currentSet = useMemo(() => new Set(currentWidgets), [currentWidgets])
 
@@ -70,6 +78,15 @@ export function WidgetPickerModal({ currentWidgets, onAdd, onClose }: Props) {
       .filter((g) => g.widgets.length > 0)
   }, [grouped, search, activeCategory])
 
+  const handleCategoryChange = (cat: WidgetCategory | 'all') => {
+    setActiveCategory(cat)
+    try {
+      localStorage.setItem('widget-picker-last-category', cat)
+    } catch {
+      /* noop */
+    }
+  }
+
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -104,7 +121,10 @@ export function WidgetPickerModal({ currentWidgets, onAdd, onClose }: Props) {
                 Browse by category and pick the widgets you want on your dashboard.
               </p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-400">
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-400"
+            >
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -123,7 +143,7 @@ export function WidgetPickerModal({ currentWidgets, onAdd, onClose }: Props) {
             </div>
             <div className="flex gap-1 overflow-x-auto scrollbar-hide">
               <button
-                onClick={() => setActiveCategory('all')}
+                onClick={() => handleCategoryChange('all')}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                   activeCategory === 'all'
                     ? 'bg-stone-700 text-stone-100'
@@ -135,9 +155,11 @@ export function WidgetPickerModal({ currentWidgets, onAdd, onClose }: Props) {
               {WIDGET_CATEGORY_ORDER.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => handleCategoryChange(cat)}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
-                    activeCategory === cat ? 'text-stone-100' : 'text-stone-500 hover:text-stone-300'
+                    activeCategory === cat
+                      ? 'text-stone-100'
+                      : 'text-stone-500 hover:text-stone-300'
                   }`}
                   style={
                     activeCategory === cat
