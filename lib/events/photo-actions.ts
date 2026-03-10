@@ -411,6 +411,90 @@ export async function updatePhotoCaption(
   return { success: true }
 }
 
+// ─── sharePhotosWithClient ───────────────────────────────────────────────────
+
+/**
+ * Chef explicitly shares event photos with the client.
+ * Sends the "photos ready" email and an in-app notification.
+ * Can be triggered any time after uploading photos (not just on first upload).
+ */
+export async function sharePhotosWithClient(
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Verify event and get client info
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, client_id, occasion, event_date, client:clients(full_name, email)')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) return { success: false, error: 'Event not found' }
+  if (!event.client_id) return { success: false, error: 'No client associated with this event' }
+
+  const clientEmail = (event.client as any)?.email
+  const clientName = (event.client as any)?.full_name ?? 'there'
+  if (!clientEmail) return { success: false, error: 'Client has no email address on file' }
+
+  // Count photos
+  const { count } = await supabase
+    .from('event_photos')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
+
+  if (!count || count === 0) return { success: false, error: 'No photos to share' }
+
+  // Get chef name for email
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('display_name, business_name')
+    .eq('id', user.tenantId!)
+    .single()
+
+  const chefName = chef?.display_name || chef?.business_name || 'Your Chef'
+
+  // Send email (non-blocking)
+  try {
+    const { sendPhotosReadyEmail } = await import('@/lib/email/notifications')
+    await sendPhotosReadyEmail({
+      clientEmail,
+      clientName,
+      chefName,
+      occasion: event.occasion ?? 'your event',
+      eventDate: event.event_date,
+      photoCount: count,
+      eventId,
+      chefId: user.tenantId!,
+    })
+  } catch (emailErr) {
+    console.error('[sharePhotosWithClient] Email failed (non-blocking):', emailErr)
+  }
+
+  // In-app notification (non-blocking)
+  try {
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+    await createClientNotification({
+      tenantId: user.tenantId!,
+      clientId: event.client_id,
+      category: 'event',
+      action: 'photos_ready',
+      title: 'Your event photos are ready',
+      body: `${count} photo${count !== 1 ? 's' : ''} from your ${event.occasion ?? 'event'} are ready to view and download.`,
+      actionUrl: `/my-events/${eventId}`,
+      eventId,
+    })
+  } catch {
+    // Non-fatal
+  }
+
+  return { success: true }
+}
+
 // ─── getPortfolioPhotos ──────────────────────────────────────────────────────
 
 /**

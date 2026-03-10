@@ -14,6 +14,7 @@ import {
   deleteEventPhoto,
   updatePhotoCaption,
   reorderEventPhotos,
+  sharePhotosWithClient,
 } from '@/lib/events/photo-actions'
 import type { EventPhoto } from '@/lib/events/photo-actions'
 
@@ -201,6 +202,8 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const [sharing, setSharing] = useState(false)
+  const [shareStatus, setShareStatus] = useState<'idle' | 'sent'>('idle')
   const [, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -328,9 +331,36 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-stone-100">Dinner Photos</h2>
-          <span className="text-sm text-stone-500 tabular-nums">
-            {photos.length} / {MAX_PHOTOS}
-          </span>
+          <div className="flex items-center gap-3">
+            {photos.length > 0 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={sharing}
+                onClick={async () => {
+                  setSharing(true)
+                  try {
+                    const result = await sharePhotosWithClient(eventId)
+                    if (result.success) {
+                      setShareStatus('sent')
+                      toast.success('Photos shared with client')
+                    } else {
+                      toast.error(result.error ?? 'Failed to share photos')
+                    }
+                  } catch {
+                    toast.error('Failed to share photos')
+                  } finally {
+                    setSharing(false)
+                  }
+                }}
+              >
+                {sharing ? 'Sending...' : shareStatus === 'sent' ? 'Shared' : 'Share with Client'}
+              </Button>
+            )}
+            <span className="text-sm text-stone-500 tabular-nums">
+              {photos.length} / {MAX_PHOTOS}
+            </span>
+          </div>
         </div>
 
         {/* Error banner */}

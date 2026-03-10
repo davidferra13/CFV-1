@@ -8,7 +8,7 @@ import { getActiveShoppingLists } from '@/lib/shopping/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
-import { ShoppingCart, Plus, Calendar, CheckCircle2, Clock } from 'lucide-react'
+import { ShoppingCart, Plus, Calendar, CheckCircle2, Clock, ListChecks } from 'lucide-react'
 import { CreateFromEventButton } from './shopping-list-client'
 
 export const metadata: Metadata = { title: 'Shopping Lists - ChefFlow' }
@@ -48,6 +48,12 @@ export default async function ShoppingListsPage() {
           <h1 className="text-2xl font-bold">Shopping Lists</h1>
         </div>
         <div className="flex gap-2">
+          <Link href="/shopping/weekly">
+            <Button variant="secondary" className="flex items-center gap-1.5">
+              <ListChecks className="h-4 w-4" />
+              Weekly View
+            </Button>
+          </Link>
           <CreateFromEventButton />
           <Link href="/shopping/new">
             <Button variant="primary" className="flex items-center gap-1.5">
@@ -91,9 +97,7 @@ export default async function ShoppingListsPage() {
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        <span>
-                          {new Date(list.created_at).toLocaleDateString()}
-                        </span>
+                        <span>{new Date(list.created_at).toLocaleDateString()}</span>
                       </div>
                       {list.total_estimated_cents ? (
                         <span>Est. {formatCurrency(list.total_estimated_cents)}</span>
@@ -122,15 +126,11 @@ export default async function ShoppingListsPage() {
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
                       <h3 className="font-medium truncate pr-2">{list.name}</h3>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {list.items.length} items
-                    </span>
+                    <span className="text-sm text-gray-500">{list.items.length} items</span>
                   </div>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>
-                      {list.completed_at
-                        ? new Date(list.completed_at).toLocaleDateString()
-                        : ''}
+                      {list.completed_at ? new Date(list.completed_at).toLocaleDateString() : ''}
                     </span>
                     <span>
                       {list.total_actual_cents
