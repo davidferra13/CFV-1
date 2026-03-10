@@ -99,22 +99,35 @@ COMMENT ON TABLE business_locations IS 'Physical business locations for multi-lo
 
 -- ============================================
 -- U21: Add location_id to existing tables
+-- Guard all with IF EXISTS since tables may be created in later migrations
 -- ============================================
 
--- staff_members uses chef_id
-ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+DO $$ BEGIN
+  -- staff_members (chef_id)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'staff_members') THEN
+    ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  END IF;
 
--- scheduled_shifts uses tenant_id
-ALTER TABLE scheduled_shifts ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  -- scheduled_shifts (tenant_id, created in 000038)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduled_shifts') THEN
+    ALTER TABLE scheduled_shifts ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  END IF;
 
--- inventory_counts uses chef_id
-ALTER TABLE inventory_counts ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  -- inventory_counts (chef_id)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'inventory_counts') THEN
+    ALTER TABLE inventory_counts ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  END IF;
 
--- sales uses tenant_id
-ALTER TABLE sales ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  -- sales (tenant_id)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales') THEN
+    ALTER TABLE sales ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  END IF;
 
--- daily_checklist_completions uses chef_id
-ALTER TABLE daily_checklist_completions ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  -- daily_checklist_completions (chef_id)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'daily_checklist_completions') THEN
+    ALTER TABLE daily_checklist_completions ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
--- Also add location_id to inventory_lots (cross-feature link)
+-- Also add location_id to inventory_lots (created above in this migration, always exists)
 ALTER TABLE inventory_lots ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
