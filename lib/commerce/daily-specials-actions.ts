@@ -24,13 +24,20 @@ export type DailySpecial = {
   priceCents: number
   category: SpecialCategory
   productId: string | null
+  recipeId: string | null
   isRecurring: boolean
   recurringDay: number | null
   available: boolean
   imageUrl: string | null
   notes: string | null
+  sortOrder: number
   createdAt: string
   updatedAt: string
+}
+
+export type RecipeSuggestion = {
+  id: string
+  name: string
 }
 
 function toSpecial(row: any): DailySpecial {
@@ -43,11 +50,13 @@ function toSpecial(row: any): DailySpecial {
     priceCents: Number(row.price_cents ?? 0),
     category: String(row.category ?? 'entree') as SpecialCategory,
     productId: row.product_id ? String(row.product_id) : null,
+    recipeId: row.recipe_id ? String(row.recipe_id) : null,
     isRecurring: Boolean(row.is_recurring),
     recurringDay: row.recurring_day != null ? Number(row.recurring_day) : null,
     available: row.available !== false,
     imageUrl: row.image_url ? String(row.image_url) : null,
     notes: row.notes ? String(row.notes) : null,
+    sortOrder: Number(row.sort_order ?? 0),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at ?? row.created_at),
   }
@@ -64,10 +73,12 @@ const CreateSpecialSchema = z.object({
   priceCents: z.number().int().min(0),
   category: z.enum(['appetizer', 'entree', 'dessert', 'drink', 'side']),
   productId: z.string().uuid().optional(),
+  recipeId: z.string().uuid().optional(),
   isRecurring: z.boolean().optional(),
   recurringDay: z.number().int().min(0).max(6).optional(),
   imageUrl: z.string().optional(),
   notes: z.string().optional(),
+  sortOrder: z.number().int().optional(),
 })
 
 export type CreateSpecialInput = z.infer<typeof CreateSpecialSchema>
@@ -95,10 +106,12 @@ export async function createSpecial(input: CreateSpecialInput): Promise<DailySpe
       price_cents: data.priceCents,
       category: data.category,
       product_id: data.productId || null,
+      recipe_id: data.recipeId || null,
       is_recurring: data.isRecurring ?? false,
       recurring_day: data.recurringDay ?? null,
       image_url: data.imageUrl || null,
       notes: data.notes || null,
+      sort_order: data.sortOrder ?? 0,
     } as any)
     .select()
     .single() as any)
@@ -131,8 +144,10 @@ export async function updateSpecial(id: string, input: UpdateSpecialInput): Prom
   if (data.productId !== undefined) updateData.product_id = data.productId || null
   if (data.isRecurring !== undefined) updateData.is_recurring = data.isRecurring
   if (data.recurringDay !== undefined) updateData.recurring_day = data.recurringDay
+  if (data.recipeId !== undefined) updateData.recipe_id = data.recipeId || null
   if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl || null
   if (data.notes !== undefined) updateData.notes = data.notes || null
+  if (data.sortOrder !== undefined) updateData.sort_order = data.sortOrder
 
   const { error } = await (supabase
     .from('daily_specials' as any)
@@ -306,4 +321,127 @@ export async function toggleSpecialAvailability(id: string): Promise<boolean> {
 
   revalidatePath('/commerce/specials')
   return newState
+}
+
+// ============================================
+// GET SPECIALS FOR WEEK (convenience wrapper)
+// ============================================
+
+/**
+ * Get all specials for a 7-day range starting from weekStart (ISO date string).
+ */
+export async function getSpecialsForWeek(weekStart: string): Promise<DailySpecial[]> {
+  const start = new Date(weekStart + 'T12:00:00Z')
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
+  const endDate = end.toISOString().substring(0, 10)
+  return getSpecialsCalendar(weekStart, endDate)
+}
+
+// ============================================
+// COPY SPECIALS TO DATE
+// ============================================
+
+/**
+ * Copy all specials from one date to another date.
+ * Skips duplicates (same name already exists on the target date).
+ */
+export async function copySpecialsToDate(
+  fromDate: string,
+  toDate: string
+): Promise<{ copied: number }> {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const supabase: any = createServerClient()
+
+  // Fetch source specials (non-recurring only)
+  const { data: sourceSpecials, error: fetchErr } = await (supabase
+    .from('daily_specials' as any)
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .eq('special_date', fromDate)
+    .eq('is_recurring', false) as any)
+
+  if (fetchErr) {
+    console.error('[daily-specials] copySpecials fetch error:', fetchErr)
+    throw new Error('Failed to load specials for copying')
+  }
+
+  if (!sourceSpecials || sourceSpecials.length === 0) {
+    return { copied: 0 }
+  }
+
+  // Check which names already exist on the target date
+  const { data: existingOnTarget } = await (supabase
+    .from('daily_specials' as any)
+    .select('name')
+    .eq('chef_id', user.tenantId!)
+    .eq('special_date', toDate) as any)
+
+  const existingNames = new Set((existingOnTarget ?? []).map((r: any) => String(r.name)))
+
+  // Build insert rows, skipping duplicates
+  const toInsert = (sourceSpecials as any[])
+    .filter((s: any) => !existingNames.has(String(s.name)))
+    .map((s: any) => ({
+      chef_id: user.tenantId!,
+      special_date: toDate,
+      name: s.name,
+      description: s.description,
+      price_cents: s.price_cents,
+      category: s.category,
+      product_id: s.product_id,
+      recipe_id: s.recipe_id,
+      is_recurring: false,
+      recurring_day: null,
+      available: true,
+      image_url: s.image_url,
+      notes: s.notes,
+      sort_order: s.sort_order ?? 0,
+    }))
+
+  if (toInsert.length === 0) {
+    return { copied: 0 }
+  }
+
+  const { error: insertErr } = await (supabase
+    .from('daily_specials' as any)
+    .insert(toInsert as any) as any)
+
+  if (insertErr) {
+    console.error('[daily-specials] copySpecials insert error:', insertErr)
+    throw new Error('Failed to copy specials')
+  }
+
+  revalidatePath('/commerce/specials')
+  return { copied: toInsert.length }
+}
+
+// ============================================
+// GET RECIPE SUGGESTIONS
+// ============================================
+
+/**
+ * List the chef's recipes that could be used as daily specials.
+ * Returns id and name only (lightweight query).
+ */
+export async function getRecipeSuggestions(): Promise<RecipeSuggestion[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('recipes')
+    .select('id, name')
+    .eq('tenant_id', user.tenantId!)
+    .order('name', { ascending: true })
+
+  if (error) {
+    console.error('[daily-specials] getRecipeSuggestions error:', error)
+    return []
+  }
+
+  return (data ?? []).map((r: any) => ({
+    id: String(r.id),
+    name: String(r.name),
+  }))
 }
