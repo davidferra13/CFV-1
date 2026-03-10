@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { BLOG_POSTS } from '@/lib/blog/posts'
-import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 const SITEMAP_QUERY_TIMEOUT_MS = Number(process.env.SITEMAP_QUERY_TIMEOUT_MS ?? 5000)
@@ -27,12 +26,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.8,
   },
   {
-    url: `${BASE_URL}/compare`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.8,
-  },
-  {
     url: `${BASE_URL}/faq`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
@@ -49,12 +42,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     lastModified: new Date(),
     changeFrequency: 'yearly',
     priority: 0.6,
-  },
-  {
-    url: `${BASE_URL}/client-relationships`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.7,
   },
   {
     url: `${BASE_URL}/partner-signup`,
@@ -133,22 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     ]
 
-    // Comparison guides
-    const compareRoutes: MetadataRoute.Sitemap = COMPARE_PAGES.map((page) => ({
-      url: `${BASE_URL}/compare/${page.slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    }))
-
-    return [
-      ...STATIC_ROUTES,
-      ...blogRoutes,
-      ...compareRoutes,
-      ...chefRoutes,
-      ...giftCardRoutes,
-      ...inquiryRoutes,
-    ]
+    return [...STATIC_ROUTES, ...blogRoutes, ...chefRoutes, ...giftCardRoutes, ...inquiryRoutes]
   } catch {
     // If DB is unavailable, return static routes only — don't break the build
     return STATIC_ROUTES

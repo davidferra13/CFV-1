@@ -74,13 +74,13 @@ export default function Home() {
       <SoftwareApplicationJsonLd />
 
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-stone-700/50">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[60px]" />
+      <section className="relative overflow-hidden border-b border-stone-200 dark:border-stone-700/50">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[60px] hidden dark:block" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 md:pb-20 md:pt-24 lg:px-8">
-          <h1 className="max-w-3xl fluid-display-xl font-display tracking-tight text-stone-100">
+          <h1 className="max-w-3xl fluid-display-xl font-display tracking-tight text-stone-900 dark:text-stone-100">
             {PLATFORM_HERO_HEADLINE}
           </h1>
-          <p className="mt-6 max-w-xl text-[1.0625rem] leading-8 text-stone-300 md:text-lg">
+          <p className="mt-6 max-w-xl text-[1.0625rem] leading-8 text-stone-600 dark:text-stone-300 md:text-lg">
             {PLATFORM_HERO_COPY}
           </p>
           <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:flex-row">
@@ -96,7 +96,7 @@ export default function Home() {
               href="/pricing"
               analyticsName="home_hero_pricing"
               analyticsProps={{ section: 'hero' }}
-              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
             >
               See pricing
             </TrackedLink>
@@ -108,12 +108,12 @@ export default function Home() {
       </section>
 
       {/* Trust bar */}
-      <section className="border-b border-stone-700/50">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-6 px-4 py-5 text-sm text-stone-400 sm:gap-8 sm:px-6 lg:px-8">
+      <section className="border-b border-stone-200 dark:border-stone-700/50">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-6 px-4 py-5 text-sm text-stone-500 dark:text-stone-400 sm:gap-8 sm:px-6 lg:px-8">
           <span>Payments via Stripe</span>
-          <span className="text-stone-700">·</span>
+          <span className="text-stone-300 dark:text-stone-700">&middot;</span>
           <span>Calendar sync built in</span>
-          <span className="text-stone-700">·</span>
+          <span className="text-stone-300 dark:text-stone-700">&middot;</span>
           <span>Your data stays yours</span>
         </div>
       </section>
@@ -126,13 +126,17 @@ export default function Home() {
             return (
               <article
                 key={feature.title}
-                className="rounded-xl border border-stone-700 bg-stone-900 p-6 shadow-[var(--shadow-card)]"
+                className="rounded-xl border border-stone-200 bg-white p-6 shadow-[var(--shadow-card)] dark:border-stone-700 dark:bg-stone-900"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-brand-950 p-2.5 text-brand-400">
+                <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-2.5 text-brand-600 dark:bg-brand-950 dark:text-brand-400">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h2 className="text-lg font-semibold text-stone-100">{feature.title}</h2>
-                <p className="mt-2 text-sm leading-7 text-stone-300">{feature.description}</p>
+                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
+                  {feature.title}
+                </h2>
+                <p className="mt-2 text-sm leading-7 text-stone-600 dark:text-stone-300">
+                  {feature.description}
+                </p>
               </article>
             )
           })}
@@ -144,18 +148,18 @@ export default function Home() {
 
       {/* Final CTA */}
       <section className="relative mx-auto w-full max-w-6xl px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-800/20 blur-[50px]" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-800/20 blur-[50px] hidden dark:block" />
         {isBeta && (
-          <p className="relative mx-auto mb-4 inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
+          <p className="relative mx-auto mb-4 inline-flex rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700 dark:border-brand-700 dark:bg-stone-900 dark:text-brand-300">
             Closed Beta
           </p>
         )}
-        <h2 className="relative fluid-display-lg font-display tracking-tight text-stone-100">
+        <h2 className="relative fluid-display-lg font-display tracking-tight text-stone-900 dark:text-stone-100">
           {isBeta
             ? 'Built with working chefs. Not for them.'
             : 'Stop losing clients to forgotten follow-ups.'}
         </h2>
-        <p className="relative mx-auto mt-4 max-w-lg text-base leading-relaxed text-stone-300">
+        <p className="relative mx-auto mt-4 max-w-lg text-base leading-relaxed text-stone-600 dark:text-stone-300">
           {isBeta
             ? 'Small group. Direct input. Your workflow shapes the product.'
             : 'Start free. Used daily by working private chefs.'}
