@@ -130,6 +130,7 @@ import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
 import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
 import { Suspense } from 'react'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
+import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
 
 function isEventSoon(eventDate: string): boolean {
   const today = new Date()
@@ -598,6 +599,9 @@ export default async function EventDetailPage({
           eventDate={event.event_date ?? null}
         />
       </Suspense>
+
+      {/* Client Dietary Context */}
+      {event.client_id && <ClientDietaryBanner clientId={event.client_id} />}
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (

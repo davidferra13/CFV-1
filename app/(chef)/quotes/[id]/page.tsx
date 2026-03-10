@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
 import { CostBreakdownEditor } from '@/components/quotes/cost-breakdown-editor'
+import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
@@ -60,6 +61,9 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
           </p>
         </div>
       )}
+
+      {/* Client Dietary Context */}
+      {quote.client_id && <ClientDietaryBanner clientId={quote.client_id} />}
 
       {/* Version History */}
       <QuoteVersionHistory

@@ -8,6 +8,7 @@ import { getMenuPairings, getBeverages } from '@/lib/beverages/actions'
 import { MenuPairingEditor } from '@/components/beverages/menu-pairing-editor'
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
 
 export default async function MenuDetailPage({ params }: { params: { id: string } }) {
   const menu = await getMenuById(params.id)
@@ -15,19 +16,23 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
 
   const [pairings, beverages] = await Promise.all([getMenuPairings(params.id), getBeverages()])
 
-  // Get guest count from linked event (if any) or menu target
+  // Get guest count and client_id from linked event (if any) or menu target
   let initialGuestCount = menu.target_guest_count ?? null
+  let menuClientId: string | null = null
   if (menu.event_id) {
     const user = await requireChef()
     const supabase: any = createServerClient()
     const { data: event } = await supabase
       .from('events')
-      .select('guest_count')
+      .select('guest_count, client_id')
       .eq('id', menu.event_id)
       .eq('tenant_id', user.tenantId!)
       .single()
     if (event?.guest_count) {
       initialGuestCount = event.guest_count
+    }
+    if (event?.client_id) {
+      menuClientId = event.client_id
     }
   }
 
@@ -53,6 +58,10 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
           </Link>
         )}
       </div>
+
+      {/* Client Dietary Context (from linked event) */}
+      {menuClientId && <ClientDietaryBanner clientId={menuClientId} />}
+
       <MenuEditorClient menu={menu} />
 
       {/* Recipe Scaling Section */}

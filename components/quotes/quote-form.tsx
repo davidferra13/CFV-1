@@ -35,6 +35,8 @@ import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import Link from 'next/link'
 import { Calculator } from 'lucide-react'
+import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
+import { ClientMenuHistoryBanner } from '@/components/clients/client-menu-history-banner'
 
 type Client = {
   id: string
@@ -1041,6 +1043,14 @@ export function QuoteForm({
                       : 'Select the client for this quote'
                 }
               />
+            </div>
+          )}
+
+          {/* Client Dietary Pre-population */}
+          {clientId && (
+            <div className="space-y-3">
+              <ClientDietaryBanner clientId={clientId} />
+              <ClientMenuHistoryBanner clientId={clientId} />
             </div>
           )}
 
