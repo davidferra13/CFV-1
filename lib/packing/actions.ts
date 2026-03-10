@@ -41,6 +41,10 @@ export async function markCarPacked(
   }
 
   revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/events/${eventId}/pack`)
+  revalidatePath('/dashboard')
+  revalidatePath('/queue')
+  revalidatePath('/briefing')
   return { success: true }
 }
 
@@ -70,6 +74,10 @@ export async function resetPackingStatus(
   }
 
   revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/events/${eventId}/pack`)
+  revalidatePath('/dashboard')
+  revalidatePath('/queue')
+  revalidatePath('/briefing')
   return { success: true }
 }
 

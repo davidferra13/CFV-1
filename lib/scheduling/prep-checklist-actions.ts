@@ -207,4 +207,6 @@ export async function markAllPrepComplete(eventId: string): Promise<void> {
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/prep`)
   revalidatePath('/dashboard')
+  revalidatePath('/queue')
+  revalidatePath('/briefing')
 }

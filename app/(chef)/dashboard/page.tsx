@@ -9,10 +9,12 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
+import { getDashboardWorkSurface } from '@/lib/workflow/actions'
 import Link from 'next/link'
 import { Plus } from '@/components/ui/icons'
 import type { PriorityQueue } from '@/lib/queue/types'
 import { ShortcutStrip } from '@/components/dashboard/shortcut-strip'
+import { DashboardWorkSurfaceView } from '@/components/dashboard/work-surface'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { DashboardTabs } from '@/components/dashboard/my-dashboard/dashboard-tabs'
@@ -110,9 +112,10 @@ export default async function ChefDashboard() {
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
-  const [queue, archetype] = await Promise.all([
+  const [queue, archetype, workSurface] = await Promise.all([
     safe('queue', getPriorityQueue, emptyQueue),
     safe('archetype', () => getCachedChefArchetype(user.entityId), null),
+    safe('workSurface', getDashboardWorkSurface, null),
   ])
   const primaryAction = getDashboardPrimaryAction(archetype)
 
@@ -232,6 +235,26 @@ export default async function ChefDashboard() {
           </div>
         )}
       </div>
+
+      {/* ============================================ */}
+      {/* WORK SURFACE                                 */}
+      {/* ============================================ */}
+      {workSurface && workSurface.summary.totalActiveEvents > 0 && (
+        <section id="work-surface" className="col-span-1 sm:col-span-2 lg:col-span-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-semibold text-stone-100">Work Surface</h2>
+              <p className="text-sm text-stone-400">
+                What you can safely do right now across active events.
+              </p>
+            </div>
+            <Link href="/queue" className="text-sm text-brand-400 hover:text-brand-300">
+              View full queue
+            </Link>
+          </div>
+          <DashboardWorkSurfaceView surface={workSurface} />
+        </section>
+      )}
 
       {/* ============================================ */}
       {/* PRIORITY QUEUE - list card                   */}

@@ -12,40 +12,52 @@ type PaymentStatus = Database['public']['Enums']['payment_status']
 
 /**
  * Facts derived from event data and related records.
- * Every field is a boolean — either the fact is confirmed or it is not.
- * The engine never guesses. Unknown = false.
+ * Every field is boolean. The engine never guesses.
  */
 export interface ConfirmedFacts {
-  // Stage 1 — Inquiry Intake
+  // Stage 1 - Inquiry Intake
   hasClient: boolean
   hasOccasion: boolean
   hasDate: boolean
   hasLocation: boolean
   hasGuestCount: boolean
 
-  // Stage 2 — Qualification
-  hasServeTimeWindow: boolean // serve_time is set
-  hasMenuDirection: boolean // at least one menu attached
+  // Stage 2 - Qualification
+  hasServeTimeWindow: boolean
+  hasMenuDirection: boolean
 
-  // Stage 3 — Menu Development
-  hasMenuAttached: boolean // menus linked via menus.event_id
-  hasMenuWithDishes: boolean // attached menu has dishes (relational)
-  menuGravityStable: boolean // status >= proposed (menu shape unlikely to change)
+  // Stage 3 - Menu Development
+  hasMenuAttached: boolean
+  hasMenuWithDishes: boolean
+  menuGravityStable: boolean
 
-  // Stage 4 — Quote
-  hasPricing: boolean // quoted_price_cents > 0
-  hasDepositDefined: boolean // deposit_amount_cents > 0
+  // Stage 4 - Quote
+  hasPricing: boolean
+  hasDepositDefined: boolean
 
-  // Stage 5 — Financial Commitment
-  depositReceived: boolean // payment_status != 'unpaid'
-  fullyPaid: boolean // payment_status == 'paid'
-  isLegallyActionable: boolean // deposit received OR status >= paid
+  // Stage 5 - Financial Commitment
+  depositReceived: boolean
+  fullyPaid: boolean
+  isLegallyActionable: boolean
 
-  // Stage 6–9 — Operational readiness
-  guestCountStable: boolean // status >= accepted (client agreed)
-  eventConfirmed: boolean // status >= confirmed
+  // Stage 6-12 - Operational readiness
+  guestCountStable: boolean
+  eventConfirmed: boolean
+  groceryListReady: boolean
+  prepListReady: boolean
+  equipmentListReady: boolean
+  packingListReady: boolean
+  timelineReady: boolean
+  executionSheetReady: boolean
+  nonNegotiablesChecked: boolean
+  shoppingComplete: boolean
+  prepComplete: boolean
+  carPacked: boolean
+  hasActiveShoppingList: boolean
+  packingProgressStarted: boolean
+  hasTravelRoute: boolean
 
-  // Timeline & Travel
+  // Timeline and travel windows
   dateWithin7Days: boolean
   dateWithin3Days: boolean
   dateWithin24Hours: boolean
@@ -55,7 +67,7 @@ export interface ConfirmedFacts {
   // Lifecycle terminals
   isCancelled: boolean
   isCompleted: boolean
-  isTerminal: boolean // cancelled OR completed
+  isTerminal: boolean
 }
 
 // ============================================
@@ -88,39 +100,32 @@ export type WorkStage =
 /**
  * Classification of a work item based on confirmed facts.
  */
-export type WorkCategory =
-  | 'blocked' // Depends on unconfirmed facts
-  | 'preparable' // Can be safely done now
-  | 'optional_early' // Reduces future stress, not required yet
+export type WorkCategory = 'blocked' | 'preparable' | 'optional_early'
 
 /**
- * Urgency level — drives dashboard ordering and visual treatment.
+ * Urgency level. Drives dashboard ordering and visual treatment.
  */
-export type WorkUrgency =
-  | 'fragile' // Will cause stacking if delayed
-  | 'normal' // Standard preparable work
-  | 'low' // Optional / nice to have now
+export type WorkUrgency = 'fragile' | 'normal' | 'low'
 
 /**
  * A single actionable work item surfaced by the engine.
  */
 export interface WorkItem {
-  id: string // Deterministic: `${eventId}:${stage}:${key}`
+  id: string
   eventId: string
   eventOccasion: string
-  eventDate: string // ISO 8601
+  eventDate: string
   clientName: string
-
+  actionUrl: string
+  actionLabel: string
   stage: WorkStage
-  stageNumber: number // 1–17
-  stageLabel: string // Human-readable stage name
-
+  stageNumber: number
+  stageLabel: string
   category: WorkCategory
   urgency: WorkUrgency
-
-  title: string // What needs to happen
-  description: string // Why it matters right now
-  blockedBy?: string // If blocked, what fact is missing
+  title: string
+  description: string
+  blockedBy?: string
 }
 
 // ============================================
@@ -129,7 +134,7 @@ export interface WorkItem {
 
 /**
  * Everything the engine needs to evaluate a single event.
- * Passed in — the engine does NOT fetch from the database.
+ * Passed in. The engine does not fetch from the database.
  */
 export interface EventContext {
   event: {
@@ -149,12 +154,37 @@ export interface EventContext {
       email: string
     } | null
   }
+  ops: {
+    groceryListReady: boolean
+    prepListReady: boolean
+    equipmentListReady: boolean
+    packingListReady: boolean
+    timelineReady: boolean
+    executionSheetReady: boolean
+    nonNegotiablesChecked: boolean
+    shoppingCompletedAt: string | null
+    prepCompletedAt: string | null
+    carPacked: boolean
+    carPackedAt: string | null
+  }
   menus: {
     id: string
     name: string
     status: string
     dishCount: number
   }[]
+  shopping: {
+    activeListId: string | null
+    hasActiveList: boolean
+    completedListCount: number
+    lastCompletedAt: string | null
+  }
+  packing: {
+    confirmedItemCount: number
+  }
+  travel: {
+    hasServiceTravelRoute: boolean
+  }
   financial: {
     totalPaidCents: number
     outstandingBalanceCents: number
@@ -163,7 +193,7 @@ export interface EventContext {
 }
 
 /**
- * Output of GET_PREPARABLE_ACTIONS for a single event.
+ * Output of getPreparableActions for a single event.
  */
 export interface EventWorkSurface {
   eventId: string
@@ -182,7 +212,7 @@ export interface DashboardWorkSurface {
   blocked: WorkItem[]
   preparable: WorkItem[]
   optionalEarly: WorkItem[]
-  fragile: WorkItem[] // Subset of preparable that is urgency=fragile
+  fragile: WorkItem[]
   byEvent: EventWorkSurface[]
   summary: {
     totalActiveEvents: number

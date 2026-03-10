@@ -135,7 +135,7 @@ export async function ScheduleCards() {
           subtitle={`${dopTaskDigest.dueTodayCount} due today`}
           trend={overdueCount > 0 ? `${overdueCount} overdue` : 'On track'}
           trendDirection={overdueCount > 0 ? 'down' : 'up'}
-          href="/daily-ops"
+          href="/daily"
         />
       )}
 
@@ -152,7 +152,7 @@ export async function ScheduleCards() {
               : 'All on schedule'
           }
           trendDirection={prepPrompts.some((p: any) => p.urgency === 'overdue') ? 'down' : 'up'}
-          href="/prep"
+          href="/culinary/prep"
         />
       )}
     </>

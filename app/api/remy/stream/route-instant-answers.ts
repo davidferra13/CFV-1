@@ -758,7 +758,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
 
       return {
         text: lines.join('\n'),
-        navSuggestions: [{ label: 'Daily Ops', href: '/daily-ops' }],
+        navSuggestions: [{ label: 'Daily Ops', href: '/daily' }],
       }
     },
   },

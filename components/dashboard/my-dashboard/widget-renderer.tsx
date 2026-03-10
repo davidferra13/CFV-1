@@ -10,6 +10,7 @@ import {
   getWidgetCategoryStyle,
   type DashboardWidgetId,
 } from '@/lib/scheduling/types'
+import type { DashboardWorkSurface } from '@/lib/workflow/types'
 import { formatCurrency } from '@/lib/utils/currency'
 import { rebookClient } from '@/lib/clients/rebook-actions'
 
@@ -41,7 +42,6 @@ export function WidgetRenderer({ widgetId, data }: Props) {
   }
 
   // Fallback: styled card with widget name + link hint
-  const meta = DASHBOARD_WIDGET_META[widgetId as DashboardWidgetId]
   const href = getWidgetHref(widgetId)
 
   const inner = (
@@ -72,6 +72,8 @@ export function WidgetRenderer({ widgetId, data }: Props) {
 
 function renderWidgetContent(widgetId: string, data: unknown): React.ReactNode {
   switch (widgetId) {
+    case 'daily_plan':
+      return <DailyPlanContent data={data} />
     case 'payments_due':
       return <PaymentsDueContent data={data} />
     case 'expiring_quotes':
@@ -124,6 +126,8 @@ function renderWidgetContent(widgetId: string, data: unknown): React.ReactNode {
       return <SchedulingGapsContent data={data} />
     case 'revenue_comparison':
       return <RevenueComparisonContent data={data} />
+    case 'work_surface':
+      return <WorkSurfaceContent data={data} />
     default:
       return null
   }
@@ -405,6 +409,79 @@ function TodaysScheduleContent({ data }: { data: unknown }) {
   )
 }
 
+// -- Daily Plan --
+function DailyPlanContent({ data }: { data: unknown }) {
+  const stats = data as {
+    totalItems?: number
+    completedItems?: number
+    adminItems?: number
+    prepItems?: number
+    creativeItems?: number
+    relationshipItems?: number
+    estimatedMinutes?: number
+  } | null
+
+  if (!stats || (stats.totalItems ?? 0) === 0) {
+    return <EmptyWidget label="Daily Plan" message="Nothing queued for today" />
+  }
+
+  const totalItems = stats.totalItems ?? 0
+  const completedItems = stats.completedItems ?? 0
+  const remainingItems = Math.max(totalItems - completedItems, 0)
+  const completionPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+  const estimatedMinutes = stats.estimatedMinutes ?? 0
+  const laneCounts = [
+    { label: 'Admin', value: stats.adminItems ?? 0 },
+    { label: 'Prep', value: stats.prepItems ?? 0 },
+    { label: 'Creative', value: stats.creativeItems ?? 0 },
+    { label: 'Relationship', value: stats.relationshipItems ?? 0 },
+  ].filter((lane) => lane.value > 0)
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p className="text-sm font-semibold text-stone-100">Daily Plan</p>
+          <p className="text-xs text-stone-500">
+            {remainingItems} remaining of {totalItems}
+          </p>
+        </div>
+        <Link href="/daily" className="text-xs text-brand-400 hover:underline shrink-0">
+          Open Daily Ops
+        </Link>
+      </div>
+
+      <div className="w-full h-1.5 bg-stone-800 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full bg-brand-500 transition-all"
+          style={{ width: `${Math.min(100, completionPercent)}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between text-xs mt-2">
+        <span className="text-stone-400">{completionPercent}% complete</span>
+        <span className="text-stone-500">
+          ~
+          {estimatedMinutes < 60
+            ? `${estimatedMinutes} min`
+            : `${Math.round((estimatedMinutes / 60) * 10) / 10}h`}
+        </span>
+      </div>
+
+      {laneCounts.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          {laneCounts.map((lane) => (
+            <div key={lane.label} className="rounded-lg bg-stone-800/60 px-2.5 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-stone-500">{lane.label}</p>
+              <p className="text-sm font-semibold text-stone-200">{lane.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // -- DOP Tasks --
 function DopTasksContent({ data }: { data: unknown }) {
   const tasks = data as {
@@ -429,6 +506,99 @@ function DopTasksContent({ data }: { data: unknown }) {
             ? `${dueToday} due today`
             : 'All on track'}
         {tasks.upcomingEvents ? ` · ${tasks.upcomingEvents} upcoming events` : ''}
+      </p>
+    </div>
+  )
+}
+
+// -- Work Surface --
+function WorkSurfaceContent({ data }: { data: unknown }) {
+  const surface = data as DashboardWorkSurface | null
+  if (!surface || surface.summary.totalActiveEvents === 0) {
+    return <EmptyWidget label="Work Surface" message="No active event work right now" />
+  }
+
+  const topItems = [...surface.fragile, ...surface.preparable, ...surface.blocked].slice(0, 4)
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p className="text-sm font-semibold text-stone-100">Work Surface</p>
+          <p className="text-xs text-stone-500">
+            {surface.summary.totalActiveEvents} active event
+            {surface.summary.totalActiveEvents === 1 ? '' : 's'}
+          </p>
+        </div>
+        <Link
+          href="/dashboard#work-surface"
+          className="text-xs text-brand-400 hover:underline shrink-0"
+        >
+          Open Dashboard
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <SurfaceMetric label="Ready" value={surface.summary.totalPreparableActions} />
+        <SurfaceMetric label="Blocked" value={surface.summary.totalBlockedActions} />
+        <SurfaceMetric label="Fragile" value={surface.summary.totalFragileActions} accent />
+      </div>
+
+      {topItems.length === 0 ? (
+        <p className="text-xs text-stone-500">All active work is optional or already resolved.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {topItems.map((item) => (
+            <Link
+              key={item.id}
+              href={item.actionUrl}
+              className="block rounded-lg border border-stone-800 bg-stone-800/50 px-3 py-2 hover:bg-stone-800 transition-colors"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-stone-200 truncate">{item.title}</p>
+                  <p className="text-[10px] text-stone-500 truncate">
+                    {item.eventOccasion} · {item.actionLabel}
+                  </p>
+                </div>
+                <span
+                  className={`text-[10px] font-medium shrink-0 ${
+                    item.urgency === 'fragile'
+                      ? 'text-amber-400'
+                      : item.category === 'blocked'
+                        ? 'text-red-400'
+                        : 'text-emerald-400'
+                  }`}
+                >
+                  {item.urgency === 'fragile'
+                    ? 'Fragile'
+                    : item.category === 'blocked'
+                      ? 'Blocked'
+                      : 'Ready'}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SurfaceMetric({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string
+  value: number
+  accent?: boolean
+}) {
+  return (
+    <div className="rounded-lg bg-stone-800/60 px-2.5 py-2">
+      <p className="text-[10px] uppercase tracking-wide text-stone-500">{label}</p>
+      <p className={`text-sm font-semibold ${accent ? 'text-amber-400' : 'text-stone-200'}`}>
+        {value}
       </p>
     </div>
   )
@@ -925,10 +1095,10 @@ function getWidgetHref(widgetId: string): string | null {
   const hrefMap: Record<string, string> = {
     todays_schedule: '/calendar',
     week_strip: '/calendar',
-    daily_plan: '/daily-plan',
+    daily_plan: '/daily',
     priority_queue: '/queue',
-    dop_tasks: '/daily-plan',
-    prep_prompts: '/daily-plan',
+    dop_tasks: '/daily',
+    prep_prompts: '/culinary/prep',
     payments_due: '/finance',
     expiring_quotes: '/events',
     business_snapshot: '/finance/reporting',
@@ -940,7 +1110,7 @@ function getWidgetHref(widgetId: string): string | null {
     cooling_alerts: '/clients',
     response_time: '/inquiries',
     business_health: '/analytics',
-    work_surface: '/daily-plan',
+    work_surface: '/dashboard#work-surface',
     onboarding_checklist: '/settings',
     live_inbox: '/messages',
     unread_hub_messages: '/hub',

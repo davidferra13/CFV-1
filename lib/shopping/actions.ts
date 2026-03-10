@@ -287,11 +287,7 @@ export async function toggleItem(listId: string, itemIndex: number) {
   return { success: true, checked: items[itemIndex].checked }
 }
 
-export async function updateItemPrice(
-  listId: string,
-  itemIndex: number,
-  actualPriceCents: number
-) {
+export async function updateItemPrice(listId: string, itemIndex: number, actualPriceCents: number) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -309,10 +305,7 @@ export async function updateItemPrice(
 
   items[itemIndex].actual_price_cents = actualPriceCents
 
-  const totalActualCents = items.reduce(
-    (sum, item) => sum + (item.actual_price_cents || 0),
-    0
-  )
+  const totalActualCents = items.reduce((sum, item) => sum + (item.actual_price_cents || 0), 0)
 
   const { error } = await supabase
     .from('shopping_lists' as any)
@@ -368,11 +361,11 @@ export async function updateShoppingList(
 export async function completeShoppingList(listId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
+  const completedAt = new Date().toISOString()
 
-  // Fetch current items to compute totals
   const { data: list } = await supabase
     .from('shopping_lists' as any)
-    .select('items')
+    .select('items, event_id')
     .eq('id', listId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -384,16 +377,13 @@ export async function completeShoppingList(listId: string) {
     (sum, item) => sum + (item.estimated_price_cents || 0),
     0
   )
-  const totalActualCents = items.reduce(
-    (sum, item) => sum + (item.actual_price_cents || 0),
-    0
-  )
+  const totalActualCents = items.reduce((sum, item) => sum + (item.actual_price_cents || 0), 0)
 
   const { error } = await supabase
     .from('shopping_lists' as any)
     .update({
       status: 'completed',
-      completed_at: new Date().toISOString(),
+      completed_at: completedAt,
       total_estimated_cents: totalEstimatedCents || null,
       total_actual_cents: totalActualCents || null,
     })
@@ -405,8 +395,29 @@ export async function completeShoppingList(listId: string) {
     throw new Error('Failed to complete shopping list')
   }
 
+  const eventId = (list as any).event_id as string | null
+  if (eventId) {
+    const { error: eventError } = await supabase
+      .from('events' as any)
+      .update({ shopping_completed_at: completedAt })
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+
+    if (eventError) {
+      console.error('[completeShoppingList] Event sync error:', eventError)
+      throw new Error('Failed to sync shopping completion to event')
+    }
+  }
+
   revalidatePath(`/shopping/${listId}`)
   revalidatePath('/shopping')
+  if (eventId) {
+    revalidatePath(`/events/${eventId}`)
+    revalidatePath(`/events/${eventId}/prep`)
+  }
+  revalidatePath('/dashboard')
+  revalidatePath('/queue')
+  revalidatePath('/briefing')
   return { success: true }
 }
 

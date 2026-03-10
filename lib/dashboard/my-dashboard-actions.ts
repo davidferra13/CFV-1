@@ -7,8 +7,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getChefPreferences, updateChefPreferences } from '@/lib/chef/actions'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
-import type { DashboardWidgetId } from '@/lib/scheduling/types'
-import { DASHBOARD_WIDGET_IDS } from '@/lib/scheduling/types'
+import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { getDashboardWorkSurface } from '@/lib/workflow/actions'
 
 // ============================================
 // CONFIG
@@ -307,6 +307,9 @@ export async function loadWidgetData(widgetIds: string[]): Promise<Record<string
       []
     ),
 
+    // Daily plan
+    safe('daily_plan', getDailyPlanStats, null),
+
     // DOP tasks (overdue + due today counts)
     safe(
       'dop_tasks',
@@ -382,6 +385,9 @@ export async function loadWidgetData(widgetIds: string[]): Promise<Record<string
       },
       []
     ),
+
+    // Work surface
+    safe('work_surface', getDashboardWorkSurface, null),
 
     // Quick expense (recent expenses)
     safe(
