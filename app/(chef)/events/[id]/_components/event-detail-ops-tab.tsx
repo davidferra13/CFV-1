@@ -26,6 +26,7 @@ import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
 import { PostServiceChecklistButton } from '@/components/events/post-service-checklist-button'
 import { EventEquipmentChecklist } from '@/components/events/event-equipment-checklist'
 import { StationStaffAssignment } from '@/components/events/station-staff-assignment'
+import { VendorDeliveryTimeline } from '@/components/events/vendor-delivery-timeline'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -138,6 +139,25 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
             <Link href={`/events/${event.id}/beo`}>
               <Button variant="ghost" size="sm">
                 View BEO
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Site Assessment */}
+      {!['cancelled'].includes(event.status) && (
+        <Card className="p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold">Site Assessment</h2>
+              <p className="text-sm text-stone-500 mt-1">
+                Evaluate the venue: kitchen, access, logistics, and capacity.
+              </p>
+            </div>
+            <Link href={`/events/${event.id}/site-assessment`}>
+              <Button variant="ghost" size="sm">
+                {event.status === 'draft' ? 'Start Assessment' : 'View Assessment'}
               </Button>
             </Link>
           </div>

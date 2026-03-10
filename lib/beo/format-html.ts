@@ -326,3 +326,155 @@ export function formatBEOAsHTML(beo: BEOData): string {
 </body>
 </html>`
 }
+
+// ─── Enhanced BEO Section Builders ───────────────────────────────────────────
+
+function buildEquipmentChecklistHTML(
+  beo: BEOData,
+  escape: (s: string | null | undefined) => string
+): string {
+  if (!beo.equipmentChecklist || beo.equipmentChecklist.length === 0) return ''
+
+  const rows = beo.equipmentChecklist
+    .map(
+      (item) => `
+      <tr>
+        <td>${escape(item.name)}</td>
+        <td style="text-align:center">${item.quantity}</td>
+        <td>${escape(item.source)}</td>
+        <td>${escape(item.category)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `
+    <div class="beo-section">
+      <h2>Equipment Checklist</h2>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th style="text-align:center">Qty</th>
+            <th>Source</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `
+}
+
+function buildVendorDeliveriesHTML(
+  beo: BEOData,
+  escape: (s: string | null | undefined) => string,
+  formatTime: (t: string | null) => string
+): string {
+  if (!beo.vendorDeliveries || beo.vendorDeliveries.length === 0) return ''
+
+  const rows = beo.vendorDeliveries
+    .map(
+      (v) => `
+      <tr>
+        <td>${formatTime(v.deliveryTime)}</td>
+        <td>${escape(v.vendorName)}</td>
+        <td>${escape(v.deliveryType)}</td>
+        <td>${escape(v.items)}</td>
+        <td>${escape(v.contactInfo)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `
+    <div class="beo-section">
+      <h2>Vendor Deliveries</h2>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Vendor</th>
+            <th>Type</th>
+            <th>Items</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `
+}
+
+function buildStationAssignmentsHTML(
+  beo: BEOData,
+  escape: (s: string | null | undefined) => string
+): string {
+  if (!beo.stationAssignments || beo.stationAssignments.length === 0) return ''
+
+  const rows = beo.stationAssignments
+    .map(
+      (s) => `
+      <tr>
+        <td>${escape(s.stationName)}</td>
+        <td>${escape(s.staffName)}</td>
+        <td>${escape(s.roleNotes)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `
+    <div class="beo-section">
+      <h2>Station Assignments</h2>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Station</th>
+            <th>Staff</th>
+            <th>Role Notes</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `
+}
+
+function buildBreakdownTimelineHTML(
+  beo: BEOData,
+  escape: (s: string | null | undefined) => string
+): string {
+  if (!beo.breakdownTimeline || beo.breakdownTimeline.length === 0) return ''
+
+  const totalMinutes = beo.breakdownTimeline.reduce((sum, t) => sum + t.estimatedMinutes, 0)
+  const totalHours = Math.floor(totalMinutes / 60)
+  const remainingMins = totalMinutes % 60
+
+  const rows = beo.breakdownTimeline
+    .map(
+      (t) => `
+      <tr>
+        <td style="text-align:center">${t.order}</td>
+        <td>${escape(t.task)}</td>
+        <td style="text-align:center">${t.estimatedMinutes} min</td>
+        <td>${escape(t.responsible)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `
+    <div class="beo-section">
+      <h2>Breakdown Timeline</h2>
+      <p class="menu-desc">Estimated total breakdown: ${totalHours > 0 ? `${totalHours}h ` : ''}${remainingMins}min</p>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th style="text-align:center">#</th>
+            <th>Task</th>
+            <th style="text-align:center">Est. Time</th>
+            <th>Responsible</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `
+}
