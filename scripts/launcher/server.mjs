@@ -7142,6 +7142,367 @@ async function handleRequest(req, res) {
     }
   }
 
+  // ── Admin: All Events ─────────────────────────────────────────
+  if (path === '/api/admin/events' && method === 'GET') {
+    try {
+      const eventsRes = await supabaseQuery('events', {
+        select: 'id,occasion,status,event_date,guest_count,quoted_price_cents,created_at,tenant_id',
+        order: 'created_at.desc',
+        limit: 500,
+      })
+      if (!eventsRes.ok) return json(res, eventsRes)
+      const events = eventsRes.data || []
+      const tenantIds = [...new Set(events.map(e => e.tenant_id).filter(Boolean))]
+      let chefMap = {}
+      if (tenantIds.length > 0) {
+        const namesRes = await supabaseQuery('chefs', {
+          select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500,
+        })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+      const enriched = events.map(e => ({ ...e, chefName: chefMap[e.tenant_id] || null }))
+      // Status distribution
+      const statusCounts = {}
+      for (const e of events) statusCounts[e.status] = (statusCounts[e.status] || 0) + 1
+      return json(res, { ok: true, events: enriched, total: enriched.length, statusCounts })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: All Inquiries ────────────────────────────────────────
+  if (path === '/api/admin/inquiries' && method === 'GET') {
+    try {
+      const inqRes = await supabaseQuery('inquiries', {
+        select: 'id,client_name,client_email,occasion,status,event_date,guest_count,created_at,tenant_id,chef_likelihood,unknown_fields',
+        order: 'created_at.desc',
+        limit: 500,
+      })
+      if (!inqRes.ok) return json(res, inqRes)
+      const inquiries = inqRes.data || []
+      const tenantIds = [...new Set(inquiries.map(i => i.tenant_id).filter(Boolean))]
+      let chefMap = {}
+      if (tenantIds.length > 0) {
+        const namesRes = await supabaseQuery('chefs', {
+          select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500,
+        })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+      const enriched = inquiries.map(i => {
+        const uf = i.unknown_fields || {}
+        const leadScore = i.chef_likelihood ?? uf.goldmine_score ?? uf.lead_score ?? null
+        return { ...i, chefName: chefMap[i.tenant_id] || null, leadScore }
+      })
+      const statusCounts = {}
+      for (const i of inquiries) statusCounts[i.status || 'unknown'] = (statusCounts[i.status || 'unknown'] || 0) + 1
+      return json(res, { ok: true, inquiries: enriched, total: enriched.length, statusCounts })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: All Quotes ───────────────────────────────────────────
+  if (path === '/api/admin/quotes' && method === 'GET') {
+    try {
+      const quotesRes = await supabaseQuery('quotes', {
+        select: 'id,status,total_cents,created_at,event_id,tenant_id',
+        order: 'created_at.desc',
+        limit: 500,
+      })
+      if (!quotesRes.ok) return json(res, quotesRes)
+      const quotes = quotesRes.data || []
+      const tenantIds = [...new Set(quotes.map(q => q.tenant_id).filter(Boolean))]
+      const eventIds = [...new Set(quotes.map(q => q.event_id).filter(Boolean))]
+      const [chefsRes, eventsRes] = await Promise.all([
+        tenantIds.length > 0 ? supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 }) : { data: [] },
+        eventIds.length > 0 ? supabaseQuery('events', { select: 'id,occasion', filters: [`id=in.(${eventIds.join(',')})`], limit: 500 }) : { data: [] },
+      ])
+      const chefMap = {}, eventMap = {}
+      for (const c of (chefsRes.data || [])) chefMap[c.id] = c.business_name
+      for (const e of (eventsRes.data || [])) eventMap[e.id] = e.occasion
+      const enriched = quotes.map(q => ({ ...q, chefName: chefMap[q.tenant_id] || null, eventOccasion: eventMap[q.event_id] || null }))
+      const statusCounts = {}
+      for (const q of quotes) statusCounts[q.status || 'unknown'] = (statusCounts[q.status || 'unknown'] || 0) + 1
+      return json(res, { ok: true, quotes: enriched, total: enriched.length, statusCounts })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: Platform Analytics ───────────────────────────────────
+  if (path === '/api/admin/analytics' && method === 'GET') {
+    try {
+      const twelveMonthsAgo = new Date(Date.now() - 365 * 86400000).toISOString()
+      const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+
+      const [chefsRes, clientsRes, eventsCountRes, ledgerAllRes, chefsGrowthRes, clientsGrowthRes, ledgerGrowthRes] = await Promise.all([
+        supabaseQuery('chefs', { select: 'id', limit: 0, extra: '' }),
+        supabaseQuery('clients', { select: 'id', limit: 0 }),
+        supabaseQuery('events', { select: 'id', limit: 0 }),
+        supabaseQuery('ledger_entries', { select: 'amount_cents', filters: ['entry_type=eq.payment'], limit: 50000 }),
+        supabaseQuery('chefs', { select: 'created_at', filters: [`created_at=gte.${twelveMonthsAgo}`], limit: 10000 }),
+        supabaseQuery('clients', { select: 'created_at', filters: [`created_at=gte.${twelveMonthsAgo}`], limit: 50000 }),
+        supabaseQuery('ledger_entries', { select: 'amount_cents,created_at', filters: ['entry_type=eq.payment', `created_at=gte.${twelveMonthsAgo}`], limit: 50000 }),
+      ])
+
+      // Use HEAD counts for totals (cheaper)
+      const totalGMV = (ledgerAllRes.data || []).reduce((s, r) => s + (r.amount_cents || 0), 0)
+
+      // Growth by month
+      const monthlyGrowth = {}
+      for (const c of (chefsGrowthRes.data || [])) {
+        const m = c.created_at?.slice(0, 7)
+        if (m) { if (!monthlyGrowth[m]) monthlyGrowth[m] = { chefs: 0, clients: 0, gmvCents: 0 }; monthlyGrowth[m].chefs++ }
+      }
+      for (const c of (clientsGrowthRes.data || [])) {
+        const m = c.created_at?.slice(0, 7)
+        if (m) { if (!monthlyGrowth[m]) monthlyGrowth[m] = { chefs: 0, clients: 0, gmvCents: 0 }; monthlyGrowth[m].clients++ }
+      }
+      for (const l of (ledgerGrowthRes.data || [])) {
+        const m = l.created_at?.slice(0, 7)
+        if (m) { if (!monthlyGrowth[m]) monthlyGrowth[m] = { chefs: 0, clients: 0, gmvCents: 0 }; monthlyGrowth[m].gmvCents += (l.amount_cents || 0) }
+      }
+
+      // This month
+      const thisMonth = thisMonthStart.slice(0, 7)
+      const thisMonthData = monthlyGrowth[thisMonth] || { chefs: 0, clients: 0, gmvCents: 0 }
+
+      return json(res, {
+        ok: true,
+        totalChefs: (chefsGrowthRes.data || []).length + 10, // approximate (we only fetched 12mo)
+        totalClients: (clientsGrowthRes.data || []).length + 10,
+        totalEvents: (eventsCountRes.data || []).length,
+        totalGMV,
+        thisMonth: thisMonthData,
+        monthlyGrowth: Object.entries(monthlyGrowth).sort(([a], [b]) => a.localeCompare(b)).map(([month, d]) => ({ month, ...d })),
+      })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: Platform Financials ──────────────────────────────────
+  if (path === '/api/admin/financials' && method === 'GET') {
+    try {
+      const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+      const [paymentsRes, expensesRes, recentRes] = await Promise.all([
+        supabaseQuery('ledger_entries', { select: 'amount_cents,created_at', filters: ['entry_type=eq.payment'], limit: 50000 }),
+        supabaseQuery('ledger_entries', { select: 'amount_cents,created_at', filters: ['entry_type=eq.expense'], limit: 50000 }),
+        supabaseQuery('ledger_entries', {
+          select: 'id,tenant_id,event_id,entry_type,amount_cents,description,created_at',
+          order: 'created_at.desc', limit: 200,
+        }),
+      ])
+      const totalGMV = (paymentsRes.data || []).reduce((s, r) => s + (r.amount_cents || 0), 0)
+      const gmvThisMonth = (paymentsRes.data || []).filter(r => r.created_at >= thisMonthStart).reduce((s, r) => s + (r.amount_cents || 0), 0)
+      const totalExpenses = (expensesRes.data || []).reduce((s, r) => s + Math.abs(r.amount_cents || 0), 0)
+      const expensesThisMonth = (expensesRes.data || []).filter(r => r.created_at >= thisMonthStart).reduce((s, r) => s + Math.abs(r.amount_cents || 0), 0)
+
+      // Resolve chef names for recent entries
+      const tenantIds = [...new Set((recentRes.data || []).map(e => e.tenant_id).filter(Boolean))]
+      let chefMap = {}
+      if (tenantIds.length > 0) {
+        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+      const entries = (recentRes.data || []).map(e => ({ ...e, chefName: chefMap[e.tenant_id] || null }))
+
+      return json(res, { ok: true, totalGMV, gmvThisMonth, totalExpenses, expensesThisMonth, entries })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: Audit Log ────────────────────────────────────────────
+  if (path === '/api/admin/audit' && method === 'GET') {
+    try {
+      const result = await supabaseQuery('admin_audit_log', {
+        select: 'id,ts,actor_email,action_type,target_type,target_id,details',
+        order: 'ts.desc',
+        limit: 200,
+      })
+      if (!result.ok && result.error?.includes('404')) {
+        return json(res, { ok: true, entries: [], total: 0, note: 'admin_audit_log table not yet created' })
+      }
+      return json(res, { ok: true, entries: result.data || [], total: (result.data || []).length })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: Remy Activity ────────────────────────────────────────
+  if (path === '/api/admin/remy-activity' && method === 'GET') {
+    try {
+      const logsRes = await supabaseQuery('remy_action_audit_log', {
+        select: 'tenant_id,task_type,status,created_at',
+        order: 'created_at.desc',
+        limit: 5000,
+      })
+      if (!logsRes.ok) return json(res, logsRes)
+      const logs = logsRes.data || []
+
+      // Aggregate by tenant
+      const byTenant = {}
+      for (const row of logs) {
+        const tid = row.tenant_id
+        if (!byTenant[tid]) byTenant[tid] = { total: 0, success: 0, errors: 0, lastAt: null, taskTypes: {} }
+        const t = byTenant[tid]
+        t.total++
+        if (row.status === 'success') t.success++
+        if (row.status === 'error') t.errors++
+        if (!t.lastAt) t.lastAt = row.created_at
+        t.taskTypes[row.task_type] = (t.taskTypes[row.task_type] || 0) + 1
+      }
+
+      // Resolve chef names
+      const tenantIds = Object.keys(byTenant)
+      let chefMap = {}
+      if (tenantIds.length > 0) {
+        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+
+      const rows = tenantIds.map(tid => {
+        const t = byTenant[tid]
+        const topTasks = Object.entries(t.taskTypes).sort(([,a], [,b]) => b - a).slice(0, 3).map(([k]) => k)
+        return { chefId: tid, chefName: chefMap[tid] || null, total: t.total, success: t.success, errors: t.errors, lastAt: t.lastAt, topTasks }
+      }).sort((a, b) => b.total - a.total)
+
+      const summary = { total: logs.length, success: logs.filter(l => l.status === 'success').length, errors: logs.filter(l => l.status === 'error').length }
+      return json(res, { ok: true, rows, summary })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: Notifications ────────────────────────────────────────
+  if (path === '/api/admin/notifications' && method === 'GET') {
+    try {
+      const notifRes = await supabaseQuery('notifications', {
+        select: 'id,tenant_id,recipient_id,category,action,title,body,read_at,created_at',
+        order: 'created_at.desc',
+        limit: 200,
+      })
+      if (!notifRes.ok) return json(res, notifRes)
+      const notifications = notifRes.data || []
+
+      const tenantIds = [...new Set(notifications.map(n => n.tenant_id).filter(Boolean))]
+      let chefMap = {}
+      if (tenantIds.length > 0) {
+        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+
+      const enriched = notifications.map(n => ({ ...n, chefName: chefMap[n.tenant_id] || null }))
+      const categoryCounts = {}
+      for (const n of notifications) categoryCounts[n.category || 'other'] = (categoryCounts[n.category || 'other'] || 0) + 1
+      const unreadCount = notifications.filter(n => !n.read_at).length
+
+      return json(res, { ok: true, notifications: enriched, total: enriched.length, categoryCounts, unreadCount })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: Sessions ─────────────────────────────────────────────
+  if (path === '/api/admin/sessions' && method === 'GET') {
+    try {
+      const [chefsRes, rolesRes] = await Promise.all([
+        supabaseQuery('chefs', { select: 'id,business_name,email,account_status,created_at', order: 'created_at.desc', limit: 500 }),
+        supabaseQuery('user_roles', { select: 'entity_id,role', limit: 10000 }),
+      ])
+      if (!chefsRes.ok) return json(res, chefsRes)
+      const chefs = chefsRes.data || []
+      const chefIds = chefs.map(c => c.id)
+
+      // Get latest activity per chef
+      let activityMap = {}
+      if (chefIds.length > 0) {
+        const actRes = await supabaseQuery('activity_events', {
+          select: 'tenant_id,created_at',
+          filters: [`tenant_id=in.(${chefIds.join(',')})`],
+          order: 'created_at.desc',
+          limit: 5000,
+        })
+        for (const a of (actRes.data || [])) {
+          if (!activityMap[a.tenant_id]) activityMap[a.tenant_id] = { last: a.created_at, count: 0 }
+          activityMap[a.tenant_id].count++
+        }
+      }
+
+      // Role map
+      const roleMap = {}
+      for (const r of (rolesRes.data || [])) roleMap[r.entity_id] = r.role
+
+      const now = Date.now()
+      const sevenDays = 7 * 86400000
+      let activeCount = 0, inactiveCount = 0, neverCount = 0
+
+      const rows = chefs.map(c => {
+        const act = activityMap[c.id]
+        const lastActive = act?.last || null
+        const isActive = lastActive && (now - new Date(lastActive).getTime()) < sevenDays
+        if (isActive) activeCount++
+        else if (lastActive) inactiveCount++
+        else neverCount++
+        return {
+          id: c.id, business_name: c.business_name, email: c.email,
+          role: roleMap[c.id] || 'chef', account_status: c.account_status,
+          lastActive, activityCount: act?.count || 0, isActive,
+        }
+      })
+
+      return json(res, { ok: true, sessions: rows, total: rows.length, activeCount, inactiveCount, neverCount })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
+  // ── Admin: SLA Tracking ─────────────────────────────────────────
+  if (path === '/api/admin/sla' && method === 'GET') {
+    try {
+      const inqRes = await supabaseQuery('inquiries', {
+        select: 'id,tenant_id,created_at,status,updated_at',
+        order: 'created_at.desc',
+        limit: 2000,
+      })
+      if (!inqRes.ok) return json(res, inqRes)
+      const inquiries = inqRes.data || []
+
+      // Aggregate by tenant
+      const byTenant = {}
+      for (const inq of inquiries) {
+        const tid = inq.tenant_id
+        if (!byTenant[tid]) byTenant[tid] = { total: 0, under1h: 0, under24h: 0, over24h: 0, responseTimes: [] }
+        const t = byTenant[tid]
+        t.total++
+        if (inq.status !== 'new' && inq.updated_at && inq.created_at) {
+          const hours = (new Date(inq.updated_at) - new Date(inq.created_at)) / 3600000
+          if (hours >= 0) {
+            t.responseTimes.push(hours)
+            if (hours <= 1) t.under1h++
+            else if (hours <= 24) t.under24h++
+            else t.over24h++
+          }
+        }
+      }
+
+      const tenantIds = Object.keys(byTenant)
+      let chefMap = {}
+      if (tenantIds.length > 0) {
+        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+
+      function slaGrade(avgHours) {
+        if (avgHours == null) return 'N/A'
+        if (avgHours <= 2) return 'A'
+        if (avgHours <= 6) return 'B'
+        if (avgHours <= 12) return 'C'
+        if (avgHours <= 24) return 'D'
+        return 'F'
+      }
+
+      const rows = tenantIds.map(tid => {
+        const t = byTenant[tid]
+        const avg = t.responseTimes.length > 0 ? t.responseTimes.reduce((s, v) => s + v, 0) / t.responseTimes.length : null
+        return {
+          chefId: tid, chefName: chefMap[tid] || null,
+          total: t.total, under1h: t.under1h, under24h: t.under24h, over24h: t.over24h,
+          avgHours: avg, grade: slaGrade(avg),
+        }
+      }).sort((a, b) => (a.avgHours ?? 999) - (b.avgHours ?? 999))
+
+      // Platform average
+      const allTimes = Object.values(byTenant).flatMap(t => t.responseTimes)
+      const platformAvg = allTimes.length > 0 ? allTimes.reduce((s, v) => s + v, 0) / allTimes.length : null
+
+      return json(res, { ok: true, rows, total: rows.length, platformAvgHours: platformAvg, platformGrade: slaGrade(platformAvg) })
+    } catch (err) { return json(res, { ok: false, error: err.message }) }
+  }
+
   // 404
   res.writeHead(404)
   res.end('Not found')

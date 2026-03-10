@@ -2039,6 +2039,56 @@ body {
         <span class="nav-icon">&#x1F6A8;</span>
         <span class="nav-label">Errors</span>
       </a>
+      <a class="nav-item" data-section="admin-events" title="All Events">
+        <span class="nav-dot online" id="nd-admin-events"></span>
+        <span class="nav-icon">&#x1F4C5;</span>
+        <span class="nav-label">Events</span>
+      </a>
+      <a class="nav-item" data-section="admin-inquiries" title="All Inquiries">
+        <span class="nav-dot online" id="nd-admin-inquiries"></span>
+        <span class="nav-icon">&#x1F4E8;</span>
+        <span class="nav-label">Leads</span>
+      </a>
+      <a class="nav-item" data-section="admin-quotes" title="All Quotes">
+        <span class="nav-dot online" id="nd-admin-quotes"></span>
+        <span class="nav-icon">&#x1F4B3;</span>
+        <span class="nav-label">Quotes</span>
+      </a>
+      <a class="nav-item" data-section="admin-analytics" title="Platform Analytics">
+        <span class="nav-dot online" id="nd-admin-analytics"></span>
+        <span class="nav-icon">&#x1F4CA;</span>
+        <span class="nav-label">Analytics</span>
+      </a>
+      <a class="nav-item" data-section="admin-financials" title="Platform Financials">
+        <span class="nav-dot online" id="nd-admin-financials"></span>
+        <span class="nav-icon">&#x1F4B0;</span>
+        <span class="nav-label">Finance</span>
+      </a>
+      <a class="nav-item" data-section="admin-audit" title="Audit Log">
+        <span class="nav-dot online" id="nd-admin-audit"></span>
+        <span class="nav-icon">&#x1F4DD;</span>
+        <span class="nav-label">Audit</span>
+      </a>
+      <a class="nav-item" data-section="admin-remy" title="Remy Activity">
+        <span class="nav-dot online" id="nd-admin-remy"></span>
+        <span class="nav-icon">&#x1F9E0;</span>
+        <span class="nav-label">Remy</span>
+      </a>
+      <a class="nav-item" data-section="admin-notifs" title="Notifications">
+        <span class="nav-dot online" id="nd-admin-notifs"></span>
+        <span class="nav-icon">&#x1F514;</span>
+        <span class="nav-label">Notifs</span>
+      </a>
+      <a class="nav-item" data-section="admin-sessions" title="Sessions">
+        <span class="nav-dot online" id="nd-admin-sessions"></span>
+        <span class="nav-icon">&#x1F465;</span>
+        <span class="nav-label">Sessions</span>
+      </a>
+      <a class="nav-item" data-section="admin-sla" title="SLA Tracking">
+        <span class="nav-dot online" id="nd-admin-sla"></span>
+        <span class="nav-icon">&#x23F1;&#xFE0F;</span>
+        <span class="nav-label">SLA</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -4948,6 +4998,135 @@ body {
         <div id="admin-errors-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
       </div>
 
+      <!-- ═══ Admin: All Events Panel ═══ -->
+      <div class="panel" id="panel-admin-events">
+        <div class="panel-header">
+          <h2 class="panel-title">All Events</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminEventsLoaded=false;loadAdminEvents()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-events"><span class="dot checking"></span><span id="admin-events-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-events-summary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+        <div id="admin-events-list" style="overflow-y:auto;max-height:calc(100vh - 340px);"></div>
+      </div>
+
+      <!-- ═══ Admin: All Inquiries Panel ═══ -->
+      <div class="panel" id="panel-admin-inquiries">
+        <div class="panel-header">
+          <h2 class="panel-title">All Inquiries</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminInquiriesLoaded=false;loadAdminInquiries()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-inquiries"><span class="dot checking"></span><span id="admin-inquiries-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-inquiries-summary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+        <div id="admin-inquiries-list" style="overflow-y:auto;max-height:calc(100vh - 340px);"></div>
+      </div>
+
+      <!-- ═══ Admin: All Quotes Panel ═══ -->
+      <div class="panel" id="panel-admin-quotes">
+        <div class="panel-header">
+          <h2 class="panel-title">All Quotes</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminQuotesLoaded=false;loadAdminQuotes()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-quotes"><span class="dot checking"></span><span id="admin-quotes-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-quotes-summary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+        <div id="admin-quotes-list" style="overflow-y:auto;max-height:calc(100vh - 340px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Platform Analytics Panel ═══ -->
+      <div class="panel" id="panel-admin-analytics">
+        <div class="panel-header">
+          <h2 class="panel-title">Platform Analytics</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminAnalyticsLoaded=false;loadAdminAnalytics()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-analytics"><span class="dot checking"></span><span id="admin-analytics-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-analytics-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;"></div>
+        <div id="admin-analytics-growth" style="margin-bottom:24px;"></div>
+      </div>
+
+      <!-- ═══ Admin: Platform Financials Panel ═══ -->
+      <div class="panel" id="panel-admin-financials">
+        <div class="panel-header">
+          <h2 class="panel-title">Platform Financials</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminFinancialsLoaded=false;loadAdminFinancials()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-financials"><span class="dot checking"></span><span id="admin-financials-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-financials-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;"></div>
+        <div id="admin-financials-ledger" style="overflow-y:auto;max-height:calc(100vh - 380px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Audit Log Panel ═══ -->
+      <div class="panel" id="panel-admin-audit">
+        <div class="panel-header">
+          <h2 class="panel-title">Audit Log</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminAuditLoaded=false;loadAdminAudit()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-audit"><span class="dot checking"></span><span id="admin-audit-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-audit-list" style="overflow-y:auto;max-height:calc(100vh - 280px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Remy Activity Panel ═══ -->
+      <div class="panel" id="panel-admin-remy">
+        <div class="panel-header">
+          <h2 class="panel-title">Remy Activity</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminRemyLoaded=false;loadAdminRemy()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-remy"><span class="dot checking"></span><span id="admin-remy-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-remy-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+        <div id="admin-remy-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Notifications Panel ═══ -->
+      <div class="panel" id="panel-admin-notifs">
+        <div class="panel-header">
+          <h2 class="panel-title">Notifications</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminNotifsLoaded=false;loadAdminNotifs()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-notifs"><span class="dot checking"></span><span id="admin-notifs-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-notifs-summary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+        <div id="admin-notifs-list" style="overflow-y:auto;max-height:calc(100vh - 340px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Sessions Panel ═══ -->
+      <div class="panel" id="panel-admin-sessions">
+        <div class="panel-header">
+          <h2 class="panel-title">Sessions</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminSessionsLoaded=false;loadAdminSessions()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-sessions"><span class="dot checking"></span><span id="admin-sessions-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-sessions-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+        <div id="admin-sessions-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
+      </div>
+
+      <!-- ═══ Admin: SLA Tracking Panel ═══ -->
+      <div class="panel" id="panel-admin-sla">
+        <div class="panel-header">
+          <h2 class="panel-title">SLA Tracking</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminSlaLoaded=false;loadAdminSla()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-sla"><span class="dot checking"></span><span id="admin-sla-status">Loading...</span></span>
+          </div>
+        </div>
+        <div id="admin-sla-platform" style="margin-bottom:20px;"></div>
+        <div id="admin-sla-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
+      </div>
+
       <!-- ═══ Console ═══ -->
       <div class="console-wrapper" id="console-wrapper">
         <div class="console-resize-handle" id="console-resize-handle"></div>
@@ -5161,6 +5340,16 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'admin-gmail') loadAdminGmail()
     if (section === 'admin-health') loadAdminHealth()
     if (section === 'admin-errors') loadAdminErrors()
+    if (section === 'admin-events') loadAdminEvents()
+    if (section === 'admin-inquiries') loadAdminInquiries()
+    if (section === 'admin-quotes') loadAdminQuotes()
+    if (section === 'admin-analytics') loadAdminAnalytics()
+    if (section === 'admin-financials') loadAdminFinancials()
+    if (section === 'admin-audit') loadAdminAudit()
+    if (section === 'admin-remy') loadAdminRemy()
+    if (section === 'admin-notifs') loadAdminNotifs()
+    if (section === 'admin-sessions') loadAdminSessions()
+    if (section === 'admin-sla') loadAdminSla()
   })
 })
 
@@ -11539,6 +11728,521 @@ function adminTimeAgo(date) {
   const days = Math.floor(hours / 24)
   if (days < 30) return days + 'd ago'
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function adminCents(cents) { return '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 }) }
+
+function adminStatusBadge(status, color) {
+  return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:${color}20;color:${color};">${escapeHtml(status)}</span>`
+}
+
+const STATUS_COLORS = {
+  draft: 'var(--text-muted)', proposed: 'var(--info)', accepted: 'var(--success)', paid: 'var(--success)',
+  confirmed: '#22c55e', in_progress: 'var(--warning)', completed: 'var(--success)', cancelled: 'var(--error)',
+  new: 'var(--info)', pending: 'var(--warning)', approved: 'var(--success)', rejected: 'var(--error)',
+  sent: 'var(--info)', viewed: '#a855f7', expired: 'var(--text-muted)',
+}
+
+// ── Phase 2: All Events ───────────────────────────────────────────
+
+let adminEventsLoaded = false
+
+async function loadAdminEvents() {
+  if (adminEventsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/events`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-events-status', data.error || 'Error'); return }
+    setText('admin-events-status', `${data.total} events`)
+    document.querySelector('#badge-admin-events .dot').className = 'dot online'
+
+    // Status badges
+    const summaryEl = document.getElementById('admin-events-summary')
+    if (summaryEl) {
+      let html = ''
+      for (const [status, count] of Object.entries(data.statusCounts).sort(([,a],[,b]) => b - a)) {
+        html += adminStatusBadge(`${status} (${count})`, STATUS_COLORS[status] || 'var(--text-muted)')
+      }
+      summaryEl.innerHTML = html
+    }
+
+    const listEl = document.getElementById('admin-events-list')
+    if (listEl) {
+      let html = ''
+      for (const e of data.events) {
+        const date = e.event_date ? new Date(e.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date'
+        const val = e.quoted_price_cents ? adminCents(e.quoted_price_cents) : '-'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:16px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${escapeHtml(e.occasion || 'Untitled')}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(e.chefName || 'Unknown chef')}</div>
+          </div>
+          <div style="display:flex;gap:12px;font-size:12px;color:var(--text-secondary);flex-shrink:0;align-items:center;">
+            ${adminStatusBadge(e.status || 'draft', STATUS_COLORS[e.status] || 'var(--text-muted)')}
+            <div>${date}</div>
+            <div>${e.guest_count || '-'} guests</div>
+            <div style="font-weight:600;">${val}</div>
+          </div>
+        </div>`
+      }
+      if (!data.events.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No events found</div>'
+      listEl.innerHTML = html
+    }
+    adminEventsLoaded = true
+  } catch (err) { setText('admin-events-status', 'Connection error') }
+}
+
+// ── Phase 2: All Inquiries ────────────────────────────────────────
+
+let adminInquiriesLoaded = false
+
+async function loadAdminInquiries() {
+  if (adminInquiriesLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/inquiries`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-inquiries-status', data.error || 'Error'); return }
+    setText('admin-inquiries-status', `${data.total} inquiries`)
+    document.querySelector('#badge-admin-inquiries .dot').className = 'dot online'
+
+    const summaryEl = document.getElementById('admin-inquiries-summary')
+    if (summaryEl) {
+      let html = ''
+      for (const [status, count] of Object.entries(data.statusCounts).sort(([,a],[,b]) => b - a)) {
+        html += adminStatusBadge(`${status} (${count})`, STATUS_COLORS[status] || 'var(--text-muted)')
+      }
+      summaryEl.innerHTML = html
+    }
+
+    const listEl = document.getElementById('admin-inquiries-list')
+    if (listEl) {
+      let html = ''
+      for (const i of data.inquiries) {
+        const received = adminTimeAgo(new Date(i.created_at))
+        const score = i.leadScore != null ? `<span style="font-weight:700;color:${i.leadScore >= 70 ? 'var(--success)' : i.leadScore >= 40 ? 'var(--warning)' : 'var(--text-muted)'};">${i.leadScore}</span>` : '-'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:16px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${escapeHtml(i.client_name || 'Unknown')}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(i.client_email || '')} - ${escapeHtml(i.chefName || 'Unknown chef')}</div>
+          </div>
+          <div style="display:flex;gap:12px;font-size:12px;color:var(--text-secondary);flex-shrink:0;align-items:center;">
+            ${adminStatusBadge(i.status || 'new', STATUS_COLORS[i.status] || 'var(--info)')}
+            <div title="Lead score">${score}</div>
+            <div>${escapeHtml(i.occasion || '-')}</div>
+            <div>${i.guest_count || '-'} guests</div>
+            <div>${received}</div>
+          </div>
+        </div>`
+      }
+      if (!data.inquiries.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No inquiries found</div>'
+      listEl.innerHTML = html
+    }
+    adminInquiriesLoaded = true
+  } catch (err) { setText('admin-inquiries-status', 'Connection error') }
+}
+
+// ── Phase 2: All Quotes ───────────────────────────────────────────
+
+let adminQuotesLoaded = false
+
+async function loadAdminQuotes() {
+  if (adminQuotesLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/quotes`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-quotes-status', data.error || 'Error'); return }
+    setText('admin-quotes-status', `${data.total} quotes`)
+    document.querySelector('#badge-admin-quotes .dot').className = 'dot online'
+
+    const summaryEl = document.getElementById('admin-quotes-summary')
+    if (summaryEl) {
+      let html = ''
+      for (const [status, count] of Object.entries(data.statusCounts).sort(([,a],[,b]) => b - a)) {
+        html += adminStatusBadge(`${status} (${count})`, STATUS_COLORS[status] || 'var(--text-muted)')
+      }
+      summaryEl.innerHTML = html
+    }
+
+    const listEl = document.getElementById('admin-quotes-list')
+    if (listEl) {
+      let html = ''
+      for (const q of data.quotes) {
+        const created = adminTimeAgo(new Date(q.created_at))
+        const total = q.total_cents ? adminCents(q.total_cents) : '-'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:16px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${escapeHtml(q.eventOccasion || 'No event')}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(q.chefName || 'Unknown chef')}</div>
+          </div>
+          <div style="display:flex;gap:12px;font-size:12px;color:var(--text-secondary);flex-shrink:0;align-items:center;">
+            ${adminStatusBadge(q.status || 'draft', STATUS_COLORS[q.status] || 'var(--text-muted)')}
+            <div style="font-weight:600;">${total}</div>
+            <div>${created}</div>
+          </div>
+        </div>`
+      }
+      if (!data.quotes.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No quotes found</div>'
+      listEl.innerHTML = html
+    }
+    adminQuotesLoaded = true
+  } catch (err) { setText('admin-quotes-status', 'Connection error') }
+}
+
+// ── Phase 2: Platform Analytics ───────────────────────────────────
+
+let adminAnalyticsLoaded = false
+
+async function loadAdminAnalytics() {
+  if (adminAnalyticsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/analytics`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-analytics-status', data.error || 'Error'); return }
+    setText('admin-analytics-status', 'Loaded')
+    document.querySelector('#badge-admin-analytics .dot').className = 'dot online'
+
+    const kpisEl = document.getElementById('admin-analytics-kpis')
+    if (kpisEl) {
+      kpisEl.innerHTML = [
+        adminStatCard('Total Chefs', data.totalChefs || 0, 'var(--brand)'),
+        adminStatCard('Total Clients', data.totalClients || 0, '#a855f7'),
+        adminStatCard('Platform GMV', adminCents(data.totalGMV || 0), 'var(--success)'),
+        adminStatCard('This Month GMV', adminCents(data.thisMonth?.gmvCents || 0), 'var(--info)'),
+      ].join('')
+    }
+
+    // Growth chart (simple bar chart)
+    const growthEl = document.getElementById('admin-analytics-growth')
+    if (growthEl && data.monthlyGrowth?.length) {
+      const maxGmv = Math.max(...data.monthlyGrowth.map(m => m.gmvCents), 1)
+      let html = '<h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Monthly GMV (Last 12 Months)</h3>'
+      html += '<div style="display:flex;gap:4px;align-items:flex-end;height:160px;padding:0 4px;">'
+      for (const m of data.monthlyGrowth) {
+        const pct = Math.max(4, (m.gmvCents / maxGmv) * 100)
+        const label = m.month.slice(5) // "MM"
+        html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:10px;color:var(--text-muted);">${adminCents(m.gmvCents)}</div>
+          <div style="width:100%;background:var(--brand);border-radius:4px 4px 0 0;height:${pct}%;min-height:4px;transition:height 500ms ease;"></div>
+          <div style="font-size:10px;color:var(--text-muted);">${label}</div>
+        </div>`
+      }
+      html += '</div>'
+
+      html += '<h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:24px 0 12px;">Monthly Signups</h3>'
+      html += '<div style="display:flex;gap:4px;align-items:flex-end;height:120px;padding:0 4px;">'
+      const maxSignups = Math.max(...data.monthlyGrowth.map(m => m.chefs + m.clients), 1)
+      for (const m of data.monthlyGrowth) {
+        const pct = Math.max(4, ((m.chefs + m.clients) / maxSignups) * 100)
+        const label = m.month.slice(5)
+        html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:10px;color:var(--text-muted);">${m.chefs}c ${m.clients}cl</div>
+          <div style="width:100%;background:var(--info);border-radius:4px 4px 0 0;height:${pct}%;min-height:4px;"></div>
+          <div style="font-size:10px;color:var(--text-muted);">${label}</div>
+        </div>`
+      }
+      html += '</div>'
+      growthEl.innerHTML = html
+    }
+    adminAnalyticsLoaded = true
+  } catch (err) { setText('admin-analytics-status', 'Connection error') }
+}
+
+// ── Phase 2: Platform Financials ──────────────────────────────────
+
+let adminFinancialsLoaded = false
+
+async function loadAdminFinancials() {
+  if (adminFinancialsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/financials`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-financials-status', data.error || 'Error'); return }
+    setText('admin-financials-status', 'Loaded')
+    document.querySelector('#badge-admin-financials .dot').className = 'dot online'
+
+    const kpisEl = document.getElementById('admin-financials-kpis')
+    if (kpisEl) {
+      kpisEl.innerHTML = [
+        adminStatCard('GMV All-Time', adminCents(data.totalGMV || 0), 'var(--success)'),
+        adminStatCard('GMV This Month', adminCents(data.gmvThisMonth || 0), 'var(--info)'),
+        adminStatCard('Expenses All-Time', adminCents(data.totalExpenses || 0), 'var(--error)'),
+        adminStatCard('Expenses This Month', adminCents(data.expensesThisMonth || 0), 'var(--warning)'),
+      ].join('')
+    }
+
+    const ledgerEl = document.getElementById('admin-financials-ledger')
+    if (ledgerEl) {
+      let html = '<h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Recent Ledger Entries</h3>'
+      for (const e of (data.entries || [])) {
+        const isPayment = e.entry_type === 'payment'
+        const color = isPayment ? 'var(--success)' : 'var(--error)'
+        const sign = isPayment ? '+' : '-'
+        const time = adminTimeAgo(new Date(e.created_at))
+        html += `<div style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:12px;border-left:3px solid ${color};">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;color:var(--text-primary);">${escapeHtml(e.description || e.entry_type)}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(e.chefName || 'Unknown')} - ${time}</div>
+          </div>
+          <div style="font-weight:700;font-size:14px;color:${color};">${sign}${adminCents(Math.abs(e.amount_cents || 0))}</div>
+        </div>`
+      }
+      if (!(data.entries || []).length) html += '<div style="text-align:center;padding:40px;color:var(--text-muted);">No ledger entries</div>'
+      ledgerEl.innerHTML = html
+    }
+    adminFinancialsLoaded = true
+  } catch (err) { setText('admin-financials-status', 'Connection error') }
+}
+
+// ── Phase 3: Audit Log ────────────────────────────────────────────
+
+let adminAuditLoaded = false
+
+async function loadAdminAudit() {
+  if (adminAuditLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/audit`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-audit-status', data.error || 'Error'); return }
+    setText('admin-audit-status', data.note || `${data.total} entries`)
+    document.querySelector('#badge-admin-audit .dot').className = 'dot online'
+
+    const listEl = document.getElementById('admin-audit-list')
+    if (listEl) {
+      let html = ''
+      if (data.note) {
+        html = `<div style="text-align:center;padding:40px;color:var(--text-muted);">${escapeHtml(data.note)}</div>`
+      } else {
+        for (const e of (data.entries || [])) {
+          const time = e.ts ? adminTimeAgo(new Date(e.ts)) : 'Unknown'
+          html += `<div style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <div style="display:flex;gap:8px;align-items:center;">
+                ${adminStatusBadge(e.action_type || 'unknown', 'var(--info)')}
+                <span style="font-size:12px;color:var(--text-secondary);">${escapeHtml(e.actor_email || 'system')}</span>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);">${time}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(e.target_type || '')}${e.target_id ? ': ' + escapeHtml(e.target_id.slice(0, 8)) : ''}</div>
+            ${e.details ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(JSON.stringify(e.details).slice(0, 200))}</div>` : ''}
+          </div>`
+        }
+      }
+      if (!data.entries?.length && !data.note) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No audit entries</div>'
+      listEl.innerHTML = html
+    }
+    adminAuditLoaded = true
+  } catch (err) { setText('admin-audit-status', 'Connection error') }
+}
+
+// ── Phase 3: Remy Activity ────────────────────────────────────────
+
+let adminRemyLoaded = false
+
+async function loadAdminRemy() {
+  if (adminRemyLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/remy-activity`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-remy-status', data.error || 'Error'); return }
+    setText('admin-remy-status', `${data.summary.total} actions`)
+    document.querySelector('#badge-admin-remy .dot').className = 'dot online'
+
+    const summaryEl = document.getElementById('admin-remy-summary')
+    if (summaryEl) {
+      const s = data.summary
+      const errorRate = s.total > 0 ? ((s.errors / s.total) * 100).toFixed(1) + '%' : '0%'
+      summaryEl.innerHTML = [
+        adminStatCard('Total Actions', s.total, 'var(--brand)'),
+        adminStatCard('Successes', s.success, 'var(--success)'),
+        adminStatCard('Errors (' + errorRate + ')', s.errors, s.errors > 0 ? 'var(--error)' : 'var(--success)'),
+      ].join('')
+    }
+
+    const listEl = document.getElementById('admin-remy-list')
+    if (listEl) {
+      let html = ''
+      for (const r of data.rows) {
+        const errorRate = r.total > 0 ? ((r.errors / r.total) * 100).toFixed(1) : '0'
+        const lastAt = r.lastAt ? adminTimeAgo(new Date(r.lastAt)) : 'Never'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:16px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${escapeHtml(r.chefName || 'Unknown')}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${r.topTasks.map(t => escapeHtml(t)).join(', ') || 'No tasks'}</div>
+          </div>
+          <div style="display:flex;gap:14px;font-size:12px;color:var(--text-secondary);flex-shrink:0;text-align:right;">
+            <div><span style="color:var(--text-muted);">Total</span><br><strong>${r.total}</strong></div>
+            <div><span style="color:var(--text-muted);">OK</span><br><strong style="color:var(--success);">${r.success}</strong></div>
+            <div><span style="color:var(--text-muted);">Err</span><br><strong style="color:${r.errors > 0 ? 'var(--error)' : 'inherit'};">${r.errors}</strong></div>
+            <div><span style="color:var(--text-muted);">Rate</span><br><strong>${errorRate}%</strong></div>
+            <div><span style="color:var(--text-muted);">Last</span><br><strong>${lastAt}</strong></div>
+          </div>
+        </div>`
+      }
+      if (!data.rows.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No Remy activity</div>'
+      listEl.innerHTML = html
+    }
+    adminRemyLoaded = true
+  } catch (err) { setText('admin-remy-status', 'Connection error') }
+}
+
+// ── Phase 3: Notifications ────────────────────────────────────────
+
+let adminNotifsLoaded = false
+
+async function loadAdminNotifs() {
+  if (adminNotifsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/notifications`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-notifs-status', data.error || 'Error'); return }
+    setText('admin-notifs-status', `${data.total} total, ${data.unreadCount} unread`)
+    document.querySelector('#badge-admin-notifs .dot').className = 'dot online'
+
+    const summaryEl = document.getElementById('admin-notifs-summary')
+    if (summaryEl) {
+      let html = ''
+      for (const [cat, count] of Object.entries(data.categoryCounts).sort(([,a],[,b]) => b - a)) {
+        html += adminStatusBadge(`${cat} (${count})`, 'var(--info)')
+      }
+      summaryEl.innerHTML = html
+    }
+
+    const listEl = document.getElementById('admin-notifs-list')
+    if (listEl) {
+      let html = ''
+      for (const n of data.notifications) {
+        const time = adminTimeAgo(new Date(n.created_at))
+        const readIcon = n.read_at ? '&#x2705;' : '&#x1F4E9;'
+        html += `<div style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;${n.read_at ? '' : 'border-left:3px solid var(--info);'}">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span>${readIcon}</span>
+              ${adminStatusBadge(n.category || 'general', 'var(--info)')}
+              ${adminStatusBadge(n.action || '', '#a855f7')}
+              <span style="font-size:12px;color:var(--text-secondary);">${escapeHtml(n.chefName || '')}</span>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">${time}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-primary);font-weight:500;">${escapeHtml(n.title || 'No title')}</div>
+          ${n.body ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${escapeHtml(n.body.slice(0, 150))}</div>` : ''}
+        </div>`
+      }
+      if (!data.notifications.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No notifications</div>'
+      listEl.innerHTML = html
+    }
+    adminNotifsLoaded = true
+  } catch (err) { setText('admin-notifs-status', 'Connection error') }
+}
+
+// ── Phase 3: Sessions ─────────────────────────────────────────────
+
+let adminSessionsLoaded = false
+
+async function loadAdminSessions() {
+  if (adminSessionsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/sessions`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-sessions-status', data.error || 'Error'); return }
+    setText('admin-sessions-status', `${data.total} users`)
+    document.querySelector('#badge-admin-sessions .dot').className = 'dot online'
+
+    const kpisEl = document.getElementById('admin-sessions-kpis')
+    if (kpisEl) {
+      kpisEl.innerHTML = [
+        adminStatCard('Active (7d)', data.activeCount, 'var(--success)'),
+        adminStatCard('Inactive', data.inactiveCount, 'var(--warning)'),
+        adminStatCard('Never Active', data.neverCount, 'var(--text-muted)'),
+      ].join('')
+    }
+
+    const listEl = document.getElementById('admin-sessions-list')
+    if (listEl) {
+      let html = ''
+      for (const s of data.sessions) {
+        const lastActive = s.lastActive ? adminTimeAgo(new Date(s.lastActive)) : 'Never'
+        const statusColor = s.isActive ? 'var(--success)' : s.lastActive ? 'var(--warning)' : 'var(--text-muted)'
+        const statusLabel = s.isActive ? 'Active' : s.lastActive ? 'Inactive' : 'Never'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:16px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:${statusColor};flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${escapeHtml(s.business_name || 'Unnamed')}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(s.email || '')}</div>
+          </div>
+          <div style="display:flex;gap:14px;font-size:12px;color:var(--text-secondary);flex-shrink:0;text-align:right;">
+            <div>${adminStatusBadge(s.role || 'chef', 'var(--info)')}</div>
+            <div>${adminStatusBadge(statusLabel, statusColor)}</div>
+            <div><span style="color:var(--text-muted);">Activity</span><br><strong>${s.activityCount}</strong></div>
+            <div><span style="color:var(--text-muted);">Last</span><br><strong>${lastActive}</strong></div>
+          </div>
+        </div>`
+      }
+      if (!data.sessions.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No sessions</div>'
+      listEl.innerHTML = html
+    }
+    adminSessionsLoaded = true
+  } catch (err) { setText('admin-sessions-status', 'Connection error') }
+}
+
+// ── Phase 3: SLA Tracking ─────────────────────────────────────────
+
+let adminSlaLoaded = false
+
+const SLA_GRADE_COLORS = { A: 'var(--success)', B: '#22c55e', C: 'var(--warning)', D: 'var(--warning)', F: 'var(--error)', 'N/A': 'var(--text-muted)' }
+
+function formatHours(h) {
+  if (h == null) return 'N/A'
+  if (h < 1) return Math.round(h * 60) + 'min'
+  if (h < 24) return h.toFixed(1) + 'h'
+  return (h / 24).toFixed(1) + 'd'
+}
+
+async function loadAdminSla() {
+  if (adminSlaLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/sla`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-sla-status', data.error || 'Error'); return }
+    setText('admin-sla-status', `Grade: ${data.platformGrade}`)
+    document.querySelector('#badge-admin-sla .dot').className = 'dot online'
+
+    const platformEl = document.getElementById('admin-sla-platform')
+    if (platformEl) {
+      const color = SLA_GRADE_COLORS[data.platformGrade] || 'var(--text-muted)'
+      platformEl.innerHTML = `<div style="display:flex;gap:24px;align-items:center;padding:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);">
+        <div style="font-size:48px;font-weight:800;color:${color};">${data.platformGrade}</div>
+        <div>
+          <div style="font-size:14px;color:var(--text-secondary);">Platform Average Response Time</div>
+          <div style="font-size:24px;font-weight:700;color:var(--text-primary);">${formatHours(data.platformAvgHours)}</div>
+        </div>
+        <div style="margin-left:auto;font-size:12px;color:var(--text-muted);">${data.total} chefs tracked</div>
+      </div>`
+    }
+
+    const listEl = document.getElementById('admin-sla-list')
+    if (listEl) {
+      let html = ''
+      for (const r of data.rows) {
+        const color = SLA_GRADE_COLORS[r.grade] || 'var(--text-muted)'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:16px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:${color}20;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:${color};flex-shrink:0;">${r.grade}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${escapeHtml(r.chefName || 'Unknown')}</div>
+            <div style="font-size:12px;color:var(--text-muted);">Avg: ${formatHours(r.avgHours)}</div>
+          </div>
+          <div style="display:flex;gap:14px;font-size:12px;color:var(--text-secondary);flex-shrink:0;text-align:right;">
+            <div><span style="color:var(--text-muted);">Total</span><br><strong>${r.total}</strong></div>
+            <div><span style="color:var(--text-muted);">&lt;1h</span><br><strong style="color:var(--success);">${r.under1h}</strong></div>
+            <div><span style="color:var(--text-muted);">&lt;24h</span><br><strong>${r.under24h}</strong></div>
+            <div><span style="color:var(--text-muted);">&gt;24h</span><br><strong style="color:${r.over24h > 0 ? 'var(--error)' : 'inherit'};">${r.over24h}</strong></div>
+          </div>
+        </div>`
+      }
+      if (!data.rows.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No SLA data</div>'
+      listEl.innerHTML = html
+    }
+    adminSlaLoaded = true
+  } catch (err) { setText('admin-sla-status', 'Connection error') }
 }
 
 </script>

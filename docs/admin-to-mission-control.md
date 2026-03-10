@@ -51,12 +51,74 @@ Five panels added to Mission Control:
 - Panels follow the existing MC pattern: lazy-loaded on first nav click, vanilla HTML/JS rendering
 - No React, no Next.js, no build step
 
+## Phase 2: Platform Visibility (Complete)
+
+### 6. All Events (`panel-admin-events`)
+
+- **API:** `GET /api/admin/events`
+- **Shows:** All events across all chefs with status distribution badges, occasion, date, guest count, quoted price
+- **Replaces:** `/admin/events`
+
+### 7. All Inquiries (`panel-admin-inquiries`)
+
+- **API:** `GET /api/admin/inquiries`
+- **Shows:** All inquiries with client name/email, chef, occasion, status, lead score (GOLDMINE), guest count
+- **Replaces:** `/admin/inquiries`
+
+### 8. All Quotes (`panel-admin-quotes`)
+
+- **API:** `GET /api/admin/quotes`
+- **Shows:** All quotes with chef, event occasion, status, total amount
+- **Replaces:** `/admin/quotes`
+
+### 9. Platform Analytics (`panel-admin-analytics`)
+
+- **API:** `GET /api/admin/analytics`
+- **Shows:** KPI cards (total chefs, clients, platform GMV, this month GMV), monthly GMV bar chart, monthly signups chart (last 12 months)
+- **Replaces:** `/admin/analytics`
+
+### 10. Platform Financials (`panel-admin-financials`)
+
+- **API:** `GET /api/admin/financials`
+- **Shows:** KPI cards (GMV all-time, GMV this month, expenses all-time, expenses this month), recent ledger entries with payment/expense indicators
+- **Replaces:** `/admin/financials`
+
+## Phase 3: Audit and Compliance (Complete)
+
+### 11. Audit Log (`panel-admin-audit`)
+
+- **API:** `GET /api/admin/audit`
+- **Shows:** Admin actions with actor email, action type badges, target info, details JSON. Gracefully handles missing table.
+- **Replaces:** `/admin/audit`
+
+### 12. Remy Activity (`panel-admin-remy`)
+
+- **API:** `GET /api/admin/remy-activity`
+- **Shows:** Per-chef Remy usage summary: total actions, success/error counts, error rate, top task types, last action time
+- **Replaces:** `/admin/remy-activity`
+
+### 13. Notifications (`panel-admin-notifs`)
+
+- **API:** `GET /api/admin/notifications`
+- **Shows:** All notifications with category/action badges, read/unread status, chef names, body preview. Category distribution summary.
+- **Replaces:** `/admin/notifications`
+
+### 14. Sessions (`panel-admin-sessions`)
+
+- **API:** `GET /api/admin/sessions`
+- **Shows:** KPI cards (active 7d, inactive, never active), per-user session info with role, status, activity count, last active
+- **Replaces:** `/admin/sessions`
+
+### 15. SLA Tracking (`panel-admin-sla`)
+
+- **API:** `GET /api/admin/sla`
+- **Shows:** Platform-wide SLA grade (A-F) with average response time, per-chef breakdown with grade badges, response time buckets (<1h, <24h, >24h)
+- **Replaces:** `/admin/sla`
+
 ## Remaining Phases
 
-- **Phase 2:** Platform visibility (All Events, All Inquiries, All Quotes, Analytics, Financials)
-- **Phase 3:** Audit and compliance (Audit Log, Remy Activity, Notifications, Sessions, SLA)
-- **Phase 4:** Remaining pages (Loyalty, Beta, Subscriptions, Chef Health, etc.)
-- **Phase 5:** Cleanup (remove `/admin/*` routes from main app, update nav-config)
+- **Phase 4:** Low-priority pages (Loyalty, Beta, Subscriptions, Chef Health, etc.) - migrate only if actively used
+- **Phase 5:** Cleanup (remove `/admin/*` routes from main app, update nav-config) - after confirming MC panels work well
 
 ## What Stays in the Main App
 
