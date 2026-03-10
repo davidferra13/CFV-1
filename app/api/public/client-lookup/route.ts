@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveChefByPublicSlug } from '@/lib/chefs/public-slug-resolver'
 import { createServerClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { z } from 'zod'
 
 const ClientLookupSchema = z.object({
@@ -27,6 +28,20 @@ function formatTimeForFormInput(value: string | null | undefined) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 lookups per minute per IP to prevent client enumeration
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown'
+    try {
+      await checkRateLimit(`client-lookup:${ip}`, 5, 60_000)
+    } catch {
+      return NextResponse.json(
+        { found: false, error: 'Too many requests. Try again later.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const { email, chefSlug } = ClientLookupSchema.parse(body)
     const normalizedEmail = email.trim().toLowerCase()
@@ -34,7 +49,8 @@ export async function POST(request: NextRequest) {
 
     const chef = await resolveChefByPublicSlug<{ id: string }>(supabase, chefSlug, 'id')
     if (!chef) {
-      return NextResponse.json({ found: false }, { status: 404 })
+      // Return same shape as "client not found" to prevent chef enumeration
+      return NextResponse.json({ found: false })
     }
 
     const { data: client } = await supabase

@@ -1,31 +1,23 @@
+import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { TrackedLink } from '@/components/analytics/tracked-link'
+import { CUSTOMER_STORIES } from '@/lib/marketing/customer-stories'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
   title: 'Customer Stories | ChefFlow',
-  description:
-    'Customer stories are not yet published. ChefFlow only publishes verified and approved customer testimonials.',
-  robots: {
-    index: false,
-    follow: false,
-  },
-  openGraph: {
-    title: 'ChefFlow Customer Stories',
-    description:
-      'Customer stories are not yet published. ChefFlow only publishes verified and approved customer testimonials.',
-    url: `${BASE_URL}/customers`,
-    siteName: 'ChefFlow',
-    type: 'website',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/customers`,
-  },
+  robots: { index: false, follow: false },
 }
 
 export default function CustomersPage() {
+  // No customer stories published yet. Return 404 instead of showing
+  // an empty placeholder page (Zero Hallucination rule).
+  if (CUSTOMER_STORIES.length === 0) {
+    notFound()
+  }
+
   const isBeta = LAUNCH_MODE === 'beta'
   const customersStructuredData = {
     '@context': 'https://schema.org',
@@ -47,27 +39,16 @@ export default function CustomersPage() {
             Customer Stories
           </p>
           <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
-            We have not published customer stories yet.
+            Chef stories from real ChefFlow users.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
-            We removed sample testimonials and do not display fabricated outcomes. This page will
-            only show verified, approved customer stories when they are available.
+            Every story here is verified and published with explicit customer approval. No generated
+            names, fabricated outcomes, or synthetic testimonials.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-        <div className="rounded-2xl border border-stone-700 bg-stone-900/80 p-6 md:p-8">
-          <h2 className="text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
-            What to expect
-          </h2>
-          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-stone-300">
-            <li>- Only real customer stories will be published here.</li>
-            <li>- Every published quote or metric will require explicit customer approval.</li>
-            <li>- No generated names, fabricated outcomes, or synthetic testimonials.</li>
-          </ul>
-        </div>
-      </section>
+      {/* Story cards will render here when CUSTOMER_STORIES has entries */}
 
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">

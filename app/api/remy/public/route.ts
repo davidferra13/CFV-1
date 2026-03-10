@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
+          data: "I'm getting a lot of messages. Give me a moment to catch up! Try again in about a minute.",
         }),
         { headers: sseHeaders() }
       )
@@ -94,17 +94,20 @@ export async function POST(req: NextRequest) {
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {
       return new Response(
-        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        encodeSSE({ type: 'error', data: 'Invalid request. Please try again.' }),
         { headers: sseHeaders() }
       )
     }
     const { message, tenantId } = validated
     const history = validateHistory(rawBody.history, 6)
 
-    // Validate tenant ID
-    if (!tenantId) {
+    // Validate tenant ID exists and is a real chef (prevent arbitrary ID probing)
+    if (
+      !tenantId ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId)
+    ) {
       return new Response(
-        encodeSSE({ type: 'error', data: 'Configuration error — please refresh the page.' }),
+        encodeSSE({ type: 'error', data: 'Configuration error - please refresh the page.' }),
         { headers: sseHeaders() }
       )
     }
@@ -115,7 +118,7 @@ export async function POST(req: NextRequest) {
       // Use public-appropriate refusal
       const publicRefusal =
         inputCheck.category === 'dangerous_content' || inputCheck.category === 'abuse'
-          ? "I'm here to help with food and events — let's keep it on topic!"
+          ? "I'm here to help with food and events. Let's keep it on topic!"
           : inputCheck.refusal
       return new Response(encodeSSE({ type: 'error', data: publicRefusal }), {
         headers: sseHeaders(),
@@ -127,7 +130,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm taking a quick break — check back in a few minutes!",
+          data: "Our AI assistant is currently offline. Sign up to explore ChefFlow's full feature set directly.",
         }),
         { headers: sseHeaders() }
       )
@@ -185,7 +188,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: 'Response took too long — try a shorter question!',
+                  data: 'Response took too long. Try a shorter question!',
                 })
               )
             )
@@ -195,7 +198,7 @@ export async function POST(req: NextRequest) {
               encoder.encode(
                 encodeSSE({
                   type: 'error',
-                  data: "Something went wrong — I'll be back shortly!",
+                  data: "Something went wrong. I'll be back shortly!",
                 })
               )
             )
@@ -213,7 +216,7 @@ export async function POST(req: NextRequest) {
     return new Response(
       encodeSSE({
         type: 'error',
-        data: 'Something went wrong — please try again!',
+        data: 'Something went wrong. Please try again!',
       }),
       { headers: sseHeaders() }
     )
