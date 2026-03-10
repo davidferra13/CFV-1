@@ -70,7 +70,7 @@ export function DirectoryFiltersForm({
       className="grid gap-3 md:grid-cols-4"
     >
       <label className="md:col-span-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
           Search chefs
         </span>
         <input
@@ -79,16 +79,18 @@ export function DirectoryFiltersForm({
           defaultValue={query}
           placeholder="Name, cuisine style, city, venue"
           maxLength={maxQueryLength}
-          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-950 px-3 py-2.5 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
       </label>
 
       <label>
-        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">State</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+          State
+        </span>
         <select
           name="state"
           defaultValue={stateFilter}
-          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-950 px-3 py-2.5 text-sm text-stone-900 dark:text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           <option value="">All states</option>
           {stateOptions.map((option) => (
@@ -100,13 +102,13 @@ export function DirectoryFiltersForm({
       </label>
 
       <label>
-        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
           Partner type
         </span>
         <select
           name="partnerType"
           defaultValue={partnerTypeFilter}
-          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-950 px-3 py-2.5 text-sm text-stone-900 dark:text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           <option value="">Any partner type</option>
           {partnerTypeOptions.map((option) => (
@@ -118,11 +120,13 @@ export function DirectoryFiltersForm({
       </label>
 
       <label>
-        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">Sort</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+          Sort
+        </span>
         <select
           name="sort"
           defaultValue={sortMode}
-          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-950 px-3 py-2.5 text-sm text-stone-900 dark:text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           <option value="featured">Featured first</option>
           <option value="partners">Most partner venues</option>
@@ -140,7 +144,7 @@ export function DirectoryFiltersForm({
         <Link
           href="/chefs"
           onClick={handleResetClick}
-          className="rounded-xl border border-stone-600 px-4 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+          className="rounded-xl border border-stone-300 dark:border-stone-600 px-4 py-2.5 text-sm font-medium text-stone-600 dark:text-stone-300 transition-colors hover:border-stone-400 dark:hover:border-stone-500 hover:text-stone-900 dark:hover:text-stone-100"
         >
           Reset
         </Link>

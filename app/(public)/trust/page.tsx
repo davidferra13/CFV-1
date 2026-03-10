@@ -82,16 +82,16 @@ export default function TrustPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(trustStructuredData) }}
       />
-      <section className="relative overflow-hidden border-b border-stone-700/50">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
+      <section className="relative overflow-hidden border-b border-stone-200 dark:border-stone-700/50">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px] hidden dark:block" />
         <div className="relative mx-auto w-full max-w-5xl px-4 py-16 text-center sm:px-6 md:py-24 lg:px-8">
-          <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
+          <p className="inline-flex rounded-full border border-brand-200 dark:border-brand-700 bg-white dark:bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700 dark:text-brand-300">
             Trust Center
           </p>
-          <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-100">
+          <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-900 dark:text-stone-100">
             Security and reliability expectations, clearly stated.
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
+          <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-600 dark:text-stone-300 md:text-lg">
             This page is the practical baseline: what is protected, how data is handled, and where
             to escalate issues.
           </p>
@@ -102,12 +102,17 @@ export default function TrustPage() {
         {TRUST_SECTIONS.map((section) => (
           <article
             key={section.title}
-            className="rounded-2xl border border-stone-700 bg-stone-900/80 p-6 shadow-[var(--shadow-card)]"
+            className="rounded-2xl border border-stone-200 dark:border-stone-700 bg-white/80 dark:bg-stone-900/80 p-6 shadow-[var(--shadow-card)]"
           >
-            <h2 className="text-2xl font-semibold text-stone-100">{section.title}</h2>
+            <h2 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">
+              {section.title}
+            </h2>
             <ul className="mt-4 space-y-2">
               {section.points.map((point) => (
-                <li key={point} className="text-sm leading-relaxed text-stone-300">
+                <li
+                  key={point}
+                  className="text-sm leading-relaxed text-stone-600 dark:text-stone-300"
+                >
                   - {point}
                 </li>
               ))}
@@ -117,32 +122,34 @@ export default function TrustPage() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-stone-700 bg-stone-900/80 p-6">
-          <h2 className="text-2xl font-semibold text-stone-100">Policy References</h2>
+        <div className="rounded-2xl border border-stone-200 dark:border-stone-700 bg-white/80 dark:bg-stone-900/80 p-6">
+          <h2 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">
+            Policy References
+          </h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <TrackedLink
               href="/privacy"
               analyticsName="trust_privacy_link"
-              className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-200 hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               Privacy Policy
             </TrackedLink>
             <TrackedLink
               href="/terms"
               analyticsName="trust_terms_link"
-              className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-200 hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               Terms of Service
             </TrackedLink>
             <a
               href="mailto:security@cheflowhq.com"
-              className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-200 hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               security@cheflowhq.com
             </a>
             <a
               href="mailto:support@cheflowhq.com"
-              className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-200 hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               support@cheflowhq.com
             </a>
@@ -150,12 +157,12 @@ export default function TrustPage() {
         </div>
       </section>
 
-      <section className="border-y border-stone-700/50 bg-stone-900/40">
+      <section className="border-y border-stone-200 dark:border-stone-700/50 bg-stone-50/40 dark:bg-stone-900/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-          <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
+          <h2 className="fluid-display-lg font-display tracking-tight text-stone-900 dark:text-stone-100">
             Want to test these workflows in your own operation?
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-600 dark:text-stone-300">
             {isBeta
               ? 'Join the beta waitlist and work directly with product during onboarding.'
               : 'Start a trial and validate inquiry, event, and payout workflows end-to-end.'}

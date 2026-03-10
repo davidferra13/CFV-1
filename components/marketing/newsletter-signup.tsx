@@ -36,7 +36,7 @@ export function NewsletterSignup() {
 
   if (status === 'success') {
     return (
-      <div className="text-sm text-green-400">
+      <div className="text-sm text-green-600 dark:text-green-400">
         You&apos;re in! We&apos;ll send you chef tips and updates.
       </div>
     )
@@ -62,7 +62,7 @@ export function NewsletterSignup() {
           placeholder="your@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-stone-700 bg-stone-900 px-3 py-1.5 text-sm text-stone-200 placeholder-stone-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+          className="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-1.5 text-sm text-stone-800 dark:text-stone-200 placeholder-stone-400 dark:placeholder-stone-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
           aria-label="Email address"
         />
         <button

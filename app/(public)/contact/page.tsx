@@ -104,12 +104,12 @@ export default function ContactPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">
-            Questions? Let's talk.
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-4">
+            Questions? Let&apos;s talk.
           </h1>
-          <p className="text-lg md:text-xl text-stone-300">
-            I'm David, the chef who built ChefFlow. Ask me anything about the product, pricing, or
-            how it fits your workflow.
+          <p className="text-lg md:text-xl text-stone-600 dark:text-stone-300">
+            I&apos;m David, the chef who built ChefFlow. Ask me anything about the product, pricing,
+            or how it fits your workflow.
           </p>
         </div>
       </section>
@@ -126,7 +126,7 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent>
                   {showSuccess && (
-                    <div className="mb-6 p-4 bg-green-950 border border-green-200 rounded-md">
+                    <div className="mb-6 p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
                       <div className="flex items-start">
                         <svg
                           className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
@@ -140,16 +140,20 @@ export default function ContactPage() {
                           />
                         </svg>
                         <div>
-                          <h4 className="font-semibold text-green-900 mb-1">Message sent!</h4>
-                          <p className="text-green-700 text-sm">I&apos;ll get back to you soon.</p>
+                          <h4 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+                            Message sent!
+                          </h4>
+                          <p className="text-green-700 dark:text-green-300 text-sm">
+                            I&apos;ll get back to you soon.
+                          </p>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {submitError && (
-                    <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
-                      <p className="text-red-700 text-sm">{submitError}</p>
+                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+                      <p className="text-red-700 dark:text-red-300 text-sm">{submitError}</p>
                     </div>
                   )}
 
@@ -232,7 +236,7 @@ export default function ContactPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <div className="flex items-start mb-4">
-                      <div className="w-10 h-10 bg-brand-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-brand-50 dark:bg-brand-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                         <svg
                           className="w-5 h-5 text-brand-600"
                           fill="none"
@@ -248,10 +252,12 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-100 mb-1">Email</h4>
+                        <h4 className="font-semibold text-stone-900 dark:text-stone-100 mb-1">
+                          Email
+                        </h4>
                         <a
                           href="mailto:support@cheflowhq.com"
-                          className="text-brand-600 hover:text-brand-400"
+                          className="text-brand-600 hover:text-brand-500 dark:hover:text-brand-400"
                         >
                           support@cheflowhq.com
                         </a>
@@ -259,9 +265,9 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-stone-700">
+                  <div className="pt-6 border-t border-stone-200 dark:border-stone-700">
                     <div className="flex items-start">
-                      <div className="w-10 h-10 bg-brand-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-brand-50 dark:bg-brand-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                         <svg
                           className="w-5 h-5 text-brand-600"
                           fill="none"
@@ -277,17 +283,20 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-100 mb-1">Response time</h4>
-                        <p className="text-stone-300 text-sm">
-                          I usually reply the same day. If I'm cooking, next morning at the latest.
+                        <h4 className="font-semibold text-stone-900 dark:text-stone-100 mb-1">
+                          Response time
+                        </h4>
+                        <p className="text-stone-600 dark:text-stone-300 text-sm">
+                          I usually reply the same day. If I&apos;m cooking, next morning at the
+                          latest.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-stone-700">
+                  <div className="pt-6 border-t border-stone-200 dark:border-stone-700">
                     <div className="flex items-start">
-                      <div className="w-10 h-10 bg-green-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-green-50 dark:bg-green-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                         <svg
                           className="w-5 h-5 text-emerald-600"
                           fill="none"
@@ -303,8 +312,10 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-100 mb-1">Support hours</h4>
-                        <p className="text-stone-300 text-sm">
+                        <h4 className="font-semibold text-stone-900 dark:text-stone-100 mb-1">
+                          Support hours
+                        </h4>
+                        <p className="text-stone-600 dark:text-stone-300 text-sm">
                           Monday to Friday
                           <br />
                           9:00 AM to 5:00 PM PT

@@ -12,13 +12,13 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-stone-700/50">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[60px]" />
+      <section className="relative overflow-hidden border-b border-stone-200 dark:border-stone-700/50">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[60px] hidden dark:block" />
         <div className="relative mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 md:py-24 lg:px-8">
-          <h1 className="fluid-display-xl font-display tracking-tight text-stone-100">
+          <h1 className="fluid-display-xl font-display tracking-tight text-stone-900 dark:text-stone-100">
             Built by a chef. For chefs.
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-[1.0625rem] leading-8 text-stone-300 md:text-lg">
+          <p className="mx-auto mt-6 max-w-xl text-[1.0625rem] leading-8 text-stone-600 dark:text-stone-300 md:text-lg">
             ChefFlow exists because no tool did what I needed. So I built one.
           </p>
         </div>
@@ -26,7 +26,7 @@ export default function AboutPage() {
 
       {/* Story */}
       <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-        <div className="space-y-6 text-base leading-relaxed text-stone-300">
+        <div className="space-y-6 text-base leading-relaxed text-stone-600 dark:text-stone-300">
           <p>
             I spent 10 years in professional kitchens. Fine dining, private events, catering for
             clients who expected perfection. The cooking was never the hard part.
@@ -47,7 +47,7 @@ export default function AboutPage() {
             follow-ups. It works alongside whatever booking channels you already use. It does not
             try to replace your marketplace or become another middleman. It is your back office.
           </p>
-          <p className="text-stone-200 font-medium">
+          <p className="text-stone-800 dark:text-stone-200 font-medium">
             Right now, 4 working private chefs use ChefFlow every day. It is in active development,
             shaped by their feedback and mine. If you are a private chef looking for something
             better than spreadsheets and memory, I would love to hear from you.
@@ -67,7 +67,7 @@ export default function AboutPage() {
             href="/contact"
             analyticsName="about_contact"
             analyticsProps={{ section: 'about_story' }}
-            className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
           >
             Talk to me
           </TrackedLink>
@@ -75,28 +75,28 @@ export default function AboutPage() {
       </section>
 
       {/* What ChefFlow is / isn't */}
-      <section className="border-t border-stone-700/50">
+      <section className="border-t border-stone-200 dark:border-stone-700/50">
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-          <h2 className="text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
+          <h2 className="text-2xl font-display tracking-tight text-stone-900 dark:text-stone-100 md:text-3xl">
             What ChefFlow is (and is not)
           </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
-            <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-400">
+            <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
                 ChefFlow is
               </h3>
-              <ul className="mt-4 space-y-3 text-sm text-stone-300">
+              <ul className="mt-4 space-y-3 text-sm text-stone-600 dark:text-stone-300">
                 <li>Your back office for clients, events, and money</li>
                 <li>A tool that works with your existing booking channels</li>
                 <li>Built by someone who does this work</li>
                 <li>Free to start, no card required</li>
               </ul>
             </div>
-            <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
+            <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">
                 ChefFlow is not
               </h3>
-              <ul className="mt-4 space-y-3 text-sm text-stone-400">
+              <ul className="mt-4 space-y-3 text-sm text-stone-500 dark:text-stone-400">
                 <li>A marketplace that takes a cut of your bookings</li>
                 <li>A restaurant POS system</li>
                 <li>A generic CRM with a food skin on it</li>
