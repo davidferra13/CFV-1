@@ -23,6 +23,10 @@ interface RateLimitResult {
   resetInSeconds: number
 }
 
+function hasRedisConfig(): boolean {
+  return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+}
+
 /**
  * Simple rate limiter using Upstash Redis.
  * e.g. limit API calls to 10 per minute per IP.
@@ -36,6 +40,10 @@ export async function rateLimit(
   limit: number,
   windowSeconds: number
 ): Promise<RateLimitResult> {
+  if (!hasRedisConfig()) {
+    return { allowed: true, remaining: limit, resetInSeconds: 0 }
+  }
+
   try {
     const { Redis } = require('@upstash/redis')
     const redis = new Redis({
@@ -68,6 +76,8 @@ export async function rateLimit(
  * Great for expensive API calls or database queries.
  */
 export async function cacheSet(key: string, value: any, ttlSeconds: number): Promise<void> {
+  if (!hasRedisConfig()) return
+
   try {
     const { Redis } = require('@upstash/redis')
     const redis = new Redis({
@@ -84,6 +94,8 @@ export async function cacheSet(key: string, value: any, ttlSeconds: number): Pro
  * Get a cached value.
  */
 export async function cacheGet<T>(key: string): Promise<T | null> {
+  if (!hasRedisConfig()) return null
+
   try {
     const { Redis } = require('@upstash/redis')
     const redis = new Redis({
@@ -118,6 +130,8 @@ export async function cacheFetch<T>(
  * Increment a counter (e.g. page views, API usage tracking).
  */
 export async function incrementCounter(key: string): Promise<number> {
+  if (!hasRedisConfig()) return 0
+
   try {
     const { Redis } = require('@upstash/redis')
     const redis = new Redis({

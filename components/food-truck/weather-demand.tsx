@@ -4,7 +4,9 @@ import { useState, useTransition, useEffect } from 'react'
 import {
   DemandAdjustment,
   AdjustedParLevel,
+  WeatherOperationalRisk,
   getWeekForecastWithDemand,
+  getWeatherOperationalRisk,
   getAdjustedParLevels,
   getLocationCoordinates,
 } from '@/lib/food-truck/weather-demand-actions'
@@ -43,6 +45,13 @@ function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+function riskBadgeClass(level: WeatherOperationalRisk['riskLevel']): string {
+  if (level === 'critical') return 'bg-red-100 text-red-800 border-red-300'
+  if (level === 'high') return 'bg-orange-100 text-orange-800 border-orange-300'
+  if (level === 'medium') return 'bg-yellow-100 text-yellow-800 border-yellow-300'
+  return 'bg-emerald-100 text-emerald-800 border-emerald-300'
+}
+
 // ---- Default Par Levels (used when no par planning exists) ----
 
 const DEFAULT_PAR_LEVELS = [
@@ -60,6 +69,7 @@ export default function WeatherDemand() {
   const [weekForecast, setWeekForecast] = useState<DemandAdjustment[]>([])
   const [selectedDay, setSelectedDay] = useState<DemandAdjustment | null>(null)
   const [parLevels, setParLevels] = useState<AdjustedParLevel[]>([])
+  const [operationalRisk, setOperationalRisk] = useState<WeatherOperationalRisk | null>(null)
   const [locations, setLocations] = useState<TruckLocation[]>([])
   const [selectedLocation, setSelectedLocation] = useState<string>('')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
@@ -89,12 +99,17 @@ export default function WeatherDemand() {
     setError(null)
     startTransition(async () => {
       try {
-        const forecast = await getWeekForecastWithDemand(lat, lng)
+        const [forecast, risk] = await Promise.all([
+          getWeekForecastWithDemand(lat, lng),
+          getWeatherOperationalRisk(lat, lng),
+        ])
         setWeekForecast(forecast)
+        setOperationalRisk(risk)
         setSelectedDay(null)
         setParLevels([])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load weather forecast')
+        setOperationalRisk(null)
       }
     })
   }
@@ -204,6 +219,81 @@ export default function WeatherDemand() {
           </div>
         </div>
       </div>
+
+      {operationalRisk && (
+        <div className="rounded-lg border bg-card p-4 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="font-semibold">Operational Risk Signals</h3>
+              <p className="text-sm text-muted-foreground">
+                Official National Weather Service alerts plus optional air-quality monitoring.
+              </p>
+            </div>
+            <span
+              className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${riskBadgeClass(operationalRisk.riskLevel)}`}
+            >
+              {operationalRisk.riskLevel}
+            </span>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-sm font-medium">Air quality</p>
+              {operationalRisk.airQuality ? (
+                <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                  <p>
+                    AQI {operationalRisk.airQuality.aqi} • {operationalRisk.airQuality.category}
+                  </p>
+                  <p>
+                    {operationalRisk.airQuality.parameter}
+                    {operationalRisk.airQuality.reportingArea
+                      ? ` • ${operationalRisk.airQuality.reportingArea}`
+                      : ''}
+                  </p>
+                  {operationalRisk.airQuality.observedAt && (
+                    <p>Observed {operationalRisk.airQuality.observedAt}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Air-quality data is not available for this location or API setup.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-sm font-medium">Active alerts</p>
+              {operationalRisk.alerts.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No active National Weather Service alerts at the moment.
+                </p>
+              ) : (
+                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                  {operationalRisk.alerts.slice(0, 3).map((alert) => (
+                    <li key={alert.id} className="rounded-md border bg-card px-3 py-2">
+                      <p className="font-medium text-foreground">{alert.event}</p>
+                      <p>{alert.headline}</p>
+                      {(alert.severity || alert.ends) && (
+                        <p className="text-xs text-muted-foreground">
+                          {[alert.severity, alert.ends ? `Ends ${alert.ends}` : null]
+                            .filter(Boolean)
+                            .join(' • ')}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            {operationalRisk.reasons.map((reason, index) => (
+              <li key={`${reason}-${index}`}>- {reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* 7-Day Forecast Strip */}
       {weekForecast.length > 0 && (

@@ -2,6 +2,10 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import {
+  getOperationalRiskSignals,
+  type OperationalRiskSignals,
+} from '@/lib/public-data/weather-risk'
 
 // ---- Types ----
 
@@ -29,6 +33,8 @@ export type AdjustedParLevel = {
   adjusted_quantity: number
   multiplier: number
 }
+
+export type WeatherOperationalRisk = OperationalRiskSignals
 
 // ---- Weather Code Descriptions ----
 
@@ -217,6 +223,14 @@ export async function getWeekForecastWithDemand(
   const forecast = await getWeatherForecast(lat, lng, new Date().toISOString().split('T')[0])
 
   return forecast.map((day) => calculateDemandMultiplier(day, day.date))
+}
+
+export async function getWeatherOperationalRisk(
+  lat: number,
+  lng: number
+): Promise<WeatherOperationalRisk> {
+  await requireChef()
+  return getOperationalRiskSignals(lat, lng)
 }
 
 // ---- Get Location Coordinates ----

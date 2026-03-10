@@ -8,6 +8,13 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { geocodeUsAddress } from '@/lib/public-data/census-geocoder'
+import {
+  normalizeCity,
+  normalizeStateCode,
+  normalizeStreetAddress,
+  normalizeZip,
+} from '@/lib/public-data/location-normalization'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -89,6 +96,29 @@ export type CreateLocationInput = z.infer<typeof CreateLocationSchema>
 export type UpdateLocationInput = z.infer<typeof UpdateLocationSchema>
 export type AddImageInput = z.infer<typeof AddImageSchema>
 export type PublicCreatePartnerInput = z.infer<typeof CreatePartnerSchema>
+
+async function normalizePartnerLocationParts(input: {
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip?: string | null
+}) {
+  const geocoded = input.address
+    ? await geocodeUsAddress({
+        address: input.address,
+        city: input.city,
+        state: input.state,
+        zip: input.zip,
+      })
+    : null
+
+  return {
+    address: geocoded?.matchedAddress ?? normalizeStreetAddress(input.address),
+    city: geocoded?.city ?? normalizeCity(input.city),
+    state: geocoded?.state ?? normalizeStateCode(input.state),
+    zip: geocoded?.zip ?? normalizeZip(input.zip),
+  }
+}
 
 // ============================================
 // 1. CREATE PARTNER
@@ -473,6 +503,12 @@ export async function createPartnerLocation(input: CreateLocationInput) {
   const user = await requireChef()
   const validated = CreateLocationSchema.parse(input)
   const supabase: any = createServerClient()
+  const normalizedLocation = await normalizePartnerLocationParts({
+    address: validated.address || null,
+    city: validated.city || null,
+    state: validated.state || null,
+    zip: validated.zip || null,
+  })
 
   // Verify partner belongs to this tenant
   const { data: partner } = await supabase
@@ -492,10 +528,10 @@ export async function createPartnerLocation(input: CreateLocationInput) {
       tenant_id: user.tenantId!,
       partner_id: validated.partner_id,
       name: validated.name,
-      address: validated.address || null,
-      city: validated.city || null,
-      state: validated.state || null,
-      zip: validated.zip || null,
+      address: normalizedLocation.address,
+      city: normalizedLocation.city,
+      state: normalizedLocation.state,
+      zip: normalizedLocation.zip,
       booking_url: validated.booking_url || null,
       description: validated.description || null,
       notes: validated.notes || null,
@@ -527,6 +563,27 @@ export async function updatePartnerLocation(id: string, input: UpdateLocationInp
     if (value !== undefined) {
       updates[key] = value === '' ? null : value
     }
+  }
+
+  if (
+    validated.address !== undefined ||
+    validated.city !== undefined ||
+    validated.state !== undefined ||
+    validated.zip !== undefined
+  ) {
+    const normalizedLocation = await normalizePartnerLocationParts({
+      address: validated.address ?? null,
+      city: validated.city ?? null,
+      state: validated.state ?? null,
+      zip: validated.zip ?? null,
+    })
+
+    if (validated.address !== undefined) updates.address = normalizedLocation.address
+    if (validated.city !== undefined || normalizedLocation.city)
+      updates.city = normalizedLocation.city
+    if (validated.state !== undefined || normalizedLocation.state)
+      updates.state = normalizedLocation.state
+    if (validated.zip !== undefined || normalizedLocation.zip) updates.zip = normalizedLocation.zip
   }
 
   const { data: location, error } = await supabase

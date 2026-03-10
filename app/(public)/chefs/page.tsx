@@ -3,6 +3,11 @@ import Link from 'next/link'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { getDiscoverableChefs } from '@/lib/directory/actions'
 import type { DirectoryChef, DirectoryPartner } from '@/lib/directory/actions'
+import {
+  formatCityState,
+  getStateFacetLabel,
+  normalizeStateCode,
+} from '@/lib/public-data/location-normalization'
 import { ChefHero } from './_components/chef-hero'
 import { DirectoryFiltersForm } from './_components/directory-filters-form'
 import { DirectoryResultsTracker } from './_components/directory-results-tracker'
@@ -96,13 +101,13 @@ function buildStateFacets(chefs: DirectoryChef[]): FacetOption[] {
         const rawState = location.state?.trim()
         if (!rawState) continue
 
-        const key = normalize(rawState)
+        const key = normalizeStateCode(rawState) ?? normalize(rawState)
         if (seenByChef.has(key)) continue
 
         seenByChef.add(key)
 
         if (!stateMap.has(key)) {
-          stateMap.set(key, { label: rawState, chefs: new Set<string>() })
+          stateMap.set(key, { label: getStateFacetLabel(rawState), chefs: new Set<string>() })
         }
 
         stateMap.get(key)?.chefs.add(chef.id)
@@ -167,7 +172,10 @@ function hasStateCoverage(chef: DirectoryChef, stateFilter: string): boolean {
   if (!stateFilter) return true
 
   return chef.partners.some((partner) =>
-    partner.partner_locations.some((location) => normalize(location.state) === stateFilter)
+    partner.partner_locations.some((location) => {
+      const normalizedState = normalizeStateCode(location.state) ?? normalize(location.state)
+      return normalizedState === stateFilter
+    })
   )
 }
 
@@ -211,7 +219,7 @@ function getChefCoverage(chef: DirectoryChef): string[] {
 
   for (const partner of chef.partners) {
     for (const location of partner.partner_locations) {
-      const cityState = [location.city, location.state].filter(Boolean).join(', ').trim()
+      const cityState = formatCityState(location.city, location.state, { useStateCode: true })
       if (cityState) uniqueCoverage.add(cityState)
     }
   }
@@ -222,7 +230,9 @@ function getChefCoverage(chef: DirectoryChef): string[] {
 function PartnerPill({ partner }: { partner: DirectoryPartner }) {
   const locations = partner.partner_locations
   const cityState =
-    locations.length > 0 ? [locations[0].city, locations[0].state].filter(Boolean).join(', ') : null
+    locations.length > 0
+      ? formatCityState(locations[0].city, locations[0].state, { useStateCode: true })
+      : null
 
   return (
     <div className="flex items-center gap-2.5 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2">

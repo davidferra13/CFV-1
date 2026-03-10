@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { geocodeUsAddress } from '@/lib/public-data/census-geocoder'
 
 // ---- Types ----
 
@@ -41,6 +42,31 @@ export type TruckScheduleEntry = {
   location?: TruckLocation
 }
 
+async function enrichTruckLocationAddress(input: { address?: string; lat?: number; lng?: number }) {
+  if (!input.address || input.lat != null || input.lng != null) {
+    return {
+      address: input.address ?? null,
+      lat: input.lat ?? null,
+      lng: input.lng ?? null,
+    }
+  }
+
+  const censusMatch = await geocodeUsAddress({ address: input.address })
+  if (!censusMatch) {
+    return {
+      address: input.address ?? null,
+      lat: input.lat ?? null,
+      lng: input.lng ?? null,
+    }
+  }
+
+  return {
+    address: censusMatch.matchedAddress,
+    lat: censusMatch.lat,
+    lng: censusMatch.lng,
+  }
+}
+
 // ---- Location CRUD ----
 
 export async function getLocations(): Promise<TruckLocation[]> {
@@ -69,15 +95,16 @@ export async function createLocation(input: {
 }): Promise<TruckLocation> {
   const user = await requireChef()
   const supabase = createServerClient()
+  const enrichedAddress = await enrichTruckLocationAddress(input)
 
   const { data, error } = await supabase
     .from('truck_locations')
     .insert({
       tenant_id: user.entityId!,
       name: input.name,
-      address: input.address ?? null,
-      lat: input.lat ?? null,
-      lng: input.lng ?? null,
+      address: enrichedAddress.address,
+      lat: enrichedAddress.lat,
+      lng: enrichedAddress.lng,
       contact_name: input.contact_name ?? null,
       contact_phone: input.contact_phone ?? null,
       permit_required: input.permit_required ?? false,
@@ -107,10 +134,36 @@ export async function updateLocation(
 ): Promise<TruckLocation> {
   const user = await requireChef()
   const supabase = createServerClient()
+  const { data: existing } =
+    input.address !== undefined && input.lat === undefined && input.lng === undefined
+      ? await supabase
+          .from('truck_locations')
+          .select('lat, lng')
+          .eq('id', id)
+          .eq('tenant_id', user.entityId!)
+          .single()
+      : { data: null }
+  const enrichedAddress = await enrichTruckLocationAddress({
+    address: input.address,
+    lat: input.lat,
+    lng: input.lng,
+  })
 
   const { data, error } = await supabase
     .from('truck_locations')
-    .update({ ...input, updated_at: new Date().toISOString() })
+    .update({
+      ...input,
+      address: input.address !== undefined ? enrichedAddress.address : input.address,
+      lat:
+        input.address !== undefined && input.lat === undefined
+          ? (enrichedAddress.lat ?? existing?.lat ?? null)
+          : input.lat,
+      lng:
+        input.address !== undefined && input.lng === undefined
+          ? (enrichedAddress.lng ?? existing?.lng ?? null)
+          : input.lng,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
     .eq('tenant_id', user.entityId!)
     .select()

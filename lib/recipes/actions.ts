@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
+import { enrichIngredientWithPublicData } from '@/lib/public-data/ingredient-enrichment'
 
 type RecipeCategory = Database['public']['Enums']['recipe_category']
 type IngredientCategory = Database['public']['Enums']['ingredient_category']
@@ -838,6 +839,11 @@ export async function createIngredient(input: CreateIngredientInput) {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = CreateIngredientSchema.parse(input)
+  const enrichment = await enrichIngredientWithPublicData({
+    name: validated.name,
+    description: validated.description,
+    allergenFlags: validated.allergen_flags,
+  })
 
   // Find-or-create: check for existing ingredient (case-insensitive)
   const { data: existing } = await supabase
@@ -862,8 +868,16 @@ export async function createIngredient(input: CreateIngredientInput) {
       description: validated.description || null,
       average_price_cents: validated.average_price_cents || null,
       is_staple: validated.is_staple || false,
-      allergen_flags: validated.allergen_flags || [],
+      allergen_flags: enrichment.allergenFlags,
       dietary_tags: validated.dietary_tags || [],
+      nutrition_calories_per_100g: enrichment.nutrition?.caloriesPer100g ?? null,
+      nutrition_carbs_per_100g: enrichment.nutrition?.carbsPer100g ?? null,
+      nutrition_fat_per_100g: enrichment.nutrition?.fatPer100g ?? null,
+      nutrition_fiber_per_100g: enrichment.nutrition?.fiberPer100g ?? null,
+      nutrition_protein_per_100g: enrichment.nutrition?.proteinPer100g ?? null,
+      nutrition_sodium_mg_per_100g: enrichment.nutrition?.sodiumMgPer100g ?? null,
+      nutrition_source: enrichment.nutritionSource,
+      nutrition_updated_at: enrichment.nutritionUpdatedAt,
       created_by: user.id,
       updated_by: user.id,
     })
@@ -887,6 +901,19 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = UpdateIngredientSchema.parse(input)
+  const needsPublicDataRefresh =
+    validated.name !== undefined ||
+    validated.description !== undefined ||
+    validated.allergen_flags !== undefined
+
+  const { data: existingIngredient } = needsPublicDataRefresh
+    ? await supabase
+        .from('ingredients')
+        .select('name, description, allergen_flags')
+        .eq('id', ingredientId)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+    : { data: null }
 
   const updateData: Record<string, unknown> = { updated_by: user.id }
   if (validated.name !== undefined) updateData.name = validated.name
@@ -896,8 +923,32 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   if (validated.average_price_cents !== undefined)
     updateData.average_price_cents = validated.average_price_cents
   if (validated.is_staple !== undefined) updateData.is_staple = validated.is_staple
-  if (validated.allergen_flags !== undefined) updateData.allergen_flags = validated.allergen_flags
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
+
+  if (needsPublicDataRefresh) {
+    const enrichment = await enrichIngredientWithPublicData({
+      name: validated.name ?? existingIngredient?.name ?? '',
+      description:
+        validated.description !== undefined
+          ? validated.description
+          : (existingIngredient?.description ?? null),
+      allergenFlags:
+        validated.allergen_flags ?? (existingIngredient?.allergen_flags as string[] | null) ?? [],
+    })
+
+    updateData.allergen_flags = enrichment.allergenFlags
+
+    if (validated.name !== undefined && enrichment.nutrition) {
+      updateData.nutrition_calories_per_100g = enrichment.nutrition.caloriesPer100g
+      updateData.nutrition_carbs_per_100g = enrichment.nutrition.carbsPer100g
+      updateData.nutrition_fat_per_100g = enrichment.nutrition.fatPer100g
+      updateData.nutrition_fiber_per_100g = enrichment.nutrition.fiberPer100g
+      updateData.nutrition_protein_per_100g = enrichment.nutrition.proteinPer100g
+      updateData.nutrition_sodium_mg_per_100g = enrichment.nutrition.sodiumMgPer100g
+      updateData.nutrition_source = enrichment.nutritionSource
+      updateData.nutrition_updated_at = enrichment.nutritionUpdatedAt
+    }
+  }
 
   const { data: ingredient, error } = await supabase
     .from('ingredients')
