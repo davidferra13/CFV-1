@@ -2012,6 +2012,33 @@ body {
         <span class="nav-icon">&#x1F3AC;</span>
         <span class="nav-label">Marketing</span>
       </a>
+      <div style="height:1px;background:var(--border);margin:8px 12px;"></div>
+      <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:4px 16px;font-weight:700;">Admin</div>
+      <a class="nav-item" data-section="admin-users" title="All Chefs">
+        <span class="nav-dot online" id="nd-admin-users"></span>
+        <span class="nav-icon">&#x1F465;</span>
+        <span class="nav-label">Users</span>
+      </a>
+      <a class="nav-item" data-section="admin-flags" title="Feature Flags">
+        <span class="nav-dot online" id="nd-admin-flags"></span>
+        <span class="nav-icon">&#x1F6A9;</span>
+        <span class="nav-label">Flags</span>
+      </a>
+      <a class="nav-item" data-section="admin-gmail" title="Gmail Sync Status">
+        <span class="nav-dot online" id="nd-admin-gmail"></span>
+        <span class="nav-icon">&#x1F4E7;</span>
+        <span class="nav-label">Gmail</span>
+      </a>
+      <a class="nav-item" data-section="admin-health" title="System Health">
+        <span class="nav-dot online" id="nd-admin-health"></span>
+        <span class="nav-icon">&#x1F3E5;</span>
+        <span class="nav-label">Health</span>
+      </a>
+      <a class="nav-item" data-section="admin-errors" title="Error Log">
+        <span class="nav-dot online" id="nd-admin-errors"></span>
+        <span class="nav-icon">&#x1F6A8;</span>
+        <span class="nav-label">Errors</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -4838,6 +4865,89 @@ body {
         </div>
       </div>
 
+      <!-- ═══ Admin: Users Panel ═══ -->
+      <div class="panel" id="panel-admin-users">
+        <div class="panel-header">
+          <h2 class="panel-title">All Chefs</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminUsersLoaded=false;loadAdminUsers()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-users">
+              <span class="dot checking"></span>
+              <span id="admin-users-status">Loading...</span>
+            </span>
+          </div>
+        </div>
+        <div id="admin-users-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+        <div id="admin-users-list" style="overflow-y:auto;max-height:calc(100vh - 320px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Feature Flags Panel ═══ -->
+      <div class="panel" id="panel-admin-flags">
+        <div class="panel-header">
+          <h2 class="panel-title">Feature Flags</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminFlagsLoaded=false;loadAdminFlags()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-flags">
+              <span class="dot checking"></span>
+              <span id="admin-flags-status">Loading...</span>
+            </span>
+          </div>
+        </div>
+        <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;line-height:1.5;">
+          Toggle feature flags per chef. Changes are saved immediately.
+        </p>
+        <div id="admin-flags-list" style="overflow-y:auto;max-height:calc(100vh - 320px);"></div>
+      </div>
+
+      <!-- ═══ Admin: Gmail Sync Panel ═══ -->
+      <div class="panel" id="panel-admin-gmail">
+        <div class="panel-header">
+          <h2 class="panel-title">Gmail Sync</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminGmailLoaded=false;loadAdminGmail()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-gmail">
+              <span class="dot checking"></span>
+              <span id="admin-gmail-status">Loading...</span>
+            </span>
+          </div>
+        </div>
+        <div id="admin-gmail-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+        <div id="admin-gmail-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
+      </div>
+
+      <!-- ═══ Admin: System Health Panel ═══ -->
+      <div class="panel" id="panel-admin-health">
+        <div class="panel-header">
+          <h2 class="panel-title">System Health</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminHealthLoaded=false;loadAdminHealth()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-health">
+              <span class="dot checking"></span>
+              <span id="admin-health-status">Loading...</span>
+            </span>
+          </div>
+        </div>
+        <div id="admin-health-tables" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;"></div>
+        <div id="admin-health-warnings" style="margin-bottom:24px;"></div>
+        <div id="admin-health-qol" style=""></div>
+      </div>
+
+      <!-- ═══ Admin: Errors Panel ═══ -->
+      <div class="panel" id="panel-admin-errors">
+        <div class="panel-header">
+          <h2 class="panel-title">Error Log</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-ghost" onclick="adminErrorsLoaded=false;loadAdminErrors()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-admin-errors">
+              <span class="dot checking"></span>
+              <span id="admin-errors-status">Loading...</span>
+            </span>
+          </div>
+        </div>
+        <div id="admin-errors-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+        <div id="admin-errors-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
+      </div>
+
       <!-- ═══ Console ═══ -->
       <div class="console-wrapper" id="console-wrapper">
         <div class="console-resize-handle" id="console-resize-handle"></div>
@@ -5046,6 +5156,11 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'manual') loadManual()
     if (section === 'marketing') loadMarketingPanel()
     if (section === 'remy') loadRemyPanel()
+    if (section === 'admin-users') loadAdminUsers()
+    if (section === 'admin-flags') loadAdminFlags()
+    if (section === 'admin-gmail') loadAdminGmail()
+    if (section === 'admin-health') loadAdminHealth()
+    if (section === 'admin-errors') loadAdminErrors()
   })
 })
 
@@ -11068,6 +11183,362 @@ function renderRetroAgents(el) {
   </div>`
 
   el.innerHTML = html
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ADMIN PANELS
+// ══════════════════════════════════════════════════════════════════
+
+let adminUsersLoaded = false
+let adminFlagsLoaded = false
+let adminGmailLoaded = false
+let adminHealthLoaded = false
+let adminErrorsLoaded = false
+
+// ── Admin: Users ──────────────────────────────────────────────────
+
+async function loadAdminUsers() {
+  if (adminUsersLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/users`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-users-status', data.error || 'Error'); return }
+
+    setText('admin-users-status', `${data.total} chefs`)
+    const dot = document.querySelector('#badge-admin-users .dot')
+    if (dot) { dot.className = 'dot online' }
+
+    // Summary cards
+    const totalGmv = data.chefs.reduce((s, c) => s + c.gmvCents, 0)
+    const totalEvents = data.chefs.reduce((s, c) => s + c.eventCount, 0)
+    const totalClients = data.chefs.reduce((s, c) => s + c.clientCount, 0)
+    const summaryEl = document.getElementById('admin-users-summary')
+    if (summaryEl) {
+      summaryEl.innerHTML = [
+        adminStatCard('Total Chefs', data.total, 'var(--brand)'),
+        adminStatCard('Total Events', totalEvents, 'var(--info)'),
+        adminStatCard('Total Clients', totalClients, '#a855f7'),
+        adminStatCard('Platform GMV', '$' + (totalGmv / 100).toLocaleString('en-US', { minimumFractionDigits: 0 }), 'var(--success)'),
+      ].join('')
+    }
+
+    // User list
+    const listEl = document.getElementById('admin-users-list')
+    if (listEl) {
+      let html = ''
+      for (const chef of data.chefs) {
+        const joined = new Date(chef.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        const gmv = (chef.gmvCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 })
+        html += `<div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;display:flex;align-items:center;gap:16px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--brand-dim);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">&#x1F468;&#x200D;&#x1F373;</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;color:var(--text-primary);">${escapeHtml(chef.business_name || 'Unnamed')}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(chef.email || '')}</div>
+          </div>
+          <div style="text-align:right;font-size:12px;color:var(--text-secondary);display:flex;gap:16px;flex-shrink:0;">
+            <div><span style="color:var(--text-muted);">Events</span><br><strong>${chef.eventCount}</strong></div>
+            <div><span style="color:var(--text-muted);">Clients</span><br><strong>${chef.clientCount}</strong></div>
+            <div><span style="color:var(--text-muted);">GMV</span><br><strong>$${gmv}</strong></div>
+            <div><span style="color:var(--text-muted);">Joined</span><br><strong>${joined}</strong></div>
+          </div>
+        </div>`
+      }
+      if (!data.chefs.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No chefs found</div>'
+      listEl.innerHTML = html
+    }
+    adminUsersLoaded = true
+  } catch (err) {
+    setText('admin-users-status', 'Connection error')
+  }
+}
+
+// ── Admin: Feature Flags ──────────────────────────────────────────
+
+const KNOWN_FLAGS = ['ai_pricing_suggestions', 'ai_menu_recommendations', 'social_platform', 'advanced_analytics', 'beta_features']
+
+async function loadAdminFlags() {
+  if (adminFlagsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/flags`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-flags-status', data.error || 'Error'); return }
+
+    setText('admin-flags-status', `${data.total} chefs`)
+    const dot = document.querySelector('#badge-admin-flags .dot')
+    if (dot) { dot.className = 'dot online' }
+
+    const listEl = document.getElementById('admin-flags-list')
+    if (!listEl) return
+
+    let html = ''
+    // Header row
+    html += `<div style="display:grid;grid-template-columns:200px repeat(${KNOWN_FLAGS.length}, 1fr);gap:8px;padding:8px 12px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;border-bottom:1px solid var(--border);margin-bottom:8px;">
+      <div>Chef</div>
+      ${KNOWN_FLAGS.map(f => `<div style="text-align:center;">${f.replace(/_/g, ' ')}</div>`).join('')}
+    </div>`
+
+    for (const chef of data.chefs) {
+      const flags = data.flagsByChef[chef.id] || {}
+      html += `<div style="display:grid;grid-template-columns:200px repeat(${KNOWN_FLAGS.length}, 1fr);gap:8px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;align-items:center;">
+        <div style="font-weight:600;font-size:13px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(chef.business_name || '')}">${escapeHtml(chef.business_name || 'Unnamed')}</div>
+        ${KNOWN_FLAGS.map(f => {
+          const enabled = flags[f] === true
+          const id = `flag-${chef.id}-${f}`
+          return `<div style="text-align:center;">
+            <button id="${id}" onclick="toggleFlag('${chef.id}','${f}',${!enabled})" style="
+              width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;position:relative;
+              background:${enabled ? 'var(--success)' : 'var(--bg-hover)'};transition:background 200ms ease;
+            ">
+              <span style="
+                position:absolute;top:2px;${enabled ? 'left:22px' : 'left:2px'};
+                width:20px;height:20px;border-radius:50%;background:white;transition:left 200ms ease;
+              "></span>
+            </button>
+          </div>`
+        }).join('')}
+      </div>`
+    }
+
+    if (!data.chefs.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No chefs found</div>'
+    listEl.innerHTML = html
+    adminFlagsLoaded = true
+  } catch (err) {
+    setText('admin-flags-status', 'Connection error')
+  }
+}
+
+async function toggleFlag(chefId, flagName, enabled) {
+  const btn = document.getElementById(`flag-${chefId}-${flagName}`)
+  if (btn) btn.style.opacity = '0.5'
+  try {
+    const res = await fetch(`${API}/api/admin/flags`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chef_id: chefId, flag_name: flagName, enabled }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      adminFlagsLoaded = false
+      loadAdminFlags()
+    } else {
+      alert('Failed to toggle flag: ' + (data.error || 'Unknown error'))
+      if (btn) btn.style.opacity = '1'
+    }
+  } catch (err) {
+    alert('Failed to toggle flag: ' + err.message)
+    if (btn) btn.style.opacity = '1'
+  }
+}
+
+// ── Admin: Gmail Sync ─────────────────────────────────────────────
+
+async function loadAdminGmail() {
+  if (adminGmailLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/gmail-sync`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-gmail-status', data.error || 'Error'); return }
+
+    setText('admin-gmail-status', `${data.total} connections`)
+    const dot = document.querySelector('#badge-admin-gmail .dot')
+    if (dot) { dot.className = 'dot online' }
+
+    const connected = data.connections.filter(c => c.gmailConnected).length
+    const totalSynced = data.connections.reduce((s, c) => s + c.totalSynced, 0)
+    const totalErrors = data.connections.reduce((s, c) => s + c.errorCount, 0)
+
+    const summaryEl = document.getElementById('admin-gmail-summary')
+    if (summaryEl) {
+      summaryEl.innerHTML = [
+        adminStatCard('Connected', connected + ' / ' + data.total, 'var(--success)'),
+        adminStatCard('Emails Synced', totalSynced.toLocaleString(), 'var(--info)'),
+        adminStatCard('Errors', totalErrors.toLocaleString(), totalErrors > 0 ? 'var(--error)' : 'var(--text-muted)'),
+      ].join('')
+    }
+
+    const listEl = document.getElementById('admin-gmail-list')
+    if (listEl) {
+      let html = ''
+      for (const conn of data.connections) {
+        const statusColor = conn.gmailConnected ? 'var(--success)' : 'var(--text-muted)'
+        const statusLabel = conn.gmailConnected ? 'Connected' : 'Disconnected'
+        const lastSync = conn.lastSyncAt ? adminTimeAgo(new Date(conn.lastSyncAt)) : 'Never'
+        const errorRate = conn.totalSynced > 0 ? ((conn.errorCount / conn.totalSynced) * 100).toFixed(1) + '%' : 'N/A'
+
+        html += `<div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;display:flex;align-items:center;gap:16px;">
+          <span style="width:12px;height:12px;border-radius:50%;background:${statusColor};flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;color:var(--text-primary);">${escapeHtml(conn.chefName)}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(conn.connectedEmail || 'No email')}</div>
+          </div>
+          <div style="display:flex;gap:16px;font-size:12px;color:var(--text-secondary);flex-shrink:0;text-align:right;">
+            <div><span style="color:var(--text-muted);">Status</span><br><strong style="color:${statusColor};">${statusLabel}</strong></div>
+            <div><span style="color:var(--text-muted);">Synced</span><br><strong>${conn.totalSynced}</strong></div>
+            <div><span style="color:var(--text-muted);">Errors</span><br><strong style="color:${conn.errorCount > 0 ? 'var(--error)' : 'inherit'};">${conn.errorCount}</strong></div>
+            <div><span style="color:var(--text-muted);">Error Rate</span><br><strong>${errorRate}</strong></div>
+            <div><span style="color:var(--text-muted);">Last Sync</span><br><strong>${lastSync}</strong></div>
+          </div>
+        </div>`
+      }
+      if (!data.connections.length) html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No Gmail connections found</div>'
+      listEl.innerHTML = html
+    }
+    adminGmailLoaded = true
+  } catch (err) {
+    setText('admin-gmail-status', 'Connection error')
+  }
+}
+
+// ── Admin: System Health ──────────────────────────────────────────
+
+async function loadAdminHealth() {
+  if (adminHealthLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/health`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-health-status', data.error || 'Error'); return }
+
+    setText('admin-health-status', 'OK')
+    const dot = document.querySelector('#badge-admin-health .dot')
+    if (dot) { dot.className = 'dot online' }
+
+    // Table row counts
+    const tablesEl = document.getElementById('admin-health-tables')
+    if (tablesEl) {
+      const tableIcons = { chefs: '&#x1F468;&#x200D;&#x1F373;', clients: '&#x1F464;', events: '&#x1F4C5;', ledger_entries: '&#x1F4B0;', inquiries: '&#x1F4E8;', chat_messages: '&#x1F4AC;' }
+      let html = ''
+      for (const [table, count] of Object.entries(data.tableCounts)) {
+        html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">${tableIcons[table] || ''} ${table.replace(/_/g, ' ')}</div>
+          <div style="font-size:28px;font-weight:700;color:var(--brand);line-height:1;">${count.toLocaleString()}</div>
+        </div>`
+      }
+      tablesEl.innerHTML = html
+    }
+
+    // Warnings
+    const warningsEl = document.getElementById('admin-health-warnings')
+    if (warningsEl) {
+      let html = '<h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Integrity Signals</h3>'
+      const signals = [
+        { label: 'Zombie Events (stale > 30 days)', value: data.zombieEvents, color: data.zombieEvents > 0 ? 'var(--warning)' : 'var(--success)' },
+        { label: 'Orphaned Clients (no tenant)', value: data.orphanedClients, color: data.orphanedClients > 0 ? 'var(--error)' : 'var(--success)' },
+      ]
+      html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">'
+      for (const s of signals) {
+        html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;border-left:3px solid ${s.color};">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${s.label}</div>
+          <div style="font-size:24px;font-weight:700;color:${s.color};">${s.value}</div>
+        </div>`
+      }
+      html += '</div>'
+      warningsEl.innerHTML = html
+    }
+
+    // QOL metrics
+    const qolEl = document.getElementById('admin-health-qol')
+    if (qolEl && data.qolMetrics) {
+      let html = '<h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">QOL Metrics (Last 30 Days)</h3>'
+      html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">'
+      const metrics = Object.entries(data.qolMetrics)
+      if (metrics.length === 0) {
+        html += '<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;">No QOL events recorded</div>'
+      }
+      for (const [key, count] of metrics) {
+        const label = key.replace(/_/g, ' ')
+        const isError = key.includes('fail') || key.includes('error')
+        html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">${label}</div>
+          <div style="font-size:22px;font-weight:700;color:${isError ? 'var(--error)' : 'var(--text-primary)'};">${count}</div>
+        </div>`
+      }
+      html += '</div>'
+      qolEl.innerHTML = html
+    }
+    adminHealthLoaded = true
+  } catch (err) {
+    setText('admin-health-status', 'Connection error')
+  }
+}
+
+// ── Admin: Errors ─────────────────────────────────────────────────
+
+async function loadAdminErrors() {
+  if (adminErrorsLoaded) return
+  try {
+    const res = await fetch(`${API}/api/admin/errors`)
+    const data = await res.json()
+    if (!data.ok) { setText('admin-errors-status', data.error || 'Error'); return }
+
+    const total = data.summary.total
+    setText('admin-errors-status', total === 0 ? 'All clear' : `${total} errors`)
+    const dot = document.querySelector('#badge-admin-errors .dot')
+    if (dot) { dot.className = total === 0 ? 'dot online' : 'dot error' }
+
+    // Summary
+    const summaryEl = document.getElementById('admin-errors-summary')
+    if (summaryEl) {
+      const s = data.summary
+      summaryEl.innerHTML = [
+        adminStatCard('Notifications', s.notifications, s.notifications > 0 ? 'var(--error)' : 'var(--success)'),
+        adminStatCard('Gmail Sync', s.gmail, s.gmail > 0 ? 'var(--error)' : 'var(--success)'),
+        adminStatCard('Remy', s.remy, s.remy > 0 ? 'var(--warning)' : 'var(--success)'),
+        adminStatCard('Automation', s.automation, s.automation > 0 ? 'var(--warning)' : 'var(--success)'),
+      ].join('')
+    }
+
+    // Error list
+    const listEl = document.getElementById('admin-errors-list')
+    if (listEl) {
+      let html = ''
+      const sourceColors = {
+        'Notifications': 'var(--error)',
+        'Gmail Sync': '#3b82f6',
+      }
+
+      for (const err of data.errors) {
+        const time = err.created_at ? adminTimeAgo(new Date(err.created_at)) : 'Unknown'
+        const color = sourceColors[err.source] || 'var(--warning)'
+        html += `<div style="padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;border-left:3px solid ${color};">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:${color}20;color:${color};">${escapeHtml(err.source)}</span>
+              ${err.chefName ? `<span style="font-size:12px;color:var(--text-secondary);">${escapeHtml(err.chefName)}</span>` : ''}
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">${time}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-primary);line-height:1.5;word-break:break-word;font-family:monospace;font-size:12px;">${escapeHtml(err.message || 'No error message')}</div>
+        </div>`
+      }
+      if (!data.errors.length) html = '<div style="text-align:center;padding:40px;color:var(--success);font-size:16px;">&#x2705; No errors found. Everything is clean.</div>'
+      listEl.innerHTML = html
+    }
+    adminErrorsLoaded = true
+  } catch (err) {
+    setText('admin-errors-status', 'Connection error')
+  }
+}
+
+// ── Admin Helpers ─────────────────────────────────────────────────
+
+function adminStatCard(label, value, color) {
+  return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:4px;">
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">${label}</div>
+    <div style="font-size:28px;font-weight:700;color:${color};line-height:1;">${value}</div>
+  </div>`
+}
+
+function adminTimeAgo(date) {
+  const now = new Date()
+  const diff = now - date
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return mins + 'm ago'
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return hours + 'h ago'
+  const days = Math.floor(hours / 24)
+  if (days < 30) return days + 'd ago'
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 </script>

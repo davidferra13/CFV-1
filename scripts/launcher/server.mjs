@@ -6851,6 +6851,297 @@ async function handleRequest(req, res) {
     return json(res, await getRetroactiveActivity())
   }
 
+  // ── Admin: All Chefs (Users Panel) ────────────────────────────
+  if (path === '/api/admin/users' && method === 'GET') {
+    try {
+      const chefsRes = await supabaseQuery('chefs', {
+        select: 'id,business_name,email,created_at',
+        order: 'created_at.desc',
+        limit: 500,
+      })
+      if (!chefsRes.ok) return json(res, chefsRes)
+      const chefs = chefsRes.data || []
+      const chefIds = chefs.map(c => c.id)
+
+      // Batch counts
+      const [eventsRes, clientsRes, ledgerRes] = await Promise.all([
+        supabaseQuery('events', { select: 'tenant_id', filters: [`tenant_id=in.(${chefIds.join(',')})`], limit: 10000 }),
+        supabaseQuery('clients', { select: 'tenant_id', filters: [`tenant_id=in.(${chefIds.join(',')})`], limit: 10000 }),
+        supabaseQuery('ledger_entries', {
+          select: 'tenant_id,amount_cents',
+          filters: [`tenant_id=in.(${chefIds.join(',')})`, 'entry_type=eq.payment'],
+          limit: 20000,
+        }),
+      ])
+
+      const eventMap = {}, clientMap = {}, gmvMap = {}
+      for (const e of (eventsRes.data || [])) eventMap[e.tenant_id] = (eventMap[e.tenant_id] || 0) + 1
+      for (const c of (clientsRes.data || [])) clientMap[c.tenant_id] = (clientMap[c.tenant_id] || 0) + 1
+      for (const l of (ledgerRes.data || [])) gmvMap[l.tenant_id] = (gmvMap[l.tenant_id] || 0) + (l.amount_cents || 0)
+
+      const enriched = chefs.map(c => ({
+        ...c,
+        eventCount: eventMap[c.id] || 0,
+        clientCount: clientMap[c.id] || 0,
+        gmvCents: gmvMap[c.id] || 0,
+      }))
+
+      return json(res, { ok: true, chefs: enriched, total: enriched.length })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+
+  // ── Admin: Feature Flags ────────────────────────────────────────
+  if (path === '/api/admin/flags' && method === 'GET') {
+    try {
+      const [chefsRes, flagsRes] = await Promise.all([
+        supabaseQuery('chefs', { select: 'id,business_name', order: 'business_name.asc', limit: 500 }),
+        supabaseQuery('chef_feature_flags', { select: 'chef_id,flag_name,enabled,updated_at', limit: 10000 }),
+      ])
+      if (!chefsRes.ok) return json(res, chefsRes)
+
+      const flagsByChef = {}
+      for (const f of (flagsRes.data || [])) {
+        if (!flagsByChef[f.chef_id]) flagsByChef[f.chef_id] = {}
+        flagsByChef[f.chef_id][f.flag_name] = f.enabled
+      }
+
+      return json(res, { ok: true, chefs: chefsRes.data || [], flagsByChef, total: (chefsRes.data || []).length })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+
+  // ── Admin: Toggle Feature Flag ──────────────────────────────────
+  if (path === '/api/admin/flags' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { chef_id, flag_name, enabled } = body
+      if (!chef_id || !flag_name || typeof enabled !== 'boolean') {
+        return json(res, { ok: false, error: 'Missing chef_id, flag_name, or enabled' })
+      }
+      // Upsert via PostgREST
+      const url = `${CONFIG.supabaseUrl}/rest/v1/chef_feature_flags`
+      const upsertRes = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.supabaseServiceKey,
+          'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify({ chef_id, flag_name, enabled, updated_at: new Date().toISOString() }),
+      })
+      if (!upsertRes.ok) {
+        const errText = await upsertRes.text()
+        return json(res, { ok: false, error: `Supabase ${upsertRes.status}: ${errText.slice(0, 300)}` })
+      }
+      return json(res, { ok: true })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+
+  // ── Admin: Gmail Sync Status ────────────────────────────────────
+  if (path === '/api/admin/gmail-sync' && method === 'GET') {
+    try {
+      const [logsRes, connectionsRes] = await Promise.all([
+        supabaseQuery('gmail_sync_log', { select: 'tenant_id,synced_at,error', order: 'synced_at.desc', limit: 5000 }),
+        supabaseQuery('google_connections', {
+          select: 'chef_id,connected_email,gmail_connected,gmail_last_sync_at,gmail_sync_errors',
+          limit: 500,
+        }),
+      ])
+
+      // Aggregate sync logs by tenant
+      const syncMap = {}
+      for (const row of (logsRes.data || [])) {
+        if (!syncMap[row.tenant_id]) syncMap[row.tenant_id] = { total: 0, errors: 0, lastSync: row.synced_at }
+        syncMap[row.tenant_id].total++
+        if (row.error) syncMap[row.tenant_id].errors++
+      }
+
+      // Get chef names for all relevant tenant IDs
+      const allIds = new Set([...Object.keys(syncMap), ...(connectionsRes.data || []).map(c => c.chef_id)])
+      let chefNameMap = {}
+      if (allIds.size > 0) {
+        const namesRes = await supabaseQuery('chefs', {
+          select: 'id,business_name,email',
+          filters: [`id=in.(${[...allIds].join(',')})`],
+          limit: 500,
+        })
+        for (const c of (namesRes.data || [])) chefNameMap[c.id] = c
+      }
+
+      // Build connection-based rows (primary view)
+      const rows = (connectionsRes.data || []).map(conn => {
+        const chef = chefNameMap[conn.chef_id] || {}
+        const sync = syncMap[conn.chef_id] || {}
+        return {
+          chefId: conn.chef_id,
+          chefName: chef.business_name || chef.email || 'Unknown',
+          connectedEmail: conn.connected_email,
+          gmailConnected: conn.gmail_connected,
+          lastSyncAt: conn.gmail_last_sync_at || sync.lastSync || null,
+          totalSynced: sync.total || 0,
+          errorCount: sync.errors || 0,
+          syncErrors: conn.gmail_sync_errors || 0,
+        }
+      })
+
+      return json(res, { ok: true, connections: rows, total: rows.length })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+
+  // ── Admin: System Health (aggregated) ───────────────────────────
+  if (path === '/api/admin/health' && method === 'GET') {
+    try {
+      const tables = ['chefs', 'clients', 'events', 'ledger_entries', 'inquiries', 'chat_messages']
+      const countPromises = tables.map(async (table) => {
+        const url = `${CONFIG.supabaseUrl}/rest/v1/${table}?select=id&limit=0`
+        const r = await fetch(url, {
+          method: 'HEAD',
+          headers: {
+            'apikey': CONFIG.supabaseServiceKey,
+            'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+            'Prefer': 'count=exact',
+          },
+        })
+        const count = parseInt(r.headers.get('content-range')?.split('/')[1] || '0', 10)
+        return { table, count }
+      })
+
+      const counts = await Promise.all(countPromises)
+      const tableCounts = {}
+      for (const { table, count } of counts) tableCounts[table] = count
+
+      // Zombie events (not completed/cancelled, not updated in 30 days)
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
+      const zombieRes = await supabaseQuery('events', {
+        select: 'id',
+        filters: [
+          'status=not.in.(completed,cancelled)',
+          `updated_at=lt.${thirtyDaysAgo}`,
+        ],
+        limit: 1000,
+      })
+
+      // Orphaned clients (no tenant)
+      const orphanRes = await supabaseQuery('clients', {
+        select: 'id',
+        filters: ['tenant_id=is.null'],
+        limit: 1000,
+      })
+
+      // QOL metrics (last 30 days)
+      const qolRes = await supabaseQuery('qol_metric_events', {
+        select: 'metric_key,created_at',
+        filters: [`created_at=gte.${thirtyDaysAgo}`],
+        limit: 5000,
+      })
+      const qolCounts = {}
+      for (const row of (qolRes.data || [])) {
+        qolCounts[row.metric_key] = (qolCounts[row.metric_key] || 0) + 1
+      }
+
+      return json(res, {
+        ok: true,
+        tableCounts,
+        zombieEvents: (zombieRes.data || []).length,
+        orphanedClients: (orphanRes.data || []).length,
+        qolMetrics: qolCounts,
+      })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+
+  // ── Admin: Aggregated Errors ────────────────────────────────────
+  if (path === '/api/admin/errors' && method === 'GET') {
+    try {
+      const [notifRes, gmailRes, remyRes, autoRes] = await Promise.all([
+        supabaseQuery('notification_delivery_log', {
+          select: 'id,error_message,tenant_id,sent_at',
+          filters: ['status=eq.failed'],
+          order: 'sent_at.desc',
+          limit: 100,
+        }),
+        supabaseQuery('gmail_sync_log', {
+          select: 'id,error,tenant_id,synced_at',
+          filters: ['error=not.is.null'],
+          order: 'synced_at.desc',
+          limit: 100,
+        }),
+        supabaseQuery('remy_action_audit_log', {
+          select: 'id,task_type,error_message,tenant_id,created_at',
+          filters: ['status=eq.error'],
+          order: 'created_at.desc',
+          limit: 100,
+        }),
+        supabaseQuery('automation_execution_log', {
+          select: 'id,trigger_type,last_error,tenant_id,created_at',
+          filters: ['status=eq.failed'],
+          order: 'created_at.desc',
+          limit: 100,
+        }),
+      ])
+
+      // Collect all tenant IDs for name resolution
+      const tenantIds = new Set()
+      const allErrors = []
+
+      for (const row of (notifRes.data || [])) {
+        if (row.tenant_id) tenantIds.add(row.tenant_id)
+        allErrors.push({ id: row.id, source: 'Notifications', message: row.error_message, tenant_id: row.tenant_id, created_at: row.sent_at })
+      }
+      for (const row of (gmailRes.data || [])) {
+        if (row.tenant_id) tenantIds.add(row.tenant_id)
+        allErrors.push({ id: row.id, source: 'Gmail Sync', message: row.error, tenant_id: row.tenant_id, created_at: row.synced_at })
+      }
+      for (const row of (remyRes.data || [])) {
+        if (row.tenant_id) tenantIds.add(row.tenant_id)
+        allErrors.push({ id: row.id, source: `Remy (${row.task_type || 'unknown'})`, message: row.error_message, tenant_id: row.tenant_id, created_at: row.created_at })
+      }
+      for (const row of (autoRes.data || [])) {
+        if (row.tenant_id) tenantIds.add(row.tenant_id)
+        allErrors.push({ id: row.id, source: `Automation (${row.trigger_type || 'unknown'})`, message: row.last_error, tenant_id: row.tenant_id, created_at: row.created_at })
+      }
+
+      // Resolve chef names
+      let chefMap = {}
+      if (tenantIds.size > 0) {
+        const namesRes = await supabaseQuery('chefs', {
+          select: 'id,business_name',
+          filters: [`id=in.(${[...tenantIds].join(',')})`],
+          limit: 500,
+        })
+        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
+      }
+
+      // Enrich and sort
+      for (const err of allErrors) {
+        err.chefName = chefMap[err.tenant_id] || null
+      }
+      allErrors.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+
+      // Summary counts
+      const summary = {
+        notifications: (notifRes.data || []).length,
+        gmail: (gmailRes.data || []).length,
+        remy: (remyRes.data || []).length,
+        automation: (autoRes.data || []).length,
+        total: allErrors.length,
+      }
+
+      return json(res, { ok: true, errors: allErrors.slice(0, 200), summary })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+
   // 404
   res.writeHead(404)
   res.end('Not found')
