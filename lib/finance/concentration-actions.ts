@@ -21,7 +21,7 @@ export async function getConcentrationRisk(): Promise<ConcentrationRisk | null> 
     .from('ledger_entries')
     .select('amount_cents, event_id, events!inner(client_id, clients!inner(id, full_name))')
     .eq('tenant_id', tenantId)
-    .eq('type', 'payment')
+    .eq('entry_type', 'payment')
     .gte('created_at', twelveMonthsAgo.toISOString())
 
   if (error) throw new Error(`Failed to fetch ledger entries: ${error.message}`)

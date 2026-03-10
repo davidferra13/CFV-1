@@ -24,6 +24,7 @@ const COVERAGE_SOURCES: CoverageSource[] = [
 ]
 
 const EXCLUDED_ROUTE_PATTERNS: RegExp[] = [
+  /^\/demo$/i,
   /^\/clients\/communication\/upcoming-touchpoints$/i,
   /^\/my-quotes\/[0-9a-f-]+$/i,
 ]

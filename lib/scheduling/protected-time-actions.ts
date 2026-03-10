@@ -2,7 +2,7 @@
 
 // Protected Time & Rest Day Blocking — Server Actions
 // Creates and manages personal-time blocks in the event_prep_blocks table.
-// block_type column was added by migration 20260322000012_capacity_protection.sql.
+// The canonical table comes from migration 20260304000001_event_prep_blocks.sql.
 // Only blocks with block_type IN ('protected_personal', 'rest') are managed here.
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -20,6 +20,14 @@ export type ProtectedBlock = {
   created_at: string
 }
 
+function isMissingPrepBlocksTable(error: { code?: string; message?: string } | null | undefined) {
+  return (
+    error?.code === 'PGRST205' &&
+    typeof error.message === 'string' &&
+    error.message.includes('event_prep_blocks')
+  )
+}
+
 // ─── Create ───────────────────────────────────────────────────────────────────
 
 export async function createProtectedBlock(input: {
@@ -35,12 +43,9 @@ export async function createProtectedBlock(input: {
     throw new Error('Invalid block_type for protected block')
   }
 
-  // event_prep_blocks uses chef_id (not tenant_id) — see migration 20260304000001
-  // block_type column added by migration 20260322000012
-  // We store start_date in block_date; end_date in a notes-friendly way via title + notes.
-  // Since event_prep_blocks only has block_date (not start/end), we insert one row per day
-  // OR we store end_date in the notes column. Using notes for end_date is the pragmatic
-  // approach until a dedicated table is added.
+  // event_prep_blocks uses chef_id (not tenant_id).
+  // Protected time uses block_date as the anchor date and stores multi-day end dates in notes
+  // until the product has a dedicated date-range table for protected blocks.
   const { data, error } = await supabase
     .from('event_prep_blocks' as any)
     .insert({
@@ -56,6 +61,9 @@ export async function createProtectedBlock(input: {
     .single()
 
   if (error) {
+    if (isMissingPrepBlocksTable(error)) {
+      throw new Error('Protected time is unavailable until scheduling migrations are applied.')
+    }
     console.error('[createProtectedBlock] Error:', error)
     throw new Error('Failed to create protected block')
   }
@@ -78,7 +86,8 @@ export async function deleteProtectedBlock(id: string): Promise<{ success: boole
     .eq('id', id)
     .single()
 
-  if (!existing || (existing as any).chef_id !== chef.tenantId!) {
+  const ownerId = (existing as Record<string, unknown>)?.chef_id
+  if (!existing || ownerId !== chef.tenantId!) {
     throw new Error('Block not found or access denied')
   }
 
@@ -88,6 +97,9 @@ export async function deleteProtectedBlock(id: string): Promise<{ success: boole
     .eq('id', id)
 
   if (error) {
+    if (isMissingPrepBlocksTable(error)) {
+      throw new Error('Protected time is unavailable until scheduling migrations are applied.')
+    }
     console.error('[deleteProtectedBlock] Error:', error)
     throw new Error('Failed to delete protected block')
   }
@@ -111,6 +123,9 @@ export async function listProtectedBlocks(): Promise<ProtectedBlock[]> {
     .order('block_date', { ascending: true })
 
   if (error) {
+    if (isMissingPrepBlocksTable(error)) {
+      return []
+    }
     console.error('[listProtectedBlocks] Error:', error)
     return []
   }

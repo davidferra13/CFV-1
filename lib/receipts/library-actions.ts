@@ -211,7 +211,7 @@ export async function getAllReceiptsForChef(
       id, event_id, client_id, photo_url, storage_path, notes,
       ocr_raw, upload_status, approved_at, created_at,
       events(occasion, event_date),
-      clients(name),
+      clients(full_name),
       receipt_extractions(
         id, store_name, store_location, purchase_date, payment_method,
         subtotal_cents, tax_cents, total_cents, extraction_confidence,
@@ -266,7 +266,7 @@ export async function getAllReceiptsForChef(
       eventName: event?.occasion ?? null,
       eventDate: event?.event_date ?? null,
       clientId: row.client_id ?? null,
-      clientName: client?.name ?? null,
+      clientName: client?.full_name ?? null,
       photoUrl,
       storagePath: row.storage_path ?? null,
       notes: row.notes ?? null,
@@ -325,10 +325,10 @@ export async function getClientOptionsForChef(): Promise<ClientOption[]> {
 
   const { data } = await supabase
     .from('clients')
-    .select('id, name')
+    .select('id, full_name')
     .eq('tenant_id', user.tenantId!)
-    .order('name', { ascending: true })
+    .order('full_name', { ascending: true })
     .limit(200)
 
-  return (data ?? []).map((c: any) => ({ id: c.id, name: c.name }))
+  return (data ?? []).map((c: any) => ({ id: c.id, name: c.full_name ?? 'Unnamed client' }))
 }

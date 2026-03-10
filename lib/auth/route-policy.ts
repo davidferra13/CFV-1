@@ -25,8 +25,15 @@ export const CHEF_PROTECTED_PATHS = [
 
 export const CLIENT_PROTECTED_PATHS = [
   '/my-events',
+  '/my-inquiries',
   '/my-quotes',
   '/my-chat',
+  '/my-meals',
+  '/my-hub',
+  '/discover',
+  '/my-spending',
+  '/my-feedback',
+  '/my-loyalty',
   '/my-profile',
   '/my-rewards',
   '/book-now',
@@ -72,8 +79,12 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/chefs',
   '/open-tables',
   '/network/connect',
+  '/photos',
+  '/rebook',
+  '/refer',
   '/survey',
   '/book',
+  '/order',
   '/embed',
   '/demo',
   '/staff-login',
@@ -84,6 +95,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/hub',
   '/g',
   '/availability',
+  '/client',
 ] as const
 
 export const ADMIN_PATHS = ['/admin'] as const
