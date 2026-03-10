@@ -18,6 +18,8 @@ import {
   CreditCard,
   MapPin,
   BarChart3,
+  TrendingUp,
+  Star,
 } from '@/components/ui/icons'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
@@ -189,6 +191,22 @@ export default async function CommerceDashboardPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <BarChart3 className="w-5 h-5 text-brand-500" />
               <span className="text-stone-200 font-medium">Clover Parity</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/analytics">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Analytics</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/specials">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <Star className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Daily Specials</span>
             </CardContent>
           </Card>
         </Link>

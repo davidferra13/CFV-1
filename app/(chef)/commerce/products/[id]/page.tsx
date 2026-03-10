@@ -5,11 +5,12 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { getProduct } from '@/lib/commerce/product-actions'
 import { ProductForm } from '@/components/commerce/product-form'
+import { ProductModifierAssignment } from '@/components/commerce/product-modifier-assignment'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Edit Product — ChefFlow' }
+export const metadata: Metadata = { title: 'Edit Product - ChefFlow' }
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
@@ -35,6 +36,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         <h1 className="text-3xl font-bold text-stone-100">Edit Product</h1>
       </div>
       <ProductForm product={product} />
+      <ProductModifierAssignment productId={id} productName={product.name} />
     </div>
   )
 }
