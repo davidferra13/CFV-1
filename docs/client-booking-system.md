@@ -9,7 +9,7 @@ Added a Calendly-style multi-step booking experience to the existing `/book/[che
 
 ## New Database Tables
 
-Migration: `supabase/migrations/20260330000095_client_booking_system.sql`
+Migration: `supabase/migrations/20260330000100_client_booking_system.sql`
 
 | Table                        | Purpose                                                                                                                      |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |

@@ -21,7 +21,7 @@ No AI involvement. Pure math.
 | `components/finance/food-cost-dashboard.tsx`                             | Full dashboard component                              |
 | `components/finance/food-cost-widget.tsx`                                | Compact widget for main dashboard                     |
 | `app/(chef)/finance/food-cost/page.tsx`                                  | Food cost page                                        |
-| `supabase/migrations/20260331000020_food_cost_and_customer_feedback.sql` | Adds `food_cost_target_percent` to `chef_preferences` |
+| `supabase/migrations/20260331000036_food_cost_and_customer_feedback.sql` | Adds `food_cost_target_percent` to `chef_preferences` |
 
 ## Server Actions
 

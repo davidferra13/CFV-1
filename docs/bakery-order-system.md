@@ -13,7 +13,7 @@ Two features for bakery operations:
 
 ### Database
 
-Table: `bakery_orders` (migration `20260331000018_bakery_orders.sql`)
+Table: `bakery_orders` (migration `20260331000033_bakery_orders.sql`)
 
 - Tenant-scoped via `tenant_id` referencing `chefs(id)`
 - Optional link to existing clients via `client_id`

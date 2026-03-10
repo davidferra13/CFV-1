@@ -91,7 +91,7 @@ Three bakery-specific features added to ChefFlow for bakeries that sell wholesal
 
 ## Migration
 
-**File:** `supabase/migrations/20260331000019_bakery_wholesale_tasting_seasonal.sql`
+**File:** `supabase/migrations/20260331000034_bakery_wholesale_tasting_seasonal.sql`
 
 All four tables (wholesale_accounts, wholesale_orders, bakery_tastings, bakery_seasonal_items) created in a single additive migration. All have RLS enabled with tenant isolation policies. Indexes on delivery_date, tasting_date, and seasonal date ranges.
 

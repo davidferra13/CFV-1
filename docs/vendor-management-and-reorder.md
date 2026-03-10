@@ -8,7 +8,7 @@ Enhances the existing vendor directory with reliability tracking, per-ingredient
 
 ### What was added
 
-**Migration** (`20260331000020_vendor_hub_and_reorder.sql`):
+**Migration** (`20260331000037_vendor_hub_and_reorder.sql`):
 
 - Added `reliability_score` (numeric) and `minimum_order_cents` (integer) columns to `vendors` table
 - New `vendor_preferred_ingredients` table: maps each ingredient to its preferred vendor (chef_id, ingredient_name unique constraint)

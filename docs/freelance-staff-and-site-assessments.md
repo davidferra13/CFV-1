@@ -11,7 +11,7 @@ Allows chefs to manage freelance and temporary staff separately from regular tea
 ### Database changes
 
 - Added columns to `staff_members`: `staff_type` (regular/freelance), `day_rate_cents`, `agency_name`, `payment_terms`, `tax_id_on_file`, `contract_notes`
-- Migration: `20260331000005_freelance_staff_and_site_assessments.sql`
+- Migration: `20260331000029_freelance_staff_and_site_assessments.sql`
 
 ### Files
 

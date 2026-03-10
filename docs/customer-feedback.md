@@ -23,7 +23,7 @@ All scoring is deterministic (Formula > AI). NPS calculation: (promoters - detra
 | `components/feedback/feedback-dashboard.tsx`                             | Full feedback dashboard                               |
 | `app/(chef)/feedback/page.tsx`                                           | Chef feedback management page                         |
 | `app/feedback/[token]/page.tsx`                                          | Public feedback form (no auth)                        |
-| `supabase/migrations/20260331000020_food_cost_and_customer_feedback.sql` | Creates feedback_requests + feedback_responses tables |
+| `supabase/migrations/20260331000036_food_cost_and_customer_feedback.sql` | Creates feedback_requests + feedback_responses tables |
 
 ## Database Tables
 

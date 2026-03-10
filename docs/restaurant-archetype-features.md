@@ -10,7 +10,7 @@ Daily food-safety compliance forms separate from the event-based `event_temp_log
 
 - `compliance_temp_logs` - daily temperature readings by location (walk-in cooler, freezer, etc.)
 - `compliance_cleaning_logs` - daily cleaning checklists grouped by area (kitchen, FOH, restroom, storage)
-- Migration: `20260331000013_restaurant_compliance_and_breaks.sql`
+- Migration: `20260331000031_restaurant_compliance_and_breaks.sql`
 
 ### Default Temperature Targets
 

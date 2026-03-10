@@ -39,7 +39,7 @@ Expanded the existing read-only reservation system into a full CRUD workflow wit
 
 New queue management system for walk-in guests.
 
-**Migration** (`supabase/migrations/20260331000011_waitlist_entries.sql`):
+**Migration** (`supabase/migrations/20260331000030_waitlist_entries.sql`):
 
 - `waitlist_entries` table with position, estimated wait, status tracking
 - RLS policy scoped to chef_id

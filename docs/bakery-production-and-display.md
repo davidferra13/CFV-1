@@ -64,7 +64,7 @@ Two bakery features for managing daily baking operations and retail display trac
 
 ## Database Tables
 
-**Migration:** `supabase/migrations/20260331000019_display_case_and_par_stock.sql`
+**Migration:** `supabase/migrations/20260331000035_display_case_and_par_stock.sql`
 
 ### display_case_items
 

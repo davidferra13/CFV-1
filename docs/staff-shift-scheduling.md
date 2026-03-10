@@ -84,7 +84,7 @@ All pages are linked with breadcrumb navigation and cross-links.
 
 ## Migration
 
-File: `supabase/migrations/20260331000022_staff_shift_scheduling.sql`
+File: `supabase/migrations/20260331000038_staff_shift_scheduling.sql`
 
 Additive only. Creates 4 new tables with indexes, RLS policies, and updated_at triggers.
 
