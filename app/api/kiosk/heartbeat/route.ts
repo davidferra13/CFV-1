@@ -16,10 +16,8 @@ export async function POST(request: Request) {
 
     const device = await validateDeviceToken(token)
     if (!device) {
-      return NextResponse.json(
-        { error: 'Invalid or inactive device', status: 'revoked' },
-        { status: 401 }
-      )
+      // Standardized error: don't leak whether device was revoked vs never existed
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supabase: any = createAdminClient()

@@ -26,7 +26,8 @@ export async function GET(request: Request) {
       .single()
 
     if (error || !device) {
-      return NextResponse.json({ error: 'Device not found', status: 'revoked' }, { status: 401 })
+      // Standardized error: don't leak whether device was revoked vs never existed
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     if (device.status === 'disabled' || device.status === 'revoked') {

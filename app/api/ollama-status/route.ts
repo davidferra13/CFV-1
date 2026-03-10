@@ -13,9 +13,20 @@ import {
   getOllamaPiUrl,
   getModelForEndpoint,
 } from '@/lib/ai/providers'
-import { NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rateLimit'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Rate limit: 60 checks per minute per IP
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown'
+  try {
+    await checkRateLimit(`ollama-status:${ip}`, 60, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
   const configured = isOllamaEnabled()
   const config = getOllamaConfig()
   const isRemote = !config.baseUrl.includes('localhost') && !config.baseUrl.includes('127.0.0.1')

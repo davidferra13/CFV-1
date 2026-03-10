@@ -58,10 +58,10 @@ export async function OPTIONS() {
 
 // ── Main submission handler ──
 export async function POST(request: NextRequest) {
-  // Rate limit by IP: 10 submissions per 5 minutes (uses Upstash Redis when configured)
+  // Rate limit by IP: 6 submissions per 5 minutes to limit spam
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   try {
-    await checkRateLimit(`embed-inquiry:${ip}`, 10, 5 * 60_000)
+    await checkRateLimit(`embed-inquiry:${ip}`, 6, 5 * 60_000)
   } catch {
     return NextResponse.json(
       { error: 'Too many submissions. Please try again later.' },

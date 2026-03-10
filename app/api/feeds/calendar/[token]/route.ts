@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 
-// Public iCal feed endpoint — no auth required.
+// Public iCal feed endpoint - no auth required.
 // URL: /api/feeds/calendar/{ical_feed_token}
 // Returns: .ics file with all upcoming events for the chef.
 // Compatible with Apple Calendar, Outlook, Google Calendar (subscribe by URL).
@@ -11,6 +12,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
 
   if (!token || token.length < 10) {
     return NextResponse.json({ error: 'Invalid feed token' }, { status: 400 })
+  }
+
+  // Rate limit: 30 lookups per minute per token to prevent enumeration
+  try {
+    await checkRateLimit(`ical-feed:${token}`, 30, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   const supabase = createServerClient({ admin: true })
