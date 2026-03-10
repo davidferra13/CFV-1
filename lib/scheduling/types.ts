@@ -116,6 +116,9 @@ export const DASHBOARD_WIDGET_IDS = [
   'inline_aar',
   'quick_create',
   'capacity',
+  'caterer_week_glance',
+  'staff_availability',
+  'weekly_labor',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -282,6 +285,9 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   imports_sync_health: { category: 'system', size: 'sm', defaultEnabled: false },
   recipe_menu_engine: { category: 'system', size: 'sm', defaultEnabled: false },
   lead_funnel_live: { category: 'system', size: 'sm', defaultEnabled: false },
+  caterer_week_glance: { category: 'today', size: 'lg', defaultEnabled: false },
+  staff_availability: { category: 'today', size: 'sm', defaultEnabled: false },
+  weekly_labor: { category: 'today', size: 'sm', defaultEnabled: false },
   travel_logistics: { category: 'system', size: 'sm', defaultEnabled: false },
   stations_ops_status: { category: 'system', size: 'sm', defaultEnabled: false },
   staff_operations: { category: 'system', size: 'sm', defaultEnabled: false },
@@ -455,6 +461,9 @@ export const WIDGET_ICONS: Partial<Record<DashboardWidgetId, string>> = {
   reviews_reputation: '\u2B50',
   client_growth_signals: '\u{1F4C8}',
   active_clients_now: '\u{1F7E2}',
+  caterer_week_glance: '\u{1F4C6}',
+  staff_availability: '\u{1F477}',
+  weekly_labor: '\u23F0',
 }
 
 /** Get icon for a specific widget (falls back to category icon) */

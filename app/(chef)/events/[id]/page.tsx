@@ -123,7 +123,10 @@ import { getOrCreateRebookDataForChefEvent } from '@/lib/rebook/actions'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
 import { EventLockInButton } from '@/components/events/event-lock-in-button'
+import { MultiDayManager } from '@/components/events/multi-day-manager'
 import { getEventEquipmentChecklist } from '@/lib/events/event-equipment-actions'
+import { getEventVendorDeliveries } from '@/lib/events/vendor-delivery-actions'
+import { listVendors } from '@/lib/vendors/actions'
 import {
   getEventStationAssignments,
   getUnassignedStaff,
@@ -354,6 +357,11 @@ export default async function EventDetailPage({
     menuLibraryData,
     chefDisplayName,
     takeAChefFinance,
+    equipmentChecklist,
+    stationAssignments,
+    unassignedStaff,
+    vendorDeliveries,
+    vendorList,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -459,6 +467,13 @@ export default async function EventDetailPage({
     !['draft', 'cancelled'].includes(event.status)
       ? getUnassignedStaff(params.id).catch(() => [])
       : Promise.resolve([]),
+    // Vendor delivery schedule
+    !['draft', 'cancelled'].includes(event.status)
+      ? getEventVendorDeliveries(params.id).catch(() => [])
+      : Promise.resolve([]),
+    !['draft', 'cancelled'].includes(event.status)
+      ? listVendors(true).catch(() => [])
+      : Promise.resolve([]),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
@@ -540,6 +555,9 @@ export default async function EventDetailPage({
           )}
           <Link href={`/events/${event.id}/travel`}>
             <Button variant="secondary">Travel Plan</Button>
+          </Link>
+          <Link href={`/events/${event.id}/floor-plan`}>
+            <Button variant="secondary">Floor Plan</Button>
           </Link>
           {['in_progress', 'confirmed'].includes(event.status) && (
             <Link href={`/events/${event.id}/live`}>
@@ -641,6 +659,17 @@ export default async function EventDetailPage({
 
       {/* Client Dietary Context */}
       {event.client_id && <ClientDietaryBanner clientId={event.client_id} />}
+
+      {/* Multi-Day Event Manager */}
+      {!['cancelled'].includes(event.status) && (
+        <MultiDayManager
+          eventId={event.id}
+          eventDate={event.event_date}
+          isMultiDay={(event as any).is_multi_day ?? false}
+          endDate={(event as any).event_end_date ?? null}
+          daySchedules={(event as any).day_schedules ?? []}
+        />
+      )}
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (
@@ -795,8 +824,18 @@ export default async function EventDetailPage({
         eventMenus={eventMenus}
         unrecordedComponents={unrecordedComponents}
         aiConfigured={aiConfigured}
+        equipmentChecklist={equipmentChecklist}
+        stationAssignments={stationAssignments as any[]}
+        unassignedStaff={unassignedStaff as any[]}
+        vendorDeliveries={vendorDeliveries as any[]}
+        vendors={(vendorList as any[]).map((v: any) => ({
+          id: v.id,
+          name: v.name,
+          contact_name: v.contact_name,
+          phone: v.phone,
+        }))}
       />
-      {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
+      {/* TAB: WRAP-UP - Debrief, survey, history      */}
       {/* ===================================== */}
       <EventDetailWrapTab
         activeTab={activeTab}

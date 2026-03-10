@@ -61,6 +61,8 @@ type EventDetailOpsTabProps = {
   equipmentChecklist: any
   stationAssignments: any[]
   unassignedStaff: any[]
+  vendorDeliveries?: any[]
+  vendors?: { id: string; name: string; contact_name: string | null; phone: string | null }[]
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -95,6 +97,8 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     equipmentChecklist,
     stationAssignments,
     unassignedStaff,
+    vendorDeliveries = [],
+    vendors = [],
   } = props
 
   return (
@@ -198,6 +202,15 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
             unassignedStaff={unassignedStaff}
           />
         </Card>
+      )}
+
+      {/* Vendor Delivery Schedule */}
+      {!['draft', 'cancelled'].includes(event.status) && (
+        <VendorDeliveryTimeline
+          eventId={event.id}
+          deliveries={vendorDeliveries}
+          vendors={vendors}
+        />
       )}
 
       {/* AI Staff Briefing */}

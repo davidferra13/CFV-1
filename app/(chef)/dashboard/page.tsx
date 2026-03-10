@@ -22,6 +22,7 @@ import { ScheduleCards } from './_sections/schedule-cards'
 import { AlertCards } from './_sections/alerts-cards'
 import { BusinessCards } from './_sections/business-cards'
 import { IntelligenceCards } from './_sections/intelligence-cards'
+import { CatererCards } from './_sections/caterer-cards'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 
@@ -91,6 +92,16 @@ function BusinessCardsSkeleton() {
 
 function IntelligenceCardsSkeleton() {
   return <WidgetCardSkeleton size="md" />
+}
+
+function CatererCardsSkeleton() {
+  return (
+    <>
+      <WidgetCardSkeleton size="md" />
+      <WidgetCardSkeleton size="sm" />
+      <WidgetCardSkeleton size="sm" />
+    </>
+  )
 }
 
 export default async function ChefDashboard() {
@@ -234,6 +245,15 @@ export default async function ChefDashboard() {
           href="/queue"
           emptyMessage="All caught up!"
         />
+      )}
+
+      {/* ============================================ */}
+      {/* CATERER SECTION (caterer/restaurant only)     */}
+      {/* ============================================ */}
+      {(archetype === 'caterer' || archetype === 'restaurant') && (
+        <Suspense fallback={<CatererCardsSkeleton />}>
+          <CatererCards />
+        </Suspense>
       )}
 
       {/* ============================================ */}
