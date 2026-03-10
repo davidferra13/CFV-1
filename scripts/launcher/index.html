@@ -172,8 +172,61 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0;
-  gap: 4px;
+  padding: 8px 0;
+  gap: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar::-webkit-scrollbar { width: 0; }
+.nav-group { width: 100%; }
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0 2px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity var(--transition);
+}
+.nav-group-header:hover { opacity: 1; }
+.nav-group-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.6;
+  transition: color var(--transition);
+}
+.nav-group-header:hover .nav-group-label { color: var(--brand); opacity: 1; }
+.nav-group-chevron {
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-left: 4px;
+  transition: transform 200ms ease;
+  opacity: 0.5;
+}
+.nav-group.collapsed .nav-group-chevron { transform: rotate(-90deg); }
+.nav-group-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  overflow: hidden;
+  transition: max-height 250ms ease, opacity 200ms ease;
+  max-height: 800px;
+  opacity: 1;
+}
+.nav-group.collapsed .nav-group-items {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.nav-group-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 12px;
+  width: calc(100% - 24px);
 }
 .nav-item {
   display: flex;
@@ -181,13 +234,14 @@ body {
   align-items: center;
   justify-content: center;
   width: 56px;
-  height: 56px;
+  height: 48px;
   border-radius: var(--radius);
   cursor: pointer;
   transition: all var(--transition);
   position: relative;
   text-decoration: none;
   color: inherit;
+  flex-shrink: 0;
 }
 .nav-item:hover {
   background: var(--bg-hover);
@@ -199,31 +253,31 @@ body {
   content: '';
   position: absolute;
   left: -1px;
-  top: 12px;
-  bottom: 12px;
+  top: 10px;
+  bottom: 10px;
   width: 3px;
   background: var(--brand);
   border-radius: 0 3px 3px 0;
 }
 .nav-icon {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
 }
 .nav-label {
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .nav-item.active .nav-label { color: var(--text-secondary); }
 .nav-dot {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   border: 1.5px solid var(--bg-primary);
 }
@@ -1882,6 +1936,9 @@ body {
 @media (max-width: 700px) {
   .sidebar { width: 56px; }
   .nav-label { display: none; }
+  .nav-group-label { display: none; }
+  .nav-group-chevron { display: none; }
+  .nav-group-header { padding: 2px 0; }
   .panel { padding: 16px; }
   .info-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -1911,184 +1968,253 @@ body {
   <!-- ═══ Layout ═══ -->
   <div class="layout">
     <!-- Sidebar -->
-    <nav class="sidebar">
-      <a class="nav-item active" data-section="home" title="Home — Quick Actions">
-        <span class="nav-dot online" id="nd-home"></span>
-        <span class="nav-icon">&#x1F3E0;</span>
-        <span class="nav-label">Home</span>
-      </a>
-      <a class="nav-item" data-section="dev" title="Dev Server">
-        <span class="nav-dot checking" id="nd-dev"></span>
-        <span class="nav-icon">&#x1F5A5;&#xFE0F;</span>
-        <span class="nav-label">Dev</span>
-      </a>
-      <a class="nav-item" data-section="beta" title="Beta Server">
-        <span class="nav-dot checking" id="nd-beta"></span>
-        <span class="nav-icon">&#x1F310;</span>
-        <span class="nav-label">Beta</span>
-      </a>
-      <a class="nav-item" data-section="prod" title="Production (Vercel)">
-        <span class="nav-dot checking" id="nd-prod"></span>
-        <span class="nav-icon">&#x1F680;</span>
-        <span class="nav-label">Prod</span>
-      </a>
-      <a class="nav-item" data-section="ollama" title="Ollama AI">
-        <span class="nav-dot checking" id="nd-ollama"></span>
-        <span class="nav-icon">&#x1F916;</span>
-        <span class="nav-label">AI</span>
-      </a>
-      <a class="nav-item" data-section="remy" title="Remy — AI Concierge Roadmap">
-        <span class="nav-dot online" id="nd-remy"></span>
-        <span class="nav-icon">&#x1F9D1;&#x200D;&#x1F373;</span>
-        <span class="nav-label">Remy</span>
-      </a>
-      <a class="nav-item" data-section="git" title="Git">
-        <span class="nav-dot online" id="nd-git"></span>
-        <span class="nav-icon">&#x1F4E6;</span>
-        <span class="nav-label">Git</span>
-      </a>
-      <a class="nav-item" data-section="build" title="Build">
-        <span class="nav-dot online" id="nd-build"></span>
-        <span class="nav-icon">&#x1F528;</span>
-        <span class="nav-label">Build</span>
-      </a>
-      <a class="nav-item" data-section="log" title="Project History">
-        <span class="nav-dot online" id="nd-log"></span>
-        <span class="nav-icon">&#x1F4DC;</span>
-        <span class="nav-label">Log</span>
-      </a>
-      <a class="nav-item" data-section="timeline" title="Project Timeline">
-        <span class="nav-dot online" id="nd-timeline"></span>
-        <span class="nav-icon">&#x1F5D3;&#xFE0F;</span>
-        <span class="nav-label">Timeline</span>
-      </a>
-      <a class="nav-item" data-section="feedback" title="User Feedback">
-        <span class="nav-dot online" id="nd-feedback"></span>
-        <span class="nav-icon">&#x1F4AC;</span>
-        <span class="nav-label">Inbox</span>
-      </a>
-      <a class="nav-item" data-section="infra" title="Infrastructure">
-        <span class="nav-dot online" id="nd-infra"></span>
-        <span class="nav-icon">&#x2699;&#xFE0F;</span>
-        <span class="nav-label">Infra</span>
-      </a>
-      <a class="nav-item" data-section="blueprint" title="Launch Blueprint">
-        <span class="nav-dot online" id="nd-blueprint"></span>
-        <span class="nav-icon">&#x1F3AF;</span>
-        <span class="nav-label">Blueprint</span>
-      </a>
-      <a class="nav-item" data-section="observe" title="Observe — Live Feeds">
-        <span class="nav-dot online" id="nd-observe"></span>
-        <span class="nav-icon">&#x1F4E1;</span>
-        <span class="nav-label">Observe</span>
-      </a>
-      <a class="nav-item" data-section="sysref" title="System Reference">
-        <span class="nav-dot online" id="nd-sysref"></span>
-        <span class="nav-icon">&#x1F4D6;</span>
-        <span class="nav-label">Ref</span>
-      </a>
-      <a class="nav-item" data-section="expenses" title="Project Expenses">
-        <span class="nav-dot online" id="nd-expenses"></span>
-        <span class="nav-icon">&#x1F4B0;</span>
-        <span class="nav-label">Costs</span>
-      </a>
-      <a class="nav-item" data-section="logins" title="Test Logins">
-        <span class="nav-dot online" id="nd-logins"></span>
-        <span class="nav-icon">&#x1F511;</span>
-        <span class="nav-label">Logins</span>
-      </a>
-      <a class="nav-item" data-section="activity-log" title="Activity Log — Full History">
-        <span class="nav-dot online" id="nd-activity-log"></span>
-        <span class="nav-icon">&#x1F4CA;</span>
-        <span class="nav-label">Activity</span>
-      </a>
-      <a class="nav-item" data-section="manual" title="App Manual">
-        <span class="nav-dot online" id="nd-manual"></span>
-        <span class="nav-icon">&#x1F4D5;</span>
-        <span class="nav-label">Manual</span>
-      </a>
-      <a class="nav-item" data-section="marketing" title="Marketing — Demo Video Library">
-        <span class="nav-dot online" id="nd-marketing"></span>
-        <span class="nav-icon">&#x1F3AC;</span>
-        <span class="nav-label">Marketing</span>
-      </a>
-      <div style="height:1px;background:var(--border);margin:8px 12px;"></div>
-      <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:4px 16px;font-weight:700;">Admin</div>
-      <a class="nav-item" data-section="admin-users" title="All Chefs">
-        <span class="nav-dot online" id="nd-admin-users"></span>
-        <span class="nav-icon">&#x1F465;</span>
-        <span class="nav-label">Users</span>
-      </a>
-      <a class="nav-item" data-section="admin-flags" title="Feature Flags">
-        <span class="nav-dot online" id="nd-admin-flags"></span>
-        <span class="nav-icon">&#x1F6A9;</span>
-        <span class="nav-label">Flags</span>
-      </a>
-      <a class="nav-item" data-section="admin-gmail" title="Gmail Sync Status">
-        <span class="nav-dot online" id="nd-admin-gmail"></span>
-        <span class="nav-icon">&#x1F4E7;</span>
-        <span class="nav-label">Gmail</span>
-      </a>
-      <a class="nav-item" data-section="admin-health" title="System Health">
-        <span class="nav-dot online" id="nd-admin-health"></span>
-        <span class="nav-icon">&#x1F3E5;</span>
-        <span class="nav-label">Health</span>
-      </a>
-      <a class="nav-item" data-section="admin-errors" title="Error Log">
-        <span class="nav-dot online" id="nd-admin-errors"></span>
-        <span class="nav-icon">&#x1F6A8;</span>
-        <span class="nav-label">Errors</span>
-      </a>
-      <a class="nav-item" data-section="admin-events" title="All Events">
-        <span class="nav-dot online" id="nd-admin-events"></span>
-        <span class="nav-icon">&#x1F4C5;</span>
-        <span class="nav-label">Events</span>
-      </a>
-      <a class="nav-item" data-section="admin-inquiries" title="All Inquiries">
-        <span class="nav-dot online" id="nd-admin-inquiries"></span>
-        <span class="nav-icon">&#x1F4E8;</span>
-        <span class="nav-label">Leads</span>
-      </a>
-      <a class="nav-item" data-section="admin-quotes" title="All Quotes">
-        <span class="nav-dot online" id="nd-admin-quotes"></span>
-        <span class="nav-icon">&#x1F4B3;</span>
-        <span class="nav-label">Quotes</span>
-      </a>
-      <a class="nav-item" data-section="admin-analytics" title="Platform Analytics">
-        <span class="nav-dot online" id="nd-admin-analytics"></span>
-        <span class="nav-icon">&#x1F4CA;</span>
-        <span class="nav-label">Analytics</span>
-      </a>
-      <a class="nav-item" data-section="admin-financials" title="Platform Financials">
-        <span class="nav-dot online" id="nd-admin-financials"></span>
-        <span class="nav-icon">&#x1F4B0;</span>
-        <span class="nav-label">Finance</span>
-      </a>
-      <a class="nav-item" data-section="admin-audit" title="Audit Log">
-        <span class="nav-dot online" id="nd-admin-audit"></span>
-        <span class="nav-icon">&#x1F4DD;</span>
-        <span class="nav-label">Audit</span>
-      </a>
-      <a class="nav-item" data-section="admin-remy" title="Remy Activity">
-        <span class="nav-dot online" id="nd-admin-remy"></span>
-        <span class="nav-icon">&#x1F9E0;</span>
-        <span class="nav-label">Remy</span>
-      </a>
-      <a class="nav-item" data-section="admin-notifs" title="Notifications">
-        <span class="nav-dot online" id="nd-admin-notifs"></span>
-        <span class="nav-icon">&#x1F514;</span>
-        <span class="nav-label">Notifs</span>
-      </a>
-      <a class="nav-item" data-section="admin-sessions" title="Sessions">
-        <span class="nav-dot online" id="nd-admin-sessions"></span>
-        <span class="nav-icon">&#x1F465;</span>
-        <span class="nav-label">Sessions</span>
-      </a>
-      <a class="nav-item" data-section="admin-sla" title="SLA Tracking">
-        <span class="nav-dot online" id="nd-admin-sla"></span>
-        <span class="nav-icon">&#x23F1;&#xFE0F;</span>
-        <span class="nav-label">SLA</span>
-      </a>
+    <nav class="sidebar" id="mc-sidebar">
+
+      <!-- ── Services ── -->
+      <div class="nav-group" data-group="services">
+        <div class="nav-group-header" onclick="toggleNavGroup('services')">
+          <span class="nav-group-label">Services</span>
+          <span class="nav-group-chevron">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="dev" title="Dev Server">
+            <span class="nav-dot checking" id="nd-dev"></span>
+            <span class="nav-icon">&#x1F5A5;&#xFE0F;</span>
+            <span class="nav-label">Dev</span>
+          </a>
+          <a class="nav-item" data-section="beta" title="Beta Server">
+            <span class="nav-dot checking" id="nd-beta"></span>
+            <span class="nav-icon">&#x1F310;</span>
+            <span class="nav-label">Beta</span>
+          </a>
+          <a class="nav-item" data-section="prod" title="Production">
+            <span class="nav-dot checking" id="nd-prod"></span>
+            <span class="nav-icon">&#x1F680;</span>
+            <span class="nav-label">Prod</span>
+          </a>
+          <a class="nav-item" data-section="ollama" title="Ollama AI">
+            <span class="nav-dot checking" id="nd-ollama"></span>
+            <span class="nav-icon">&#x1F916;</span>
+            <span class="nav-label">AI</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group-divider"></div>
+
+      <!-- ── Dev Tools ── -->
+      <div class="nav-group" data-group="devtools">
+        <div class="nav-group-header" onclick="toggleNavGroup('devtools')">
+          <span class="nav-group-label">Dev</span>
+          <span class="nav-group-chevron">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item active" data-section="home" title="Home">
+            <span class="nav-dot online" id="nd-home"></span>
+            <span class="nav-icon">&#x1F3E0;</span>
+            <span class="nav-label">Home</span>
+          </a>
+          <a class="nav-item" data-section="git" title="Git">
+            <span class="nav-dot online" id="nd-git"></span>
+            <span class="nav-icon">&#x1F4E6;</span>
+            <span class="nav-label">Git</span>
+          </a>
+          <a class="nav-item" data-section="build" title="Build">
+            <span class="nav-dot online" id="nd-build"></span>
+            <span class="nav-icon">&#x1F528;</span>
+            <span class="nav-label">Build</span>
+          </a>
+          <a class="nav-item" data-section="logins" title="Test Logins">
+            <span class="nav-dot online" id="nd-logins"></span>
+            <span class="nav-icon">&#x1F511;</span>
+            <span class="nav-label">Logins</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group-divider"></div>
+
+      <!-- ── Project ── -->
+      <div class="nav-group" data-group="project">
+        <div class="nav-group-header" onclick="toggleNavGroup('project')">
+          <span class="nav-group-label">Project</span>
+          <span class="nav-group-chevron">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="timeline" title="Timeline">
+            <span class="nav-dot online" id="nd-timeline"></span>
+            <span class="nav-icon">&#x1F5D3;&#xFE0F;</span>
+            <span class="nav-label">Timeline</span>
+          </a>
+          <a class="nav-item" data-section="expenses" title="Expenses">
+            <span class="nav-dot online" id="nd-expenses"></span>
+            <span class="nav-icon">&#x1F4B0;</span>
+            <span class="nav-label">Costs</span>
+          </a>
+          <a class="nav-item" data-section="activity-log" title="Activity Log">
+            <span class="nav-dot online" id="nd-activity-log"></span>
+            <span class="nav-icon">&#x1F4CA;</span>
+            <span class="nav-label">Activity</span>
+          </a>
+          <a class="nav-item" data-section="log" title="Project History">
+            <span class="nav-dot online" id="nd-log"></span>
+            <span class="nav-icon">&#x1F4DC;</span>
+            <span class="nav-label">Log</span>
+          </a>
+          <a class="nav-item" data-section="blueprint" title="Launch Blueprint">
+            <span class="nav-dot online" id="nd-blueprint"></span>
+            <span class="nav-icon">&#x1F3AF;</span>
+            <span class="nav-label">Blueprint</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group-divider"></div>
+
+      <!-- ── Docs ── -->
+      <div class="nav-group" data-group="docs">
+        <div class="nav-group-header" onclick="toggleNavGroup('docs')">
+          <span class="nav-group-label">Docs</span>
+          <span class="nav-group-chevron">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="manual" title="App Manual">
+            <span class="nav-dot online" id="nd-manual"></span>
+            <span class="nav-icon">&#x1F4D5;</span>
+            <span class="nav-label">Manual</span>
+          </a>
+          <a class="nav-item" data-section="sysref" title="System Reference">
+            <span class="nav-dot online" id="nd-sysref"></span>
+            <span class="nav-icon">&#x1F4D6;</span>
+            <span class="nav-label">Ref</span>
+          </a>
+          <a class="nav-item" data-section="remy" title="Remy Roadmap">
+            <span class="nav-dot online" id="nd-remy"></span>
+            <span class="nav-icon">&#x1F9D1;&#x200D;&#x1F373;</span>
+            <span class="nav-label">Remy</span>
+          </a>
+          <a class="nav-item" data-section="marketing" title="Marketing">
+            <span class="nav-dot online" id="nd-marketing"></span>
+            <span class="nav-icon">&#x1F3AC;</span>
+            <span class="nav-label">Marketing</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group-divider"></div>
+
+      <!-- ── Monitor ── -->
+      <div class="nav-group" data-group="monitor">
+        <div class="nav-group-header" onclick="toggleNavGroup('monitor')">
+          <span class="nav-group-label">Monitor</span>
+          <span class="nav-group-chevron">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="feedback" title="User Feedback">
+            <span class="nav-dot online" id="nd-feedback"></span>
+            <span class="nav-icon">&#x1F4AC;</span>
+            <span class="nav-label">Inbox</span>
+          </a>
+          <a class="nav-item" data-section="observe" title="Live Feeds">
+            <span class="nav-dot online" id="nd-observe"></span>
+            <span class="nav-icon">&#x1F4E1;</span>
+            <span class="nav-label">Observe</span>
+          </a>
+          <a class="nav-item" data-section="infra" title="Infrastructure">
+            <span class="nav-dot online" id="nd-infra"></span>
+            <span class="nav-icon">&#x2699;&#xFE0F;</span>
+            <span class="nav-label">Infra</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group-divider"></div>
+
+      <!-- ── Admin (collapsed by default) ── -->
+      <div class="nav-group collapsed" data-group="admin">
+        <div class="nav-group-header" onclick="toggleNavGroup('admin')">
+          <span class="nav-group-label">Admin</span>
+          <span class="nav-group-chevron">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="admin-users" title="All Chefs">
+            <span class="nav-dot online" id="nd-admin-users"></span>
+            <span class="nav-icon">&#x1F465;</span>
+            <span class="nav-label">Users</span>
+          </a>
+          <a class="nav-item" data-section="admin-flags" title="Feature Flags">
+            <span class="nav-dot online" id="nd-admin-flags"></span>
+            <span class="nav-icon">&#x1F6A9;</span>
+            <span class="nav-label">Flags</span>
+          </a>
+          <a class="nav-item" data-section="admin-gmail" title="Gmail Sync">
+            <span class="nav-dot online" id="nd-admin-gmail"></span>
+            <span class="nav-icon">&#x1F4E7;</span>
+            <span class="nav-label">Gmail</span>
+          </a>
+          <a class="nav-item" data-section="admin-health" title="System Health">
+            <span class="nav-dot online" id="nd-admin-health"></span>
+            <span class="nav-icon">&#x1F3E5;</span>
+            <span class="nav-label">Health</span>
+          </a>
+          <a class="nav-item" data-section="admin-errors" title="Error Log">
+            <span class="nav-dot online" id="nd-admin-errors"></span>
+            <span class="nav-icon">&#x1F6A8;</span>
+            <span class="nav-label">Errors</span>
+          </a>
+          <a class="nav-item" data-section="admin-events" title="All Events">
+            <span class="nav-dot online" id="nd-admin-events"></span>
+            <span class="nav-icon">&#x1F4C5;</span>
+            <span class="nav-label">Events</span>
+          </a>
+          <a class="nav-item" data-section="admin-inquiries" title="All Inquiries">
+            <span class="nav-dot online" id="nd-admin-inquiries"></span>
+            <span class="nav-icon">&#x1F4E8;</span>
+            <span class="nav-label">Leads</span>
+          </a>
+          <a class="nav-item" data-section="admin-quotes" title="All Quotes">
+            <span class="nav-dot online" id="nd-admin-quotes"></span>
+            <span class="nav-icon">&#x1F4B3;</span>
+            <span class="nav-label">Quotes</span>
+          </a>
+          <a class="nav-item" data-section="admin-analytics" title="Analytics">
+            <span class="nav-dot online" id="nd-admin-analytics"></span>
+            <span class="nav-icon">&#x1F4CA;</span>
+            <span class="nav-label">Analytics</span>
+          </a>
+          <a class="nav-item" data-section="admin-financials" title="Financials">
+            <span class="nav-dot online" id="nd-admin-financials"></span>
+            <span class="nav-icon">&#x1F4B0;</span>
+            <span class="nav-label">Finance</span>
+          </a>
+          <a class="nav-item" data-section="admin-audit" title="Audit Log">
+            <span class="nav-dot online" id="nd-admin-audit"></span>
+            <span class="nav-icon">&#x1F4DD;</span>
+            <span class="nav-label">Audit</span>
+          </a>
+          <a class="nav-item" data-section="admin-remy" title="Remy Activity">
+            <span class="nav-dot online" id="nd-admin-remy"></span>
+            <span class="nav-icon">&#x1F9E0;</span>
+            <span class="nav-label">Remy AI</span>
+          </a>
+          <a class="nav-item" data-section="admin-notifs" title="Notifications">
+            <span class="nav-dot online" id="nd-admin-notifs"></span>
+            <span class="nav-icon">&#x1F514;</span>
+            <span class="nav-label">Notifs</span>
+          </a>
+          <a class="nav-item" data-section="admin-sessions" title="Sessions">
+            <span class="nav-dot online" id="nd-admin-sessions"></span>
+            <span class="nav-icon">&#x1F465;</span>
+            <span class="nav-label">Sessions</span>
+          </a>
+          <a class="nav-item" data-section="admin-sla" title="SLA Tracking">
+            <span class="nav-dot online" id="nd-admin-sla"></span>
+            <span class="nav-icon">&#x23F1;&#xFE0F;</span>
+            <span class="nav-label">SLA</span>
+          </a>
+        </div>
+      </div>
+
     </nav>
 
     <!-- Content -->
@@ -5306,6 +5432,49 @@ const API = 'http://localhost:41937'
 let currentSection = 'dev'
 let pendingAction = null
 let statusData = null
+
+// ── Collapsible Nav Groups ────────────────────────────────────────
+
+function toggleNavGroup(groupName) {
+  const group = document.querySelector(`.nav-group[data-group="${groupName}"]`)
+  if (!group) return
+  group.classList.toggle('collapsed')
+  saveNavGroupState()
+}
+
+function saveNavGroupState() {
+  const state = {}
+  document.querySelectorAll('.nav-group').forEach(g => {
+    state[g.dataset.group] = g.classList.contains('collapsed')
+  })
+  localStorage.setItem('mc-nav-groups', JSON.stringify(state))
+}
+
+function restoreNavGroupState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('mc-nav-groups'))
+    if (!state) return
+    document.querySelectorAll('.nav-group').forEach(g => {
+      const key = g.dataset.group
+      if (key in state) {
+        g.classList.toggle('collapsed', state[key])
+      }
+    })
+  } catch {}
+}
+
+// Auto-expand a group when one of its items is clicked
+function expandGroupForSection(section) {
+  const item = document.querySelector(`.nav-item[data-section="${section}"]`)
+  if (!item) return
+  const group = item.closest('.nav-group')
+  if (group && group.classList.contains('collapsed')) {
+    group.classList.remove('collapsed')
+    saveNavGroupState()
+  }
+}
+
+restoreNavGroupState()
 
 // ── Navigation ────────────────────────────────────────────────────
 
