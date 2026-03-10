@@ -26,14 +26,18 @@ import {
 } from '@/components/ui/icons'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
+import type { PortalOverview } from '@/lib/client-portal/portal-actions'
+import { Cake, Star, Trophy } from '@/components/ui/icons'
 
 interface ClientNavProps {
   userEmail: string
+  portalOverview?: PortalOverview | null
 }
 
 const BOOK_NOW_HREF = '/book-now'
 
-const navItems = [
+// Core nav items (always shown)
+const coreNavItems = [
   { href: '/my-events', label: 'My Events', icon: Calendar },
   { href: '/my-inquiries', label: 'My Inquiries', icon: ClipboardList },
   { href: '/my-quotes', label: 'My Quotes', icon: FileText },
@@ -43,8 +47,40 @@ const navItems = [
   { href: '/discover', label: 'Discover', icon: Compass },
   { href: '/my-rewards', label: 'Rewards', icon: Gift },
   { href: '/my-spending', label: 'Spending', icon: DollarSign },
-  { href: '/my-profile', label: 'Profile', icon: User },
 ]
+
+// Dynamic nav items (shown only when client has data for them)
+type DynamicNavItem = {
+  href: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  overviewKey: keyof PortalOverview
+}
+
+const dynamicNavItems: DynamicNavItem[] = [
+  { href: '/my-orders', label: 'My Orders', icon: Cake, overviewKey: 'hasEvents' }, // placeholder until bakery_orders exists
+  {
+    href: '/my-reservations',
+    label: 'Reservations',
+    icon: Calendar,
+    overviewKey: 'hasReservations',
+  },
+  { href: '/my-loyalty', label: 'Loyalty', icon: Trophy, overviewKey: 'hasLoyalty' },
+  { href: '/my-feedback', label: 'Feedback', icon: Star, overviewKey: 'hasFeedback' },
+]
+
+function getNavItems(overview?: PortalOverview | null) {
+  const visibleDynamic = overview
+    ? dynamicNavItems.filter((item) => overview[item.overviewKey])
+    : [] // If no overview data, hide dynamic items (safer than showing empty sections)
+
+  return [
+    ...coreNavItems,
+    ...visibleDynamic,
+    // Profile always last
+    { href: '/my-profile', label: 'Profile', icon: User },
+  ]
+}
 
 type ClientSidebarContextType = {
   collapsed: boolean
@@ -94,10 +130,11 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
   )
 }
 
-export function ClientSidebar({ userEmail }: ClientNavProps) {
+export function ClientSidebar({ userEmail, portalOverview }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
   const [signingOut, setSigningOut] = useState(false)
+  const navItems = getNavItems(portalOverview)
 
   const handleSignOut = async () => {
     setSigningOut(true)
@@ -246,10 +283,11 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
   )
 }
 
-export function ClientMobileNav({ userEmail }: ClientNavProps) {
+export function ClientMobileNav({ userEmail, portalOverview }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const navItems = getNavItems(portalOverview)
 
   const closeMenu = () => setMenuOpen(false)
 

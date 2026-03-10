@@ -22,6 +22,7 @@ import { getAdminEmails } from '@/lib/platform/owner-account'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { getImpersonatedClientInfo } from '@/lib/auth/client-impersonation-actions'
 import { ClientImpersonationBanner } from '@/components/admin/client-impersonation-banner'
+import { getPortalOverview, type PortalOverview } from '@/lib/client-portal/portal-actions'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -29,6 +30,14 @@ export default async function ClientLayout({ children }: { children: React.React
     user = await requireClient()
   } catch {
     redirect('/auth/signin?portal=client')
+  }
+
+  // Fetch portal overview to determine which nav sections to show
+  let portalOverview: PortalOverview | null = null
+  try {
+    portalOverview = await getPortalOverview()
+  } catch {
+    // Non-blocking: if overview fetch fails, nav shows all sections
   }
 
   // Check if admin is impersonating a client
@@ -82,8 +91,8 @@ export default async function ClientLayout({ children }: { children: React.React
           <Suspense fallback={null}>
             <BetaSurveyBannerWrapper href="/beta-survey" />
           </Suspense>
-          <ClientSidebar userEmail={user.email} />
-          <ClientMobileNav userEmail={user.email} />
+          <ClientSidebar userEmail={user.email} portalOverview={portalOverview} />
+          <ClientMobileNav userEmail={user.email} portalOverview={portalOverview} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>
             <ClientTourWrapper>{children}</ClientTourWrapper>
