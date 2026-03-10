@@ -1,6 +1,6 @@
 # Recipe Scaling Engine
 
-**Status:** Implemented (Phase 1)
+**Status:** Implemented (Phases 1 + 2)
 **Date:** 2026-03-09
 **Branch:** feature/risk-gap-closure
 
@@ -17,11 +17,14 @@ Given a menu with dishes, components linked to recipes, and a guest count:
 
 ## Key Files
 
-| File                                       | Purpose                                                  |
-| ------------------------------------------ | -------------------------------------------------------- |
-| `lib/scaling/recipe-scaling.ts`            | Core scaling engine (server action)                      |
-| `components/culinary/MenuScalingPanel.tsx` | UI panel with two views (dish breakdown + shopping list) |
-| `app/(chef)/culinary/menus/[id]/page.tsx`  | Menu detail page (scaling panel added here)              |
+| File                                       | Purpose                                                      |
+| ------------------------------------------ | ------------------------------------------------------------ |
+| `lib/scaling/recipe-scaling.ts`            | Core scaling engine (server action)                          |
+| `lib/scaling/portioning.ts`                | Industry-standard per-person portioning reference + math     |
+| `lib/scaling/prep-timeline.ts`             | Backwards-plan prep schedule from serve time (server action) |
+| `lib/scaling/allergen-check.ts`            | Aggregate allergens + conflict detection (server action)     |
+| `components/culinary/MenuScalingPanel.tsx` | UI panel with 5 tabs (see below)                             |
+| `app/(chef)/culinary/menus/[id]/page.tsx`  | Menu detail page (scaling panel added here)                  |
 
 ## How It Works
 
@@ -38,10 +41,13 @@ Event (guest_count: 40)
           -> Ingredient: Herbs 0.5 oz -> 2.5 oz
 ```
 
-### Two Views
+### Five Views (Tabs)
 
 1. **By Dish** - shows each dish, its components, the multiplier math, and the full scaled ingredient table
 2. **Shopping List** - consolidates all ingredients across all dishes, grouped by store section (Produce, Dairy, Protein, Pantry, etc.), with totals
+3. **Portions Guide** - industry-standard per-person quantities for catering (cheese 3oz, charcuterie 2oz, protein 6oz, etc.) scaled to your guest count
+4. **Prep Timeline** - backwards-planned schedule from serve time. Groups tasks by day (make-ahead days vs day-of). Resolves overlaps by staggering longest tasks first. Shows station assignments.
+5. **Allergens** - aggregates all allergens from dishes, recipes, and ingredients across the entire menu. Compares against client dietary restrictions. Red dot on tab if conflicts found.
 
 ### Quantity Rounding
 
@@ -68,8 +74,10 @@ If an ingredient has 85% yield (15% trim/waste), the cost reflects the fact that
 3. Ingredient pricing (cost_per_unit_cents or last_price_cents) for cost estimates
 4. Components linked to recipes via recipe_id
 
-## What's Next (Phase 1 Roadmap)
+## What's Next (Phases 3-4 Roadmap)
 
-- [ ] Consolidated shopping list as standalone printable/shareable page
-- [ ] Portioning calculator (per-person industry standards)
-- [ ] Prep timeline (backwards-plan from serve time)
+- [ ] Equipment/supplies checklist (tie boards, utensils, disposables to events)
+- [ ] Client-facing menu view (shareable link, toggle pricing)
+- [ ] Vendor/supplier management (track where you buy, price comparison)
+- [ ] Post-event waste tracking (feed leftovers back into portioning)
+- [ ] Transport/logistics planner (vehicle capacity, cooler needs, drive time)
