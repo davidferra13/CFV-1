@@ -512,6 +512,16 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/travel`}>
             <Button variant="secondary">Travel Plan</Button>
           </Link>
+          {['in_progress', 'confirmed'].includes(event.status) && (
+            <Link href={`/events/${event.id}/live`}>
+              <Button variant="secondary">Live Coordination</Button>
+            </Link>
+          )}
+          {['in_progress', 'completed'].includes(event.status) && (
+            <Link href={`/events/${event.id}/breakdown`}>
+              <Button variant="secondary">Breakdown Checklist</Button>
+            </Link>
+          )}
           {event.status === 'completed' && (
             <Link href={`/events/${event.id}/story`}>
               <Button variant="secondary">Create Story</Button>
