@@ -374,9 +374,15 @@ export default async function EventDetailPage({
     getEventTips(params.id).catch(() => []),
     getEventGuestLeadCount(params.id).catch(() => 0),
     getEventMessagesForChef(params.id).catch(() => []),
-    event.status === 'completed' ? getGuestFeedbackForEvent(params.id).catch(() => []) : Promise.resolve([]),
-    event.status === 'completed' ? getReferralShareDataForChefEvent(params.id).catch(() => null) : Promise.resolve(null),
-    event.status === 'completed' ? getOrCreateRebookDataForChefEvent(params.id).catch(() => null) : Promise.resolve(null),
+    event.status === 'completed'
+      ? getGuestFeedbackForEvent(params.id).catch(() => [])
+      : Promise.resolve([]),
+    event.status === 'completed'
+      ? getReferralShareDataForChefEvent(params.id).catch(() => null)
+      : Promise.resolve(null),
+    event.status === 'completed'
+      ? getOrCreateRebookDataForChefEvent(params.id).catch(() => null)
+      : Promise.resolve(null),
     (event as any).location_lat && (event as any).location_lng
       ? getChefToVenueTravel((event as any).location_lat, (event as any).location_lng)
       : Promise.resolve(null),
@@ -481,6 +487,11 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/documents`}>
             <Button variant="secondary">Documents</Button>
           </Link>
+          {!['draft', 'cancelled'].includes(event.status) && (
+            <Link href={`/events/${event.id}/prep`}>
+              <Button variant="secondary">Prep Checklist</Button>
+            </Link>
+          )}
           {!['draft', 'cancelled'].includes(event.status) && (
             <Link href={`/events/${event.id}/pack`}>
               <Button variant="secondary">Packing List</Button>
