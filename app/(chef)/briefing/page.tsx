@@ -436,6 +436,194 @@ export default async function BriefingPage() {
       )}
 
       {/* ============================================ */}
+      {/* SECTION F: ACTION NEEDED */}
+      {/* ============================================ */}
+      {(briefing.overduePayments.length > 0 ||
+        briefing.pendingInquiries.length > 0 ||
+        briefing.unsignedProposals.length > 0) && (
+        <section>
+          <h2 className="text-base font-semibold text-stone-200 mb-3">Action Needed</h2>
+          <div className="space-y-3">
+            {briefing.overduePayments.length > 0 && (
+              <Card className="border-red-900/40">
+                <CardContent className="pt-4 pb-3">
+                  <h4 className="text-sm font-medium text-red-400 mb-2">
+                    Overdue Payments ({briefing.overduePayments.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {briefing.overduePayments.map((p) => (
+                      <Link key={p.event_id} href={`/events/${p.event_id}`}>
+                        <div className="flex items-center justify-between rounded-lg bg-red-950/20 border border-red-900/20 px-3 py-2 hover:brightness-110 transition">
+                          <div>
+                            <p className="text-sm text-stone-200">{p.client_name}</p>
+                            <p className="text-xs text-stone-500">{p.occasion}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-red-400">
+                              ${(p.amount_cents / 100).toFixed(0)}
+                            </p>
+                            <p className="text-[11px] text-stone-500">{p.days_past_due}d overdue</p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {briefing.pendingInquiries.length > 0 && (
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <h4 className="text-sm font-medium text-brand-400 mb-2">
+                    Pending Inquiries ({briefing.pendingInquiries.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {briefing.pendingInquiries.map((i) => (
+                      <Link key={i.id} href={`/inquiries/${i.id}`}>
+                        <div className="flex items-center justify-between rounded-lg bg-stone-800/50 px-3 py-2 hover:brightness-110 transition">
+                          <div>
+                            <p className="text-sm text-stone-200">{i.client_name}</p>
+                            {i.occasion && <p className="text-xs text-stone-500">{i.occasion}</p>}
+                          </div>
+                          <div className="text-right flex items-center gap-2">
+                            {i.lead_score !== null && (
+                              <Badge
+                                variant={
+                                  i.lead_score >= 70
+                                    ? 'success'
+                                    : i.lead_score >= 40
+                                      ? 'warning'
+                                      : 'default'
+                                }
+                                className="text-[10px]"
+                              >
+                                {i.lead_score}%
+                              </Badge>
+                            )}
+                            <p className="text-xs text-stone-500">{i.days_waiting}d</p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {briefing.unsignedProposals.length > 0 && (
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <h4 className="text-sm font-medium text-amber-400 mb-2">
+                    Unsigned Proposals ({briefing.unsignedProposals.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {briefing.unsignedProposals.map((p) => (
+                      <Link key={p.event_id} href={`/events/${p.event_id}`}>
+                        <div className="flex items-center justify-between rounded-lg bg-stone-800/50 px-3 py-2 hover:brightness-110 transition">
+                          <div>
+                            <p className="text-sm text-stone-200">{p.client_name}</p>
+                            {p.occasion && <p className="text-xs text-stone-500">{p.occasion}</p>}
+                          </div>
+                          <p className="text-xs text-stone-500">{p.days_since_sent}d since sent</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* SECTION G: UPCOMING MILESTONES */}
+      {/* ============================================ */}
+      {briefing.upcomingMilestones.length > 0 && (
+        <section>
+          <h2 className="text-base font-semibold text-stone-200 mb-3">
+            Upcoming Milestones
+            <Badge variant="info" className="ml-2">
+              {briefing.upcomingMilestones.length}
+            </Badge>
+          </h2>
+          <Card>
+            <CardContent className="pt-3 pb-3 space-y-2">
+              {briefing.upcomingMilestones.map((m, idx) => (
+                <div
+                  key={`${m.client_id}-${m.type}-${idx}`}
+                  className="flex items-center justify-between rounded-lg bg-stone-800/50 px-3 py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {m.type === 'birthday' ? '\uD83C\uDF82' : '\uD83C\uDF89'}
+                    </span>
+                    <div>
+                      <p className="text-sm text-stone-200">{m.client_name}</p>
+                      <p className="text-xs text-stone-500 capitalize">{m.type}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-stone-300">
+                      {m.days_away === 0 ? 'Today!' : `${m.days_away}d`}
+                    </p>
+                    <p className="text-[11px] text-stone-500">
+                      {new Date(m.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* SECTION H: WEEK AHEAD */}
+      {/* ============================================ */}
+      <section>
+        <h2 className="text-base font-semibold text-stone-200 mb-3">This Week</h2>
+        <Card>
+          <CardContent className="pt-3 pb-3">
+            <div className="grid grid-cols-7 gap-1">
+              {briefing.weekAhead.map((day) => (
+                <div
+                  key={day.date}
+                  className={`text-center rounded-lg px-1 py-2.5 ${
+                    day.date === briefing.today
+                      ? 'bg-brand-950/40 border border-brand-700/50'
+                      : 'bg-stone-800/50'
+                  }`}
+                >
+                  <p
+                    className={`text-[11px] font-medium ${
+                      day.date === briefing.today ? 'text-brand-400' : 'text-stone-500'
+                    }`}
+                  >
+                    {day.day_label}
+                  </p>
+                  <p
+                    className={`text-lg font-bold mt-0.5 ${
+                      day.event_count > 0 ? 'text-stone-100' : 'text-stone-600'
+                    }`}
+                  >
+                    {day.event_count}
+                  </p>
+                  <p className="text-[10px] text-stone-600">
+                    {day.event_count === 1 ? 'event' : 'events'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ============================================ */}
       {/* QUICK LINKS */}
       {/* ============================================ */}
       <div className="flex flex-wrap gap-2 pt-2">

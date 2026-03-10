@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getCarriedOverTasks, type CarriedTask } from '@/lib/tasks/carry-forward'
 import { getShiftNotes, type ShiftNote } from '@/lib/shifts/actions'
+import { getUpcomingMilestones, type UpcomingMilestone } from '@/lib/loyalty/auto-rewards'
 
 // ============================================
 // TYPES
@@ -103,6 +104,33 @@ export type MorningBriefing = {
     event_title: string | null
     status: string
   }[]
+  // Section G: Overdue Payments
+  overduePayments: {
+    event_id: string
+    client_name: string
+    occasion: string
+    amount_cents: number
+    days_past_due: number
+  }[]
+  // Section H: Pending Inquiries
+  pendingInquiries: {
+    id: string
+    client_name: string
+    occasion: string | null
+    days_waiting: number
+    lead_score: number | null
+  }[]
+  // Section I: Unsigned Proposals
+  unsignedProposals: {
+    event_id: string
+    client_name: string
+    occasion: string | null
+    days_since_sent: number
+  }[]
+  // Section J: Upcoming Milestones
+  upcomingMilestones: UpcomingMilestone[]
+  // Section K: Week Ahead
+  weekAhead: { date: string; day_label: string; event_count: number }[]
 }
 
 // ============================================
@@ -140,6 +168,12 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     staleFollowupsResult,
     // Prep timers
     prepTimersResult,
+    // New sections
+    overduePaymentsResult,
+    pendingInquiriesResult,
+    unsignedProposalsResult,
+    weekAheadEventsResult,
+    upcomingMilestonesResult,
   ] = await Promise.all([
     getShiftNotes(today),
     getCarriedOverTasks(today),
@@ -232,6 +266,45 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
         'end_at',
         new Date(new Date(today + 'T00:00:00').getTime() + 24 * 60 * 60 * 1000).toISOString()
       ),
+    // Overdue payments (accepted events past due)
+    supabase
+      .from('events')
+      .select('id, occasion, event_date, quoted_price_cents, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'accepted')
+      .lt('event_date', today)
+      .limit(10),
+    // Pending inquiries (open, waiting for response)
+    supabase
+      .from('inquiries')
+      .select('id, client_name, occasion, created_at, unknown_fields')
+      .eq('chef_id', tenantId)
+      .in('status', ['new', 'contacted'])
+      .order('created_at', { ascending: true })
+      .limit(10),
+    // Unsigned proposals (proposed events, waiting for client)
+    supabase
+      .from('events')
+      .select('id, occasion, created_at, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'proposed')
+      .order('created_at', { ascending: true })
+      .limit(10),
+    // Week ahead event counts
+    supabase
+      .from('events')
+      .select('id, event_date')
+      .eq('tenant_id', tenantId)
+      .gte('event_date', today)
+      .lte(
+        'event_date',
+        new Date(new Date(today + 'T00:00:00').getTime() + 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0]
+      )
+      .in('status', ['confirmed', 'paid', 'accepted', 'in_progress']),
+    // Upcoming milestones
+    getUpcomingMilestones(tenantId, 14).catch(() => [] as UpcomingMilestone[]),
   ])
 
   // Build today's events with client names and staff counts
@@ -381,6 +454,82 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     status: p.status,
   }))
 
+  // Build overdue payments
+  const overduePayments = ((overduePaymentsResult.data ?? []) as any[]).map((e) => {
+    const eventDate = new Date(e.event_date + 'T00:00:00')
+    const daysPastDue = Math.floor((Date.now() - eventDate.getTime()) / (1000 * 60 * 60 * 24))
+    return {
+      event_id: e.id,
+      client_name: e.client?.full_name ?? 'Unknown',
+      occasion: e.occasion ?? 'Event',
+      amount_cents: e.quoted_price_cents ?? 0,
+      days_past_due: daysPastDue,
+    }
+  })
+
+  // Build pending inquiries
+  const pendingInquiries = ((pendingInquiriesResult.data ?? []) as any[]).map((i) => {
+    const createdAt = new Date(i.created_at)
+    const daysWaiting = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+    const unknownFields = i.unknown_fields as Record<string, unknown> | null
+    const leadScore = unknownFields?.chef_likelihood ? Number(unknownFields.chef_likelihood) : null
+    return {
+      id: i.id,
+      client_name: i.client_name ?? 'Unknown',
+      occasion: i.occasion,
+      days_waiting: daysWaiting,
+      lead_score: leadScore,
+    }
+  })
+
+  // Build unsigned proposals
+  const unsignedProposals = ((unsignedProposalsResult.data ?? []) as any[]).map((e) => {
+    const createdAt = new Date(e.created_at)
+    const daysSinceSent = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+    return {
+      event_id: e.id,
+      client_name: e.client?.full_name ?? 'Unknown',
+      occasion: e.occasion,
+      days_since_sent: daysSinceSent,
+    }
+  })
+
+  // Build week ahead
+  const weekAheadMap: Record<string, number> = {}
+  for (const event of (weekAheadEventsResult.data ?? []) as any[]) {
+    const d = event.event_date as string
+    weekAheadMap[d] = (weekAheadMap[d] ?? 0) + 1
+  }
+
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekAhead: { date: string; day_label: string; event_count: number }[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today + 'T00:00:00')
+    d.setDate(d.getDate() + i)
+    const dateStr = d.toISOString().split('T')[0]
+    weekAhead.push({
+      date: dateStr,
+      day_label: dayLabels[d.getDay()],
+      event_count: weekAheadMap[dateStr] ?? 0,
+    })
+  }
+
+  // Add overdue payment alerts
+  if (overduePayments.length > 0) {
+    alerts.push({
+      type: 'payment_due',
+      title: `${overduePayments.length} overdue payment${overduePayments.length !== 1 ? 's' : ''}`,
+      detail: overduePayments
+        .slice(0, 3)
+        .map((p) => `${p.client_name} (${p.days_past_due}d)`)
+        .join(', '),
+      href: '/finance',
+      severity: 'critical',
+    })
+  }
+
+  const upcomingMilestones = (upcomingMilestonesResult ?? []) as UpcomingMilestone[]
+
   return {
     today,
     shiftLabel,
@@ -392,5 +541,10 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     staffOnDuty,
     alerts,
     prepTimersToday,
+    overduePayments,
+    pendingInquiries,
+    unsignedProposals,
+    upcomingMilestones,
+    weekAhead,
   }
 }

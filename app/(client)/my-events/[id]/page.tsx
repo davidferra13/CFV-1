@@ -43,6 +43,7 @@ import { buildJourneySteps } from '@/lib/events/journey-steps'
 import { getClientPrepTimeline } from '@/lib/events/prep-timeline-actions'
 import { getClientDietaryConfirmation } from '@/lib/events/dietary-confirmation-actions'
 import { getClientLiveStatuses } from '@/lib/events/live-tracker-actions'
+import { TipAfterReviewCard } from '@/components/reviews/tip-after-review-card'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -670,6 +671,13 @@ export default async function EventDetailPage({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Tip Section (in_progress events, before review) */}
+      {event.status === 'in_progress' && tipAmountCents <= 0 && (
+        <div className="mb-8">
+          <TipAfterReviewCard eventId={event.id} />
+        </div>
       )}
 
       {/* Post-Event Feedback (completed events only) */}
