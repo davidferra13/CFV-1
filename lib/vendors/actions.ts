@@ -214,3 +214,230 @@ export async function setVendorPreferred(id: string, preferred: boolean) {
 
   revalidatePath('/culinary/vendors')
 }
+
+// ============================================
+// RELIABILITY SCORE
+// ============================================
+
+/**
+ * Update vendor reliability score from delivery history.
+ * Deterministic: score = (onTimeDeliveries / totalDeliveries) * 100
+ */
+export async function updateReliabilityScore(
+  vendorId: string,
+  onTimeDeliveries: number,
+  totalDeliveries: number
+) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  if (totalDeliveries <= 0) {
+    throw new Error('Total deliveries must be greater than zero')
+  }
+  if (onTimeDeliveries < 0 || onTimeDeliveries > totalDeliveries) {
+    throw new Error('On-time deliveries must be between 0 and total deliveries')
+  }
+
+  const score = Math.round((onTimeDeliveries / totalDeliveries) * 10000) / 100
+
+  const { error } = await supabase
+    .from('vendors')
+    .update({ reliability_score: score })
+    .eq('id', vendorId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) {
+    console.error('[vendors] updateReliabilityScore error:', error)
+    throw new Error('Failed to update reliability score')
+  }
+
+  revalidatePath('/vendors')
+  revalidatePath(`/vendors/${vendorId}`)
+  return { score }
+}
+
+// ============================================
+// PER-INGREDIENT PREFERRED VENDOR
+// ============================================
+
+/**
+ * Get the preferred vendor for a specific ingredient (by name).
+ */
+export async function getPreferredVendor(ingredientName: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const normalized = ingredientName.trim().toLowerCase()
+
+  const { data, error } = await supabase
+    .from('vendor_preferred_ingredients')
+    .select('*, vendors(id, name, status, reliability_score)')
+    .eq('chef_id', user.tenantId!)
+    .eq('ingredient_name', normalized)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[vendors] getPreferredVendor error:', error)
+    throw new Error('Failed to get preferred vendor')
+  }
+
+  return data
+}
+
+/**
+ * Set the preferred vendor for a specific ingredient (by name).
+ * Uses upsert on (chef_id, ingredient_name).
+ */
+export async function setPreferredVendor(ingredientName: string, vendorId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const normalized = ingredientName.trim().toLowerCase()
+
+  const { error } = await supabase.from('vendor_preferred_ingredients').upsert(
+    {
+      chef_id: user.tenantId!,
+      ingredient_name: normalized,
+      vendor_id: vendorId,
+    },
+    { onConflict: 'chef_id,ingredient_name' }
+  )
+
+  if (error) {
+    console.error('[vendors] setPreferredVendor error:', error)
+    throw new Error('Failed to set preferred vendor')
+  }
+
+  revalidatePath('/vendors')
+  revalidatePath('/inventory/reorder')
+}
+
+/**
+ * Get all preferred vendor mappings for the current chef.
+ */
+export async function getAllPreferredVendors() {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('vendor_preferred_ingredients')
+    .select('*, vendors(id, name, status)')
+    .eq('chef_id', user.tenantId!)
+    .order('ingredient_name', { ascending: true })
+
+  if (error) {
+    console.error('[vendors] getAllPreferredVendors error:', error)
+    throw new Error('Failed to get preferred vendors')
+  }
+
+  return data ?? []
+}
+
+// ============================================
+// PRICE COMPARISON BY NAME
+// ============================================
+
+/**
+ * Compare prices for a given ingredient name across all vendors.
+ * Uses vendor_price_points (latest per vendor).
+ */
+export async function compareVendorPrices(ingredientName: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const normalized = ingredientName.trim().toLowerCase()
+
+  const { data, error } = await supabase
+    .from('vendor_price_points')
+    .select('*, vendors(id, name, status)')
+    .eq('chef_id', user.tenantId!)
+    .ilike('item_name', normalized)
+    .order('recorded_at', { ascending: false })
+    .limit(500)
+
+  if (error) {
+    console.error('[vendors] compareVendorPrices error:', error)
+    throw new Error('Failed to compare vendor prices')
+  }
+
+  // Deduplicate: keep only the latest price per vendor
+  const latestByVendor = new Map<string, any>()
+  for (const row of data ?? []) {
+    if (!latestByVendor.has(row.vendor_id)) {
+      latestByVendor.set(row.vendor_id, row)
+    }
+  }
+
+  return Array.from(latestByVendor.values()).sort(
+    (a: any, b: any) => (a.price_cents ?? 0) - (b.price_cents ?? 0)
+  )
+}
+
+/**
+ * Get the cheapest vendor for a specific ingredient (by name).
+ * Returns the vendor with the lowest latest price.
+ */
+export async function getCheapestVendor(ingredientName: string) {
+  const results = await compareVendorPrices(ingredientName)
+  return results.length > 0 ? results[0] : null
+}
+
+/**
+ * Get all current prices from one vendor (latest per ingredient).
+ */
+export async function getVendorPriceList(vendorId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('vendor_price_points')
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .eq('vendor_id', vendorId)
+    .order('recorded_at', { ascending: false })
+    .limit(2000)
+
+  if (error) {
+    console.error('[vendors] getVendorPriceList error:', error)
+    throw new Error('Failed to get vendor price list')
+  }
+
+  // Deduplicate: latest price per item_name + unit combination
+  const latestByItem = new Map<string, any>()
+  for (const row of data ?? []) {
+    const key = `${(row.item_name || '').toLowerCase()}|${(row.unit || '').toLowerCase()}`
+    if (!latestByItem.has(key)) {
+      latestByItem.set(key, row)
+    }
+  }
+
+  return Array.from(latestByItem.values()).sort((a: any, b: any) =>
+    (a.item_name || '').localeCompare(b.item_name || '')
+  )
+}
+
+/**
+ * Get price history for a given ingredient across all vendors over time.
+ */
+export async function getPriceHistory(ingredientName: string, days = 180) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const normalized = ingredientName.trim().toLowerCase()
+  const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+  const { data, error } = await supabase
+    .from('vendor_price_points')
+    .select('*, vendors(id, name)')
+    .eq('chef_id', user.tenantId!)
+    .ilike('item_name', normalized)
+    .gte('recorded_at', sinceDate)
+    .order('recorded_at', { ascending: true })
+
+  if (error) {
+    console.error('[vendors] getPriceHistory error:', error)
+    throw new Error('Failed to get price history')
+  }
+
+  return data ?? []
+}

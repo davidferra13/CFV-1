@@ -13,6 +13,7 @@ import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widge
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getQuickRequests } from '@/lib/client-requests/actions'
 import { getCertExpiryAlerts, type CertExpiryAlert } from '@/lib/protection/cert-alert-actions'
+import { getReorderAlertCount } from '@/lib/vendors/reorder-actions'
 import { CertExpiryBanner } from '@/components/protection/cert-expiry-banner'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
@@ -60,6 +61,7 @@ export async function AlertCards() {
     safe('Onboarding', getOnboardingProgress, emptyOnboardingProgress),
     safe('Client requests', getQuickRequests, []),
     safe('Cert expiry', getCertExpiryAlerts, []),
+    safe('Reorder alerts', getReorderAlertCount, 0),
   ])
 
   const [
@@ -73,6 +75,7 @@ export async function AlertCards() {
     onboardingProgressR,
     quickRequestsR,
     certExpiryR,
+    reorderAlertCountR,
   ] = results
 
   const responseTimeSummary = responseTimeSummaryR.data
@@ -85,6 +88,7 @@ export async function AlertCards() {
   const onboardingProgress = onboardingProgressR.data
   const quickRequests = quickRequestsR.data
   const certExpiryAlerts = certExpiryR.data as CertExpiryAlert[]
+  const reorderAlertCount = reorderAlertCountR.data as number
 
   const failedSections = results.filter((r) => r.failed).map((r) => (r as { label: string }).label)
 
@@ -255,6 +259,19 @@ export async function AlertCards() {
           trendDirection={onboardingProgress.completedPhases > 0 ? 'up' : 'flat'}
           trend={`${Math.round((onboardingProgress.completedPhases / onboardingProgress.totalPhases) * 100)}% done`}
           href="/settings"
+        />
+      )}
+
+      {/* Reorder Alerts - stat card */}
+      {reorderAlertCount > 0 && (
+        <StatCard
+          widgetId="reorder_alerts"
+          title="Below Par"
+          value={String(reorderAlertCount)}
+          subtitle={`item${reorderAlertCount !== 1 ? 's' : ''} need reordering`}
+          trendDirection="down"
+          trend="Restock needed"
+          href="/inventory/reorder"
         />
       )}
     </>
