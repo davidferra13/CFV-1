@@ -178,6 +178,14 @@ export default async function CommerceDashboardPage() {
             </CardContent>
           </Card>
         </Link>
+        <Link href="/commerce/purchase-orders">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <Package className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Purchase Orders</span>
+            </CardContent>
+          </Card>
+        </Link>
         <Link href="/commerce/observability">
           <Card interactive>
             <CardContent className="p-4 flex items-center gap-3">

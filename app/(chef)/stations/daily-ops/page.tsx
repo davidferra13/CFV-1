@@ -8,8 +8,10 @@ import type { StationSnapshot, AlertItem } from '@/lib/stations/daily-ops-action
 import { DailyOpsActionsBar } from '@/components/stations/daily-ops-actions-bar'
 import { ShiftNotesSection } from '@/components/briefing/shift-notes-section'
 import { PrepTimerForm } from '@/components/briefing/prep-timer-form'
+import { DailyChecklist } from '@/components/commerce/daily-checklist'
 import { getShiftNotes } from '@/lib/shifts/actions'
 import { getActivePrepTimers } from '@/lib/prep/actions'
+import { getOpeningChecklist, getClosingChecklist } from '@/lib/commerce/daily-checklist-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -141,10 +143,12 @@ function StationCard({ station }: { station: StationSnapshot }) {
 export default async function DailyOpsPage() {
   await requireChef()
   const today = new Date().toISOString().split('T')[0]
-  const [data, shiftNotes, activePrepTimers] = await Promise.all([
+  const [data, shiftNotes, activePrepTimers, openingItems, closingItems] = await Promise.all([
     getDailyOpsData(),
     getShiftNotes(today),
     getActivePrepTimers(),
+    getOpeningChecklist(today).catch(() => []),
+    getClosingChecklist(today).catch(() => []),
   ])
 
   return (
@@ -181,6 +185,11 @@ export default async function DailyOpsPage() {
           <DailyOpsActionsBar openingTemplateId={data.openingTemplateId} />
         </CardContent>
       </Card>
+
+      {/* ============================================ */}
+      {/* DAILY OPENING / CLOSING CHECKLIST */}
+      {/* ============================================ */}
+      <DailyChecklist openingItems={openingItems} closingItems={closingItems} date={today} />
 
       {/* ============================================ */}
       {/* ALL STATIONS AT A GLANCE */}
