@@ -729,6 +729,24 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     }
   }
 
+  // Fire workflow automations for quote_sent (non-blocking)
+  if (newStatus === 'sent') {
+    try {
+      const { processEventTrigger } = await import('@/lib/automations/workflow-actions')
+      await processEventTrigger(user.tenantId!, 'quote_sent', {
+        entityId: id,
+        entityType: updated.event_id ? 'event' : 'inquiry',
+        fields: {
+          client_name: updated.client_id,
+          occasion: null,
+          total_cents: updated.total_quoted_cents,
+        },
+      })
+    } catch (err) {
+      console.error('[transitionQuote] Workflow trigger failed (non-blocking):', err)
+    }
+  }
+
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${id}`)
 

@@ -563,6 +563,23 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Automation evaluation failed (non-blocking):', err)
   }
 
+  // Fire workflow automations for inquiry_created (non-blocking)
+  try {
+    const { processEventTrigger } = await import('@/lib/automations/workflow-actions')
+    await processEventTrigger(user.tenantId!, 'inquiry_created', {
+      entityId: inquiry.id,
+      entityType: 'inquiry',
+      fields: {
+        channel: validated.channel,
+        client_name: validated.client_name || 'Unknown',
+        occasion: validated.confirmed_occasion || null,
+        guest_count: validated.confirmed_guest_count ?? null,
+      },
+    })
+  } catch (err) {
+    console.error('[createInquiry] Workflow trigger failed (non-blocking):', err)
+  }
+
   // Enqueue Remy reactive AI task — auto-score lead (non-blocking)
   try {
     const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')

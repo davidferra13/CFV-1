@@ -773,6 +773,36 @@ export async function transitionEvent({
     log.events.warn('Automation evaluation failed (non-blocking)', { error: err })
   }
 
+  // Fire workflow automations (non-blocking)
+  try {
+    const { processEventTrigger } = await import('@/lib/automations/workflow-actions')
+    await processEventTrigger(event.tenant_id, 'event_stage_changed', {
+      entityId: eventId,
+      entityType: 'event',
+      fields: {
+        from_status: fromStatus,
+        to_status: toStatus,
+        status: toStatus,
+        occasion: event.occasion || null,
+        client_name: event.client_id,
+        guest_count: event.guest_count,
+        event_date: event.event_date,
+      },
+    })
+  } catch (err) {
+    log.events.warn('Workflow trigger failed (non-blocking)', { error: err })
+  }
+
+  // Cancel active workflows when event is cancelled (non-blocking)
+  if (toStatus === 'cancelled') {
+    try {
+      const { cancelWorkflowsForEntity } = await import('@/lib/automations/workflow-engine')
+      await cancelWorkflowsForEntity(eventId, event.tenant_id)
+    } catch (err) {
+      log.events.warn('Workflow cancellation failed (non-blocking)', { error: err })
+    }
+  }
+
   // Enqueue Remy reactive AI tasks (non-blocking)
   try {
     if (toStatus === 'confirmed') {
