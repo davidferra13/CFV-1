@@ -513,6 +513,11 @@ export default async function EventDetailPage({
           </div>
           <p className="text-stone-300 mt-1">
             {format(new Date(event.event_date), "EEEE, MMMM d, yyyy 'at' h:mm a")}
+            {(event as any).is_multi_day && (event as any).event_end_date && (
+              <span className="ml-2 text-xs text-amber-400 font-medium">
+                to {format(new Date((event as any).event_end_date + 'T12:00:00'), 'MMMM d, yyyy')}
+              </span>
+            )}
             {(event as any).event_timezone && (
               <span className="ml-2 text-xs text-stone-300 font-normal">
                 {(event as any).event_timezone.replace('America/', '').replace('_', ' ')}

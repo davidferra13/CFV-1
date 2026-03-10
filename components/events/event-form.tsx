@@ -737,6 +737,12 @@ export function EventForm({
               helperText="All times for this event are in this timezone"
             />
 
+            {mode === 'edit' && (
+              <p className="text-xs text-stone-400">
+                Need a multi-day event? Enable it from the event detail page after saving.
+              </p>
+            )}
+
             <Input
               label="Number of Guests"
               type="number"
