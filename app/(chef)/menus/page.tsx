@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { getBookingSettings } from '@/lib/booking/booking-settings-actions'
 
 export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
@@ -13,7 +14,11 @@ import { IngredientConsolidationBar } from '@/components/intelligence/ingredient
 
 export default async function MenusPage() {
   const user = await requireChef()
-  const [menus, costSummaries] = await Promise.all([getMenus(), getMenuCostSummaries()])
+  const [menus, costSummaries, bookingSettings] = await Promise.all([
+    getMenus(),
+    getMenuCostSummaries(),
+    getBookingSettings().catch(() => null),
+  ])
 
   const eventIds = Array.from(
     new Set(menus.map((menu: any) => menu.event_id).filter(Boolean))
@@ -50,7 +55,12 @@ export default async function MenusPage() {
         <IngredientConsolidationBar />
       </Suspense>
 
-      <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />
+      <MenusClientWrapper
+        menus={menus}
+        eventsById={eventsById}
+        costByMenuId={costByMenuId}
+        featuredBookingMenuId={bookingSettings?.featured_booking_menu_id ?? null}
+      />
     </div>
   )
 }

@@ -19,6 +19,7 @@ import {
   transitionMenu,
 } from '@/lib/menus/actions'
 import { toggleShowcase } from '@/lib/menus/showcase-actions'
+import { setFeaturedBookingMenuSelection } from '@/lib/booking/booking-settings-actions'
 import {
   searchRecipes,
   linkRecipeToComponent,
@@ -106,6 +107,7 @@ type Props = {
   event: Event
   recipeMap?: Record<string, RecipeInfo>
   costSummary?: MenuCostSummary | null
+  featuredBookingMenuId: string | null
 }
 
 const STATUS_BADGE: Record<
@@ -118,7 +120,13 @@ const STATUS_BADGE: Record<
   archived: { label: 'Archived', variant: 'default' },
 }
 
-export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, costSummary }: Props) {
+export function MenuDetailClient({
+  menu: initialMenu,
+  event,
+  recipeMap = {},
+  costSummary,
+  featuredBookingMenuId,
+}: Props) {
   const router = useRouter()
   const [menu] = useState(initialMenu)
   const [isEditing, setIsEditing] = useState(false)
@@ -127,6 +135,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deletePolicy, setDeletePolicy] = useState<ConfirmPolicyInput | null>(null)
   const [isShowcase, setIsShowcase] = useState(initialMenu.is_showcase)
+  const [isFeaturedBookingMenu, setIsFeaturedBookingMenu] = useState(
+    featuredBookingMenuId === initialMenu.id
+  )
   const undoStack = useUndoStack<string | null>(null)
 
   // Recipe link modal state
@@ -289,6 +300,29 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     }
   }
 
+  const handleToggleFeaturedBooking = async () => {
+    const previousValue = isFeaturedBookingMenu
+    setLoading(true)
+    setError('')
+    setIsFeaturedBookingMenu(!previousValue)
+    try {
+      const result = await setFeaturedBookingMenuSelection(previousValue ? null : menu.id)
+      if (!result.success) {
+        throw new Error(result.error ?? 'Failed to update featured booking menu')
+      }
+      trackAction(
+        previousValue ? 'Removed featured booking menu' : 'Featured menu on booking page',
+        menu.name
+      )
+      router.refresh()
+    } catch (err) {
+      setIsFeaturedBookingMenu(previousValue)
+      setMutationError(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handlePrintBackOfHouse = () => {
     window.print()
   }
@@ -417,6 +451,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
             {menu.is_template && <Badge variant="info">Template</Badge>}
             {menu.is_showcase && <Badge variant="success">Showcase</Badge>}
+            {isFeaturedBookingMenu && <Badge variant="success">Featured Offer</Badge>}
             {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
             {menu.target_guest_count && (
               <Badge variant="default">{menu.target_guest_count} guests</Badge>
@@ -433,6 +468,13 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           )}
           <Button variant="ghost" onClick={() => router.back()}>
             Back
+          </Button>
+          <Button
+            variant={isFeaturedBookingMenu ? 'secondary' : 'primary'}
+            onClick={handleToggleFeaturedBooking}
+            disabled={loading}
+          >
+            {isFeaturedBookingMenu ? 'Remove Featured Offer' : 'Feature on Booking Page'}
           </Button>
           {event ? (
             <Button
@@ -605,6 +647,31 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
                 <div className="mt-1 flex items-center gap-2">
                   <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                   {menu.is_template && <Badge variant="info">Template</Badge>}
+                  {isFeaturedBookingMenu && <Badge variant="success">Featured Offer</Badge>}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-stone-500">Booking Showcase</label>
+                <div className="mt-2 flex flex-col gap-3 rounded-xl border border-stone-800 bg-stone-950/70 p-4">
+                  <p className="text-sm text-stone-300">
+                    {isFeaturedBookingMenu
+                      ? 'This menu is currently the featured offer on your public profile and booking page.'
+                      : 'Make this the menu clients see as your featured ready-to-book offer.'}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                      size="sm"
+                      variant={isFeaturedBookingMenu ? 'secondary' : 'primary'}
+                      onClick={handleToggleFeaturedBooking}
+                      disabled={loading}
+                    >
+                      {isFeaturedBookingMenu ? 'Remove Featured Offer' : 'Feature on Booking Page'}
+                    </Button>
+                    <p className="text-xs text-stone-500">
+                      Merchandising copy stays in Settings, but menu selection now lives here.
+                    </p>
+                  </div>
                 </div>
               </div>
 

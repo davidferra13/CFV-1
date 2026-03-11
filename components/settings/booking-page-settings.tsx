@@ -6,24 +6,18 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
-import {
-  upsertBookingSettings,
-  type BookingSettings,
-  type FeaturedBookingMenuOption,
-} from '@/lib/booking/booking-settings-actions'
+import { upsertBookingSettings, type BookingSettings } from '@/lib/booking/booking-settings-actions'
 
 type Props = {
   initialSettings: BookingSettings
-  menuOptions: FeaturedBookingMenuOption[]
 }
 
 const SITE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://cheflowhq.com'
 
-export function BookingPageSettings({ initialSettings, menuOptions }: Props) {
+export function BookingPageSettings({ initialSettings }: Props) {
   const [enabled, setEnabled] = useState(initialSettings.booking_enabled)
   const [slug, setSlug] = useState(initialSettings.booking_slug ?? '')
   const [headline, setHeadline] = useState(initialSettings.booking_headline ?? '')
@@ -51,9 +45,6 @@ export function BookingPageSettings({ initialSettings, menuOptions }: Props) {
     initialSettings.booking_deposit_fixed_cents
       ? String(initialSettings.booking_deposit_fixed_cents / 100)
       : ''
-  )
-  const [featuredMenuId, setFeaturedMenuId] = useState(
-    initialSettings.featured_booking_menu_id ?? ''
   )
   const [featuredBadge, setFeaturedBadge] = useState(initialSettings.featured_booking_badge ?? '')
   const [featuredTitle, setFeaturedTitle] = useState(initialSettings.featured_booking_title ?? '')
@@ -90,7 +81,6 @@ export function BookingPageSettings({ initialSettings, menuOptions }: Props) {
           depositType === 'fixed' && depositFixedCents
             ? Math.round(parseFloat(depositFixedCents) * 100)
             : null,
-        featured_booking_menu_id: featuredMenuId || null,
         featured_booking_badge: featuredBadge || null,
         featured_booking_title: featuredTitle || null,
         featured_booking_pitch: featuredPitch || null,
@@ -192,25 +182,15 @@ export function BookingPageSettings({ initialSettings, menuOptions }: Props) {
             <div>
               <p className="text-sm font-medium text-stone-300">Featured ready-to-book menu</p>
               <p className="mt-1 text-xs text-stone-500">
-                Showcase one menu clients can buy into immediately instead of starting with a fully
-                custom brief. Featured-menu bookings are always treated as one-off events.
+                Choose which menu is featured from your menu library. Use this section to control
+                the sales copy around that featured offer.
               </p>
             </div>
 
-            <Select
-              label="Featured menu"
-              value={featuredMenuId}
-              onChange={(e) => setFeaturedMenuId(e.target.value)}
-              options={menuOptions.map((menu) => ({
-                value: menu.id,
-                label: `${menu.name}${menu.target_guest_count ? ` | ${menu.target_guest_count} guests` : ''}${menu.is_showcase ? ' | Showcase' : ''}`,
-              }))}
-              helperText={
-                menuOptions.length > 0
-                  ? 'Clients will see this menu on your public profile and can start a booking or request directly from it.'
-                  : 'Create a menu first if you want a ready-to-book option.'
-              }
-            />
+            <div className="rounded-xl border border-dashed border-stone-700 bg-stone-950/60 px-4 py-3 text-sm text-stone-400">
+              Go to <span className="font-medium text-stone-200">Menus</span>, open any menu, and
+              choose <span className="font-medium text-stone-200">Feature on booking page</span>.
+            </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               <Input
@@ -238,13 +218,6 @@ export function BookingPageSettings({ initialSettings, menuOptions }: Props) {
               rows={3}
               helperText="Shown on your public profile, inquiry page, and booking flow when this menu is selected."
             />
-
-            {menuOptions.length === 0 && (
-              <p className="text-xs text-stone-500">
-                No eligible menus yet. Build one in your menu library, then come back and feature it
-                here.
-              </p>
-            )}
           </Card>
 
           <Card className="space-y-4 p-4">

@@ -7,6 +7,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { MenuDetailClient } from './menu-detail-client'
 import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
+import { getBookingSettings } from '@/lib/booking/booking-settings-actions'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -16,10 +17,11 @@ export default async function MenuDetailPage({ params }: Props) {
   const user = await requireChef()
   const { id } = await params
 
-  const [menu, event, costSummaries] = await Promise.all([
+  const [menu, event, costSummaries, bookingSettings] = await Promise.all([
     getMenuById(id),
     getMenuEvent(id),
     getMenuCostSummaries(),
+    getBookingSettings().catch(() => null),
   ])
 
   if (!menu) {
@@ -75,6 +77,7 @@ export default async function MenuDetailPage({ params }: Props) {
         event={event}
         recipeMap={recipeMap}
         costSummary={costSummaries.find((summary) => summary.menu_id === menu.id) || null}
+        featuredBookingMenuId={bookingSettings?.featured_booking_menu_id ?? null}
       />
       {recommendations && <MenuRecommendationHints result={recommendations} />}
     </div>

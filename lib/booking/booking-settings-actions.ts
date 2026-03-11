@@ -54,14 +54,6 @@ export type BookingSettings = {
   featured_booking_pitch: string | null
 }
 
-export type FeaturedBookingMenuOption = {
-  id: string
-  name: string
-  status: string
-  target_guest_count: number | null
-  is_showcase: boolean
-}
-
 export async function getBookingSettings(): Promise<BookingSettings> {
   const user = await requireChef()
   const supabase: any = createServerClient()
@@ -98,37 +90,22 @@ export async function getBookingSettings(): Promise<BookingSettings> {
   }
 }
 
-export async function getFeaturedBookingMenuOptions(): Promise<FeaturedBookingMenuOption[]> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
-
-  const { data, error } = await supabase
-    .from('menus')
-    .select('id, name, status, target_guest_count, is_showcase')
-    .eq('tenant_id', user.tenantId!)
-    .neq('status', 'archived')
-    .is('deleted_at' as any, null)
-    .order('updated_at', { ascending: false })
-
-  if (error) {
-    console.error('[getFeaturedBookingMenuOptions] Error:', error)
-    return []
-  }
-
-  return (data ?? []) as FeaturedBookingMenuOption[]
-}
-
 export async function upsertBookingSettings(
   input: z.infer<typeof BookingSettingsSchema>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const validated = BookingSettingsSchema.parse(input)
   const supabase: any = createServerClient()
-  const featuredMenuId =
-    typeof validated.featured_booking_menu_id === 'string' &&
-    validated.featured_booking_menu_id.trim()
+  const shouldUpdateFeaturedMenuSelection = Object.prototype.hasOwnProperty.call(
+    input,
+    'featured_booking_menu_id'
+  )
+  const featuredMenuId = shouldUpdateFeaturedMenuSelection
+    ? typeof validated.featured_booking_menu_id === 'string' &&
+      validated.featured_booking_menu_id.trim()
       ? validated.featured_booking_menu_id.trim()
       : null
+    : null
 
   // Validation: instant-book requires base price and Stripe Connect
   if (validated.booking_model === 'instant_book') {
@@ -148,7 +125,7 @@ export async function upsertBookingSettings(
     }
   }
 
-  if (featuredMenuId) {
+  if (shouldUpdateFeaturedMenuSelection && featuredMenuId) {
     const { data: featuredMenu } = await supabase
       .from('menus')
       .select('id, status')
@@ -176,10 +153,13 @@ export async function upsertBookingSettings(
     booking_deposit_type: validated.booking_deposit_type,
     booking_deposit_percent: validated.booking_deposit_percent ?? null,
     booking_deposit_fixed_cents: validated.booking_deposit_fixed_cents ?? null,
-    featured_booking_menu_id: featuredMenuId,
     featured_booking_badge: validated.featured_booking_badge || null,
     featured_booking_title: validated.featured_booking_title || null,
     featured_booking_pitch: validated.featured_booking_pitch || null,
+  }
+
+  if (shouldUpdateFeaturedMenuSelection) {
+    update.featured_booking_menu_id = featuredMenuId
   }
 
   if (validated.booking_slug) {
@@ -193,6 +173,71 @@ export async function upsertBookingSettings(
   revalidatePath('/settings')
   revalidateTag('chef-booking-profile') // Bust public booking page cache
   revalidateTag(`chef-layout-${user.entityId}`)
+  return { success: true }
+}
+
+export async function setFeaturedBookingMenuSelection(
+  menuId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const normalizedMenuId = typeof menuId === 'string' && menuId.trim() ? menuId.trim() : null
+
+  const { data: chef, error: chefError } = await supabase
+    .from('chefs')
+    .select('slug, booking_slug, featured_booking_menu_id')
+    .eq('id', user.entityId)
+    .single()
+
+  if (chefError || !chef) {
+    return { success: false, error: 'Failed to load booking showcase settings.' }
+  }
+
+  if (normalizedMenuId) {
+    const { data: featuredMenu } = await supabase
+      .from('menus')
+      .select('id, status')
+      .eq('id', normalizedMenuId)
+      .eq('tenant_id', user.tenantId!)
+      .is('deleted_at' as any, null)
+      .maybeSingle()
+
+    if (!featuredMenu || featuredMenu.status === 'archived') {
+      return {
+        success: false,
+        error: 'Choose an active menu from your library to feature on your booking page.',
+      }
+    }
+  }
+
+  const { error } = await supabase
+    .from('chefs')
+    .update({ featured_booking_menu_id: normalizedMenuId })
+    .eq('id', user.entityId)
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  const affectedMenuIds = new Set<string>()
+  if (normalizedMenuId) affectedMenuIds.add(normalizedMenuId)
+  if (chef.featured_booking_menu_id) affectedMenuIds.add(chef.featured_booking_menu_id)
+
+  revalidatePath('/menus')
+  revalidatePath('/settings')
+  for (const affectedMenuId of affectedMenuIds) {
+    revalidatePath(`/menus/${affectedMenuId}`)
+  }
+  if (chef.slug) {
+    revalidatePath(`/chef/${chef.slug}`)
+    revalidatePath(`/chef/${chef.slug}/inquire`)
+  }
+  if (chef.booking_slug) {
+    revalidatePath(`/book/${chef.booking_slug}`)
+  }
+  revalidateTag('chef-booking-profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
+
   return { success: true }
 }
 

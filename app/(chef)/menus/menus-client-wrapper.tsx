@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { formatCurrency } from '@/lib/utils/currency'
 import { duplicateMenu, transitionMenu, getMenuQuickViewData } from '@/lib/menus/actions'
+import { setFeaturedBookingMenuSelection } from '@/lib/booking/booking-settings-actions'
 import type { MenuQuickViewData } from '@/lib/menus/actions'
 
 type Menu = {
@@ -58,6 +59,7 @@ type Props = {
   menus: Menu[]
   eventsById: Record<string, EventLite>
   costByMenuId: Record<string, MenuCostSummary>
+  featuredBookingMenuId: string | null
 }
 
 type SortValue = 'created_desc' | 'created_asc' | 'name' | 'status'
@@ -116,12 +118,14 @@ function MenuCard({
   menuEvent,
   costSummary,
   isActive,
+  isFeaturedBooking,
   onClick,
 }: {
   menu: Menu
   menuEvent: EventLite | null
   costSummary: MenuCostSummary | undefined
   isActive: boolean
+  isFeaturedBooking: boolean
   onClick: () => void
 }) {
   const displayStatus = getDisplayStatus(menu.status)
@@ -174,6 +178,7 @@ function MenuCard({
             </Badge>
             {menu.is_template && <Badge variant="info">Template</Badge>}
             {menu.is_showcase && <Badge variant="success">Showcase</Badge>}
+            {isFeaturedBooking && <Badge variant="success">Featured Offer</Badge>}
             {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
           </div>
 
@@ -203,7 +208,12 @@ function MenuCard({
 // MAIN COMPONENT
 // ============================================
 
-export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
+export function MenusClientWrapper({
+  menus,
+  eventsById,
+  costByMenuId,
+  featuredBookingMenuId: initialFeaturedBookingMenuId,
+}: Props) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<SortValue>('created_desc')
@@ -214,7 +224,10 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
   const [page, setPage] = useState(1)
   const [selectedMenuId, setSelectedMenuId] = useState<string | null>(null)
   const [error, setError] = useState('')
-  const [busyAction, setBusyAction] = useState<'archive' | 'duplicate' | null>(null)
+  const [busyAction, setBusyAction] = useState<'archive' | 'duplicate' | 'feature' | null>(null)
+  const [featuredBookingMenuId, setFeaturedBookingMenuId] = useState<string | null>(
+    initialFeaturedBookingMenuId
+  )
 
   // Quick view data (lazy-loaded per menu)
   const [quickViewData, setQuickViewData] = useState<MenuQuickViewData | null>(null)
@@ -229,6 +242,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
       ? eventsById[selectedMenu.event_id]
       : null
   const selectedMenuStatus = selectedMenu ? getDisplayStatus(selectedMenu.status) : null
+  const selectedMenuIsFeatured = selectedMenu ? featuredBookingMenuId === selectedMenu.id : false
 
   useEffect(() => {
     setPage(1)
@@ -380,6 +394,29 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
     }
   }
 
+  const handleFeaturedBookingToggle = async () => {
+    if (!selectedMenu) return
+
+    setError('')
+    setBusyAction('feature')
+    const previousFeaturedMenuId = featuredBookingMenuId
+    const nextFeaturedMenuId = selectedMenuIsFeatured ? null : selectedMenu.id
+    setFeaturedBookingMenuId(nextFeaturedMenuId)
+
+    try {
+      const result = await setFeaturedBookingMenuSelection(nextFeaturedMenuId)
+      if (!result.success) {
+        throw new Error(result.error ?? 'Failed to update featured booking menu')
+      }
+      router.refresh()
+    } catch (err: any) {
+      setFeaturedBookingMenuId(previousFeaturedMenuId)
+      setError(err.message || 'Failed to update featured booking menu')
+    } finally {
+      setBusyAction(null)
+    }
+  }
+
   const totalMenuCount = menus.length
 
   return (
@@ -430,6 +467,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                 menuEvent={menu.event_id ? (eventsById[menu.event_id] ?? null) : null}
                 costSummary={costByMenuId[menu.id]}
                 isActive
+                isFeaturedBooking={featuredBookingMenuId === menu.id}
                 onClick={() => openMenuModal(menu.id)}
               />
             ))}
@@ -529,6 +567,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                 menuEvent={menu.event_id ? (eventsById[menu.event_id] ?? null) : null}
                 costSummary={costByMenuId[menu.id]}
                 isActive={false}
+                isFeaturedBooking={featuredBookingMenuId === menu.id}
                 onClick={() => openMenuModal(menu.id)}
               />
             ))}
@@ -584,6 +623,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                   </Badge>
                   {selectedMenu.is_template && <Badge variant="info">Template</Badge>}
                   {selectedMenu.is_showcase && <Badge variant="success">Showcase</Badge>}
+                  {selectedMenuIsFeatured && <Badge variant="success">Featured Offer</Badge>}
                   {selectedMenu.cuisine_type && (
                     <Badge variant="default">{selectedMenu.cuisine_type}</Badge>
                   )}
@@ -769,8 +809,23 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                 <div className="flex flex-wrap items-center gap-3 border-t border-stone-700 pt-4">
                   <div className="flex flex-wrap gap-2">
                     <Button
+                      variant={selectedMenuIsFeatured ? 'secondary' : 'primary'}
+                      onClick={handleFeaturedBookingToggle}
+                      disabled={busyAction !== null}
+                    >
+                      <ChefHat className="mr-1.5 h-4 w-4" />
+                      {busyAction === 'feature'
+                        ? selectedMenuIsFeatured
+                          ? 'Removing...'
+                          : 'Featuring...'
+                        : selectedMenuIsFeatured
+                          ? 'Remove Featured Offer'
+                          : 'Feature on Booking Page'}
+                    </Button>
+                    <Button
                       variant="secondary"
                       onClick={() => router.push(`/menus/${selectedMenu.id}/editor`)}
+                      disabled={busyAction !== null}
                     >
                       Edit
                     </Button>
