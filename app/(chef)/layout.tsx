@@ -182,7 +182,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
             <TestAccountBanner />
             <KeyboardShortcutsWrapper>
               <div
-                className="min-h-screen"
+                className="dark-surface min-h-screen text-stone-200"
                 style={{
                   backgroundColor: profile.portal_background_color || '#0c0a09',
                   backgroundImage: profile.portal_background_image_url

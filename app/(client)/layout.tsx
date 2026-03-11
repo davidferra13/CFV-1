@@ -80,7 +80,7 @@ export default async function ClientLayout({ children }: { children: React.React
             <div className="h-10" />
           </>
         )}
-        <div className="min-h-screen bg-stone-800">
+        <div className="dark-surface min-h-screen bg-stone-800 text-stone-200">
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"

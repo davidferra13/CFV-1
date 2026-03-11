@@ -127,7 +127,7 @@ export default async function ChefProfilePage({ params }: Props) {
     : { backgroundColor }
 
   return (
-    <div className="min-h-screen" style={pageBackgroundStyle}>
+    <div className="dark-surface min-h-screen" style={pageBackgroundStyle}>
       <AggregateRatingJsonLd
         chefName={chef.display_name}
         averageRating={reviewFeed.stats.averageRating}

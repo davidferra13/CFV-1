@@ -124,34 +124,6 @@ html {
                                   but 5.8:1 on stone-800 (input bg) — passes on input bg */
   }
 
-  .text-stone-500 {
-    color: #a8a29e;
-  }
-  .text-red-600 {
-    color: #f87171;
-  }
-  .text-amber-900 {
-    color: #fde68a;
-  }
-  .text-amber-800 {
-    color: #fcd34d;
-  }
-  .text-amber-700 {
-    color: #fbbf24;
-  }
-  .text-green-900 {
-    color: #86efac;
-  }
-  .text-green-800 {
-    color: #4ade80;
-  }
-  .text-emerald-700 {
-    color: #34d399;
-  }
-  .text-emerald-800 {
-    color: #6ee7b7;
-  }
-
   body {
     @apply bg-stone-950 text-stone-200 antialiased;
     /* Faint noise texture — breaks up flat digital void, adds tactile feel */
@@ -233,6 +205,251 @@ html {
     color: var(--text-muted-soft);
   }
   /* Text link — distinct from button orange (lighter, with underline on hover) */
+  /* Public pages default to readable light-surface text unless a view opts into a dark shell. */
+  .public-shell {
+    background-color: #ffffff;
+    color: #1c1917;
+  }
+
+  html:not(.dark) .public-shell .text-stone-100 {
+    color: #1c1917;
+  }
+  html:not(.dark) .public-shell .text-stone-200 {
+    color: #292524;
+  }
+  html:not(.dark) .public-shell .text-stone-300 {
+    color: #44403c;
+  }
+  html:not(.dark) .public-shell .text-stone-400,
+  html:not(.dark) .public-shell .text-stone-500 {
+    color: #57534e;
+  }
+  html:not(.dark) .public-shell .text-red-200 {
+    color: #b91c1c;
+  }
+  html:not(.dark) .public-shell .text-green-200,
+  html:not(.dark) .public-shell .text-emerald-200 {
+    color: #166534;
+  }
+  html:not(.dark) .public-shell .text-amber-200,
+  html:not(.dark) .public-shell .text-yellow-200 {
+    color: #92400e;
+  }
+  html:not(.dark) .public-shell .text-orange-200 {
+    color: #9a3412;
+  }
+
+  /* Dark shells keep the brighter helper tones without leaking into light routes. */
+  .dark-surface .text-stone-100 {
+    color: #fafaf9;
+  }
+  .dark-surface .text-stone-200 {
+    color: #e7e5e4;
+  }
+  .dark-surface .text-stone-300 {
+    color: #d6d3d1;
+  }
+  .dark-surface .text-stone-400,
+  .dark-surface .text-stone-500 {
+    color: #a8a29e;
+  }
+  .dark-surface .text-red-200 {
+    color: #fecaca;
+  }
+  .dark-surface .text-green-200,
+  .dark-surface .text-emerald-200 {
+    color: #bbf7d0;
+  }
+  .dark-surface .text-amber-200,
+  .dark-surface .text-yellow-200,
+  .dark-surface .text-orange-200 {
+    color: #fde68a;
+  }
+  .dark-surface .text-red-600 {
+    color: #f87171;
+  }
+  .dark-surface .text-amber-900 {
+    color: #fde68a;
+  }
+  .dark-surface .text-amber-800 {
+    color: #fcd34d;
+  }
+  .dark-surface .text-amber-700 {
+    color: #fbbf24;
+  }
+  .dark-surface .text-green-900 {
+    color: #86efac;
+  }
+  .dark-surface .text-green-800 {
+    color: #4ade80;
+  }
+  .dark-surface .text-emerald-700 {
+    color: #34d399;
+  }
+  .dark-surface .text-emerald-800 {
+    color: #6ee7b7;
+  }
+
+  /* Explicit light panels must override nearby dark shells and card wrappers. */
+  html:not(.dark)
+    :is(
+      .bg-white,
+      .bg-stone-50,
+      .bg-stone-100,
+      .bg-brand-50,
+      .bg-red-50,
+      .bg-amber-50,
+      .bg-yellow-50,
+      .bg-orange-50,
+      .bg-green-50,
+      .bg-emerald-50
+    ).text-stone-100,
+  html:not(.dark)
+    :is(
+      .bg-white,
+      .bg-stone-50,
+      .bg-stone-100,
+      .bg-brand-50,
+      .bg-red-50,
+      .bg-amber-50,
+      .bg-yellow-50,
+      .bg-orange-50,
+      .bg-green-50,
+      .bg-emerald-50
+    )
+    .text-stone-100 {
+    color: #1c1917;
+  }
+  html:not(.dark)
+    :is(
+      .bg-white,
+      .bg-stone-50,
+      .bg-stone-100,
+      .bg-brand-50,
+      .bg-red-50,
+      .bg-amber-50,
+      .bg-yellow-50,
+      .bg-orange-50,
+      .bg-green-50,
+      .bg-emerald-50
+    ).text-stone-200,
+  html:not(.dark)
+    :is(
+      .bg-white,
+      .bg-stone-50,
+      .bg-stone-100,
+      .bg-brand-50,
+      .bg-red-50,
+      .bg-amber-50,
+      .bg-yellow-50,
+      .bg-orange-50,
+      .bg-green-50,
+      .bg-emerald-50
+    )
+    .text-stone-200 {
+    color: #292524;
+  }
+  html:not(.dark)
+    :is(
+      .bg-white,
+      .bg-stone-50,
+      .bg-stone-100,
+      .bg-brand-50,
+      .bg-red-50,
+      .bg-amber-50,
+      .bg-yellow-50,
+      .bg-orange-50,
+      .bg-green-50,
+      .bg-emerald-50
+    ).text-stone-300,
+  html:not(.dark)
+    :is(
+      .bg-white,
+      .bg-stone-50,
+      .bg-stone-100,
+      .bg-brand-50,
+      .bg-red-50,
+      .bg-amber-50,
+      .bg-yellow-50,
+      .bg-orange-50,
+      .bg-green-50,
+      .bg-emerald-50
+    )
+    .text-stone-300 {
+    color: #44403c;
+  }
+  html:not(.dark) :is(.bg-red-50).text-red-200,
+  html:not(.dark) :is(.bg-red-50) .text-red-200 {
+    color: #b91c1c;
+  }
+  html:not(.dark) :is(.bg-green-50, .bg-emerald-50).text-green-200,
+  html:not(.dark) :is(.bg-green-50, .bg-emerald-50) .text-green-200,
+  html:not(.dark) :is(.bg-green-50, .bg-emerald-50).text-emerald-200,
+  html:not(.dark) :is(.bg-green-50, .bg-emerald-50) .text-emerald-200 {
+    color: #166534;
+  }
+  html:not(.dark) :is(.bg-amber-50, .bg-yellow-50, .bg-orange-50).text-amber-200,
+  html:not(.dark) :is(.bg-amber-50, .bg-yellow-50, .bg-orange-50) .text-amber-200,
+  html:not(.dark) :is(.bg-amber-50, .bg-yellow-50, .bg-orange-50).text-yellow-200,
+  html:not(.dark) :is(.bg-amber-50, .bg-yellow-50, .bg-orange-50) .text-yellow-200,
+  html:not(.dark) :is(.bg-amber-50, .bg-yellow-50, .bg-orange-50).text-orange-200,
+  html:not(.dark) :is(.bg-amber-50, .bg-yellow-50, .bg-orange-50) .text-orange-200 {
+    color: #92400e;
+  }
+
+  /* Dark sections nested inside light public routes must win the cascade. */
+  html:not(.dark) .public-shell .dark-surface {
+    color: #e7e5e4;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-stone-100 {
+    color: #fafaf9;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-stone-200 {
+    color: #e7e5e4;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-stone-300 {
+    color: #d6d3d1;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-stone-400,
+  html:not(.dark) .public-shell .dark-surface .text-stone-500 {
+    color: #a8a29e;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-red-200 {
+    color: #fecaca;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-green-200,
+  html:not(.dark) .public-shell .dark-surface .text-emerald-200 {
+    color: #bbf7d0;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-amber-200,
+  html:not(.dark) .public-shell .dark-surface .text-yellow-200,
+  html:not(.dark) .public-shell .dark-surface .text-orange-200 {
+    color: #fde68a;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-red-600 {
+    color: #f87171;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-amber-900 {
+    color: #fde68a;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-amber-800 {
+    color: #fcd34d;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-amber-700 {
+    color: #fbbf24;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-green-900 {
+    color: #86efac;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-green-800 {
+    color: #4ade80;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-emerald-700 {
+    color: #34d399;
+  }
+  html:not(.dark) .public-shell .dark-surface .text-emerald-800 {
+    color: #6ee7b7;
+  }
   .text-link {
     color: rgb(var(--brand-400));
     text-decoration: none;
@@ -523,7 +740,6 @@ html {
   animation: slide-in-from-top 0.2s ease-out;
 }
 
-<<<<<<< HEAD
 /* ============================================
    CULINARY BOARD — Word Click Animations
    Each word animates to FEEL like itself.

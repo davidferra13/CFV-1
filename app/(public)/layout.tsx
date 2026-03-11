@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/ui/theme-provider'
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <div className="relative flex min-h-screen flex-col overflow-x-clip bg-white dark:bg-gradient-to-b dark:from-[#1a1210] dark:via-[#141110] dark:to-stone-950">
+      <div className="public-shell relative flex min-h-screen flex-col overflow-x-clip text-stone-900 dark:bg-gradient-to-b dark:from-[#1a1210] dark:via-[#141110] dark:to-stone-950 dark:text-stone-100">
         {/* Skip link removed - root layout.tsx already provides one */}
         {/* Ambient glow - warm brand radiance behind the page (dark mode only) */}
         <div className="pointer-events-none fixed inset-0 overflow-hidden dark:block hidden">

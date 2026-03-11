@@ -47,7 +47,7 @@ export default function AboutPage() {
             follow-ups. It works alongside whatever booking channels you already use. It does not
             try to replace your marketplace or become another middleman. It is your back office.
           </p>
-          <p className="text-stone-800 dark:text-stone-200 font-medium">
+          <p className="text-stone-900 dark:text-stone-200 font-medium">
             Right now, 4 working private chefs use ChefFlow every day. It is in active development,
             shaped by their feedback and mine. If you are a private chef looking for something
             better than spreadsheets and memory, I would love to hear from you.
@@ -67,7 +67,7 @@ export default function AboutPage() {
             href="/contact"
             analyticsName="about_contact"
             analyticsProps={{ section: 'about_story' }}
-            className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+            className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
           >
             Talk to me
           </TrackedLink>

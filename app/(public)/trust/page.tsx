@@ -130,26 +130,26 @@ export default function TrustPage() {
             <TrackedLink
               href="/privacy"
               analyticsName="trust_privacy_link"
-              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-900 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               Privacy Policy
             </TrackedLink>
             <TrackedLink
               href="/terms"
               analyticsName="trust_terms_link"
-              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-900 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               Terms of Service
             </TrackedLink>
             <a
               href="mailto:security@cheflowhq.com"
-              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-900 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               security@cheflowhq.com
             </a>
             <a
               href="mailto:support@cheflowhq.com"
-              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
+              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm font-semibold text-stone-900 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               support@cheflowhq.com
             </a>

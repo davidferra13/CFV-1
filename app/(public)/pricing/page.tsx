@@ -124,7 +124,7 @@ export default function PricingPage() {
                   className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
                     plan.highlighted
                       ? 'bg-brand-600 text-white hover:bg-brand-700'
-                      : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800'
+                      : 'border border-stone-300 bg-white text-stone-900 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800'
                   }`}
                 >
                   {isBeta ? 'Join beta waitlist' : plan.ctaLabel}
@@ -244,7 +244,7 @@ export default function PricingPage() {
                 href="/contact"
                 analyticsName="pricing_bottom_talk_to_sales"
                 analyticsProps={{ section: 'pricing_bottom_cta' }}
-                className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+                className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
               >
                 Talk to the founder
               </TrackedLink>

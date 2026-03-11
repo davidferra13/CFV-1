@@ -96,7 +96,7 @@ export default function Home() {
               href="/pricing"
               analyticsName="home_hero_pricing"
               analyticsProps={{ section: 'hero' }}
-              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
             >
               See pricing
             </TrackedLink>
@@ -111,9 +111,9 @@ export default function Home() {
       <section className="border-b border-stone-200 dark:border-stone-700/50">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-6 px-4 py-5 text-sm text-stone-500 dark:text-stone-400 sm:gap-8 sm:px-6 lg:px-8">
           <span>Payments via Stripe</span>
-          <span className="text-stone-300 dark:text-stone-700">&middot;</span>
+          <span className="text-stone-300 dark:text-stone-200">&middot;</span>
           <span>Calendar sync built in</span>
-          <span className="text-stone-300 dark:text-stone-700">&middot;</span>
+          <span className="text-stone-300 dark:text-stone-200">&middot;</span>
           <span>Your data stays yours</span>
         </div>
       </section>

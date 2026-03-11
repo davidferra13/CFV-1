@@ -60,7 +60,7 @@ export default function CustomerStoryPage({ params }: Props) {
   }
 
   return (
-    <article>
+    <article className="dark-surface bg-stone-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(storyStructuredData) }}

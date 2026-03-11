@@ -124,7 +124,7 @@ export default function FaqPage() {
               href="/trust"
               analyticsName="faq_trust_link"
               analyticsProps={{ section: 'faq_bottom' }}
-              className="inline-flex items-center rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-7 py-3 text-sm font-semibold text-stone-700 dark:text-stone-200 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800"
+              className="inline-flex items-center rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-7 py-3 text-sm font-semibold text-stone-900 dark:text-stone-200 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800"
             >
               Review trust center
             </TrackedLink>

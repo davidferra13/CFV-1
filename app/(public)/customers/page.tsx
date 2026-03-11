@@ -27,7 +27,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div>
+    <div className="dark-surface bg-stone-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(customersStructuredData) }}
