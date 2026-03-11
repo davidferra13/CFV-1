@@ -80,21 +80,21 @@ export function RecentPagesSection() {
           type="button"
           onClick={toggleCollapsed}
           aria-expanded={!collapsed}
-          className="group flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+          className="group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
         >
-          <Clock className="w-4 h-4 text-stone-500" />
+          <Clock className="h-4 w-4 text-stone-500 dark:text-stone-400" />
           <span className="flex-1 text-left">Recent</span>
           {collapsed ? (
-            <ChevronUp className="w-4 h-4 text-stone-400" />
+            <ChevronUp className="h-4 w-4 text-stone-500 dark:text-stone-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-stone-400" />
+            <ChevronDown className="h-4 w-4 text-stone-500 dark:text-stone-400" />
           )}
         </button>
         {!collapsed && recentPages.length > 0 && (
           <button
             type="button"
             onClick={clearHistory}
-            className="text-stone-500 hover:text-stone-300 transition-colors p-1 rounded-md"
+            className="rounded-md p-1 text-stone-500 transition-colors hover:bg-brand-100/70 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-300"
             title="Clear recent pages"
             aria-label="Clear recent pages"
           >
@@ -114,10 +114,10 @@ export function RecentPagesSection() {
               key={page.path}
               type="button"
               onClick={() => router.push(page.path)}
-              className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium text-stone-400 hover:bg-stone-800 hover:text-stone-100 transition-colors text-left"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm font-medium text-stone-700 transition-colors hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
             >
               <span className="flex-1 truncate">{page.label}</span>
-              <span className="text-[10px] text-stone-500 flex-shrink-0 tabular-nums">
+              <span className="flex-shrink-0 tabular-nums text-[10px] text-stone-500 dark:text-stone-500">
                 {relativeTime(page.visitedAt)}
               </span>
             </button>

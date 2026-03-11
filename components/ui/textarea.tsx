@@ -25,14 +25,19 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={textareaId} className="block text-sm font-medium text-stone-300 mb-1.5">
+          <label
+            htmlFor={textareaId}
+            className="mb-1.5 block text-sm font-medium text-stone-800 dark:text-stone-300"
+          >
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <textarea ref={ref} id={textareaId} className={textareaClasses} rows={4} {...props} />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1 text-sm text-stone-400">{helperText}</p>}
+        {error && <p className="mt-1 text-sm text-red-700 dark:text-red-400">{error}</p>}
+        {helperText && !error && (
+          <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{helperText}</p>
+        )}
       </div>
     )
   }

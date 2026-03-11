@@ -30,7 +30,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-stone-300 mb-1.5">
+          <label
+            htmlFor={inputId}
+            className="mb-1.5 block text-sm font-medium text-stone-800 dark:text-stone-300"
+          >
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -87,8 +90,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </button>
           )}
         </div>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
+        {error && <p className="mt-1 text-sm text-red-700 dark:text-red-400">{error}</p>}
+        {helperText && !error && (
+          <p className="mt-1.5 text-sm text-stone-600 dark:text-stone-400">{helperText}</p>
+        )}
       </div>
     )
   }
