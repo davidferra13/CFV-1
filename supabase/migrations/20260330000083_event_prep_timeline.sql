@@ -30,14 +30,12 @@ CREATE TABLE IF NOT EXISTS public.event_prep_steps (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT event_prep_steps_event_step_unique UNIQUE (event_id, step_key)
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_prep_steps_event_id
   ON public.event_prep_steps(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_prep_steps_tenant_id
   ON public.event_prep_steps(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_event_prep_steps_status
   ON public.event_prep_steps(status);
-
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS prep_timeline_visibility JSONB
   NOT NULL
@@ -53,14 +51,11 @@ ALTER TABLE public.chefs
     "cleanup": true,
     "complete": true
   }'::jsonb;
-
 DROP TRIGGER IF EXISTS set_event_prep_steps_updated_at ON public.event_prep_steps;
 CREATE TRIGGER set_event_prep_steps_updated_at
   BEFORE UPDATE ON public.event_prep_steps
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
 ALTER TABLE public.event_prep_steps ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS event_prep_steps_chef_all ON public.event_prep_steps;
 CREATE POLICY event_prep_steps_chef_all
   ON public.event_prep_steps
@@ -83,7 +78,6 @@ CREATE POLICY event_prep_steps_chef_all
       LIMIT 1
     )
   );
-
 DROP POLICY IF EXISTS event_prep_steps_client_select ON public.event_prep_steps;
 CREATE POLICY event_prep_steps_client_select
   ON public.event_prep_steps

@@ -8,20 +8,20 @@ import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-900 text-blue-700',
-  contacted: 'bg-yellow-900 text-yellow-700',
-  qualified: 'bg-purple-900 text-purple-700',
-  converted: 'bg-green-900 text-green-700',
-  lost: 'bg-red-900 text-red-700',
+  new: 'bg-blue-900 text-blue-200',
+  contacted: 'bg-yellow-900 text-yellow-200',
+  qualified: 'bg-purple-900 text-purple-200',
+  converted: 'bg-green-900 text-green-200',
+  lost: 'bg-red-900 text-red-200',
   archived: 'bg-stone-800 text-stone-500',
 }
 
 function LeadScoreBadge({ score }: { score: number | null }) {
   if (score === null) return <span className="text-stone-600 text-xs">-</span>
   let color = 'bg-stone-800 text-stone-400'
-  if (score >= 70) color = 'bg-green-900 text-green-700'
-  else if (score >= 40) color = 'bg-yellow-900 text-yellow-700'
-  else color = 'bg-red-900 text-red-700'
+  if (score >= 70) color = 'bg-green-900 text-green-200'
+  else if (score >= 40) color = 'bg-yellow-900 text-yellow-200'
+  else color = 'bg-red-900 text-red-200'
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${color}`}>
       {score}

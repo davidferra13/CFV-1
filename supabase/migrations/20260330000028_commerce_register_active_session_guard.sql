@@ -33,7 +33,6 @@ SET
     )
   )
 WHERE rs.id IN (SELECT id FROM duplicates);
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_register_sessions_one_active_per_tenant
   ON register_sessions (tenant_id)
   WHERE status IN ('open', 'suspended');

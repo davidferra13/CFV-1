@@ -124,7 +124,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
           </div>
           <div className="flex flex-wrap gap-1">
             {result.avoidances.map((p, i) => (
-              <span key={i} className="bg-red-950 text-red-700 rounded px-1.5 py-0.5">
+              <span key={i} className="bg-red-950 text-red-200 rounded px-1.5 py-0.5">
                 {p}
               </span>
             ))}

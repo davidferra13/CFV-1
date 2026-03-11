@@ -270,7 +270,7 @@ export function LocationRoster({
     <div className="space-y-4">
       {/* Error display */}
       {error && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
+        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-200 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
           {error}
           <button onClick={() => setError(null)} className="ml-2 font-medium underline">
             Dismiss
@@ -339,7 +339,7 @@ export function LocationRoster({
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{loc.name}</h3>
                         {loc.permit_required && (
-                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-200 dark:bg-blue-900/30 dark:text-blue-300">
                             Permit Required
                           </span>
                         )}
@@ -375,7 +375,7 @@ export function LocationRoster({
                       </button>
                       <button
                         onClick={() => handleDeleteLocation(loc.id)}
-                        className="rounded px-2 py-1 text-sm text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
+                        className="rounded px-2 py-1 text-sm text-red-500 hover:bg-red-50 hover:text-red-200 dark:hover:bg-red-900/20"
                       >
                         Delete
                       </button>

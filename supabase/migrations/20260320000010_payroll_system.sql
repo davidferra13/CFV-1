@@ -42,7 +42,6 @@ CREATE TABLE employees (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- TABLE 2: Individual payroll records (one per pay period per employee)
 CREATE TABLE payroll_records (
   id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -79,7 +78,6 @@ CREATE TABLE payroll_records (
   created_at                  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at                  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- TABLE 3: Form 941 quarterly summaries
 CREATE TABLE payroll_941_summaries (
   id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -109,7 +107,6 @@ CREATE TABLE payroll_941_summaries (
 
   UNIQUE (chef_id, tax_year, quarter)
 );
-
 -- TABLE 4: W-2 annual summaries (one per employee per year)
 CREATE TABLE payroll_w2_summaries (
   id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -132,30 +129,24 @@ CREATE TABLE payroll_w2_summaries (
 
   UNIQUE (chef_id, employee_id, tax_year)
 );
-
 -- Indexes
 CREATE INDEX idx_employees_chef       ON employees(chef_id, status);
 CREATE INDEX idx_payroll_records_chef ON payroll_records(chef_id, pay_date DESC);
 CREATE INDEX idx_payroll_records_emp  ON payroll_records(employee_id, pay_period_start DESC);
 CREATE INDEX idx_941_chef_year        ON payroll_941_summaries(chef_id, tax_year DESC);
 CREATE INDEX idx_w2_chef_year         ON payroll_w2_summaries(chef_id, tax_year DESC);
-
 -- Update triggers
 CREATE TRIGGER trg_employees_updated_at
   BEFORE UPDATE ON employees
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER trg_payroll_records_updated_at
   BEFORE UPDATE ON payroll_records
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER trg_payroll_941_updated_at
   BEFORE UPDATE ON payroll_941_summaries
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- RLS: employees
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY emp_chef_select ON employees FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY emp_chef_insert ON employees FOR INSERT
@@ -164,10 +155,8 @@ CREATE POLICY emp_chef_update ON employees FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY emp_chef_delete ON employees FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- RLS: payroll_records
 ALTER TABLE payroll_records ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY pr_chef_select ON payroll_records FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pr_chef_insert ON payroll_records FOR INSERT
@@ -176,10 +165,8 @@ CREATE POLICY pr_chef_update ON payroll_records FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pr_chef_delete ON payroll_records FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- RLS: payroll_941_summaries
 ALTER TABLE payroll_941_summaries ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY p941_chef_select ON payroll_941_summaries FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY p941_chef_insert ON payroll_941_summaries FOR INSERT
@@ -188,10 +175,8 @@ CREATE POLICY p941_chef_update ON payroll_941_summaries FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY p941_chef_delete ON payroll_941_summaries FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- RLS: payroll_w2_summaries
 ALTER TABLE payroll_w2_summaries ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY w2_chef_select ON payroll_w2_summaries FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY w2_chef_insert ON payroll_w2_summaries FOR INSERT
@@ -200,7 +185,6 @@ CREATE POLICY w2_chef_update ON payroll_w2_summaries FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY w2_chef_delete ON payroll_w2_summaries FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- Comments
 COMMENT ON COLUMN employees.ssn_last4 IS
   'Last 4 digits of SSN for display only. Never store full SSN in this system.';

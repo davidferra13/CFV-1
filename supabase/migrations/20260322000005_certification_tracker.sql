@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS chef_certifications (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Add all columns if they don't exist (table may have been created with fewer columns)
 ALTER TABLE chef_certifications ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES chefs(id) ON DELETE CASCADE;
 ALTER TABLE chef_certifications ADD COLUMN IF NOT EXISTS cert_type TEXT;
@@ -33,7 +32,6 @@ ALTER TABLE chef_certifications ADD COLUMN IF NOT EXISTS notes TEXT;
 ALTER TABLE chef_certifications ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
 ALTER TABLE chef_certifications ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE chef_certifications ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
 -- Backfill tenant_id from chef_id if chef_id column exists
 DO $$
 BEGIN
@@ -41,9 +39,7 @@ BEGIN
     UPDATE chef_certifications SET tenant_id = chef_id WHERE tenant_id IS NULL;
   END IF;
 END $$;
-
 ALTER TABLE chef_certifications ENABLE ROW LEVEL SECURITY;
-
 -- Drop existing policy if present, then recreate
 DROP POLICY IF EXISTS "chef_certifications_own_tenant" ON chef_certifications;
 CREATE POLICY "chef_certifications_own_tenant" ON chef_certifications
@@ -52,7 +48,6 @@ CREATE POLICY "chef_certifications_own_tenant" ON chef_certifications
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
     )
   );
-
 CREATE INDEX IF NOT EXISTS idx_chef_certs_tenant ON chef_certifications(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_chef_certs_expiry ON chef_certifications(expiry_date) WHERE expiry_date IS NOT NULL AND is_active = TRUE;
 CREATE INDEX IF NOT EXISTS idx_chef_certs_type ON chef_certifications(tenant_id, cert_type);

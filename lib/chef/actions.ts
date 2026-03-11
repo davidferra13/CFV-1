@@ -6,6 +6,10 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import {
+  DEFAULT_PRIMARY_SHORTCUT_HREFS,
+  upgradeLegacyPrimaryNavHrefs,
+} from '@/lib/navigation/primary-shortcuts'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
@@ -307,7 +311,9 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
     my_dashboard_notes: typeof row.my_dashboard_notes === 'string' ? row.my_dashboard_notes : '',
     my_dashboard_pinned_menu_id:
       typeof row.my_dashboard_pinned_menu_id === 'string' ? row.my_dashboard_pinned_menu_id : null,
-    primary_nav_hrefs: getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs),
+    primary_nav_hrefs: upgradeLegacyPrimaryNavHrefs(
+      getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs)
+    ),
   }
 }
 
@@ -323,7 +329,7 @@ export async function getChefPrimaryNavHrefs(): Promise<string[]> {
   if (error || !data) return []
 
   const row = data as Record<string, unknown>
-  return getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs)
+  return upgradeLegacyPrimaryNavHrefs(getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs))
 }
 
 // ============================================
@@ -409,6 +415,11 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
+}
+
+export async function applyRecommendedPrimaryNav() {
+  await updateChefPreferences({ primary_nav_hrefs: [] })
+  return { success: true, primaryNavHrefs: [...DEFAULT_PRIMARY_SHORTCUT_HREFS] }
 }
 
 // ============================================

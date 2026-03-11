@@ -21,7 +21,7 @@ export default async function RevenuePerHourPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-200">
             ← Finance
           </Link>
           <h1 className="text-3xl font-bold text-stone-900 mt-1">Revenue Per Hour</h1>

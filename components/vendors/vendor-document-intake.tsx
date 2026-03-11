@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { MOBILE_CAPTURE_FILE_EXTENSION_ACCEPT } from '@/lib/uploads/mobile-capture-types'
 import {
   uploadVendorDocument,
   type VendorDocumentStatus,
@@ -216,8 +217,8 @@ export function VendorDocumentIntake({ vendorId, uploads }: VendorDocumentIntake
       <CardContent className="space-y-4">
         <p className="text-sm text-stone-500">
           Upload catalogs, invoices, expenses, and supplier documents in one place. Catalog CSV/XLSX
-          files are auto-queued into your comparison workflow. Invoice and expense files are
-          processed automatically after upload.
+          files are auto-queued into your comparison workflow. Phone photos including HEIC/HEIF,
+          invoice scans, and expense backups are processed automatically after upload.
         </p>
 
         {error && (
@@ -255,7 +256,8 @@ export function VendorDocumentIntake({ vendorId, uploads }: VendorDocumentIntake
               ref={fileRef}
               type="file"
               multiple
-              accept=".csv,.xlsx,.xls,.pdf,.txt,.jpg,.jpeg,.png,.webp,.doc,.docx"
+              accept={`.csv,.xlsx,.xls,.txt,.doc,.docx,${MOBILE_CAPTURE_FILE_EXTENSION_ACCEPT}`}
+              capture="environment"
               onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
               className="block w-full text-sm text-stone-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-stone-800 file:text-stone-300 hover:file:bg-stone-700"
             />

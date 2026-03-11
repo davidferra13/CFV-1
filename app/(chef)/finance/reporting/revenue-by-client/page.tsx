@@ -76,7 +76,7 @@ export default async function RevenueByClientPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">Total across {clients.length} clients</p>
         </Card>
         <Card className="p-4">
@@ -123,7 +123,7 @@ export default async function RevenueByClientPage() {
                   <TableCell className="text-stone-100 font-semibold text-sm">
                     {formatCurrency(client.totalRevenue)}
                   </TableCell>
-                  <TableCell className="text-green-700 text-sm">
+                  <TableCell className="text-green-200 text-sm">
                     {formatCurrency(client.completedRevenue)}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">

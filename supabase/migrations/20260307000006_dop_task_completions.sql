@@ -13,18 +13,14 @@ CREATE TABLE IF NOT EXISTS dop_task_completions (
   notes TEXT,                       -- optional chef note on completion
   UNIQUE (event_id, task_key)       -- one completion record per task per event
 );
-
 -- RLS
 ALTER TABLE dop_task_completions ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own DOP completions"
   ON dop_task_completions
   FOR ALL
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 CREATE INDEX idx_dop_task_completions_event
   ON dop_task_completions(event_id);
-
 COMMENT ON TABLE dop_task_completions IS 'Manual chef confirmations for Day-Of Protocol tasks that cannot be auto-detected';
 COMMENT ON COLUMN dop_task_completions.task_key IS 'Identifier matching the task key in lib/scheduling/dop.ts';

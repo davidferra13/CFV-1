@@ -9,7 +9,6 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 CREATE TABLE IF NOT EXISTS commerce_promotions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -40,13 +39,10 @@ CREATE TABLE IF NOT EXISTS commerce_promotions (
     (discount_type IN ('fixed_order', 'fixed_item') AND discount_cents IS NOT NULL AND discount_percent IS NULL)
   )
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_commerce_promotions_tenant_code
   ON commerce_promotions (tenant_id, code);
-
 CREATE INDEX IF NOT EXISTS idx_commerce_promotions_tenant_active
   ON commerce_promotions (tenant_id, is_active, starts_at, ends_at);
-
 CREATE TABLE IF NOT EXISTS sale_applied_promotions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -60,21 +56,16 @@ CREATE TABLE IF NOT EXISTS sale_applied_promotions (
   discount_cents INTEGER NOT NULL CHECK (discount_cents > 0),
   metadata JSONB NOT NULL DEFAULT '{}'::JSONB
 );
-
 CREATE INDEX IF NOT EXISTS idx_sale_applied_promotions_tenant_sale
   ON sale_applied_promotions (tenant_id, sale_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_sale_applied_promotions_tenant_promotion
   ON sale_applied_promotions (tenant_id, promotion_id);
-
 DROP TRIGGER IF EXISTS update_commerce_promotions_updated_at ON commerce_promotions;
 CREATE TRIGGER update_commerce_promotions_updated_at
   BEFORE UPDATE ON commerce_promotions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE commerce_promotions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sale_applied_promotions ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS chef_commerce_promotions ON commerce_promotions;
 CREATE POLICY chef_commerce_promotions ON commerce_promotions
   FOR ALL USING (
@@ -83,7 +74,6 @@ CREATE POLICY chef_commerce_promotions ON commerce_promotions
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS chef_sale_applied_promotions ON sale_applied_promotions;
 CREATE POLICY chef_sale_applied_promotions ON sale_applied_promotions
   FOR ALL USING (
@@ -92,15 +82,11 @@ CREATE POLICY chef_sale_applied_promotions ON sale_applied_promotions
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS service_commerce_promotions ON commerce_promotions;
 CREATE POLICY service_commerce_promotions ON commerce_promotions
   FOR ALL USING (auth.role() = 'service_role');
-
 DROP POLICY IF EXISTS service_sale_applied_promotions ON sale_applied_promotions;
 CREATE POLICY service_sale_applied_promotions ON sale_applied_promotions
   FOR ALL USING (auth.role() = 'service_role');
-
 COMMENT ON TABLE commerce_promotions IS 'Reusable POS promotion rules (percent/fixed, order/item scoped).';
 COMMENT ON TABLE sale_applied_promotions IS 'Immutable snapshot of promotions applied to each sale.';
-

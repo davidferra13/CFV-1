@@ -35,15 +35,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 // Allergen badge colors
 const ALLERGEN_COLORS: Record<string, string> = {
-  milk: 'bg-blue-100 text-blue-800',
-  egg: 'bg-yellow-100 text-yellow-800',
-  fish: 'bg-cyan-100 text-cyan-800',
-  shellfish: 'bg-teal-100 text-teal-800',
-  tree_nuts: 'bg-amber-100 text-amber-800',
-  peanuts: 'bg-orange-100 text-orange-800',
-  wheat: 'bg-red-100 text-red-800',
-  soy: 'bg-green-100 text-green-800',
-  sesame: 'bg-purple-100 text-purple-800',
+  milk: 'bg-blue-100 text-blue-200',
+  egg: 'bg-yellow-100 text-yellow-200',
+  fish: 'bg-cyan-100 text-cyan-200',
+  shellfish: 'bg-teal-100 text-teal-200',
+  tree_nuts: 'bg-amber-100 text-amber-200',
+  peanuts: 'bg-orange-100 text-orange-200',
+  wheat: 'bg-red-100 text-red-200',
+  soy: 'bg-green-100 text-green-200',
+  sesame: 'bg-purple-100 text-purple-200',
 }
 
 type SystemIngredient = {

@@ -126,7 +126,7 @@ export default async function AARHistoryPage() {
               .map(({ item, count }) => (
                 <span
                   key={item}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-900 text-amber-800"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-900 text-amber-200"
                 >
                   {item} ({count}x)
                 </span>

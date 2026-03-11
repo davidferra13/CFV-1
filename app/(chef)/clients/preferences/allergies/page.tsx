@@ -41,7 +41,7 @@ export default async function AllergiesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Allergies</h1>
-          <span className="bg-red-900 text-red-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-red-900 text-red-200 text-sm px-2 py-0.5 rounded-full">
             {clientsWithAllergies.length} clients
           </span>
         </div>
@@ -57,7 +57,7 @@ export default async function AllergiesPage() {
             {topAllergies.map(([allergy, count]) => (
               <span
                 key={allergy}
-                className="bg-red-900 text-red-800 text-sm px-3 py-1 rounded-full"
+                className="bg-red-900 text-red-200 text-sm px-3 py-1 rounded-full"
               >
                 {allergy} <span className="text-red-600 font-semibold">×{count}</span>
               </span>
@@ -102,7 +102,7 @@ export default async function AllergiesPage() {
                       {(client.allergies as string[]).map((a) => (
                         <span
                           key={a}
-                          className="bg-red-900 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full"
+                          className="bg-red-900 text-red-200 text-xs font-medium px-2 py-0.5 rounded-full"
                         >
                           {a}
                         </span>

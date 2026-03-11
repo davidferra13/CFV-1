@@ -8,7 +8,6 @@
 -- ENUM: rsvp_status
 -- ============================================================
 CREATE TYPE rsvp_status AS ENUM ('pending', 'attending', 'declined', 'maybe');
-
 -- ============================================================
 -- TABLE: event_shares
 -- One record per shareable link for an event.
@@ -35,17 +34,14 @@ CREATE TABLE event_shares (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Indexes for event_shares
 CREATE INDEX idx_event_shares_token ON event_shares(token);
 CREATE INDEX idx_event_shares_event_id ON event_shares(event_id);
 CREATE INDEX idx_event_shares_tenant_id ON event_shares(tenant_id);
-
 -- Updated_at trigger
 CREATE TRIGGER set_event_shares_updated_at
   BEFORE UPDATE ON event_shares
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================================
 -- TABLE: event_guests
 -- One record per guest RSVP. Linked to a share + event.
@@ -68,23 +64,19 @@ CREATE TABLE event_guests (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Prevent duplicate RSVPs per email per share link
 CREATE UNIQUE INDEX idx_event_guests_share_email
   ON event_guests(event_share_id, email)
   WHERE email IS NOT NULL;
-
 -- Indexes for event_guests
 CREATE INDEX idx_event_guests_guest_token ON event_guests(guest_token);
 CREATE INDEX idx_event_guests_event_id ON event_guests(event_id);
 CREATE INDEX idx_event_guests_tenant_id ON event_guests(tenant_id);
 CREATE INDEX idx_event_guests_event_share_id ON event_guests(event_share_id);
-
 -- Updated_at trigger
 CREATE TRIGGER set_event_guests_updated_at
   BEFORE UPDATE ON event_guests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================================
 -- VIEW: event_rsvp_summary
 -- Aggregated RSVP counts and dietary info per event.
@@ -117,12 +109,10 @@ SELECT
   ) AS all_allergies
 FROM event_guests eg
 GROUP BY eg.event_id, eg.tenant_id;
-
 -- ============================================================
 -- RLS: event_shares
 -- ============================================================
 ALTER TABLE event_shares ENABLE ROW LEVEL SECURITY;
-
 -- Chefs can do everything for their tenant
 CREATE POLICY event_shares_chef_all ON event_shares
   FOR ALL
@@ -132,7 +122,6 @@ CREATE POLICY event_shares_chef_all ON event_shares
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Clients can SELECT and INSERT for their own events
 CREATE POLICY event_shares_client_select ON event_shares
   FOR SELECT
@@ -142,7 +131,6 @@ CREATE POLICY event_shares_client_select ON event_shares
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 CREATE POLICY event_shares_client_insert ON event_shares
   FOR INSERT
   WITH CHECK (
@@ -151,7 +139,6 @@ CREATE POLICY event_shares_client_insert ON event_shares
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 -- Clients can update their own shares (e.g., revoke)
 CREATE POLICY event_shares_client_update ON event_shares
   FOR UPDATE
@@ -161,18 +148,16 @@ CREATE POLICY event_shares_client_update ON event_shares
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 -- Public can SELECT by valid token (for guest access)
 CREATE POLICY event_shares_public_select_by_token ON event_shares
   FOR SELECT
   USING (true);
-  -- App layer MUST filter by specific token to prevent enumeration
+-- App layer MUST filter by specific token to prevent enumeration
 
 -- ============================================================
 -- RLS: event_guests
 -- ============================================================
 ALTER TABLE event_guests ENABLE ROW LEVEL SECURITY;
-
 -- Chefs can read all guests for their tenant
 CREATE POLICY event_guests_chef_all ON event_guests
   FOR ALL
@@ -182,7 +167,6 @@ CREATE POLICY event_guests_chef_all ON event_guests
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Clients can read guests for events they own
 CREATE POLICY event_guests_client_select ON event_guests
   FOR SELECT
@@ -193,24 +177,23 @@ CREATE POLICY event_guests_client_select ON event_guests
       WHERE e.client_id = ur.entity_id
     )
   );
-
 -- Public can INSERT (submit RSVP) -- validated at app layer via share token
 CREATE POLICY event_guests_public_insert ON event_guests
   FOR INSERT
   WITH CHECK (true);
-  -- App layer validates share token before allowing insert
+-- App layer validates share token before allowing insert
 
 -- Public can SELECT their own guest record by guest_token
 CREATE POLICY event_guests_public_select_by_token ON event_guests
   FOR SELECT
   USING (true);
-  -- App layer MUST filter by specific guest_token
+-- App layer MUST filter by specific guest_token
 
 -- Public can UPDATE their own RSVP by guest_token
 CREATE POLICY event_guests_public_update_by_token ON event_guests
   FOR UPDATE
   USING (true);
-  -- App layer MUST filter by specific guest_token
+-- App layer MUST filter by specific guest_token
 
 -- ============================================================
 -- GRANTS for anon role (unauthenticated guests)

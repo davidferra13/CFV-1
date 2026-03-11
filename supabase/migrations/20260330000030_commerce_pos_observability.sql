@@ -4,12 +4,10 @@ DO $$ BEGIN
   CREATE TYPE pos_alert_severity AS ENUM ('info', 'warning', 'error', 'critical');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 DO $$ BEGIN
   CREATE TYPE pos_alert_status AS ENUM ('open', 'acknowledged', 'resolved');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 CREATE TABLE IF NOT EXISTS pos_alert_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -32,17 +30,13 @@ CREATE TABLE IF NOT EXISTS pos_alert_events (
   resolved_at TIMESTAMPTZ,
   resolved_by UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
-
 CREATE INDEX IF NOT EXISTS idx_pos_alert_events_tenant_status_created
   ON pos_alert_events (tenant_id, status, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_pos_alert_events_tenant_severity_created
   ON pos_alert_events (tenant_id, severity, created_at DESC);
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pos_alert_events_open_dedupe
   ON pos_alert_events (tenant_id, dedupe_key)
   WHERE status = 'open' AND dedupe_key IS NOT NULL;
-
 CREATE TABLE IF NOT EXISTS pos_metric_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -62,18 +56,14 @@ CREATE TABLE IF NOT EXISTS pos_metric_snapshots (
   metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
   UNIQUE (tenant_id, snapshot_date)
 );
-
 CREATE INDEX IF NOT EXISTS idx_pos_metric_snapshots_tenant_date
   ON pos_metric_snapshots (tenant_id, snapshot_date DESC);
-
 DROP TRIGGER IF EXISTS update_pos_alert_events_updated_at ON pos_alert_events;
 CREATE TRIGGER update_pos_alert_events_updated_at
   BEFORE UPDATE ON pos_alert_events
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE pos_alert_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pos_metric_snapshots ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS pos_alert_events_chef_all ON pos_alert_events;
 CREATE POLICY pos_alert_events_chef_all ON pos_alert_events
   FOR ALL USING (
@@ -82,7 +72,6 @@ CREATE POLICY pos_alert_events_chef_all ON pos_alert_events
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS pos_metric_snapshots_chef_all ON pos_metric_snapshots;
 CREATE POLICY pos_metric_snapshots_chef_all ON pos_metric_snapshots
   FOR ALL USING (
@@ -91,15 +80,11 @@ CREATE POLICY pos_metric_snapshots_chef_all ON pos_metric_snapshots
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS pos_alert_events_service_all ON pos_alert_events;
 CREATE POLICY pos_alert_events_service_all ON pos_alert_events
   FOR ALL USING (auth.role() = 'service_role');
-
 DROP POLICY IF EXISTS pos_metric_snapshots_service_all ON pos_metric_snapshots;
 CREATE POLICY pos_metric_snapshots_service_all ON pos_metric_snapshots
   FOR ALL USING (auth.role() = 'service_role');
-
 COMMENT ON TABLE pos_alert_events IS 'POS operational alerts for incidents and anomalous states.';
 COMMENT ON TABLE pos_metric_snapshots IS 'Daily POS KPI snapshots used for pilot observability and trend review.';
-

@@ -93,15 +93,15 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
 }
 
 const ENTRY_TYPE_COLORS: Record<string, string> = {
-  payment: 'bg-green-900 text-green-800',
+  payment: 'bg-green-900 text-green-200',
   deposit: 'bg-brand-900 text-brand-300',
   installment: 'bg-brand-900 text-brand-300',
-  final_payment: 'bg-green-900 text-green-800',
-  tip: 'bg-purple-900 text-purple-800',
-  refund: 'bg-red-900 text-red-800',
+  final_payment: 'bg-green-900 text-green-200',
+  tip: 'bg-purple-900 text-purple-200',
+  refund: 'bg-red-900 text-red-200',
   adjustment: 'bg-stone-800 text-stone-200',
-  add_on: 'bg-orange-900 text-orange-800',
-  credit: 'bg-teal-900 text-teal-800',
+  add_on: 'bg-orange-900 text-orange-200',
+  credit: 'bg-teal-900 text-teal-200',
 }
 
 const CALENDAR_ENTRY_TYPE_LABELS: Record<string, string> = {
@@ -595,15 +595,15 @@ export function FinancialsClient({
                           </td>
                           <td className="px-3 py-2 text-sm">
                             {entry.revenue_type === 'promotional' ? (
-                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-purple-900 text-purple-700">
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-purple-900 text-purple-200">
                                 Promotional
                               </span>
                             ) : entry.is_completed ? (
-                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-green-900 text-green-700">
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-green-900 text-green-200">
                                 Completed
                               </span>
                             ) : (
-                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-amber-900 text-amber-700">
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-amber-900 text-amber-200">
                                 Upcoming
                               </span>
                             )}
@@ -661,7 +661,7 @@ export function FinancialsClient({
 
           {/* Filtered balance warning */}
           {isFiltered && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-950 border border-amber-200 rounded-md text-sm text-amber-800">
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-950 border border-amber-200 rounded-md text-sm text-amber-200">
               <svg className="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"

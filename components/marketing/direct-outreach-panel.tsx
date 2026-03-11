@@ -117,7 +117,7 @@ export function DirectOutreachPanel({
 
       {sent && (
         <div className="flex items-center gap-3">
-          <span className="text-sm text-green-700">Message sent.</span>
+          <span className="text-sm text-green-200">Message sent.</span>
           <Button
             variant="ghost"
             size="sm"

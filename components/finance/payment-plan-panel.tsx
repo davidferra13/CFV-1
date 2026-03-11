@@ -80,12 +80,12 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
             <p className="font-semibold text-stone-100 text-sm">{formatCurrency(totalPlanned)}</p>
           </div>
           <div className="rounded-md bg-emerald-950 p-2">
-            <p className="text-xs text-emerald-700">Paid</p>
-            <p className="font-semibold text-emerald-800 text-sm">{formatCurrency(totalPaid)}</p>
+            <p className="text-xs text-emerald-200">Paid</p>
+            <p className="font-semibold text-emerald-200 text-sm">{formatCurrency(totalPaid)}</p>
           </div>
           <div className="rounded-md bg-amber-950 p-2">
-            <p className="text-xs text-amber-700">Remaining</p>
-            <p className="font-semibold text-amber-800 text-sm">{formatCurrency(remaining)}</p>
+            <p className="text-xs text-amber-200">Remaining</p>
+            <p className="font-semibold text-amber-200 text-sm">{formatCurrency(remaining)}</p>
           </div>
         </div>
       )}
@@ -119,7 +119,7 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
               {!inst.paidAt && (
                 <button
                   onClick={() => handleMarkPaid(inst)}
-                  className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                  className="text-emerald-600 hover:text-emerald-200 transition-colors"
                   title="Mark as paid"
                 >
                   <CheckCircle className="h-4 w-4" />

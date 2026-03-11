@@ -47,7 +47,7 @@ export function PrepTimelineView({ menuId }: Props) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-950 px-4 py-3 text-sm text-red-700">
+      <div className="rounded-lg border border-red-200 bg-red-950 px-4 py-3 text-sm text-red-200">
         {error}
       </div>
     )
@@ -114,7 +114,7 @@ function ComponentItem({ component }: { component: PrepTimelineSlot['components'
       </span>
 
       {component.station && (
-        <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+        <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-200">
           {component.station}
         </span>
       )}

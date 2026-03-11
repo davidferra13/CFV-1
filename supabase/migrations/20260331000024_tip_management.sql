@@ -15,16 +15,12 @@ create table if not exists tip_entries (
   notes text null,
   created_at timestamptz not null default now()
 );
-
 create index idx_tip_entries_tenant_date on tip_entries(tenant_id, shift_date);
 create index idx_tip_entries_staff on tip_entries(tenant_id, staff_member_id);
-
 alter table tip_entries enable row level security;
-
 create policy "tip_entries_tenant_isolation" on tip_entries
   for all using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
-
 -- Tip pool configurations: how tips get distributed
 create table if not exists tip_pool_configs (
   id uuid primary key default gen_random_uuid(),
@@ -36,15 +32,11 @@ create table if not exists tip_pool_configs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create index idx_tip_pool_configs_tenant on tip_pool_configs(tenant_id);
-
 alter table tip_pool_configs enable row level security;
-
 create policy "tip_pool_configs_tenant_isolation" on tip_pool_configs
   for all using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
-
 -- Tip distributions: finalized distribution records
 create table if not exists tip_distributions (
   id uuid primary key default gen_random_uuid(),
@@ -57,12 +49,9 @@ create table if not exists tip_distributions (
   method_used text not null,
   created_at timestamptz not null default now()
 );
-
 create index idx_tip_distributions_tenant_date on tip_distributions(tenant_id, distribution_date);
 create index idx_tip_distributions_staff on tip_distributions(tenant_id, staff_member_id);
-
 alter table tip_distributions enable row level security;
-
 create policy "tip_distributions_tenant_isolation" on tip_distributions
   for all using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());

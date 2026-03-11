@@ -19,7 +19,6 @@ create table if not exists stocktakes (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Stocktake line items
 create table if not exists stocktake_items (
   id uuid primary key default gen_random_uuid(),
@@ -41,31 +40,24 @@ create table if not exists stocktake_items (
   notes text,
   created_at timestamptz not null default now()
 );
-
 -- Indexes
 create index if not exists idx_stocktakes_tenant_date
   on stocktakes(tenant_id, stocktake_date);
-
 create index if not exists idx_stocktake_items_stocktake
   on stocktake_items(stocktake_id);
-
 create index if not exists idx_stocktake_items_tenant
   on stocktake_items(tenant_id);
-
 -- RLS
 alter table stocktakes enable row level security;
 alter table stocktake_items enable row level security;
-
 create policy "Chefs see own stocktakes"
   on stocktakes for all
   using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
-
 create policy "Chefs see own stocktake items"
   on stocktake_items for all
   using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
-
 -- Updated_at trigger for stocktakes
 create or replace function update_stocktakes_updated_at()
 returns trigger as $$
@@ -74,7 +66,6 @@ begin
   return new;
 end;
 $$ language plpgsql;
-
 create trigger trg_stocktakes_updated_at
   before update on stocktakes
   for each row execute function update_stocktakes_updated_at();

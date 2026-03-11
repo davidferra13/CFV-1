@@ -332,7 +332,7 @@ export default function BatchPlanner() {
 
       {/* Batch List */}
       {loadError && (
-        <div className="rounded border border-red-300 bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300">
+        <div className="rounded border border-red-300 bg-red-50 dark:bg-red-950 p-4 text-red-200 dark:text-red-300">
           {loadError}
         </div>
       )}

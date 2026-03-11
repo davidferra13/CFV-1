@@ -130,7 +130,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
 
       {/* Errors */}
       {deleteError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-200 px-4 py-3 rounded-lg text-sm">
           {deleteError}
         </div>
       )}
@@ -219,18 +219,18 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
                     {b.cost_cents != null && (
                       <div>
                         <span className="text-stone-400">Cost:</span>{' '}
-                        <span className="font-medium text-stone-700">{formatCurrency(b.cost_cents)}</span>
+                        <span className="font-medium text-stone-200">{formatCurrency(b.cost_cents)}</span>
                       </div>
                     )}
                     {sellPrice != null && (
                       <div>
                         <span className="text-stone-400">Sell:</span>{' '}
-                        <span className="font-medium text-green-700">{formatCurrency(sellPrice)}</span>
+                        <span className="font-medium text-green-200">{formatCurrency(sellPrice)}</span>
                       </div>
                     )}
                     <div>
                       <span className="text-stone-400">Margin:</span>{' '}
-                      <span className="font-medium text-stone-700">{computeMargin(b)}</span>
+                      <span className="font-medium text-stone-200">{computeMargin(b)}</span>
                     </div>
                   </div>
 
@@ -263,7 +263,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-200"
                       onClick={() => handleDelete(b.id, b.name)}
                       disabled={isPending}
                     >

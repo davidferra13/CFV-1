@@ -500,7 +500,7 @@ function ComponentRow({
               type="button"
               onClick={handleDelete}
               disabled={deleting}
-              className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-950"
+              className="text-xs text-red-400 hover:text-red-200 px-2 py-1 rounded hover:bg-red-950"
             >
               {deleting ? '…' : 'Delete'}
             </button>
@@ -672,7 +672,7 @@ function DishCard({
                       type="button"
                       onClick={handleDeleteDish}
                       disabled={deleting}
-                      className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-950"
+                      className="text-xs text-red-400 hover:text-red-200 px-2 py-1 rounded hover:bg-red-950"
                     >
                       {deleting ? '…' : 'Delete'}
                     </button>
@@ -810,7 +810,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
       </div>
 
       {locked && (
-        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-200">
           This menu is locked. Unlock it by transitioning to draft before making changes.
         </div>
       )}

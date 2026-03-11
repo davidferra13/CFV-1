@@ -3,7 +3,7 @@
 // Each archetype gets templates tailored to their business type.
 // NOT a server action file - no 'use server'.
 
-import type { ArchetypeId } from './presets'
+import { ARCHETYPE_IDS, type ArchetypeId } from './registry'
 
 export type StarterTemplateType =
   | 'contract'
@@ -717,14 +717,18 @@ Thank you for supporting a small bakery,
 
 // ---- All Templates Combined -------------------------------------------------
 
-export const ALL_STARTER_TEMPLATES: StarterTemplate[] = [
-  ...PRIVATE_CHEF_TEMPLATES,
-  ...CATERER_TEMPLATES,
-  ...MEAL_PREP_TEMPLATES,
-  ...RESTAURANT_TEMPLATES,
-  ...FOOD_TRUCK_TEMPLATES,
-  ...BAKERY_TEMPLATES,
-]
+const STARTER_TEMPLATE_PACKS: Record<ArchetypeId, StarterTemplate[]> = {
+  'private-chef': PRIVATE_CHEF_TEMPLATES,
+  caterer: CATERER_TEMPLATES,
+  'meal-prep': MEAL_PREP_TEMPLATES,
+  restaurant: RESTAURANT_TEMPLATES,
+  'food-truck': FOOD_TRUCK_TEMPLATES,
+  bakery: BAKERY_TEMPLATES,
+}
+
+export const ALL_STARTER_TEMPLATES: StarterTemplate[] = ARCHETYPE_IDS.flatMap(
+  (archetypeId) => STARTER_TEMPLATE_PACKS[archetypeId]
+)
 
 /**
  * Get starter templates for a specific archetype.
@@ -732,7 +736,7 @@ export const ALL_STARTER_TEMPLATES: StarterTemplate[] = [
  */
 export function getStarterTemplatesForArchetype(archetypeId?: ArchetypeId): StarterTemplate[] {
   if (!archetypeId) return ALL_STARTER_TEMPLATES
-  return ALL_STARTER_TEMPLATES.filter((t) => t.archetypeId === archetypeId)
+  return STARTER_TEMPLATE_PACKS[archetypeId] ?? []
 }
 
 /**

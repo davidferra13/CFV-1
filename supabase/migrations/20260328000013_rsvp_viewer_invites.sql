@@ -17,7 +17,6 @@ BEGIN
     );
   END IF;
 END$$;
-
 CREATE TABLE IF NOT EXISTS event_share_invites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -37,20 +36,16 @@ CREATE TABLE IF NOT EXISTS event_share_invites (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_share_invites_token ON event_share_invites(token);
 CREATE INDEX IF NOT EXISTS idx_event_share_invites_event ON event_share_invites(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_share_invites_tenant ON event_share_invites(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_event_share_invites_share ON event_share_invites(event_share_id);
 CREATE INDEX IF NOT EXISTS idx_event_share_invites_status ON event_share_invites(status);
-
 DROP TRIGGER IF EXISTS set_event_share_invites_updated_at ON event_share_invites;
 CREATE TRIGGER set_event_share_invites_updated_at
   BEFORE UPDATE ON event_share_invites
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE event_share_invites ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS event_share_invites_chef_all ON event_share_invites;
 CREATE POLICY event_share_invites_chef_all ON event_share_invites
   FOR ALL
@@ -60,7 +55,6 @@ CREATE POLICY event_share_invites_chef_all ON event_share_invites
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS event_share_invites_client_select ON event_share_invites;
 CREATE POLICY event_share_invites_client_select ON event_share_invites
   FOR SELECT
@@ -72,7 +66,6 @@ CREATE POLICY event_share_invites_client_select ON event_share_invites
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS event_share_invites_client_insert ON event_share_invites;
 CREATE POLICY event_share_invites_client_insert ON event_share_invites
   FOR INSERT
@@ -84,7 +77,6 @@ CREATE POLICY event_share_invites_client_insert ON event_share_invites
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS event_share_invites_client_update ON event_share_invites;
 CREATE POLICY event_share_invites_client_update ON event_share_invites
   FOR UPDATE
@@ -96,17 +88,13 @@ CREATE POLICY event_share_invites_client_update ON event_share_invites
       WHERE e.client_id = ur.entity_id
     )
   );
-
 -- Viewer lead attribution fields (fully optional and backward-compatible).
 ALTER TABLE guest_leads
   ADD COLUMN IF NOT EXISTS source TEXT,
   ADD COLUMN IF NOT EXISTS source_invite_token TEXT,
   ADD COLUMN IF NOT EXISTS source_event_share_id UUID REFERENCES event_shares(id) ON DELETE SET NULL;
-
 UPDATE guest_leads
 SET source = COALESCE(source, 'guest_qr');
-
 ALTER TABLE guest_leads
   ALTER COLUMN source SET DEFAULT 'guest_qr';
-
 CREATE INDEX IF NOT EXISTS idx_guest_leads_source ON guest_leads(tenant_id, source);

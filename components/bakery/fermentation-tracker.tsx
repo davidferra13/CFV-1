@@ -340,7 +340,7 @@ export default function FermentationTracker() {
 
       {/* Active Fermentations */}
       {loadError && (
-        <div className="rounded border border-red-300 bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300">
+        <div className="rounded border border-red-300 bg-red-50 dark:bg-red-950 p-4 text-red-200 dark:text-red-300">
           {loadError}
         </div>
       )}
@@ -459,9 +459,9 @@ export default function FermentationTracker() {
                           key={s}
                           className={`text-xs px-2 py-1 rounded ${
                             isCurrent
-                              ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium'
+                              ? 'bg-blue-100 dark:bg-blue-900 text-blue-200 dark:text-blue-200 font-medium'
                               : isCompleted
-                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                ? 'bg-green-100 dark:bg-green-900 text-green-200 dark:text-green-200'
                                 : 'bg-muted text-muted-foreground'
                           }`}
                         >

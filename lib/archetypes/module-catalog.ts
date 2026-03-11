@@ -2,7 +2,7 @@
 // This is a static catalog for discovery UI. Module toggle state lives in chef_preferences.
 // NOT a server action file - no 'use server'.
 
-import type { ArchetypeId } from './presets'
+import type { ArchetypeId } from './registry'
 
 export type DimensionId = 'production' | 'movement' | 'time' | 'money' | 'people' | 'compliance'
 

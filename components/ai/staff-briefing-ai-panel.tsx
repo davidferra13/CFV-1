@@ -122,7 +122,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
               className={`rounded p-2 ${s.label === 'ALLERGENS' ? 'bg-red-950 border border-red-200' : 'bg-stone-800'}`}
             >
               <div
-                className={`text-[11px] font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-700' : 'text-stone-500'}`}
+                className={`text-[11px] font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-200' : 'text-stone-500'}`}
               >
                 {s.label}
               </div>

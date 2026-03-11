@@ -3,11 +3,9 @@
 
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS show_guest_details_to_host BOOLEAN NOT NULL DEFAULT true;
-
 ALTER TABLE public.event_guests
   ADD COLUMN IF NOT EXISTS dietary_notes TEXT,
   ADD COLUMN IF NOT EXISTS phone TEXT;
-
 UPDATE public.event_guests
 SET dietary_notes = NULLIF(
   trim(

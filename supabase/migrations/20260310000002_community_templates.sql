@@ -16,12 +16,9 @@ CREATE TABLE IF NOT EXISTS community_templates (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 CREATE INDEX IF NOT EXISTS idx_community_templates_type ON community_templates(template_type);
 CREATE INDEX IF NOT EXISTS idx_community_templates_published ON community_templates(is_published);
-
 ALTER TABLE community_templates ENABLE ROW LEVEL SECURITY;
-
 -- Published templates are visible to all authenticated chefs
 CREATE POLICY "Published templates visible to all chefs" ON community_templates
   FOR SELECT USING (
@@ -29,7 +26,6 @@ CREATE POLICY "Published templates visible to all chefs" ON community_templates
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
     )
   );
-
 CREATE POLICY "Chef manages own templates" ON community_templates
   FOR ALL USING (author_tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

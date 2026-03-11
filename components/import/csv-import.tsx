@@ -22,16 +22,16 @@ import type { ParsedClient } from '@/lib/ai/parse-client'
 type Phase = 'input' | 'preview' | 'saving' | 'done'
 
 const COL_COLORS: Record<string, string> = {
-  full_name: 'bg-blue-900 text-blue-800',
-  first_name: 'bg-blue-950 text-blue-700',
-  last_name: 'bg-blue-950 text-blue-700',
-  email: 'bg-green-900 text-green-800',
-  phone: 'bg-purple-900 text-purple-800',
-  notes: 'bg-yellow-900 text-yellow-800',
-  address: 'bg-orange-900 text-orange-800',
-  city: 'bg-orange-950 text-orange-700',
-  state: 'bg-orange-950 text-orange-700',
-  zip: 'bg-orange-950 text-orange-700',
+  full_name: 'bg-blue-900 text-blue-200',
+  first_name: 'bg-blue-950 text-blue-200',
+  last_name: 'bg-blue-950 text-blue-200',
+  email: 'bg-green-900 text-green-200',
+  phone: 'bg-purple-900 text-purple-200',
+  notes: 'bg-yellow-900 text-yellow-200',
+  address: 'bg-orange-900 text-orange-200',
+  city: 'bg-orange-950 text-orange-200',
+  state: 'bg-orange-950 text-orange-200',
+  zip: 'bg-orange-950 text-orange-200',
   skip: 'bg-stone-800 text-stone-400',
 }
 

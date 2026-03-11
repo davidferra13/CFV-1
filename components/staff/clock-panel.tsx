@@ -213,7 +213,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
                     <div className="text-xs text-stone-500">
                       In at {formatTime(entry.clockInAt)}
                       {' \u2022 '}
-                      <span className="font-medium text-emerald-700">
+                      <span className="font-medium text-emerald-200">
                         {formatElapsed(entry.clockInAt)}
                       </span>
                     </div>

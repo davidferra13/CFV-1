@@ -84,7 +84,7 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
       <CardContent className="p-6 md:p-8">
         {submitError && (
           <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
-            <p className="text-red-700 text-sm">{submitError}</p>
+            <p className="text-red-200 text-sm">{submitError}</p>
           </div>
         )}
 

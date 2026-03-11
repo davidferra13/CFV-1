@@ -131,11 +131,11 @@ export function DopMobileView({
   }
 
   const CATEGORY_COLORS: Record<string, string> = {
-    documents: 'bg-purple-950 text-purple-700',
-    shopping: 'bg-green-950 text-green-700',
+    documents: 'bg-purple-950 text-purple-200',
+    shopping: 'bg-green-950 text-green-200',
     prep: 'bg-brand-950 text-brand-400',
-    packing: 'bg-yellow-950 text-yellow-700',
-    reset: 'bg-orange-950 text-orange-700',
+    packing: 'bg-yellow-950 text-yellow-200',
+    reset: 'bg-orange-950 text-orange-200',
     admin: 'bg-stone-800 text-stone-300',
   }
 
@@ -181,7 +181,7 @@ export function DopMobileView({
 
             {/* Big complete button */}
             {currentTask.isAutoComplete ? (
-              <div className="w-full py-5 rounded-xl text-lg font-semibold bg-green-900 border-2 border-green-500 text-green-700 flex items-center justify-center gap-2">
+              <div className="w-full py-5 rounded-xl text-lg font-semibold bg-green-900 border-2 border-green-500 text-green-200 flex items-center justify-center gap-2">
                 <CheckCircle2 className="h-5 w-5" />
                 Auto-Completed
               </div>
@@ -191,7 +191,7 @@ export function DopMobileView({
                 disabled={isPending}
                 className={`w-full py-5 rounded-xl text-lg font-semibold transition-all active:scale-95 disabled:opacity-60 ${
                   isTaskComplete(currentTask)
-                    ? 'bg-green-900 border-2 border-green-500 text-green-700'
+                    ? 'bg-green-900 border-2 border-green-500 text-green-200'
                     : 'bg-stone-900 text-white hover:bg-stone-800'
                 }`}
               >
@@ -227,7 +227,7 @@ export function DopMobileView({
           {schedule.isCompressed && (
             <div className="mt-4 bg-amber-950 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-800 font-medium">
+              <p className="text-xs text-amber-200 font-medium">
                 Compressed timeline — less than 48 hours notice. Day-before steps may be skipped.
               </p>
             </div>

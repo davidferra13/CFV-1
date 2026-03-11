@@ -41,7 +41,7 @@ export function LostReasonPrompt({ quoteId, onDismiss }: LostReasonPromptProps) 
 
   if (submitted) {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-950 px-4 py-3 text-sm text-green-800">
+      <div className="rounded-xl border border-green-200 bg-green-950 px-4 py-3 text-sm text-green-200">
         Feedback recorded. Thanks for tracking this.
       </div>
     )

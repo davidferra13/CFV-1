@@ -51,34 +51,34 @@ type Props = {
 }
 
 const PAYMENT_STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  paid: { label: 'Paid in Full', className: 'bg-green-900 text-green-800' },
-  deposit_paid: { label: 'Deposit Paid', className: 'bg-blue-900 text-blue-800' },
-  partial: { label: 'Partial', className: 'bg-amber-900 text-amber-800' },
-  unpaid: { label: 'Unpaid', className: 'bg-red-900 text-red-800' },
+  paid: { label: 'Paid in Full', className: 'bg-green-900 text-green-200' },
+  deposit_paid: { label: 'Deposit Paid', className: 'bg-blue-900 text-blue-200' },
+  partial: { label: 'Partial', className: 'bg-amber-900 text-amber-200' },
+  unpaid: { label: 'Unpaid', className: 'bg-red-900 text-red-200' },
   refunded: { label: 'Refunded', className: 'bg-stone-800 text-stone-400' },
 }
 
 const EVENT_STATUS_STYLES: Record<string, string> = {
-  completed: 'text-green-700',
-  confirmed: 'text-blue-700',
-  paid: 'text-blue-700',
+  completed: 'text-green-200',
+  confirmed: 'text-blue-200',
+  paid: 'text-blue-200',
   accepted: 'text-brand-400',
-  proposed: 'text-amber-700',
+  proposed: 'text-amber-200',
   draft: 'text-stone-500',
-  in_progress: 'text-purple-700',
+  in_progress: 'text-purple-200',
   cancelled: 'text-stone-400 line-through',
 }
 
 const ENTRY_TYPE_STYLES: Record<string, { label: string; className: string }> = {
-  payment: { label: 'Payment', className: 'bg-green-900 text-green-800' },
+  payment: { label: 'Payment', className: 'bg-green-900 text-green-200' },
   deposit: { label: 'Deposit', className: 'bg-brand-900 text-brand-300' },
-  installment: { label: 'Installment', className: 'bg-blue-900 text-blue-800' },
-  final_payment: { label: 'Final Payment', className: 'bg-green-900 text-green-800' },
-  tip: { label: 'Tip', className: 'bg-purple-900 text-purple-800' },
-  refund: { label: 'Refund', className: 'bg-red-900 text-red-800' },
+  installment: { label: 'Installment', className: 'bg-blue-900 text-blue-200' },
+  final_payment: { label: 'Final Payment', className: 'bg-green-900 text-green-200' },
+  tip: { label: 'Tip', className: 'bg-purple-900 text-purple-200' },
+  refund: { label: 'Refund', className: 'bg-red-900 text-red-200' },
   adjustment: { label: 'Adjustment', className: 'bg-stone-800 text-stone-300' },
-  add_on: { label: 'Add-On', className: 'bg-orange-900 text-orange-800' },
-  credit: { label: 'Credit', className: 'bg-teal-900 text-teal-800' },
+  add_on: { label: 'Add-On', className: 'bg-orange-900 text-orange-200' },
+  credit: { label: 'Credit', className: 'bg-teal-900 text-teal-200' },
 }
 
 export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }: Props) {
@@ -225,14 +225,14 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                             ? formatCurrency(event.depositAmountCents)
                             : '—'}
                         </td>
-                        <td className="py-3 pr-4 text-right font-mono text-green-700">
+                        <td className="py-3 pr-4 text-right font-mono text-green-200">
                           {event.totalPaidCents > 0 ? formatCurrency(event.totalPaidCents) : '—'}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono">
                           {isCancelled ? (
                             <span className="text-stone-400">—</span>
                           ) : event.outstandingBalanceCents > 0 ? (
-                            <span className="text-red-700 font-semibold">
+                            <span className="text-red-200 font-semibold">
                               {formatCurrency(event.outstandingBalanceCents)}
                             </span>
                           ) : (
@@ -265,12 +265,12 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                         {formatCurrency(summary.totalQuotedCents)}
                       </td>
                       <td className="pt-3 pr-4" />
-                      <td className="pt-3 pr-4 text-right font-mono text-green-700">
+                      <td className="pt-3 pr-4 text-right font-mono text-green-200">
                         {formatCurrency(summary.totalPaidCents)}
                       </td>
                       <td className="pt-3 pr-4 text-right font-mono">
                         {summary.totalOutstandingCents > 0 ? (
-                          <span className="text-red-700">
+                          <span className="text-red-200">
                             {formatCurrency(summary.totalOutstandingCents)}
                           </span>
                         ) : (
@@ -351,7 +351,7 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                           </span>
                         </td>
                         <td
-                          className={`py-3 pr-4 text-right font-mono font-semibold ${isNegative ? 'text-red-700' : 'text-green-700'}`}
+                          className={`py-3 pr-4 text-right font-mono font-semibold ${isNegative ? 'text-red-200' : 'text-green-200'}`}
                         >
                           {isNegative ? '−' : '+'}
                           {formatCurrency(Math.abs(entry.amount_cents))}

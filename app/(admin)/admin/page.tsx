@@ -154,7 +154,7 @@ export default async function AdminOverviewPage() {
           <StatCard label="New Clients (Month)" value={stats.clientsThisMonth} />
         </div>
       ) : (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200">
           Could not load platform statistics. Check server logs.
         </div>
       )}
@@ -299,7 +299,7 @@ export default async function AdminOverviewPage() {
             </p>
           </div>
         ) : (
-          <div className="rounded-xl border border-red-200 bg-red-950 p-4 text-xs text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-950 p-4 text-xs text-red-200">
             Debug state unavailable.
           </div>
         )}

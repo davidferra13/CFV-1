@@ -23,11 +23,9 @@ CREATE TABLE IF NOT EXISTS proposal_tokens (
   view_count      INTEGER NOT NULL DEFAULT 0,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_proposal_tokens_token ON proposal_tokens(token);
 CREATE INDEX idx_proposal_tokens_quote ON proposal_tokens(quote_id);
 CREATE INDEX idx_proposal_tokens_tenant ON proposal_tokens(tenant_id);
-
 -- ============================================
 -- TABLE 2: QUOTE ADD-ONS
 -- Links a chef's addon library items to a specific quote,
@@ -48,9 +46,7 @@ CREATE TABLE IF NOT EXISTS quote_addons (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (quote_id, addon_id)
 );
-
 CREATE INDEX idx_quote_addons_quote ON quote_addons(quote_id);
-
 -- ============================================
 -- TABLE 3: PROPOSAL ADDON SELECTIONS
 -- What the client actually selected, frozen at acceptance.
@@ -67,9 +63,7 @@ CREATE TABLE IF NOT EXISTS proposal_addon_selections (
   line_total_cents    INTEGER NOT NULL,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_pas_token ON proposal_addon_selections(proposal_token_id);
-
 -- ============================================
 -- ADDITIVE COLUMNS
 -- ============================================
@@ -78,11 +72,9 @@ CREATE INDEX idx_pas_token ON proposal_addon_selections(proposal_token_id);
 ALTER TABLE quotes
   ADD COLUMN IF NOT EXISTS addon_total_cents INTEGER DEFAULT 0,
   ADD COLUMN IF NOT EXISTS effective_total_cents INTEGER;
-
 -- Link contracts to the Smart File flow
 ALTER TABLE event_contracts
   ADD COLUMN IF NOT EXISTS proposal_token_id UUID REFERENCES proposal_tokens(id) ON DELETE SET NULL;
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -90,19 +82,16 @@ ALTER TABLE event_contracts
 ALTER TABLE proposal_tokens             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quote_addons                ENABLE ROW LEVEL SECURITY;
 ALTER TABLE proposal_addon_selections   ENABLE ROW LEVEL SECURITY;
-
 -- proposal_tokens: chef can manage, public can read by token (via admin client)
 CREATE POLICY pt_chef_all ON proposal_tokens
   FOR ALL TO authenticated
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
-
 -- quote_addons: chef manages
 CREATE POLICY qa_chef_all ON quote_addons
   FOR ALL TO authenticated
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
-
 -- proposal_addon_selections: read-only for chef (via parent join), inserts via admin client
 CREATE POLICY pas_chef_select ON proposal_addon_selections
   FOR SELECT TO authenticated
@@ -113,21 +102,17 @@ CREATE POLICY pas_chef_select ON proposal_addon_selections
         AND pt.tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
     )
   );
-
 -- Allow inserts via admin client only (public proposal flow)
 CREATE POLICY pas_service_insert ON proposal_addon_selections
   FOR INSERT TO service_role
   WITH CHECK (true);
-
 -- proposal_tokens: allow service_role full access (for public proposal page)
 CREATE POLICY pt_service_all ON proposal_tokens
   FOR ALL TO service_role
   USING (true) WITH CHECK (true);
-
 CREATE POLICY qa_service_select ON quote_addons
   FOR SELECT TO service_role
   USING (true);
-
 -- ============================================
 -- COMMENTS
 -- ============================================

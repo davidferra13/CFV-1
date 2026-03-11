@@ -19,12 +19,12 @@ import { Badge } from '@/components/ui/badge'
 // ---- Status helpers ----
 
 const STATUS_COLORS: Record<TruckPreorder['status'], string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  ready: 'bg-green-100 text-green-800',
+  pending: 'bg-yellow-100 text-yellow-200',
+  confirmed: 'bg-blue-100 text-blue-200',
+  ready: 'bg-green-100 text-green-200',
   picked_up: 'bg-gray-100 text-gray-600',
-  cancelled: 'bg-red-100 text-red-800',
-  no_show: 'bg-orange-100 text-orange-800',
+  cancelled: 'bg-red-100 text-red-200',
+  no_show: 'bg-orange-100 text-orange-200',
 }
 
 const NEXT_STATUS: Partial<Record<TruckPreorder['status'], TruckPreorder['status']>> = {
@@ -158,7 +158,7 @@ export default function PreorderManager() {
         </div>
       </div>
 
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-200">{error}</div>}
 
       {/* Summary Panel */}
       {summary && (
@@ -517,7 +517,7 @@ function AddPreorderForm({
                 <button
                   type="button"
                   onClick={() => removeItem(i)}
-                  className="text-red-500 text-sm hover:text-red-700"
+                  className="text-red-500 text-sm hover:text-red-200"
                 >
                   Remove
                 </button>
@@ -528,7 +528,7 @@ function AddPreorderForm({
         <button
           type="button"
           onClick={addItem}
-          className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+          className="mt-2 text-sm text-blue-600 hover:text-blue-200"
         >
           + Add item
         </button>

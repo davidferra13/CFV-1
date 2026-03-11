@@ -19,13 +19,10 @@ CREATE TABLE IF NOT EXISTS beta_signups (
   invited_at        timestamptz,
   onboarded_at      timestamptz
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_beta_signups_email ON beta_signups (email);
 CREATE INDEX IF NOT EXISTS idx_beta_signups_status ON beta_signups (status);
 CREATE INDEX IF NOT EXISTS idx_beta_signups_created_at ON beta_signups (created_at DESC);
-
 -- RLS: enabled but no public policies — all access via admin client (service role)
 ALTER TABLE beta_signups ENABLE ROW LEVEL SECURITY;
-
 COMMENT ON TABLE beta_signups IS 'Beta interest signups from /beta public page. Managed by admin via /admin/beta. Accessed only via admin client.';

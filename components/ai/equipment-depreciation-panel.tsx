@@ -75,7 +75,7 @@ export function EquipmentDepreciationPanel() {
           <div key={i} className="border border-stone-800 rounded p-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-stone-300">{item.itemName}</span>
-              <span className="text-xs text-green-700 font-medium">
+              <span className="text-xs text-green-200 font-medium">
                 ${item.annualDeductionDollars.toFixed(0)}/yr
               </span>
             </div>

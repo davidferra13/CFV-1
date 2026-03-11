@@ -19,19 +19,19 @@ type PackingTemplatesClientProps = {
 function categoryBadgeColor(category: string): string {
   switch (category) {
     case 'Knives':
-      return 'bg-red-100 text-red-700'
+      return 'bg-red-100 text-red-200'
     case 'Cookware':
-      return 'bg-orange-100 text-orange-700'
+      return 'bg-orange-100 text-orange-200'
     case 'Utensils':
-      return 'bg-blue-100 text-blue-700'
+      return 'bg-blue-100 text-blue-200'
     case 'Serving':
-      return 'bg-purple-100 text-purple-700'
+      return 'bg-purple-100 text-purple-200'
     case 'Storage':
-      return 'bg-teal-100 text-teal-700'
+      return 'bg-teal-100 text-teal-200'
     case 'Linens':
-      return 'bg-pink-100 text-pink-700'
+      return 'bg-pink-100 text-pink-200'
     default:
-      return 'bg-stone-100 text-stone-700'
+      return 'bg-stone-100 text-stone-200'
   }
 }
 

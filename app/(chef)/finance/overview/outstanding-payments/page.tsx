@@ -44,7 +44,7 @@ export default async function OutstandingPaymentsPage() {
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Outstanding Payments</h1>
           <span
-            className={`text-sm px-2 py-0.5 rounded-full ${outstanding.length > 0 ? 'bg-amber-900 text-amber-700' : 'bg-stone-800 text-stone-400'}`}
+            className={`text-sm px-2 py-0.5 rounded-full ${outstanding.length > 0 ? 'bg-amber-900 text-amber-200' : 'bg-stone-800 text-stone-400'}`}
           >
             {outstanding.length}
           </span>
@@ -57,7 +57,7 @@ export default async function OutstandingPaymentsPage() {
       {outstanding.length > 0 && (
         <Card className="p-4 bg-amber-950 border-amber-200">
           <p className="text-2xl font-bold text-amber-900">{formatCurrency(totalOutstanding)}</p>
-          <p className="text-sm text-amber-700 mt-1">
+          <p className="text-sm text-amber-200 mt-1">
             Total outstanding across {outstanding.length} events
           </p>
         </Card>
@@ -91,7 +91,7 @@ export default async function OutstandingPaymentsPage() {
                       {format(new Date(event.event_date), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell
-                      className={`text-sm font-semibold ${daysOver > 30 ? 'text-red-600' : 'text-amber-700'}`}
+                      className={`text-sm font-semibold ${daysOver > 30 ? 'text-red-600' : 'text-amber-200'}`}
                     >
                       {daysOver}d
                     </TableCell>

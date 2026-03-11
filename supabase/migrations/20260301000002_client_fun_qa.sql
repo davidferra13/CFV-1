@@ -5,6 +5,5 @@
 
 ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS fun_qa_answers JSONB DEFAULT '{}';
-
 COMMENT ON COLUMN clients.fun_qa_answers IS
   'Optional fun Q&A answers submitted by the client. Keyed by stable question identifiers. Used by the chef to personalise communication and encourage rebookings.';

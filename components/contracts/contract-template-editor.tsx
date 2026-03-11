@@ -94,7 +94,7 @@ export function ContractTemplateEditor({ template, onDone }: Props) {
               key={f}
               type="button"
               onClick={() => insertMergeField(f)}
-              className="rounded bg-amber-900 px-2 py-0.5 text-xs font-mono text-amber-800 hover:bg-amber-200 transition-colors"
+              className="rounded bg-amber-900 px-2 py-0.5 text-xs font-mono text-amber-200 hover:bg-amber-200 transition-colors"
             >
               {f}
             </button>

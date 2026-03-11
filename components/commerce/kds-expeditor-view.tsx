@@ -198,7 +198,7 @@ export default function KDSExpeditorView() {
       </div>
 
       {error && (
-        <div className="m-2 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <div className="m-2 rounded-md bg-red-50 p-3 text-sm text-red-200 dark:bg-red-950 dark:text-red-300">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
             dismiss
@@ -222,7 +222,7 @@ export default function KDSExpeditorView() {
                 {/* Station Header */}
                 <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 rounded-t-lg">
                   <h3 className="font-bold text-zinc-900 dark:text-zinc-100">{station.name}</h3>
-                  <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+                  <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-200 dark:text-blue-300">
                     {station.tickets.length}
                   </span>
                 </div>

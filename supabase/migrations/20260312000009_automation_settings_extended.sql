@@ -6,7 +6,6 @@ ALTER TABLE chef_automation_settings
   ADD COLUMN IF NOT EXISTS closure_deadline_alerts_enabled   BOOLEAN NOT NULL DEFAULT TRUE,
   ADD COLUMN IF NOT EXISTS closure_deadline_days             INTEGER NOT NULL DEFAULT 3,
   ADD COLUMN IF NOT EXISTS weekly_summary_enabled            BOOLEAN NOT NULL DEFAULT FALSE;
-
 COMMENT ON COLUMN chef_automation_settings.receipt_upload_reminders_enabled IS
   'Alert chef when a completed/in-progress event has no receipts uploaded within 24 hours.';
 COMMENT ON COLUMN chef_automation_settings.closure_deadline_alerts_enabled IS

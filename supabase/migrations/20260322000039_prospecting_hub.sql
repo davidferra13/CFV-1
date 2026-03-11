@@ -22,9 +22,7 @@ CREATE TABLE prospect_scrub_sessions (
 
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_scrub_sessions_chef ON prospect_scrub_sessions(chef_id, created_at DESC);
-
 -- ============================================
 -- TABLE 2: PROSPECTS
 -- The permanent lead scrubbing database. Maximally detailed
@@ -115,7 +113,6 @@ CREATE TABLE prospects (
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_prospects_chef_status   ON prospects(chef_id, status);
 CREATE INDEX idx_prospects_chef_category ON prospects(chef_id, category);
 CREATE INDEX idx_prospects_chef_region   ON prospects(chef_id, region);
@@ -123,11 +120,9 @@ CREATE INDEX idx_prospects_chef_priority ON prospects(chef_id, priority);
 CREATE INDEX idx_prospects_follow_up     ON prospects(next_follow_up_at)
   WHERE status = 'follow_up';
 CREATE INDEX idx_prospects_session       ON prospects(scrub_session_id);
-
 CREATE TRIGGER trg_prospects_updated_at
   BEFORE UPDATE ON prospects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 3: PROSPECT NOTES
 -- Append-only note log. Every interaction, observation, or intel
@@ -147,9 +142,7 @@ CREATE TABLE prospect_notes (
 
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_prospect_notes_prospect ON prospect_notes(prospect_id, created_at DESC);
-
 -- ============================================
 -- TABLE 4: PROSPECT CALL SCRIPTS
 -- Reusable cold-calling scripts matched to prospect categories.
@@ -167,13 +160,10 @@ CREATE TABLE prospect_call_scripts (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_call_scripts_chef ON prospect_call_scripts(chef_id);
-
 CREATE TRIGGER trg_call_scripts_updated_at
   BEFORE UPDATE ON prospect_call_scripts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- ALTER: SCHEDULED_CALLS
 -- Add prospect_id FK and 'prospecting' call type.
@@ -181,9 +171,7 @@ CREATE TRIGGER trg_call_scripts_updated_at
 
 ALTER TABLE scheduled_calls
   ADD COLUMN IF NOT EXISTS prospect_id UUID REFERENCES prospects(id) ON DELETE SET NULL;
-
 CREATE INDEX IF NOT EXISTS idx_scheduled_calls_prospect ON scheduled_calls(prospect_id);
-
 -- Widen the call_type CHECK to include 'prospecting'.
 -- PostgreSQL ALTER CHECK requires drop+add.
 ALTER TABLE scheduled_calls DROP CONSTRAINT IF EXISTS scheduled_calls_call_type_check;
@@ -192,7 +180,6 @@ ALTER TABLE scheduled_calls ADD CONSTRAINT scheduled_calls_call_type_check
     'discovery', 'follow_up', 'proposal_walkthrough', 'pre_event_logistics',
     'vendor_supplier', 'partner', 'general', 'prospecting'
   ));
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -201,7 +188,6 @@ ALTER TABLE prospect_scrub_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prospects               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prospect_notes          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prospect_call_scripts   ENABLE ROW LEVEL SECURITY;
-
 -- prospect_scrub_sessions
 CREATE POLICY pss_chef_select ON prospect_scrub_sessions FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
@@ -209,7 +195,6 @@ CREATE POLICY pss_chef_insert ON prospect_scrub_sessions FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pss_chef_update ON prospect_scrub_sessions FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- prospects
 CREATE POLICY p_chef_select ON prospects FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
@@ -219,13 +204,11 @@ CREATE POLICY p_chef_update ON prospects FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY p_chef_delete ON prospects FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- prospect_notes
 CREATE POLICY pn_chef_select ON prospect_notes FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pn_chef_insert ON prospect_notes FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- prospect_call_scripts
 CREATE POLICY pcs_chef_select ON prospect_call_scripts FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
@@ -235,7 +218,6 @@ CREATE POLICY pcs_chef_update ON prospect_call_scripts FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pcs_chef_delete ON prospect_call_scripts FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 COMMENT ON TABLE prospect_scrub_sessions IS 'Logs each AI lead scrubbing run with the free-form query and result counts.';
 COMMENT ON TABLE prospects IS 'Permanent prospect database. Full dossier per prospect — identity, contact, gatekeeper intel, intelligence, call tracking.';
 COMMENT ON TABLE prospect_notes IS 'Append-only note log for prospects. Every interaction and observation is timestamped.';

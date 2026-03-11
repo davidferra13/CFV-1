@@ -62,7 +62,7 @@ export default async function SentInvoicesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Sent Invoices</h1>
-          <span className="bg-amber-900 text-amber-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-amber-900 text-amber-200 text-sm px-2 py-0.5 rounded-full">
             {sent.length}
           </span>
         </div>
@@ -72,7 +72,7 @@ export default async function SentInvoicesPage() {
       {sent.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-700">{sent.length}</p>
+            <p className="text-2xl font-bold text-amber-200">{sent.length}</p>
             <p className="text-sm text-stone-500 mt-1">Awaiting acceptance</p>
           </Card>
           <Card className="p-4">

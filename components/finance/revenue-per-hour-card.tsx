@@ -70,8 +70,8 @@ export function RevenuePerHourCard({
           {percentChange !== null && (
             <div className={`text-sm font-medium px-2 py-0.5 rounded ${
               percentChange >= 0
-                ? 'text-emerald-700 bg-emerald-50'
-                : 'text-red-700 bg-red-50'
+                ? 'text-emerald-200 bg-emerald-50'
+                : 'text-red-200 bg-red-50'
             }`}>
               {percentChange >= 0 ? '+' : ''}{percentChange}%
             </div>

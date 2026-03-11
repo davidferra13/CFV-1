@@ -20,7 +20,7 @@ export default async function PayrollCalculatorPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
         <strong>Reference tool only.</strong> This calculator uses staff clock entries and tip
         distributions to estimate gross pay. It does not account for tax withholdings, deductions,
         or benefits. Use your payroll provider for official calculations.

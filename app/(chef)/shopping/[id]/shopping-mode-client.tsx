@@ -190,7 +190,7 @@ export function ShoppingModeClient({ initialList }: Props) {
           </Link>
           <h1 className="text-lg font-bold truncate flex-1 mx-3">{list.name}</h1>
           {isCompleted && (
-            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+            <span className="text-xs bg-green-100 text-green-200 px-2 py-1 rounded-full font-medium">
               Done
             </span>
           )}
@@ -438,7 +438,7 @@ function ShoppingItemRow({
               />
               <button
                 onClick={onPriceSubmit}
-                className="p-1 text-green-600 hover:text-green-700"
+                className="p-1 text-green-600 hover:text-green-200"
               >
                 <Check className="h-4 w-4" />
               </button>

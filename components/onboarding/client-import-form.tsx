@@ -279,7 +279,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
             </CardHeader>
             <CardContent className="space-y-4">
               {error && (
-                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                   {error}
                 </div>
               )}
@@ -335,7 +335,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
               )}
 
               {csvImported > 0 && csvRows.length === 0 && (
-                <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-700">
+                <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-200">
                   Successfully imported {csvImported} client{csvImported === 1 ? '' : 's'}.
                 </div>
               )}
@@ -348,7 +348,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
             </CardHeader>
             <CardContent className="space-y-4">
               {error && (
-                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                   {error}
                 </div>
               )}
@@ -437,7 +437,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                     {form.dietary_restrictions.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 rounded-full bg-amber-900 px-2.5 py-0.5 text-xs text-amber-800"
+                        className="inline-flex items-center gap-1 rounded-full bg-amber-900 px-2.5 py-0.5 text-xs text-amber-200"
                       >
                         {tag}
                         <button
@@ -476,7 +476,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                     {form.allergies.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 rounded-full bg-red-900 px-2.5 py-0.5 text-xs text-red-800"
+                        className="inline-flex items-center gap-1 rounded-full bg-red-900 px-2.5 py-0.5 text-xs text-red-200"
                       >
                         {tag}
                         <button

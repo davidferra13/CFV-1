@@ -64,7 +64,7 @@ export function EightySixModal({ courseId, courseName, onClose, onConfirm }: Eig
 
         {/* Course name */}
         <div className="rounded-lg bg-red-950 border border-red-200 p-3 mb-4">
-          <p className="text-sm font-medium text-red-800">
+          <p className="text-sm font-medium text-red-200">
             Are you sure you want to 86{' '}
             <span className="font-bold">&ldquo;{courseName}&rdquo;</span>?
           </p>

@@ -40,6 +40,8 @@
     "test:unit:auth": "node --test --import tsx \"tests/unit/auth.*.test.ts\"",
     "test:integration": "node --test --import tsx \"tests/integration/**/*.integration.test.ts\"",
     "verify:chef-nav": "tsx scripts/audit-chef-nav.ts",
+    "backfill:primary-nav": "tsx scripts/backfill-primary-nav.ts",
+    "backfill:marketplace-platforms": "tsx scripts/backfill-marketplace-platform-records.ts",
     "test:e2e:headed": "npm run verify:e2e-contract && npx playwright test --headed",
     "test:e2e:debug": "npx playwright test --debug",
     "test:e2e:report": "npx playwright show-report",

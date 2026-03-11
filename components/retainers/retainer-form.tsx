@@ -78,7 +78,7 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
     <Card className="p-6">
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="p-3 bg-red-950 text-red-700 text-sm rounded-lg border border-red-200">
+          <div className="p-3 bg-red-950 text-red-200 text-sm rounded-lg border border-red-200">
             {error}
           </div>
         )}

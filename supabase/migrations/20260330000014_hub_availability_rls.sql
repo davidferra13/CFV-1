@@ -7,7 +7,6 @@
 -- RLS: hub_availability
 -- ============================================================
 ALTER TABLE hub_availability ENABLE ROW LEVEL SECURITY;
-
 -- Group members can view availability polls for their groups
 CREATE POLICY hub_availability_member_select ON hub_availability
   FOR SELECT
@@ -18,7 +17,6 @@ CREATE POLICY hub_availability_member_select ON hub_availability
       WHERE gp.auth_user_id = auth.uid()
     )
   );
-
 -- Only the creator can insert availability polls
 CREATE POLICY hub_availability_member_insert ON hub_availability
   FOR INSERT
@@ -28,7 +26,6 @@ CREATE POLICY hub_availability_member_insert ON hub_availability
       WHERE auth_user_id = auth.uid()
     )
   );
-
 -- Only the creator can update (close) their polls
 CREATE POLICY hub_availability_creator_update ON hub_availability
   FOR UPDATE
@@ -38,7 +35,6 @@ CREATE POLICY hub_availability_creator_update ON hub_availability
       WHERE auth_user_id = auth.uid()
     )
   );
-
 -- Only the creator can delete their polls
 CREATE POLICY hub_availability_creator_delete ON hub_availability
   FOR DELETE
@@ -48,12 +44,10 @@ CREATE POLICY hub_availability_creator_delete ON hub_availability
       WHERE auth_user_id = auth.uid()
     )
   );
-
 -- ============================================================
 -- RLS: hub_availability_responses
 -- ============================================================
 ALTER TABLE hub_availability_responses ENABLE ROW LEVEL SECURITY;
-
 -- Group members can view all responses for polls in their groups
 CREATE POLICY hub_availability_responses_member_select ON hub_availability_responses
   FOR SELECT
@@ -65,7 +59,6 @@ CREATE POLICY hub_availability_responses_member_select ON hub_availability_respo
       WHERE gp.auth_user_id = auth.uid()
     )
   );
-
 -- Members can insert their own responses
 CREATE POLICY hub_availability_responses_member_insert ON hub_availability_responses
   FOR INSERT
@@ -75,7 +68,6 @@ CREATE POLICY hub_availability_responses_member_insert ON hub_availability_respo
       WHERE auth_user_id = auth.uid()
     )
   );
-
 -- Members can update their own responses
 CREATE POLICY hub_availability_responses_member_update ON hub_availability_responses
   FOR UPDATE
@@ -85,7 +77,6 @@ CREATE POLICY hub_availability_responses_member_update ON hub_availability_respo
       WHERE auth_user_id = auth.uid()
     )
   );
-
 -- Members can delete their own responses
 CREATE POLICY hub_availability_responses_member_delete ON hub_availability_responses
   FOR DELETE

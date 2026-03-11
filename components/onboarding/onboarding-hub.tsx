@@ -310,7 +310,7 @@ export function OnboardingHub({
                   <div className="space-y-1">
                     <p className="text-sm text-stone-300">{phase.description}</p>
                     {isDone && (
-                      <p className="text-sm font-medium text-green-700">
+                      <p className="text-sm font-medium text-green-200">
                         Done: {phase.doneSummary(progress)}
                       </p>
                     )}

@@ -141,12 +141,12 @@ export function BEOViewer({ initialBeo, eventId }: BEOViewerProps) {
       <div className="bg-white text-stone-900 rounded-lg shadow-lg print:shadow-none print:rounded-none">
         {/* Header */}
         <div className="border-b-[3px] border-stone-900 px-8 pt-8 pb-4">
-          <div className="text-base font-semibold text-stone-700">{beo.chef.businessName}</div>
+          <div className="text-base font-semibold text-stone-200">{beo.chef.businessName}</div>
           <h1 className="text-2xl font-bold">
             Banquet Event Order
             <span
               className={`ml-2 inline-block text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
-                version === 'kitchen' ? 'bg-amber-100 text-amber-800' : 'bg-cyan-100 text-cyan-800'
+                version === 'kitchen' ? 'bg-amber-100 text-amber-200' : 'bg-cyan-100 text-cyan-200'
               }`}
             >
               {version === 'kitchen' ? 'Kitchen' : 'Full'}
@@ -203,7 +203,7 @@ export function BEOViewer({ initialBeo, eventId }: BEOViewerProps) {
                 </div>
               )}
               {beo.allergies.length > 0 && (
-                <div className="text-sm text-red-700 font-medium">
+                <div className="text-sm text-red-200 font-medium">
                   <span className="font-semibold">Allergies: </span>
                   {beo.allergies.join(', ')}
                 </div>
@@ -225,7 +225,7 @@ export function BEOViewer({ initialBeo, eventId }: BEOViewerProps) {
               <div className="space-y-4">
                 {beo.courses.map((course) => (
                   <div key={course.number}>
-                    <h3 className="text-sm font-semibold text-stone-700 mb-2">{course.name}</h3>
+                    <h3 className="text-sm font-semibold text-stone-200 mb-2">{course.name}</h3>
                     <table className="w-full text-sm border-collapse">
                       <thead>
                         <tr className="bg-stone-50">
@@ -252,7 +252,7 @@ export function BEOViewer({ initialBeo, eventId }: BEOViewerProps) {
                                   {dish.dietaryTags.map((t) => (
                                     <span
                                       key={t}
-                                      className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-green-100 text-green-800"
+                                      className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-green-100 text-green-200"
                                     >
                                       {t}
                                     </span>
@@ -260,7 +260,7 @@ export function BEOViewer({ initialBeo, eventId }: BEOViewerProps) {
                                   {dish.allergenFlags.map((t) => (
                                     <span
                                       key={t}
-                                      className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-800 font-bold"
+                                      className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-200 font-bold"
                                     >
                                       {t}
                                     </span>

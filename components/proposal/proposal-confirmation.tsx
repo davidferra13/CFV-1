@@ -88,7 +88,7 @@ export function ProposalConfirmation({
             <Bell className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-medium text-amber-900 mb-1">What happens next</p>
-              <ul className="text-sm text-amber-700 space-y-1">
+              <ul className="text-sm text-amber-200 space-y-1">
                 <li>Your chef will reach out to finalize details.</li>
                 <li>You will receive a confirmation email shortly.</li>
                 {isDeposit && <li>The remaining balance will be due before the event.</li>}

@@ -54,7 +54,7 @@ export default async function SalesTaxPage() {
 
       {!settings?.enabled && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
-          <p className="text-sm text-amber-800">
+          <p className="text-sm text-amber-200">
             Sales tax collection is <strong>disabled</strong>.{' '}
             <Link href="/finance/sales-tax/settings" className="underline hover:text-amber-900">
               Enable it in Settings →

@@ -124,7 +124,7 @@ export function CommissaryLoadout({
     <div className="space-y-4">
       {/* Error display */}
       {error && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
+        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-200 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
           {error}
           <button onClick={() => setError(null)} className="ml-2 font-medium underline">
             Dismiss
@@ -260,7 +260,7 @@ export function CommissaryLoadout({
           <div className="pt-2">
             {allLoaded ? (
               <div className="rounded-lg border border-green-300 bg-green-50 p-4 text-center dark:border-green-700 dark:bg-green-900/20">
-                <p className="text-lg font-semibold text-green-700 dark:text-green-400">
+                <p className="text-lg font-semibold text-green-200 dark:text-green-400">
                   All Loaded - Ready to Roll!
                 </p>
                 <p className="mt-1 text-sm text-green-600 dark:text-green-500">
@@ -271,7 +271,7 @@ export function CommissaryLoadout({
               <button
                 onClick={handleMarkReady}
                 disabled={isPending}
-                className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors"
+                className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-4 py-3 text-sm font-semibold text-green-200 hover:bg-green-100 disabled:opacity-50 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors"
               >
                 Mark All Loaded - Ready to Roll
               </button>

@@ -95,7 +95,7 @@ export default function BlogPostPage({ params }: Props) {
           {/* Back link */}
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors mb-8"
+            className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-200 dark:hover:text-stone-300 transition-colors mb-8"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

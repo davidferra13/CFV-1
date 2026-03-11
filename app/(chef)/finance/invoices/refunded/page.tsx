@@ -45,7 +45,7 @@ export default async function RefundedInvoicesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Refunded Invoices</h1>
-          <span className="bg-purple-900 text-purple-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-purple-900 text-purple-200 text-sm px-2 py-0.5 rounded-full">
             {refunded.length}
           </span>
         </div>
@@ -55,7 +55,7 @@ export default async function RefundedInvoicesPage() {
       {refunded.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
           <Card className="p-4">
-            <p className="text-2xl font-bold text-purple-700">{refunded.length}</p>
+            <p className="text-2xl font-bold text-purple-200">{refunded.length}</p>
             <p className="text-sm text-stone-500 mt-1">Events with refunds</p>
           </Card>
           <Card className="p-4">

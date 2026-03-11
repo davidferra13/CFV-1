@@ -54,7 +54,7 @@ export function CancellationPolicyDisplay({ variant, policy = DEFAULT_POLICY }: 
           <div>
             <p className="text-sm font-medium text-stone-100">{tier1.condition}</p>
           </div>
-          <span className="text-sm font-medium text-green-700 bg-green-950 px-2.5 py-0.5 rounded-full">
+          <span className="text-sm font-medium text-green-200 bg-green-950 px-2.5 py-0.5 rounded-full">
             {tier1.outcome}
           </span>
         </div>
@@ -64,7 +64,7 @@ export function CancellationPolicyDisplay({ variant, policy = DEFAULT_POLICY }: 
           <div>
             <p className="text-sm font-medium text-stone-100">{tier2.condition}</p>
           </div>
-          <span className="text-sm font-medium text-green-700 bg-green-950 px-2.5 py-0.5 rounded-full">
+          <span className="text-sm font-medium text-green-200 bg-green-950 px-2.5 py-0.5 rounded-full">
             {tier2.outcome}
           </span>
         </div>
@@ -74,7 +74,7 @@ export function CancellationPolicyDisplay({ variant, policy = DEFAULT_POLICY }: 
           <div>
             <p className="text-sm font-medium text-stone-100">{tier3.condition}</p>
           </div>
-          <span className="text-sm font-medium text-red-700 bg-red-950 px-2.5 py-0.5 rounded-full">
+          <span className="text-sm font-medium text-red-200 bg-red-950 px-2.5 py-0.5 rounded-full">
             {tier3.outcome}
           </span>
         </div>
@@ -87,8 +87,8 @@ export function CancellationPolicyDisplay({ variant, policy = DEFAULT_POLICY }: 
           <span
             className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${
               policy.depositRefundable
-                ? 'text-green-700 bg-green-950'
-                : 'text-amber-700 bg-amber-950'
+                ? 'text-green-200 bg-green-950'
+                : 'text-amber-200 bg-amber-950'
             }`}
           >
             {depositLine.outcome}

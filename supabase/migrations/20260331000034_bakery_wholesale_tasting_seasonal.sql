@@ -20,9 +20,7 @@ CREATE TABLE IF NOT EXISTS wholesale_accounts (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE wholesale_accounts ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "wholesale_accounts_tenant_isolation" ON wholesale_accounts
     FOR ALL USING (
@@ -31,7 +29,6 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ============================================================
 -- 2. Wholesale Orders
 -- ============================================================
@@ -54,9 +51,7 @@ CREATE TABLE IF NOT EXISTS wholesale_orders (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE wholesale_orders ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "wholesale_orders_tenant_isolation" ON wholesale_orders
     FOR ALL USING (
@@ -65,9 +60,7 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 CREATE INDEX IF NOT EXISTS idx_wholesale_orders_delivery ON wholesale_orders (tenant_id, delivery_date);
-
 -- ============================================================
 -- 3. Bakery Tastings
 -- ============================================================
@@ -94,9 +87,7 @@ CREATE TABLE IF NOT EXISTS bakery_tastings (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE bakery_tastings ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "bakery_tastings_tenant_isolation" ON bakery_tastings
     FOR ALL USING (
@@ -105,9 +96,7 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 CREATE INDEX IF NOT EXISTS idx_bakery_tastings_date ON bakery_tastings (tenant_id, tasting_date);
-
 -- ============================================================
 -- 4. Bakery Seasonal Items
 -- ============================================================
@@ -129,9 +118,7 @@ CREATE TABLE IF NOT EXISTS bakery_seasonal_items (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE bakery_seasonal_items ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "bakery_seasonal_items_tenant_isolation" ON bakery_seasonal_items
     FOR ALL USING (
@@ -140,5 +127,4 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 CREATE INDEX IF NOT EXISTS idx_bakery_seasonal_items_dates ON bakery_seasonal_items (tenant_id, start_date, end_date);

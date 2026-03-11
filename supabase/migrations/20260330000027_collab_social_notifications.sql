@@ -3,7 +3,6 @@
 
 ALTER TABLE chef_social_notifications
   DROP CONSTRAINT IF EXISTS chef_social_notifications_notification_type_check;
-
 ALTER TABLE chef_social_notifications
   ADD CONSTRAINT chef_social_notifications_notification_type_check
   CHECK (
@@ -27,10 +26,8 @@ ALTER TABLE chef_social_notifications
       'collab_handoff_cancelled'
     )
   );
-
 ALTER TABLE chef_social_notifications
   DROP CONSTRAINT IF EXISTS chef_social_notifications_entity_type_check;
-
 ALTER TABLE chef_social_notifications
   ADD CONSTRAINT chef_social_notifications_entity_type_check
   CHECK (

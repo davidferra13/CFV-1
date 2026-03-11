@@ -71,7 +71,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
 
       {!profile || !hasNotes ? (
         <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2.5">
-          <p className="text-sm text-amber-800">
+          <p className="text-sm text-amber-200">
             No kitchen notes on file for this client.{' '}
             <Link
               href={`/clients/${clientId}`}
@@ -120,10 +120,10 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
 
           {profile.equipment_must_bring && profile.equipment_must_bring.length > 0 && (
             <div className="flex gap-6 text-sm">
-              <span className="text-stone-500 font-medium w-28 shrink-0 text-amber-700">
+              <span className="text-stone-500 font-medium w-28 shrink-0 text-amber-200">
                 Must bring
               </span>
-              <span className="text-amber-800 font-medium">
+              <span className="text-amber-200 font-medium">
                 {profile.equipment_must_bring.join(', ')}
               </span>
             </div>

@@ -50,7 +50,6 @@ CREATE TABLE automation_rules (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- ─── Automation Execution Log ─────────────────────────────────────────────
 -- Immutable audit trail of every rule firing.
 
@@ -75,26 +74,20 @@ CREATE TABLE automation_executions (
 
   executed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- ─── Indexes ──────────────────────────────────────────────────────────────
 
 CREATE INDEX idx_automation_rules_tenant
   ON automation_rules(tenant_id, is_active);
-
 CREATE INDEX idx_automation_rules_trigger
   ON automation_rules(trigger_event) WHERE is_active = true;
-
 CREATE INDEX idx_automation_executions_tenant
   ON automation_executions(tenant_id, executed_at DESC);
-
 CREATE INDEX idx_automation_executions_rule
   ON automation_executions(rule_id, executed_at DESC);
-
 -- ─── RLS Policies ─────────────────────────────────────────────────────────
 
 ALTER TABLE automation_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE automation_executions ENABLE ROW LEVEL SECURITY;
-
 -- Chefs manage their own automation rules
 CREATE POLICY "Chefs manage own automation rules"
   ON automation_rules
@@ -111,7 +104,6 @@ CREATE POLICY "Chefs manage own automation rules"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Chefs read their own execution logs
 CREATE POLICY "Chefs read own automation executions"
   ON automation_executions
@@ -122,14 +114,12 @@ CREATE POLICY "Chefs read own automation executions"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Service role manages everything (for cron + webhook processing)
 CREATE POLICY "Service role manages automation rules"
   ON automation_rules
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY "Service role manages automation executions"
   ON automation_executions
   FOR ALL

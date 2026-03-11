@@ -304,12 +304,12 @@ export function HoursLogWidget({
         {showStreakBanner && (
           <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-950 px-3 py-2">
             {trackingStreak > 0 && (
-              <span className="text-amber-700 text-sm font-mono" aria-hidden="true">
+              <span className="text-amber-200 text-sm font-mono" aria-hidden="true">
                 {'▰'.repeat(Math.min(trackingStreak, 7))}
                 {'▱'.repeat(Math.max(0, 7 - Math.min(trackingStreak, 7)))}
               </span>
             )}
-            <p className="text-sm font-medium text-amber-800">{streakMessage}</p>
+            <p className="text-sm font-medium text-amber-200">{streakMessage}</p>
           </div>
         )}
 

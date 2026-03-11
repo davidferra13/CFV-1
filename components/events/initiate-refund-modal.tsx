@@ -58,9 +58,9 @@ export function InitiateRefundModal({
   const [success, setSuccess] = useState(false)
 
   const tierBadge: Record<PolicyTier, { label: string; color: string }> = {
-    full_refund: { label: 'Full refund eligible', color: 'bg-green-900 text-green-800' },
-    full_refund_24hr: { label: 'Full refund (24-hr window)', color: 'bg-green-900 text-green-800' },
-    no_refund: { label: 'No refund per policy', color: 'bg-red-900 text-red-800' },
+    full_refund: { label: 'Full refund eligible', color: 'bg-green-900 text-green-200' },
+    full_refund_24hr: { label: 'Full refund (24-hr window)', color: 'bg-green-900 text-green-200' },
+    no_refund: { label: 'No refund per policy', color: 'bg-red-900 text-red-200' },
   }
 
   const badge = tierBadge[recommendation.policyTier]
@@ -168,7 +168,7 @@ export function InitiateRefundModal({
           </div>
 
           {recommendation.depositNonRefundableWarning && (
-            <p className="mt-3 text-xs text-amber-700 bg-amber-950 px-3 py-2 rounded">
+            <p className="mt-3 text-xs text-amber-200 bg-amber-950 px-3 py-2 rounded">
               The deposit ({formatCurrency(depositPaidCents)}) is non-refundable per policy.
               Override below only with client agreement.
             </p>

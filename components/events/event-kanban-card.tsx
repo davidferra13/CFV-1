@@ -57,7 +57,7 @@ export function EventKanbanCard({ event, isDragging = false }: EventKanbanCardPr
 
       {/* Price */}
       {event.quoted_price_cents > 0 && (
-        <div className="mt-1.5 text-xs font-medium text-emerald-700">
+        <div className="mt-1.5 text-xs font-medium text-emerald-200">
           {formatCurrency(event.quoted_price_cents)}
         </div>
       )}
@@ -78,7 +78,7 @@ export function EventKanbanCardOverlay({ event }: { event: KanbanEvent }) {
         <span className="text-xs text-stone-400">{event.guest_count} guests</span>
       </div>
       {event.quoted_price_cents > 0 && (
-        <div className="mt-1.5 text-xs font-medium text-emerald-700">
+        <div className="mt-1.5 text-xs font-medium text-emerald-200">
           {formatCurrency(event.quoted_price_cents)}
         </div>
       )}

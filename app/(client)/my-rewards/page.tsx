@@ -29,10 +29,10 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 const TIER_BADGE: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-800',
+  bronze: 'bg-amber-900 text-amber-200',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-800',
-  platinum: 'bg-indigo-900 text-indigo-800',
+  gold: 'bg-yellow-900 text-yellow-200',
+  platinum: 'bg-indigo-900 text-indigo-200',
 }
 
 type TierKey = (typeof TIER_ORDER)[number]
@@ -235,7 +235,7 @@ export default async function MyRewardsPage() {
             <Card className="border-amber-200 bg-amber-950/30">
               <CardHeader>
                 <CardTitle className="text-amber-900">Pending Rewards</CardTitle>
-                <p className="text-sm text-amber-700 mt-1">
+                <p className="text-sm text-amber-200 mt-1">
                   You have redeemed these rewards. Your chef will honour them at your next event.
                 </p>
               </CardHeader>
@@ -330,7 +330,7 @@ export default async function MyRewardsPage() {
                         </p>
                       </div>
                       <span
-                        className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-300'}`}
+                        className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-200' : 'text-stone-300'}`}
                       >
                         {tx.points >= 0 ? '+' : ''}
                         {tx.points}

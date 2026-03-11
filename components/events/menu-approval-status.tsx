@@ -80,15 +80,15 @@ export function MenuApprovalStatus({ eventId, status, sentAt, approvedAt, revisi
       )}
 
       {status === 'approved' && (
-        <p className="text-xs text-green-700">
+        <p className="text-xs text-green-200">
           Approved {approvedAt ? new Date(approvedAt).toLocaleDateString() : ''}.
         </p>
       )}
 
       {status === 'revision_requested' && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-2">
-          <p className="text-xs font-medium text-amber-800">Client requested revisions:</p>
-          <p className="text-xs text-amber-700">{revisionNotes}</p>
+          <p className="text-xs font-medium text-amber-200">Client requested revisions:</p>
+          <p className="text-xs text-amber-200">{revisionNotes}</p>
           <Button size="sm" onClick={handleSend} disabled={loading}>
             {loading ? 'Sending…' : 'Send Updated Menu'}
           </Button>

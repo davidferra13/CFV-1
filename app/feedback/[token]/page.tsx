@@ -130,7 +130,7 @@ export default function PublicFeedbackPage() {
 
           {/* Star Rating */}
           <div className="mb-6">
-            <label className="text-sm font-medium text-stone-700 block mb-2">
+            <label className="text-sm font-medium text-stone-200 block mb-2">
               Rate your experience
             </label>
             <div className="flex gap-2">
@@ -158,7 +158,7 @@ export default function PublicFeedbackPage() {
 
           {/* Comment */}
           <div className="mb-6">
-            <label className="text-sm font-medium text-stone-700 block mb-2">
+            <label className="text-sm font-medium text-stone-200 block mb-2">
               Any comments? (optional)
             </label>
             <textarea
@@ -172,7 +172,7 @@ export default function PublicFeedbackPage() {
 
           {/* Tags */}
           <div className="mb-6">
-            <label className="text-sm font-medium text-stone-700 block mb-2">
+            <label className="text-sm font-medium text-stone-200 block mb-2">
               What stood out? (optional)
             </label>
             <div className="flex flex-wrap gap-2">
@@ -195,7 +195,7 @@ export default function PublicFeedbackPage() {
 
           {/* Would Recommend */}
           <div className="mb-8">
-            <label className="text-sm font-medium text-stone-700 block mb-2">
+            <label className="text-sm font-medium text-stone-200 block mb-2">
               Would you recommend us?
             </label>
             <div className="flex gap-3">
@@ -204,7 +204,7 @@ export default function PublicFeedbackPage() {
                 onClick={() => setWouldRecommend(true)}
                 className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                   wouldRecommend === true
-                    ? 'bg-green-50 text-green-700 border-green-300'
+                    ? 'bg-green-50 text-green-200 border-green-300'
                     : 'bg-white text-stone-600 border-stone-300 hover:border-stone-500'
                 }`}
               >
@@ -215,7 +215,7 @@ export default function PublicFeedbackPage() {
                 onClick={() => setWouldRecommend(false)}
                 className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                   wouldRecommend === false
-                    ? 'bg-red-50 text-red-700 border-red-300'
+                    ? 'bg-red-50 text-red-200 border-red-300'
                     : 'bg-white text-stone-600 border-stone-300 hover:border-stone-500'
                 }`}
               >

@@ -15,24 +15,17 @@ create table if not exists sops (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create index idx_sops_tenant on sops(tenant_id);
 create index idx_sops_category on sops(tenant_id, category);
-
 alter table sops enable row level security;
-
 create policy "Chefs see own sops"
   on sops for select using (tenant_id = auth.uid());
-
 create policy "Chefs insert own sops"
   on sops for insert with check (tenant_id = auth.uid());
-
 create policy "Chefs update own sops"
   on sops for update using (tenant_id = auth.uid());
-
 create policy "Chefs delete own sops"
   on sops for delete using (tenant_id = auth.uid());
-
 -- SOP completions: tracks which staff completed which SOP version
 create table if not exists sop_completions (
   id uuid primary key default gen_random_uuid(),
@@ -44,21 +37,15 @@ create table if not exists sop_completions (
   notes text,
   unique (sop_id, staff_member_id, version_completed)
 );
-
 create index idx_sop_completions_tenant on sop_completions(tenant_id);
 create index idx_sop_completions_staff on sop_completions(tenant_id, staff_member_id);
 create index idx_sop_completions_sop on sop_completions(sop_id);
-
 alter table sop_completions enable row level security;
-
 create policy "Chefs see own completions"
   on sop_completions for select using (tenant_id = auth.uid());
-
 create policy "Chefs insert own completions"
   on sop_completions for insert with check (tenant_id = auth.uid());
-
 create policy "Chefs update own completions"
   on sop_completions for update using (tenant_id = auth.uid());
-
 create policy "Chefs delete own completions"
   on sop_completions for delete using (tenant_id = auth.uid());

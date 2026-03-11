@@ -161,7 +161,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                         {adjustment.pointsSpent} points redeemed
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-right text-green-700 text-sm">
+                    <td className="px-4 py-3 text-right text-green-200 text-sm">
                       -{formatCents(adjustment.discountCents)}
                     </td>
                   </tr>
@@ -173,7 +173,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                         Beta tester discount ({betaDiscount.discountPercent}%)
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-right text-green-700 text-sm">
+                    <td className="px-4 py-3 text-right text-green-200 text-sm">
                       -{formatCents(betaDiscount.discountCents)}
                     </td>
                   </tr>
@@ -243,9 +243,9 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                         <span
                           className={`font-medium ${
                             entry.isRefund
-                              ? 'text-red-700'
+                              ? 'text-red-200'
                               : entry.isTip
-                                ? 'text-purple-700'
+                                ? 'text-purple-200'
                                 : 'text-stone-100'
                           }`}
                         >
@@ -263,9 +263,9 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                       <td
                         className={`px-4 py-3 text-right font-medium ${
                           entry.isRefund
-                            ? 'text-red-700'
+                            ? 'text-red-200'
                             : entry.isTip
-                              ? 'text-purple-700'
+                              ? 'text-purple-200'
                               : 'text-stone-100'
                         }`}
                       >
@@ -292,13 +292,13 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
             {loyaltyDiscountCents > 0 && (
               <div className="flex justify-between text-sm text-stone-400">
                 <span>Loyalty discount</span>
-                <span className="text-green-700">-{formatCents(loyaltyDiscountCents)}</span>
+                <span className="text-green-200">-{formatCents(loyaltyDiscountCents)}</span>
               </div>
             )}
             {betaDiscount?.applied && (
               <div className="flex justify-between text-sm text-stone-400">
                 <span>Beta tester discount ({betaDiscount.discountPercent}%)</span>
-                <span className="text-green-700">-{formatCents(betaDiscount.discountCents)}</span>
+                <span className="text-green-200">-{formatCents(betaDiscount.discountCents)}</span>
               </div>
             )}
             {(loyaltyDiscountCents > 0 || betaDiscount?.applied) && (
@@ -316,19 +316,19 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
             {totalPaidCents > 0 && (
               <div className="flex justify-between text-sm text-stone-400">
                 <span>Total paid</span>
-                <span className="text-green-700">{formatCents(totalPaidCents)}</span>
+                <span className="text-green-200">{formatCents(totalPaidCents)}</span>
               </div>
             )}
             {totalRefundedCents > 0 && (
               <div className="flex justify-between text-sm text-stone-400">
                 <span>Refunded</span>
-                <span className="text-red-700">−{formatCents(totalRefundedCents)}</span>
+                <span className="text-red-200">−{formatCents(totalRefundedCents)}</span>
               </div>
             )}
             {tipAmountCents > 0 && (
               <div className="flex justify-between text-sm text-stone-500">
                 <span>Gratuity (not included in total)</span>
-                <span className="text-purple-700">{formatCents(tipAmountCents)}</span>
+                <span className="text-purple-200">{formatCents(tipAmountCents)}</span>
               </div>
             )}
             <div className="border-t border-stone-700 pt-2 mt-2">
@@ -337,7 +337,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                   {isPaidInFull ? 'Balance' : 'Balance due'}
                 </span>
                 <span
-                  className={`text-lg font-bold ${isPaidInFull ? 'text-green-700' : 'text-stone-100'}`}
+                  className={`text-lg font-bold ${isPaidInFull ? 'text-green-200' : 'text-stone-100'}`}
                 >
                   {isPaidInFull ? 'PAID IN FULL' : formatCents(balanceDueCents)}
                 </span>

@@ -18,11 +18,11 @@ function formatCents(cents: number): string {
 }
 
 const ENTRY_TYPE_COLORS: Record<string, string> = {
-  payment: 'bg-green-900 text-green-700',
-  deposit: 'bg-blue-900 text-blue-700',
+  payment: 'bg-green-900 text-green-200',
+  deposit: 'bg-blue-900 text-blue-200',
   expense: 'bg-red-900 text-red-600',
-  tip: 'bg-yellow-900 text-yellow-700',
-  refund: 'bg-orange-900 text-orange-700',
+  tip: 'bg-yellow-900 text-yellow-200',
+  refund: 'bg-orange-900 text-orange-200',
 }
 
 export default async function AdminFinancialsPage() {

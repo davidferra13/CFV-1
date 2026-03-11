@@ -18,7 +18,6 @@ CREATE TYPE inquiry_status AS ENUM (
   'declined',         -- Chef or client declined
   'expired'           -- No response after follow-ups
 );
-
 -- Inquiry source channel
 CREATE TYPE inquiry_channel AS ENUM (
   'text',
@@ -29,7 +28,6 @@ CREATE TYPE inquiry_channel AS ENUM (
   'website',
   'other'
 );
-
 -- Message approval workflow states
 CREATE TYPE message_status AS ENUM (
   'draft',      -- Created but not approved
@@ -37,7 +35,6 @@ CREATE TYPE message_status AS ENUM (
   'sent',       -- Successfully sent
   'logged'      -- Inbound message or already-sent message logged
 );
-
 -- Message communication channel
 CREATE TYPE message_channel AS ENUM (
   'text',
@@ -47,13 +44,11 @@ CREATE TYPE message_channel AS ENUM (
   'phone',
   'internal_note'
 );
-
 -- Message direction
 CREATE TYPE message_direction AS ENUM (
   'inbound',   -- Client to chef
   'outbound'   -- Chef to client
 );
-
 -- ============================================
 -- INQUIRIES (Unified Inquiry Tracking)
 -- ============================================
@@ -98,21 +93,18 @@ CREATE TABLE inquiries (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
-
 CREATE INDEX idx_inquiries_tenant ON inquiries(tenant_id);
 CREATE INDEX idx_inquiries_client ON inquiries(client_id);
 CREATE INDEX idx_inquiries_status ON inquiries(status);
 CREATE INDEX idx_inquiries_tenant_status ON inquiries(tenant_id, status);
 CREATE INDEX idx_inquiries_follow_up_due ON inquiries(follow_up_due_at) WHERE follow_up_due_at IS NOT NULL;
 CREATE INDEX idx_inquiries_converted ON inquiries(converted_to_event_id) WHERE converted_to_event_id IS NOT NULL;
-
 COMMENT ON TABLE inquiries IS 'Unified inquiry tracking from all channels (Part 11). Every inquiry becomes a structured record.';
 COMMENT ON COLUMN inquiries.client_id IS 'Nullable - inquiry might be from new lead who is not yet a client';
 COMMENT ON COLUMN inquiries.source_message IS 'Verbatim original message for context';
 COMMENT ON COLUMN inquiries.unknown_fields IS 'Array of blocking questions: ["What time?", "How many guests?"]';
 COMMENT ON COLUMN inquiries.follow_up_due_at IS 'When to prompt chef if no response. Update to next interval when follow-up sent. No separate follow_ups table needed.';
 COMMENT ON COLUMN inquiries.converted_to_event_id IS 'UUID of event created from this inquiry. FK constraint will be added in Layer 3 when events table exists.';
-
 -- ============================================
 -- INQUIRY STATE TRANSITIONS (Immutable Audit Trail)
 -- ============================================
@@ -128,15 +120,12 @@ CREATE TABLE inquiry_state_transitions (
   reason TEXT,
   metadata JSONB
 );
-
 CREATE INDEX idx_inquiry_transitions_inquiry ON inquiry_state_transitions(inquiry_id);
 CREATE INDEX idx_inquiry_transitions_tenant ON inquiry_state_transitions(tenant_id);
 CREATE INDEX idx_inquiry_transitions_date ON inquiry_state_transitions(transitioned_at DESC);
-
 COMMENT ON TABLE inquiry_state_transitions IS 'Immutable audit trail of all inquiry status changes';
 COMMENT ON COLUMN inquiry_state_transitions.from_status IS 'Nullable for initial state (creation)';
 COMMENT ON COLUMN inquiry_state_transitions.transitioned_by IS 'NULL for system transitions (e.g., auto-expire)';
-
 -- ============================================
 -- MESSAGES (Contextual, Event-Bound Communication)
 -- ============================================
@@ -167,20 +156,17 @@ CREATE TABLE messages (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
-
 CREATE INDEX idx_messages_tenant ON messages(tenant_id);
 CREATE INDEX idx_messages_inquiry ON messages(inquiry_id);
 CREATE INDEX idx_messages_event ON messages(event_id);
 CREATE INDEX idx_messages_client ON messages(client_id);
 CREATE INDEX idx_messages_status ON messages(status);
 CREATE INDEX idx_messages_sent_at ON messages(sent_at DESC);
-
 COMMENT ON TABLE messages IS 'Contextual, event-bound communication (Part 12). Messages are permanent records - NEVER deleted once logged. All outbound messages require explicit approval before sending.';
 COMMENT ON COLUMN messages.event_id IS 'UUID of related event. FK constraint will be added in Layer 3 when events table exists.';
 COMMENT ON COLUMN messages.direction IS 'inbound (client → chef) or outbound (chef → client)';
 COMMENT ON COLUMN messages.status IS 'draft → approved → sent for outbound; logged for inbound';
 COMMENT ON COLUMN messages.approved_by IS 'Required for outbound messages - NO auto-sending ever';
-
 -- ============================================
 -- RESPONSE TEMPLATES (Pre-drafted Chef Voice)
 -- ============================================
@@ -196,13 +182,10 @@ CREATE TABLE response_templates (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
-
 CREATE INDEX idx_templates_tenant ON response_templates(tenant_id);
 CREATE INDEX idx_templates_active ON response_templates(tenant_id, is_active) WHERE is_active = true;
-
 COMMENT ON TABLE response_templates IS 'Pre-drafted responses in chef voice. Require chef approval before sending.';
 COMMENT ON COLUMN response_templates.usage_count IS 'Incremented each time template is used';
-
 -- ============================================
 -- TRIGGER FUNCTIONS
 -- ============================================
@@ -214,9 +197,7 @@ BEGIN
   RAISE EXCEPTION 'Inquiry state transitions are immutable. They form an audit trail.';
 END;
 $$ LANGUAGE plpgsql;
-
 COMMENT ON FUNCTION prevent_inquiry_transition_modification IS 'Enforces immutability on inquiry_state_transitions table';
-
 -- Validate inquiry state transition is legal
 CREATE OR REPLACE FUNCTION validate_inquiry_transition()
 RETURNS TRIGGER AS $$
@@ -250,9 +231,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 COMMENT ON FUNCTION validate_inquiry_transition IS 'Validates inquiry state transitions against allowed state machine rules';
-
 -- Extend audit logging to support inquiries and messages
 CREATE OR REPLACE FUNCTION log_audit()
 RETURNS TRIGGER AS $$
@@ -312,9 +291,7 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 COMMENT ON FUNCTION log_audit IS 'Logs all mutations to audit_log table with before/after snapshots (extended for Layer 2 tables)';
-
 -- ============================================
 -- TRIGGERS
 -- ============================================
@@ -323,41 +300,32 @@ COMMENT ON FUNCTION log_audit IS 'Logs all mutations to audit_log table with bef
 CREATE TRIGGER inquiries_updated_at
 BEFORE UPDATE ON inquiries
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER messages_updated_at
 BEFORE UPDATE ON messages
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER templates_updated_at
 BEFORE UPDATE ON response_templates
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- Audit logging
 CREATE TRIGGER inquiries_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON inquiries
 FOR EACH ROW EXECUTE FUNCTION log_audit();
-
 CREATE TRIGGER messages_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON messages
 FOR EACH ROW EXECUTE FUNCTION log_audit();
-
 CREATE TRIGGER templates_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON response_templates
 FOR EACH ROW EXECUTE FUNCTION log_audit();
-
 -- Inquiry state transition validation and immutability
 CREATE TRIGGER inquiry_transitions_validate
 BEFORE INSERT ON inquiry_state_transitions
 FOR EACH ROW EXECUTE FUNCTION validate_inquiry_transition();
-
 CREATE TRIGGER inquiry_transitions_immutable_update
 BEFORE UPDATE ON inquiry_state_transitions
 FOR EACH ROW EXECUTE FUNCTION prevent_inquiry_transition_modification();
-
 CREATE TRIGGER inquiry_transitions_immutable_delete
 BEFORE DELETE ON inquiry_state_transitions
 FOR EACH ROW EXECUTE FUNCTION prevent_inquiry_transition_modification();
-
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
@@ -367,7 +335,6 @@ ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inquiry_state_transitions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE response_templates ENABLE ROW LEVEL SECURITY;
-
 -- ============================================
 -- INQUIRIES TABLE POLICIES
 -- ============================================
@@ -379,7 +346,6 @@ CREATE POLICY inquiries_chef_select ON inquiries
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can create inquiries
 CREATE POLICY inquiries_chef_insert ON inquiries
   FOR INSERT
@@ -387,7 +353,6 @@ CREATE POLICY inquiries_chef_insert ON inquiries
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can update their inquiries
 CREATE POLICY inquiries_chef_update ON inquiries
   FOR UPDATE
@@ -395,7 +360,6 @@ CREATE POLICY inquiries_chef_update ON inquiries
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can delete their inquiries (prefer status transition to 'declined' or 'expired')
 CREATE POLICY inquiries_chef_delete ON inquiries
   FOR DELETE
@@ -403,7 +367,6 @@ CREATE POLICY inquiries_chef_delete ON inquiries
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Clients can read inquiries linked to them
 CREATE POLICY inquiries_client_select ON inquiries
   FOR SELECT
@@ -411,10 +374,8 @@ CREATE POLICY inquiries_client_select ON inquiries
     get_current_user_role() = 'client' AND
     client_id = get_current_client_id()
   );
-
 COMMENT ON POLICY inquiries_chef_select ON inquiries IS 'Chefs see only their tenant inquiries';
 COMMENT ON POLICY inquiries_client_select ON inquiries IS 'Clients see only inquiries linked to them';
-
 -- ============================================
 -- INQUIRY_STATE_TRANSITIONS TABLE POLICIES
 -- ============================================
@@ -426,7 +387,6 @@ CREATE POLICY inquiry_transitions_chef_select ON inquiry_state_transitions
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Clients can read transitions for their inquiries
 CREATE POLICY inquiry_transitions_client_select ON inquiry_state_transitions
   FOR SELECT
@@ -436,20 +396,17 @@ CREATE POLICY inquiry_transitions_client_select ON inquiry_state_transitions
       SELECT id FROM inquiries WHERE client_id = get_current_client_id()
     )
   );
-
 -- Only chef who owns the inquiry can insert state transitions
 CREATE POLICY inquiry_transitions_insert ON inquiry_state_transitions
   FOR INSERT
   WITH CHECK (
     tenant_id = get_current_tenant_id()
   );
-
 -- NO UPDATE/DELETE (enforced by immutability triggers)
 
 COMMENT ON POLICY inquiry_transitions_chef_select ON inquiry_state_transitions IS 'Chefs see transitions for their tenant inquiries';
 COMMENT ON POLICY inquiry_transitions_client_select ON inquiry_state_transitions IS 'Clients see transitions for their inquiries';
 COMMENT ON POLICY inquiry_transitions_insert ON inquiry_state_transitions IS 'Only the chef who owns the inquiry can record state transitions (tenant isolation enforced)';
-
 -- ============================================
 -- MESSAGES TABLE POLICIES
 -- ============================================
@@ -461,7 +418,6 @@ CREATE POLICY messages_chef_select ON messages
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can create messages
 CREATE POLICY messages_chef_insert ON messages
   FOR INSERT
@@ -469,7 +425,6 @@ CREATE POLICY messages_chef_insert ON messages
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can update messages (only drafts via app logic - sent messages immutable in practice)
 CREATE POLICY messages_chef_update ON messages
   FOR UPDATE
@@ -477,7 +432,6 @@ CREATE POLICY messages_chef_update ON messages
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- NO DELETE POLICY: Messages are permanent records.
 -- Once logged, never deleted. Messages are an audit trail of communication.
 -- Deletion only occurs via CASCADE when parent records (inquiries, events, clients) are deleted.
@@ -489,10 +443,8 @@ CREATE POLICY messages_client_select ON messages
     get_current_user_role() = 'client' AND
     client_id = get_current_client_id()
   );
-
 COMMENT ON POLICY messages_chef_select ON messages IS 'Chefs see messages for their tenant';
 COMMENT ON POLICY messages_client_select ON messages IS 'Clients see messages related to them';
-
 -- ============================================
 -- RESPONSE_TEMPLATES TABLE POLICIES
 -- ============================================
@@ -508,11 +460,9 @@ CREATE POLICY templates_chef_all ON response_templates
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- No client access to templates
 
 COMMENT ON POLICY templates_chef_all ON response_templates IS 'Chefs manage their own response templates';
-
 -- ============================================
 -- VERIFICATION QUERIES
 -- ============================================

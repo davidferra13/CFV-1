@@ -26,7 +26,7 @@ export function InboxItemCard({ item }: InboxItemCardProps) {
             <SourceBadge source={item.source} contentType={item.content_type} />
             <span className="text-xs text-stone-400 shrink-0">{timeAgo}</span>
           </div>
-          <p className="text-sm text-stone-800 line-clamp-2">
+          <p className="text-sm text-stone-200 line-clamp-2">
             {item.preview || 'No preview available'}
           </p>
         </div>
@@ -73,10 +73,10 @@ function SourceIcon({ source }: { source: string }) {
 
 function SourceBadge({ source, contentType }: { source: string; contentType: string | null }) {
   const colors: Record<string, string> = {
-    chat: 'bg-blue-900 text-blue-700',
-    message: 'bg-emerald-900 text-emerald-700',
-    wix: 'bg-purple-900 text-purple-700',
-    notification: 'bg-amber-900 text-amber-700',
+    chat: 'bg-blue-900 text-blue-200',
+    message: 'bg-emerald-900 text-emerald-200',
+    wix: 'bg-purple-900 text-purple-200',
+    notification: 'bg-amber-900 text-amber-200',
   }
 
   const labels: Record<string, string> = {

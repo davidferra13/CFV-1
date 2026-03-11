@@ -65,7 +65,7 @@ export default async function ClientRequestsPage() {
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Badge variant={config.variant}>{config.label}</Badge>
-                      <span className="text-sm text-stone-700">{req.client.full_name}</span>
+                      <span className="text-sm text-stone-200">{req.client.full_name}</span>
                       <span className="text-sm text-stone-500">{req.requested_date}</span>
                       <span className="text-sm text-stone-500">{req.guest_count} guests</span>
                     </div>

@@ -136,7 +136,7 @@ function RequestCard({ request }: RequestCardProps) {
 
         {/* Error */}
         {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-3">
+          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-200 mb-3">
             {error}
           </div>
         )}

@@ -117,7 +117,7 @@ export function MilestoneManager({
                   size="sm"
                   onClick={() => handleRemove(i)}
                   disabled={saving}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-600 hover:text-red-200"
                 >
                   Remove
                 </Button>

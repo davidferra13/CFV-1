@@ -149,7 +149,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
                 </CardTitle>
                 <Link
                   href="/events?status=completed"
-                  className="text-sm text-amber-700 hover:text-amber-900 font-medium"
+                  className="text-sm text-amber-200 hover:text-amber-900 font-medium"
                 >
                   All Events
                 </Link>

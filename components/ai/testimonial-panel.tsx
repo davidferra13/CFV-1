@@ -104,7 +104,7 @@ export function TestimonialPanel() {
                 </span>
                 <span>{t.bestPlatform}</span>
               </div>
-              <div className="text-[11px] text-green-700">{t.why}</div>
+              <div className="text-[11px] text-green-200">{t.why}</div>
             </div>
           ))}
         </div>

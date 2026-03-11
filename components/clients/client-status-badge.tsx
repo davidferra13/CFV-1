@@ -8,10 +8,10 @@ import { useState, useTransition } from 'react'
 import { updateClientStatus } from '@/lib/clients/actions'
 
 const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-emerald-900 text-emerald-800',
+  active: 'bg-emerald-900 text-emerald-200',
   dormant: 'bg-stone-700 text-stone-300',
-  repeat_ready: 'bg-blue-900 text-blue-800',
-  vip: 'bg-purple-900 text-purple-800',
+  repeat_ready: 'bg-blue-900 text-blue-200',
+  vip: 'bg-purple-900 text-purple-200',
 }
 
 const STATUS_LABELS: Record<string, string> = {

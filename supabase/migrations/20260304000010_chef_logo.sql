@@ -4,7 +4,6 @@
 
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS logo_url TEXT;
-
 -- Storage bucket for chef logos (public, max 5MB, JPEG/PNG/WebP/SVG)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (

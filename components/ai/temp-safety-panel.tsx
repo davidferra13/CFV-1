@@ -86,7 +86,7 @@ export function TempSafetyPanel({ eventId }: { eventId: string }) {
       <p className="text-xs text-stone-400">{result.summary}</p>
 
       {result.violations.length === 0 && (
-        <div className="flex items-center gap-2 text-xs text-green-700 bg-green-950 rounded p-2">
+        <div className="flex items-center gap-2 text-xs text-green-200 bg-green-950 rounded p-2">
           <CheckCircle className="w-3 h-3" />
           No food safety violations detected.
         </div>

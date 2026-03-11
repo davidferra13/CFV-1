@@ -1,5 +1,7 @@
 # Private Chef Manager Expansion Roadmap
 
+Implementation spec: [private-chef-manager-build-spec.md](./private-chef-manager-build-spec.md)
+
 **Date:** March 6, 2026
 
 ## Scope

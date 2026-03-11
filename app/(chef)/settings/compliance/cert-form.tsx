@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DocumentUploadField } from '@/components/documents/document-upload-field'
 import { createCertification } from '@/lib/compliance/actions'
 
 const CERT_TYPES = [
@@ -43,8 +44,10 @@ export function CertForm() {
       setError('Name is required.')
       return
     }
+
     setSaving(true)
     setError(null)
+
     try {
       await createCertification({
         cert_type: form.cert_type as Parameters<typeof createCertification>[0]['cert_type'],
@@ -52,11 +55,12 @@ export function CertForm() {
         issuing_body: form.issuing_body || undefined,
         issued_date: form.issued_date || undefined,
         expiry_date: form.expiry_date || undefined,
-        reminder_days_before: parseInt(form.reminder_days_before) || 30,
+        reminder_days_before: parseInt(form.reminder_days_before, 10) || 30,
         cert_number: form.cert_number || undefined,
         document_url: form.document_url || undefined,
         status: form.status as 'active' | 'expired' | 'pending_renewal',
       })
+
       setForm({
         cert_type: 'food_handler',
         name: '',
@@ -86,13 +90,14 @@ export function CertForm() {
             value={form.cert_type}
             onChange={(e) => update('cert_type', e.target.value)}
           >
-            {CERT_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            {CERT_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
               </option>
             ))}
           </select>
         </div>
+
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Status</label>
           <select
@@ -105,6 +110,7 @@ export function CertForm() {
             <option value="pending_renewal">Pending renewal</option>
           </select>
         </div>
+
         <div className="col-span-2">
           <label className="block text-xs font-medium text-stone-400 mb-1">
             Name / description *
@@ -116,6 +122,7 @@ export function CertForm() {
             required
           />
         </div>
+
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Issuing body</label>
           <Input
@@ -124,6 +131,7 @@ export function CertForm() {
             placeholder="National Restaurant Assoc."
           />
         </div>
+
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Certificate #</label>
           <Input
@@ -132,6 +140,7 @@ export function CertForm() {
             placeholder="Optional"
           />
         </div>
+
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Issued date</label>
           <Input
@@ -140,6 +149,7 @@ export function CertForm() {
             onChange={(e) => update('issued_date', e.target.value)}
           />
         </div>
+
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Expiry date</label>
           <Input
@@ -148,6 +158,7 @@ export function CertForm() {
             onChange={(e) => update('expiry_date', e.target.value)}
           />
         </div>
+
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">
             Remind me N days before expiry
@@ -159,19 +170,37 @@ export function CertForm() {
             onChange={(e) => update('reminder_days_before', e.target.value)}
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-stone-400 mb-1">Document URL</label>
+
+        <div className="col-span-2">
+          <DocumentUploadField
+            label="Upload certification file"
+            description="Attach the certificate, permit scan, or renewal proof directly to ChefFlow."
+            documentType="policy"
+            entityType="compliance_certification"
+            tags={['certification', form.cert_type]}
+            revalidatePaths={['/documents', '/settings/compliance']}
+            initialUrl={form.document_url || null}
+            initialName={form.document_url ? 'Current certification file' : null}
+            onUploaded={(document) => update('document_url', document.url)}
+            onCleared={() => update('document_url', '')}
+          />
+        </div>
+
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-stone-400 mb-1">Document Link</label>
           <Input
             type="url"
             value={form.document_url}
             onChange={(e) => update('document_url', e.target.value)}
-            placeholder="https://… (optional)"
+            placeholder="Optional external link or uploaded ChefFlow file"
           />
         </div>
       </div>
+
       {error && <p className="text-xs text-red-600">{error}</p>}
+
       <Button type="submit" size="sm" disabled={saving}>
-        {saving ? 'Saving…' : 'Add Certification'}
+        {saving ? 'Saving...' : 'Add Certification'}
       </Button>
     </form>
   )

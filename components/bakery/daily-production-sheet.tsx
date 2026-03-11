@@ -23,9 +23,9 @@ function formatDate(date: Date): string {
 function StatusBadge({ status }: { status: ProductionItemStatus }) {
   const colors: Record<ProductionItemStatus, string> = {
     pending: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-    in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-    done: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-    skipped: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+    in_progress: 'bg-blue-100 text-blue-200 dark:bg-blue-900 dark:text-blue-300',
+    done: 'bg-green-100 text-green-200 dark:bg-green-900 dark:text-green-300',
+    skipped: 'bg-yellow-100 text-yellow-200 dark:bg-yellow-900 dark:text-yellow-300',
   }
   const labels: Record<ProductionItemStatus, string> = {
     pending: 'Pending',
@@ -44,9 +44,9 @@ function StatusBadge({ status }: { status: ProductionItemStatus }) {
 
 function SourceBadge({ source }: { source: string }) {
   const colors: Record<string, string> = {
-    par_stock: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-    custom_order: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-    batch: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300',
+    par_stock: 'bg-purple-100 text-purple-200 dark:bg-purple-900 dark:text-purple-300',
+    custom_order: 'bg-orange-100 text-orange-200 dark:bg-orange-900 dark:text-orange-300',
+    batch: 'bg-indigo-100 text-indigo-200 dark:bg-indigo-900 dark:text-indigo-300',
   }
   const labels: Record<string, string> = {
     par_stock: 'Par Stock',
@@ -317,7 +317,7 @@ export default function DailyProductionSheet() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-200 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
             Dismiss
@@ -486,7 +486,7 @@ export default function DailyProductionSheet() {
                   <button
                     onClick={() => handleDeleteParStock(ps.id)}
                     disabled={isPending}
-                    className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+                    className="text-sm text-red-500 hover:text-red-200 disabled:opacity-50"
                   >
                     Remove
                   </button>
@@ -597,7 +597,7 @@ function ProductionSection({
                 <button
                   onClick={() => onStatusChange(item.id, 'in_progress')}
                   disabled={isPending}
-                  className="rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                  className="rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-200 hover:bg-blue-200 disabled:opacity-50 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
                 >
                   Start
                 </button>
@@ -606,7 +606,7 @@ function ProductionSection({
                 <button
                   onClick={() => onStatusChange(item.id, 'done')}
                   disabled={isPending}
-                  className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200 disabled:opacity-50 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
+                  className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-200 hover:bg-green-200 disabled:opacity-50 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
                 >
                   Done
                 </button>

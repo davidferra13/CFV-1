@@ -41,7 +41,7 @@ export default async function FailedPaymentsPage() {
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Failed &amp; Pending Payments</h1>
           <span
-            className={`text-sm px-2 py-0.5 rounded-full ${pastDue.length > 0 ? 'bg-amber-900 text-amber-700' : 'bg-stone-800 text-stone-400'}`}
+            className={`text-sm px-2 py-0.5 rounded-full ${pastDue.length > 0 ? 'bg-amber-900 text-amber-200' : 'bg-stone-800 text-stone-400'}`}
           >
             {stalled.length}
           </span>
@@ -53,8 +53,8 @@ export default async function FailedPaymentsPage() {
       </div>
 
       <Card className="p-4 bg-amber-950 border-amber-200">
-        <p className="text-sm text-amber-800 font-medium">Note on failed payments</p>
-        <p className="text-sm text-amber-700 mt-1">
+        <p className="text-sm text-amber-200 font-medium">Note on failed payments</p>
+        <p className="text-sm text-amber-200 mt-1">
           ChefFlow records successful payment ledger entries only. For detailed Stripe failed charge
           data, check your <strong>Stripe Dashboard → Payments → Failed</strong>. Events listed here
           are in &quot;accepted&quot; state with no recorded payment yet.
@@ -75,7 +75,7 @@ export default async function FailedPaymentsPage() {
 
           <Card className="p-4 bg-red-950 border-red-200">
             <p className="text-xl font-bold text-red-900">{formatCurrency(totalPastDueValue)}</p>
-            <p className="text-sm text-red-700 mt-1">Value in past-due accepted events</p>
+            <p className="text-sm text-red-200 mt-1">Value in past-due accepted events</p>
           </Card>
 
           <Card>
@@ -141,7 +141,7 @@ export default async function FailedPaymentsPage() {
         <>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold text-stone-100">Upcoming — Awaiting Payment</h2>
-            <span className="bg-amber-900 text-amber-700 text-xs px-2 py-0.5 rounded-full">
+            <span className="bg-amber-900 text-amber-200 text-xs px-2 py-0.5 rounded-full">
               {upcoming.length}
             </span>
           </div>

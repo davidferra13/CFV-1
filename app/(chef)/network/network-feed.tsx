@@ -146,7 +146,7 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
           ))}
         </div>
 
-        {preferenceError && <p className="text-sm text-red-700">{preferenceError}</p>}
+        {preferenceError && <p className="text-sm text-red-200">{preferenceError}</p>}
       </div>
 
       <div className="rounded-lg border border-stone-700 p-4 bg-stone-900">
@@ -198,7 +198,7 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
           </div>
         </div>
         {enabledFeatures.length === 0 && (
-          <p className="text-sm text-amber-700 mt-2">
+          <p className="text-sm text-amber-200 mt-2">
             All feed features are currently disabled. Re-enable at least one to post or view feed
             items.
           </p>
@@ -207,7 +207,7 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
 
       {postError && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-3">
-          <p className="text-sm text-red-700">{postError}</p>
+          <p className="text-sm text-red-200">{postError}</p>
         </div>
       )}
 

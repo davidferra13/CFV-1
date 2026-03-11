@@ -238,7 +238,7 @@ export function RSVPForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && <div className="bg-red-950 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
+      {error && <div className="bg-red-950 text-red-200 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
       {/* RSVP Status Selection */}
       <div>
@@ -254,10 +254,10 @@ export function RSVPForm({
               className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                 rsvpStatus === option.value
                   ? option.color === 'emerald'
-                    ? 'border-emerald-500 bg-emerald-950 text-emerald-700'
+                    ? 'border-emerald-500 bg-emerald-950 text-emerald-200'
                     : option.color === 'amber'
-                      ? 'border-amber-500 bg-amber-950 text-amber-700'
-                      : 'border-red-500 bg-red-950 text-red-700'
+                      ? 'border-amber-500 bg-amber-950 text-amber-200'
+                      : 'border-red-500 bg-red-950 text-red-200'
                   : 'border-stone-700 text-stone-400 hover:border-stone-600'
               }`}
             >

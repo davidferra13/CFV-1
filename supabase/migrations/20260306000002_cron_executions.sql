@@ -23,33 +23,26 @@ CREATE TABLE cron_executions (
   result       JSONB,      -- optional: summary of what the cron did
   error_text   TEXT        -- only set when status = 'error'
 );
-
 COMMENT ON TABLE cron_executions IS
   'Heartbeat log for all scheduled cron jobs. '
   'Each successful cron run inserts one row. '
   'Read by /api/scheduled/monitor to detect stale or failing jobs.';
-
 COMMENT ON COLUMN cron_executions.cron_name IS
   'Identifier matching the cron path in vercel.json, '
   'e.g. ''lifecycle'', ''follow-ups'', ''loyalty-expiry''.';
-
 COMMENT ON COLUMN cron_executions.duration_ms IS
   'Optional: elapsed milliseconds from start to heartbeat call. '
   'Useful for detecting slow crons approaching Vercel''s 25s limit.';
-
 -- Fast lookup: what was the last run of a given cron?
 CREATE INDEX idx_cron_executions_name_executed
   ON cron_executions (cron_name, executed_at DESC);
-
 -- Fast lookup: all recent executions sorted by time
 CREATE INDEX idx_cron_executions_executed
   ON cron_executions (executed_at DESC);
-
 -- RLS: This is a system/operational table.
 -- Only accessible via service_role (admin: true) from server code.
 -- No user-facing policies — chefs and clients cannot read this table.
 ALTER TABLE cron_executions ENABLE ROW LEVEL SECURITY;
-
 -- Auto-cleanup: Keep only the last 30 days of execution records.
 -- Older records are noise; the monitor only cares about recent runs.
 -- This prevents unbounded table growth without a separate cleanup cron.
@@ -65,11 +58,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 COMMENT ON FUNCTION purge_old_cron_executions IS
   'Auto-purges cron_executions rows older than 30 days on each INSERT. '
   'Keeps the table lean without requiring a separate cleanup cron.';
-
 CREATE TRIGGER auto_purge_cron_executions
   AFTER INSERT ON cron_executions
   FOR EACH STATEMENT

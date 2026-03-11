@@ -8,13 +8,11 @@ ALTER TABLE chef_documents DROP CONSTRAINT IF EXISTS chef_documents_tenant_id_fk
 ALTER TABLE chef_documents
   ADD CONSTRAINT chef_documents_tenant_id_fkey
   FOREIGN KEY (tenant_id) REFERENCES chefs(id) ON DELETE CASCADE;
-
 -- event_id: ON DELETE SET NULL (document survives if event is deleted)
 ALTER TABLE chef_documents DROP CONSTRAINT IF EXISTS chef_documents_event_id_fkey;
 ALTER TABLE chef_documents
   ADD CONSTRAINT chef_documents_event_id_fkey
   FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL;
-
 -- client_id: ON DELETE SET NULL (document survives if client is deleted)
 ALTER TABLE chef_documents DROP CONSTRAINT IF EXISTS chef_documents_client_id_fkey;
 ALTER TABLE chef_documents

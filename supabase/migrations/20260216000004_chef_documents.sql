@@ -23,19 +23,15 @@ CREATE TABLE chef_documents (
   created_by UUID REFERENCES auth.users(id),
   updated_by UUID REFERENCES auth.users(id)
 );
-
 -- RLS
 ALTER TABLE chef_documents ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY chef_documents_tenant_isolation ON chef_documents
   FOR ALL
   USING (tenant_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'))
   WITH CHECK (tenant_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'));
-
 -- Indexes
 CREATE INDEX idx_chef_documents_tenant ON chef_documents(tenant_id);
 CREATE INDEX idx_chef_documents_type ON chef_documents(tenant_id, document_type);
-
 -- Updated_at trigger
 CREATE TRIGGER chef_documents_updated_at
   BEFORE UPDATE ON chef_documents

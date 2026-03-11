@@ -129,7 +129,7 @@ export default function AiPrivacyPage() {
         <div className="flex items-center gap-2">
           <div
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-              prefs.remy_enabled ? 'bg-emerald-900 text-emerald-700' : 'bg-stone-800 text-stone-500'
+              prefs.remy_enabled ? 'bg-emerald-900 text-emerald-200' : 'bg-stone-800 text-stone-500'
             }`}
           >
             <div

@@ -189,7 +189,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       )}
 
       {/* Preview mode banner */}
-      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-950 px-4 py-2.5 text-sm text-amber-800">
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-950 px-4 py-2.5 text-sm text-amber-200">
         <Eye className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <span>
           <strong>Preview Mode</strong> - This is exactly what your clients see.

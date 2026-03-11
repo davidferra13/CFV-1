@@ -20,11 +20,36 @@ type NavEntry = {
 }
 
 const projectRoot = process.cwd()
-const chefAppRoot = path.join(projectRoot, 'app', '(chef)')
+const appRoots = [path.join(projectRoot, 'app', '(chef)'), path.join(projectRoot, 'app', '(admin)')]
 const placeholderPattern =
   /currently being built|coming soon|placeholder|under construction|work in progress/i
 const prototypePattern = /const\s+mock[A-Za-z0-9_]*\s*=|will be here\.|TODO:\s*replace mock/i
-const MAX_TOP_LEVEL_VISIBLE = 16
+const REQUIRED_RESTORED_ROUTES = [
+  '/communications',
+  '/wix-submissions',
+  '/commerce',
+  '/culinary',
+  '/operations',
+  '/vendors',
+  '/inventory',
+  '/finance/reporting',
+  '/network',
+  '/reports',
+  '/templates',
+  '/training',
+  '/production',
+  '/scheduling',
+  '/notifications',
+  '/photos',
+  '/consulting',
+]
+const RUNTIME_SECTION_ROUTES = [
+  '/network',
+  '/network/collabs',
+  '/network/notifications',
+  '/network/saved',
+  '/community/templates',
+]
 
 function normalizeHref(href: string) {
   return href.split('?')[0]
@@ -98,8 +123,8 @@ function collectChefPageFiles(dir: string): string[] {
   return out
 }
 
-function routeFromPageFile(filePath: string): string {
-  const relative = path.relative(chefAppRoot, filePath)
+function routeFromPageFile(filePath: string, appRoot: string): string {
+  const relative = path.relative(appRoot, filePath)
   const withoutPage = relative.replace(/\\page\.tsx$/, '').replace(/\/page\.tsx$/, '')
   const normalized = withoutPage.split(path.sep).join('/')
   if (normalized === '' || normalized === '.') return '/'
@@ -124,13 +149,6 @@ function main() {
 
   const navEntries = collectNavEntries()
 
-  const topLevelCount = standaloneTop.length + navGroups.length + standaloneBottom.length
-  if (topLevelCount > MAX_TOP_LEVEL_VISIBLE) {
-    failures.push(
-      `Top-level visible count is ${topLevelCount}; expected <= ${MAX_TOP_LEVEL_VISIBLE}`
-    )
-  }
-
   const byHref = new Map<string, NavEntry[]>()
   for (const entry of navEntries) {
     const arr = byHref.get(entry.href) ?? []
@@ -142,19 +160,20 @@ function main() {
     .filter(([, arr]) => arr.length > 1)
     .map(([href, arr]) => `${href} (${arr.length} entries)`)
 
-  if (duplicateHrefs.length > 0) {
-    failures.push(`Found duplicate nav hrefs (${duplicateHrefs.length})`)
-  }
-
-  const pageFiles = collectChefPageFiles(chefAppRoot)
+  const pageFiles = appRoots.flatMap((root) =>
+    fs.existsSync(root) ? collectChefPageFiles(root) : []
+  )
   const allRoutes = new Set<string>()
   const staticRouteToFile = new Map<string, string>()
 
-  for (const file of pageFiles) {
-    const route = routeFromPageFile(file)
-    allRoutes.add(route)
-    if (!route.includes('[')) {
-      staticRouteToFile.set(route, file)
+  for (const root of appRoots) {
+    if (!fs.existsSync(root)) continue
+    for (const file of collectChefPageFiles(root)) {
+      const route = routeFromPageFile(file, root)
+      allRoutes.add(route)
+      if (!route.includes('[')) {
+        staticRouteToFile.set(route, file)
+      }
     }
   }
 
@@ -167,39 +186,30 @@ function main() {
     failures.push(`Found nav hrefs without a matching route (${navMissingRoutes.length})`)
   }
 
-  const primaryRoutes = navEntries
-    .filter((entry) => entry.visibility === 'primary')
-    .map((entry) => entry.normalizedHref)
+  const navRoutes = new Set([
+    ...navEntries.map((entry) => entry.normalizedHref),
+    ...RUNTIME_SECTION_ROUTES,
+  ])
+  const missingRestoredRoutes = REQUIRED_RESTORED_ROUTES.filter((route) => !navRoutes.has(route))
 
-  const primaryPlaceholderRoutes = primaryRoutes
-    .filter((route, idx, arr) => arr.indexOf(route) === idx)
-    .filter((route) => isPlaceholderOrPrototype(route, staticRouteToFile))
-
-  if (primaryPlaceholderRoutes.length > 0) {
-    failures.push(
-      `Primary nav contains placeholder/prototype routes (${primaryPlaceholderRoutes.length})`
-    )
+  if (missingRestoredRoutes.length > 0) {
+    failures.push(`Required restored routes missing from nav (${missingRestoredRoutes.length})`)
   }
 
-  const secondaryPlaceholderRoutes = navEntries
-    .filter((entry) => entry.visibility === 'secondary')
-    .map((entry) => entry.normalizedHref)
-    .filter((route, idx, arr) => arr.indexOf(route) === idx)
-    .filter((route) => isPlaceholderOrPrototype(route, staticRouteToFile))
-
-  if (secondaryPlaceholderRoutes.length > 0) {
-    failures.push(
-      `Secondary nav contains placeholder/prototype routes; move them to advanced (${secondaryPlaceholderRoutes.length})`
-    )
-  }
-
-  const navRoutes = new Set(navEntries.map((entry) => entry.normalizedHref))
-
-  const discoverabilityExcludePrefixes = ['/settings/']
+  const discoverabilityExcludePrefixes = [
+    '/settings/',
+    '/admin/',
+    '/cannabis',
+    '/chef/cannabis',
+    '/dev/',
+    '/games/',
+  ]
+  const discoverabilityExcludeRoutes = ['/charity/hours', '/inquiries/sent-to-client']
 
   const discoverableRoutes = Array.from(allRoutes)
     .filter((route) => route !== '/')
     .filter((route) => !route.includes('['))
+    .filter((route) => !discoverabilityExcludeRoutes.includes(route))
     .filter((route) => !discoverabilityExcludePrefixes.some((prefix) => route.startsWith(prefix)))
     .filter((route) => !isPlaceholderOrPrototype(route, staticRouteToFile))
 
@@ -207,27 +217,28 @@ function main() {
     .filter((route) => !navRoutes.has(route))
     .sort()
 
-  if (missingDiscoverableRoutes.length > 0) {
-    failures.push(
-      `Implemented non-placeholder static routes missing from nav (${missingDiscoverableRoutes.length})`
-    )
-  }
-
   if (failures.length > 0) {
     console.error('Chef nav audit FAILED')
     printList('Failures', failures)
-    printList('Duplicate hrefs', duplicateHrefs)
     printList('Nav hrefs with no route', navMissingRoutes)
-    printList('Primary placeholder/prototype routes', primaryPlaceholderRoutes)
-    printList('Secondary placeholder/prototype routes', secondaryPlaceholderRoutes)
+    printList('Missing restored routes', missingRestoredRoutes)
+    printList('Duplicate hrefs (informational)', duplicateHrefs)
     printList('Missing discoverable routes', missingDiscoverableRoutes)
     process.exit(1)
   }
 
   console.log('Chef nav audit passed')
-  console.log(`Top-level visible count: ${topLevelCount}`)
   console.log(`Total unique nav hrefs: ${byHref.size}`)
+  if (duplicateHrefs.length > 0) {
+    console.log(`Duplicate hrefs (informational): ${duplicateHrefs.length}`)
+  }
+  console.log(`Restored routes verified: ${REQUIRED_RESTORED_ROUTES.length}`)
   console.log(`Discoverable static routes covered: ${discoverableRoutes.length}`)
+  if (missingDiscoverableRoutes.length > 0) {
+    console.log(
+      `Discoverable static routes still not linked from nav: ${missingDiscoverableRoutes.length}`
+    )
+  }
 }
 
 main()

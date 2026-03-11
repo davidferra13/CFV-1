@@ -45,7 +45,7 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
         <DollarSign className="h-4 w-4 text-emerald-500 shrink-0" />
         <span className="text-sm text-stone-400">
           Total tips received:{' '}
-          <span className="font-semibold text-emerald-700">{formatCurrency(totalCents)}</span>
+          <span className="font-semibold text-emerald-200">{formatCurrency(totalCents)}</span>
         </span>
       </div>
 
@@ -67,7 +67,7 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-3">
-              <span className="font-semibold text-emerald-700">
+              <span className="font-semibold text-emerald-200">
                 {formatCurrency(tip.amountCents)}
               </span>
               <button

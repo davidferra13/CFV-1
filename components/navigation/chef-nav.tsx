@@ -17,13 +17,6 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
-import {
-  getStrictFocusGroupRank,
-  isStrictFocusGroupVisible,
-  isLockInGroupVisible,
-  STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS,
-  LOCK_IN_PRIMARY_SHORTCUT_HREFS,
-} from '@/lib/navigation/focus-mode-nav'
 import { unlockEvent } from '@/lib/chef/actions'
 
 import {
@@ -116,9 +109,11 @@ const communitySectionItems = [
   { href: '/network?tab=feed', label: 'Feed' },
   { href: '/network?tab=channels', label: 'Channels' },
   { href: '/network?tab=discover', label: 'Discover Chefs' },
+  { href: '/network/collabs', label: 'Collaborations' },
   { href: '/network?tab=connections', label: 'Connections' },
   { href: '/network/saved', label: 'Saved Posts' },
   { href: '/network/notifications', label: 'Notifications' },
+  { href: '/community/templates', label: 'Community Templates' },
 ]
 
 function splitHref(href: string) {
@@ -641,58 +636,28 @@ export function ChefSidebar({
     setUnlockPending(false)
   }, [router])
 
-  const primaryItems = useMemo(
-    () =>
-      resolveStandaloneTop(
-        isLockedIn
-          ? [...LOCK_IN_PRIMARY_SHORTCUT_HREFS]
-          : focusMode && !isAdmin
-            ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]
-            : primaryNavHrefs
-      ),
-    [isLockedIn, focusMode, isAdmin, primaryNavHrefs]
-  )
+  const primaryItems = useMemo(() => resolveStandaloneTop(primaryNavHrefs), [primaryNavHrefs])
   const visiblePrimaryItems = useMemo(
     () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
     [isAdmin, primaryItems]
   )
 
-  // Filter nav groups by role + focus mode + event lock-in.
-  const enabledSet = useMemo(
-    () => (enabledModules ? new Set(enabledModules) : null),
-    [enabledModules]
-  )
+  // Filter nav groups by role only. The full portal stays visible even during lock-in.
   const accessibleGroups = useMemo(() => {
-    const baseGroups = navGroups
+    return navGroups
       .map((group) => ({
         ...group,
         items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
       }))
       .filter((group) => group.items.length > 0)
-
-    // Event lock-in is the strictest filter
-    if (isLockedIn) {
-      return baseGroups.filter((group) => isLockInGroupVisible(group.id, Boolean(isAdmin)))
-    }
-
-    if (!focusMode || isAdmin) return baseGroups
-    const strictGroups = baseGroups.filter((group) =>
-      isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
-    )
-    return strictGroups.sort(
-      (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
-    )
-  }, [isAdmin, focusMode, isLockedIn])
+  }, [isAdmin])
   const groupEntries = useMemo(
     () =>
-      accessibleGroups
-        // Hide module-locked groups entirely for non-admins
-        .filter((group) => isAdmin || !enabledSet || !group.module || enabledSet.has(group.module))
-        .map((group) => ({
-          group,
-          isLocked: false,
-        })),
-    [accessibleGroups, enabledSet, isAdmin]
+      accessibleGroups.map((group) => ({
+        group,
+        isLocked: false,
+      })),
+    [accessibleGroups]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -811,7 +776,7 @@ export function ChefSidebar({
   return (
     <aside
       data-tour="sidebar-nav"
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
+      className={`surface-panel hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
@@ -1052,52 +1017,50 @@ export function ChefSidebar({
               </div>
             </div>
 
-            {!isLockedIn && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setQuickCreateOpen((prev) => !prev)}
-                  aria-expanded={quickCreateOpen}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-                >
-                  <Plus className="w-4 h-4 text-stone-400" />
-                  <span className="flex-1 text-left">Quick Create</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                      quickCreateOpen ? 'rotate-0' : '-rotate-90'
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+            <>
+              <button
+                type="button"
+                onClick={() => setQuickCreateOpen((prev) => !prev)}
+                aria-expanded={quickCreateOpen}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+              >
+                <Plus className="w-4 h-4 text-stone-400" />
+                <span className="flex-1 text-left">Quick Create</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                    quickCreateOpen ? 'rotate-0' : '-rotate-90'
                   }`}
-                >
-                  <div className="space-y-0.5">
-                    {filteredQuickCreateItems.map((item) => {
-                      const Icon = item.icon
-                      const active = isItemActive(pathname, item.href, searchParams)
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                            active
-                              ? 'bg-brand-950 text-brand-400'
-                              : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
-                          }`}
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          New {item.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  {filteredQuickCreateItems.map((item) => {
+                    const Icon = item.icon
+                    const active = isItemActive(pathname, item.href, searchParams)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                          active
+                            ? 'bg-brand-950 text-brand-400'
+                            : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        New {item.label}
+                      </Link>
+                    )
+                  })}
                 </div>
+              </div>
 
-                <RecentPagesSection />
-              </>
-            )}
+              <RecentPagesSection />
+            </>
 
             <div className="border-t border-stone-800 my-2" />
 
@@ -1118,7 +1081,7 @@ export function ChefSidebar({
 
             <div className="border-t border-stone-800 my-2" />
 
-            {isAdmin && !isLockedIn && (
+            {isAdmin && (
               <SectionAccordion
                 title="Cannabis"
                 items={filteredCannabisItems}
@@ -1127,10 +1090,10 @@ export function ChefSidebar({
                 onToggle={() => setCannabisSectionOpen((prev) => !prev)}
                 pathname={pathname}
                 searchParams={searchParams}
-                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
-                headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
+                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-200'}
+                headerInactiveClass="text-green-200 hover:bg-green-950/20 hover:text-green-600"
                 dividerClass="border-green-800/30"
-                itemActiveClass="text-emerald-700"
+                itemActiveClass="text-emerald-200"
                 itemInactiveClass="text-stone-500 hover:text-stone-300"
                 activeBgStyle={{ background: 'rgba(74, 124, 78, 0.08)' }}
                 iconActiveColor="#4a7c4e"
@@ -1138,74 +1101,70 @@ export function ChefSidebar({
               />
             )}
 
-            {(!focusMode || isAdmin) && !isLockedIn && (
-              <SectionAccordion
-                title="Community"
-                items={filteredCommunityItems}
-                icon={Rss}
-                isOpen={communitySectionOpen}
-                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-                pathname={pathname}
-                searchParams={searchParams}
-                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-                dividerClass="border-indigo-800/30"
-                itemActiveClass="text-indigo-400"
-                itemInactiveClass="text-stone-500 hover:text-stone-300"
-                activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
-                iconActiveColor="#818cf8"
-                iconInactiveColor="rgba(99, 102, 241, 0.5)"
-              />
-            )}
+            <SectionAccordion
+              title="Community"
+              items={filteredCommunityItems}
+              icon={Rss}
+              isOpen={communitySectionOpen}
+              onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+              pathname={pathname}
+              searchParams={searchParams}
+              headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+              headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+              dividerClass="border-indigo-800/30"
+              itemActiveClass="text-indigo-400"
+              itemInactiveClass="text-stone-500 hover:text-stone-300"
+              activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
+              iconActiveColor="#818cf8"
+              iconInactiveColor="rgba(99, 102, 241, 0.5)"
+            />
 
-            {!isLockedIn && (
-              <>
-                <div className="border-t border-stone-800 my-2" />
+            <>
+              <div className="border-t border-stone-800 my-2" />
 
-                {/* Settings */}
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen((prev) => !prev)}
-                  aria-expanded={settingsOpen}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-                >
-                  <span className="flex-1 text-left">Settings & Tools</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                      settingsOpen ? 'rotate-0' : '-rotate-90'
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+              {/* Settings */}
+              <button
+                type="button"
+                onClick={() => setSettingsOpen((prev) => !prev)}
+                aria-expanded={settingsOpen}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+              >
+                <span className="flex-1 text-left">Settings & Tools</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                    settingsOpen ? 'rotate-0' : '-rotate-90'
                   }`}
-                >
-                  <div className="space-y-0.5">
-                    {filteredSettingsItems.map((item) => {
-                      const Icon = item.icon
-                      const active = isItemActive(pathname, item.href, searchParams)
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                            active
-                              ? 'bg-brand-950 text-brand-400 border-brand-500'
-                              : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                          }`}
-                        >
-                          <Icon
-                            className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                          />
-                          {item.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  {filteredSettingsItems.map((item) => {
+                    const Icon = item.icon
+                    const active = isItemActive(pathname, item.href, searchParams)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                          active
+                            ? 'bg-brand-950 text-brand-400 border-brand-500'
+                            : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+                        }`}
+                      >
+                        <Icon
+                          className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                        />
+                        {item.label}
+                      </Link>
+                    )
+                  })}
                 </div>
-              </>
-            )}
+              </div>
+            </>
           </div>
         )}
 
@@ -1680,80 +1639,29 @@ export function ChefMobileNav({
     setUnlockPending(false)
   }, [router])
 
-  const primaryItems = useMemo(
-    () =>
-      resolveStandaloneTop(
-        isLockedIn
-          ? [...LOCK_IN_PRIMARY_SHORTCUT_HREFS]
-          : focusMode && !isAdmin
-            ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]
-            : primaryNavHrefs
-      ),
-    [isLockedIn, focusMode, isAdmin, primaryNavHrefs]
-  )
+  const primaryItems = useMemo(() => resolveStandaloneTop(primaryNavHrefs), [primaryNavHrefs])
   const visiblePrimaryItems = useMemo(
     () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
     [isAdmin, primaryItems]
   )
-  const tabItems = useMemo(
-    () =>
-      isLockedIn
-        ? [
-            {
-              href: `/events/${lockedEventId}`,
-              label: 'Event',
-              icon: CalendarCheck as any,
-            },
-            ...resolveStandaloneTop(['/inbox', '/chat', '/documents']).map((item) => ({
-              ...item,
-              label: item.label,
-            })),
-          ]
-        : focusMode && !isAdmin
-          ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
-              ...item,
-              label: item.href === '/dashboard' ? 'Home' : item.label,
-            }))
-          : mobileTabItems,
-    [isLockedIn, focusMode, isAdmin, lockedEventId]
-  )
+  const tabItems = useMemo(() => mobileTabItems, [])
 
-  // Filter nav groups by role + focus mode + event lock-in.
-  const enabledSet = useMemo(
-    () => (enabledModules ? new Set(enabledModules) : null),
-    [enabledModules]
-  )
+  // Filter nav groups by role only. The full portal stays visible even during lock-in.
   const accessibleGroups = useMemo(() => {
-    const baseGroups = navGroups
+    return navGroups
       .map((group) => ({
         ...group,
         items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
       }))
       .filter((group) => group.items.length > 0)
-
-    // Event lock-in is the strictest filter
-    if (isLockedIn) {
-      return baseGroups.filter((group) => isLockInGroupVisible(group.id, Boolean(isAdmin)))
-    }
-
-    if (!focusMode || isAdmin) return baseGroups
-    const strictGroups = baseGroups.filter((group) =>
-      isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
-    )
-    return strictGroups.sort(
-      (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
-    )
-  }, [isAdmin, focusMode, isLockedIn])
+  }, [isAdmin])
   const groupEntries = useMemo(
     () =>
-      accessibleGroups
-        // Hide module-locked groups entirely for non-admins
-        .filter((group) => isAdmin || !enabledSet || !group.module || enabledSet.has(group.module))
-        .map((group) => ({
-          group,
-          isLocked: false,
-        })),
-    [accessibleGroups, enabledSet, isAdmin]
+      accessibleGroups.map((group) => ({
+        group,
+        isLocked: false,
+      })),
+    [accessibleGroups]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -1950,46 +1858,44 @@ export function ChefMobileNav({
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
               <div className="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-sm pb-2 space-y-2">
                 <NavFilterInput value={navFilter} onChange={setNavFilter} />
-                {!isLockedIn && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
-                      aria-expanded={mobileQuickCreateOpen}
-                      className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-                    >
-                      <Plus className="w-4 h-4 text-stone-400" />
-                      <span className="flex-1 text-left">Quick Create</span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                          mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
-                        }`}
-                      />
-                    </button>
-                    <div
-                      className={`overflow-hidden transition-all duration-200 ${
-                        mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
+                    aria-expanded={mobileQuickCreateOpen}
+                    className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                  >
+                    <Plus className="w-4 h-4 text-stone-400" />
+                    <span className="flex-1 text-left">Quick Create</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                        mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
                       }`}
-                    >
-                      <div className="grid grid-cols-2 gap-1">
-                        {filteredQuickCreateItems.map((item) => {
-                          const Icon = item.icon
-                          return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              onClick={closeMenu}
-                              className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              {item.label}
-                            </Link>
-                          )
-                        })}
-                      </div>
+                    />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="grid grid-cols-2 gap-1">
+                      {filteredQuickCreateItems.map((item) => {
+                        const Icon = item.icon
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeMenu}
+                            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                            {item.label}
+                          </Link>
+                        )
+                      })}
                     </div>
-                  </>
-                )}
+                  </div>
+                </>
               </div>
 
               <button
@@ -2057,7 +1963,7 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {isAdmin && !isLockedIn && (
+              {isAdmin && (
                 <SectionAccordion
                   title="Cannabis"
                   items={filteredCannabisItems}
@@ -2066,85 +1972,80 @@ export function ChefMobileNav({
                   onToggle={() => setCannabisSectionOpen((prev) => !prev)}
                   pathname={pathname}
                   searchParams={searchParams}
-                  headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
-                  headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
+                  headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-200'}
+                  headerInactiveClass="text-green-200 hover:bg-green-950/20 hover:text-green-600"
                   dividerClass="border-green-800/30"
-                  itemActiveClass="text-green-700 bg-green-950/50"
+                  itemActiveClass="text-green-200 bg-green-950/50"
                   itemInactiveClass="text-stone-500 hover:bg-stone-800"
                   iconActiveColor="#16a34a"
                   iconInactiveColor="rgba(21, 128, 61, 0.45)"
                   onNavigate={closeMenu}
                 />
               )}
+              <SectionAccordion
+                title="Community"
+                items={filteredCommunityItems}
+                icon={Rss}
+                isOpen={communitySectionOpen}
+                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+                pathname={pathname}
+                searchParams={searchParams}
+                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+                dividerClass="border-indigo-800/30"
+                itemActiveClass="text-indigo-400 bg-indigo-950/50"
+                itemInactiveClass="text-stone-500 hover:bg-stone-800"
+                iconActiveColor="#818cf8"
+                iconInactiveColor="rgba(99, 102, 241, 0.5)"
+                onNavigate={closeMenu}
+              />
+              <>
+                <div className="border-t border-stone-800 my-2" />
 
-              {(!focusMode || isAdmin) && !isLockedIn && (
-                <SectionAccordion
-                  title="Community"
-                  items={filteredCommunityItems}
-                  icon={Rss}
-                  isOpen={communitySectionOpen}
-                  onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-                  pathname={pathname}
-                  searchParams={searchParams}
-                  headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-                  headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-                  dividerClass="border-indigo-800/30"
-                  itemActiveClass="text-indigo-400 bg-indigo-950/50"
-                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
-                  iconActiveColor="#818cf8"
-                  iconInactiveColor="rgba(99, 102, 241, 0.5)"
-                  onNavigate={closeMenu}
-                />
-              )}
-              {!isLockedIn && (
-                <>
-                  <div className="border-t border-stone-800 my-2" />
-
-                  {/* Settings */}
-                  <button
-                    type="button"
-                    onClick={() => setMobileSettingsOpen((prev) => !prev)}
-                    aria-expanded={mobileSettingsOpen}
-                    className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-                  >
-                    <span className="flex-1 text-left">Settings & Tools</span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                        mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
-                      }`}
-                    />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ${
-                      mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                {/* Settings */}
+                <button
+                  type="button"
+                  onClick={() => setMobileSettingsOpen((prev) => !prev)}
+                  aria-expanded={mobileSettingsOpen}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                >
+                  <span className="flex-1 text-left">Settings & Tools</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                      mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
                     }`}
-                  >
-                    <div className="space-y-0.5">
-                      {filteredSettingsItems.map((item) => {
-                        const Icon = item.icon
-                        const active = isItemActive(pathname, item.href, searchParams)
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={closeMenu}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                              active
-                                ? 'bg-brand-950 text-brand-400'
-                                : 'text-stone-400 hover:bg-stone-800'
-                            }`}
-                          >
-                            <Icon
-                              className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                            />
-                            {item.label}
-                          </Link>
-                        )
-                      })}
-                    </div>
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    {filteredSettingsItems.map((item) => {
+                      const Icon = item.icon
+                      const active = isItemActive(pathname, item.href, searchParams)
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={closeMenu}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                            active
+                              ? 'bg-brand-950 text-brand-400'
+                              : 'text-stone-400 hover:bg-stone-800'
+                          }`}
+                        >
+                          <Icon
+                            className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                          />
+                          {item.label}
+                        </Link>
+                      )
+                    })}
                   </div>
-                </>
-              )}
+                </div>
+              </>
 
               {/* Sign Out */}
               <div className="pt-4 mt-4 border-t border-stone-800">

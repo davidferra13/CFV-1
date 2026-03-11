@@ -22,24 +22,18 @@ CREATE TABLE IF NOT EXISTS marketing_spend_log (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS msl_chef_date_idx ON marketing_spend_log (chef_id, spend_date DESC);
 CREATE INDEX IF NOT EXISTS msl_chef_channel_idx ON marketing_spend_log (chef_id, channel);
-
 CREATE TRIGGER msl_updated_at
   BEFORE UPDATE ON marketing_spend_log
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE marketing_spend_log ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_msl_all"
   ON marketing_spend_log FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 COMMENT ON TABLE marketing_spend_log IS
   'Chef-entered ad spend by channel and date. Used to compute CAC, CPL, and ROAS across marketing channels.';
-
 -- ============================================================
 -- 2. COMPETITOR BENCHMARKS
 -- ============================================================
@@ -57,19 +51,14 @@ CREATE TABLE IF NOT EXISTS competitor_benchmarks (
 
   created_at                        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS cb_chef_date_idx ON competitor_benchmarks (chef_id, recorded_date DESC);
-
 ALTER TABLE competitor_benchmarks ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_cb_all"
   ON competitor_benchmarks FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 COMMENT ON TABLE competitor_benchmarks IS
   'Manually recorded local market benchmarks: competitor pricing, average ratings. Used for positioning analysis.';
-
 -- ============================================================
 -- 3. WEBSITE STATS SNAPSHOTS
 -- ============================================================
@@ -93,15 +82,11 @@ CREATE TABLE IF NOT EXISTS website_stats_snapshots (
 
   CONSTRAINT wss_chef_month_unique UNIQUE (chef_id, snapshot_month)
 );
-
 CREATE INDEX IF NOT EXISTS wss_chef_month_idx ON website_stats_snapshots (chef_id, snapshot_month DESC);
-
 ALTER TABLE website_stats_snapshots ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_wss_all"
   ON website_stats_snapshots FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 COMMENT ON TABLE website_stats_snapshots IS
   'Monthly website traffic snapshots. Can be entered manually or synced from Vercel Analytics / Plausible.';

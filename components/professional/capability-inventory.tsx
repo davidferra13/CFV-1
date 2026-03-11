@@ -86,17 +86,17 @@ const CONFIDENCE_OPTIONS = [
   {
     value: 'expert',
     label: 'Expert',
-    color: 'bg-green-900 text-green-800 border-green-300 hover:bg-green-200',
+    color: 'bg-green-900 text-green-200 border-green-300 hover:bg-green-200',
   },
   {
     value: 'proficient',
     label: 'Proficient',
-    color: 'bg-blue-900 text-blue-800 border-blue-300 hover:bg-blue-200',
+    color: 'bg-blue-900 text-blue-200 border-blue-300 hover:bg-blue-200',
   },
   {
     value: 'learning',
     label: 'Learning',
-    color: 'bg-amber-900 text-amber-800 border-amber-300 hover:bg-amber-200',
+    color: 'bg-amber-900 text-amber-200 border-amber-300 hover:bg-amber-200',
   },
   {
     value: 'not_my_specialty',

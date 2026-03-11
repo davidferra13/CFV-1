@@ -11,12 +11,10 @@ CREATE TABLE IF NOT EXISTS conversation_thread_reads (
   last_read_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (tenant_id, thread_id)
 );
-
 ALTER TABLE conversation_thread_reads ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Chefs manage own thread reads"
   ON conversation_thread_reads FOR ALL
   USING (tenant_id IN (SELECT id FROM chefs WHERE id = tenant_id));
-
 -- Index for fast "unread count" query: threads with last_activity_at > last_read_at
 CREATE INDEX IF NOT EXISTS idx_thread_reads_tenant
   ON conversation_thread_reads(tenant_id);

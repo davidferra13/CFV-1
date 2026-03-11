@@ -166,7 +166,7 @@ export function VendorInvoiceMatcher({
                     </span>
                   </div>
                   {hasPriceChange && knownPrice && (
-                    <p className="mt-1 text-xs text-amber-700">
+                    <p className="mt-1 text-xs text-amber-200">
                       Previous price: {formatMoney(knownPrice.lastPriceCents)} per unit (
                       {item.unitPriceCents > knownPrice.lastPriceCents ? '+' : ''}
                       {formatMoney(item.unitPriceCents - knownPrice.lastPriceCents)})

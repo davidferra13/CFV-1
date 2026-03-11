@@ -46,12 +46,12 @@ export default async function AdminPaymentsHealthPage() {
           {hasBlockers ? (
             <>
               <AlertTriangle size={16} className="text-red-600" />
-              <span className="text-red-700">Action required</span>
+              <span className="text-red-200">Action required</span>
             </>
           ) : (
             <>
               <CheckCircle size={16} className="text-green-600" />
-              <span className="text-green-700">Payments health is clear</span>
+              <span className="text-green-200">Payments health is clear</span>
             </>
           )}
         </div>
@@ -90,9 +90,9 @@ export default async function AdminPaymentsHealthPage() {
         <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
           <h2 className="text-sm font-semibold text-slate-700">Blockers</h2>
           {health.blockers.length === 0 ? (
-            <p className="mt-3 text-sm text-green-700">None</p>
+            <p className="mt-3 text-sm text-green-200">None</p>
           ) : (
-            <ul className="mt-3 space-y-2 text-sm text-red-700">
+            <ul className="mt-3 space-y-2 text-sm text-red-200">
               {health.blockers.map((item) => (
                 <li key={item}>- {item}</li>
               ))}
@@ -104,7 +104,7 @@ export default async function AdminPaymentsHealthPage() {
           {health.warnings.length === 0 ? (
             <p className="mt-3 text-sm text-slate-500">None</p>
           ) : (
-            <ul className="mt-3 space-y-2 text-sm text-amber-700">
+            <ul className="mt-3 space-y-2 text-sm text-amber-200">
               {health.warnings.map((item) => (
                 <li key={item}>- {item}</li>
               ))}

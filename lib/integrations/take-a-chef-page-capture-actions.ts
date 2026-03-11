@@ -7,6 +7,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { findPlatformInquiryByContext } from '@/lib/gmail/platform-dedup'
 import { transitionInquiry } from '@/lib/inquiries/actions'
+import { extractTakeAChefFinanceMeta } from '@/lib/integrations/take-a-chef-finance'
+import { syncMarketplaceCaptureToCanonical } from '@/lib/marketplace/platform-records'
 import {
   TAKE_A_CHEF_PAGE_CAPTURE_TYPES,
   mergeTakeAChefPageCaptureIntoUnknownFields,
@@ -379,6 +381,17 @@ export async function saveTakeAChefPageCapture(
         currentStatus: inquiry.status,
         hasLinkedEvent: Boolean(inquiry.converted_to_event_id),
       })
+      const mergedUnknownFields = mergeTakeAChefPageCaptureIntoUnknownFields({
+        unknownFields: inquiry.unknown_fields,
+        identityKeys: parsed.identityKeys,
+        captureType,
+        pageUrl: validated.pageUrl,
+        pageTitle: validated.pageTitle || null,
+        pageLinks: validated.pageLinks,
+        notes: validated.notes || null,
+        parsed,
+        capturedAt,
+      })
 
       const { error: updateError } = await supabase
         .from('inquiries')
@@ -403,17 +416,7 @@ export async function saveTakeAChefPageCapture(
           source_message: inquiry.source_message || parsed.summary,
           next_action_required: nextAction.nextActionRequired,
           next_action_by: nextAction.nextActionBy,
-          unknown_fields: mergeTakeAChefPageCaptureIntoUnknownFields({
-            unknownFields: inquiry.unknown_fields,
-            identityKeys: parsed.identityKeys,
-            captureType,
-            pageUrl: validated.pageUrl,
-            pageTitle: validated.pageTitle || null,
-            pageLinks: validated.pageLinks,
-            notes: validated.notes || null,
-            parsed,
-            capturedAt,
-          }),
+          unknown_fields: mergedUnknownFields,
         })
         .eq('tenant_id', tenantId)
         .eq('id', existingInquiryId)
@@ -463,6 +466,55 @@ export async function saveTakeAChefPageCapture(
         revalidatePath(`/events/${inquiry.converted_to_event_id}`)
       }
 
+      try {
+        const finance = extractTakeAChefFinanceMeta(mergedUnknownFields)
+        await syncMarketplaceCaptureToCanonical({
+          supabase,
+          tenantId,
+          inquiryId: existingInquiryId,
+          platform: 'take_a_chef',
+          clientId: linkedClientId ?? inquiry.client_id ?? null,
+          eventId,
+          externalInquiryId: inquiry.external_inquiry_id || parsed.orderId || parsed.ctaUriToken || null,
+          externalUrl: inquiry.external_link || parsed.primaryLink || validated.pageUrl,
+          captureType,
+          pageUrl: validated.pageUrl,
+          pageTitle: validated.pageTitle || null,
+          pageLinks: validated.pageLinks,
+          summary: parsed.summary,
+          notes: validated.notes || null,
+          textExcerpt: parsed.textExcerpt,
+          extractedClientName: parsed.clientName,
+          extractedEmail: parsed.email,
+          extractedPhone: parsed.phone,
+          extractedBookingDate: parsed.bookingDate,
+          extractedGuestCount: parsed.guestCount,
+          extractedLocation: parsed.location,
+          extractedOccasion: parsed.occasion,
+          extractedAmountCents: parsed.amountCents,
+          nextActionRequired: nextAction.nextActionRequired,
+          nextActionBy: nextAction.nextActionBy,
+          statusDetail: `Chef Flow inquiry status: ${finalStatus}`,
+          payout: {
+            grossBookingCents: parsed.amountCents ?? finance.grossBookingCents,
+            commissionPercent: finance.commissionPercent,
+            netPayoutCents: finance.payoutAmountCents,
+            payoutStatus: finance.payoutStatus,
+            payoutArrivalDate: finance.payoutArrivalDate,
+            payoutReference: finance.payoutReference,
+            notes: finance.notes,
+            capturedAt,
+          },
+          actedBy: user.id,
+          capturedAt,
+        })
+      } catch (canonicalError) {
+        console.error(
+          '[take-a-chef-page-capture] Canonical marketplace sync skipped:',
+          canonicalError
+        )
+      }
+
       revalidatePath('/marketplace')
       revalidatePath('/dashboard')
       revalidatePath('/inquiries')
@@ -502,6 +554,22 @@ export async function saveTakeAChefPageCapture(
       currentStatus: status,
       hasLinkedEvent: false,
     })
+    const mergedUnknownFields = mergeTakeAChefPageCaptureIntoUnknownFields({
+      unknownFields: {
+        submission_source: 'take_a_chef_page_capture',
+        client_name: parsed.clientName,
+        client_email: parsed.email,
+        client_phone: parsed.phone,
+      },
+      identityKeys: parsed.identityKeys,
+      captureType,
+      pageUrl: validated.pageUrl,
+      pageTitle: validated.pageTitle || null,
+      pageLinks: validated.pageLinks,
+      notes: validated.notes || null,
+      parsed,
+      capturedAt,
+    })
 
     const { data: inquiry, error: insertError } = await supabase
       .from('inquiries')
@@ -523,22 +591,7 @@ export async function saveTakeAChefPageCapture(
         status,
         next_action_required: nextAction.nextActionRequired,
         next_action_by: nextAction.nextActionBy,
-        unknown_fields: mergeTakeAChefPageCaptureIntoUnknownFields({
-          unknownFields: {
-            submission_source: 'take_a_chef_page_capture',
-            client_name: parsed.clientName,
-            client_email: parsed.email,
-            client_phone: parsed.phone,
-          },
-          identityKeys: parsed.identityKeys,
-          captureType,
-          pageUrl: validated.pageUrl,
-          pageTitle: validated.pageTitle || null,
-          pageLinks: validated.pageLinks,
-          notes: validated.notes || null,
-          parsed,
-          capturedAt,
-        }),
+        unknown_fields: mergedUnknownFields,
       })
       .select('id')
       .single()
@@ -581,6 +634,55 @@ export async function saveTakeAChefPageCapture(
     if (eventId) {
       revalidatePath('/events')
       revalidatePath(`/events/${eventId}`)
+    }
+
+    try {
+      const finance = extractTakeAChefFinanceMeta(mergedUnknownFields)
+      await syncMarketplaceCaptureToCanonical({
+        supabase,
+        tenantId,
+        inquiryId: inquiry.id,
+        platform: 'take_a_chef',
+        clientId,
+        eventId,
+        externalInquiryId: parsed.orderId || parsed.ctaUriToken || null,
+        externalUrl: parsed.primaryLink || validated.pageUrl,
+        captureType,
+        pageUrl: validated.pageUrl,
+        pageTitle: validated.pageTitle || null,
+        pageLinks: validated.pageLinks,
+        summary: parsed.summary,
+        notes: validated.notes || null,
+        textExcerpt: parsed.textExcerpt,
+        extractedClientName: parsed.clientName,
+        extractedEmail: parsed.email,
+        extractedPhone: parsed.phone,
+        extractedBookingDate: parsed.bookingDate,
+        extractedGuestCount: parsed.guestCount,
+        extractedLocation: parsed.location,
+        extractedOccasion: parsed.occasion,
+        extractedAmountCents: parsed.amountCents,
+        nextActionRequired: nextAction.nextActionRequired,
+        nextActionBy: nextAction.nextActionBy,
+        statusDetail: `Chef Flow inquiry status: ${status}`,
+        payout: {
+          grossBookingCents: parsed.amountCents ?? finance.grossBookingCents,
+          commissionPercent: finance.commissionPercent,
+          netPayoutCents: finance.payoutAmountCents,
+          payoutStatus: finance.payoutStatus,
+          payoutArrivalDate: finance.payoutArrivalDate,
+          payoutReference: finance.payoutReference,
+          notes: finance.notes,
+          capturedAt,
+        },
+        actedBy: user.id,
+        capturedAt,
+      })
+    } catch (canonicalError) {
+      console.error(
+        '[take-a-chef-page-capture] Canonical marketplace sync skipped:',
+        canonicalError
+      )
     }
 
     return {

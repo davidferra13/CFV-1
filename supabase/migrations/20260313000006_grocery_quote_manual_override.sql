@@ -6,7 +6,6 @@ ALTER TABLE grocery_price_quote_items
   ADD COLUMN IF NOT EXISTS manual_price_cents  INTEGER,
   ADD COLUMN IF NOT EXISTS is_manual_override  BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS source_label        TEXT;
-
 -- source_label expected values (not enforced, free-text for flexibility):
 --   'spoonacular' | 'kroger' | 'mealme' | 'usda'
---   'local_farm' | 'fish_market' | 'specialty_market' | 'custom'
+--   'local_farm' | 'fish_market' | 'specialty_market' | 'custom';

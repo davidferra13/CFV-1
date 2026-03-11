@@ -35,23 +35,17 @@ CREATE TABLE IF NOT EXISTS hub_groups (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Group token lookup (for share links)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_hub_groups_token
   ON hub_groups(group_token);
-
 CREATE INDEX IF NOT EXISTS idx_hub_groups_event
   ON hub_groups(event_id) WHERE event_id IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_hub_groups_stub
   ON hub_groups(event_stub_id) WHERE event_stub_id IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_hub_groups_tenant
   ON hub_groups(tenant_id) WHERE tenant_id IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_hub_groups_creator
   ON hub_groups(created_by_profile_id);
-
 -- Group members
 CREATE TABLE IF NOT EXISTS hub_group_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -73,13 +67,10 @@ CREATE TABLE IF NOT EXISTS hub_group_members (
 
   UNIQUE(group_id, profile_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_hub_group_members_profile
   ON hub_group_members(profile_id);
-
 CREATE INDEX IF NOT EXISTS idx_hub_group_members_group
   ON hub_group_members(group_id);
-
 -- Link multiple events to one group (dinner clubs, recurring groups)
 CREATE TABLE IF NOT EXISTS hub_group_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -89,48 +80,35 @@ CREATE TABLE IF NOT EXISTS hub_group_events (
 
   UNIQUE(group_id, event_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_hub_group_events_group
   ON hub_group_events(group_id);
-
 -- Add hub_group_id back-reference to event_stubs
 ALTER TABLE event_stubs ADD COLUMN IF NOT EXISTS hub_group_id UUID REFERENCES hub_groups(id) ON DELETE SET NULL;
-
 -- Add hub_group_id to event_shares for linking
 ALTER TABLE event_shares ADD COLUMN IF NOT EXISTS hub_group_id UUID REFERENCES hub_groups(id) ON DELETE SET NULL;
-
 -- RLS
 ALTER TABLE hub_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_group_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_group_events ENABLE ROW LEVEL SECURITY;
-
 -- Groups: public read (link-based access)
 CREATE POLICY "hub_groups_select_anon" ON hub_groups
   FOR SELECT USING (true);
-
 CREATE POLICY "hub_groups_insert_anon" ON hub_groups
   FOR INSERT WITH CHECK (true);
-
 CREATE POLICY "hub_groups_manage_service" ON hub_groups
   FOR ALL USING (auth.role() = 'service_role');
-
 -- Members: public read
 CREATE POLICY "hub_group_members_select_anon" ON hub_group_members
   FOR SELECT USING (true);
-
 CREATE POLICY "hub_group_members_insert_anon" ON hub_group_members
   FOR INSERT WITH CHECK (true);
-
 CREATE POLICY "hub_group_members_manage_service" ON hub_group_members
   FOR ALL USING (auth.role() = 'service_role');
-
 -- Group events: public read
 CREATE POLICY "hub_group_events_select_anon" ON hub_group_events
   FOR SELECT USING (true);
-
 CREATE POLICY "hub_group_events_manage_service" ON hub_group_events
   FOR ALL USING (auth.role() = 'service_role');
-
 -- Chefs can read groups for their tenant
 CREATE POLICY "hub_groups_chef_read" ON hub_groups
   FOR SELECT USING (

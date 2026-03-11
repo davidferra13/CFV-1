@@ -49,7 +49,7 @@ export default async function ClientPortalPage({ params }: { params: { token: st
                     <p className="text-sm font-semibold text-amber-900">
                       Payment due: {formatCurrency(p.outstandingCents)}
                     </p>
-                    <p className="text-xs text-amber-700 mt-0.5">{p.occasion ?? 'Event'}</p>
+                    <p className="text-xs text-amber-200 mt-0.5">{p.occasion ?? 'Event'}</p>
                   </div>
                   <Link
                     href={p.paymentUrl}

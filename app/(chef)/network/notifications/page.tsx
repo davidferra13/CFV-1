@@ -89,7 +89,7 @@ export default async function NotificationsPage() {
                       {notif.actor.profile_image_url && (
                         <AvatarImage src={notif.actor.profile_image_url} alt={actorName} />
                       )}
-                      <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
+                      <AvatarFallback className="bg-amber-900 text-amber-200 text-xs font-semibold">
                         {actorName
                           .split(' ')
                           .map((w: string) => w[0])
@@ -133,7 +133,7 @@ export default async function NotificationsPage() {
                 {actionHref && (
                   <Link
                     href={actionHref}
-                    className="text-xs text-amber-700 font-medium hover:underline mt-1"
+                    className="text-xs text-amber-200 font-medium hover:underline mt-1"
                   >
                     Open
                   </Link>

@@ -55,8 +55,8 @@ export function PipelineRevenueForecast({ forecast }: Props) {
       {/* Main numbers */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-emerald-950 rounded-lg p-3">
-          <p className="text-xs text-emerald-700 font-medium mb-0.5">Expected</p>
-          <p className="text-xl font-bold text-emerald-800">{formatCurrency(expectedCents)}</p>
+          <p className="text-xs text-emerald-200 font-medium mb-0.5">Expected</p>
+          <p className="text-xl font-bold text-emerald-200">{formatCurrency(expectedCents)}</p>
           <p className="text-[10px] text-emerald-600 mt-0.5">probability-weighted</p>
         </div>
         <div className="bg-stone-800 rounded-lg p-3">

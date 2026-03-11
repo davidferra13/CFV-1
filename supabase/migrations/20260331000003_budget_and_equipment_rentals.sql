@@ -14,14 +14,11 @@ CREATE TABLE IF NOT EXISTS chef_budgets (
   updated_at  timestamptz NOT NULL DEFAULT now(),
   UNIQUE (chef_id, month, category)
 );
-
 ALTER TABLE chef_budgets ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_budgets_tenant_isolation"
   ON chef_budgets FOR ALL
   USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
-
 -- ─── Event Equipment Rentals ────────────────────────────────────────────
 -- Track rental equipment needs per event with cost and status tracking.
 
@@ -43,14 +40,11 @@ CREATE TABLE IF NOT EXISTS event_equipment_rentals (
   created_at        timestamptz NOT NULL DEFAULT now(),
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE event_equipment_rentals ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "event_equipment_rentals_tenant_isolation"
   ON event_equipment_rentals FOR ALL
   USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
-
 -- Indexes for common queries
 CREATE INDEX idx_chef_budgets_chef_month ON chef_budgets(chef_id, month);
 CREATE INDEX idx_event_equipment_rentals_event ON event_equipment_rentals(event_id);

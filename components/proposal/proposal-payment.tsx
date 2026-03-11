@@ -97,14 +97,14 @@ export function ProposalPayment({
 
         {/* Validation messages */}
         {missingSignature && (
-          <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 mb-4">
+          <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-200 mb-4">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>Please sign the contract above before proceeding to payment.</span>
           </div>
         )}
 
         {!missingSignature && missingAgreement && (
-          <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 mb-4">
+          <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-200 mb-4">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>Please agree to the terms above before proceeding.</span>
           </div>
@@ -112,7 +112,7 @@ export function ProposalPayment({
 
         {/* Error message */}
         {error && (
-          <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
+          <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-200 mb-4">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>

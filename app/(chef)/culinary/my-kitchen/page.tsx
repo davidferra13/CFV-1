@@ -51,7 +51,7 @@ export default async function MyKitchenPage() {
 
       {mastered.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-amber-700 mb-3">Mastered</h2>
+          <h2 className="text-lg font-semibold text-amber-200 mb-3">Mastered</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {mastered.map((p: any) => (
               <CreativeProjectCard key={p.id} project={p} />

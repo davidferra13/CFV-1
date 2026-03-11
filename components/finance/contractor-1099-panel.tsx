@@ -104,8 +104,8 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-amber-800">1099 Filing Required</p>
-                <p className="text-xs text-amber-700 mt-1">
+                <p className="text-sm font-medium text-amber-200">1099 Filing Required</p>
+                <p className="text-xs text-amber-200 mt-1">
                   {threshold
                     .map((t) => `${t.staffName} (${formatCents(t.ytdPaymentsCents)})`)
                     .join(', ')}{' '}

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { updateNDA } from '@/lib/clients/nda-actions'
+import { DocumentUploadField } from '@/components/documents/document-upload-field'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,18 +29,29 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [savedState, setSavedState] = useState(initial)
 
-  const [ndaActive, setNdaActive] = useState(initial.nda_active)
-  const [coverage, setCoverage] = useState(initial.nda_coverage ?? '')
-  const [effectiveDate, setEffectiveDate] = useState(initial.nda_effective_date ?? '')
-  const [expiryDate, setExpiryDate] = useState(initial.nda_expiry_date ?? '')
-  const [documentUrl, setDocumentUrl] = useState(initial.nda_document_url ?? '')
-  const [photoPermission, setPhotoPermission] = useState(initial.photo_permission ?? 'none')
+  const [ndaActive, setNdaActive] = useState(savedState.nda_active)
+  const [coverage, setCoverage] = useState(savedState.nda_coverage ?? '')
+  const [effectiveDate, setEffectiveDate] = useState(savedState.nda_effective_date ?? '')
+  const [expiryDate, setExpiryDate] = useState(savedState.nda_expiry_date ?? '')
+  const [documentUrl, setDocumentUrl] = useState(savedState.nda_document_url ?? '')
+  const [photoPermission, setPhotoPermission] = useState(savedState.photo_permission ?? 'none')
+
+  useEffect(() => {
+    setSavedState(initial)
+    setNdaActive(initial.nda_active)
+    setCoverage(initial.nda_coverage ?? '')
+    setEffectiveDate(initial.nda_effective_date ?? '')
+    setExpiryDate(initial.nda_expiry_date ?? '')
+    setDocumentUrl(initial.nda_document_url ?? '')
+    setPhotoPermission(initial.photo_permission ?? 'none')
+  }, [initial])
 
   function handleSave() {
     startTransition(async () => {
       try {
-        await updateNDA(clientId, {
+        const nextState = {
           nda_active: ndaActive,
           nda_coverage: coverage || undefined,
           nda_effective_date: effectiveDate || undefined,
@@ -51,6 +63,15 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
               | 'portfolio_only'
               | 'public_with_approval'
               | 'public_freely') || undefined,
+        }
+        await updateNDA(clientId, nextState)
+        setSavedState({
+          nda_active: ndaActive,
+          nda_coverage: coverage || null,
+          nda_effective_date: effectiveDate || null,
+          nda_expiry_date: expiryDate || null,
+          nda_document_url: documentUrl || null,
+          photo_permission: photoPermission,
         })
         setEditing(false)
       } catch (err) {
@@ -60,12 +81,12 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
   }
 
   function handleCancel() {
-    setNdaActive(initial.nda_active)
-    setCoverage(initial.nda_coverage ?? '')
-    setEffectiveDate(initial.nda_effective_date ?? '')
-    setExpiryDate(initial.nda_expiry_date ?? '')
-    setDocumentUrl(initial.nda_document_url ?? '')
-    setPhotoPermission(initial.photo_permission ?? 'none')
+    setNdaActive(savedState.nda_active)
+    setCoverage(savedState.nda_coverage ?? '')
+    setEffectiveDate(savedState.nda_effective_date ?? '')
+    setExpiryDate(savedState.nda_expiry_date ?? '')
+    setDocumentUrl(savedState.nda_document_url ?? '')
+    setPhotoPermission(savedState.photo_permission ?? 'none')
     setEditing(false)
   }
 
@@ -94,32 +115,45 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                 <div>
                   <p className="text-stone-500">NDA Status</p>
                   <p className="font-medium text-stone-100">
-                    {initial.nda_active ? 'Active' : 'Not on file'}
+                    {savedState.nda_active ? 'Active' : 'Not on file'}
                   </p>
                 </div>
                 <div>
                   <p className="text-stone-500">Photo Permission</p>
                   <p className="font-medium text-stone-100">
-                    {PHOTO_OPTIONS.find((o) => o.value === initial.photo_permission)?.label ??
+                    {PHOTO_OPTIONS.find((o) => o.value === savedState.photo_permission)?.label ??
                       'None'}
                   </p>
                 </div>
-                {initial.nda_coverage && (
+                {savedState.nda_coverage && (
                   <div className="col-span-2">
                     <p className="text-stone-500">Coverage</p>
-                    <p className="font-medium text-stone-100">{initial.nda_coverage}</p>
+                    <p className="font-medium text-stone-100">{savedState.nda_coverage}</p>
                   </div>
                 )}
-                {initial.nda_effective_date && (
+                {savedState.nda_effective_date && (
                   <div>
                     <p className="text-stone-500">Effective</p>
-                    <p className="font-medium text-stone-100">{initial.nda_effective_date}</p>
+                    <p className="font-medium text-stone-100">{savedState.nda_effective_date}</p>
                   </div>
                 )}
-                {initial.nda_expiry_date && (
+                {savedState.nda_expiry_date && (
                   <div>
                     <p className="text-stone-500">Expires</p>
-                    <p className="font-medium text-stone-100">{initial.nda_expiry_date}</p>
+                    <p className="font-medium text-stone-100">{savedState.nda_expiry_date}</p>
+                  </div>
+                )}
+                {savedState.nda_document_url && (
+                  <div className="col-span-2">
+                    <p className="text-stone-500">Document</p>
+                    <a
+                      href={savedState.nda_document_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-amber-200 underline underline-offset-2"
+                    >
+                      View signed NDA
+                    </a>
                   </div>
                 )}
               </div>
@@ -191,13 +225,31 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">
-                      Document URL
+                      Upload Signed NDA
+                    </label>
+                    <DocumentUploadField
+                      label="Signed NDA"
+                      description="Store the signed NDA in ChefFlow or leave the current external link in place."
+                      documentType="contract"
+                      entityType="client"
+                      entityId={clientId}
+                      tags={['nda', 'client']}
+                      revalidatePaths={['/documents', `/clients/${clientId}`]}
+                      initialUrl={documentUrl || null}
+                      initialName={documentUrl ? 'Current NDA document' : null}
+                      onUploaded={(document) => setDocumentUrl(document.url)}
+                      onCleared={() => setDocumentUrl('')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Document Link
                     </label>
                     <input
                       type="url"
                       value={documentUrl}
                       onChange={(e) => setDocumentUrl(e.target.value)}
-                      placeholder="Link to NDA document"
+                      placeholder="Optional external link or uploaded ChefFlow file"
                       className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                     />
                   </div>

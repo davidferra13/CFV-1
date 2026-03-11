@@ -47,7 +47,7 @@ export default async function AdminCommunicationsPage() {
           <Megaphone size={16} className="text-amber-500" />
           <h2 className="text-sm font-semibold text-slate-700">Platform Announcement Banner</h2>
           {currentText && (
-            <span className="ml-auto text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="ml-auto text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full font-medium">
               Active
             </span>
           )}
@@ -57,7 +57,7 @@ export default async function AdminCommunicationsPage() {
           to clear.
         </p>
         {announcementError ? (
-          <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-800">
+          <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-200">
             {announcementError}
           </div>
         ) : (

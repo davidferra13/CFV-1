@@ -35,16 +35,16 @@ import { CALENDAR_COLORS } from '@/lib/calendar/colors'
 import type { EventWeather } from '@/lib/weather/open-meteo'
 
 const BLOCK_COLORS: Record<PrepBlockType, string> = {
-  grocery_run: 'bg-green-900 text-green-800 border-green-200',
-  specialty_sourcing: 'bg-emerald-900 text-emerald-800 border-emerald-200',
-  prep_session: 'bg-orange-900 text-orange-800 border-orange-200',
-  packing: 'bg-blue-900 text-blue-800 border-blue-200',
-  travel_to_event: 'bg-purple-900 text-purple-800 border-purple-200',
-  mental_prep: 'bg-pink-900 text-pink-800 border-pink-200',
-  equipment_prep: 'bg-yellow-900 text-yellow-800 border-yellow-200',
+  grocery_run: 'bg-green-900 text-green-200 border-green-200',
+  specialty_sourcing: 'bg-emerald-900 text-emerald-200 border-emerald-200',
+  prep_session: 'bg-orange-900 text-orange-200 border-orange-200',
+  packing: 'bg-blue-900 text-blue-200 border-blue-200',
+  travel_to_event: 'bg-purple-900 text-purple-200 border-purple-200',
+  mental_prep: 'bg-pink-900 text-pink-200 border-pink-200',
+  equipment_prep: 'bg-yellow-900 text-yellow-200 border-yellow-200',
   admin: 'bg-stone-800 text-stone-300 border-stone-700',
   cleanup: 'bg-stone-800 text-stone-300 border-stone-700',
-  custom: 'bg-indigo-900 text-indigo-800 border-indigo-200',
+  custom: 'bg-indigo-900 text-indigo-200 border-indigo-200',
 }
 
 function fmtTime(block: PrepBlock): string {
@@ -524,7 +524,7 @@ export function WeekPlannerClient({
       ))}
 
       {weekGaps.length === 0 && hasEvents && (
-        <div className="text-sm text-green-700 bg-green-950 border border-green-200 rounded-lg px-4 py-3">
+        <div className="text-sm text-green-200 bg-green-950 border border-green-200 rounded-lg px-4 py-3">
           ✓ All events this week have required prep blocks scheduled.
         </div>
       )}
@@ -607,7 +607,7 @@ export function WeekPlannerClient({
                     <p className="font-semibold text-amber-900 truncate">
                       {ev.occasion || 'Event'}
                     </p>
-                    <p className="text-amber-700 truncate text-xs">{ev.clientName}</p>
+                    <p className="text-amber-200 truncate text-xs">{ev.clientName}</p>
                     <p className="text-amber-600 text-xs">{ev.serveTime}</p>
                   </div>
                 </Link>

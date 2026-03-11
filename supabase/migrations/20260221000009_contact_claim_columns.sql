@@ -10,12 +10,10 @@ ALTER TABLE contact_submissions
   ADD COLUMN claimed_by_chef_id UUID REFERENCES chefs(id),
   ADD COLUMN claimed_at TIMESTAMPTZ,
   ADD COLUMN inquiry_id UUID REFERENCES inquiries(id);
-
 -- Fast lookup for unclaimed submissions
 CREATE INDEX idx_contact_submissions_unclaimed
   ON contact_submissions (claimed_by_chef_id)
   WHERE claimed_by_chef_id IS NULL;
-
 -- Chefs can UPDATE to claim (only setting their own chef_id)
 CREATE POLICY contact_submissions_chef_update ON contact_submissions
   FOR UPDATE
@@ -31,5 +29,4 @@ CREATE POLICY contact_submissions_chef_update ON contact_submissions
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 GRANT UPDATE ON contact_submissions TO authenticated;

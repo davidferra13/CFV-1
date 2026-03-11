@@ -39,8 +39,8 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
   const activeServices = services.filter((s: any) => s.status === 'active')
 
   const reactionColors: Record<string, string> = {
-    loved: 'text-green-700',
-    liked: 'text-blue-700',
+    loved: 'text-green-200',
+    liked: 'text-blue-200',
     neutral: 'text-stone-500',
     disliked: 'text-red-600',
   }
@@ -262,7 +262,7 @@ export default async function ClientRecurringPage({ params }: { params: { id: st
                 </p>
                 <ul className="space-y-0.5">
                   {suggestions.loved.map((dish: any, i: number) => (
-                    <li key={i} className="text-sm text-green-700">
+                    <li key={i} className="text-sm text-green-200">
                       {dish.dish_name}
                     </li>
                   ))}

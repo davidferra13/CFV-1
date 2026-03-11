@@ -9,9 +9,9 @@ import { Card } from '@/components/ui/card'
 export const metadata: Metadata = { title: 'Food Cost % - ChefFlow' }
 
 function pctColor(pct: number) {
-  if (pct <= 28) return 'text-green-700'
-  if (pct <= 35) return 'text-amber-700'
-  return 'text-red-700'
+  if (pct <= 28) return 'text-green-200'
+  if (pct <= 35) return 'text-amber-200'
+  return 'text-red-200'
 }
 
 export default async function FoodCostPage() {

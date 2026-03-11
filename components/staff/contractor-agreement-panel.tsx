@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { addAgreement } from '@/lib/staff/contractor-agreement-actions'
+import { DocumentUploadField } from '@/components/documents/document-upload-field'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,6 +32,7 @@ export function ContractorAgreementPanel({
   staffMemberId: string
   agreements: Agreement[]
 }) {
+  const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [effectiveDate, setEffectiveDate] = useState('')
@@ -37,6 +40,7 @@ export function ContractorAgreementPanel({
   const [rate, setRate] = useState('')
   const [ipClause, setIpClause] = useState(false)
   const [confClause, setConfClause] = useState(false)
+  const [documentUrl, setDocumentUrl] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -49,7 +53,15 @@ export function ContractorAgreementPanel({
           rate_cents: rate ? Math.round(parseFloat(rate) * 100) : undefined,
           has_ip_clause: ipClause,
           has_confidentiality_clause: confClause,
+          document_url: documentUrl || undefined,
         })
+        router.refresh()
+        setEffectiveDate('')
+        setScope('')
+        setRate('')
+        setIpClause(false)
+        setConfClause(false)
+        setDocumentUrl('')
         setShowForm(false)
       } catch (err) {
         toast.error('Failed to save service agreement')
@@ -82,6 +94,16 @@ export function ContractorAgreementPanel({
                 {a.has_ip_clause && <span>IP clause</span>}
                 {a.has_confidentiality_clause && <span>Confidentiality clause</span>}
               </div>
+              {a.document_url && (
+                <a
+                  href={a.document_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block text-xs text-amber-200 underline underline-offset-2"
+                >
+                  View agreement file
+                </a>
+              )}
             </div>
           </div>
         ))}
@@ -140,6 +162,31 @@ export function ContractorAgreementPanel({
                 />{' '}
                 Confidentiality
               </label>
+            </div>
+            <DocumentUploadField
+              label="Upload signed agreement"
+              description="Store the signed contractor agreement inside ChefFlow."
+              documentType="contract"
+              entityType="staff_member"
+              entityId={staffMemberId}
+              tags={['staff', 'agreement', 'contractor']}
+              revalidatePaths={['/documents', '/staff']}
+              initialUrl={documentUrl || null}
+              initialName={documentUrl ? 'Current agreement file' : null}
+              onUploaded={(document) => setDocumentUrl(document.url)}
+              onCleared={() => setDocumentUrl('')}
+            />
+            <div>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Agreement Link
+              </label>
+              <input
+                type="url"
+                value={documentUrl}
+                onChange={(e) => setDocumentUrl(e.target.value)}
+                placeholder="Optional external link or uploaded ChefFlow file"
+                className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
+              />
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={isPending || !effectiveDate}>

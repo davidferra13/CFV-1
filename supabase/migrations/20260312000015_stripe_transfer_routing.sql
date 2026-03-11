@@ -10,20 +10,16 @@
 ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS platform_fee_percent NUMERIC(5,2) NOT NULL DEFAULT 0.00,
   ADD COLUMN IF NOT EXISTS platform_fee_fixed_cents INTEGER NOT NULL DEFAULT 0;
-
 ALTER TABLE chefs
   ADD CONSTRAINT chefs_platform_fee_percent_range
     CHECK (platform_fee_percent >= 0 AND platform_fee_percent <= 100);
-
 ALTER TABLE chefs
   ADD CONSTRAINT chefs_platform_fee_fixed_cents_range
     CHECK (platform_fee_fixed_cents >= 0);
-
 COMMENT ON COLUMN chefs.platform_fee_percent IS
   'Platform commission percentage (e.g. 5.00 = 5%). Applied as application_fee_amount on Stripe destination charges.';
 COMMENT ON COLUMN chefs.platform_fee_fixed_cents IS
   'Fixed platform fee in cents added on top of percentage fee per transaction. Default 0.';
-
 ------------------------------------------------------------
 -- 2. stripe_transfers — tracks every transfer to connected accounts
 ------------------------------------------------------------
@@ -58,22 +54,17 @@ CREATE TABLE IF NOT EXISTS stripe_transfers (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_stripe_transfers_tenant ON stripe_transfers(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_stripe_transfers_event ON stripe_transfers(event_id);
 CREATE INDEX IF NOT EXISTS idx_stripe_transfers_status ON stripe_transfers(status);
-
 -- RLS
 ALTER TABLE stripe_transfers ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs can view own transfers"
   ON stripe_transfers FOR SELECT
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
-
 CREATE POLICY "Service role full access on stripe_transfers"
   ON stripe_transfers FOR ALL
   USING (auth.role() = 'service_role');
-
 ------------------------------------------------------------
 -- 3. platform_fee_ledger — append-only platform revenue tracking
 ------------------------------------------------------------
@@ -100,7 +91,6 @@ CREATE TABLE IF NOT EXISTS platform_fee_ledger (
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Immutability trigger (same pattern as ledger_entries)
 CREATE OR REPLACE FUNCTION prevent_platform_fee_ledger_mutation()
 RETURNS TRIGGER AS $$
@@ -108,18 +98,14 @@ BEGIN
   RAISE EXCEPTION 'platform_fee_ledger entries are immutable';
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER enforce_platform_fee_ledger_immutability
   BEFORE UPDATE OR DELETE ON platform_fee_ledger
   FOR EACH ROW
   EXECUTE FUNCTION prevent_platform_fee_ledger_mutation();
-
 CREATE INDEX IF NOT EXISTS idx_platform_fee_ledger_tenant ON platform_fee_ledger(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_platform_fee_ledger_event ON platform_fee_ledger(event_id);
-
 -- RLS: service role only (admin visibility, chefs don't see platform fee internals)
 ALTER TABLE platform_fee_ledger ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Service role full access on platform_fee_ledger"
   ON platform_fee_ledger FOR ALL
   USING (auth.role() = 'service_role');

@@ -24,24 +24,18 @@ CREATE TABLE inventory_lots (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_inventory_lots_ingredient_expiry ON inventory_lots(tenant_id, ingredient_name, expiry_date);
 CREATE INDEX idx_inventory_lots_expiry ON inventory_lots(tenant_id, expiry_date);
 CREATE INDEX idx_inventory_lots_status ON inventory_lots(tenant_id, status);
-
 CREATE TRIGGER trg_inventory_lots_updated_at
   BEFORE UPDATE ON inventory_lots
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 ALTER TABLE inventory_lots ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY il_select ON inventory_lots FOR SELECT USING (tenant_id = get_current_tenant_id());
 CREATE POLICY il_insert ON inventory_lots FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 CREATE POLICY il_update ON inventory_lots FOR UPDATE USING (tenant_id = get_current_tenant_id());
 CREATE POLICY il_delete ON inventory_lots FOR DELETE USING (tenant_id = get_current_tenant_id());
-
 COMMENT ON TABLE inventory_lots IS 'Tracks individual ingredient lots for FIFO rotation and shelf-life management.';
-
 -- Default shelf life settings per ingredient
 CREATE TABLE ingredient_shelf_life_defaults (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,17 +46,12 @@ CREATE TABLE ingredient_shelf_life_defaults (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (tenant_id, ingredient_name)
 );
-
 ALTER TABLE ingredient_shelf_life_defaults ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY isld_select ON ingredient_shelf_life_defaults FOR SELECT USING (tenant_id = get_current_tenant_id());
 CREATE POLICY isld_insert ON ingredient_shelf_life_defaults FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 CREATE POLICY isld_update ON ingredient_shelf_life_defaults FOR UPDATE USING (tenant_id = get_current_tenant_id());
 CREATE POLICY isld_delete ON ingredient_shelf_life_defaults FOR DELETE USING (tenant_id = get_current_tenant_id());
-
 COMMENT ON TABLE ingredient_shelf_life_defaults IS 'Default shelf life settings per ingredient for automatic expiry calculation.';
-
-
 -- ============================================
 -- U21: business_locations (multi-location)
 -- ============================================
@@ -80,23 +69,16 @@ CREATE TABLE business_locations (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_business_locations_tenant ON business_locations(tenant_id);
-
 CREATE TRIGGER trg_business_locations_updated_at
   BEFORE UPDATE ON business_locations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 ALTER TABLE business_locations ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY bl_select ON business_locations FOR SELECT USING (tenant_id = get_current_tenant_id());
 CREATE POLICY bl_insert ON business_locations FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 CREATE POLICY bl_update ON business_locations FOR UPDATE USING (tenant_id = get_current_tenant_id());
 CREATE POLICY bl_delete ON business_locations FOR DELETE USING (tenant_id = get_current_tenant_id());
-
 COMMENT ON TABLE business_locations IS 'Physical business locations for multi-location operations.';
-
-
 -- ============================================
 -- U21: Add location_id to existing tables
 -- Guard all with IF EXISTS since tables may be created in later migrations
@@ -128,6 +110,5 @@ DO $$ BEGIN
     ALTER TABLE daily_checklist_completions ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;
   END IF;
 END $$;
-
 -- Also add location_id to inventory_lots (created above in this migration, always exists)
 ALTER TABLE inventory_lots ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES business_locations(id) ON DELETE SET NULL;

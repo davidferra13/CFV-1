@@ -19,18 +19,13 @@ CREATE TABLE cannabis_tier_users (
   notes                 TEXT,
   UNIQUE(auth_user_id)
 );
-
 ALTER TABLE cannabis_tier_users ENABLE ROW LEVEL SECURITY;
-
 -- Users can read their own row (needed for hasCannabisAccess check)
 CREATE POLICY "cannabis_tier_users_read_own"
   ON cannabis_tier_users FOR SELECT
   USING (auth_user_id = auth.uid());
-
 CREATE INDEX idx_cannabis_tier_users_auth_user_id ON cannabis_tier_users(auth_user_id);
 CREATE INDEX idx_cannabis_tier_users_tenant_id ON cannabis_tier_users(tenant_id);
-
-
 -- ─── 2. Cannabis Tier Invitations ────────────────────────────────────────────
 -- All invites are queued here first. Admin approves or rejects before anything
 -- is sent to the invitee. The token is generated ONLY after admin approval.
@@ -53,24 +48,18 @@ CREATE TABLE cannabis_tier_invitations (
   expires_at                TIMESTAMPTZ,        -- 30-day window from approval
   created_at                TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE cannabis_tier_invitations ENABLE ROW LEVEL SECURITY;
-
 -- Inviting user can read invites they sent (to see "pending approval" status)
 CREATE POLICY "cannabis_invitations_read_own"
   ON cannabis_tier_invitations FOR SELECT
   USING (invited_by_auth_user_id = auth.uid());
-
 -- Inviting user can insert their own invites
 CREATE POLICY "cannabis_invitations_insert_own"
   ON cannabis_tier_invitations FOR INSERT
   WITH CHECK (invited_by_auth_user_id = auth.uid());
-
 CREATE INDEX idx_cannabis_invitations_status ON cannabis_tier_invitations(admin_approval_status);
 CREATE INDEX idx_cannabis_invitations_token ON cannabis_tier_invitations(token);
 CREATE INDEX idx_cannabis_invitations_inviter ON cannabis_tier_invitations(invited_by_auth_user_id);
-
-
 -- ─── 3. Cannabis Event Category Enum ─────────────────────────────────────────
 
 CREATE TYPE event_cannabis_category AS ENUM (
@@ -79,8 +68,6 @@ CREATE TYPE event_cannabis_category AS ENUM (
   'cbd_only',            -- CBD products only, no THC
   'micro_dose'           -- micro-dose fine dining experience
 );
-
-
 -- ─── 4. Cannabis Event Details ────────────────────────────────────────────────
 -- Extends the events table for cannabis-specific data.
 -- Linked 1:1 to an event; event must have cannabis_preference = true.
@@ -97,9 +84,7 @@ CREATE TABLE cannabis_event_details (
   created_at                        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at                        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE cannabis_event_details ENABLE ROW LEVEL SECURITY;
-
 -- Tenant-scoped: chef can CRUD their own cannabis event details
 CREATE POLICY "cannabis_event_details_tenant_access"
   ON cannabis_event_details FOR ALL
@@ -117,6 +102,5 @@ CREATE POLICY "cannabis_event_details_tenant_access"
       AND role = 'chef'
     )
   );
-
 CREATE INDEX idx_cannabis_event_details_event_id ON cannabis_event_details(event_id);
 CREATE INDEX idx_cannabis_event_details_tenant_id ON cannabis_event_details(tenant_id);

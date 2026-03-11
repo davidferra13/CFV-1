@@ -33,7 +33,7 @@ export function GeocodeAddressButton({ eventId }: GeocodeAddressButtonProps) {
   }
 
   if (status === 'success') {
-    return <p className="text-xs text-green-700 mt-2">✓ {message}</p>
+    return <p className="text-xs text-green-200 mt-2">✓ {message}</p>
   }
 
   return (

@@ -17,29 +17,22 @@ CREATE TABLE IF NOT EXISTS meal_prep_batch_log (
   notes                    text,
   created_at               timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_meal_prep_batch_log_chef_date
   ON meal_prep_batch_log(chef_id, batch_date);
-
 CREATE INDEX idx_meal_prep_batch_log_recipe
   ON meal_prep_batch_log(recipe_id)
   WHERE recipe_id IS NOT NULL;
-
 -- RLS
 ALTER TABLE meal_prep_batch_log ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef sees own batch logs"
   ON meal_prep_batch_log FOR SELECT
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef inserts own batch logs"
   ON meal_prep_batch_log FOR INSERT
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef updates own batch logs"
   ON meal_prep_batch_log FOR UPDATE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef deletes own batch logs"
   ON meal_prep_batch_log FOR DELETE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

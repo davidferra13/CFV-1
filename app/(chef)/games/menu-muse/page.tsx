@@ -66,17 +66,17 @@ const CATEGORY_EMOJI: Record<string, string> = {
 }
 
 const WORD_CATEGORY_COLORS: Record<string, string> = {
-  texture: 'bg-amber-900 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  flavor: 'bg-red-900 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  temperature: 'bg-blue-900 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  mouthfeel: 'bg-purple-900 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  aroma: 'bg-green-900 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  texture: 'bg-amber-900 text-amber-200 dark:bg-amber-900/30 dark:text-amber-300',
+  flavor: 'bg-red-900 text-red-200 dark:bg-red-900/30 dark:text-red-300',
+  temperature: 'bg-blue-900 text-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  mouthfeel: 'bg-purple-900 text-purple-200 dark:bg-purple-900/30 dark:text-purple-300',
+  aroma: 'bg-green-900 text-green-200 dark:bg-green-900/30 dark:text-green-300',
   technique: 'bg-stone-800 text-stone-200 dark:bg-stone-900/30 dark:text-stone-300',
-  visual: 'bg-pink-900 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-  composition: 'bg-indigo-900 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-  emotion: 'bg-rose-900 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
-  sauce: 'bg-orange-900 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  action: 'bg-teal-900 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+  visual: 'bg-pink-900 text-pink-200 dark:bg-pink-900/30 dark:text-pink-300',
+  composition: 'bg-indigo-900 text-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300',
+  emotion: 'bg-rose-900 text-rose-200 dark:bg-rose-900/30 dark:text-rose-300',
+  sauce: 'bg-orange-900 text-orange-200 dark:bg-orange-900/30 dark:text-orange-300',
+  action: 'bg-teal-900 text-teal-200 dark:bg-teal-900/30 dark:text-teal-300',
 }
 
 // ---------------------------------------------------------------------------
@@ -455,7 +455,7 @@ export default function MenuMusePage() {
           onShuffle={() => setProduceSeed((s) => s + 1)}
         >
           {data.seasonal.sensory_anchor && (
-            <p className="mb-3 rounded-lg bg-green-500/10 px-3 py-2 text-sm italic text-green-700 dark:text-green-400">
+            <p className="mb-3 rounded-lg bg-green-500/10 px-3 py-2 text-sm italic text-green-200 dark:text-green-400">
               &ldquo;{data.seasonal.sensory_anchor}&rdquo;
             </p>
           )}
@@ -478,7 +478,7 @@ export default function MenuMusePage() {
           {/* Active micro-windows */}
           {data.seasonal.active_micro_windows.length > 0 && (
             <div className="mb-4">
-              <h3 className="mb-2 text-sm font-semibold text-green-700 dark:text-green-400">
+              <h3 className="mb-2 text-sm font-semibold text-green-200 dark:text-green-400">
                 Active Windows
               </h3>
               <div className="grid gap-2">
@@ -578,7 +578,7 @@ export default function MenuMusePage() {
                     {data.clientContext.allergies.map((a, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-700"
+                        className="rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-200"
                       >
                         {a}
                       </span>
@@ -595,7 +595,7 @@ export default function MenuMusePage() {
                     {data.clientContext.dietary_restrictions.map((d, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                        className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-200"
                       >
                         {d}
                       </span>
@@ -612,7 +612,7 @@ export default function MenuMusePage() {
                     {data.clientContext.favorite_dishes.map((d, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-700"
+                        className="rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-200"
                       >
                         {d}
                       </span>
@@ -628,7 +628,7 @@ export default function MenuMusePage() {
                     {data.clientContext.favorite_cuisines.map((c, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                        className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-200"
                       >
                         {c}
                       </span>
@@ -760,7 +760,7 @@ export default function MenuMusePage() {
                     {data.ideas.dishesToExplore.map((dish, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-700 dark:text-amber-400"
+                        className="rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-200 dark:text-amber-400"
                       >
                         {dish}
                       </span>

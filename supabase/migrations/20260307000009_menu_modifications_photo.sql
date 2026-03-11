@@ -5,6 +5,5 @@
 
 ALTER TABLE menu_modifications
   ADD COLUMN IF NOT EXISTS photo_url TEXT;
-
 COMMENT ON COLUMN menu_modifications.photo_url IS
   'Optional proof photo URL (Supabase Storage) showing the actual dish as served. Supports post-service accountability.';

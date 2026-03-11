@@ -24,10 +24,8 @@ create table if not exists beverages (
   created_at  timestamptz default now(),
   updated_at  timestamptz default now()
 );
-
 create index if not exists idx_beverages_chef on beverages(chef_id);
 create index if not exists idx_beverages_type on beverages(chef_id, type);
-
 -- ─── Menu Beverage Pairings ─────────────────────────────────────────────────────
 
 create table if not exists menu_beverage_pairings (
@@ -40,41 +38,30 @@ create table if not exists menu_beverage_pairings (
   pairing_note  text,
   created_at    timestamptz default now()
 );
-
 create index if not exists idx_menu_bev_pairings_menu on menu_beverage_pairings(menu_id);
 create index if not exists idx_menu_bev_pairings_bev on menu_beverage_pairings(beverage_id);
-
 -- ─── RLS ────────────────────────────────────────────────────────────────────────
 
 alter table beverages enable row level security;
 alter table menu_beverage_pairings enable row level security;
-
 -- Beverages: chef can CRUD their own
 create policy "beverages_select_own" on beverages
   for select using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 create policy "beverages_insert_own" on beverages
   for insert with check (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 create policy "beverages_update_own" on beverages
   for update using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 create policy "beverages_delete_own" on beverages
   for delete using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 -- Menu Beverage Pairings: chef can CRUD their own
 create policy "menu_bev_pairings_select_own" on menu_beverage_pairings
   for select using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 create policy "menu_bev_pairings_insert_own" on menu_beverage_pairings
   for insert with check (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 create policy "menu_bev_pairings_update_own" on menu_beverage_pairings
   for update using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 create policy "menu_bev_pairings_delete_own" on menu_beverage_pairings
   for delete using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
-
 -- ─── Updated-at trigger ─────────────────────────────────────────────────────────
 
 create or replace function update_beverages_updated_at()
@@ -84,7 +71,6 @@ begin
   return new;
 end;
 $$ language plpgsql;
-
 create trigger trg_beverages_updated_at
   before update on beverages
   for each row execute function update_beverages_updated_at();

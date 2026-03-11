@@ -1,8 +1,13 @@
 // Text extraction from uploaded menu files
-// Supports: PDF, images (OCR via Tesseract.js), DOCX, TXT
+// Supports: PDF, JPG/JPEG, PNG, HEIC/HEIF, WEBP, DOCX, TXT, and RTF
 // All processing is LOCAL — no data leaves the machine
 
 'use server'
+
+import {
+  buildDeterministicEnhancedDocumentImage,
+  canDeterministicallyEnhanceDocumentImage,
+} from '@/lib/documents/image-enhancement'
 
 // Max extraction time per file — prevents malicious/malformed files from hanging the server
 const EXTRACTION_TIMEOUT_MS = 30_000 // 30 seconds
@@ -65,13 +70,17 @@ export async function extractTextFromTxt(buffer: Buffer): Promise<string> {
  * Returns both the text and a confidence score (0-100).
  */
 export async function extractTextFromImage(
-  buffer: Buffer
+  buffer: Buffer,
+  mimeType: string = 'image/png'
 ): Promise<{ text: string; confidence: number }> {
   const Tesseract = await import('tesseract.js')
   const worker = await Tesseract.createWorker('eng')
   try {
+    const imageBuffer = canDeterministicallyEnhanceDocumentImage(mimeType)
+      ? (await buildDeterministicEnhancedDocumentImage(buffer)).buffer
+      : buffer
     const { data } = await withTimeout(
-      worker.recognize(buffer),
+      worker.recognize(imageBuffer),
       EXTRACTION_TIMEOUT_MS,
       'OCR extraction'
     )
@@ -98,10 +107,15 @@ export async function extractTextFromFile(
       return { text: await extractTextFromPdf(buffer) }
     case 'jpg':
     case 'jpeg':
+      return extractTextFromImage(buffer, 'image/jpeg')
     case 'png':
+      return extractTextFromImage(buffer, 'image/png')
     case 'heic':
+      return extractTextFromImage(buffer, 'image/heic')
+    case 'heif':
+      return extractTextFromImage(buffer, 'image/heif')
     case 'webp':
-      return extractTextFromImage(buffer)
+      return extractTextFromImage(buffer, 'image/webp')
     case 'docx':
       return { text: await extractTextFromDocx(buffer) }
     case 'txt':

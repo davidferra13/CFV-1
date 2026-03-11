@@ -23,29 +23,22 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own purchase orders"
   ON purchase_orders FOR ALL
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
-
 CREATE INDEX idx_purchase_orders_chef ON purchase_orders(chef_id);
 CREATE INDEX idx_purchase_orders_vendor ON purchase_orders(vendor_id);
 CREATE INDEX idx_purchase_orders_status ON purchase_orders(chef_id, status);
-
 -- Auto-update updated_at
 CREATE TRIGGER set_purchase_orders_updated_at
   BEFORE UPDATE ON purchase_orders
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 -- PO number sequence per chef (auto-generated PO-YYYY-NNNNN)
 CREATE SEQUENCE IF NOT EXISTS po_number_seq START 1;
-
 COMMENT ON TABLE purchase_orders IS 'Purchase orders sent to vendors for ingredient/supply procurement';
-
 -- ============================================
 -- Purchase Order Items
 -- ============================================
@@ -63,19 +56,14 @@ CREATE TABLE IF NOT EXISTS purchase_order_items (
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own PO items"
   ON purchase_order_items FOR ALL
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
-
 CREATE INDEX idx_po_items_po ON purchase_order_items(po_id);
 CREATE INDEX idx_po_items_chef ON purchase_order_items(chef_id);
-
 COMMENT ON TABLE purchase_order_items IS 'Line items within a purchase order';
-
 -- ============================================
 -- Daily Checklist Completions
 -- ============================================
@@ -91,19 +79,14 @@ CREATE TABLE IF NOT EXISTS daily_checklist_completions (
   notes TEXT,
   UNIQUE (chef_id, checklist_date, checklist_type, item_key)
 );
-
 ALTER TABLE daily_checklist_completions ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own checklist completions"
   ON daily_checklist_completions FOR ALL
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
-
 CREATE INDEX idx_checklist_completions_date
   ON daily_checklist_completions(chef_id, checklist_date, checklist_type);
-
 COMMENT ON TABLE daily_checklist_completions IS 'Tracks completion of daily opening/closing checklist items';
-
 -- ============================================
 -- Custom Checklist Items
 -- ============================================
@@ -118,15 +101,11 @@ CREATE TABLE IF NOT EXISTS daily_checklist_custom_items (
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE daily_checklist_custom_items ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own custom checklist items"
   ON daily_checklist_custom_items FOR ALL
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
-
 CREATE INDEX idx_custom_checklist_chef
   ON daily_checklist_custom_items(chef_id, checklist_type);
-
 COMMENT ON TABLE daily_checklist_custom_items IS 'Chef-defined custom items for daily opening/closing checklists';

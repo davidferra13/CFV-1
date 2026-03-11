@@ -24,13 +24,11 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Fire on INSERT and UPDATE (role or entity_id change)
 CREATE TRIGGER trg_validate_user_role_entity_id
   BEFORE INSERT OR UPDATE OF role, entity_id ON user_roles
   FOR EACH ROW
   EXECUTE FUNCTION validate_user_role_entity_id();
-
 -- Cleanup trigger: when a chef or client is deleted, remove their user_roles entry.
 -- This prevents zombie roles pointing to deleted entities.
 
@@ -41,12 +39,10 @@ BEGIN
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trg_cleanup_user_roles_on_chef_delete
   AFTER DELETE ON chefs
   FOR EACH ROW
   EXECUTE FUNCTION cleanup_user_roles_on_entity_delete();
-
 CREATE TRIGGER trg_cleanup_user_roles_on_client_delete
   AFTER DELETE ON clients
   FOR EACH ROW

@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS recurring_menu_recommendations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_rmr_tenant_client
   ON recurring_menu_recommendations(tenant_id, client_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_rmr_status
@@ -34,38 +33,30 @@ CREATE INDEX IF NOT EXISTS idx_rmr_status
 CREATE INDEX IF NOT EXISTS idx_rmr_week
   ON recurring_menu_recommendations(tenant_id, week_start)
   WHERE week_start IS NOT NULL;
-
 COMMENT ON TABLE recurring_menu_recommendations IS
   'Chef weekly recommendation drafts sent to recurring clients, with client approval/revision status.';
-
 DROP TRIGGER IF EXISTS trg_rmr_updated_at ON recurring_menu_recommendations;
 CREATE TRIGGER trg_rmr_updated_at
   BEFORE UPDATE ON recurring_menu_recommendations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE recurring_menu_recommendations ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS rmr_chef_select ON recurring_menu_recommendations;
 CREATE POLICY rmr_chef_select ON recurring_menu_recommendations
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS rmr_chef_insert ON recurring_menu_recommendations;
 CREATE POLICY rmr_chef_insert ON recurring_menu_recommendations
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS rmr_chef_update ON recurring_menu_recommendations;
 CREATE POLICY rmr_chef_update ON recurring_menu_recommendations
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS rmr_chef_delete ON recurring_menu_recommendations;
 CREATE POLICY rmr_chef_delete ON recurring_menu_recommendations
   FOR DELETE
   USING (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS rmr_client_select ON recurring_menu_recommendations;
 CREATE POLICY rmr_client_select ON recurring_menu_recommendations
   FOR SELECT
@@ -77,7 +68,6 @@ CREATE POLICY rmr_client_select ON recurring_menu_recommendations
         AND c.auth_user_id = auth.uid()
     )
   );
-
 DROP POLICY IF EXISTS rmr_client_update ON recurring_menu_recommendations;
 CREATE POLICY rmr_client_update ON recurring_menu_recommendations
   FOR UPDATE
@@ -100,14 +90,12 @@ CREATE POLICY rmr_client_update ON recurring_menu_recommendations
         AND c.auth_user_id = auth.uid()
     )
   );
-
 -- ============================================================================
 -- 2) CLIENT FEEDBACK METADATA ON SERVED DISH HISTORY
 -- ============================================================================
 
 ALTER TABLE served_dish_history
   ADD COLUMN IF NOT EXISTS client_feedback_at TIMESTAMPTZ;
-
 DROP POLICY IF EXISTS sdh_client_update ON served_dish_history;
 CREATE POLICY sdh_client_update ON served_dish_history
   FOR UPDATE

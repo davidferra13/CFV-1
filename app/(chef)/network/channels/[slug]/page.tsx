@@ -88,7 +88,7 @@ export default async function ChannelPage({ params }: { params: Promise<{ slug: 
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-stone-100">{ch.name}</h1>
             {ch.is_official && (
-              <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full font-medium">
                 Official
               </span>
             )}

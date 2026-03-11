@@ -33,7 +33,7 @@ export default async function LaborExpensesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Labor</h1>
-          <span className="bg-orange-900 text-orange-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-orange-900 text-orange-200 text-sm px-2 py-0.5 rounded-full">
             {expenses.length}
           </span>
         </div>

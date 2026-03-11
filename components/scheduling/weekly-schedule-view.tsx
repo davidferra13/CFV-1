@@ -26,9 +26,9 @@ const DAY_TYPE_LABELS: Record<string, string> = {
 }
 
 const PREP_STATUS_COLORS: Record<string, string> = {
-  ready: 'bg-green-900 text-green-700',
-  partial: 'bg-yellow-900 text-yellow-700',
-  not_started: 'bg-red-900 text-red-700',
+  ready: 'bg-green-900 text-green-200',
+  partial: 'bg-yellow-900 text-yellow-200',
+  not_started: 'bg-red-900 text-red-200',
 }
 
 export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekSchedule }) {
@@ -81,7 +81,7 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
         <div className="space-y-2">
           {schedule.warnings.map((warning, i) => (
             <div key={i} className="bg-amber-950 border border-amber-200 rounded-lg p-3">
-              <p className="text-sm text-amber-800">{warning}</p>
+              <p className="text-sm text-amber-200">{warning}</p>
             </div>
           ))}
         </div>
@@ -118,7 +118,7 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
                       day.dayType === 'event'
                         ? 'bg-brand-900 text-brand-400'
                         : day.dayType === 'prep'
-                          ? 'bg-amber-900 text-amber-700'
+                          ? 'bg-amber-900 text-amber-200'
                           : 'bg-stone-800 text-stone-500'
                     }`}
                   >
@@ -152,7 +152,7 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
 
                 {/* Prep Day Note */}
                 {day.dayType === 'prep' && day.isPrepDayFor && (
-                  <div className="text-xs text-amber-700 bg-amber-900 rounded p-1.5">
+                  <div className="text-xs text-amber-200 bg-amber-900 rounded p-1.5">
                     Prep day for tomorrow
                   </div>
                 )}

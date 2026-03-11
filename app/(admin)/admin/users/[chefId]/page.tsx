@@ -20,13 +20,13 @@ function formatCents(cents: number): string {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  proposed: 'bg-yellow-900 text-yellow-700',
-  accepted: 'bg-blue-900 text-blue-700',
-  paid: 'bg-indigo-900 text-indigo-700',
-  confirmed: 'bg-purple-900 text-purple-700',
-  in_progress: 'bg-orange-900 text-orange-700',
-  completed: 'bg-green-900 text-green-700',
-  cancelled: 'bg-red-900 text-red-700',
+  proposed: 'bg-yellow-900 text-yellow-200',
+  accepted: 'bg-blue-900 text-blue-200',
+  paid: 'bg-indigo-900 text-indigo-200',
+  confirmed: 'bg-purple-900 text-purple-200',
+  in_progress: 'bg-orange-900 text-orange-200',
+  completed: 'bg-green-900 text-green-200',
+  cancelled: 'bg-red-900 text-red-200',
 }
 
 export default async function AdminChefDetailPage({ params }: { params: { chefId: string } }) {
@@ -127,7 +127,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 showScore
               />
               {accountStatus === 'suspended' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-700 border border-red-200">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-200 border border-red-200">
                   Suspended
                 </span>
               )}

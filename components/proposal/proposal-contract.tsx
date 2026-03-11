@@ -272,7 +272,7 @@ export function ProposalContract({
       )}
 
       {alreadySigned && (
-        <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-200">
           This contract has been signed.
         </div>
       )}

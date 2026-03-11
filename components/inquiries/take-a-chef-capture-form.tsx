@@ -112,7 +112,7 @@ export function TakeAChefCaptureForm({
           <span className="text-xl">✓</span>
           <div>
             <p className="font-semibold text-green-900">Booking Captured</p>
-            <p className="text-sm text-green-700 mt-0.5">
+            <p className="text-sm text-green-200 mt-0.5">
               Client, inquiry, and draft event created — all tagged as Take a Chef
             </p>
           </div>
@@ -313,7 +313,7 @@ export function TakeAChefCaptureForm({
               form.commission_percent != null &&
               form.commission_percent > 0 && (
                 <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2 text-sm">
-                  <span className="text-amber-700 font-medium">Commission: </span>
+                  <span className="text-amber-200 font-medium">Commission: </span>
                   <span className="text-amber-900 font-semibold">
                     $
                     {(

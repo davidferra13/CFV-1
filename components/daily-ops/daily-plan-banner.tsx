@@ -26,7 +26,7 @@ export function DailyPlanBanner({ stats }: Props) {
       <Link href="/daily" className="block">
         <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-950 px-4 py-3 hover:bg-green-900 transition-colors">
           <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-          <p className="text-sm font-medium text-green-800">Daily plan cleared. Go cook.</p>
+          <p className="text-sm font-medium text-green-200">Daily plan cleared. Go cook.</p>
           <ArrowRight className="h-3.5 w-3.5 text-green-400 ml-auto shrink-0" />
         </div>
       </Link>

@@ -20,7 +20,6 @@ CREATE TYPE loyalty_transaction_type AS ENUM (
   'adjustment',   -- admin correction
   'expired'       -- expired points (future use)
 );
-
 -- Reward types (service-denominated, never cash)
 CREATE TYPE loyalty_reward_type AS ENUM (
   'discount_fixed',   -- e.g. $25 off next dinner
@@ -29,7 +28,6 @@ CREATE TYPE loyalty_reward_type AS ENUM (
   'free_dinner',      -- full dinner coverage
   'upgrade'           -- bonus courses, tasting menu upgrade
 );
-
 -- Loyalty tier enum (replaces untyped TEXT on clients)
 CREATE TYPE loyalty_tier AS ENUM (
   'bronze',
@@ -37,7 +35,6 @@ CREATE TYPE loyalty_tier AS ENUM (
   'gold',
   'platinum'
 );
-
 -- =====================================================================================
 -- TABLE 1: loyalty_transactions (append-only ledger)
 -- =====================================================================================
@@ -66,9 +63,7 @@ CREATE TABLE loyalty_transactions (
     (type IN ('adjustment', 'expired'))
   )
 );
-
 COMMENT ON TABLE loyalty_transactions IS 'Append-only ledger of all loyalty point changes. Never update or delete.';
-
 -- =====================================================================================
 -- TABLE 2: loyalty_rewards (reward catalog)
 -- =====================================================================================
@@ -105,9 +100,7 @@ CREATE TABLE loyalty_rewards (
     (reward_type NOT IN ('discount_fixed', 'discount_percent'))
   )
 );
-
 COMMENT ON TABLE loyalty_rewards IS 'Service-denominated reward catalog. The chef never spends money — rewards are time and cooking.';
-
 -- =====================================================================================
 -- TABLE 3: loyalty_config (per-tenant program settings)
 -- =====================================================================================
@@ -146,9 +139,7 @@ CREATE TABLE loyalty_config (
     tier_gold_min < tier_platinum_min
   )
 );
-
 COMMENT ON TABLE loyalty_config IS 'Per-tenant loyalty program configuration. One row per chef.';
-
 -- =====================================================================================
 -- ALTER: Add columns to existing tables
 -- =====================================================================================
@@ -157,15 +148,12 @@ COMMENT ON TABLE loyalty_config IS 'Per-tenant loyalty program configuration. On
 -- (loyalty_points and loyalty_tier already exist from Layer 1)
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS total_guests_served INTEGER DEFAULT 0;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS total_events_completed INTEGER DEFAULT 0;
-
 -- Convert loyalty_tier from TEXT to the new enum
 -- (Drop the old text column and recreate as enum — the column has no data yet)
 ALTER TABLE clients DROP COLUMN IF EXISTS loyalty_tier;
 ALTER TABLE clients ADD COLUMN loyalty_tier loyalty_tier DEFAULT 'bronze' NOT NULL;
-
 -- Add loyalty_points_awarded flag to events (for the closure checklist pattern)
 ALTER TABLE events ADD COLUMN IF NOT EXISTS loyalty_points_awarded BOOLEAN DEFAULT false NOT NULL;
-
 -- =====================================================================================
 -- INDEXES
 -- =====================================================================================
@@ -175,58 +163,43 @@ CREATE INDEX idx_loyalty_transactions_client ON loyalty_transactions(client_id);
 CREATE INDEX idx_loyalty_transactions_event ON loyalty_transactions(event_id);
 CREATE INDEX idx_loyalty_transactions_tenant_client ON loyalty_transactions(tenant_id, client_id);
 CREATE INDEX idx_loyalty_transactions_type ON loyalty_transactions(type);
-
 CREATE INDEX idx_loyalty_rewards_tenant ON loyalty_rewards(tenant_id);
 CREATE INDEX idx_loyalty_rewards_active ON loyalty_rewards(tenant_id, is_active);
-
 CREATE INDEX idx_loyalty_config_tenant ON loyalty_config(tenant_id);
-
 CREATE INDEX idx_clients_loyalty_tier ON clients(tenant_id, loyalty_tier);
 CREATE INDEX idx_clients_loyalty_points ON clients(tenant_id, loyalty_points);
-
 -- =====================================================================================
 -- RLS POLICIES
 -- =====================================================================================
 
 -- loyalty_transactions: append-only, tenant-isolated
 ALTER TABLE loyalty_transactions ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY tenant_isolation_select_loyalty_transactions ON loyalty_transactions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_isolation_insert_loyalty_transactions ON loyalty_transactions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No UPDATE or DELETE policies — append-only
 
 -- loyalty_rewards: full CRUD, tenant-isolated
 ALTER TABLE loyalty_rewards ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY tenant_isolation_select_loyalty_rewards ON loyalty_rewards
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_isolation_insert_loyalty_rewards ON loyalty_rewards
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_isolation_update_loyalty_rewards ON loyalty_rewards
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- loyalty_config: read/write, tenant-isolated
 ALTER TABLE loyalty_config ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY tenant_isolation_select_loyalty_config ON loyalty_config
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_isolation_insert_loyalty_config ON loyalty_config
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_isolation_update_loyalty_config ON loyalty_config
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- Client-side read access to loyalty_transactions (own records only)
 CREATE POLICY client_read_own_loyalty_transactions ON loyalty_transactions
   FOR SELECT
@@ -236,7 +209,6 @@ CREATE POLICY client_read_own_loyalty_transactions ON loyalty_transactions
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 -- Client-side read access to loyalty_rewards (active only)
 CREATE POLICY client_read_active_loyalty_rewards ON loyalty_rewards
   FOR SELECT
@@ -248,7 +220,6 @@ CREATE POLICY client_read_active_loyalty_rewards ON loyalty_rewards
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
     )
   );
-
 -- =====================================================================================
 -- TRIGGERS
 -- =====================================================================================
@@ -261,21 +232,17 @@ BEGIN
   RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER enforce_loyalty_transaction_immutability
   BEFORE UPDATE OR DELETE ON loyalty_transactions
   FOR EACH ROW EXECUTE FUNCTION prevent_loyalty_transaction_mutation();
-
 -- Auto-update updated_at on loyalty_rewards
 CREATE TRIGGER update_loyalty_rewards_updated_at
   BEFORE UPDATE ON loyalty_rewards
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
-
 -- Auto-update updated_at on loyalty_config
 CREATE TRIGGER update_loyalty_config_updated_at
   BEFORE UPDATE ON loyalty_config
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
-
 -- =====================================================================================
 -- DEFAULT REWARDS (inserted per-tenant on first config creation via app code)
 -- =====================================================================================
@@ -292,4 +259,4 @@ CREATE TRIGGER update_loyalty_config_updated_at
 -- Indexes: 10
 -- RLS Policies: 8 (chef + client access)
 -- Triggers: 3 (immutability, updated_at x2)
--- END OF LOYALTY PROGRAM MIGRATION
+-- END OF LOYALTY PROGRAM MIGRATION;

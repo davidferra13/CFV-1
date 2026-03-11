@@ -37,7 +37,7 @@ export default async function AdminDocumentsPage() {
           columns={[
             { header: 'Title', accessor: (d) => d.title },
             { header: 'Chef', accessor: (d) => d.chefBusinessName },
-            { header: 'Type', accessor: (d) => d.doc_type },
+            { header: 'Type', accessor: (d) => d.document_type },
             { header: 'Created', accessor: (d) => d.created_at },
           ]}
         />
@@ -76,7 +76,7 @@ export default async function AdminDocumentsPage() {
                       {doc.chefBusinessName ?? 'Unknown'}
                     </td>
                     <td className="px-4 py-3 text-stone-400 text-xs capitalize">
-                      {doc.doc_type ?? '-'}
+                      {doc.document_type ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400">
                       {new Date(doc.created_at).toLocaleDateString('en-US', {

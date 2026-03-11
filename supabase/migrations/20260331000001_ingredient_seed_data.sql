@@ -6,6 +6,8 @@
 -- Chefs can browse/search and import into their personal ingredient list.
 -- Data is read-only for all users (seeded by migration, managed by admins).
 
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;
 CREATE TABLE IF NOT EXISTS system_ingredients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -37,7 +39,6 @@ CREATE TABLE IF NOT EXISTS system_ingredients (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Indexes for search performance
 CREATE INDEX IF NOT EXISTS idx_system_ingredients_name
   ON system_ingredients USING gin (to_tsvector('english', name));
@@ -46,15 +47,12 @@ CREATE INDEX IF NOT EXISTS idx_system_ingredients_category
 CREATE INDEX IF NOT EXISTS idx_system_ingredients_active
   ON system_ingredients (is_active) WHERE is_active = true;
 CREATE INDEX IF NOT EXISTS idx_system_ingredients_name_trgm
-  ON system_ingredients USING gin (name gin_trgm_ops);
-
+  ON system_ingredients USING gin (name extensions.gin_trgm_ops);
 -- RLS: everyone can read system ingredients, nobody can write (admin via service role)
 ALTER TABLE system_ingredients ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "system_ingredients_read_all"
   ON system_ingredients FOR SELECT
   USING (true);
-
 -- Grant read access
 GRANT SELECT ON system_ingredients TO authenticated;
 GRANT SELECT ON system_ingredients TO anon;

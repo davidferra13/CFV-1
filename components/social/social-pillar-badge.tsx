@@ -2,12 +2,12 @@ import type { SocialPillar } from '@/lib/social/types'
 import { SOCIAL_PILLAR_LABELS } from '@/lib/social/types'
 
 const PILLAR_STYLES: Record<SocialPillar, string> = {
-  recipe: 'bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800',
-  behind_scenes: 'bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800',
-  education: 'bg-sky-950 text-sky-700 ring-1 ring-inset ring-sky-800',
-  social_proof: 'bg-violet-950 text-violet-700 ring-1 ring-inset ring-violet-200',
-  offers: 'bg-orange-950 text-orange-700 ring-1 ring-inset ring-orange-200',
-  seasonal: 'bg-rose-950 text-rose-700 ring-1 ring-inset ring-rose-200',
+  recipe: 'bg-emerald-950 text-emerald-200 ring-1 ring-inset ring-emerald-800',
+  behind_scenes: 'bg-amber-950 text-amber-200 ring-1 ring-inset ring-amber-800',
+  education: 'bg-sky-950 text-sky-200 ring-1 ring-inset ring-sky-800',
+  social_proof: 'bg-violet-950 text-violet-200 ring-1 ring-inset ring-violet-200',
+  offers: 'bg-orange-950 text-orange-200 ring-1 ring-inset ring-orange-200',
+  seasonal: 'bg-rose-950 text-rose-200 ring-1 ring-inset ring-rose-200',
 }
 
 export function SocialPillarBadge({

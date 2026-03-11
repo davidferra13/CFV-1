@@ -27,7 +27,7 @@ export function SaveStateBadge({ state, onRetry, className = '' }: SaveStateBadg
         aria-live="polite"
         aria-label="Save state: saving"
         data-testid="save-state-badge"
-        className={`inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-950 px-3 py-1.5 text-xs text-blue-700 ${className}`}
+        className={`inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-950 px-3 py-1.5 text-xs text-blue-200 ${className}`}
       >
         <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
         <span>Saving...</span>
@@ -42,7 +42,7 @@ export function SaveStateBadge({ state, onRetry, className = '' }: SaveStateBadg
         aria-live="polite"
         aria-label={`Save state: saved ${formatRelativeTime(state.lastSavedAt)}`}
         data-testid="save-state-badge"
-        className={`inline-flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-950 px-3 py-1.5 text-xs text-emerald-800 ${className}`}
+        className={`inline-flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-950 px-3 py-1.5 text-xs text-emerald-200 ${className}`}
       >
         <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
         <span>Saved {formatRelativeTime(state.lastSavedAt)}</span>
@@ -57,7 +57,7 @@ export function SaveStateBadge({ state, onRetry, className = '' }: SaveStateBadg
         aria-live="polite"
         aria-label={`Save state: offline queued, ${state.queuedCount} pending`}
         data-testid="save-state-badge"
-        className={`inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-950 px-3 py-1.5 text-xs text-amber-800 ${className}`}
+        className={`inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-950 px-3 py-1.5 text-xs text-amber-200 ${className}`}
       >
         <CloudUpload className="h-3.5 w-3.5" aria-hidden="true" />
         <span>
@@ -75,12 +75,12 @@ export function SaveStateBadge({ state, onRetry, className = '' }: SaveStateBadg
         aria-live="assertive"
         aria-label="Save state: save failed"
         data-testid="save-state-badge"
-        className={`inline-flex flex-wrap items-center gap-2 rounded-md border border-red-300 bg-red-950 px-3 py-1.5 text-xs text-red-800 ${className}`}
+        className={`inline-flex flex-wrap items-center gap-2 rounded-md border border-red-300 bg-red-950 px-3 py-1.5 text-xs text-red-200 ${className}`}
       >
         <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
         <span>Save failed: {state.errorMessage}</span>
         {state.traceId ? <span className="opacity-80">(ref: {state.traceId})</span> : null}
-        <span className="text-red-700">Local draft is kept on this device.</span>
+        <span className="text-red-200">Local draft is kept on this device.</span>
         {onRetry ? (
           <Button type="button" size="sm" variant="secondary" onClick={() => void onRetry()}>
             Retry

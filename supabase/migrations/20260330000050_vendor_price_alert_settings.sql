@@ -11,20 +11,15 @@ CREATE TABLE IF NOT EXISTS vendor_price_alert_settings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_vendor_price_alert_settings_chef_vendor
   ON vendor_price_alert_settings (chef_id, vendor_id);
-
 CREATE INDEX IF NOT EXISTS idx_vendor_price_alert_settings_vendor
   ON vendor_price_alert_settings (vendor_id);
-
 DROP TRIGGER IF EXISTS update_vendor_price_alert_settings_updated_at ON vendor_price_alert_settings;
 CREATE TRIGGER update_vendor_price_alert_settings_updated_at
   BEFORE UPDATE ON vendor_price_alert_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE vendor_price_alert_settings ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS vendor_price_alert_settings_chef_all ON vendor_price_alert_settings;
 CREATE POLICY vendor_price_alert_settings_chef_all ON vendor_price_alert_settings
   FOR ALL USING (
@@ -34,10 +29,8 @@ CREATE POLICY vendor_price_alert_settings_chef_all ON vendor_price_alert_setting
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS vendor_price_alert_settings_service_all ON vendor_price_alert_settings;
 CREATE POLICY vendor_price_alert_settings_service_all ON vendor_price_alert_settings
   FOR ALL USING (auth.role() = 'service_role');
-
 COMMENT ON TABLE vendor_price_alert_settings IS
   'Per-vendor threshold used to filter price change alerts.';

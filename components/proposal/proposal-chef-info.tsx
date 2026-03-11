@@ -43,7 +43,7 @@ export function ProposalChefInfo({
             />
           ) : (
             <div className="h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center shrink-0 border-2 border-white shadow-sm">
-              <span className="text-amber-700 font-bold text-xl">
+              <span className="text-amber-200 font-bold text-xl">
                 {(businessName || 'C').charAt(0).toUpperCase()}
               </span>
             </div>
@@ -51,7 +51,7 @@ export function ProposalChefInfo({
 
           <div className="min-w-0">
             {businessName && <p className="font-semibold text-gray-900 text-lg">{businessName}</p>}
-            {tagline && <p className="text-sm text-amber-700 mt-0.5">{tagline}</p>}
+            {tagline && <p className="text-sm text-amber-200 mt-0.5">{tagline}</p>}
             {bio && (
               <p className="text-sm text-gray-600 mt-3 leading-relaxed whitespace-pre-line">
                 {bio}

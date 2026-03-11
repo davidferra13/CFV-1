@@ -21,17 +21,17 @@ export function ChargebackRateCard({ rate }: ChargebackRateCardProps) {
   const rateConfig = {
     green: {
       bg: 'bg-emerald-950 border-emerald-200',
-      labelColor: 'text-emerald-700',
+      labelColor: 'text-emerald-200',
       dot: 'bg-emerald-500',
     },
     amber: {
       bg: 'bg-amber-950 border-amber-200',
-      labelColor: 'text-amber-700',
+      labelColor: 'text-amber-200',
       dot: 'bg-amber-500',
     },
     red: {
       bg: 'bg-red-950 border-red-200',
-      labelColor: 'text-red-700',
+      labelColor: 'text-red-200',
       dot: 'bg-red-500',
     },
   }
@@ -57,12 +57,12 @@ export function ChargebackRateCard({ rate }: ChargebackRateCardProps) {
       </div>
 
       {rate.riskLevel === 'amber' && (
-        <p className="text-xs text-amber-700 mt-2 font-medium">
+        <p className="text-xs text-amber-200 mt-2 font-medium">
           Approaching the danger threshold. Review disputed transactions.
         </p>
       )}
       {rate.riskLevel === 'red' && (
-        <p className="text-xs text-red-700 mt-2 font-medium">
+        <p className="text-xs text-red-200 mt-2 font-medium">
           Chargeback rate exceeds safe zone. Payment processors may flag your account.
         </p>
       )}

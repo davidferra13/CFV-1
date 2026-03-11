@@ -44,9 +44,9 @@ function getOnTimeVariant(rate: number): 'success' | 'warning' | 'error' {
 }
 
 function getOnTimeBg(rate: number): string {
-  if (rate >= 90) return 'text-emerald-700'
-  if (rate >= 70) return 'text-amber-700'
-  return 'text-red-700'
+  if (rate >= 90) return 'text-emerald-200'
+  if (rate >= 70) return 'text-amber-200'
+  return 'text-red-200'
 }
 
 function getRatingColor(rating: number): string {
@@ -93,7 +93,7 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
     const isActive = sortKey === column
     return (
       <th
-        className="px-3 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-700 transition-colors"
+        className="px-3 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider cursor-pointer select-none hover:text-stone-200 transition-colors"
         onClick={() => handleSort(column)}
       >
         <div className="flex items-center gap-1">
@@ -195,7 +195,7 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
                       </span>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-sm text-stone-700 font-medium">
+                      <span className="text-sm text-stone-200 font-medium">
                         {score.totalEvents}
                       </span>
                     </td>

@@ -163,7 +163,7 @@ export function PayrollCalculator() {
 
           {error && <p className="text-sm text-red-400">{error}</p>}
 
-          <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
+          <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
             <strong>Reference tool only.</strong> Payroll calculations are estimates based on clock
             entries and tip distributions. Consult your payroll provider for official pay stubs and
             tax filings.

@@ -421,7 +421,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="font-semibold text-purple-900">Loyalty Points Awarded</h2>
-              <p className="text-sm text-purple-700 mt-1">
+              <p className="text-sm text-purple-200 mt-1">
                 {eventLoyaltyPoints} points earned for this event ({event.guest_count} guests)
               </p>
             </div>

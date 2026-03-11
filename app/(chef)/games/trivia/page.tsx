@@ -96,10 +96,10 @@ function LoadingState({ onCancel }: { onCancel: () => void }) {
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const color =
     confidence >= 5
-      ? 'bg-green-500/10 text-green-700 border-green-500/30'
+      ? 'bg-green-500/10 text-green-200 border-green-500/30'
       : confidence >= 4
-        ? 'bg-blue-500/10 text-blue-700 border-blue-500/30'
-        : 'bg-yellow-500/10 text-yellow-700 border-yellow-500/30'
+        ? 'bg-blue-500/10 text-blue-200 border-blue-500/30'
+        : 'bg-yellow-500/10 text-yellow-200 border-yellow-500/30'
   const label = confidence >= 5 ? 'Verified' : confidence >= 4 ? 'High confidence' : 'Moderate'
 
   return (
@@ -517,8 +517,8 @@ export default function TriviaGame() {
             {q.choices.map((choice, i) => {
               let bg = 'border-border hover:border-brand-500/50'
               if (showAnswer) {
-                if (i === q.correctIndex) bg = 'border-green-500 bg-green-500/10 text-green-700'
-                else if (i === selected) bg = 'border-red-500 bg-red-500/10 text-red-700'
+                if (i === q.correctIndex) bg = 'border-green-500 bg-green-500/10 text-green-200'
+                else if (i === selected) bg = 'border-red-500 bg-red-500/10 text-red-200'
                 else bg = 'border-border opacity-50'
               } else if (selected === i) {
                 bg = 'border-brand-500 bg-brand-500/10'
@@ -622,12 +622,12 @@ export default function TriviaGame() {
 
                         {/* Answer details */}
                         <div className="mt-2 space-y-1 text-xs">
-                          <div className="text-green-700">
+                          <div className="text-green-200">
                             <span className="font-medium">Correct answer:</span>{' '}
                             {question.choices[question.correctIndex]}
                           </div>
                           {!wasCorrect && (
-                            <div className="text-red-700">
+                            <div className="text-red-200">
                               <span className="font-medium">
                                 {timedOut ? 'Time ran out' : 'Your answer'}:
                               </span>{' '}

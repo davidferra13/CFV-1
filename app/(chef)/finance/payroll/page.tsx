@@ -88,7 +88,7 @@ export default async function PayrollPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
         <strong>Reference tool only.</strong> File payroll taxes and W-2s using IRS-approved payroll
         software. Consult a payroll professional for filing deadlines (Form 941 due 30 days after
         each quarter; W-2s due January 31).
@@ -106,7 +106,7 @@ export default async function PayrollPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">YTD Net Pay</p>
-            <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency(ytdNetPay)}</p>
+            <p className="text-2xl font-bold text-emerald-200 mt-1">{formatCurrency(ytdNetPay)}</p>
           </CardContent>
         </Card>
         <Card>

@@ -143,7 +143,7 @@ export default function ContactPage() {
                           <h4 className="font-semibold text-green-900 dark:text-green-100 mb-1">
                             Message sent!
                           </h4>
-                          <p className="text-green-700 dark:text-green-300 text-sm">
+                          <p className="text-green-200 dark:text-green-300 text-sm">
                             I&apos;ll get back to you soon.
                           </p>
                         </div>
@@ -153,7 +153,7 @@ export default function ContactPage() {
 
                   {submitError && (
                     <div className="mb-6 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
-                      <p className="text-red-700 dark:text-red-300 text-sm">{submitError}</p>
+                      <p className="text-red-200 dark:text-red-300 text-sm">{submitError}</p>
                     </div>
                   )}
 

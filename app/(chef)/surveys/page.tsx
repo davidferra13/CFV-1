@@ -134,7 +134,7 @@ export default async function SurveysPage() {
                     {/* Highlight */}
                     {survey.highlight_text && (
                       <div className="bg-amber-950 border border-amber-100 rounded-lg px-3 py-2 mb-2">
-                        <p className="text-xs text-amber-700 font-medium mb-0.5">Highlight</p>
+                        <p className="text-xs text-amber-200 font-medium mb-0.5">Highlight</p>
                         <p className="text-sm text-stone-300">{survey.highlight_text}</p>
                       </div>
                     )}

@@ -20,12 +20,9 @@ CREATE TABLE IF NOT EXISTS display_case_items (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_display_case_items_tenant ON display_case_items(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_display_case_items_tenant_active ON display_case_items(tenant_id) WHERE is_active = true;
-
 ALTER TABLE display_case_items ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can manage their own display case items"
     ON display_case_items
@@ -37,7 +34,6 @@ DO $$ BEGIN
       SELECT 1 FROM user_roles WHERE auth_user_id = auth.uid() AND entity_id = display_case_items.tenant_id
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 CREATE OR REPLACE FUNCTION update_display_case_items_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -45,14 +41,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DO $$ BEGIN
   CREATE TRIGGER display_case_items_updated_at
     BEFORE UPDATE ON display_case_items
     FOR EACH ROW
     EXECUTE FUNCTION update_display_case_items_updated_at();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- Par stock items: things always produced daily
 CREATE TABLE IF NOT EXISTS bakery_par_stock (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -66,12 +60,9 @@ CREATE TABLE IF NOT EXISTS bakery_par_stock (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_bakery_par_stock_tenant ON bakery_par_stock(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_bakery_par_stock_tenant_active ON bakery_par_stock(tenant_id) WHERE is_active = true;
-
 ALTER TABLE bakery_par_stock ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can manage their own par stock"
     ON bakery_par_stock
@@ -83,7 +74,6 @@ DO $$ BEGIN
       SELECT 1 FROM user_roles WHERE auth_user_id = auth.uid() AND entity_id = bakery_par_stock.tenant_id
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 CREATE OR REPLACE FUNCTION update_bakery_par_stock_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -91,14 +81,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DO $$ BEGIN
   CREATE TRIGGER bakery_par_stock_updated_at
     BEFORE UPDATE ON bakery_par_stock
     FOR EACH ROW
     EXECUTE FUNCTION update_bakery_par_stock_updated_at();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- Daily production log: tracks completion of production items
 CREATE TABLE IF NOT EXISTS bakery_production_log (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -116,11 +104,8 @@ CREATE TABLE IF NOT EXISTS bakery_production_log (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_bakery_production_log_tenant_date ON bakery_production_log(tenant_id, production_date);
-
 ALTER TABLE bakery_production_log ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can manage their own production log"
     ON bakery_production_log
@@ -132,7 +117,6 @@ DO $$ BEGIN
       SELECT 1 FROM user_roles WHERE auth_user_id = auth.uid() AND entity_id = bakery_production_log.tenant_id
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 CREATE OR REPLACE FUNCTION update_bakery_production_log_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -140,7 +124,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DO $$ BEGIN
   CREATE TRIGGER bakery_production_log_updated_at
     BEFORE UPDATE ON bakery_production_log

@@ -5,6 +5,5 @@
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS location_lat double precision,
   ADD COLUMN IF NOT EXISTS location_lng double precision;
-
 COMMENT ON COLUMN events.location_lat IS 'Latitude from Google Places, for map display';
 COMMENT ON COLUMN events.location_lng IS 'Longitude from Google Places, for map display';

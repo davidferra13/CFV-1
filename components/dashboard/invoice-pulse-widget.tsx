@@ -148,7 +148,7 @@ export function InvoicePulseWidget({ invoices, monthlyStats }: InvoicePulseWidge
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="4"
-                className="text-stone-800"
+                className="text-stone-200"
               />
               <circle
                 cx="24"

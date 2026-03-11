@@ -195,7 +195,7 @@ export function StarterTemplateLoader() {
 
         {/* Status indicator */}
         {loaded === true && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-200 dark:bg-green-900/30 dark:text-green-400">
             <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -215,14 +215,14 @@ export function StarterTemplateLoader() {
 
       {/* Error message */}
       {error && (
-        <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-200 dark:bg-red-900/20 dark:text-red-400">
           {error}
         </div>
       )}
 
       {/* Success message */}
       {successMessage && (
-        <div className="mb-3 rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <div className="mb-3 rounded-md bg-green-50 p-3 text-sm text-green-200 dark:bg-green-900/20 dark:text-green-400">
           {successMessage}
         </div>
       )}

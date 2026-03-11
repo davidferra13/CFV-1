@@ -405,7 +405,7 @@ export function PushDinnerBuilder() {
                   step === s.num
                     ? 'bg-brand-600 text-white'
                     : s.num < step
-                      ? 'bg-green-900 text-green-700 hover:bg-green-200 cursor-pointer'
+                      ? 'bg-green-900 text-green-200 hover:bg-green-200 cursor-pointer'
                       : 'bg-stone-800 text-stone-400 cursor-not-allowed'
                 }`}
             >
@@ -820,8 +820,8 @@ export function PushDinnerBuilder() {
             <div className="bg-amber-950 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-800">Ollama is not running</p>
-                <p className="text-xs text-amber-700 mt-0.5">
+                <p className="text-sm font-medium text-amber-200">Ollama is not running</p>
+                <p className="text-xs text-amber-200 mt-0.5">
                   Start Ollama to generate personalised drafts. Or write each message manually below
                   — click Edit on any card.
                 </p>

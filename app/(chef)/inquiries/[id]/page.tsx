@@ -50,13 +50,14 @@ import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-promp
 import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
-import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
+import { MarketplaceActionPanel } from '@/components/inquiries/marketplace-action-panel'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
 import { Suspense } from 'react'
 import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
 import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
+import { getMarketplaceInquiryContext } from '@/lib/marketplace/platform-records'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -96,60 +97,8 @@ function getReferralSource(inquiry: { unknown_fields: unknown }): string | null 
   return (unknown?.referral_source as string) || null
 }
 
-function getTakeAChefPageCapture(inquiry: { unknown_fields: unknown }) {
-  const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  const capture =
-    unknown?.take_a_chef_page_capture &&
-    typeof unknown.take_a_chef_page_capture === 'object' &&
-    !Array.isArray(unknown.take_a_chef_page_capture)
-      ? (unknown.take_a_chef_page_capture as Record<string, unknown>)
-      : null
-  const workflow =
-    unknown?.take_a_chef_workflow &&
-    typeof unknown.take_a_chef_workflow === 'object' &&
-    !Array.isArray(unknown.take_a_chef_workflow)
-      ? (unknown.take_a_chef_workflow as Record<string, unknown>)
-      : null
-
-  if (!capture) return null
-
-  return {
-    captureType:
-      typeof capture.capture_type === 'string' ? (capture.capture_type as string) : 'other',
-    capturedAt:
-      typeof capture.last_captured_at === 'string' ? (capture.last_captured_at as string) : null,
-    pageUrl: typeof capture.page_url === 'string' ? (capture.page_url as string) : null,
-    pageTitle: typeof capture.page_title === 'string' ? (capture.page_title as string) : null,
-    summary: typeof capture.summary === 'string' ? (capture.summary as string) : null,
-    notes: typeof capture.notes === 'string' ? (capture.notes as string) : null,
-    extractedEmail:
-      typeof capture.extracted_email === 'string' ? (capture.extracted_email as string) : null,
-    extractedPhone:
-      typeof capture.extracted_phone === 'string' ? (capture.extracted_phone as string) : null,
-    extractedBookingDate:
-      typeof capture.extracted_booking_date === 'string'
-        ? (capture.extracted_booking_date as string)
-        : null,
-    extractedLocation:
-      typeof capture.extracted_location === 'string'
-        ? (capture.extracted_location as string)
-        : null,
-    proposalCapturedAt:
-      typeof workflow?.proposal_captured_at === 'string'
-        ? (workflow.proposal_captured_at as string)
-        : null,
-    proposalAmountCents:
-      typeof workflow?.proposal_amount_cents === 'number'
-        ? (workflow.proposal_amount_cents as number)
-        : null,
-    menuCapturedAt:
-      typeof workflow?.menu_captured_at === 'string' ? (workflow.menu_captured_at as string) : null,
-    menuSeen: workflow?.menu_seen === true,
-  }
-}
-
 export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
 
   const [
     inquiry,
@@ -209,7 +158,10 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   )
   const scheduleRequest = parsedScheduleRequest.success ? parsedScheduleRequest.data : undefined
   const scheduleSummary = summarizeScheduleRequest(scheduleRequest)
-  const tacPageCapture = inquiry.channel === 'take_a_chef' ? getTakeAChefPageCapture(inquiry) : null
+  const marketplaceContext = await getMarketplaceInquiryContext({
+    tenantId: user.tenantId!,
+    inquiry: inquiry as any,
+  })
 
   // Track which confirmed facts are still missing
   const missingFacts: string[] = []
@@ -325,7 +277,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* Missing Facts Warning */}
       {missingFacts.length > 0 && inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
         <div className="bg-amber-950 border border-amber-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-amber-800">Missing event details:</p>
+          <p className="text-sm font-medium text-amber-200">Missing event details:</p>
           <div className="flex gap-2 mt-2 flex-wrap">
             {missingFacts.map((fact) => (
               <Badge key={fact} variant="warning">
@@ -389,87 +341,11 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* TakeAChef workflow guide — collapsible overview for first-time users */}
       {inquiry.channel === 'take_a_chef' && <TacWorkflowGuide inquiryStatus={inquiry.status} />}
 
-      {tacPageCapture && (
-        <Card className="p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-semibold">Latest Marketplace Capture</h2>
-                <Badge variant="info">{tacPageCapture.captureType.replace('_', ' ')}</Badge>
-              </div>
-              {tacPageCapture.capturedAt && (
-                <p className="mt-1 text-sm text-stone-400">
-                  Captured{' '}
-                  {formatDistanceToNow(new Date(tacPageCapture.capturedAt), { addSuffix: true })}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/marketplace/capture">
-                <Button variant="ghost">Capture another page</Button>
-              </Link>
-              {tacPageCapture.pageUrl && (
-                <a
-                  href={tacPageCapture.pageUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-                >
-                  Open captured page
-                </a>
-              )}
-            </div>
-          </div>
-          <div className="mt-4 space-y-3 text-sm">
-            {tacPageCapture.pageTitle && (
-              <p className="text-stone-200">
-                <span className="text-stone-500">Page title:</span> {tacPageCapture.pageTitle}
-              </p>
-            )}
-            {tacPageCapture.summary && <p className="text-stone-300">{tacPageCapture.summary}</p>}
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-stone-400">
-              {tacPageCapture.extractedBookingDate && (
-                <span>Date: {tacPageCapture.extractedBookingDate}</span>
-              )}
-              {tacPageCapture.extractedLocation && (
-                <span>Location: {tacPageCapture.extractedLocation}</span>
-              )}
-              {tacPageCapture.extractedEmail && <span>Email: {tacPageCapture.extractedEmail}</span>}
-              {tacPageCapture.extractedPhone && <span>Phone: {tacPageCapture.extractedPhone}</span>}
-            </div>
-            {(tacPageCapture.proposalCapturedAt ||
-              tacPageCapture.proposalAmountCents != null ||
-              tacPageCapture.menuSeen) && (
-              <div className="flex flex-wrap gap-x-4 gap-y-2 text-stone-400">
-                {tacPageCapture.proposalCapturedAt && (
-                  <span>
-                    Proposal captured{' '}
-                    {formatDistanceToNow(new Date(tacPageCapture.proposalCapturedAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                )}
-                {tacPageCapture.proposalAmountCents != null && (
-                  <span>Proposal amount: {formatCurrency(tacPageCapture.proposalAmountCents)}</span>
-                )}
-                {tacPageCapture.menuSeen && (
-                  <span>
-                    Menu captured
-                    {tacPageCapture.menuCapturedAt
-                      ? ` ${formatDistanceToNow(new Date(tacPageCapture.menuCapturedAt), {
-                          addSuffix: true,
-                        })}`
-                      : ''}
-                  </span>
-                )}
-              </div>
-            )}
-            {tacPageCapture.notes && (
-              <p className="whitespace-pre-wrap text-stone-300">{tacPageCapture.notes}</p>
-            )}
-          </div>
-        </Card>
-      )}
+      <MarketplaceActionPanel
+        context={marketplaceContext}
+        inquiryStatus={inquiry.status}
+        clientName={name}
+      />
 
       {/* TakeAChef-specific panels — only for take_a_chef channel */}
       {inquiry.channel === 'take_a_chef' && inquiry.status === 'new' && (
@@ -496,25 +372,9 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           clientName={name}
           hasMenu={false}
         />
-      )}
+      )}{/*
 
-      {/* Platform link banner — shows "Open in {Platform}" for any platform inquiry with an external link.
           Skipped for TAC statuses that already have their own button (new → TacAddressLead, awaiting_chef → TacStatusPrompt). */}
-      {(inquiry as any).external_link &&
-        (inquiry as any).external_platform &&
-        !(
-          inquiry.channel === 'take_a_chef' &&
-          (inquiry.status === 'new' || inquiry.status === 'awaiting_chef')
-        ) && (
-          <PlatformLinkBanner
-            platform={(inquiry as any).external_platform}
-            externalLink={(inquiry as any).external_link}
-            externalInquiryId={(inquiry as any).external_inquiry_id ?? null}
-            clientName={name}
-            status={inquiry.status}
-          />
-        )}
-
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Contact Information */}

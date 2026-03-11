@@ -149,7 +149,7 @@ export function ProposalHero({
             />
           ) : (
             <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <span className="text-amber-700 font-semibold text-sm">
+              <span className="text-amber-200 font-semibold text-sm">
                 {(chefBusinessName || 'C').charAt(0).toUpperCase()}
               </span>
             </div>
@@ -195,7 +195,7 @@ export function ProposalHero({
         {/* Chef message */}
         {chefMessage && (
           <div className="mt-8 bg-amber-50/50 rounded-xl border border-amber-100 p-5">
-            <p className="text-sm text-amber-800/60 mb-1 font-medium">
+            <p className="text-sm text-amber-200/60 mb-1 font-medium">
               A note from {chefBusinessName || 'your chef'}
             </p>
             <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">

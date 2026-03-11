@@ -299,7 +299,7 @@ export default function DisplayCase() {
     <div className="space-y-6">
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-200 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
             Dismiss
@@ -515,7 +515,7 @@ export default function DisplayCase() {
                     {item.allergens.map((a) => (
                       <span
                         key={a}
-                        className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 dark:bg-red-900 dark:text-red-300"
+                        className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-200 dark:bg-red-900 dark:text-red-300"
                       >
                         {a}
                       </span>
@@ -545,7 +545,7 @@ export default function DisplayCase() {
                       setRestockQty('1')
                     }}
                     disabled={isPending}
-                    className="flex-1 rounded-md bg-blue-100 px-2 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                    className="flex-1 rounded-md bg-blue-100 px-2 py-1.5 text-sm font-medium text-blue-200 hover:bg-blue-200 disabled:opacity-50 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
                   >
                     Restock
                   </button>

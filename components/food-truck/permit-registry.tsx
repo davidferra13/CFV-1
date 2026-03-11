@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { DocumentUploadField } from '@/components/documents/document-upload-field'
 import {
   type Permit,
   type PermitType,
@@ -170,6 +171,16 @@ function PermitCard({
           <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[permit.status]}`}>
             {STATUS_LABELS[permit.status]}
           </span>
+          {permit.document_url && (
+            <a
+              href={permit.document_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-amber-200 underline underline-offset-2"
+            >
+              Document
+            </a>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -385,6 +396,30 @@ function AddPermitModal({
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
               className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500 resize-none"
+            />
+          </div>
+
+          <DocumentUploadField
+            label="Upload permit file"
+            description="Attach the permit, city certificate, or renewal PDF directly to ChefFlow."
+            documentType="policy"
+            entityType="food_truck_permit"
+            tags={['permit', form.permit_type]}
+            revalidatePaths={['/documents', '/food-truck/permits']}
+            initialUrl={form.document_url || null}
+            initialName={form.document_url ? 'Current permit file' : null}
+            onUploaded={(document) => setForm({ ...form, document_url: document.url })}
+            onCleared={() => setForm({ ...form, document_url: '' })}
+          />
+
+          <div>
+            <label className="block text-sm text-stone-400 mb-1">Document Link</label>
+            <input
+              type="url"
+              value={form.document_url ?? ''}
+              onChange={(e) => setForm({ ...form, document_url: e.target.value })}
+              placeholder="Optional external link or uploaded ChefFlow file"
+              className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500"
             />
           </div>
 

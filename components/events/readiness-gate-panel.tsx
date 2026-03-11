@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { markGatePassed, overrideGate } from '@/lib/events/readiness'
 import type { ReadinessResult, GateResult, ReadinessGate } from '@/lib/events/readiness'
+import { canMarkReadinessGatePassed } from '@/lib/events/readiness-config'
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ function GateRow({
   const [overrideReason, setOverrideReason] = useState('')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const canMarkDone = canMarkReadinessGatePassed(gate.gate as ReadinessGate)
 
   const handleMarkPassed = () => {
     startTransition(async () => {
@@ -114,7 +116,7 @@ function GateRow({
           </div>
           {gate.details && <p className="text-xs text-stone-400 mt-0.5">{gate.details}</p>}
           {gate.overrideReason && (
-            <p className="text-xs text-amber-700 mt-0.5 italic">
+            <p className="text-xs text-amber-200 mt-0.5 italic">
               Bypassed: &ldquo;{gate.overrideReason}&rdquo;
             </p>
           )}
@@ -123,7 +125,7 @@ function GateRow({
         {/* Actions for pending gates only */}
         {gate.status === 'pending' && (
           <div className="flex items-center gap-1.5 shrink-0">
-            {!gate.isHardBlock && (
+            {!gate.isHardBlock && canMarkDone && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -186,7 +188,7 @@ function GateRow({
 // ─── Main Panel ───────────────────────────────────────────────────────────────
 
 export function ReadinessGatePanel({ eventId, readiness, targetLabel }: ReadinessGatePanelProps) {
-  const [localReadiness, setLocalReadiness] = useState(readiness)
+  const localReadiness = readiness
 
   const handleUpdate = async () => {
     // Trigger a page revalidation by refreshing (server component parent will re-fetch)
@@ -218,7 +220,7 @@ export function ReadinessGatePanel({ eventId, readiness, targetLabel }: Readines
           </CardTitle>
           <div className="flex items-center gap-2">
             {passedCount > 0 && (
-              <span className="text-xs font-medium text-green-700">
+              <span className="text-xs font-medium text-green-200">
                 {passedCount}/{localReadiness.gates.length} done
               </span>
             )}
@@ -232,18 +234,18 @@ export function ReadinessGatePanel({ eventId, readiness, targetLabel }: Readines
           </div>
         </div>
         {hardBlocked && (
-          <p className="text-xs text-red-700 mt-1">
+          <p className="text-xs text-red-200 mt-1">
             One or more items cannot be bypassed. Address them before proceeding.
           </p>
         )}
         {!hardBlocked && pendingCount > 0 && (
           <p className="text-xs text-stone-500 mt-1">
-            These items are recommended before {targetLabel.toLowerCase()}. You can mark each done
-            or skip with a reason.
+            Resolve these items before {targetLabel.toLowerCase()}. Manual checklist items can be
+            marked done, and any non-safety item can be skipped with a reason.
           </p>
         )}
         {overriddenCount > 0 && !hardBlocked && (
-          <p className="text-xs text-amber-700 mt-1">
+          <p className="text-xs text-amber-200 mt-1">
             {overriddenCount} item{overriddenCount > 1 ? 's' : ''} bypassed — recorded in the event
             audit trail.
           </p>

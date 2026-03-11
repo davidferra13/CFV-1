@@ -200,7 +200,7 @@ export function JourneyProgressPanel({
           Next Momentum Moves
         </p>
         {remaining.length === 0 ? (
-          <p className="text-sm text-amber-800 mt-1">
+          <p className="text-sm text-amber-200 mt-1">
             Journal is fully documented. Keep adding new entries as this journey evolves.
           </p>
         ) : (

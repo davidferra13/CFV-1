@@ -8,9 +8,9 @@ import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-900 text-green-700',
+  active: 'bg-green-900 text-green-200',
   inactive: 'bg-stone-800 text-stone-500',
-  pending: 'bg-yellow-900 text-yellow-700',
+  pending: 'bg-yellow-900 text-yellow-200',
 }
 
 export default async function AdminStaffPage() {

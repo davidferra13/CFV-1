@@ -39,7 +39,7 @@ export default async function RecipeSprintPage() {
       </div>
 
       {!aiConfigured && items.length > 0 && (
-        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-200">
           <strong>Auto-parsing not set up.</strong> Set GEMINI_API_KEY in your environment for
           automatic ingredient and method extraction. Descriptions will be saved as method text. You
           can edit the full recipe after.

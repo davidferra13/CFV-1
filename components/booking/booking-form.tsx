@@ -793,8 +793,8 @@ export function BookingForm({
       {/* Instant-book pricing summary */}
       {isInstantBook && pricing && (
         <div className="rounded-lg border border-green-200 bg-green-950 p-4 space-y-2">
-          <p className="text-sm font-medium text-green-800">Pricing Summary</p>
-          <div className="flex justify-between text-sm text-green-700">
+          <p className="text-sm font-medium text-green-200">Pricing Summary</p>
+          <div className="flex justify-between text-sm text-green-200">
             <span>
               {bookingConfig?.pricingType === 'per_person'
                 ? `${formatDollars(bookingConfig.basePriceCents!)} x ${parseInt(guestCount) || 1} guests`

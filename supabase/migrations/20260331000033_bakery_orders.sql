@@ -33,14 +33,11 @@ CREATE TABLE IF NOT EXISTS bakery_orders (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_bakery_orders_tenant_pickup ON bakery_orders(tenant_id, pickup_date);
 CREATE INDEX IF NOT EXISTS idx_bakery_orders_tenant_status ON bakery_orders(tenant_id, status);
-
 -- RLS
 ALTER TABLE bakery_orders ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can manage their own bakery orders"
     ON bakery_orders
@@ -52,7 +49,6 @@ DO $$ BEGIN
       SELECT 1 FROM user_roles WHERE auth_user_id = auth.uid() AND entity_id = bakery_orders.tenant_id
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- Auto-update updated_at
 CREATE OR REPLACE FUNCTION update_bakery_orders_updated_at()
 RETURNS TRIGGER AS $$
@@ -61,7 +57,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DO $$ BEGIN
   CREATE TRIGGER bakery_orders_updated_at
     BEFORE UPDATE ON bakery_orders

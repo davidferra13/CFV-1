@@ -115,14 +115,14 @@ export function OnlineCart({
             <div className="space-y-4">
               <button
                 onClick={() => setShowCheckout(false)}
-                className="text-sm text-stone-500 hover:text-stone-700"
+                className="text-sm text-stone-500 hover:text-stone-200"
               >
                 &larr; Back to cart
               </button>
 
               {/* Order type */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-2">Order type</label>
+                <label className="block text-sm font-medium text-stone-200 mb-2">Order type</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setOrderType('pickup')}
@@ -149,7 +149,7 @@ export function OnlineCart({
 
               {/* Customer info */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-200 mb-1">
                   Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -157,12 +157,12 @@ export function OnlineCart({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-800"
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-200"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-200 mb-1">
                   Phone <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -170,12 +170,12 @@ export function OnlineCart({
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="(555) 123-4567"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-800"
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-200"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-200 mb-1">
                   Email (optional, for confirmation)
                 </label>
                 <input
@@ -183,23 +183,23 @@ export function OnlineCart({
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-800"
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-200"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Order notes</label>
+                <label className="block text-sm font-medium text-stone-200 mb-1">Order notes</label>
                 <textarea
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
                   placeholder="Any special requests?"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-800 resize-none"
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-200 resize-none"
                   rows={2}
                 />
               </div>
 
               {error && (
-                <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">{error}</div>
+                <div className="bg-red-50 text-red-200 text-sm p-3 rounded-lg">{error}</div>
               )}
 
               {/* Order summary */}
@@ -254,7 +254,7 @@ export function OnlineCart({
                         >
                           -
                         </button>
-                        <span className="text-sm font-medium text-stone-800 w-6 text-center">
+                        <span className="text-sm font-medium text-stone-200 w-6 text-center">
                           {item.quantity}
                         </span>
                         <button
@@ -266,7 +266,7 @@ export function OnlineCart({
                       </div>
                       <button
                         onClick={() => onRemoveItem(index)}
-                        className="text-xs text-red-500 hover:text-red-700"
+                        className="text-xs text-red-500 hover:text-red-200"
                       >
                         Remove
                       </button>

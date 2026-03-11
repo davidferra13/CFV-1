@@ -193,12 +193,12 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           </CardHeader>
           <CardContent className="space-y-5">
             {configError && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                 {configError}
               </div>
             )}
             {configSaved && (
-              <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-700 flex items-center gap-2">
+              <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-200 flex items-center gap-2">
                 <Check className="h-4 w-4" /> Config saved
               </div>
             )}
@@ -345,7 +345,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             </CardHeader>
             <CardContent className="space-y-4">
               {rewardError && (
-                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                   {rewardError}
                 </div>
               )}
@@ -426,7 +426,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           <CardContent className="space-y-4">
             <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800">
+              <p className="text-sm text-amber-200">
                 The points ledger is append-only. Once saved, balances can only be corrected with an
                 additional adjustment transaction — not deleted. Enter each client&apos;s historical
                 balance carefully.
@@ -434,7 +434,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             </div>
 
             {seedError && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                 {seedError}
               </div>
             )}

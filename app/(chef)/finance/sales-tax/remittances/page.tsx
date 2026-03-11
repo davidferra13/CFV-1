@@ -52,7 +52,7 @@ export default async function SalesTaxRemittancesPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Total Remitted</p>
-            <p className="text-2xl font-bold text-emerald-700 mt-1">
+            <p className="text-2xl font-bold text-emerald-200 mt-1">
               {formatCurrency(totalRemitted)}
             </p>
             <p className="text-xs text-stone-400 mt-1">{remittances.length} filings</p>
@@ -62,7 +62,7 @@ export default async function SalesTaxRemittancesPage() {
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Outstanding</p>
             <p
-              className={`text-2xl font-bold mt-1 ${summary.outstandingCents > 0 ? 'text-amber-700' : 'text-stone-400'}`}
+              className={`text-2xl font-bold mt-1 ${summary.outstandingCents > 0 ? 'text-amber-200' : 'text-stone-400'}`}
             >
               {formatCurrency(summary.outstandingCents)}
             </p>

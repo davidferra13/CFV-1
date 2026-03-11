@@ -230,7 +230,7 @@ export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
             {schedule.warnings.map((warning, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 text-xs text-amber-700 bg-amber-950 rounded-lg p-2"
+                className="flex items-start gap-2 text-xs text-amber-200 bg-amber-950 rounded-lg p-2"
               >
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <span>{warning}</span>

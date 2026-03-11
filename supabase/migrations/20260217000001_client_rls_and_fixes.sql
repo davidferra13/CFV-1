@@ -10,7 +10,6 @@ CREATE POLICY events_client_can_view_own ON events
   FOR SELECT USING (
     get_current_user_role() = 'client' AND client_id = get_current_client_id()
   );
-
 -- ============================================
 -- 2. Client SELECT policy for quotes
 -- Clients can read quotes where they are the client_id
@@ -19,7 +18,6 @@ CREATE POLICY quotes_client_can_view_own ON quotes
   FOR SELECT USING (
     get_current_user_role() = 'client' AND client_id = get_current_client_id()
   );
-
 -- ============================================
 -- 3. Client SELECT policy for event_financial_summary view
 -- (view inherits RLS from underlying tables, but the view itself
@@ -35,11 +33,9 @@ CREATE POLICY quotes_client_can_view_own ON quotes
 -- ============================================
 ALTER TABLE chef_documents
   DROP CONSTRAINT IF EXISTS chef_documents_tenant_id_fkey;
-
 ALTER TABLE chef_documents
   ADD CONSTRAINT chef_documents_tenant_id_fkey
   FOREIGN KEY (tenant_id) REFERENCES chefs(id) ON DELETE CASCADE;
-
 -- ============================================
 -- 5. Add missing indexes on chef_documents for common query patterns
 -- ============================================

@@ -60,7 +60,7 @@ export function AvailabilitySignalToggle({ initialEnabled }: Props) {
       </div>
 
       {enabled && (
-        <p className="text-xs text-green-700 bg-green-950 rounded-lg px-3 py-2">
+        <p className="text-xs text-green-200 bg-green-950 rounded-lg px-3 py-2">
           Active — your public target booking dates will appear on your profile. Use the Calendar to
           mark specific dates as publicly visible.
         </p>

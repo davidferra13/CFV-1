@@ -38,7 +38,7 @@ export default async function SoftwareExpensesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Software &amp; Subscriptions</h1>
-          <span className="bg-violet-900 text-violet-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-violet-900 text-violet-200 text-sm px-2 py-0.5 rounded-full">
             {expenses.length}
           </span>
         </div>
@@ -55,7 +55,7 @@ export default async function SoftwareExpensesPage() {
           <p className="text-sm text-stone-500 mt-1">Subscription entries</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-violet-700">{uniqueVendors}</p>
+          <p className="text-2xl font-bold text-violet-200">{uniqueVendors}</p>
           <p className="text-sm text-stone-500 mt-1">Unique vendors</p>
         </Card>
       </div>

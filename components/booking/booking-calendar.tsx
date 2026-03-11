@@ -139,7 +139,7 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
             cls += ' bg-brand-600 text-white ring-2 ring-brand-600'
             clickable = true
           } else if (status === 'available') {
-            cls += ' bg-green-900 text-green-800 hover:bg-green-200 cursor-pointer'
+            cls += ' bg-green-900 text-green-200 hover:bg-green-200 cursor-pointer'
             clickable = true
           } else if (status === 'blocked') {
             cls += ' bg-stone-800 text-stone-300 cursor-not-allowed'

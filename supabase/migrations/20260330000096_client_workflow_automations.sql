@@ -45,10 +45,8 @@ CREATE TABLE workflow_templates (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_workflow_templates_chef ON workflow_templates(chef_id, is_active);
 CREATE INDEX idx_workflow_templates_trigger ON workflow_templates(trigger_type) WHERE is_active = true;
-
 -- ============================================
 -- TABLE 2: WORKFLOW_STEPS
 -- ============================================
@@ -94,9 +92,7 @@ CREATE TABLE workflow_steps (
 
   UNIQUE (template_id, step_order)
 );
-
 CREATE INDEX idx_workflow_steps_template ON workflow_steps(template_id, step_order);
-
 -- ============================================
 -- TABLE 3: WORKFLOW_EXECUTIONS
 -- ============================================
@@ -126,14 +122,11 @@ CREATE TABLE workflow_executions (
   -- Prevent duplicate enrollments for the same workflow + entity
   UNIQUE (template_id, entity_id)
 );
-
 CREATE INDEX idx_workflow_executions_pending
   ON workflow_executions(next_step_at)
   WHERE status = 'active' AND next_step_at IS NOT NULL;
-
 CREATE INDEX idx_workflow_executions_chef
   ON workflow_executions(chef_id, status);
-
 -- ============================================
 -- TABLE 4: WORKFLOW_EXECUTION_LOG
 -- ============================================
@@ -155,10 +148,8 @@ CREATE TABLE workflow_execution_log (
 
   executed_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_workflow_execution_log_exec
   ON workflow_execution_log(execution_id, step_order);
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -167,7 +158,6 @@ ALTER TABLE workflow_templates      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workflow_steps          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workflow_executions     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workflow_execution_log  ENABLE ROW LEVEL SECURITY;
-
 -- Workflow templates
 CREATE POLICY wt_chef_all ON workflow_templates FOR ALL
   USING (
@@ -182,11 +172,9 @@ CREATE POLICY wt_chef_all ON workflow_templates FOR ALL
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY wt_service_all ON workflow_templates FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 -- Workflow steps (owned by chef via parent template)
 CREATE POLICY ws_chef_all ON workflow_steps FOR ALL
   USING (
@@ -209,11 +197,9 @@ CREATE POLICY ws_chef_all ON workflow_steps FOR ALL
         )
     )
   );
-
 CREATE POLICY ws_service_all ON workflow_steps FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 -- Workflow executions
 CREATE POLICY we_chef_all ON workflow_executions FOR ALL
   USING (
@@ -228,11 +214,9 @@ CREATE POLICY we_chef_all ON workflow_executions FOR ALL
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY we_service_all ON workflow_executions FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 -- Workflow execution log
 CREATE POLICY wel_chef_select ON workflow_execution_log FOR SELECT
   USING (
@@ -241,11 +225,9 @@ CREATE POLICY wel_chef_select ON workflow_execution_log FOR SELECT
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY wel_service_all ON workflow_execution_log FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 -- ============================================
 -- UPDATED_AT TRIGGERS
 -- ============================================

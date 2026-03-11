@@ -32,13 +32,13 @@ export default async function ReconciliationPage() {
           <p className="text-sm text-stone-500 mt-1">Total GMV</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
+          <p className="text-2xl font-bold text-green-200">
             {formatCurrency(data.totalTransferredCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Transferred to chefs</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-violet-700">
+          <p className="text-2xl font-bold text-violet-200">
             {formatCurrency(data.totalPlatformFeesCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Platform fees</p>
@@ -86,10 +86,10 @@ export default async function ReconciliationPage() {
                   <TableCell className="text-stone-300 text-sm">
                     {formatCurrency(chef.gmvCents)}
                   </TableCell>
-                  <TableCell className="text-green-700 text-sm">
+                  <TableCell className="text-green-200 text-sm">
                     {formatCurrency(chef.transferredCents)}
                   </TableCell>
-                  <TableCell className="text-violet-700 text-sm">
+                  <TableCell className="text-violet-200 text-sm">
                     {formatCurrency(chef.platformFeesCents)}
                   </TableCell>
                   <TableCell className="text-sm">

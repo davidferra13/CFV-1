@@ -265,7 +265,7 @@ export function OllamaStatusBadge() {
   let badgeLabel: string
 
   if (allOnline) {
-    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
+    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-200'
     badgeDot = 'bg-emerald-500 animate-pulse'
     if (endpoints.length === 2) {
       badgeLabel = `PC · ${endpoints[0].latencyMs ?? '?'}ms | Pi · ${endpoints[1].latencyMs ?? '?'}ms`
@@ -275,7 +275,7 @@ export function OllamaStatusBadge() {
     }
   } else if (pcHealthy) {
     // PC is fine, Pi is down — still green, Pi is a bonus not a requirement
-    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
+    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-200'
     badgeDot = 'bg-emerald-500 animate-pulse'
     badgeLabel =
       endpoints.length === 2
@@ -283,7 +283,7 @@ export function OllamaStatusBadge() {
         : `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
   } else if (anyOnline) {
     // PC is down but Pi is up — amber, degraded
-    badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
+    badgeClass = 'border-amber-200 bg-amber-950 text-amber-200'
     badgeDot = 'bg-amber-500 animate-pulse'
     badgeLabel =
       endpoints.length === 2
@@ -292,7 +292,7 @@ export function OllamaStatusBadge() {
             .join(' | ')
         : 'AI Degraded'
   } else {
-    badgeClass = 'border-red-300 bg-red-950 text-red-700'
+    badgeClass = 'border-red-300 bg-red-950 text-red-200'
     badgeDot = 'bg-red-500'
     badgeLabel = 'AI Offline'
   }

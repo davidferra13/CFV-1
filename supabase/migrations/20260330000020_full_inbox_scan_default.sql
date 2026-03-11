@@ -4,7 +4,6 @@
 
 ALTER TABLE google_connections
   ALTER COLUMN historical_scan_lookback_days SET DEFAULT 0;
-
 -- Also update any existing rows that still have the old 730 default
 -- and haven't started scanning yet (idle/not enabled).
 UPDATE google_connections

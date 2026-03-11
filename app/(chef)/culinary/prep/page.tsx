@@ -120,13 +120,13 @@ export default async function PrepPage() {
                       <div className="text-right shrink-0">
                         {comp.make_ahead_window_hours ? (
                           <div className="text-center">
-                            <p className="text-xl font-bold text-amber-700">
+                            <p className="text-xl font-bold text-amber-200">
                               {comp.make_ahead_window_hours}h
                             </p>
                             <p className="text-xs text-stone-400">lead time</p>
                           </div>
                         ) : (
-                          <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
                             Make ahead
                           </span>
                         )}

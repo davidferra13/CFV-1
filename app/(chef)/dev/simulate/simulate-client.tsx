@@ -203,12 +203,12 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
 
           {/* Errors / success */}
           {runError && (
-            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-800">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
               {runError}
             </div>
           )}
           {runSuccess && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-3 py-2 text-sm text-emerald-800">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-3 py-2 text-sm text-emerald-200">
               Simulation complete — results updated below.
             </div>
           )}

@@ -15,10 +15,8 @@ CREATE TABLE IF NOT EXISTS chef_portfolio_removal_requests (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Add tenant_id if it doesn't exist (table may have been created with chef_id instead)
 ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES chefs(id) ON DELETE CASCADE;
-
 -- Backfill tenant_id from chef_id if chef_id column exists
 DO $$
 BEGIN
@@ -26,7 +24,6 @@ BEGIN
     UPDATE chef_portfolio_removal_requests SET tenant_id = chef_id WHERE tenant_id IS NULL;
   END IF;
 END $$;
-
 -- Ensure all columns exist if table was pre-created with fewer columns
 ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS client_id UUID;
 ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS request_date DATE DEFAULT CURRENT_DATE;
@@ -37,9 +34,7 @@ ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS completed_a
 ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS completion_notes TEXT;
 ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE chef_portfolio_removal_requests ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
 ALTER TABLE chef_portfolio_removal_requests ENABLE ROW LEVEL SECURITY;
-
 -- Drop existing policy if present, then recreate
 DROP POLICY IF EXISTS "portfolio_removal_own_tenant" ON chef_portfolio_removal_requests;
 CREATE POLICY "portfolio_removal_own_tenant" ON chef_portfolio_removal_requests
@@ -48,6 +43,5 @@ CREATE POLICY "portfolio_removal_own_tenant" ON chef_portfolio_removal_requests
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
     )
   );
-
 CREATE INDEX IF NOT EXISTS idx_portfolio_removal_tenant ON chef_portfolio_removal_requests(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_portfolio_removal_client ON chef_portfolio_removal_requests(client_id) WHERE client_id IS NOT NULL;

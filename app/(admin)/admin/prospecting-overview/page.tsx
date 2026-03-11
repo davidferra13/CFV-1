@@ -8,12 +8,12 @@ import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STAGE_COLORS: Record<string, string> = {
-  lead: 'bg-blue-900 text-blue-700',
-  contacted: 'bg-yellow-900 text-yellow-700',
-  meeting: 'bg-purple-900 text-purple-700',
-  proposal: 'bg-indigo-900 text-indigo-700',
-  won: 'bg-green-900 text-green-700',
-  lost: 'bg-red-900 text-red-700',
+  lead: 'bg-blue-900 text-blue-200',
+  contacted: 'bg-yellow-900 text-yellow-200',
+  meeting: 'bg-purple-900 text-purple-200',
+  proposal: 'bg-indigo-900 text-indigo-200',
+  won: 'bg-green-900 text-green-200',
+  lost: 'bg-red-900 text-red-200',
   nurture: 'bg-stone-800 text-stone-400',
 }
 

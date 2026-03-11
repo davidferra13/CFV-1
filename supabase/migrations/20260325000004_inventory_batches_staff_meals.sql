@@ -35,17 +35,14 @@ CREATE TABLE inventory_batches (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_batches_chef_ingredient ON inventory_batches(chef_id, ingredient_id, is_depleted);
 CREATE INDEX idx_batches_expiry ON inventory_batches(chef_id, expiry_date)
   WHERE NOT is_depleted AND expiry_date IS NOT NULL;
 CREATE INDEX idx_batches_fifo ON inventory_batches(chef_id, ingredient_id, received_date ASC)
   WHERE NOT is_depleted;
-
 CREATE TRIGGER trg_batches_updated_at
   BEFORE UPDATE ON inventory_batches
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE: staff_meals
 -- ============================================
@@ -63,10 +60,8 @@ CREATE TABLE staff_meals (
   created_by      UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_staff_meals_chef ON staff_meals(chef_id, meal_date DESC);
 CREATE INDEX idx_staff_meals_event ON staff_meals(event_id) WHERE event_id IS NOT NULL;
-
 -- ============================================
 -- TABLE: staff_meal_items
 -- ============================================
@@ -80,16 +75,13 @@ CREATE TABLE staff_meal_items (
   cost_cents      INTEGER,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_staff_meal_items_meal ON staff_meal_items(staff_meal_id);
-
 -- ============================================
 -- RLS
 -- ============================================
 ALTER TABLE inventory_batches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_meals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_meal_items ENABLE ROW LEVEL SECURITY;
-
 -- inventory_batches: chef-only
 CREATE POLICY ib_chef_select ON inventory_batches FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
@@ -97,7 +89,6 @@ CREATE POLICY ib_chef_insert ON inventory_batches FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 CREATE POLICY ib_chef_update ON inventory_batches FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
-
 -- staff_meals: chef-only
 CREATE POLICY sm_chef_select ON staff_meals FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
@@ -105,7 +96,6 @@ CREATE POLICY sm_chef_insert ON staff_meals FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 CREATE POLICY sm_chef_update ON staff_meals FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
-
 -- staff_meal_items: via parent join
 CREATE POLICY smi_chef_select ON staff_meal_items FOR SELECT
   USING (EXISTS (

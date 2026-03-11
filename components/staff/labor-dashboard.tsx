@@ -291,7 +291,7 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
                           <span className="text-sm text-stone-600">{event.staffCount}</span>
                         </td>
                         <td className="px-3 py-3 text-right">
-                          <span className="text-sm font-medium text-stone-700">
+                          <span className="text-sm font-medium text-stone-200">
                             {formatMoney(event.laborCents)}
                           </span>
                         </td>
@@ -312,13 +312,13 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
                 <tfoot>
                   <tr className="border-t-2 border-stone-200 bg-stone-50/50">
                     <td className="px-3 py-3 text-sm font-semibold text-stone-900">Total</td>
-                    <td className="px-3 py-3 text-right text-sm font-medium text-stone-700">
+                    <td className="px-3 py-3 text-right text-sm font-medium text-stone-200">
                       {currentMonthDetail.reduce((sum, e) => sum + e.staffCount, 0)}
                     </td>
                     <td className="px-3 py-3 text-right text-sm font-semibold text-stone-900">
                       {formatMoney(currentTotalLabor)}
                     </td>
-                    <td className="px-3 py-3 text-right text-sm font-medium text-stone-700">
+                    <td className="px-3 py-3 text-right text-sm font-medium text-stone-200">
                       {formatMoney(currentTotalRevenue)}
                     </td>
                     <td className="px-3 py-3 text-right">

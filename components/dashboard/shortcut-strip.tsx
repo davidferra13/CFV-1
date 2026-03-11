@@ -4,23 +4,24 @@ import Link from 'next/link'
 import {
   Calendar,
   ChatTeardropText,
+  ChatDots,
   Users,
-  Broadcast,
+  Invoice,
   Utensils,
-  BarChart2,
+  Warehouse,
   Wallet,
-  Settings,
 } from '@/components/ui/icons'
 
 const SHORTCUTS = [
-  { label: 'Events', href: '/events', icon: Calendar, color: '#3b82f6' },
+  { label: 'Calendar', href: '/schedule', icon: Calendar, color: '#3b82f6' },
+  { label: 'Events', href: '/events', icon: Calendar, color: '#2563eb' },
   { label: 'Inquiries', href: '/inquiries', icon: ChatTeardropText, color: '#f59e0b' },
+  { label: 'Quotes', href: '/quotes', icon: Invoice, color: '#f97316' },
   { label: 'Clients', href: '/clients', icon: Users, color: '#a855f7' },
-  { label: 'Commands', href: '#remy', icon: Broadcast, color: '#e88f47' },
   { label: 'Recipes', href: '/recipes', icon: Utensils, color: '#10b981' },
-  { label: 'Analytics', href: '/analytics', icon: BarChart2, color: '#06b6d4' },
-  { label: 'Finance', href: '/finance/reporting', icon: Wallet, color: '#22c55e' },
-  { label: 'Settings', href: '/settings', icon: Settings, color: '#78716c' },
+  { label: 'Comms', href: '/communications', icon: ChatDots, color: '#06b6d4' },
+  { label: 'Inventory', href: '/inventory', icon: Warehouse, color: '#22c55e' },
+  { label: 'Invoices', href: '/finance/invoices', icon: Wallet, color: '#14b8a6' },
 ] as const
 
 /**

@@ -42,28 +42,28 @@ const QUADRANT_CONFIG: Record<
 > = {
   star: {
     label: 'Star',
-    color: 'text-green-700',
+    color: 'text-green-200',
     bgColor: 'bg-green-50',
     dotColor: '#16a34a',
     icon: Star,
   },
   plowhorse: {
     label: 'Plow Horse',
-    color: 'text-amber-700',
+    color: 'text-amber-200',
     bgColor: 'bg-amber-50',
     dotColor: '#d97706',
     icon: Zap,
   },
   puzzle: {
     label: 'Puzzle',
-    color: 'text-blue-700',
+    color: 'text-blue-200',
     bgColor: 'bg-blue-50',
     dotColor: '#2563eb',
     icon: HelpCircle,
   },
   dog: {
     label: 'Dog',
-    color: 'text-red-700',
+    color: 'text-red-200',
     bgColor: 'bg-red-50',
     dotColor: '#dc2626',
     icon: TrendingDown,
@@ -175,7 +175,7 @@ export function MenuEngineeringMatrix() {
           <p className="text-red-600">{error}</p>
           <button
             onClick={() => loadData(period)}
-            className="mt-3 text-sm text-violet-600 hover:text-violet-700 underline"
+            className="mt-3 text-sm text-violet-600 hover:text-violet-200 underline"
           >
             Try again
           </button>
@@ -495,7 +495,7 @@ export function MenuEngineeringMatrix() {
                     <th
                       key={col.key}
                       onClick={() => handleSort(col.key)}
-                      className="text-left py-2 px-3 text-stone-500 font-medium cursor-pointer hover:text-stone-700 whitespace-nowrap"
+                      className="text-left py-2 px-3 text-stone-500 font-medium cursor-pointer hover:text-stone-200 whitespace-nowrap"
                     >
                       <span className="inline-flex items-center gap-1">
                         {col.label}
@@ -520,17 +520,17 @@ export function MenuEngineeringMatrix() {
                       }
                     >
                       <td className="py-2.5 px-3 font-medium text-stone-900">{item.dishName}</td>
-                      <td className="py-2.5 px-3 text-stone-700">{item.unitsSold}</td>
-                      <td className="py-2.5 px-3 text-stone-700">
+                      <td className="py-2.5 px-3 text-stone-200">{item.unitsSold}</td>
+                      <td className="py-2.5 px-3 text-stone-200">
                         {formatCents(item.revenueCents)}
                       </td>
-                      <td className="py-2.5 px-3 text-stone-700">
+                      <td className="py-2.5 px-3 text-stone-200">
                         {formatCents(item.foodCostCents)}
                       </td>
-                      <td className="py-2.5 px-3 text-stone-700">
+                      <td className="py-2.5 px-3 text-stone-200">
                         {formatCents(item.profitCents)}
                       </td>
-                      <td className="py-2.5 px-3 text-stone-700">{item.profitMarginPercent}%</td>
+                      <td className="py-2.5 px-3 text-stone-200">{item.profitMarginPercent}%</td>
                       <td className="py-2.5 px-3">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`}

@@ -99,7 +99,7 @@ export default async function AdminEquipmentPage() {
                     <td className="px-4 py-3 text-stone-400 text-xs capitalize">{item.category}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.status === 'owned' ? 'bg-green-900 text-green-700' : 'bg-stone-800 text-stone-500'}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.status === 'owned' ? 'bg-green-900 text-green-200' : 'bg-stone-800 text-stone-500'}`}
                       >
                         {item.status}
                       </span>

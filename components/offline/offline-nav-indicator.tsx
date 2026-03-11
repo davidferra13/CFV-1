@@ -18,7 +18,7 @@ export function OfflineNavIndicator() {
         title={`Syncing ${syncProgress.completed}/${syncProgress.total} actions...`}
       >
         <Loader2 className="h-3 w-3 text-blue-600 animate-spin" />
-        <span className="text-xs font-medium text-blue-700">Syncing</span>
+        <span className="text-xs font-medium text-blue-200">Syncing</span>
       </div>
     )
   }
@@ -48,7 +48,7 @@ export function OfflineNavIndicator() {
         title="No internet connection — changes will sync when reconnected"
       >
         <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
-        <span className="text-xs font-medium text-red-700">Offline</span>
+        <span className="text-xs font-medium text-red-200">Offline</span>
       </div>
     )
   }
@@ -61,7 +61,7 @@ export function OfflineNavIndicator() {
         title={`${pendingCount} action${pendingCount === 1 ? '' : 's'} waiting to sync`}
       >
         <CloudUpload className="h-3 w-3 text-amber-600" />
-        <span className="text-xs font-medium text-amber-700">{pendingCount} pending</span>
+        <span className="text-xs font-medium text-amber-200">{pendingCount} pending</span>
       </div>
     )
   }

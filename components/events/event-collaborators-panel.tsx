@@ -516,7 +516,7 @@ function CollaboratorRow({
                 type="button"
                 onClick={onRemove}
                 disabled={isPending}
-                className="text-xs text-red-500 hover:text-red-700 px-1.5 py-0.5 rounded"
+                className="text-xs text-red-500 hover:text-red-200 px-1.5 py-0.5 rounded"
                 title="Remove collaborator"
               >
                 Remove
@@ -535,7 +535,7 @@ function CollaboratorRow({
               key={key}
               className={`text-xs rounded-full px-2 py-0.5 ${
                 collab.permissions[key]
-                  ? 'bg-green-900 text-green-800'
+                  ? 'bg-green-900 text-green-200'
                   : 'bg-stone-800 text-stone-400 line-through'
               }`}
             >

@@ -18,37 +18,29 @@ CREATE TABLE chef_activity_log (
   client_id   UUID REFERENCES clients(id) ON DELETE SET NULL,  -- If action relates to a client
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Check constraints for domain values
 ALTER TABLE chef_activity_log ADD CONSTRAINT chk_activity_domain
   CHECK (domain IN ('event', 'inquiry', 'quote', 'menu', 'recipe', 'client', 'financial', 'communication', 'operational'));
-
 COMMENT ON TABLE chef_activity_log IS 'Permanent chef activity log — every meaningful action the chef takes, for the activity feed and "pick up where you left off" features.';
-
 -- ─── Indexes ────────────────────────────────────────────────────────────────
 
 -- Primary query: "Show me my recent activity" (tenant + time)
 CREATE INDEX idx_chef_activity_tenant_recent
   ON chef_activity_log (tenant_id, created_at DESC);
-
 -- Client-scoped: "Show me everything related to this client"
 CREATE INDEX idx_chef_activity_client
   ON chef_activity_log (tenant_id, client_id, created_at DESC)
   WHERE client_id IS NOT NULL;
-
 -- Domain filter: "Show me just my event/menu/inquiry activity"
 CREATE INDEX idx_chef_activity_domain
   ON chef_activity_log (tenant_id, domain, created_at DESC);
-
 -- Entity lookup: "Last action on this entity" (for resume section)
 CREATE INDEX idx_chef_activity_entity
   ON chef_activity_log (tenant_id, entity_type, entity_id, created_at DESC)
   WHERE entity_id IS NOT NULL;
-
 -- ─── RLS ────────────────────────────────────────────────────────────────────
 
 ALTER TABLE chef_activity_log ENABLE ROW LEVEL SECURITY;
-
 -- Chef can read their own activity
 CREATE POLICY chef_activity_log_select ON chef_activity_log
   FOR SELECT USING (
@@ -57,10 +49,8 @@ CREATE POLICY chef_activity_log_select ON chef_activity_log
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Insert via admin client only (server actions use admin client)
 CREATE POLICY chef_activity_log_insert ON chef_activity_log
   FOR INSERT WITH CHECK (true);
-
 -- No updates or deletes — append-only
--- (No UPDATE or DELETE policies = no one can modify/remove entries via RLS)
+-- (No UPDATE or DELETE policies = no one can modify/remove entries via RLS);

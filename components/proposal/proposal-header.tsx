@@ -48,7 +48,7 @@ export function ProposalHeader({
             />
           ) : (
             <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <span className="text-amber-700 font-semibold text-sm">
+              <span className="text-amber-200 font-semibold text-sm">
                 {(chefBusinessName || 'C').charAt(0).toUpperCase()}
               </span>
             </div>

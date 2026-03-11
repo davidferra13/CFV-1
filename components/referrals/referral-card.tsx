@@ -202,7 +202,7 @@ export function ReferralCard() {
                   <span className="text-gray-700">{r.referredName || 'Friend'}</span>
                   <span
                     className={`inline-flex items-center gap-1 text-xs font-medium ${
-                      r.eventCompleted ? 'text-green-700' : 'text-amber-600'
+                      r.eventCompleted ? 'text-green-200' : 'text-amber-600'
                     }`}
                   >
                     {r.eventCompleted ? (

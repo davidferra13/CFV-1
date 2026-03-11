@@ -19,20 +19,14 @@ CREATE TABLE IF NOT EXISTS truck_locations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE truck_locations ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own truck locations"
   ON truck_locations
   FOR ALL
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 CREATE INDEX idx_truck_locations_tenant ON truck_locations(tenant_id);
-
 COMMENT ON TABLE truck_locations IS 'Food truck location roster - spots the truck regularly visits';
-
-
 -- Table: truck_schedule
 -- Tracks which location a truck is visiting on which date and time.
 CREATE TABLE IF NOT EXISTS truck_schedule (
@@ -52,24 +46,19 @@ CREATE TABLE IF NOT EXISTS truck_schedule (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (tenant_id, date, location_id)
 );
-
 ALTER TABLE truck_schedule ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage their own truck schedule"
   ON truck_schedule
   FOR ALL
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 CREATE INDEX idx_truck_schedule_tenant ON truck_schedule(tenant_id);
 CREATE INDEX idx_truck_schedule_date ON truck_schedule(tenant_id, date);
 CREATE INDEX idx_truck_schedule_location ON truck_schedule(location_id);
-
 -- Validate status values
 ALTER TABLE truck_schedule
   ADD CONSTRAINT truck_schedule_status_check
   CHECK (status IN ('scheduled', 'active', 'completed', 'cancelled'));
-
 COMMENT ON TABLE truck_schedule IS 'Food truck daily schedule - which location to visit, when, and post-service metrics';
 COMMENT ON COLUMN truck_schedule.revenue_cents IS 'Revenue in cents (minor units) - filled after service';
 COMMENT ON COLUMN truck_schedule.expected_covers IS 'Estimated number of customers';

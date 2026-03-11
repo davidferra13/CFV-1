@@ -192,7 +192,7 @@ function LogBatchForm({ onLogged }: { onLogged: () => void }) {
 
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-stone-700 mb-3">Log Batch Result</h3>
+      <h3 className="text-sm font-semibold text-stone-200 mb-3">Log Batch Result</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div>

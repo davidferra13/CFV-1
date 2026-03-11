@@ -65,6 +65,7 @@ export async function listRecentMessages(
 // ─── List Messages Page (paginated — for historical scan) ───────────────────
 
 interface ListMessagesPageOptions {
+  includeSpamTrash?: boolean
   pageToken?: string
   query?: string
   maxResults?: number
@@ -73,17 +74,19 @@ interface ListMessagesPageOptions {
 interface ListMessagesPageResult {
   messages: GmailMessageRef[]
   nextPageToken?: string
+  resultSizeEstimate?: number
 }
 
 export async function listMessagesPage(
   accessToken: string,
   options: ListMessagesPageOptions = {}
 ): Promise<ListMessagesPageResult> {
-  const { pageToken, query, maxResults = 100 } = options
+  const { includeSpamTrash = false, pageToken, query, maxResults = 100 } = options
 
   const params = new URLSearchParams({
     maxResults: String(maxResults),
   })
+  if (includeSpamTrash) params.set('includeSpamTrash', 'true')
   if (query) params.set('q', query)
   if (pageToken) params.set('pageToken', pageToken)
 
@@ -101,6 +104,8 @@ export async function listMessagesPage(
   return {
     messages: data.messages || [],
     nextPageToken: data.nextPageToken,
+    resultSizeEstimate:
+      typeof data.resultSizeEstimate === 'number' ? data.resultSizeEstimate : undefined,
   }
 }
 
@@ -191,9 +196,12 @@ export async function getFullMessage(accessToken: string, messageId: string): Pr
 
 // ─── Get Gmail Profile ──────────────────────────────────────────────────────
 
-export async function getGmailProfile(
-  accessToken: string
-): Promise<{ emailAddress: string; historyId: string }> {
+export async function getGmailProfile(accessToken: string): Promise<{
+  emailAddress: string
+  historyId: string
+  messagesTotal: number | null
+  threadsTotal: number | null
+}> {
   const response = await fetch(`${GMAIL_API}/profile`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
@@ -208,6 +216,8 @@ export async function getGmailProfile(
   return {
     emailAddress: data.emailAddress,
     historyId: data.historyId,
+    messagesTotal: typeof data.messagesTotal === 'number' ? data.messagesTotal : null,
+    threadsTotal: typeof data.threadsTotal === 'number' ? data.threadsTotal : null,
   }
 }
 

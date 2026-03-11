@@ -47,7 +47,7 @@ export default async function LedgerPage() {
           <p className="text-sm text-stone-500 mt-1">Total ledger entries</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
+          <p className="text-2xl font-bold text-green-200">
             {formatCurrency(summary.totalRevenueCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Revenue recorded</p>
@@ -88,7 +88,7 @@ export default async function LedgerPage() {
                   <p className="text-xs text-stone-400">{entry.description}</p>
                 </div>
                 <span
-                  className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-700'}`}
+                  className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-200'}`}
                 >
                   {entry.is_refund ? '−' : '+'}
                   {formatCurrency(Math.abs(entry.amount_cents))}

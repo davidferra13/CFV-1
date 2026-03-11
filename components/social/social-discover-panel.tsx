@@ -40,7 +40,7 @@ function DiscoverChefCard({
       <Link href={`/network/${chef.id}`}>
         <Avatar className="w-10 h-10 flex-shrink-0">
           {chef.profile_image_url && <AvatarImage src={chef.profile_image_url} alt={authorName} />}
-          <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
+          <AvatarFallback className="bg-amber-900 text-amber-200 text-xs font-semibold">
             {authorName
               .split(' ')
               .map((w: string) => w[0])
@@ -97,7 +97,7 @@ export function SocialDiscoverPanel({
           </div>
           <Link
             href="/network?tab=discover"
-            className="block text-center text-xs text-amber-700 font-medium mt-3 hover:underline"
+            className="block text-center text-xs text-amber-200 font-medium mt-3 hover:underline"
           >
             See more chefs →
           </Link>
@@ -116,7 +116,7 @@ export function SocialDiscoverPanel({
               <div key={item.tag} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-stone-400 w-4">{i + 1}</span>
-                  <span className="text-sm font-medium text-amber-700">#{item.tag}</span>
+                  <span className="text-sm font-medium text-amber-200">#{item.tag}</span>
                 </div>
                 <span className="text-xs text-stone-400">{item.post_count} posts</span>
               </div>

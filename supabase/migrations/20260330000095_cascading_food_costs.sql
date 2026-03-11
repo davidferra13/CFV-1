@@ -16,12 +16,10 @@ ALTER TABLE ingredients
   ADD COLUMN IF NOT EXISTS weight_to_volume_ratio DECIMAL(8,4),
   ADD COLUMN IF NOT EXISTS default_yield_pct INTEGER DEFAULT 100
     CHECK (default_yield_pct IS NULL OR (default_yield_pct > 0 AND default_yield_pct <= 100));
-
 COMMENT ON COLUMN ingredients.cost_per_unit_cents IS 'Canonical cost per default_unit in cents. Updated from price history or manual entry.';
 COMMENT ON COLUMN ingredients.unit_type IS 'Classification of the default_unit: weight, volume, each, or length.';
 COMMENT ON COLUMN ingredients.weight_to_volume_ratio IS 'Grams per mL for unit conversion (e.g. flour = 0.593, water = 1.0).';
 COMMENT ON COLUMN ingredients.default_yield_pct IS 'Default usable yield after standard prep (100 = no loss, 85 = 15% trim loss).';
-
 -- ============================================
 -- 2. RECIPE_INGREDIENTS: Add prep + yield columns
 -- ============================================
@@ -31,11 +29,9 @@ ALTER TABLE recipe_ingredients
   ADD COLUMN IF NOT EXISTS yield_pct INTEGER DEFAULT 100
     CHECK (yield_pct IS NULL OR (yield_pct > 0 AND yield_pct <= 100)),
   ADD COLUMN IF NOT EXISTS computed_cost_cents INTEGER;
-
 COMMENT ON COLUMN recipe_ingredients.prep_action IS 'Prep method applied (e.g. peel, dice, fillet). Drives yield calculation.';
 COMMENT ON COLUMN recipe_ingredients.yield_pct IS 'Usable yield after this prep action (100 = no loss). Overrides ingredient default when set.';
 COMMENT ON COLUMN recipe_ingredients.computed_cost_cents IS 'Computed: (cost_per_unit * quantity) / (yield_pct / 100). Updated by cascade engine.';
-
 -- ============================================
 -- 3. RECIPES: Add computed cost columns
 -- ============================================
@@ -43,10 +39,8 @@ COMMENT ON COLUMN recipe_ingredients.computed_cost_cents IS 'Computed: (cost_per
 ALTER TABLE recipes
   ADD COLUMN IF NOT EXISTS total_cost_cents INTEGER,
   ADD COLUMN IF NOT EXISTS cost_per_serving_cents INTEGER;
-
 COMMENT ON COLUMN recipes.total_cost_cents IS 'Computed sum of all ingredient + sub-recipe costs (yield-adjusted). Updated by cascade engine.';
 COMMENT ON COLUMN recipes.cost_per_serving_cents IS 'total_cost_cents / yield_quantity. Updated by cascade engine.';
-
 -- ============================================
 -- 4. EVENTS: Add cost refresh flag
 -- ============================================
@@ -54,9 +48,7 @@ COMMENT ON COLUMN recipes.cost_per_serving_cents IS 'total_cost_cents / yield_qu
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS cost_needs_refresh BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS cost_refreshed_at TIMESTAMPTZ;
-
 COMMENT ON COLUMN events.cost_needs_refresh IS 'Set true when upstream ingredient/recipe costs change. Chef reviews before clearing.';
-
 -- ============================================
 -- 5. UPDATE compute_recipe_cost_cents to be yield-aware
 -- ============================================
@@ -96,7 +88,6 @@ RETURNS INTEGER AS $$
   JOIN recipe_ingredients ri ON ri.recipe_id = arc.recipe_id
   JOIN ingredients i ON i.id = ri.ingredient_id;
 $$ LANGUAGE SQL STABLE;
-
 -- ============================================
 -- 6. Helper: Recompute and store recipe costs
 -- Called by the cascade engine after price changes.
@@ -126,7 +117,6 @@ BEGIN
   WHERE id = p_recipe_id;
 END;
 $$ LANGUAGE plpgsql;
-
 -- ============================================
 -- 7. Helper: Recompute recipe_ingredients.computed_cost_cents
 -- ============================================
@@ -152,7 +142,6 @@ BEGIN
     AND ri.recipe_id = p_recipe_id;
 END;
 $$ LANGUAGE plpgsql;
-
 -- ============================================
 -- 8. Update recipe_cost_summary view to include new columns
 -- ============================================
@@ -173,7 +162,6 @@ SELECT
     END
   ) AS cost_per_portion_cents,
   (SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id = r.id) AS ingredient_count,
-  (SELECT COUNT(*) FROM recipe_sub_recipes WHERE parent_recipe_id = r.id) AS sub_recipe_count,
   (
     SELECT COUNT(*) = COUNT(COALESCE(i.cost_per_unit_cents, i.last_price_cents))
     FROM recipe_ingredients ri
@@ -185,6 +173,7 @@ SELECT
     FROM recipe_ingredients ri
     JOIN ingredients i ON i.id = ri.ingredient_id
     WHERE ri.recipe_id = r.id
-  ) AS last_price_updated_at
+  ) AS last_price_updated_at,
+  (SELECT COUNT(*) FROM recipe_sub_recipes WHERE parent_recipe_id = r.id) AS sub_recipe_count
 FROM recipes r
 WHERE r.archived = false;

@@ -13,16 +13,12 @@ CREATE TABLE IF NOT EXISTS packing_templates (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Index for chef lookups
 CREATE INDEX idx_packing_templates_chef_id ON packing_templates(chef_id);
-
 -- Index for event_type matching (auto-suggest)
 CREATE INDEX idx_packing_templates_event_type ON packing_templates(chef_id, event_type) WHERE event_type IS NOT NULL;
-
 -- RLS
 ALTER TABLE packing_templates ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs can manage their own packing templates"
   ON packing_templates
   FOR ALL
@@ -38,7 +34,6 @@ CREATE POLICY "Chefs can manage their own packing templates"
       AND user_roles.auth_user_id = auth.uid()
       AND user_roles.role = 'chef'
   ));
-
 -- Updated_at trigger
 CREATE OR REPLACE FUNCTION update_packing_templates_updated_at()
 RETURNS TRIGGER AS $$
@@ -47,12 +42,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trg_packing_templates_updated_at
   BEFORE UPDATE ON packing_templates
   FOR EACH ROW
   EXECUTE FUNCTION update_packing_templates_updated_at();
-
 COMMENT ON TABLE packing_templates IS
   'Reusable equipment and item packing list templates. '
   'Each template stores a JSONB array of items with name, quantity, category, and notes. '

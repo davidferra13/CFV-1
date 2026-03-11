@@ -43,7 +43,7 @@ export function ProposalServices({ eventOccasion, menu }: ProposalServicesProps)
         <h2 className="text-xl font-semibold text-gray-900">The Menu</h2>
       </div>
 
-      {menu.name && <p className="text-lg font-medium text-amber-700 mb-1">{menu.name}</p>}
+      {menu.name && <p className="text-lg font-medium text-amber-200 mb-1">{menu.name}</p>}
       {menu.description && <p className="text-sm text-gray-500 mb-6">{menu.description}</p>}
 
       <div className="space-y-8">
@@ -77,7 +77,7 @@ export function ProposalServices({ eventOccasion, menu }: ProposalServicesProps)
                         {dish.dietaryTags.map((tag) => (
                           <span
                             key={tag}
-                            className="text-[10px] font-medium uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5"
+                            className="text-[10px] font-medium uppercase tracking-wider text-amber-200 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5"
                           >
                             {tag}
                           </span>
@@ -121,7 +121,7 @@ function DishCard({ dish }: { dish: Dish }) {
             {dish.dietaryTags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] font-medium uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5"
+                className="text-[10px] font-medium uppercase tracking-wider text-amber-200 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5"
               >
                 {tag}
               </span>

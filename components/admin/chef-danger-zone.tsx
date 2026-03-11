@@ -64,12 +64,12 @@ export function ChefDangerZone({ chefId, chefName, currentStatus }: Props) {
     <div className="bg-stone-900 rounded-xl border border-red-200 overflow-hidden">
       <div className="px-4 py-3 border-b border-red-100 bg-red-950 flex items-center gap-2">
         <AlertTriangle size={14} className="text-red-500" />
-        <h2 className="text-sm font-semibold text-red-700">Danger Zone</h2>
+        <h2 className="text-sm font-semibold text-red-200">Danger Zone</h2>
       </div>
       <div className="p-4 space-y-4">
         {isSuspended ? (
           <div className="space-y-3">
-            <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-800">
+            <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-200">
               This account is currently <strong>suspended</strong>. The chef cannot log in.
             </div>
             <button

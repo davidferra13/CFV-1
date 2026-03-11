@@ -298,7 +298,7 @@ function VendorCard({
                   href={vendor.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-700 underline"
+                  className="text-amber-200 underline"
                 >
                   Website
                 </a>

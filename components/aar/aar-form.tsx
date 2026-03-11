@@ -299,7 +299,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
                 flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors
                 ${
                   forgottenItems.has(ci.item)
-                    ? 'border-red-300 bg-red-950 text-red-800'
+                    ? 'border-red-300 bg-red-950 text-red-200'
                     : 'border-stone-700 bg-stone-900 text-stone-300 hover:bg-stone-800'
                 }
               `}

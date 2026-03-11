@@ -28,7 +28,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION respond_to_quote_atomic(
   p_quote_id UUID,
   p_client_id UUID,
@@ -263,4 +262,4 @@ BEGIN
     'converting_quote_id', CASE WHEN v_quote.event_id IS NOT NULL THEN v_quote.id ELSE NULL END
   );
 END;
-$$;
+$$;;

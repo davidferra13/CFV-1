@@ -8,11 +8,11 @@ import { analyzeClientSentiment, type SentimentAnalysis } from '@/lib/ai/sentime
 import { toast } from 'sonner'
 
 const SENTIMENT_COLORS: Record<string, string> = {
-  very_positive: 'text-green-700',
+  very_positive: 'text-green-200',
   positive: 'text-emerald-600',
   neutral: 'text-stone-500',
-  negative: 'text-amber-700',
-  very_negative: 'text-red-700',
+  negative: 'text-amber-200',
+  very_negative: 'text-red-200',
 }
 
 const SENTIMENT_LABELS: Record<string, string> = {
@@ -83,11 +83,11 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
           </div>
 
           {analysis.riskFlag && analysis.riskReason && (
-            <div className="bg-red-950 border border-red-200 rounded p-2 text-red-800">
+            <div className="bg-red-950 border border-red-200 rounded p-2 text-red-200">
               <div className="font-medium mb-0.5">Risk Detected</div>
               {analysis.riskReason}
               {analysis.actionRecommendation && (
-                <div className="mt-1 text-red-700">Action: {analysis.actionRecommendation}</div>
+                <div className="mt-1 text-red-200">Action: {analysis.actionRecommendation}</div>
               )}
             </div>
           )}

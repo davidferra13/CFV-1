@@ -294,7 +294,7 @@ export function ScenarioPlanner({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Meal Prep Slider */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">
+          <label className="block text-sm font-medium text-stone-200 mb-2">
             Additional weekly meal prep clients
           </label>
           <input
@@ -307,14 +307,14 @@ export function ScenarioPlanner({
           />
           <div className="flex justify-between text-xs text-stone-500 mt-1">
             <span>0</span>
-            <span className="font-medium text-stone-700">+{addMealPrep}</span>
+            <span className="font-medium text-stone-200">+{addMealPrep}</span>
             <span>10</span>
           </div>
         </div>
 
         {/* One-off Events Slider */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">
+          <label className="block text-sm font-medium text-stone-200 mb-2">
             Additional events per week
           </label>
           <input
@@ -327,7 +327,7 @@ export function ScenarioPlanner({
           />
           <div className="flex justify-between text-xs text-stone-500 mt-1">
             <span>0</span>
-            <span className="font-medium text-stone-700">+{addEvents}</span>
+            <span className="font-medium text-stone-200">+{addEvents}</span>
             <span>10</span>
           </div>
         </div>
@@ -385,9 +385,9 @@ export function ScenarioPlanner({
 
 export function BurnoutBadge({ risk }: { risk: CapacityAnalysis['burnoutRisk'] }) {
   const config = {
-    low: { bg: 'bg-green-100', text: 'text-green-700', label: 'Low Risk' },
-    moderate: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Moderate' },
-    high: { bg: 'bg-red-100', text: 'text-red-700', label: 'High Risk' },
+    low: { bg: 'bg-green-100', text: 'text-green-200', label: 'Low Risk' },
+    moderate: { bg: 'bg-amber-100', text: 'text-amber-200', label: 'Moderate' },
+    high: { bg: 'bg-red-100', text: 'text-red-200', label: 'High Risk' },
   }
 
   const c = config[risk]

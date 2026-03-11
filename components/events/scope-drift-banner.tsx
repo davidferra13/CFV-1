@@ -42,7 +42,7 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
 
           <ul className="space-y-1">
             {driftResult.changes.map((change) => (
-              <li key={change.field} className="text-sm text-amber-800">
+              <li key={change.field} className="text-sm text-amber-200">
                 <span className="font-medium">{change.field}:</span>{' '}
                 <span className="line-through text-amber-600">{change.original}</span>
                 {' → '}

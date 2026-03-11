@@ -214,7 +214,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
                   <div className="pt-3 border-t flex justify-between items-center">
                     <span className="font-semibold text-stone-100">Balance Due</span>
                     <span
-                      className={`text-xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-emerald-600'}`}
+                      className={`text-xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-200' : 'text-emerald-600'}`}
                     >
                       {formatCurrency(outstandingBalanceCents)}
                     </span>

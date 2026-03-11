@@ -6,6 +6,13 @@
 -- TABLE: plating_guides
 -- =============================================================================
 
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 CREATE TABLE plating_guides (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -21,23 +28,19 @@ CREATE TABLE plating_guides (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Indexes
 CREATE INDEX idx_plating_guides_chef_id ON plating_guides(chef_id);
 CREATE INDEX idx_plating_guides_recipe_id ON plating_guides(recipe_id);
-
 -- Auto-update updated_at
 CREATE TRIGGER set_plating_guides_updated_at
   BEFORE UPDATE ON plating_guides
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
-
 -- =============================================================================
 -- RLS
 -- =============================================================================
 
 ALTER TABLE plating_guides ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY chef_manages_own_plating_guides ON plating_guides
   FOR ALL
   USING (chef_id = get_current_tenant_id())

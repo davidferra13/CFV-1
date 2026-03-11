@@ -31,19 +31,15 @@ CREATE TABLE chef_feedback (
   created_at      TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at      TIMESTAMPTZ DEFAULT now() NOT NULL
 );
-
 CREATE INDEX idx_chef_feedback_tenant ON chef_feedback(tenant_id);
 CREATE INDEX idx_chef_feedback_client ON chef_feedback(client_id);
 CREATE INDEX idx_chef_feedback_source ON chef_feedback(source);
-
 COMMENT ON TABLE chef_feedback IS
   'Chef-logged external feedback: verbal, Google reviews, Yelp, social media, etc. Separate from client_reviews (client-submitted).';
-
 -- ============================================
 -- 2. RLS Policies (chef-only, using user_roles pattern from client_reviews)
 -- ============================================
 ALTER TABLE chef_feedback ENABLE ROW LEVEL SECURITY;
-
 -- Chefs can read all feedback for their tenant
 CREATE POLICY chef_feedback_select_chef ON chef_feedback
   FOR SELECT TO authenticated
@@ -53,7 +49,6 @@ CREATE POLICY chef_feedback_select_chef ON chef_feedback
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
-
 -- Chefs can insert feedback for their tenant
 CREATE POLICY chef_feedback_insert_chef ON chef_feedback
   FOR INSERT TO authenticated
@@ -63,7 +58,6 @@ CREATE POLICY chef_feedback_insert_chef ON chef_feedback
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
-
 -- Chefs can update their own feedback
 CREATE POLICY chef_feedback_update_chef ON chef_feedback
   FOR UPDATE TO authenticated
@@ -79,7 +73,6 @@ CREATE POLICY chef_feedback_update_chef ON chef_feedback
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
-
 -- ============================================
 -- 3. Updated_at trigger
 -- ============================================

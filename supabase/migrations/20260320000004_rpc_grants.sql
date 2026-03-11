@@ -4,4 +4,4 @@
 -- Depends on: 20260320000001 (transition_event_atomic function)
 -- ============================================================
 
-GRANT EXECUTE ON FUNCTION transition_event_atomic(UUID, TEXT, TEXT, UUID, UUID, JSONB) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION transition_event_atomic(UUID, TEXT, TEXT, UUID, UUID, JSONB) TO authenticated, service_role;;

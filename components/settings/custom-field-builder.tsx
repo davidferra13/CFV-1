@@ -295,7 +295,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                         size="sm"
                         onClick={() => handleDelete(def)}
                         disabled={isPending}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-950 shrink-0"
+                        className="text-red-500 hover:text-red-200 hover:bg-red-950 shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -21,8 +21,8 @@ export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  shared: 'bg-blue-900 text-blue-700',
-  locked: 'bg-green-900 text-green-700',
+  shared: 'bg-blue-900 text-blue-200',
+  locked: 'bg-green-900 text-green-200',
   archived: 'bg-stone-700 text-stone-500',
 }
 
@@ -138,7 +138,7 @@ export default async function ChefMenusPage() {
                   </TableCell>
                   <TableCell>
                     {menu.is_template ? (
-                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
                         Template
                       </span>
                     ) : (

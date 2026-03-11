@@ -169,7 +169,7 @@ export function CommandCenterClient() {
 
       {/* Ollama offline */}
       {currentRun?.ollamaOffline && (
-        <div className="rounded-lg border border-red-200 bg-red-950 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-200 bg-red-950 p-4 text-sm text-red-200">
           <span className="font-medium">The processing service is offline.</span> Start the local
           service to use the Command Center. Your conversations are processed privately and never
           stored on our servers.

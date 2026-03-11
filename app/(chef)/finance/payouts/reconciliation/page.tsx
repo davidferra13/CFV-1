@@ -78,11 +78,11 @@ export default async function ReconciliationPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 bg-green-950 border-green-200">
-          <p className="text-2xl font-bold text-green-700">{reconciled.length}</p>
+          <p className="text-2xl font-bold text-green-200">{reconciled.length}</p>
           <p className="text-sm text-emerald-600 mt-1">Fully reconciled</p>
         </Card>
         <Card className="p-4 bg-amber-950 border-amber-200">
-          <p className="text-2xl font-bold text-amber-700">{partial.length}</p>
+          <p className="text-2xl font-bold text-amber-200">{partial.length}</p>
           <p className="text-sm text-amber-600 mt-1">Partially recorded</p>
         </Card>
         <Card className="p-4 bg-stone-800 border-stone-700">
@@ -187,10 +187,10 @@ export default async function ReconciliationPage() {
                       <TableCell className="text-stone-100 font-semibold text-sm">
                         {formatCurrency(invoiced)}
                       </TableCell>
-                      <TableCell className="text-green-700 font-semibold text-sm">
+                      <TableCell className="text-green-200 font-semibold text-sm">
                         {formatCurrency(recorded)}
                       </TableCell>
-                      <TableCell className="text-amber-700 font-semibold text-sm">
+                      <TableCell className="text-amber-200 font-semibold text-sm">
                         {formatCurrency(invoiced - recorded)}
                       </TableCell>
                       <TableCell>

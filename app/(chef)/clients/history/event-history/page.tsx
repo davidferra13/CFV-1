@@ -17,13 +17,13 @@ import { format } from 'date-fns'
 export const metadata: Metadata = { title: 'Event History - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  completed: 'bg-green-900 text-green-700',
+  completed: 'bg-green-900 text-green-200',
   cancelled: 'bg-stone-700 text-stone-500',
-  in_progress: 'bg-blue-900 text-blue-700',
-  confirmed: 'bg-teal-900 text-teal-700',
-  paid: 'bg-emerald-900 text-emerald-700',
-  accepted: 'bg-sky-900 text-sky-700',
-  proposed: 'bg-amber-900 text-amber-700',
+  in_progress: 'bg-blue-900 text-blue-200',
+  confirmed: 'bg-teal-900 text-teal-200',
+  paid: 'bg-emerald-900 text-emerald-200',
+  accepted: 'bg-sky-900 text-sky-200',
+  proposed: 'bg-amber-900 text-amber-200',
   draft: 'bg-stone-800 text-stone-400',
 }
 
@@ -65,11 +65,11 @@ export default async function EventHistoryPage() {
             <p className="text-sm text-stone-500 mt-1">Past events</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-700">{completedEvents.length}</p>
+            <p className="text-2xl font-bold text-green-200">{completedEvents.length}</p>
             <p className="text-sm text-stone-500 mt-1">Completed</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-700">{formatCurrency(totalRevenue)}</p>
+            <p className="text-2xl font-bold text-amber-200">{formatCurrency(totalRevenue)}</p>
             <p className="text-sm text-stone-500 mt-1">Revenue from completed</p>
           </Card>
         </div>

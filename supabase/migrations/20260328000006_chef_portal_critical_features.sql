@@ -16,16 +16,13 @@ CREATE TABLE IF NOT EXISTS chef_profiles (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE chef_profiles
   ADD COLUMN IF NOT EXISTS notification_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS notification_email_enabled BOOLEAN NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS notification_sms_enabled BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS notification_push_enabled BOOLEAN NOT NULL DEFAULT true;
-
 CREATE INDEX IF NOT EXISTS idx_chef_profiles_tenant_id ON chef_profiles(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_chef_profiles_chef_id ON chef_profiles(chef_id);
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -37,9 +34,7 @@ BEGIN
       EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END $$;
-
 ALTER TABLE chef_profiles ENABLE ROW LEVEL SECURITY;
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -91,7 +86,6 @@ BEGIN
       );
   END IF;
 END $$;
-
 -- ============================================================
 -- 2) Integration connection settings on tenant_settings
 -- ============================================================
@@ -104,13 +98,10 @@ CREATE TABLE IF NOT EXISTS tenant_settings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE tenant_settings
   ADD COLUMN IF NOT EXISTS integration_connection_settings JSONB NOT NULL DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS integration_updated_at TIMESTAMPTZ;
-
 CREATE INDEX IF NOT EXISTS idx_tenant_settings_tenant_id ON tenant_settings(tenant_id);
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -122,9 +113,7 @@ BEGIN
       EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END $$;
-
 ALTER TABLE tenant_settings ENABLE ROW LEVEL SECURITY;
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -176,7 +165,6 @@ BEGIN
       );
   END IF;
 END $$;
-
 -- ============================================================
 -- 3) Client preference fields on clients
 -- ============================================================
@@ -188,7 +176,6 @@ ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS budget_range_max_cents INTEGER,
   ADD COLUMN IF NOT EXISTS cleanup_expectations TEXT,
   ADD COLUMN IF NOT EXISTS leftovers_preference TEXT;
-
 -- ============================================================
 -- 4) Team member relationships on chef_team_members
 -- ============================================================
@@ -211,7 +198,6 @@ CREATE TABLE IF NOT EXISTS chef_team_members (
   CONSTRAINT chef_team_members_status_check
     CHECK (status IN ('invited', 'active', 'inactive', 'removed'))
 );
-
 ALTER TABLE chef_team_members
   ADD COLUMN IF NOT EXISTS member_chef_id UUID REFERENCES chefs(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS member_email TEXT,
@@ -222,12 +208,10 @@ ALTER TABLE chef_team_members
   ADD COLUMN IF NOT EXISTS invited_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS removed_at TIMESTAMPTZ;
-
 CREATE INDEX IF NOT EXISTS idx_chef_team_members_tenant ON chef_team_members(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_chef_team_members_member ON chef_team_members(member_chef_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_chef_team_members_tenant_email
   ON chef_team_members(tenant_id, lower(member_email));
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -239,9 +223,7 @@ BEGIN
       EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END $$;
-
 ALTER TABLE chef_team_members ENABLE ROW LEVEL SECURITY;
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -263,7 +245,6 @@ BEGIN
       );
   END IF;
 END $$;
-
 -- ============================================================
 -- 5) Time block management table for advanced scheduling
 -- ============================================================
@@ -284,9 +265,7 @@ CREATE TABLE IF NOT EXISTS time_blocks (
   CONSTRAINT time_blocks_range_check
     CHECK (end_at > start_at)
 );
-
 CREATE INDEX IF NOT EXISTS idx_time_blocks_tenant_start ON time_blocks(tenant_id, start_at);
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -298,9 +277,7 @@ BEGIN
       EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END $$;
-
 ALTER TABLE time_blocks ENABLE ROW LEVEL SECURITY;
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -322,7 +299,6 @@ BEGIN
       );
   END IF;
 END $$;
-
 -- ============================================================
 -- 6) Contract version history and multi-party signers
 -- ============================================================
@@ -338,12 +314,10 @@ CREATE TABLE IF NOT EXISTS event_contract_versions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(contract_id, version_number)
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_contract_versions_contract
   ON event_contract_versions(contract_id, version_number DESC);
 CREATE INDEX IF NOT EXISTS idx_event_contract_versions_tenant
   ON event_contract_versions(tenant_id);
-
 CREATE TABLE IF NOT EXISTS event_contract_signers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   contract_id UUID NOT NULL REFERENCES event_contracts(id) ON DELETE CASCADE,
@@ -366,14 +340,12 @@ CREATE TABLE IF NOT EXISTS event_contract_signers (
   CONSTRAINT event_contract_signers_order_check
     CHECK (signing_order >= 1)
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS uq_event_contract_signers_contract_email
   ON event_contract_signers(contract_id, lower(signer_email));
 CREATE INDEX IF NOT EXISTS idx_event_contract_signers_contract_order
   ON event_contract_signers(contract_id, signing_order);
 CREATE INDEX IF NOT EXISTS idx_event_contract_signers_tenant
   ON event_contract_signers(tenant_id);
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -385,23 +357,19 @@ BEGIN
       EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END $$;
-
 -- Backfill tenant_id from parent contract when missing.
 UPDATE event_contract_versions v
 SET tenant_id = c.chef_id
 FROM event_contracts c
 WHERE v.contract_id = c.id
   AND v.tenant_id IS NULL;
-
 UPDATE event_contract_signers s
 SET tenant_id = c.chef_id
 FROM event_contracts c
 WHERE s.contract_id = c.id
   AND s.tenant_id IS NULL;
-
 ALTER TABLE event_contract_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_contract_signers ENABLE ROW LEVEL SECURITY;
-
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -512,4 +480,3 @@ BEGIN
       );
   END IF;
 END $$;
-

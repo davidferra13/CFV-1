@@ -31,7 +31,7 @@ export default async function SauceComponentsPage() {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Sauces</h1>
-            <span className="bg-orange-900 text-orange-700 text-sm px-2 py-0.5 rounded-full">
+            <span className="bg-orange-900 text-orange-200 text-sm px-2 py-0.5 rounded-full">
               {sauces.length}
             </span>
           </div>
@@ -47,11 +47,11 @@ export default async function SauceComponentsPage() {
             <p className="text-sm text-stone-500 mt-1">Sauce components</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-700">{linkedCount}</p>
+            <p className="text-2xl font-bold text-green-200">{linkedCount}</p>
             <p className="text-sm text-stone-500 mt-1">Linked to recipes</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-700">
+            <p className="text-2xl font-bold text-amber-200">
               {sauces.filter((c) => c.is_make_ahead).length}
             </p>
             <p className="text-sm text-stone-500 mt-1">Make-ahead</p>
@@ -99,7 +99,7 @@ export default async function SauceComponentsPage() {
                     {comp.recipe_id ? (
                       <Link
                         href={`/culinary/recipes/${comp.recipe_id}`}
-                        className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                        className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full hover:bg-green-200"
                       >
                         Linked
                       </Link>
@@ -109,7 +109,7 @@ export default async function SauceComponentsPage() {
                   </TableCell>
                   <TableCell>
                     {comp.is_make_ahead ? (
-                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
                         {comp.make_ahead_window_hours
                           ? `${comp.make_ahead_window_hours}h ahead`
                           : 'Make ahead'}

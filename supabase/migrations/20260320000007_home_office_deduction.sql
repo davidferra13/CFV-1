@@ -11,7 +11,6 @@ ALTER TABLE tax_settings
   ADD COLUMN IF NOT EXISTS annual_insurance_home_cents INTEGER,
   ADD COLUMN IF NOT EXISTS annual_repairs_cents INTEGER,
   ADD COLUMN IF NOT EXISTS home_office_notes TEXT;
-
 COMMENT ON COLUMN tax_settings.home_deduction_method IS
   'simplified = $5/sqft up to 300 sqft (max $1,500/yr). actual = office% × home expenses.';
 COMMENT ON COLUMN tax_settings.annual_rent_mortgage_cents IS

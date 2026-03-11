@@ -20,13 +20,13 @@ const STAGES = [
     href: '/finance/invoices/sent',
     label: 'Sent',
     description: 'Awaiting client acceptance',
-    style: 'bg-amber-900 text-amber-700',
+    style: 'bg-amber-900 text-amber-200',
   },
   {
     href: '/finance/invoices/paid',
     label: 'Paid',
     description: 'Accepted and payment underway',
-    style: 'bg-green-900 text-green-700',
+    style: 'bg-green-900 text-green-200',
   },
   {
     href: '/finance/invoices/overdue',
@@ -38,7 +38,7 @@ const STAGES = [
     href: '/finance/invoices/refunded',
     label: 'Refunded',
     description: 'Refunds issued',
-    style: 'bg-purple-900 text-purple-700',
+    style: 'bg-purple-900 text-purple-200',
   },
   {
     href: '/finance/invoices/cancelled',
@@ -105,11 +105,11 @@ export default async function InvoicesPage() {
           <p className="mt-1 text-sm text-stone-500">Total events</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalRevenue)}</p>
           <p className="mt-1 text-sm text-stone-500">Total collected</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-700">{counts.sent + counts.draft}</p>
+          <p className="text-2xl font-bold text-amber-200">{counts.sent + counts.draft}</p>
           <p className="mt-1 text-sm text-stone-500">Awaiting payment</p>
         </Card>
       </div>

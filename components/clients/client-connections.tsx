@@ -250,7 +250,7 @@ export function ClientConnections({
                         size="sm"
                         onClick={() => handleRemove(conn.id)}
                         disabled={saving}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-950"
+                        className="text-red-600 hover:text-red-200 hover:bg-red-950"
                       >
                         {removingId === conn.id ? 'Removing...' : 'Remove'}
                       </Button>

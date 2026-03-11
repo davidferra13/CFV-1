@@ -106,7 +106,7 @@ export default async function ExpensesPage() {
           <p className="text-sm text-stone-500 mt-1">Total spend</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-orange-700">{formatCurrency(totalBusiness)}</p>
+          <p className="text-2xl font-bold text-orange-200">{formatCurrency(totalBusiness)}</p>
           <p className="text-sm text-stone-500 mt-1">Business expenses</p>
         </Card>
       </div>

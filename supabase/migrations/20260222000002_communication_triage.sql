@@ -7,31 +7,24 @@
 DO $$ BEGIN
   CREATE TYPE communication_source AS ENUM ('email', 'website_form', 'sms', 'instagram', 'takeachef', 'manual_log');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE TYPE communication_direction AS ENUM ('inbound', 'outbound');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE TYPE communication_event_status AS ENUM ('unlinked', 'linked', 'resolved');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE TYPE conversation_thread_state AS ENUM ('active', 'snoozed', 'closed');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE TYPE suggested_link_status AS ENUM ('pending', 'accepted', 'rejected');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE TYPE follow_up_timer_status AS ENUM ('active', 'completed', 'dismissed');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE TYPE communication_action_source AS ENUM ('manual', 'webhook', 'automation', 'import');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ConversationThread
 CREATE TABLE IF NOT EXISTS conversation_threads (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -44,7 +37,6 @@ CREATE TABLE IF NOT EXISTS conversation_threads (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- CommunicationEvent
 CREATE TABLE IF NOT EXISTS communication_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -64,7 +56,6 @@ CREATE TABLE IF NOT EXISTS communication_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- SuggestedLink
 CREATE TABLE IF NOT EXISTS suggested_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -77,7 +68,6 @@ CREATE TABLE IF NOT EXISTS suggested_links (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- FollowUpTimer
 CREATE TABLE IF NOT EXISTS follow_up_timers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -90,7 +80,6 @@ CREATE TABLE IF NOT EXISTS follow_up_timers (
   completed_at TIMESTAMPTZ,
   dismissed_at TIMESTAMPTZ
 );
-
 -- Editable deterministic classification rules
 CREATE TABLE IF NOT EXISTS communication_classification_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -105,7 +94,6 @@ CREATE TABLE IF NOT EXISTS communication_classification_rules (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Explicit action audit for communication subsystem
 CREATE TABLE IF NOT EXISTS communication_action_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -119,7 +107,6 @@ CREATE TABLE IF NOT EXISTS communication_action_log (
   new_state JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_comm_events_tenant_timestamp
   ON communication_events(tenant_id, timestamp DESC);
@@ -132,7 +119,6 @@ CREATE INDEX IF NOT EXISTS idx_comm_events_sender
 CREATE UNIQUE INDEX IF NOT EXISTS uq_comm_events_external
   ON communication_events(tenant_id, source, external_id)
   WHERE external_id IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_threads_tenant_activity
   ON conversation_threads(tenant_id, last_activity_at DESC);
 CREATE INDEX IF NOT EXISTS idx_threads_tenant_state
@@ -140,42 +126,34 @@ CREATE INDEX IF NOT EXISTS idx_threads_tenant_state
 CREATE UNIQUE INDEX IF NOT EXISTS uq_threads_external_key
   ON conversation_threads(tenant_id, external_thread_key)
   WHERE external_thread_key IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_suggested_links_event
   ON suggested_links(tenant_id, communication_event_id, status);
-
 CREATE INDEX IF NOT EXISTS idx_followup_tenant_due
   ON follow_up_timers(tenant_id, due_at)
   WHERE status = 'active';
 CREATE INDEX IF NOT EXISTS idx_followup_thread
   ON follow_up_timers(tenant_id, thread_id, status);
-
 CREATE INDEX IF NOT EXISTS idx_comm_action_log_tenant_time
   ON communication_action_log(tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comm_action_log_event
   ON communication_action_log(tenant_id, communication_event_id, created_at DESC);
-
 -- updated_at triggers
 DROP TRIGGER IF EXISTS conversation_threads_updated_at ON conversation_threads;
 CREATE TRIGGER conversation_threads_updated_at
 BEFORE UPDATE ON conversation_threads
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 DROP TRIGGER IF EXISTS communication_events_updated_at ON communication_events;
 CREATE TRIGGER communication_events_updated_at
 BEFORE UPDATE ON communication_events
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 DROP TRIGGER IF EXISTS suggested_links_updated_at ON suggested_links;
 CREATE TRIGGER suggested_links_updated_at
 BEFORE UPDATE ON suggested_links
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 DROP TRIGGER IF EXISTS communication_classification_rules_updated_at ON communication_classification_rules;
 CREATE TRIGGER communication_classification_rules_updated_at
 BEFORE UPDATE ON communication_classification_rules
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- Enable RLS
 ALTER TABLE conversation_threads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE communication_events ENABLE ROW LEVEL SECURITY;
@@ -183,7 +161,6 @@ ALTER TABLE suggested_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE follow_up_timers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE communication_classification_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE communication_action_log ENABLE ROW LEVEL SECURITY;
-
 -- Chef tenant-scoped access
 CREATE POLICY communication_threads_chef_all ON conversation_threads
 FOR ALL
@@ -199,7 +176,6 @@ WITH CHECK (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 CREATE POLICY communication_events_chef_all ON communication_events
 FOR ALL
 USING (
@@ -214,7 +190,6 @@ WITH CHECK (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 CREATE POLICY suggested_links_chef_all ON suggested_links
 FOR ALL
 USING (
@@ -229,7 +204,6 @@ WITH CHECK (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 CREATE POLICY follow_up_timers_chef_all ON follow_up_timers
 FOR ALL
 USING (
@@ -244,7 +218,6 @@ WITH CHECK (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 CREATE POLICY communication_rules_chef_all ON communication_classification_rules
 FOR ALL
 USING (
@@ -259,7 +232,6 @@ WITH CHECK (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 CREATE POLICY communication_action_log_chef_select ON communication_action_log
 FOR SELECT
 USING (
@@ -268,7 +240,6 @@ USING (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 CREATE POLICY communication_action_log_chef_insert ON communication_action_log
 FOR INSERT
 WITH CHECK (
@@ -277,32 +248,25 @@ WITH CHECK (
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   )
 );
-
 -- Service role management for webhook/import pipelines
 CREATE POLICY communication_threads_service_all ON conversation_threads
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY communication_events_service_all ON communication_events
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY suggested_links_service_all ON suggested_links
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY follow_up_timers_service_all ON follow_up_timers
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY communication_rules_service_all ON communication_classification_rules
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY communication_action_log_service_all ON communication_action_log
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
-
 -- Triage inbox view (thread-level latest signal)
 CREATE OR REPLACE VIEW communication_inbox_items AS
 WITH latest_event AS (
@@ -376,4 +340,3 @@ FROM conversation_threads ct
 JOIN latest_event le ON le.thread_id = ct.id
 LEFT JOIN overdue_timer ot ON ot.thread_id = ct.id
 LEFT JOIN pending_links pl ON pl.communication_event_id = le.communication_event_id;
-

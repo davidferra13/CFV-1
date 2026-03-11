@@ -78,7 +78,7 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
         </div>
         <div className="flex items-center gap-2">
           {result.totalEstimatedSavingsCents > 0 && (
-            <span className="flex items-center gap-1 text-xs text-green-700 font-medium">
+            <span className="flex items-center gap-1 text-xs text-green-200 font-medium">
               <DollarSign className="w-3 h-3" />
               {formatDollars(result.totalEstimatedSavingsCents)} est. savings
             </span>
@@ -103,13 +103,13 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
                 <span className="text-stone-400">→</span>
                 <span className="text-stone-400">{match.neededIngredient}</span>
                 <span
-                  className={`text-[10px] px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-700' : match.matchType === 'partial' ? 'bg-blue-900 text-blue-700' : 'bg-amber-900 text-amber-700'}`}
+                  className={`text-[10px] px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-200' : match.matchType === 'partial' ? 'bg-blue-900 text-blue-200' : 'bg-amber-900 text-amber-200'}`}
                 >
                   {match.matchType}
                 </span>
               </div>
               {match.estimatedSavingsCents && (
-                <div className="text-[11px] text-green-700">
+                <div className="text-[11px] text-green-200">
                   Est. savings: {formatDollars(match.estimatedSavingsCents)}
                 </div>
               )}

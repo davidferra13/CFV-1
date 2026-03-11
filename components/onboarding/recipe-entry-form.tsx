@@ -30,19 +30,19 @@ const CATEGORIES = [
 ] as const
 
 const CATEGORY_COLORS: Record<string, string> = {
-  protein: 'bg-red-900 text-red-800',
-  sauce: 'bg-orange-900 text-orange-800',
-  starch: 'bg-yellow-900 text-yellow-800',
-  vegetable: 'bg-green-900 text-green-800',
-  fruit: 'bg-lime-900 text-lime-800',
-  dessert: 'bg-pink-900 text-pink-800',
-  bread: 'bg-amber-900 text-amber-800',
-  pasta: 'bg-amber-900 text-amber-800',
-  soup: 'bg-cyan-900 text-cyan-800',
-  salad: 'bg-emerald-900 text-emerald-800',
-  appetizer: 'bg-violet-900 text-violet-800',
+  protein: 'bg-red-900 text-red-200',
+  sauce: 'bg-orange-900 text-orange-200',
+  starch: 'bg-yellow-900 text-yellow-200',
+  vegetable: 'bg-green-900 text-green-200',
+  fruit: 'bg-lime-900 text-lime-200',
+  dessert: 'bg-pink-900 text-pink-200',
+  bread: 'bg-amber-900 text-amber-200',
+  pasta: 'bg-amber-900 text-amber-200',
+  soup: 'bg-cyan-900 text-cyan-200',
+  salad: 'bg-emerald-900 text-emerald-200',
+  appetizer: 'bg-violet-900 text-violet-200',
   condiment: 'bg-stone-800 text-stone-200',
-  beverage: 'bg-blue-900 text-blue-800',
+  beverage: 'bg-blue-900 text-blue-200',
   other: 'bg-stone-800 text-stone-300',
 }
 
@@ -160,7 +160,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                 {error}
               </div>
             )}
@@ -288,7 +288,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
                   {form.dietary_tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 rounded-full bg-green-900 px-2.5 py-0.5 text-xs text-green-800"
+                      className="inline-flex items-center gap-1 rounded-full bg-green-900 px-2.5 py-0.5 text-xs text-green-200"
                     >
                       {tag}
                       <button

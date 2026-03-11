@@ -19,7 +19,6 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 DO $$ BEGIN
   CREATE TYPE incentive_delivery_channel AS ENUM (
     'email',
@@ -27,7 +26,6 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 -- =====================================================================================
 -- TABLE 1: client_incentives
 -- =====================================================================================
@@ -87,11 +85,9 @@ CREATE TABLE IF NOT EXISTS client_incentives (
     (created_by_role = 'client' AND created_by_client_id IS NOT NULL)
   )
 );
-
 COMMENT ON TABLE client_incentives IS 'Voucher and gift card records. Can be created by chefs and clients within tenant rules.';
 COMMENT ON COLUMN client_incentives.code IS 'Human-facing share code for voucher or gift card.';
 COMMENT ON COLUMN client_incentives.target_client_id IS 'Optional intended recipient client in the same tenant.';
-
 -- =====================================================================================
 -- TABLE 2: incentive_deliveries
 -- =====================================================================================
@@ -112,9 +108,7 @@ CREATE TABLE IF NOT EXISTS incentive_deliveries (
     position('@' in recipient_email) > 1
   )
 );
-
 COMMENT ON TABLE incentive_deliveries IS 'Audit trail of voucher/gift card sends. Chef-only insert/select.';
-
 -- =====================================================================================
 -- INDEXES
 -- =====================================================================================
@@ -125,23 +119,19 @@ CREATE INDEX IF NOT EXISTS idx_client_incentives_target_client ON client_incenti
 CREATE INDEX IF NOT EXISTS idx_client_incentives_created_by_client ON client_incentives(created_by_client_id) WHERE created_by_client_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_client_incentives_active ON client_incentives(tenant_id, is_active);
 CREATE INDEX IF NOT EXISTS idx_client_incentives_expires_at ON client_incentives(expires_at) WHERE expires_at IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_incentive_deliveries_tenant ON incentive_deliveries(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_incentive_deliveries_incentive ON incentive_deliveries(incentive_id);
 CREATE INDEX IF NOT EXISTS idx_incentive_deliveries_sent_at ON incentive_deliveries(sent_at DESC);
-
 -- =====================================================================================
 -- RLS: client_incentives
 -- =====================================================================================
 
 ALTER TABLE client_incentives ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS client_incentives_chef_select ON client_incentives;
 CREATE POLICY client_incentives_chef_select ON client_incentives
   FOR SELECT USING (
     tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS client_incentives_chef_insert ON client_incentives;
 CREATE POLICY client_incentives_chef_insert ON client_incentives
   FOR INSERT WITH CHECK (
@@ -151,7 +141,6 @@ CREATE POLICY client_incentives_chef_insert ON client_incentives
     AND created_by_client_id IS NULL
     AND created_by_user_id = auth.uid()
   );
-
 DROP POLICY IF EXISTS client_incentives_chef_update ON client_incentives;
 CREATE POLICY client_incentives_chef_update ON client_incentives
   FOR UPDATE USING (
@@ -160,13 +149,11 @@ CREATE POLICY client_incentives_chef_update ON client_incentives
   WITH CHECK (
     tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS client_incentives_chef_delete ON client_incentives;
 CREATE POLICY client_incentives_chef_delete ON client_incentives
   FOR DELETE USING (
     tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS client_incentives_client_select ON client_incentives;
 CREATE POLICY client_incentives_client_select ON client_incentives
   FOR SELECT USING (
@@ -176,7 +163,6 @@ CREATE POLICY client_incentives_client_select ON client_incentives
       OR target_client_id = get_current_client_id()
     )
   );
-
 DROP POLICY IF EXISTS client_incentives_client_insert ON client_incentives;
 CREATE POLICY client_incentives_client_insert ON client_incentives
   FOR INSERT WITH CHECK (
@@ -193,19 +179,16 @@ CREATE POLICY client_incentives_client_insert ON client_incentives
       OR target_client_id = get_current_client_id()
     )
   );
-
 -- =====================================================================================
 -- RLS: incentive_deliveries
 -- =====================================================================================
 
 ALTER TABLE incentive_deliveries ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS incentive_deliveries_chef_select ON incentive_deliveries;
 CREATE POLICY incentive_deliveries_chef_select ON incentive_deliveries
   FOR SELECT USING (
     tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS incentive_deliveries_chef_insert ON incentive_deliveries;
 CREATE POLICY incentive_deliveries_chef_insert ON incentive_deliveries
   FOR INSERT WITH CHECK (
@@ -219,7 +202,6 @@ CREATE POLICY incentive_deliveries_chef_insert ON incentive_deliveries
         AND ci.tenant_id = get_current_tenant_id()
     )
   );
-
 -- =====================================================================================
 -- TRIGGERS
 -- =====================================================================================
@@ -229,7 +211,6 @@ CREATE TRIGGER set_client_incentives_updated_at
   BEFORE UPDATE ON client_incentives
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 -- =====================================================================================
 -- END
--- =====================================================================================
+-- =====================================================================================;

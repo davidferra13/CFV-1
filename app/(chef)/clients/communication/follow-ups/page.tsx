@@ -63,11 +63,11 @@ export default async function FollowUpsPage() {
             <p className="mt-1 text-sm text-stone-500">Overdue (180+ days)</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-700">{atRisk}</p>
+            <p className="text-2xl font-bold text-amber-200">{atRisk}</p>
             <p className="mt-1 text-sm text-stone-500">At risk (90-180 days)</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-sky-700">
+            <p className="text-2xl font-bold text-sky-200">
               {followUpCandidates.length - overdue - atRisk}
             </p>
             <p className="mt-1 text-sm text-stone-500">Check in (30-90 days)</p>

@@ -48,7 +48,7 @@ export function DailyPlanView({ plan }: Props) {
       {/* Protected time reminder */}
       {plan.protectedTime.length > 0 && (
         <div className="rounded-lg border border-purple-200 bg-purple-950/50 px-4 py-3">
-          <p className="text-sm text-purple-700">
+          <p className="text-sm text-purple-200">
             <span className="font-medium">Protected time today:</span>{' '}
             {plan.protectedTime.map((b) => b.title).join(', ')}
           </p>

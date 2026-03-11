@@ -44,7 +44,7 @@ export function PhotoConsentSummary({ guests }: { guests: Guest[] }) {
       </div>
 
       {allConsented ? (
-        <p className="text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
+        <p className="text-sm text-emerald-200 bg-emerald-950 rounded-lg px-3 py-2">
           All attending guests have consented to photo sharing. You're clear to post!
         </p>
       ) : (

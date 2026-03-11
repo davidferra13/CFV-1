@@ -61,7 +61,7 @@ export function ConfirmPolicyDialog({
         ) : null}
 
         {decision.mode === 'strong' ? (
-          <div className="rounded-md border border-red-300 bg-red-950 px-3 py-2 text-xs text-red-800 flex gap-2">
+          <div className="rounded-md border border-red-300 bg-red-950 px-3 py-2 text-xs text-red-200 flex gap-2">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
             <span>This action is high-risk and irreversible.</span>
           </div>

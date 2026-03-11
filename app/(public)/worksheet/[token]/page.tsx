@@ -28,7 +28,7 @@ export default async function WorksheetPage({ params }: Props) {
             Help your chef prepare the perfect experience by sharing your preferences below.
           </p>
           {worksheet.occasion && (
-            <p className="mt-1 text-sm font-medium text-stone-700">{worksheet.occasion}</p>
+            <p className="mt-1 text-sm font-medium text-stone-200">{worksheet.occasion}</p>
           )}
           {worksheet.eventDate && (
             <p className="mt-1 text-sm text-stone-500">
@@ -44,15 +44,15 @@ export default async function WorksheetPage({ params }: Props) {
 
         {worksheet.chefNote && (
           <div className="mb-6 rounded-lg bg-stone-100 p-4 text-sm text-stone-700">
-            <p className="font-medium text-stone-800 mb-1">Note from your chef:</p>
+            <p className="font-medium text-stone-200 mb-1">Note from your chef:</p>
             <p>{worksheet.chefNote}</p>
           </div>
         )}
 
         {worksheet.status === 'completed' ? (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-            <p className="text-lg font-semibold text-emerald-800">Thank you!</p>
-            <p className="mt-2 text-sm text-emerald-700">
+            <p className="text-lg font-semibold text-emerald-200">Thank you!</p>
+            <p className="mt-2 text-sm text-emerald-200">
               Your details have been submitted. Your chef will use this to prepare for your dinner.
             </p>
           </div>

@@ -76,7 +76,7 @@ export function EventSalesTaxForm({ eventId, eventPriceCents, existing, settings
       </CardHeader>
       <CardContent className="space-y-4">
         {saved && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-emerald-200 bg-emerald-950 rounded-lg px-3 py-2">
             <CheckCircle className="h-4 w-4" />
             Sales tax saved.
           </div>
@@ -165,7 +165,7 @@ export function EventSalesTaxForm({ eventId, eventPriceCents, existing, settings
           </div>
           <div className="flex justify-between text-sm font-bold mt-2 pt-2 border-t border-stone-700">
             <span className="text-stone-200">Tax to Collect</span>
-            <span className={form.isExempt ? 'text-stone-400' : 'text-amber-700'}>
+            <span className={form.isExempt ? 'text-stone-400' : 'text-amber-200'}>
               {form.isExempt ? 'Exempt' : formatCurrency(previewTax)}
             </span>
           </div>

@@ -149,7 +149,7 @@ export function TimeTracker({ initialData, lockedStaffMemberId }: Props) {
         </div>
 
         {activeEntries.length > 0 && (
-          <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-200">
             {activeEntries.length} active clocked-in{' '}
             {activeEntries.length === 1 ? 'entry' : 'entries'}
           </div>

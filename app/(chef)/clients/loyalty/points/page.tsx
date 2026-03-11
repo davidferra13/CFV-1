@@ -15,10 +15,10 @@ import {
 export const metadata: Metadata = { title: 'Loyalty Points - ChefFlow' }
 
 const TIER_STYLES: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-800',
+  bronze: 'bg-amber-900 text-amber-200',
   silver: 'bg-stone-700 text-stone-300',
-  gold: 'bg-yellow-900 text-yellow-800',
-  platinum: 'bg-sky-900 text-sky-800',
+  gold: 'bg-yellow-900 text-yellow-200',
+  platinum: 'bg-sky-900 text-sky-200',
 }
 
 export default async function LoyaltyPointsPage() {
@@ -52,7 +52,7 @@ export default async function LoyaltyPointsPage() {
           <p className="text-sm text-stone-500 mt-1">Total points outstanding</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-700">{withPoints.length}</p>
+          <p className="text-2xl font-bold text-amber-200">{withPoints.length}</p>
           <p className="text-sm text-stone-500 mt-1">Members with points balance</p>
         </Card>
       </div>

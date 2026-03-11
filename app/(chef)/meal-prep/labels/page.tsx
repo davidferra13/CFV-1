@@ -217,7 +217,7 @@ export default function MealPrepLabelsPage() {
 
       {/* Load from Event */}
       <Card className="p-4 print:hidden">
-        <h2 className="text-sm font-semibold text-stone-700 mb-3">Load from Event</h2>
+        <h2 className="text-sm font-semibold text-stone-200 mb-3">Load from Event</h2>
         <div className="flex gap-2 items-end">
           <div className="flex-1">
             <label className="block text-xs text-stone-500 mb-1">Event ID</label>
@@ -241,7 +241,7 @@ export default function MealPrepLabelsPage() {
 
       {/* Settings */}
       <Card className="p-4 print:hidden">
-        <h2 className="text-sm font-semibold text-stone-700 mb-3">Label Settings</h2>
+        <h2 className="text-sm font-semibold text-stone-200 mb-3">Label Settings</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs text-stone-500 mb-1">Prep Date</label>
@@ -285,7 +285,7 @@ export default function MealPrepLabelsPage() {
           </div>
         </div>
         <div className="mt-3">
-          <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-stone-200 cursor-pointer">
             <input
               type="checkbox"
               checked={includeNutrition}
@@ -300,7 +300,7 @@ export default function MealPrepLabelsPage() {
       {/* Dish List */}
       <div className="space-y-4 print:hidden">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-stone-700">Dishes</h2>
+          <h2 className="text-sm font-semibold text-stone-200">Dishes</h2>
           <Button variant="secondary" onClick={addDish}>
             + Add Dish
           </Button>
@@ -313,7 +313,7 @@ export default function MealPrepLabelsPage() {
               {dishes.length > 1 && (
                 <button
                   onClick={() => removeDish(dish.id)}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs text-red-500 hover:text-red-200"
                 >
                   Remove
                 </button>
@@ -368,7 +368,7 @@ export default function MealPrepLabelsPage() {
                   {COMMON_ALLERGENS.map((a) => (
                     <label
                       key={a}
-                      className="flex items-center gap-1 text-xs text-stone-700 cursor-pointer"
+                      className="flex items-center gap-1 text-xs text-stone-200 cursor-pointer"
                     >
                       <input
                         type="checkbox"
@@ -438,7 +438,7 @@ export default function MealPrepLabelsPage() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 print:hidden">
+        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-200 print:hidden">
           {error}
         </div>
       )}
@@ -458,7 +458,7 @@ export default function MealPrepLabelsPage() {
       {/* Preview / Print Area */}
       {labels.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3 print:hidden">
+          <h2 className="text-sm font-semibold text-stone-200 mb-3 print:hidden">
             Preview ({labels.length} label{labels.length !== 1 ? 's' : ''})
           </h2>
           <LabelGrid labels={labels} />

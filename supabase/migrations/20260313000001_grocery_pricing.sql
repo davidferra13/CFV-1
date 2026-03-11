@@ -19,13 +19,10 @@ CREATE TABLE grocery_price_quotes (
   status                   TEXT NOT NULL DEFAULT 'pending'
                            CHECK (status IN ('pending', 'complete', 'partial', 'failed'))
 );
-
 CREATE INDEX grocery_price_quotes_event_idx
   ON grocery_price_quotes (tenant_id, event_id, created_at DESC);
-
 -- RLS
 ALTER TABLE grocery_price_quotes ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_own_quotes"
   ON grocery_price_quotes
   FOR ALL
@@ -36,7 +33,6 @@ CREATE POLICY "chef_own_quotes"
         AND role = 'chef'
     )
   );
-
 -- ─── grocery_price_quote_items ────────────────────────────────────────────────
 -- Per-ingredient line items from a pricing run.
 -- Stores both API results and the computed average.
@@ -52,13 +48,10 @@ CREATE TABLE grocery_price_quote_items (
   kroger_price_cents      INT,
   average_price_cents     INT
 );
-
 CREATE INDEX grocery_price_quote_items_quote_idx
   ON grocery_price_quote_items (quote_id);
-
 -- RLS — accessible via quote's tenant_id
 ALTER TABLE grocery_price_quote_items ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_own_quote_items"
   ON grocery_price_quote_items
   FOR ALL

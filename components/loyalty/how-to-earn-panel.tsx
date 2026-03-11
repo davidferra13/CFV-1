@@ -27,7 +27,7 @@ function EarnRow({ emoji, label, points }: { emoji: string; label: string; point
         <span className="text-xl w-7 text-center">{emoji}</span>
         <span className="text-sm text-stone-300">{label}</span>
       </div>
-      <span className="text-sm font-bold text-emerald-700 shrink-0 ml-4">+{points}</span>
+      <span className="text-sm font-bold text-emerald-200 shrink-0 ml-4">+{points}</span>
     </div>
   )
 }

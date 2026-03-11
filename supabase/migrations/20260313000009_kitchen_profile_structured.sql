@@ -14,7 +14,6 @@ ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS kitchen_plating_notes       TEXT,
   ADD COLUMN IF NOT EXISTS kitchen_sink_notes          TEXT,
   ADD COLUMN IF NOT EXISTS kitchen_profile_updated_at  TIMESTAMPTZ;
-
 COMMENT ON COLUMN clients.kitchen_oven_notes IS 'Oven reliability, quirks, temperature accuracy';
 COMMENT ON COLUMN clients.kitchen_burner_notes IS 'Number of working burners, gas vs induction, BTU notes';
 COMMENT ON COLUMN clients.kitchen_counter_notes IS 'Counter space availability, prep surface quality';

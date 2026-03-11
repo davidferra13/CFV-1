@@ -67,14 +67,14 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
     return (
       <Card className="border-emerald-200 bg-emerald-950">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-emerald-800">
+          <CardTitle className="flex items-center gap-2 text-emerald-200">
             <ClipboardList className="h-4 w-4" />
             DOP Tasks
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-2">
-            <p className="text-sm font-medium text-emerald-700">All caught up</p>
+            <p className="text-sm font-medium text-emerald-200">All caught up</p>
             <p className="text-xs text-emerald-600 mt-1">
               No outstanding tasks across your upcoming events
             </p>
@@ -94,7 +94,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
             <ClipboardList className="h-4 w-4 text-stone-400" />
             DOP Tasks
             {digest.overdueCount > 0 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-200">
                 {digest.overdueCount} overdue
               </span>
             )}
@@ -110,7 +110,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
             </span>
           )}
           {digest.dueTodayCount > 0 && (
-            <span className="text-xs font-medium text-amber-700 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-200">
+            <span className="text-xs font-medium text-amber-200 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-200">
               {digest.dueTodayCount} due today
             </span>
           )}
@@ -200,7 +200,7 @@ export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
                         </span>
                         <span
                           className={`text-sm font-medium truncate ${
-                            task.isOverdue ? 'text-red-700' : 'text-stone-300'
+                            task.isOverdue ? 'text-red-200' : 'text-stone-300'
                           }`}
                         >
                           {task.taskLabel}

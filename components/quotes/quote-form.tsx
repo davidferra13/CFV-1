@@ -853,7 +853,7 @@ export function QuoteForm({
 
             <div className="space-y-1.5">
               {!guestCount || parseInt(guestCount) <= 0 ? (
-                <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
+                <p className="text-xs text-amber-200 bg-amber-950 border border-amber-200 rounded px-2 py-1">
                   Fill in &ldquo;Number of Guests&rdquo; in the main form first — the calculator
                   uses that count.
                 </p>
@@ -879,7 +879,7 @@ export function QuoteForm({
             {calcResult && (
               <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
                 {calcResult.requiresCustomPricing ? (
-                  <p className="text-sm text-amber-700 font-medium">
+                  <p className="text-sm text-amber-200 font-medium">
                     Requires custom pricing — use the notes fields below.
                   </p>
                 ) : (
@@ -928,7 +928,7 @@ export function QuoteForm({
                         </div>
                       )}
                       {calcResult.minimumApplied && (
-                        <div className="text-xs text-amber-700">Minimum booking floor applied</div>
+                        <div className="text-xs text-amber-200">Minimum booking floor applied</div>
                       )}
                       <div className="flex justify-between border-t border-stone-700 pt-1 font-semibold text-stone-100">
                         <span>Total</span>
@@ -989,7 +989,7 @@ export function QuoteForm({
             </div>
           )}
           {prefilledSource === 'recurring_default' && (
-            <div className="rounded-lg bg-emerald-950 border border-emerald-700 px-4 py-3 text-sm text-emerald-700">
+            <div className="rounded-lg bg-emerald-950 border border-emerald-700 px-4 py-3 text-sm text-emerald-200">
               <span className="font-medium text-emerald-600">
                 Prefilled from recurring client default pricing.
               </span>{' '}

@@ -15,17 +15,17 @@ type Props = {
 }
 
 const DIETARY_BADGES: Record<string, { label: string; color: string }> = {
-  vegetarian: { label: 'V', color: 'bg-green-100 text-green-700' },
-  vegan: { label: 'VG', color: 'bg-green-100 text-green-800' },
-  'gluten-free': { label: 'GF', color: 'bg-amber-100 text-amber-700' },
-  gluten_free: { label: 'GF', color: 'bg-amber-100 text-amber-700' },
-  'dairy-free': { label: 'DF', color: 'bg-blue-100 text-blue-700' },
-  dairy_free: { label: 'DF', color: 'bg-blue-100 text-blue-700' },
-  'nut-free': { label: 'NF', color: 'bg-orange-100 text-orange-700' },
-  nut_free: { label: 'NF', color: 'bg-orange-100 text-orange-700' },
-  halal: { label: 'H', color: 'bg-teal-100 text-teal-700' },
-  kosher: { label: 'K', color: 'bg-purple-100 text-purple-700' },
-  spicy: { label: 'Spicy', color: 'bg-red-100 text-red-700' },
+  vegetarian: { label: 'V', color: 'bg-green-100 text-green-200' },
+  vegan: { label: 'VG', color: 'bg-green-100 text-green-200' },
+  'gluten-free': { label: 'GF', color: 'bg-amber-100 text-amber-200' },
+  gluten_free: { label: 'GF', color: 'bg-amber-100 text-amber-200' },
+  'dairy-free': { label: 'DF', color: 'bg-blue-100 text-blue-200' },
+  dairy_free: { label: 'DF', color: 'bg-blue-100 text-blue-200' },
+  'nut-free': { label: 'NF', color: 'bg-orange-100 text-orange-200' },
+  nut_free: { label: 'NF', color: 'bg-orange-100 text-orange-200' },
+  halal: { label: 'H', color: 'bg-teal-100 text-teal-200' },
+  kosher: { label: 'K', color: 'bg-purple-100 text-purple-200' },
+  spicy: { label: 'Spicy', color: 'bg-red-100 text-red-200' },
 }
 
 export function OnlineMenu({ categories, onAddToCart }: Props) {
@@ -264,7 +264,7 @@ function ModifierModal({
                             : 'border-stone-200 hover:border-stone-300'
                         }`}
                       >
-                        <span className="text-sm text-stone-800">{opt.label}</span>
+                        <span className="text-sm text-stone-200">{opt.label}</span>
                         {opt.price_delta_cents > 0 && (
                           <span className="text-sm text-stone-500">
                             +${(opt.price_delta_cents / 100).toFixed(2)}
@@ -280,14 +280,14 @@ function ModifierModal({
 
           {/* Special instructions */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-200 mb-1">
               Special instructions
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any special requests?"
-              className="w-full border border-stone-200 rounded-lg p-2 text-sm text-stone-800 placeholder:text-stone-400 resize-none"
+              className="w-full border border-stone-200 rounded-lg p-2 text-sm text-stone-200 placeholder:text-stone-400 resize-none"
               rows={2}
             />
           </div>

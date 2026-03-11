@@ -11,6 +11,7 @@ import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
+import { syncMarketplaceInquiryProjection } from '@/lib/marketplace/platform-records'
 
 // ─── Schema ────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,7 @@ export async function captureTakeAChefBooking(
     const clientId = contactEmail
       ? await findExistingClientByEmail(supabase, tenantId, contactEmail)
       : null
+    const clientCreated = false
 
     // 4. Create inquiry
     const { data: inquiry, error: inquiryError } = await supabase
@@ -93,6 +95,7 @@ export async function captureTakeAChefBooking(
       .insert({
         tenant_id: tenantId,
         channel: 'take_a_chef' as const,
+        external_platform: 'take_a_chef',
         client_id: clientId,
         contact_name: contactName,
         contact_email: contactEmail,
@@ -129,6 +132,32 @@ export async function captureTakeAChefBooking(
 
     // 5. Create draft event (requires client)
     if (!clientId) {
+      try {
+        await syncMarketplaceInquiryProjection({
+          supabase,
+          tenantId,
+          inquiryId: inquiry.id,
+          platform: 'take_a_chef',
+          clientId,
+          summary: sourceMessage,
+          statusOnPlatform: 'booking_confirmed',
+          nextActionRequired: 'Review Take a Chef booking details',
+          nextActionBy: 'chef',
+          payout: {
+            grossBookingCents: validated.total_price_cents ?? null,
+            commissionPercent: validated.commission_percent,
+          },
+          payload: {
+            submission_source: 'take_a_chef_manual_capture',
+          },
+          actedBy: user.id,
+          actionType: 'manual_capture_created',
+          actionLabel: 'Created Take a Chef manual capture',
+        })
+      } catch (canonicalError) {
+        console.error('[captureTakeAChefBooking] Canonical marketplace sync skipped:', canonicalError)
+      }
+
       return {
         success: true,
         inquiryId: inquiry.id,
@@ -184,6 +213,33 @@ export async function captureTakeAChefBooking(
       .from('inquiries')
       .update({ converted_to_event_id: event.id })
       .eq('id', inquiry.id)
+
+    try {
+      await syncMarketplaceInquiryProjection({
+        supabase,
+        tenantId,
+        inquiryId: inquiry.id,
+        platform: 'take_a_chef',
+        clientId,
+        eventId: event.id,
+        summary: sourceMessage,
+        statusOnPlatform: 'booking_confirmed',
+        nextActionRequired: 'Review Take a Chef booking details',
+        nextActionBy: 'chef',
+        payout: {
+          grossBookingCents: validated.total_price_cents ?? null,
+          commissionPercent: validated.commission_percent,
+        },
+        payload: {
+          submission_source: 'take_a_chef_manual_capture',
+        },
+        actedBy: user.id,
+        actionType: 'manual_capture_created',
+        actionLabel: 'Created Take a Chef manual capture',
+      })
+    } catch (canonicalError) {
+      console.error('[captureTakeAChefBooking] Canonical marketplace sync skipped:', canonicalError)
+    }
 
     // 8. Log commission as expense
     let commissionExpenseId: string | undefined

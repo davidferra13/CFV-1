@@ -44,7 +44,7 @@ export default async function EventDebriefPage({ params }: { params: { id: strin
         </div>
 
         {blanks.event.debriefCompletedAt && (
-          <div className="flex-shrink-0 flex items-center gap-1.5 text-sm text-green-700 bg-green-950 border border-green-200 rounded-full px-3 py-1">
+          <div className="flex-shrink-0 flex items-center gap-1.5 text-sm text-green-200 bg-green-950 border border-green-200 rounded-full px-3 py-1">
             <span>&#10003;</span>
             <span>Complete</span>
           </div>

@@ -109,7 +109,7 @@ export default async function CompliancePage() {
             {expiring.map((c: any) => {
               const { daysRemaining } = certExpiryStatus(c.expiry_date)
               return (
-                <li key={c.id} className="text-sm text-amber-800">
+                <li key={c.id} className="text-sm text-amber-200">
                   {c.name}: {daysRemaining}d remaining (
                   {format(new Date(c.expiry_date! + 'T00:00:00'), 'MMM d, yyyy')})
                 </li>
@@ -158,7 +158,7 @@ export default async function CompliancePage() {
                         href={cert.document_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1 block text-xs text-amber-700 underline"
+                        className="mt-1 block text-xs text-amber-200 underline"
                       >
                         View document
                       </a>

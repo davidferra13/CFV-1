@@ -120,7 +120,7 @@ export function PlatingGuideEditor({ guide, recipeId, recipeName, onSave, onCanc
 
         <CardContent className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-200 rounded-lg px-4 py-3 text-sm">
               {error}
             </div>
           )}
@@ -176,7 +176,7 @@ export function PlatingGuideEditor({ guide, recipeId, recipeName, onSave, onCanc
           {/* Components */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-stone-700">Components</label>
+              <label className="text-sm font-medium text-stone-200">Components</label>
               <Button type="button" variant="ghost" onClick={addComponent} className="text-xs h-auto px-2 py-1">
                 + Add Component
               </Button>

@@ -15,7 +15,6 @@ CREATE TYPE staff_role AS ENUM (
   'dishwasher',
   'other'
 );
-
 -- ENUM: Staff assignment status
 CREATE TYPE staff_assignment_status AS ENUM (
   'scheduled',   -- Tentatively assigned
@@ -23,7 +22,6 @@ CREATE TYPE staff_assignment_status AS ENUM (
   'completed',   -- Event complete, hours logged
   'no_show'      -- Staff did not appear
 );
-
 -- ============================================
 -- TABLE 1: STAFF MEMBERS (Chef's Roster)
 -- ============================================
@@ -43,16 +41,12 @@ CREATE TABLE staff_members (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_staff_members_chef   ON staff_members(chef_id, status);
-
 COMMENT ON TABLE staff_members IS 'Chef''s roster of sous chefs, assistants, and service staff.';
 COMMENT ON COLUMN staff_members.hourly_rate_cents IS 'Default hourly rate in cents. Can be overridden per event assignment.';
-
 CREATE TRIGGER trg_staff_members_updated_at
   BEFORE UPDATE ON staff_members
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 2: EVENT STAFF ASSIGNMENTS
 -- ============================================
@@ -85,27 +79,22 @@ CREATE TABLE event_staff_assignments (
 
   UNIQUE (event_id, staff_member_id)  -- one assignment per staff per event
 );
-
 CREATE INDEX idx_staff_assignments_event ON event_staff_assignments(event_id);
 CREATE INDEX idx_staff_assignments_chef  ON event_staff_assignments(chef_id);
 CREATE INDEX idx_staff_assignments_staff ON event_staff_assignments(staff_member_id);
-
 COMMENT ON TABLE event_staff_assignments IS 'Links staff members to events with role, rate, hours, and pay tracking.';
 COMMENT ON COLUMN event_staff_assignments.role_override IS 'NULL = use the staff member''s default role.';
 COMMENT ON COLUMN event_staff_assignments.rate_override_cents IS 'NULL = use the staff member''s default hourly_rate_cents.';
 COMMENT ON COLUMN event_staff_assignments.pay_amount_cents IS 'Stored computed pay = actual_hours × effective_rate. Set when hours are logged.';
-
 CREATE TRIGGER trg_staff_assignments_updated_at
   BEFORE UPDATE ON event_staff_assignments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE staff_members         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_staff_assignments ENABLE ROW LEVEL SECURITY;
-
 -- ---- staff_members: chef-only ----
 
 CREATE POLICY sm_chef_select ON staff_members
@@ -113,25 +102,21 @@ CREATE POLICY sm_chef_select ON staff_members
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY sm_chef_insert ON staff_members
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY sm_chef_update ON staff_members
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY sm_chef_delete ON staff_members
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 -- ---- event_staff_assignments: chef-only ----
 
 CREATE POLICY esa_chef_select ON event_staff_assignments
@@ -139,19 +124,16 @@ CREATE POLICY esa_chef_select ON event_staff_assignments
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY esa_chef_insert ON event_staff_assignments
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY esa_chef_update ON event_staff_assignments
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY esa_chef_delete ON event_staff_assignments
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

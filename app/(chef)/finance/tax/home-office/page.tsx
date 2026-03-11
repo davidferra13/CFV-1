@@ -69,14 +69,14 @@ export default async function HomeOfficePage({
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-800">
+                <p className="text-sm font-medium text-emerald-200">
                   Current Deduction ({taxYear})
                 </p>
-                <p className="text-xs text-emerald-700 mt-0.5">
+                <p className="text-xs text-emerald-200 mt-0.5">
                   Using {deductionData.settings?.homeDeductionMethod ?? 'simplified'} method
                 </p>
               </div>
-              <p className="text-2xl font-bold text-emerald-800">
+              <p className="text-2xl font-bold text-emerald-200">
                 {formatCurrency(deductionData.selectedMethodDeductionCents)}
               </p>
             </div>

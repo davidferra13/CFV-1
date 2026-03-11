@@ -140,7 +140,7 @@ export function RetirementHealthPanel({
         <CardContent className="py-3">
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-blue-200">
               These are <strong>above-the-line deductions</strong> (Schedule 1) that reduce your
               Adjusted Gross Income — separate from Schedule C business expenses. Report them to
               your accountant alongside your Schedule C. They reduce your total tax bill beyond
@@ -169,7 +169,7 @@ export function RetirementHealthPanel({
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Combined Deduction</p>
-            <p className="text-2xl font-semibold text-emerald-700">{formatCents(combinedTotal)}</p>
+            <p className="text-2xl font-semibold text-emerald-200">{formatCents(combinedTotal)}</p>
             <p className="text-xs text-stone-400 mt-0.5">Total AGI reduction</p>
           </CardContent>
         </Card>
@@ -198,8 +198,8 @@ export function RetirementHealthPanel({
           )}
           {remaining > 0 && retirementTotal > 0 && (
             <div className="flex items-center justify-between text-sm bg-emerald-950 rounded-lg px-3 py-2">
-              <span className="text-emerald-700">Remaining SEP-IRA capacity</span>
-              <span className="font-medium text-emerald-800">{formatCents(remaining)}</span>
+              <span className="text-emerald-200">Remaining SEP-IRA capacity</span>
+              <span className="font-medium text-emerald-200">{formatCents(remaining)}</span>
             </div>
           )}
 

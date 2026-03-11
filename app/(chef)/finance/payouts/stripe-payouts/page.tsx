@@ -33,7 +33,7 @@ export default async function StripePayoutsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Stripe Payouts</h1>
-          <span className="bg-violet-900 text-violet-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-violet-900 text-violet-200 text-sm px-2 py-0.5 rounded-full">
             {summary.transferCount}
           </span>
         </div>
@@ -44,8 +44,8 @@ export default async function StripePayoutsPage() {
 
       {!summary.onboardingComplete && (
         <Card className="p-4 bg-amber-950 border-amber-200">
-          <p className="text-sm text-amber-800 font-medium">Stripe Connect not set up</p>
-          <p className="text-sm text-amber-700 mt-1">
+          <p className="text-sm text-amber-200 font-medium">Stripe Connect not set up</p>
+          <p className="text-sm text-amber-200 mt-1">
             Complete your Stripe Connect onboarding in{' '}
             <Link href="/settings" className="underline font-medium">
               Settings
@@ -57,8 +57,8 @@ export default async function StripePayoutsPage() {
 
       {summary.onboardingComplete && (
         <Card className="p-4 bg-violet-950 border-violet-200">
-          <p className="text-sm text-violet-800 font-medium">Stripe Connect active</p>
-          <p className="text-sm text-violet-700 mt-1">
+          <p className="text-sm text-violet-200 font-medium">Stripe Connect active</p>
+          <p className="text-sm text-violet-200 mt-1">
             Client payments are automatically transferred to your connected Stripe account. Stripe
             then pays out to your bank on a rolling basis (usually T+2 business days). For exact
             payout details, visit your <strong>Stripe Dashboard</strong>.
@@ -68,7 +68,7 @@ export default async function StripePayoutsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
+          <p className="text-2xl font-bold text-green-200">
             {formatCurrency(summary.totalNetReceivedCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Net received</p>
@@ -141,7 +141,7 @@ export default async function StripePayoutsPage() {
                       ? `-${formatCurrency(transfer.platformFeeCents)}`
                       : '—'}
                   </TableCell>
-                  <TableCell className="text-green-700 font-semibold text-sm">
+                  <TableCell className="text-green-200 font-semibold text-sm">
                     {formatCurrency(transfer.netTransferCents)}
                   </TableCell>
                   <TableCell>

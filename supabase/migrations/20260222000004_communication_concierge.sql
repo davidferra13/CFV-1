@@ -4,10 +4,8 @@
 
 ALTER TABLE conversation_threads
   ADD COLUMN IF NOT EXISTS is_starred BOOLEAN NOT NULL DEFAULT false;
-
 CREATE INDEX IF NOT EXISTS idx_conversation_threads_starred
   ON conversation_threads(tenant_id, is_starred, last_activity_at DESC);
-
 CREATE OR REPLACE VIEW communication_inbox_items AS
 WITH latest_event AS (
   SELECT DISTINCT ON (ce.thread_id)
@@ -81,6 +79,5 @@ FROM conversation_threads ct
 JOIN latest_event le ON le.thread_id = ct.id
 LEFT JOIN overdue_timer ot ON ot.thread_id = ct.id
 LEFT JOIN pending_links pl ON pl.communication_event_id = le.communication_event_id;
-
 GRANT SELECT ON TABLE communication_inbox_items TO authenticated;
 GRANT SELECT ON TABLE communication_inbox_items TO service_role;

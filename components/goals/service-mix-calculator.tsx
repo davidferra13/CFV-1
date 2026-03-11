@@ -103,7 +103,7 @@ export function ServiceMixCalculator({
       <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-amber-200 uppercase tracking-wide">
               {monthLabel} — already booked
             </p>
             <p className="text-2xl font-bold text-amber-900 mt-0.5">
@@ -114,7 +114,7 @@ export function ServiceMixCalculator({
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-amber-200 uppercase tracking-wide">
               Gap remaining
             </p>
             <p className="text-2xl font-bold text-amber-900 mt-0.5">
@@ -125,7 +125,7 @@ export function ServiceMixCalculator({
         </div>
 
         {gapCents === 0 && (
-          <p className="mt-2 text-sm font-medium text-emerald-700">
+          <p className="mt-2 text-sm font-medium text-emerald-200">
             You&apos;ve already hit your goal this month!
           </p>
         )}
@@ -237,7 +237,7 @@ export function ServiceMixCalculator({
                   Planned revenue
                 </p>
                 <p
-                  className={`text-2xl font-bold mt-0.5 ${goalMet ? 'text-emerald-700' : 'text-stone-100'}`}
+                  className={`text-2xl font-bold mt-0.5 ${goalMet ? 'text-emerald-200' : 'text-stone-100'}`}
                 >
                   {formatDollars(plan.totalPlannedCents)}
                 </p>
@@ -255,7 +255,7 @@ export function ServiceMixCalculator({
                       <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">
                         Goal exceeded
                       </p>
-                      <p className="text-xl font-bold text-emerald-700 mt-0.5">
+                      <p className="text-xl font-bold text-emerald-200 mt-0.5">
                         +{formatDollars(plan.exceededByCents)}
                       </p>
                     </div>
@@ -264,7 +264,7 @@ export function ServiceMixCalculator({
                       <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">
                         Goal hit exactly
                       </p>
-                      <p className="text-xl font-bold text-emerald-700 mt-0.5">✓</p>
+                      <p className="text-xl font-bold text-emerald-200 mt-0.5">✓</p>
                     </div>
                   )
                 ) : (
@@ -272,7 +272,7 @@ export function ServiceMixCalculator({
                     <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">
                       Still needed
                     </p>
-                    <p className="text-xl font-bold text-amber-700 mt-0.5">
+                    <p className="text-xl font-bold text-amber-200 mt-0.5">
                       {formatDollars(plan.unfilledCents)}
                     </p>
                   </div>
@@ -357,7 +357,7 @@ export function ServiceMixCalculator({
                     </td>
                   </tr>
                   <tr
-                    className={`font-bold ${goalMet ? 'bg-emerald-950 text-emerald-800' : 'bg-amber-950 text-amber-800'}`}
+                    className={`font-bold ${goalMet ? 'bg-emerald-950 text-emerald-200' : 'bg-amber-950 text-amber-200'}`}
                   >
                     <td className="px-3 py-2">Projected total</td>
                     <td />

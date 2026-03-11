@@ -22,11 +22,8 @@ CREATE TABLE IF NOT EXISTS simulation_runs (
                                CHECK (status IN ('running', 'completed', 'failed')),
   config           jsonb       NOT NULL DEFAULT '{}'
 );
-
 CREATE INDEX simulation_runs_tenant_idx ON simulation_runs (tenant_id, started_at DESC);
-
 ALTER TABLE simulation_runs ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "simulation_runs_chef_rls" ON simulation_runs
   FOR ALL
   USING (
@@ -35,7 +32,6 @@ CREATE POLICY "simulation_runs_chef_rls" ON simulation_runs
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- ── simulation_results ───────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS simulation_results (
@@ -51,12 +47,9 @@ CREATE TABLE IF NOT EXISTS simulation_results (
   duration_ms      integer,
   created_at       timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX simulation_results_run_idx    ON simulation_results (run_id);
 CREATE INDEX simulation_results_tenant_idx ON simulation_results (tenant_id, module, created_at DESC);
-
 ALTER TABLE simulation_results ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "simulation_results_chef_rls" ON simulation_results
   FOR ALL
   USING (
@@ -65,7 +58,6 @@ CREATE POLICY "simulation_results_chef_rls" ON simulation_results
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- ── fine_tuning_examples ─────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS fine_tuning_examples (
@@ -78,11 +70,8 @@ CREATE TABLE IF NOT EXISTS fine_tuning_examples (
   quality_score integer     NOT NULL CHECK (quality_score BETWEEN 0 AND 100),
   created_at    timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX fine_tuning_examples_tenant_idx ON fine_tuning_examples (tenant_id, module, quality_score DESC);
-
 ALTER TABLE fine_tuning_examples ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "fine_tuning_examples_chef_rls" ON fine_tuning_examples
   FOR ALL
   USING (

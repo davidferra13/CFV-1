@@ -10,15 +10,12 @@ CREATE TABLE IF NOT EXISTS remy_conversations (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Index for listing conversations (most recent first)
 CREATE INDEX idx_remy_conversations_tenant_recent
   ON remy_conversations(tenant_id, updated_at DESC)
   WHERE is_active = true;
-
 -- RLS
 ALTER TABLE remy_conversations ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY remy_conversations_select ON remy_conversations
   FOR SELECT USING (
     tenant_id IN (
@@ -26,7 +23,6 @@ CREATE POLICY remy_conversations_select ON remy_conversations
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY remy_conversations_insert ON remy_conversations
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -34,7 +30,6 @@ CREATE POLICY remy_conversations_insert ON remy_conversations
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY remy_conversations_update ON remy_conversations
   FOR UPDATE USING (
     tenant_id IN (
@@ -42,7 +37,6 @@ CREATE POLICY remy_conversations_update ON remy_conversations
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY remy_conversations_delete ON remy_conversations
   FOR DELETE USING (
     tenant_id IN (
@@ -50,12 +44,10 @@ CREATE POLICY remy_conversations_delete ON remy_conversations
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE TRIGGER set_remy_conversations_updated_at
   BEFORE UPDATE ON remy_conversations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 -- Remy Messages: individual messages within a conversation thread.
 
 CREATE TABLE IF NOT EXISTS remy_messages (
@@ -68,18 +60,14 @@ CREATE TABLE IF NOT EXISTS remy_messages (
   nav_suggestions JSONB,           -- navigation suggestions (if any)
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Index for loading messages in a conversation (chronological)
 CREATE INDEX idx_remy_messages_conversation
   ON remy_messages(conversation_id, created_at ASC);
-
 -- Index for tenant scoping
 CREATE INDEX idx_remy_messages_tenant
   ON remy_messages(tenant_id, created_at DESC);
-
 -- RLS
 ALTER TABLE remy_messages ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY remy_messages_select ON remy_messages
   FOR SELECT USING (
     tenant_id IN (
@@ -87,7 +75,6 @@ CREATE POLICY remy_messages_select ON remy_messages
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY remy_messages_insert ON remy_messages
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -95,6 +82,5 @@ CREATE POLICY remy_messages_insert ON remy_messages
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Messages are immutable once created — no update or delete policies
--- (Conversation-level delete cascades handle cleanup)
+-- (Conversation-level delete cascades handle cleanup);

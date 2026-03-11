@@ -63,7 +63,7 @@ export function MarketplaceConvertBanner({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="flex-shrink-0 mt-0.5">
-            <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold">
+            <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-200 text-sm font-bold">
               {platformLabel.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -72,7 +72,7 @@ export function MarketplaceConvertBanner({
             <p className="font-semibold text-amber-900 text-sm">
               This dinner came through {platformLabel}
             </p>
-            <p className="text-amber-700 text-xs mt-0.5">
+            <p className="text-amber-200 text-xs mt-0.5">
               {clientName
                 ? `Send ${clientName} your direct booking link`
                 : 'Send your client the direct booking link'}{' '}
@@ -125,7 +125,7 @@ export function MarketplaceConvertBanner({
                 href={directBookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 border border-amber-300 text-amber-800 text-xs font-medium rounded-lg hover:bg-amber-950 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 border border-amber-300 text-amber-200 text-xs font-medium rounded-lg hover:bg-amber-950 transition-colors"
               >
                 <svg
                   className="w-3.5 h-3.5"

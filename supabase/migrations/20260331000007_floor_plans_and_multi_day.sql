@@ -16,24 +16,19 @@ CREATE TABLE IF NOT EXISTS event_floor_plans (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_floor_plans_event_id ON event_floor_plans(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_floor_plans_chef_id ON event_floor_plans(chef_id);
-
 ALTER TABLE event_floor_plans ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage own floor plans"
   ON event_floor_plans
   FOR ALL
-  USING (chef_id = (SELECT id FROM chefs WHERE user_id = auth.uid()))
-  WITH CHECK (chef_id = (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
+  WITH CHECK (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 -- Auto-update updated_at
 CREATE OR REPLACE TRIGGER set_event_floor_plans_updated_at
   BEFORE UPDATE ON event_floor_plans
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- Feature 2: Multi-Day Event Support
 -- ============================================

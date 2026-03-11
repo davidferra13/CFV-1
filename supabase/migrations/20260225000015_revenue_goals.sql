@@ -9,7 +9,6 @@ ALTER TABLE chef_preferences
   ADD COLUMN target_annual_revenue_cents INTEGER,
   ADD COLUMN revenue_goal_custom JSONB NOT NULL DEFAULT '[]'::jsonb,
   ADD COLUMN revenue_goal_nudge_level TEXT NOT NULL DEFAULT 'gentle';
-
 ALTER TABLE chef_preferences
   ADD CONSTRAINT chef_preferences_target_monthly_revenue_nonnegative
     CHECK (target_monthly_revenue_cents >= 0),
@@ -19,6 +18,5 @@ ALTER TABLE chef_preferences
     CHECK (revenue_goal_nudge_level IN ('gentle', 'standard', 'aggressive')),
   ADD CONSTRAINT chef_preferences_revenue_goal_custom_array
     CHECK (jsonb_typeof(revenue_goal_custom) = 'array');
-
 CREATE INDEX idx_chef_preferences_revenue_goal_enabled
   ON chef_preferences (tenant_id, revenue_goal_program_enabled);

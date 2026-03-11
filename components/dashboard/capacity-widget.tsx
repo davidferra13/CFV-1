@@ -14,9 +14,9 @@ interface CapacityWidgetProps {
 }
 
 const BURNOUT_COLORS = {
-  low: { bg: 'bg-green-100', text: 'text-green-700', label: 'Low' },
-  moderate: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Moderate' },
-  high: { bg: 'bg-red-100', text: 'text-red-700', label: 'High' },
+  low: { bg: 'bg-green-100', text: 'text-green-200', label: 'Low' },
+  moderate: { bg: 'bg-amber-100', text: 'text-amber-200', label: 'Moderate' },
+  high: { bg: 'bg-red-100', text: 'text-red-200', label: 'High' },
 }
 
 export function CapacityWidget({
@@ -41,7 +41,7 @@ export function CapacityWidget({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-violet-500" />
-          <span className="text-sm font-medium text-stone-700">Capacity</span>
+          <span className="text-sm font-medium text-stone-200">Capacity</span>
         </div>
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${burnout.bg} ${burnout.text}`}>
           {burnout.label} risk
@@ -77,7 +77,7 @@ export function CapacityWidget({
       {/* Link */}
       <Link
         href="/analytics/capacity"
-        className="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-700 font-medium"
+        className="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-200 font-medium"
       >
         Full capacity analysis <ArrowRight className="w-3 h-3" />
       </Link>

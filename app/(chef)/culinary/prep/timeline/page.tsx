@@ -49,8 +49,8 @@ export default async function PrepTimelinePage() {
       </div>
 
       <Card className="p-4 bg-amber-950 border-amber-200">
-        <p className="text-sm font-medium text-amber-800">How to use this view</p>
-        <p className="text-sm text-amber-700 mt-1">
+        <p className="text-sm font-medium text-amber-200">How to use this view</p>
+        <p className="text-sm text-amber-200 mt-1">
           Components marked as make-ahead on a menu appear here, grouped by menu and sorted from
           longest to shortest lead time. Use this to build your day-by-day prep schedule working
           backwards from the event date.

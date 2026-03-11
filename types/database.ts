@@ -3378,13 +3378,24 @@ export type Database = {
           created_at: string
           created_by: string | null
           document_type: string
+          entity_id: string | null
+          entity_type: string | null
+          extraction_confidence: number | null
+          extraction_status: string
           event_id: string | null
+          file_hash: string | null
+          file_size_bytes: number | null
           folder_id: string | null
           id: string
           is_template: boolean
           key_terms: Json | null
+          mime_type: string | null
+          original_filename: string | null
           source_filename: string | null
+          source_url: string | null
           source_type: string
+          storage_bucket: string | null
+          storage_path: string | null
           summary: string | null
           tags: string[] | null
           tenant_id: string
@@ -3398,13 +3409,24 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           document_type?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          extraction_confidence?: number | null
+          extraction_status?: string
           event_id?: string | null
+          file_hash?: string | null
+          file_size_bytes?: number | null
           folder_id?: string | null
           id?: string
           is_template?: boolean
           key_terms?: Json | null
+          mime_type?: string | null
+          original_filename?: string | null
           source_filename?: string | null
+          source_url?: string | null
           source_type?: string
+          storage_bucket?: string | null
+          storage_path?: string | null
           summary?: string | null
           tags?: string[] | null
           tenant_id: string
@@ -3418,13 +3440,24 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           document_type?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          extraction_confidence?: number | null
+          extraction_status?: string
           event_id?: string | null
+          file_hash?: string | null
+          file_size_bytes?: number | null
           folder_id?: string | null
           id?: string
           is_template?: boolean
           key_terms?: Json | null
+          mime_type?: string | null
+          original_filename?: string | null
           source_filename?: string | null
+          source_url?: string | null
           source_type?: string
+          storage_bucket?: string | null
+          storage_path?: string | null
           summary?: string | null
           tags?: string[] | null
           tenant_id?: string
@@ -15229,12 +15262,15 @@ export type Database = {
           gmail_sync_errors: number
           historical_scan_completed_at: string | null
           historical_scan_enabled: boolean
+          historical_scan_include_spam_trash: boolean
           historical_scan_last_run_at: string | null
           historical_scan_lookback_days: number
           historical_scan_page_token: string | null
+          historical_scan_result_size_estimate: number | null
           historical_scan_started_at: string | null
           historical_scan_status: string
           historical_scan_total_processed: number
+          historical_scan_total_seen: number
           id: string
           refresh_token: string | null
           scopes: string[]
@@ -15254,12 +15290,15 @@ export type Database = {
           gmail_sync_errors?: number
           historical_scan_completed_at?: string | null
           historical_scan_enabled?: boolean
+          historical_scan_include_spam_trash?: boolean
           historical_scan_last_run_at?: string | null
           historical_scan_lookback_days?: number
           historical_scan_page_token?: string | null
+          historical_scan_result_size_estimate?: number | null
           historical_scan_started_at?: string | null
           historical_scan_status?: string
           historical_scan_total_processed?: number
+          historical_scan_total_seen?: number
           id?: string
           refresh_token?: string | null
           scopes?: string[]
@@ -15279,12 +15318,15 @@ export type Database = {
           gmail_sync_errors?: number
           historical_scan_completed_at?: string | null
           historical_scan_enabled?: boolean
+          historical_scan_include_spam_trash?: boolean
           historical_scan_last_run_at?: string | null
           historical_scan_lookback_days?: number
           historical_scan_page_token?: string | null
+          historical_scan_result_size_estimate?: number | null
           historical_scan_started_at?: string | null
           historical_scan_status?: string
           historical_scan_total_processed?: number
+          historical_scan_total_seen?: number
           id?: string
           refresh_token?: string | null
           scopes?: string[]

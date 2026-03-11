@@ -33,25 +33,20 @@ CREATE TABLE IF NOT EXISTS hub_share_cards (
   is_active      BOOLEAN NOT NULL DEFAULT true,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Index for fast public lookups
 CREATE INDEX idx_hub_share_cards_share_token ON hub_share_cards(share_token) WHERE is_active = true;
 CREATE INDEX idx_hub_share_cards_group_id ON hub_share_cards(group_id);
-
 -- RLS
 ALTER TABLE hub_share_cards ENABLE ROW LEVEL SECURITY;
-
 -- Anyone can read active share cards (public link access)
 CREATE POLICY "hub_share_cards_select_public"
   ON hub_share_cards FOR SELECT
   USING (is_active = true);
-
 -- Service role handles all writes
 CREATE POLICY "hub_share_cards_service_all"
   ON hub_share_cards FOR ALL
   USING (true)
   WITH CHECK (true);
-
 -- Grant anon read access
 GRANT SELECT ON hub_share_cards TO anon;
 GRANT ALL ON hub_share_cards TO service_role;

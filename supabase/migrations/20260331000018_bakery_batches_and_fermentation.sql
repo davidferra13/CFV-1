@@ -23,38 +23,30 @@ CREATE TABLE bakery_batches (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_bakery_batches_tenant_date ON bakery_batches(tenant_id, planned_date);
 CREATE INDEX idx_bakery_batches_status ON bakery_batches(tenant_id, status);
-
 -- RLS
 ALTER TABLE bakery_batches ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY tenant_isolation_select_bakery_batches ON bakery_batches
   FOR SELECT USING (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 CREATE POLICY tenant_isolation_insert_bakery_batches ON bakery_batches
   FOR INSERT WITH CHECK (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 CREATE POLICY tenant_isolation_update_bakery_batches ON bakery_batches
   FOR UPDATE USING (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 CREATE POLICY tenant_isolation_delete_bakery_batches ON bakery_batches
   FOR DELETE USING (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 -- updated_at trigger
 CREATE TRIGGER update_bakery_batches_updated_at
   BEFORE UPDATE ON bakery_batches
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 -- =====================================================================================
 -- TABLE 2: fermentation_logs
 -- =====================================================================================
@@ -78,34 +70,27 @@ CREATE TABLE fermentation_logs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_fermentation_logs_tenant_start ON fermentation_logs(tenant_id, start_time);
 CREATE INDEX idx_fermentation_logs_batch ON fermentation_logs(batch_id);
 CREATE INDEX idx_fermentation_logs_active ON fermentation_logs(tenant_id) WHERE end_time IS NULL;
-
 -- RLS
 ALTER TABLE fermentation_logs ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY tenant_isolation_select_fermentation_logs ON fermentation_logs
   FOR SELECT USING (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 CREATE POLICY tenant_isolation_insert_fermentation_logs ON fermentation_logs
   FOR INSERT WITH CHECK (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 CREATE POLICY tenant_isolation_update_fermentation_logs ON fermentation_logs
   FOR UPDATE USING (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 CREATE POLICY tenant_isolation_delete_fermentation_logs ON fermentation_logs
   FOR DELETE USING (
-    tenant_id IN (SELECT id FROM chefs WHERE user_id = auth.uid())
+    tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
-
 -- updated_at trigger
 CREATE TRIGGER update_fermentation_logs_updated_at
   BEFORE UPDATE ON fermentation_logs

@@ -14,7 +14,6 @@
 
 ALTER TABLE client_incentives
   DROP CONSTRAINT IF EXISTS chk_client_incentives_creator_role_shape;
-
 ALTER TABLE client_incentives
   ADD CONSTRAINT chk_client_incentives_creator_role_shape CHECK (
     (

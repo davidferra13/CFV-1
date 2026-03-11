@@ -5,6 +5,10 @@
 
 import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
+import {
+  buildDeterministicEnhancedDocumentImage,
+  canDeterministicallyEnhanceDocumentImage,
+} from '@/lib/documents/image-enhancement'
 
 const MODEL = 'gemini-2.5-flash'
 
@@ -115,7 +119,7 @@ RESPOND WITH ONLY valid JSON matching this exact structure (no markdown, no expl
  */
 export async function parseReceiptImage(
   imageBase64: string,
-  mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' = 'image/jpeg'
+  mediaType: string = 'image/jpeg'
 ): Promise<ReceiptExtraction> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
@@ -124,14 +128,25 @@ export async function parseReceiptImage(
     )
   }
 
+  let normalizedImageBase64 = imageBase64
+  let normalizedMediaType = mediaType
+
+  if (canDeterministicallyEnhanceDocumentImage(mediaType)) {
+    const enhanced = await buildDeterministicEnhancedDocumentImage(
+      Buffer.from(imageBase64, 'base64')
+    )
+    normalizedImageBase64 = enhanced.buffer.toString('base64')
+    normalizedMediaType = enhanced.contentType
+  }
+
   const ai = new GoogleGenAI({ apiKey })
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: [
       {
         inlineData: {
-          mimeType: mediaType,
-          data: imageBase64,
+          mimeType: normalizedMediaType,
+          data: normalizedImageBase64,
         },
       },
       { text: 'Extract all data from this receipt. Return only valid JSON.' },

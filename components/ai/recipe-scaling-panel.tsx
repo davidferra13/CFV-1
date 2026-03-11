@@ -91,12 +91,12 @@ export function RecipeScalingPanel({
 
       {result.techniqueAdjustments.length > 0 && (
         <div className="bg-amber-950 border border-amber-200 rounded p-2">
-          <div className="text-xs font-medium text-amber-800 mb-1 flex items-center gap-1">
+          <div className="text-xs font-medium text-amber-200 mb-1 flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
             Technique Changes
           </div>
           {result.techniqueAdjustments.map((t, i) => (
-            <div key={i} className="text-xs text-amber-700">
+            <div key={i} className="text-xs text-amber-200">
               • {t}
             </div>
           ))}

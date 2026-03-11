@@ -66,7 +66,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:text-blue-900"
+          className="flex items-center gap-1.5 text-xs font-medium text-blue-200 hover:text-blue-900"
         >
           <span className="text-blue-400">{expanded ? '▾' : '▸'}</span>
           How TakeAChef inquiries work in ChefFlow
@@ -101,7 +101,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
                 </span>
                 <div>
                   <p
-                    className={`text-xs font-medium ${isActive ? 'text-blue-900' : 'text-blue-700'}`}
+                    className={`text-xs font-medium ${isActive ? 'text-blue-900' : 'text-blue-200'}`}
                   >
                     {step.label}
                     {isActive && (
@@ -116,7 +116,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-[11px] text-blue-500 hover:text-blue-700 underline underline-offset-2 ml-2 mt-1"
+            className="text-[11px] text-blue-500 hover:text-blue-200 underline underline-offset-2 ml-2 mt-1"
           >
             Got it, don't show again
           </button>

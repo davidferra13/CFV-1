@@ -25,18 +25,15 @@ CREATE TABLE client_connections (
   -- One connection per ordered pair per tenant
   CONSTRAINT uq_client_connection UNIQUE (tenant_id, client_a_id, client_b_id)
 );
-
 -- Indexes for bidirectional lookups
 CREATE INDEX idx_client_connections_tenant ON client_connections(tenant_id);
 CREATE INDEX idx_client_connections_a ON client_connections(tenant_id, client_a_id);
 CREATE INDEX idx_client_connections_b ON client_connections(tenant_id, client_b_id);
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE client_connections ENABLE ROW LEVEL SECURITY;
-
 -- Chefs can see connections for their own tenancy
 CREATE POLICY client_connections_select ON client_connections
   FOR SELECT USING (
@@ -45,7 +42,6 @@ CREATE POLICY client_connections_select ON client_connections
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
-
 -- Chefs can create connections within their tenancy
 CREATE POLICY client_connections_insert ON client_connections
   FOR INSERT WITH CHECK (
@@ -54,7 +50,6 @@ CREATE POLICY client_connections_insert ON client_connections
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
-
 -- Chefs can update connections within their tenancy
 CREATE POLICY client_connections_update ON client_connections
   FOR UPDATE USING (
@@ -63,7 +58,6 @@ CREATE POLICY client_connections_update ON client_connections
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
-
 -- Chefs can delete connections within their tenancy
 CREATE POLICY client_connections_delete ON client_connections
   FOR DELETE USING (

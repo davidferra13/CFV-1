@@ -36,7 +36,7 @@ export default async function ShoppingListDetailPage({
           <ArrowLeft className="h-4 w-4" />
           Back to Lists
         </Link>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-200">
           Shopping list not found or could not be loaded.
         </div>
       </div>

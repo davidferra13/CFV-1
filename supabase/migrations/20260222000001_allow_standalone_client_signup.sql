@@ -3,6 +3,5 @@
 
 ALTER TABLE clients
   ALTER COLUMN tenant_id DROP NOT NULL;
-
 COMMENT ON COLUMN clients.tenant_id IS
   'Optional at signup. NULL means standalone client account not yet attached to a chef tenant.';

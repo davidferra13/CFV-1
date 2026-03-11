@@ -203,13 +203,13 @@ export function ClientDashboardLayoutForm({
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-200">{error}</p>
         </div>
       )}
 
       {success && (
         <div className="rounded-lg border border-green-200 bg-green-950 p-4">
-          <p className="text-sm text-green-700">Dashboard widget settings saved.</p>
+          <p className="text-sm text-green-200">Dashboard widget settings saved.</p>
         </div>
       )}
 

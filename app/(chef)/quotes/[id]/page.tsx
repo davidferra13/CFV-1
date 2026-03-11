@@ -56,7 +56,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       {/* Frozen Snapshot Notice */}
       {quote.snapshot_frozen && (
         <div className="bg-green-950 border border-green-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-green-800">
+          <p className="text-sm font-medium text-green-200">
             Pricing snapshot frozen at acceptance. Original pricing is preserved.
           </p>
         </div>
@@ -157,7 +157,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             {quote.accepted_at && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Accepted At</dt>
-                <dd className="text-sm text-green-700 mt-1">
+                <dd className="text-sm text-green-200 mt-1">
                   {format(new Date(quote.accepted_at), "MMM d, yyyy 'at' h:mm a")}
                 </dd>
               </div>
@@ -165,7 +165,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             {quote.rejected_at && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Rejected At</dt>
-                <dd className="text-sm text-red-700 mt-1">
+                <dd className="text-sm text-red-200 mt-1">
                   {format(new Date(quote.rejected_at), "MMM d, yyyy 'at' h:mm a")}
                 </dd>
               </div>
@@ -242,7 +242,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       {quote.rejected_reason && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Rejection Reason</h2>
-          <p className="text-sm text-red-700 whitespace-pre-wrap">{quote.rejected_reason}</p>
+          <p className="text-sm text-red-200 whitespace-pre-wrap">{quote.rejected_reason}</p>
         </Card>
       )}
 

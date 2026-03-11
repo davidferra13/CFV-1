@@ -19,7 +19,6 @@ CREATE TYPE event_status AS ENUM (
   'completed',    -- Service finished, on-site work done
   'cancelled'     -- Cancelled by either party (double-l spelling matches app code)
 );
-
 -- Payment status (computed from ledger, not transitioned)
 CREATE TYPE payment_status AS ENUM (
   'unpaid',
@@ -28,14 +27,12 @@ CREATE TYPE payment_status AS ENUM (
   'paid',
   'refunded'
 );
-
 -- Pricing models
 CREATE TYPE pricing_model AS ENUM (
   'per_person',
   'flat_rate',
   'custom'
 );
-
 -- Service styles
 CREATE TYPE event_service_style AS ENUM (
   'plated',
@@ -45,7 +42,6 @@ CREATE TYPE event_service_style AS ENUM (
   'tasting_menu',
   'other'
 );
-
 -- Payment methods
 CREATE TYPE payment_method AS ENUM (
   'cash',
@@ -56,14 +52,12 @@ CREATE TYPE payment_method AS ENUM (
   'check',
   'other'
 );
-
 -- Cancellation initiator
 CREATE TYPE cancellation_initiator AS ENUM (
   'chef',
   'client',
   'mutual'
 );
-
 -- Quote lifecycle
 CREATE TYPE quote_status AS ENUM (
   'draft',
@@ -72,7 +66,6 @@ CREATE TYPE quote_status AS ENUM (
   'rejected',
   'expired'
 );
-
 -- Ledger entry types
 CREATE TYPE ledger_entry_type AS ENUM (
   'payment',
@@ -85,7 +78,6 @@ CREATE TYPE ledger_entry_type AS ENUM (
   'add_on',
   'credit'
 );
-
 -- Expense categories
 CREATE TYPE expense_category AS ENUM (
   'groceries',
@@ -96,7 +88,6 @@ CREATE TYPE expense_category AS ENUM (
   'supplies',
   'other'
 );
-
 -- ============================================
 -- TABLE 1: EVENTS
 -- ============================================
@@ -211,7 +202,6 @@ CREATE TABLE events (
   CONSTRAINT events_deposit_lte_quoted CHECK (deposit_amount_cents <= quoted_price_cents OR deposit_amount_cents IS NULL),
   CONSTRAINT events_tip_non_negative CHECK (tip_amount_cents >= 0)
 );
-
 CREATE INDEX idx_events_tenant_id ON events(tenant_id);
 CREATE INDEX idx_events_client_id ON events(client_id);
 CREATE INDEX idx_events_inquiry_id ON events(inquiry_id);
@@ -219,14 +209,12 @@ CREATE INDEX idx_events_status ON events(status);
 CREATE INDEX idx_events_event_date ON events(event_date);
 CREATE INDEX idx_events_tenant_date ON events(tenant_id, event_date);
 CREATE INDEX idx_events_tenant_status ON events(tenant_id, status);
-
 COMMENT ON TABLE events IS 'The canonical event record. Events only exist once inquiry is confirmed and quote is accepted.';
 COMMENT ON COLUMN events.tenant_id IS 'FK to chefs.id - tenant scoping';
 COMMENT ON COLUMN events.status IS '8-state FSM: draft → proposed → accepted → paid → confirmed → in_progress → completed | cancelled';
 COMMENT ON COLUMN events.payment_status IS 'CRITICAL: ONLY written by update_event_payment_status_on_ledger_insert trigger. Application must NEVER set this field directly.';
 COMMENT ON COLUMN events.pricing_snapshot IS 'Frozen pricing at event creation - IMMUTABLE';
 COMMENT ON COLUMN events.allergies IS 'IMMUTABLE after event creation - safety-critical data';
-
 -- ============================================
 -- TABLE 2: EVENT STATE TRANSITIONS
 -- ============================================
@@ -242,13 +230,10 @@ CREATE TABLE event_state_transitions (
   reason TEXT,
   metadata JSONB
 );
-
 CREATE INDEX idx_event_transitions_event_id ON event_state_transitions(event_id);
 CREATE INDEX idx_event_transitions_tenant_id ON event_state_transitions(tenant_id);
-
 COMMENT ON TABLE event_state_transitions IS 'Immutable audit trail of event state changes';
 COMMENT ON COLUMN event_state_transitions.from_status IS 'Nullable for initial state';
-
 -- ============================================
 -- TABLE 3: QUOTES
 -- ============================================
@@ -301,16 +286,13 @@ CREATE TABLE quotes (
   CONSTRAINT quotes_guest_count_positive CHECK (guest_count_estimated > 0 OR guest_count_estimated IS NULL),
   CONSTRAINT quotes_must_link_inquiry_or_event CHECK (inquiry_id IS NOT NULL OR event_id IS NOT NULL)
 );
-
 CREATE INDEX idx_quotes_tenant_id ON quotes(tenant_id);
 CREATE INDEX idx_quotes_inquiry_id ON quotes(inquiry_id);
 CREATE INDEX idx_quotes_event_id ON quotes(event_id);
 CREATE INDEX idx_quotes_client_id ON quotes(client_id);
 CREATE INDEX idx_quotes_status ON quotes(status);
-
 COMMENT ON TABLE quotes IS 'Pricing proposals linked to inquiry and/or event';
 COMMENT ON COLUMN quotes.pricing_snapshot IS 'Frozen pricing at acceptance - IMMUTABLE after status = accepted';
-
 -- ============================================
 -- TABLE 4: QUOTE STATE TRANSITIONS
 -- ============================================
@@ -326,12 +308,9 @@ CREATE TABLE quote_state_transitions (
   reason TEXT,
   metadata JSONB
 );
-
 CREATE INDEX idx_quote_transitions_quote_id ON quote_state_transitions(quote_id);
 CREATE INDEX idx_quote_transitions_tenant_id ON quote_state_transitions(tenant_id);
-
 COMMENT ON TABLE quote_state_transitions IS 'Immutable audit trail of quote state changes';
-
 -- ============================================
 -- TABLE 5: LEDGER ENTRIES (Append-Only)
 -- ============================================
@@ -373,7 +352,6 @@ CREATE TABLE ledger_entries (
   CONSTRAINT ledger_refund_has_reason CHECK ((is_refund = true AND refund_reason IS NOT NULL) OR is_refund = false),
   CONSTRAINT ledger_refund_type_match CHECK ((entry_type = 'refund' AND is_refund = true) OR entry_type != 'refund')
 );
-
 CREATE INDEX idx_ledger_entries_tenant_id ON ledger_entries(tenant_id);
 CREATE INDEX idx_ledger_entries_client_id ON ledger_entries(client_id);
 CREATE INDEX idx_ledger_entries_event_id ON ledger_entries(event_id);
@@ -381,10 +359,8 @@ CREATE INDEX idx_ledger_entries_entry_type ON ledger_entries(entry_type);
 CREATE INDEX idx_ledger_entries_created_at ON ledger_entries(created_at);
 CREATE INDEX idx_ledger_entries_ledger_sequence ON ledger_entries(ledger_sequence);
 CREATE INDEX idx_ledger_entries_tenant_event ON ledger_entries(tenant_id, event_id);
-
 COMMENT ON TABLE ledger_entries IS 'CRITICAL: Append-only financial ledger. NEVER update or delete. Only INSERT allowed.';
 COMMENT ON COLUMN ledger_entries.ledger_sequence IS 'Immutable sequence number for audit ordering';
-
 -- ============================================
 -- TABLE 6: EXPENSES
 -- ============================================
@@ -434,16 +410,13 @@ CREATE TABLE expenses (
   CONSTRAINT expenses_mileage_non_negative CHECK (mileage_miles >= 0 OR mileage_miles IS NULL),
   CONSTRAINT expenses_mileage_rate_positive CHECK (mileage_rate_per_mile_cents > 0 OR mileage_rate_per_mile_cents IS NULL)
 );
-
 CREATE INDEX idx_expenses_tenant_id ON expenses(tenant_id);
 CREATE INDEX idx_expenses_event_id ON expenses(event_id);
 CREATE INDEX idx_expenses_category ON expenses(category);
 CREATE INDEX idx_expenses_expense_date ON expenses(expense_date);
 CREATE INDEX idx_expenses_tenant_date ON expenses(tenant_id, expense_date);
 CREATE INDEX idx_expenses_is_business ON expenses(is_business);
-
 COMMENT ON TABLE expenses IS 'Cost tracking per event (cost side, vs ledger_entries for revenue side)';
-
 -- ============================================
 -- TABLE 7: AFTER ACTION REVIEWS
 -- ============================================
@@ -480,14 +453,11 @@ CREATE TABLE after_action_reviews (
   created_by UUID REFERENCES auth.users(id),
   updated_by UUID REFERENCES auth.users(id)
 );
-
 CREATE INDEX idx_aar_event_id ON after_action_reviews(event_id);
 CREATE INDEX idx_aar_tenant_id ON after_action_reviews(tenant_id);
 CREATE INDEX idx_aar_calm_rating ON after_action_reviews(calm_rating);
 CREATE INDEX idx_aar_preparation_rating ON after_action_reviews(preparation_rating);
-
 COMMENT ON TABLE after_action_reviews IS 'Post-event retrospective. One per event. The real KPIs: calm_rating and preparation_rating.';
-
 -- ============================================
 -- COLUMN ADDITIONS TO LAYER 1 (clients)
 -- ============================================
@@ -496,7 +466,6 @@ COMMENT ON TABLE after_action_reviews IS 'Post-event retrospective. One per even
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS total_payments_received_cents INTEGER DEFAULT 0;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS first_event_date DATE;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS last_event_date DATE;
-
 -- ============================================
 -- FOREIGN KEY ADDITIONS TO LAYER 2
 -- ============================================
@@ -505,14 +474,11 @@ ALTER TABLE clients ADD COLUMN IF NOT EXISTS last_event_date DATE;
 ALTER TABLE inquiries
 ADD CONSTRAINT fk_inquiries_converted_to_event
 FOREIGN KEY (converted_to_event_id) REFERENCES events(id) ON DELETE SET NULL;
-
 CREATE INDEX idx_inquiries_converted_to_event ON inquiries(converted_to_event_id) WHERE converted_to_event_id IS NOT NULL;
-
 -- Add FK constraint to messages.event_id (deferred from Layer 2)
 ALTER TABLE messages
 ADD CONSTRAINT fk_messages_event
 FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE;
-
 -- Note: idx_messages_event already exists from Layer 2, no need to recreate
 
 -- ============================================
@@ -527,19 +493,14 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER events_updated_at BEFORE UPDATE ON events
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
-
 CREATE TRIGGER quotes_updated_at BEFORE UPDATE ON quotes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
-
 CREATE TRIGGER expenses_updated_at BEFORE UPDATE ON expenses
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
-
 CREATE TRIGGER aar_updated_at BEFORE UPDATE ON after_action_reviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
-
 -- Validate event state transitions (8-state FSM)
 CREATE OR REPLACE FUNCTION validate_event_state_transition()
 RETURNS TRIGGER AS $$
@@ -566,11 +527,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER validate_event_state_transition_trigger
   BEFORE UPDATE OF status ON events
   FOR EACH ROW EXECUTE FUNCTION validate_event_state_transition();
-
 -- Freeze pricing snapshot on event creation
 CREATE OR REPLACE FUNCTION freeze_event_pricing_snapshot()
 RETURNS TRIGGER AS $$
@@ -586,11 +545,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER freeze_event_pricing_snapshot_trigger
   BEFORE INSERT ON events
   FOR EACH ROW EXECUTE FUNCTION freeze_event_pricing_snapshot();
-
 -- Log event state transitions
 CREATE OR REPLACE FUNCTION log_event_state_transition()
 RETURNS TRIGGER AS $$
@@ -613,11 +570,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER log_event_state_transition_trigger
   AFTER UPDATE OF status ON events
   FOR EACH ROW EXECUTE FUNCTION log_event_state_transition();
-
 -- Validate quote state transitions
 CREATE OR REPLACE FUNCTION validate_quote_state_transition()
 RETURNS TRIGGER AS $$
@@ -637,11 +592,9 @@ BEGIN
   RAISE EXCEPTION 'Invalid quote state transition from % to %', OLD.status, NEW.status;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER validate_quote_state_transition_trigger
   BEFORE UPDATE OF status ON quotes
   FOR EACH ROW EXECUTE FUNCTION validate_quote_state_transition();
-
 -- Freeze quote snapshot on acceptance
 CREATE OR REPLACE FUNCTION freeze_quote_snapshot_on_acceptance()
 RETURNS TRIGGER AS $$
@@ -661,11 +614,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER freeze_quote_snapshot_on_acceptance_trigger
   BEFORE UPDATE OF status ON quotes
   FOR EACH ROW EXECUTE FUNCTION freeze_quote_snapshot_on_acceptance();
-
 -- Prevent quote mutation after acceptance
 CREATE OR REPLACE FUNCTION prevent_quote_mutation_after_acceptance()
 RETURNS TRIGGER AS $$
@@ -682,11 +633,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER prevent_quote_mutation_after_acceptance_trigger
   BEFORE UPDATE ON quotes
   FOR EACH ROW EXECUTE FUNCTION prevent_quote_mutation_after_acceptance();
-
 -- Log quote state transitions
 CREATE OR REPLACE FUNCTION log_quote_state_transition()
 RETURNS TRIGGER AS $$
@@ -709,11 +658,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER log_quote_state_transition_trigger
   AFTER UPDATE OF status ON quotes
   FOR EACH ROW EXECUTE FUNCTION log_quote_state_transition();
-
 -- Prevent ledger mutation (append-only enforcement)
 CREATE OR REPLACE FUNCTION prevent_ledger_mutation()
 RETURNS TRIGGER AS $$
@@ -721,15 +668,12 @@ BEGIN
   RAISE EXCEPTION 'Ledger entries are immutable. Only INSERT allowed.';
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER prevent_ledger_update
   BEFORE UPDATE ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();
-
 CREATE TRIGGER prevent_ledger_delete
   BEFORE DELETE ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();
-
 -- Prevent state transition mutation
 CREATE OR REPLACE FUNCTION prevent_transition_mutation()
 RETURNS TRIGGER AS $$
@@ -737,23 +681,18 @@ BEGIN
   RAISE EXCEPTION 'State transitions are immutable audit records';
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER prevent_event_transition_update
   BEFORE UPDATE ON event_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
-
 CREATE TRIGGER prevent_event_transition_delete
   BEFORE DELETE ON event_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
-
 CREATE TRIGGER prevent_quote_transition_update
   BEFORE UPDATE ON quote_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
-
 CREATE TRIGGER prevent_quote_transition_delete
   BEFORE DELETE ON quote_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
-
 -- Update client lifetime value on ledger insert
 CREATE OR REPLACE FUNCTION update_client_lifetime_value_on_ledger_insert()
 RETURNS TRIGGER AS $$
@@ -775,11 +714,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER update_client_lifetime_value_trigger
   AFTER INSERT ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION update_client_lifetime_value_on_ledger_insert();
-
 -- Update event payment status on ledger insert
 CREATE OR REPLACE FUNCTION update_event_payment_status_on_ledger_insert()
 RETURNS TRIGGER AS $$
@@ -836,11 +773,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER update_event_payment_status_trigger
   AFTER INSERT ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION update_event_payment_status_on_ledger_insert();
-
 -- Update client stats on event completion
 CREATE OR REPLACE FUNCTION update_client_stats_on_event_completion()
 RETURNS TRIGGER AS $$
@@ -856,11 +791,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER update_client_stats_on_event_completion_trigger
   AFTER UPDATE OF status ON events
   FOR EACH ROW EXECUTE FUNCTION update_client_stats_on_event_completion();
-
 -- Mark event AAR filed on insert
 CREATE OR REPLACE FUNCTION mark_event_aar_filed_on_insert()
 RETURNS TRIGGER AS $$
@@ -871,11 +804,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER mark_event_aar_filed_trigger
   AFTER INSERT ON after_action_reviews
   FOR EACH ROW EXECUTE FUNCTION mark_event_aar_filed_on_insert();
-
 -- ============================================
 -- RLS POLICIES
 -- ============================================
@@ -888,58 +819,45 @@ ALTER TABLE quote_state_transitions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ledger_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE after_action_reviews ENABLE ROW LEVEL SECURITY;
-
 -- EVENTS policies
 CREATE POLICY events_tenant_isolation_select ON events
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY events_tenant_isolation_insert ON events
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY events_tenant_isolation_update ON events
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No DELETE policy - events are never hard-deleted
 
 -- EVENT_STATE_TRANSITIONS policies
 CREATE POLICY event_transitions_tenant_isolation_select ON event_state_transitions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY event_transitions_tenant_isolation_insert ON event_state_transitions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No UPDATE/DELETE policies - immutable audit records
 
 -- QUOTES policies
 CREATE POLICY quotes_tenant_isolation_select ON quotes
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY quotes_tenant_isolation_insert ON quotes
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY quotes_tenant_isolation_update ON quotes
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No DELETE policy - quotes are never hard-deleted
 
 -- QUOTE_STATE_TRANSITIONS policies
 CREATE POLICY quote_transitions_tenant_isolation_select ON quote_state_transitions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY quote_transitions_tenant_isolation_insert ON quote_state_transitions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No UPDATE/DELETE policies - immutable audit records
 
 -- LEDGER_ENTRIES policies
 CREATE POLICY ledger_entries_tenant_isolation_select ON ledger_entries
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY ledger_entries_tenant_isolation_insert ON ledger_entries
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No UPDATE/DELETE policies - append-only ledger
 
 -- Client portal: clients can view their own ledger entries
@@ -949,31 +867,24 @@ CREATE POLICY ledger_entries_client_can_view_own ON ledger_entries
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 -- EXPENSES policies
 CREATE POLICY expenses_tenant_isolation_select ON expenses
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY expenses_tenant_isolation_insert ON expenses
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY expenses_tenant_isolation_update ON expenses
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No DELETE policy - expenses are never hard-deleted
 
 -- AFTER_ACTION_REVIEWS policies
 CREATE POLICY aar_tenant_isolation_select ON after_action_reviews
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY aar_tenant_isolation_insert ON after_action_reviews
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY aar_tenant_isolation_update ON after_action_reviews
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- No DELETE policy - AARs are never hard-deleted
 
 -- ============================================
@@ -1008,7 +919,6 @@ FROM events e
 LEFT JOIN ledger_entries le ON le.event_id = e.id
 LEFT JOIN expenses ex ON ex.event_id = e.id
 GROUP BY e.id;
-
 -- Event time summary
 CREATE OR REPLACE VIEW event_time_summary AS
 SELECT
@@ -1030,7 +940,6 @@ SELECT
    COALESCE(EXTRACT(EPOCH FROM (service_completed_at - service_started_at)), 0) +
    COALESCE(EXTRACT(EPOCH FROM (reset_completed_at - reset_started_at)), 0)) / 3600 AS total_time_hours
 FROM events;
-
 -- Client financial summary
 CREATE OR REPLACE VIEW client_financial_summary AS
 SELECT
@@ -1060,7 +969,6 @@ FROM clients c
 LEFT JOIN events e ON e.client_id = c.id
 LEFT JOIN ledger_entries le ON le.client_id = c.id
 GROUP BY c.id;
-
 -- ============================================
 -- HELPER FUNCTIONS
 -- ============================================
@@ -1078,7 +986,6 @@ BEGIN
   RETURN v_status;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Compute event profit margin
 CREATE OR REPLACE FUNCTION compute_event_profit_margin(p_event_id UUID)
 RETURNS DECIMAL AS $$
@@ -1092,7 +999,6 @@ BEGIN
   RETURN v_margin;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Compute client lifetime value
 CREATE OR REPLACE FUNCTION compute_client_lifetime_value(p_client_id UUID)
 RETURNS INTEGER AS $$
@@ -1106,7 +1012,6 @@ BEGIN
   RETURN v_ltv;
 END;
 $$ LANGUAGE plpgsql;
-
 -- ============================================
 -- END OF LAYER 3 MIGRATION
--- ============================================
+-- ============================================;

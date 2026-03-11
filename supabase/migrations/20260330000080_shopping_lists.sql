@@ -15,15 +15,12 @@ CREATE TABLE IF NOT EXISTS shopping_lists (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- Indexes
 CREATE INDEX idx_shopping_lists_chef_id ON shopping_lists(chef_id);
 CREATE INDEX idx_shopping_lists_status ON shopping_lists(chef_id, status);
 CREATE INDEX idx_shopping_lists_event_id ON shopping_lists(event_id) WHERE event_id IS NOT NULL;
-
 -- RLS
 ALTER TABLE shopping_lists ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs can manage their own shopping lists"
   ON shopping_lists
   FOR ALL
@@ -33,7 +30,6 @@ CREATE POLICY "Chefs can manage their own shopping lists"
   WITH CHECK (chef_id = auth.uid() OR chef_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
-
 -- Updated_at trigger
 CREATE OR REPLACE FUNCTION update_shopping_lists_updated_at()
 RETURNS TRIGGER AS $$
@@ -42,7 +38,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trg_shopping_lists_updated_at
   BEFORE UPDATE ON shopping_lists
   FOR EACH ROW

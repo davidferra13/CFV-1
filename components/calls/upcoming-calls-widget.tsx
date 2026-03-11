@@ -23,7 +23,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
         </div>
         <Link
           href="/calls/new"
-          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-200 font-medium"
         >
           <Plus className="w-3.5 h-3.5" />
           Schedule

@@ -11,14 +11,11 @@ CREATE TABLE contact_submissions (
   read        BOOLEAN NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- RLS: admin/service role can read; anon can insert
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY contact_submissions_anon_insert ON contact_submissions
   FOR INSERT
   WITH CHECK (true);
-
 -- Chef can read contact submissions (platform admin)
 CREATE POLICY contact_submissions_chef_select ON contact_submissions
   FOR SELECT
@@ -28,6 +25,5 @@ CREATE POLICY contact_submissions_chef_select ON contact_submissions
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 GRANT INSERT ON contact_submissions TO anon;
 GRANT SELECT ON contact_submissions TO authenticated;

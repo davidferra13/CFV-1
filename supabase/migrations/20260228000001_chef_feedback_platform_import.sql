@@ -15,12 +15,10 @@
 -- ============================================================================
 ALTER TABLE chef_feedback
   ADD COLUMN IF NOT EXISTS reviewer_name TEXT;
-
 COMMENT ON COLUMN chef_feedback.reviewer_name IS
   'Name of the external reviewer for platform-imported reviews (Airbnb, Facebook, etc.).
    NULL when client_id is set (reviewer is a known ChefFlow client).
    Populated manually for all non-ChefFlow platform sources.';
-
 -- ============================================================================
 -- STEP 2: Expand the source CHECK constraint
 -- PostgreSQL auto-names an inline CHECK as <table>_<column>_check.
@@ -30,7 +28,6 @@ COMMENT ON COLUMN chef_feedback.reviewer_name IS
 -- ============================================================================
 ALTER TABLE chef_feedback
   DROP CONSTRAINT IF EXISTS chef_feedback_source_check;
-
 ALTER TABLE chef_feedback
   ADD CONSTRAINT chef_feedback_source_check
   CHECK (source IN (
@@ -56,7 +53,6 @@ ALTER TABLE chef_feedback
     'instagram',
     'yelp_guest'
   ));
-
 -- ============================================================================
 -- STEP 3: Index on reviewer_name for future search/filter queries
 -- ============================================================================

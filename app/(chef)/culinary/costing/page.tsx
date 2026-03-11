@@ -46,7 +46,7 @@ export default async function CostingPage() {
           <p className="text-sm text-stone-500 mt-1">Total recipes</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{costingCoverage}%</p>
+          <p className="text-2xl font-bold text-green-200">{costingCoverage}%</p>
           <p className="text-sm text-stone-500 mt-1">Costing coverage</p>
         </Card>
         <Card className="p-4">
@@ -54,7 +54,7 @@ export default async function CostingPage() {
           <p className="text-sm text-stone-500 mt-1">Avg recipe cost</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-700">{uncostedRecipes}</p>
+          <p className="text-2xl font-bold text-amber-200">{uncostedRecipes}</p>
           <p className="text-sm text-stone-500 mt-1">Missing price data</p>
         </Card>
       </div>
@@ -113,11 +113,11 @@ export default async function CostingPage() {
                       </TableCell>
                       <TableCell>
                         {recipe.has_all_prices ? (
-                          <span className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full">
                             Complete
                           </span>
                         ) : (
-                          <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
                             Partial
                           </span>
                         )}
@@ -177,11 +177,11 @@ export default async function CostingPage() {
                     </TableCell>
                     <TableCell>
                       {mc.has_all_recipe_costs ? (
-                        <span className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full">
                           Complete
                         </span>
                       ) : (
-                        <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
                           Partial
                         </span>
                       )}

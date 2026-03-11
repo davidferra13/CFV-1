@@ -8,7 +8,6 @@ ALTER TABLE client_reviews
   ADD COLUMN IF NOT EXISTS punctuality_rating INTEGER CHECK (punctuality_rating BETWEEN 1 AND 5),
   ADD COLUMN IF NOT EXISTS cleanup_rating INTEGER CHECK (cleanup_rating BETWEEN 1 AND 5),
   ADD COLUMN IF NOT EXISTS would_book_again BOOLEAN;
-
 COMMENT ON COLUMN client_reviews.food_quality_rating IS
   'Client rating for food quality on a 1-5 scale.';
 COMMENT ON COLUMN client_reviews.presentation_rating IS

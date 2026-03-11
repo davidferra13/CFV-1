@@ -132,7 +132,7 @@ export function DishDetailClient({
           <Link href="/culinary/dish-index" className="text-stone-500 hover:text-stone-400 text-sm">
             Dish Index
           </Link>
-          <span className="text-stone-700">/</span>
+          <span className="text-stone-200">/</span>
         </div>
         <div className="flex items-start justify-between">
           <div>
@@ -472,7 +472,7 @@ export function DishDetailClient({
                     <button
                       key={n}
                       onClick={() => setFeedbackData({ ...feedbackData, rating: n })}
-                      className={`text-lg ${n <= feedbackData.rating ? 'text-brand-400' : 'text-stone-700'}`}
+                      className={`text-lg ${n <= feedbackData.rating ? 'text-brand-400' : 'text-stone-200'}`}
                     >
                       ★
                     </button>
@@ -537,7 +537,7 @@ export function DishDetailClient({
                 {!!f.execution_notes && (
                   <p className="text-xs text-stone-500 mt-0.5">{String(f.execution_notes)}</p>
                 )}
-                <p className="text-[10px] text-stone-700 mt-1">
+                <p className="text-[10px] text-stone-200 mt-1">
                   {new Date(f.created_at as string).toLocaleDateString()}
                 </p>
               </div>

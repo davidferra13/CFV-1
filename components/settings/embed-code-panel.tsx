@@ -578,7 +578,7 @@ export function EmbedCodePanel({ chefId, publicProfileSlug }: Props) {
         <h2 className="text-lg font-semibold text-emerald-900">
           What Happens When Someone Submits
         </h2>
-        <ol className="text-sm text-emerald-800 space-y-2 list-decimal list-inside">
+        <ol className="text-sm text-emerald-200 space-y-2 list-decimal list-inside">
           <li>
             The visitor fills out the form on <strong>your website</strong> — they never leave your
             site.

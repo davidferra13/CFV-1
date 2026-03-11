@@ -23,20 +23,16 @@ CREATE TABLE IF NOT EXISTS event_equipment_checklist (
 
   UNIQUE (event_id, equipment_name, chef_id)
 );
-
 -- RLS
 ALTER TABLE event_equipment_checklist ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef owns equipment checklist"
   ON event_equipment_checklist
   FOR ALL
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
-
 -- Indexes
 CREATE INDEX idx_equip_checklist_event ON event_equipment_checklist(event_id);
 CREATE INDEX idx_equip_checklist_chef  ON event_equipment_checklist(chef_id);
-
 -- ═══════════════════════════════════════════════════
 -- 2. event_station_assignments
 -- ═══════════════════════════════════════════════════
@@ -52,16 +48,13 @@ CREATE TABLE IF NOT EXISTS event_station_assignments (
 
   UNIQUE (event_id, station_id, staff_member_id)
 );
-
 -- RLS
 ALTER TABLE event_station_assignments ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef owns station assignments"
   ON event_station_assignments
   FOR ALL
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
-
 -- Indexes
 CREATE INDEX idx_station_assign_event   ON event_station_assignments(event_id);
 CREATE INDEX idx_station_assign_chef    ON event_station_assignments(chef_id);

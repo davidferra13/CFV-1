@@ -23,7 +23,7 @@ function ChefBadge({
   )
   if (daysSinceSignup < 30) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-700">
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-200">
         New
       </span>
     )
@@ -72,7 +72,7 @@ export default async function AdminChefListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200 flex items-center gap-2">
           <AlertCircle size={14} />
           {error}
         </div>
@@ -150,7 +150,7 @@ export default async function AdminChefListPage() {
                     <td className="px-4 py-3 flex items-center gap-3">
                       <Link
                         href={`/admin/users/${chef.id}`}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-xs text-blue-600 hover:text-blue-200 font-medium"
                       >
                         View →
                       </Link>

@@ -230,7 +230,7 @@ function LegCard({
               <div className="space-y-1">
                 {/* Origin */}
                 <div className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-900 text-green-700 text-xs font-bold flex items-center justify-center mt-0.5">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-900 text-green-200 text-xs font-bold flex items-center justify-center mt-0.5">
                     A
                   </span>
                   <div>
@@ -273,7 +273,7 @@ function LegCard({
                   <div className="flex items-start gap-2 ml-2.5">
                     <div className="flex flex-col items-center">
                       <div className="w-px h-3 bg-stone-300" />
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-red-900 text-red-700 text-xs font-bold flex items-center justify-center">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-red-900 text-red-200 text-xs font-bold flex items-center justify-center">
                         Z
                       </span>
                     </div>
@@ -522,13 +522,13 @@ export function TravelPlanClient({
       {/* Nearby events (consolidation suggestion) */}
       {!isFormOpen && plan.nearbyEvents.length > 0 && (
         <div className="bg-amber-950 border border-amber-200 rounded-lg p-3 text-sm">
-          <p className="font-medium text-amber-800">
+          <p className="font-medium text-amber-200">
             You have {plan.nearbyEvents.length} other event
             {plan.nearbyEvents.length !== 1 ? 's' : ''} this week:
           </p>
           <ul className="mt-1 space-y-0.5">
             {plan.nearbyEvents.map((evt) => (
-              <li key={evt.id} className="text-amber-700 text-xs">
+              <li key={evt.id} className="text-amber-200 text-xs">
                 • {evt.occasion || 'Untitled'} on{' '}
                 {new Date(evt.event_date).toLocaleDateString('en-US', {
                   weekday: 'short',

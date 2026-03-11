@@ -33,7 +33,7 @@ export function LiveIndicator() {
       title="No internet connection — changes will sync when reconnected"
     >
       <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
-      <span className="text-xs font-medium text-red-700">Offline</span>
+      <span className="text-xs font-medium text-red-200">Offline</span>
     </div>
   )
 }

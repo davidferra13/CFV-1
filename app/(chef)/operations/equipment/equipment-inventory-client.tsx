@@ -144,10 +144,10 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
       {/* Maintenance alerts */}
       {overdueItems.length > 0 && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 p-3">
-          <p className="text-sm font-medium text-amber-800">
+          <p className="text-sm font-medium text-amber-200">
             {overdueItems.length} item{overdueItems.length !== 1 ? 's' : ''} due for maintenance:
           </p>
-          <ul className="mt-1 text-sm text-amber-700">
+          <ul className="mt-1 text-sm text-amber-200">
             {overdueItems.map((item) => (
               <li key={item.id}>• {item.name}</li>
             ))}
@@ -161,7 +161,7 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? 'border-b-2 border-amber-600 text-amber-700' : 'text-stone-500 hover:text-stone-300'}`}
+            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? 'border-b-2 border-amber-600 text-amber-200' : 'text-stone-500 hover:text-stone-300'}`}
           >
             {t === 'owned' ? `Owned (${inventory.length})` : `Rentals (${recentRentals.length})`}
           </button>

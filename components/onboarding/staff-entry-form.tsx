@@ -101,7 +101,7 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
                 {error}
               </div>
             )}

@@ -15,9 +15,9 @@ const PHASE_LABELS: Record<string, string> = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  complete: 'bg-green-900 text-green-800',
-  pending: 'bg-yellow-900 text-yellow-800',
-  overdue: 'bg-red-900 text-red-800',
+  complete: 'bg-green-900 text-green-200',
+  pending: 'bg-yellow-900 text-yellow-200',
+  overdue: 'bg-red-900 text-red-200',
   upcoming: 'bg-brand-900 text-brand-300',
   not_applicable: 'bg-stone-800 text-stone-500',
 }
@@ -63,15 +63,15 @@ function TaskRow({ task, eventId, manualCompletionKeys }: TaskRowProps) {
           <span
             className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
               task.category === 'documents'
-                ? 'bg-purple-950 text-purple-700'
+                ? 'bg-purple-950 text-purple-200'
                 : task.category === 'shopping'
-                  ? 'bg-green-950 text-green-700'
+                  ? 'bg-green-950 text-green-200'
                   : task.category === 'prep'
                     ? 'bg-brand-950 text-brand-400'
                     : task.category === 'packing'
-                      ? 'bg-yellow-950 text-yellow-700'
+                      ? 'bg-yellow-950 text-yellow-200'
                       : task.category === 'reset'
-                        ? 'bg-orange-950 text-orange-700'
+                        ? 'bg-orange-950 text-orange-200'
                         : 'bg-stone-800 text-stone-300'
             }`}
           >
@@ -171,7 +171,7 @@ export function DOPView({ schedule, eventId, manualCompletionKeys }: DOPViewProp
               : `${schedule.leadTimeDays} day${schedule.leadTimeDays === 1 ? '' : 's'}`}{' '}
             notice
           </p>
-          <p className="text-xs text-amber-700 mt-1">
+          <p className="text-xs text-amber-200 mt-1">
             Standard day-before procedures may not apply. Shopping and prep run back to back.
           </p>
         </div>

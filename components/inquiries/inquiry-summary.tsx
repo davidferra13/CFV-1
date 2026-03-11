@@ -173,7 +173,7 @@ export function InquirySummary({ data, variant }: Props) {
                   <InquiryChannelBadge channel={data.channel} />
                 )}
                 {data.converted_to_event_id && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-200 border border-emerald-200">
                     Booked
                   </span>
                 )}
@@ -358,7 +358,7 @@ export function InquirySummary({ data, variant }: Props) {
                     {data.confirmed_dietary_restrictions.map((r) => (
                       <span
                         key={r}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-800 border border-amber-200"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-200 border border-amber-200"
                       >
                         {r}
                       </span>

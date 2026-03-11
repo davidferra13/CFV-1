@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS client_meal_requests (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_client_meal_requests_tenant_status
   ON client_meal_requests(tenant_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_client_meal_requests_client
@@ -36,37 +35,30 @@ CREATE INDEX IF NOT EXISTS idx_client_meal_requests_client
 CREATE INDEX IF NOT EXISTS idx_client_meal_requests_week
   ON client_meal_requests(tenant_id, requested_for_week_start)
   WHERE requested_for_week_start IS NOT NULL;
-
 COMMENT ON TABLE client_meal_requests IS
   'Client-submitted meal requests for recurring service collaboration (repeat dishes, avoids, new ideas).';
-
 DROP TRIGGER IF EXISTS trg_client_meal_requests_updated_at ON client_meal_requests;
 CREATE TRIGGER trg_client_meal_requests_updated_at
   BEFORE UPDATE ON client_meal_requests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================================================
 -- 2) RLS
 -- ============================================================================
 
 ALTER TABLE client_meal_requests ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS cmr_chef_select ON client_meal_requests;
 CREATE POLICY cmr_chef_select ON client_meal_requests
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS cmr_chef_update ON client_meal_requests;
 CREATE POLICY cmr_chef_update ON client_meal_requests
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS cmr_chef_delete ON client_meal_requests;
 CREATE POLICY cmr_chef_delete ON client_meal_requests
   FOR DELETE
   USING (tenant_id = get_current_tenant_id());
-
 DROP POLICY IF EXISTS cmr_client_select ON client_meal_requests;
 CREATE POLICY cmr_client_select ON client_meal_requests
   FOR SELECT
@@ -78,7 +70,6 @@ CREATE POLICY cmr_client_select ON client_meal_requests
         AND c.auth_user_id = auth.uid()
     )
   );
-
 DROP POLICY IF EXISTS cmr_client_insert ON client_meal_requests;
 CREATE POLICY cmr_client_insert ON client_meal_requests
   FOR INSERT
@@ -91,7 +82,6 @@ CREATE POLICY cmr_client_insert ON client_meal_requests
         AND c.tenant_id = client_meal_requests.tenant_id
     )
   );
-
 DROP POLICY IF EXISTS cmr_client_update ON client_meal_requests;
 CREATE POLICY cmr_client_update ON client_meal_requests
   FOR UPDATE
@@ -112,7 +102,6 @@ CREATE POLICY cmr_client_update ON client_meal_requests
     )
     AND status IN ('requested', 'withdrawn')
   );
-
 -- ============================================================================
 -- 3) CLIENT READ ACCESS TO SERVED DISH HISTORY
 -- ============================================================================
@@ -128,4 +117,3 @@ CREATE POLICY sdh_client_select ON served_dish_history
         AND c.auth_user_id = auth.uid()
     )
   );
-

@@ -31,7 +31,7 @@ export default async function OperationsHubPage() {
           ? `${overdueEquipment.length} due for maintenance`
           : `${equipment.length} items`,
       badgeColor:
-        overdueEquipment.length > 0 ? 'text-amber-700 bg-amber-950' : 'text-stone-500 bg-stone-800',
+        overdueEquipment.length > 0 ? 'text-amber-200 bg-amber-950' : 'text-stone-500 bg-stone-800',
     },
     {
       href: '/operations/kitchen-rentals',
@@ -72,7 +72,7 @@ export default async function OperationsHubPage() {
           <Card key={s.label}>
             <CardContent className="pt-4 pb-4">
               <p
-                className={`text-2xl font-bold ${(s as any).highlight ? 'text-amber-700' : 'text-stone-100'}`}
+                className={`text-2xl font-bold ${(s as any).highlight ? 'text-amber-200' : 'text-stone-100'}`}
               >
                 {s.value}
               </p>

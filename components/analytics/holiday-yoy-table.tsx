@@ -60,7 +60,7 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
               {years.map((y) => (
                 <th
                   key={y}
-                  className={`text-center px-4 py-3 text-xs font-semibold uppercase tracking-wide ${y === currentYear ? 'text-amber-700' : 'text-stone-500'}`}
+                  className={`text-center px-4 py-3 text-xs font-semibold uppercase tracking-wide ${y === currentYear ? 'text-amber-200' : 'text-stone-500'}`}
                 >
                   {y}
                   {y === currentYear && (
@@ -89,7 +89,7 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
                         {stat && stat.eventCount > 0 ? (
                           <div>
                             <div
-                              className={`font-semibold ${isCurrentYear ? 'text-amber-800' : 'text-stone-300'}`}
+                              className={`font-semibold ${isCurrentYear ? 'text-amber-200' : 'text-stone-300'}`}
                             >
                               {stat.eventCount} event{stat.eventCount !== 1 ? 's' : ''}
                             </div>

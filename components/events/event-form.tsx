@@ -653,7 +653,7 @@ export function EventForm({
             {step === 1 ? '1' : '✓'}
           </div>
           <span
-            className={`text-sm font-medium ${step === 1 ? 'text-stone-100' : 'text-green-700'}`}
+            className={`text-sm font-medium ${step === 1 ? 'text-stone-100' : 'text-green-200'}`}
           >
             Event Details
           </span>
@@ -794,10 +794,10 @@ export function EventForm({
             {/* Conflict warning banner */}
             {conflictWarnings && conflictWarnings.length > 0 && (
               <div className="rounded-lg border border-amber-300 bg-amber-950 p-4 space-y-3">
-                <p className="text-sm font-semibold text-amber-800">Scheduling conflict detected</p>
+                <p className="text-sm font-semibold text-amber-200">Scheduling conflict detected</p>
                 <ul className="space-y-1">
                   {conflictWarnings.map((w, i) => (
-                    <li key={i} className="text-sm text-amber-700 flex gap-2">
+                    <li key={i} className="text-sm text-amber-200 flex gap-2">
                       <span className="mt-0.5 shrink-0">⚠</span>
                       <span>{w}</span>
                     </li>
@@ -810,7 +810,7 @@ export function EventForm({
                     onChange={(e) => setConflictOverride(e.target.checked)}
                     className="rounded border-amber-400 text-amber-600 focus:ring-amber-500"
                   />
-                  <span className="text-sm text-amber-800 font-medium">
+                  <span className="text-sm text-amber-200 font-medium">
                     I understand — create the event anyway
                   </span>
                 </label>

@@ -16,7 +16,6 @@ CREATE TYPE chef_goal_type AS ENUM (
   'profit_margin',
   'expense_ratio'
 );
-
 -- ── ENUM: goal status ────────────────────────────────────────────────────────
 CREATE TYPE chef_goal_status AS ENUM (
   'active',
@@ -24,7 +23,6 @@ CREATE TYPE chef_goal_status AS ENUM (
   'completed',
   'archived'
 );
-
 -- ── TABLE 1: chef_goals ──────────────────────────────────────────────────────
 -- One record per goal definition. A chef may have multiple active goals
 -- of the same type (e.g. two revenue_custom goals for different date ranges).
@@ -51,12 +49,10 @@ CREATE TABLE chef_goals (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT chef_goals_period_order CHECK (period_start <= period_end)
 );
-
 CREATE INDEX idx_chef_goals_tenant_status
   ON chef_goals (tenant_id, status);
 CREATE INDEX idx_chef_goals_tenant_type
   ON chef_goals (tenant_id, goal_type, status);
-
 -- ── TABLE 2: goal_snapshots ───────────────────────────────────────────────────
 -- Append-only historical record. Inserted once per cron run per (goal, date).
 -- One row per (goal_id, snapshot_date). The UNIQUE constraint ensures
@@ -83,12 +79,10 @@ CREATE TABLE goal_snapshots (
   computed_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT goal_snapshots_unique_goal_date UNIQUE (goal_id, snapshot_date)
 );
-
 CREATE INDEX idx_goal_snapshots_tenant_month
   ON goal_snapshots (tenant_id, snapshot_month DESC);
 CREATE INDEX idx_goal_snapshots_goal_date
   ON goal_snapshots (goal_id, snapshot_date DESC);
-
 -- ── TABLE 3: goal_client_suggestions ─────────────────────────────────────────
 -- Tracks which clients were surfaced as outreach candidates for a goal
 -- and whether the chef acted on them. One row per (goal_id, client_id).
@@ -112,16 +106,13 @@ CREATE TABLE goal_client_suggestions (
   updated_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT goal_client_suggestions_unique UNIQUE (goal_id, client_id)
 );
-
 CREATE INDEX idx_goal_client_suggestions_tenant_goal
   ON goal_client_suggestions (tenant_id, goal_id, status);
-
 -- ── ROW LEVEL SECURITY ────────────────────────────────────────────────────────
 
 ALTER TABLE chef_goals              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE goal_snapshots          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE goal_client_suggestions ENABLE ROW LEVEL SECURITY;
-
 -- chef_goals: tenant-scoped select/insert/update (no delete — use archived status)
 CREATE POLICY chef_goals_select ON chef_goals
   FOR SELECT USING (tenant_id = get_current_tenant_id());
@@ -130,13 +121,11 @@ CREATE POLICY chef_goals_insert ON chef_goals
 CREATE POLICY chef_goals_update ON chef_goals
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- goal_snapshots: append-only (no update/delete from client)
 CREATE POLICY goal_snapshots_select ON goal_snapshots
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 CREATE POLICY goal_snapshots_insert ON goal_snapshots
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- goal_client_suggestions: tenant-scoped select/insert/update
 CREATE POLICY goal_client_suggestions_select ON goal_client_suggestions
   FOR SELECT USING (tenant_id = get_current_tenant_id());

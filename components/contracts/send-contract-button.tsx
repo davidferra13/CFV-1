@@ -169,7 +169,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
       {/* Signed — read-only with PDF download */}
       {contract?.status === 'signed' && (
         <div className="flex items-center gap-3">
-          <p className="text-sm text-green-700">
+          <p className="text-sm text-green-200">
             Signed {contract.signed_at ? new Date(contract.signed_at).toLocaleDateString() : ''}
           </p>
           <a
@@ -196,7 +196,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
       {/* Void confirmation */}
       {showVoidConfirm && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-3 space-y-2">
-          <p className="text-sm text-red-700">
+          <p className="text-sm text-red-200">
             Void this contract? The client will not be able to sign it.
           </p>
           <div className="flex gap-2">

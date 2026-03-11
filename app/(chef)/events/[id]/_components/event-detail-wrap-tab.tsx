@@ -80,7 +80,7 @@ export function EventDetailWrapTab({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="font-semibold text-amber-900">Capture what you learned tonight</h2>
-              <p className="text-sm text-amber-700 mt-1">
+              <p className="text-sm text-amber-200 mt-1">
                 Client insights, recipe notes, dish photos &#8212; while it&#39;s still fresh.
               </p>
             </div>
@@ -117,7 +117,7 @@ export function EventDetailWrapTab({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="font-semibold text-blue-900">Client Satisfaction Survey</h3>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm text-blue-200 mt-1">
                 Send a post-event survey to collect NPS score, ratings, and a testimonial.
               </p>
             </div>

@@ -186,7 +186,7 @@ export default async function AdminOnboardingPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${s.tier === 'Pro' ? 'bg-purple-900 text-purple-700' : s.tier === 'Trial' ? 'bg-yellow-900 text-yellow-700' : 'bg-stone-800 text-stone-400'}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${s.tier === 'Pro' ? 'bg-purple-900 text-purple-200' : s.tier === 'Trial' ? 'bg-yellow-900 text-yellow-200' : 'bg-stone-800 text-stone-400'}`}
                     >
                       {s.tier}
                     </span>

@@ -45,7 +45,7 @@ function DraftField({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">{label}</span>
-      <span className={`text-sm font-medium ${uncertain ? 'text-amber-700' : 'text-stone-200'}`}>
+      <span className={`text-sm font-medium ${uncertain ? 'text-amber-200' : 'text-stone-200'}`}>
         {value}
         {uncertain && <span className="ml-1 text-amber-500 text-xs">(uncertain)</span>}
       </span>

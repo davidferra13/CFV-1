@@ -103,7 +103,7 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actions</h2>
-        <p className="text-green-700">
+        <p className="text-green-200">
           This quote has been accepted by the client. Pricing is frozen.
         </p>
       </Card>

@@ -182,7 +182,7 @@ export default async function FinancePage() {
           <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
+          <p className="text-2xl font-bold text-green-200">
             {formatCurrency(summary.netRevenueCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Net revenue (after refunds)</p>
@@ -195,7 +195,7 @@ export default async function FinancePage() {
         </Card>
         {carryForwardSavings > 0 && (
           <Card className="p-4 border-emerald-200 bg-emerald-950">
-            <p className="text-2xl font-bold text-emerald-700">
+            <p className="text-2xl font-bold text-emerald-200">
               {formatCurrency(carryForwardSavings)}
             </p>
             <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>

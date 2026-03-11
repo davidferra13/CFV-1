@@ -24,13 +24,20 @@ import type { BrainDumpImportResult } from '@/lib/ai/import-actions'
 import type { ReceiptExtraction } from '@/lib/ai/parse-receipt'
 import type { ParsedDocument } from '@/lib/ai/parse-document-text'
 import type { VisionDetectionResult } from '@/lib/ai/parse-document-vision'
+import type { DocumentIntelligenceItem } from '@/lib/document-intelligence/types'
+import {
+  MOBILE_CAPTURE_FILE_ACCEPT,
+  MOBILE_CAPTURE_IMAGE_ACCEPT,
+} from '@/lib/uploads/mobile-capture-types'
 import { CsvImport } from './csv-import'
+import { ArchiveInbox } from './archive-inbox'
 import { PastEventsImport } from './past-events-import'
 import { TakeAChefImport } from './take-a-chef-import'
 import { InquiryImport } from './inquiry-import'
 
 export type ImportMode =
   | 'brain-dump'
+  | 'archive'
   | 'clients'
   | 'recipe'
   | 'receipt'
@@ -58,6 +65,12 @@ type TabConfig = {
 }
 
 const TABS: TabConfig[] = [
+  {
+    mode: 'archive',
+    label: 'Archive Inbox',
+    placeholder: '',
+    isCustomComponent: true,
+  },
   {
     mode: 'brain-dump',
     label: 'Brain Dump',
@@ -97,12 +110,6 @@ const TABS: TabConfig[] = [
     placeholder: `Paste a contract, policy, template, or any other document.\n\nExample:\nCancellation Policy - Events cancelled more than 7 days before the event date receive a full refund minus the deposit. Cancellations within 7 days forfeit the deposit. Same-day cancellations are charged 50% of the quoted price. Weather-related cancellations are handled on a case-by-case basis.`,
   },
   {
-    mode: 'file-upload',
-    label: 'Upload File',
-    placeholder: '',
-    isFileUpload: true,
-  },
-  {
     mode: 'take-a-chef',
     label: 'Take a Chef',
     placeholder: '',
@@ -133,13 +140,22 @@ export function SmartImportHub({
   events = [],
   existingClients = [],
   initialMode = 'brain-dump',
+  initialArchiveJobId,
+  initialArchiveItems = [],
+  archiveUnavailableReason,
+  defaultTakeAChefCommissionPercent,
 }: {
   aiConfigured: boolean
   events?: EventOption[]
   existingClients?: { id: string; full_name: string }[]
   initialMode?: ImportMode
+  initialArchiveJobId?: string
+  initialArchiveItems?: DocumentIntelligenceItem[]
+  archiveUnavailableReason?: string | null
+  defaultTakeAChefCommissionPercent?: number
 }) {
-  const [mode, setMode] = useState<ImportMode>(initialMode)
+  const normalizedInitialMode = initialMode === 'file-upload' ? 'archive' : initialMode
+  const [mode, setMode] = useState<ImportMode>(normalizedInitialMode)
   const [phase, setPhase] = useState<ImportPhase>('input')
   const [rawText, setRawText] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -240,8 +256,7 @@ export function SmartImportHub({
         if (!uploadedFile) return
         const base64 = await fileToBase64(uploadedFile)
         const { parseReceiptImage } = await import('@/lib/ai/parse-receipt')
-        const mediaType = uploadedFile.type as 'image/jpeg' | 'image/png' | 'image/webp'
-        const result = await parseReceiptImage(base64, mediaType)
+        const result = await parseReceiptImage(base64, uploadedFile.type || 'image/jpeg')
         setParsedReceipt(result)
         setParseConfidence(result.confidence)
         setParseWarnings(result.warnings)
@@ -425,11 +440,25 @@ export function SmartImportHub({
       )}
 
       {/* CUSTOM COMPONENT MODES — CSV and Past Events handle their own full flow */}
+      {isCustomMode && mode === 'archive' && (
+        <ArchiveInbox
+          aiConfigured={aiConfigured}
+          events={events}
+          initialJobId={initialArchiveJobId}
+          initialItems={initialArchiveItems}
+          unavailableReason={archiveUnavailableReason}
+        />
+      )}
       {isCustomMode && mode === 'csv' && <CsvImport />}
       {isCustomMode && mode === 'past-events' && (
         <PastEventsImport existingClients={existingClients} />
       )}
-      {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
+      {isCustomMode && mode === 'take-a-chef' && (
+        <TakeAChefImport
+          aiConfigured={aiConfigured}
+          defaultCommissionPercent={defaultTakeAChefCommissionPercent}
+        />
+      )}
       {isCustomMode && mode === 'inquiries' && <InquiryImport aiConfigured={aiConfigured} />}
 
       {/* INPUT PHASE — AI-driven modes only */}
@@ -456,13 +485,13 @@ export function SmartImportHub({
               disabled={phase === 'parsing'}
               accept={
                 mode === 'receipt'
-                  ? 'image/jpeg,image/png,image/webp'
-                  : 'image/jpeg,image/png,image/webp,application/pdf'
+                  ? MOBILE_CAPTURE_IMAGE_ACCEPT
+                  : MOBILE_CAPTURE_FILE_ACCEPT
               }
               hint={
                 mode === 'receipt'
-                  ? 'Upload a photo of your receipt (JPEG, PNG, WebP)'
-                  : 'Upload an image or PDF (JPEG, PNG, WebP, PDF)'
+                  ? 'Upload a receipt photo (JPEG, PNG, HEIC/HEIF, WebP)'
+                  : 'Upload a phone photo or PDF (JPEG, PNG, HEIC/HEIF, WebP, PDF)'
               }
             />
           )}
@@ -790,6 +819,7 @@ function FileUploadZone({
           ref={inputRef}
           type="file"
           accept={accept}
+          capture="environment"
           aria-label="Upload file"
           onChange={(e) => {
             if (e.target.files?.[0]) onFileChange(e.target.files[0])

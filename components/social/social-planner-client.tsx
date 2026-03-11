@@ -329,7 +329,7 @@ export function SocialPlannerClient({
           </CardHeader>
           <CardContent className="space-y-3">
             {!selectedPost.preflight_ready && (
-              <div className="text-sm text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
+              <div className="text-sm text-amber-200 bg-amber-950 border border-amber-200 rounded px-2 py-1">
                 Missing: {selectedPost.preflight_missing_items.join(', ')}
               </div>
             )}

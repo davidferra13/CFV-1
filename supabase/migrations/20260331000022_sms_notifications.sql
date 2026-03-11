@@ -24,21 +24,17 @@ CREATE TABLE IF NOT EXISTS sms_messages (
   sent_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- Indexes
 CREATE INDEX idx_sms_messages_tenant ON sms_messages(tenant_id);
 CREATE INDEX idx_sms_messages_status ON sms_messages(tenant_id, status);
 CREATE INDEX idx_sms_messages_created ON sms_messages(tenant_id, created_at DESC);
 CREATE INDEX idx_sms_messages_entity ON sms_messages(entity_type, entity_id) WHERE entity_id IS NOT NULL;
-
 -- RLS
 ALTER TABLE sms_messages ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs can manage their own SMS messages"
   ON sms_messages FOR ALL
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 -- Add Twilio config columns to chef_preferences
 ALTER TABLE chef_preferences ADD COLUMN IF NOT EXISTS sms_enabled boolean DEFAULT false;
 ALTER TABLE chef_preferences ADD COLUMN IF NOT EXISTS twilio_account_sid text;

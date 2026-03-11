@@ -11,12 +11,9 @@ CREATE TABLE IF NOT EXISTS chef_api_keys (
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 CREATE INDEX IF NOT EXISTS idx_api_keys_tenant ON chef_api_keys(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON chef_api_keys(key_hash);
-
 ALTER TABLE chef_api_keys ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef owns api keys" ON chef_api_keys
   FOR ALL USING (tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

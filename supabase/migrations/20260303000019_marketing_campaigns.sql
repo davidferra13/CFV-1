@@ -41,17 +41,13 @@ CREATE TABLE marketing_campaigns (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_campaigns_chef   ON marketing_campaigns(chef_id, status);
 CREATE INDEX idx_campaigns_send   ON marketing_campaigns(scheduled_at) WHERE status = 'scheduled';
-
 COMMENT ON TABLE marketing_campaigns IS 'Chef-composed email campaigns for client re-engagement and announcements.';
 COMMENT ON COLUMN marketing_campaigns.target_segment IS 'JSONB audience definition. segment: dormant_90_days | all_clients | client_ids array.';
-
 CREATE TRIGGER trg_campaigns_updated_at
   BEFORE UPDATE ON marketing_campaigns
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 2: CAMPAIGN RECIPIENTS
 -- ============================================
@@ -73,12 +69,9 @@ CREATE TABLE campaign_recipients (
 
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_campaign_recipients_campaign ON campaign_recipients(campaign_id);
 CREATE INDEX idx_campaign_recipients_client   ON campaign_recipients(chef_id, client_id);
-
 COMMENT ON TABLE campaign_recipients IS 'Per-email delivery log for each campaign. Tracks open, click, and unsubscribe events.';
-
 -- ============================================
 -- UNSUBSCRIBE FLAG ON CLIENTS
 -- ============================================
@@ -86,21 +79,17 @@ COMMENT ON TABLE campaign_recipients IS 'Per-email delivery log for each campaig
 -- Add marketing opt-out to the clients table (additive ALTER TABLE)
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS marketing_unsubscribed BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS marketing_unsubscribed_at TIMESTAMPTZ;
-
 COMMENT ON COLUMN clients.marketing_unsubscribed IS 'Client has opted out of marketing emails from this chef. Still receives transactional emails (quotes, contracts, etc.)';
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE marketing_campaigns  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_recipients  ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY mc_chef_select ON marketing_campaigns FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY mc_chef_insert ON marketing_campaigns FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY mc_chef_update ON marketing_campaigns FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY mc_chef_delete ON marketing_campaigns FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 CREATE POLICY cr_chef_select ON campaign_recipients FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cr_chef_insert ON campaign_recipients FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cr_chef_update ON campaign_recipients FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

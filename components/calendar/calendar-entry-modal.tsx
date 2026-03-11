@@ -340,7 +340,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
           {isRevenueCApable && (
             <div className="border border-teal-200 rounded-lg p-4 space-y-3 bg-teal-950">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-teal-800">Revenue</span>
+                <span className="text-sm font-semibold text-teal-200">Revenue</span>
               </div>
               <div className="flex items-center gap-3">
                 <input
@@ -422,7 +422,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
           {isTargetBooking && (
             <div className="border border-green-200 rounded-lg p-4 space-y-3 bg-green-950">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-green-800">
+                <span className="text-sm font-semibold text-green-200">
                   Public Availability Signal
                 </span>
               </div>

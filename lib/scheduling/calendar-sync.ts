@@ -27,7 +27,7 @@ export async function getCalendarConnection(): Promise<CalendarConnection> {
 
   const { data } = await supabase
     .from('google_connections')
-    .select('connected_email, calendar_connected')
+    .select('connected_email, calendar_connected, calendar_last_sync_at')
     .eq('chef_id', chef.entityId)
     .single()
 
@@ -38,7 +38,7 @@ export async function getCalendarConnection(): Promise<CalendarConnection> {
   return {
     connected: (data as any)?.calendar_connected || false,
     email: (data as any)?.connected_email || null,
-    lastSync: null,
+    lastSync: (data as any)?.calendar_last_sync_at || null,
   }
 }
 

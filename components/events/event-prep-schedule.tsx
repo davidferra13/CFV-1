@@ -35,16 +35,16 @@ import { PREP_BLOCK_TYPE_LABELS } from '@/lib/scheduling/types'
 // ============================================
 
 const BLOCK_TYPE_COLORS: Record<PrepBlockType, string> = {
-  grocery_run: 'bg-green-900 text-green-800',
-  specialty_sourcing: 'bg-emerald-900 text-emerald-800',
-  prep_session: 'bg-orange-900 text-orange-800',
-  packing: 'bg-blue-900 text-blue-800',
-  travel_to_event: 'bg-purple-900 text-purple-800',
-  mental_prep: 'bg-pink-900 text-pink-800',
-  equipment_prep: 'bg-yellow-900 text-yellow-800',
+  grocery_run: 'bg-green-900 text-green-200',
+  specialty_sourcing: 'bg-emerald-900 text-emerald-200',
+  prep_session: 'bg-orange-900 text-orange-200',
+  packing: 'bg-blue-900 text-blue-200',
+  travel_to_event: 'bg-purple-900 text-purple-200',
+  mental_prep: 'bg-pink-900 text-pink-200',
+  equipment_prep: 'bg-yellow-900 text-yellow-200',
   admin: 'bg-stone-800 text-stone-300',
   cleanup: 'bg-stone-800 text-stone-300',
-  custom: 'bg-indigo-900 text-indigo-800',
+  custom: 'bg-indigo-900 text-indigo-200',
 }
 
 function formatBlockTime(block: PrepBlock): string {
@@ -137,7 +137,7 @@ function SuggestionPanel({
         <p className="font-semibold text-amber-900">
           Review Suggestions ({suggestions.length} prep blocks)
         </p>
-        <p className="text-xs text-amber-700">Edit dates/times, then confirm</p>
+        <p className="text-xs text-amber-200">Edit dates/times, then confirm</p>
       </div>
 
       <div className="space-y-2 max-h-80 overflow-y-auto">

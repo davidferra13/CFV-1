@@ -11,7 +11,6 @@ ALTER TABLE chef_automation_settings
                                                          CHECK (default_deposit_percentage BETWEEN 0 AND 100),
   ADD COLUMN IF NOT EXISTS default_deposit_amount_cents  INTEGER NOT NULL DEFAULT 0
                                                          CHECK (default_deposit_amount_cents >= 0);
-
 COMMENT ON COLUMN chef_automation_settings.default_deposit_enabled IS
   'When true, new events auto-fill deposit from these defaults. Chef can always override or remove.';
 COMMENT ON COLUMN chef_automation_settings.default_deposit_type IS

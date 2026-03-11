@@ -11,6 +11,7 @@ type Certification = {
   status?: string
   expiry_date?: string | null
   created_at?: string
+  document_url?: string | null
 }
 
 function statusVariant(status?: string): 'success' | 'warning' | 'error' | 'default' {
@@ -57,6 +58,16 @@ export function CertificationList({ certs }: { certs: Certification[] }) {
                   <p className="text-xs text-stone-400 mt-1">
                     Expires: {new Date(cert.expiry_date).toLocaleDateString()}
                   </p>
+                )}
+                {cert.document_url && (
+                  <a
+                    href={cert.document_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-block text-xs text-amber-200 underline underline-offset-2"
+                  >
+                    View document
+                  </a>
                 )}
               </div>
               {cert.status && (

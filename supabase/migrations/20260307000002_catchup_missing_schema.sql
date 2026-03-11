@@ -16,20 +16,16 @@
 
 ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ DEFAULT NULL;
-
 -- Backfill: mark all existing chefs as having completed onboarding.
 UPDATE chefs
   SET onboarding_completed_at = now()
   WHERE onboarding_completed_at IS NULL;
-
 ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS stripe_account_id TEXT DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS stripe_onboarding_complete BOOLEAN NOT NULL DEFAULT FALSE;
-
 CREATE INDEX IF NOT EXISTS idx_chefs_stripe_account_id
   ON chefs(stripe_account_id)
   WHERE stripe_account_id IS NOT NULL;
-
 -- ── From 20260303000022: Event Surveys ───────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS event_surveys (
@@ -50,13 +46,10 @@ CREATE TABLE IF NOT EXISTS event_surveys (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT event_surveys_one_per_event UNIQUE (event_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_surveys_tenant_id ON event_surveys(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_event_surveys_event_id  ON event_surveys(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_surveys_token     ON event_surveys(token);
-
 ALTER TABLE event_surveys ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY event_surveys_chef_read ON event_surveys
     FOR SELECT TO authenticated
@@ -69,12 +62,10 @@ DO $$ BEGIN
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 -- ── From 20260304000010: Chef Logo ───────────────────────────────────────────
 
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS logo_url TEXT;
-
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'chef-logos',
@@ -88,12 +79,10 @@ SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
-
 -- ── From 20260305000009: Dish Photos ─────────────────────────────────────────
 
 ALTER TABLE dishes
   ADD COLUMN IF NOT EXISTS photo_url TEXT;
-
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'dish-photos',
@@ -107,7 +96,6 @@ SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
-
 DO $$ BEGIN
   CREATE POLICY "dish_photos_chef_upload"
   ON storage.objects FOR INSERT
@@ -117,9 +105,8 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 DO $$ BEGIN
   CREATE POLICY "dish_photos_chef_update"
   ON storage.objects FOR UPDATE
@@ -129,9 +116,8 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 DO $$ BEGIN
   CREATE POLICY "dish_photos_chef_delete"
   ON storage.objects FOR DELETE
@@ -141,13 +127,12 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 DO $$ BEGIN
   CREATE POLICY "dish_photos_public_read"
   ON storage.objects FOR SELECT
   TO public
   USING (bucket_id = 'dish-photos');
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

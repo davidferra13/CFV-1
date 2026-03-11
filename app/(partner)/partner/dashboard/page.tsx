@@ -71,7 +71,7 @@ export default async function PartnerDashboardPage() {
             <Heart size={18} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
               <h2 className="text-sm font-semibold text-amber-900 mb-1">Your partnership story</h2>
-              <p className="text-sm text-amber-800">
+              <p className="text-sm text-amber-200">
                 {originClientName && originEventSummary
                   ? `This partnership began when a guest (${originClientName}) hosted a ${originEventSummary} at your space. They were so impressed, they reached out about becoming a partner.`
                   : originEventSummary

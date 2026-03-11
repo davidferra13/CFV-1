@@ -24,10 +24,10 @@ export function InsuranceHealthCard({ policies }: { policies: Policy[] }) {
 
   const textColor =
     policies.length === 0 || expired.length > 0
-      ? 'text-red-800'
+      ? 'text-red-200'
       : expiringSoon.length > 0
-        ? 'text-amber-800'
-        : 'text-emerald-800'
+        ? 'text-amber-200'
+        : 'text-emerald-200'
 
   return (
     <Link href="/settings/protection/insurance">

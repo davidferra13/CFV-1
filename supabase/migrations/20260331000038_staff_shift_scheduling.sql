@@ -17,17 +17,13 @@ CREATE TABLE IF NOT EXISTS shift_templates (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_shift_templates_tenant ON shift_templates(tenant_id);
-
 COMMENT ON TABLE shift_templates IS 'Reusable shift templates (Morning, Evening, Split, etc.) for scheduling.';
-
 DO $$ BEGIN
   CREATE TRIGGER trg_shift_templates_updated_at
     BEFORE UPDATE ON shift_templates
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ============================================
 -- TABLE 2: SCHEDULED SHIFTS
 -- ============================================
@@ -48,18 +44,14 @@ CREATE TABLE IF NOT EXISTS scheduled_shifts (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_scheduled_shifts_tenant_date ON scheduled_shifts(tenant_id, shift_date);
 CREATE INDEX IF NOT EXISTS idx_scheduled_shifts_staff_date ON scheduled_shifts(tenant_id, staff_member_id, shift_date);
-
 COMMENT ON TABLE scheduled_shifts IS 'Individual shift assignments for staff on specific dates.';
-
 DO $$ BEGIN
   CREATE TRIGGER trg_scheduled_shifts_updated_at
     BEFORE UPDATE ON scheduled_shifts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ============================================
 -- TABLE 3: STAFF AVAILABILITY
 -- ============================================
@@ -76,7 +68,6 @@ CREATE TABLE IF NOT EXISTS staff_availability (
 
   UNIQUE (tenant_id, staff_member_id, day_of_week)
 );
-
 -- Backfill tenant_id if table exists with chef_id from an earlier migration variant
 ALTER TABLE staff_availability ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES chefs(id) ON DELETE CASCADE;
 -- Sync tenant_id from chef_id for existing rows if both columns exist
@@ -86,11 +77,8 @@ DO $$ BEGIN
     UPDATE staff_availability SET tenant_id = chef_id WHERE tenant_id IS NULL;
   END IF;
 END $$;
-
 CREATE INDEX IF NOT EXISTS idx_staff_availability_tenant ON staff_availability(tenant_id);
-
 COMMENT ON TABLE staff_availability IS 'Weekly availability preferences per staff member. day_of_week: 0=Sunday through 6=Saturday.';
-
 -- ============================================
 -- TABLE 4: SHIFT SWAP REQUESTS
 -- ============================================
@@ -107,17 +95,13 @@ CREATE TABLE IF NOT EXISTS shift_swap_requests (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_shift_swap_requests_tenant ON shift_swap_requests(tenant_id);
-
 COMMENT ON TABLE shift_swap_requests IS 'Shift swap/coverage requests between staff members.';
-
 DO $$ BEGIN
   CREATE TRIGGER trg_shift_swap_requests_updated_at
     BEFORE UPDATE ON shift_swap_requests
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -126,25 +110,21 @@ ALTER TABLE shift_templates       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scheduled_shifts      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_availability    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shift_swap_requests   ENABLE ROW LEVEL SECURITY;
-
 -- shift_templates: tenant-scoped
 DO $$ BEGIN CREATE POLICY st_select ON shift_templates FOR SELECT USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY st_insert ON shift_templates FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY st_update ON shift_templates FOR UPDATE USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY st_delete ON shift_templates FOR DELETE USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- scheduled_shifts: tenant-scoped
 DO $$ BEGIN CREATE POLICY ss_select ON scheduled_shifts FOR SELECT USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY ss_insert ON scheduled_shifts FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY ss_update ON scheduled_shifts FOR UPDATE USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY ss_delete ON scheduled_shifts FOR DELETE USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- staff_availability: tenant-scoped
 DO $$ BEGIN CREATE POLICY sa_select ON staff_availability FOR SELECT USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY sa_insert ON staff_availability FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY sa_update ON staff_availability FOR UPDATE USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY sa_delete ON staff_availability FOR DELETE USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- shift_swap_requests: tenant-scoped
 DO $$ BEGIN CREATE POLICY ssr_select ON shift_swap_requests FOR SELECT USING (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY ssr_insert ON shift_swap_requests FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;

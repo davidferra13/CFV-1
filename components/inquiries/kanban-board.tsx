@@ -113,10 +113,10 @@ function KanbanColumn({ column, cards }: KanbanColumnProps) {
           aria-expanded={!collapsed}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="font-semibold text-stone-800 text-sm">{column.label}</span>
+            <span className="font-semibold text-stone-200 text-sm">{column.label}</span>
             <Badge variant={column.badgeVariant}>{cards.length}</Badge>
             {revenueLabel && (
-              <span className="text-xs text-emerald-700 font-medium ml-auto shrink-0">
+              <span className="text-xs text-emerald-200 font-medium ml-auto shrink-0">
                 {revenueLabel}
               </span>
             )}

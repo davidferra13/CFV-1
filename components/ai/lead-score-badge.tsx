@@ -7,9 +7,9 @@ import { scoreInquiry, type LeadScore } from '@/lib/ai/lead-scoring'
 import { toast } from 'sonner'
 
 const TIER_COLORS: Record<string, string> = {
-  hot: 'text-red-700 bg-red-950 border border-red-200',
-  warm: 'text-amber-700 bg-amber-950 border border-amber-200',
-  cold: 'text-blue-700 bg-blue-950 border border-blue-200',
+  hot: 'text-red-200 bg-red-950 border border-red-200',
+  warm: 'text-amber-200 bg-amber-950 border border-amber-200',
+  cold: 'text-blue-200 bg-blue-950 border border-blue-200',
 }
 
 export function LeadScoreBadge({
@@ -74,7 +74,7 @@ export function LeadScoreBadge({
           <p className="text-stone-400">{score.recommendation}</p>
           {score.factors.length > 0 && (
             <div>
-              <div className="text-green-700 font-medium mb-0.5">Score Factors</div>
+              <div className="text-green-200 font-medium mb-0.5">Score Factors</div>
               {score.factors.map((f, i) => (
                 <div key={i} className="text-stone-400">
                   + {f}

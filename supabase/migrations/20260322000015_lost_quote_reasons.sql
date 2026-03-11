@@ -6,5 +6,4 @@ ALTER TABLE quotes
   )),
   ADD COLUMN IF NOT EXISTS lost_notes TEXT,
   ADD COLUMN IF NOT EXISTS lost_recorded_at TIMESTAMPTZ;
-
 CREATE INDEX IF NOT EXISTS idx_quotes_lost_reason ON quotes(tenant_id, lost_reason) WHERE lost_reason IS NOT NULL;

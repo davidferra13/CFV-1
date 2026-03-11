@@ -15,14 +15,12 @@
 -- Drop overly permissive public policies on event_shares
 -- ============================================================
 DROP POLICY IF EXISTS event_shares_public_select_by_token ON event_shares;
-
 -- ============================================================
 -- Drop overly permissive public policies on event_guests
 -- ============================================================
 DROP POLICY IF EXISTS event_guests_public_insert ON event_guests;
 DROP POLICY IF EXISTS event_guests_public_select_by_token ON event_guests;
 DROP POLICY IF EXISTS event_guests_public_update_by_token ON event_guests;
-
 -- ============================================================
 -- Revoke anon grants (admin client bypasses these anyway)
 -- ============================================================

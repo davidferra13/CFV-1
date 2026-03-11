@@ -5,15 +5,12 @@
 ALTER TABLE hub_groups
   ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'public'
     CHECK (visibility IN ('public', 'private', 'secret'));
-
 -- 2. Anonymous posting flag on groups
 ALTER TABLE hub_groups
   ADD COLUMN IF NOT EXISTS allow_anonymous_posts BOOLEAN NOT NULL DEFAULT false;
-
 -- 3. Anonymous flag on individual messages
 ALTER TABLE hub_messages
   ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN NOT NULL DEFAULT false;
-
 -- 4. Availability scheduling table
 CREATE TABLE IF NOT EXISTS hub_availability (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -33,7 +30,6 @@ CREATE TABLE IF NOT EXISTS hub_availability (
 
   CHECK (date_range_end >= date_range_start)
 );
-
 -- 5. Individual date responses
 CREATE TABLE IF NOT EXISTS hub_availability_responses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -48,7 +44,6 @@ CREATE TABLE IF NOT EXISTS hub_availability_responses (
 
   UNIQUE(availability_id, profile_id, response_date)
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_hub_availability_group ON hub_availability(group_id);
 CREATE INDEX IF NOT EXISTS idx_hub_availability_responses_avail ON hub_availability_responses(availability_id);

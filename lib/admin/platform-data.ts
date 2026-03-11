@@ -234,7 +234,7 @@ export async function getAdminStaff(): Promise<AdminStaffRow[]> {
 export type AdminDocumentRow = {
   id: string
   title: string | null
-  doc_type: string | null
+  document_type: string | null
   created_at: string
   tenant_id: string
   chefBusinessName: string | null
@@ -246,7 +246,7 @@ export async function getAdminDocuments(): Promise<AdminDocumentRow[]> {
 
   const { data: docs } = await supabase
     .from('chef_documents')
-    .select('id, title, doc_type, created_at, tenant_id')
+    .select('id, title, document_type, created_at, tenant_id')
     .order('created_at', { ascending: false })
     .limit(500)
 

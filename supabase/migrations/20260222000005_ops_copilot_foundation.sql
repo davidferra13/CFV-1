@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS copilot_runs (
   completed_at TIMESTAMPTZ,
   duration_ms INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS copilot_recommendations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -31,7 +30,6 @@ CREATE TABLE IF NOT EXISTS copilot_recommendations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   resolved_at TIMESTAMPTZ
 );
-
 CREATE TABLE IF NOT EXISTS copilot_actions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -47,7 +45,6 @@ CREATE TABLE IF NOT EXISTS copilot_actions (
   error TEXT,
   executed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE TABLE IF NOT EXISTS copilot_run_errors (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -57,28 +54,21 @@ CREATE TABLE IF NOT EXISTS copilot_run_errors (
   error_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_copilot_actions_idempotency
   ON copilot_actions(tenant_id, idempotency_key)
   WHERE idempotency_key IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_copilot_runs_tenant_started
   ON copilot_runs(tenant_id, started_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_copilot_recommendations_tenant_status
   ON copilot_recommendations(tenant_id, status, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_copilot_actions_tenant_executed
   ON copilot_actions(tenant_id, executed_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_copilot_run_errors_tenant_created
   ON copilot_run_errors(tenant_id, created_at DESC);
-
 ALTER TABLE copilot_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_actions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_run_errors ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chefs manage own copilot runs"
   ON copilot_runs
   FOR ALL
@@ -94,7 +84,6 @@ CREATE POLICY "Chefs manage own copilot runs"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY "Chefs manage own copilot recommendations"
   ON copilot_recommendations
   FOR ALL
@@ -110,7 +99,6 @@ CREATE POLICY "Chefs manage own copilot recommendations"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY "Chefs manage own copilot actions"
   ON copilot_actions
   FOR ALL
@@ -126,7 +114,6 @@ CREATE POLICY "Chefs manage own copilot actions"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY "Chefs read own copilot run errors"
   ON copilot_run_errors
   FOR SELECT
@@ -136,25 +123,21 @@ CREATE POLICY "Chefs read own copilot run errors"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY "Service role manages copilot runs"
   ON copilot_runs
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY "Service role manages copilot recommendations"
   ON copilot_recommendations
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY "Service role manages copilot actions"
   ON copilot_actions
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 CREATE POLICY "Service role manages copilot run errors"
   ON copilot_run_errors
   FOR ALL

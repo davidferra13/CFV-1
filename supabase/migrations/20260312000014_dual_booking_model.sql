@@ -13,14 +13,12 @@ ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS booking_deposit_type TEXT DEFAULT 'percent'
     CHECK (booking_deposit_type IN ('percent', 'fixed')),
   ADD COLUMN IF NOT EXISTS booking_deposit_fixed_cents INTEGER DEFAULT 0;
-
 -- Note: booking_deposit_percent already exists from migration 20260307000012.
 
 -- 2. New column on events to track how the event was created
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS booking_source TEXT
     CHECK (booking_source IN ('inquiry', 'instant_book'));
-
 COMMENT ON COLUMN chefs.booking_model IS 'inquiry_first: client submits request; instant_book: client pays deposit and auto-books';
 COMMENT ON COLUMN chefs.booking_base_price_cents IS 'Base event price for instant-book (required when model=instant_book)';
 COMMENT ON COLUMN chefs.booking_pricing_type IS 'flat_rate: fixed price regardless of guests; per_person: price multiplied by guest count';

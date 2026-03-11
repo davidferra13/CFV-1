@@ -11,7 +11,6 @@
 
 -- Core roles
 CREATE TYPE user_role AS ENUM ('chef', 'client');
-
 -- Client lifecycle status
 CREATE TYPE client_status AS ENUM (
   'active',        -- Currently engaged
@@ -19,7 +18,6 @@ CREATE TYPE client_status AS ENUM (
   'repeat_ready',  -- Ready for rebooking
   'vip'            -- High-value repeat client
 );
-
 -- How client found the chef
 CREATE TYPE referral_source AS ENUM (
   'take_a_chef',
@@ -30,7 +28,6 @@ CREATE TYPE referral_source AS ENUM (
   'email',
   'other'
 );
-
 -- Preferred contact method
 CREATE TYPE contact_method AS ENUM (
   'phone',
@@ -38,7 +35,6 @@ CREATE TYPE contact_method AS ENUM (
   'text',
   'instagram'
 );
-
 -- Spice tolerance level
 CREATE TYPE spice_tolerance AS ENUM (
   'none',
@@ -47,7 +43,6 @@ CREATE TYPE spice_tolerance AS ENUM (
   'hot',
   'very_hot'
 );
-
 -- ============================================
 -- CHEFS (Tenant Owners)
 -- ============================================
@@ -61,12 +56,9 @@ CREATE TABLE chefs (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
-
 CREATE INDEX idx_chefs_auth_user ON chefs(auth_user_id);
-
 COMMENT ON TABLE chefs IS 'Tenant owners - private chef businesses (multi-tenant root). Chef records are never deleted, only cascade-deleted if auth.users is deleted.';
 COMMENT ON COLUMN chefs.auth_user_id IS 'Foreign key to Supabase auth.users';
-
 -- ============================================
 -- CLIENTS (Full Client Relationship System)
 -- Per Master Document Part 10
@@ -136,12 +128,10 @@ CREATE TABLE clients (
   -- Unique constraint: email unique per tenant
   UNIQUE(tenant_id, email)
 );
-
 CREATE INDEX idx_clients_auth_user ON clients(auth_user_id);
 CREATE INDEX idx_clients_tenant ON clients(tenant_id);
 CREATE INDEX idx_clients_status ON clients(status);
 CREATE INDEX idx_clients_tenant_status ON clients(tenant_id, status);
-
 COMMENT ON TABLE clients IS 'Complete client relationship records - identity, household, preferences, site notes, relationship intelligence (Part 10). IMPORTANT: Client records are NEVER hard-deleted. To remove a client, set status to "dormant". Deletion is only via CASCADE if auth.users or chefs is deleted.';
 COMMENT ON COLUMN clients.auth_user_id IS 'Nullable - client can exist before they have an account';
 COMMENT ON COLUMN clients.tenant_id IS 'Which chef owns this client (multi-tenant scoping)';
@@ -152,7 +142,6 @@ COMMENT ON COLUMN clients.lifetime_value_cents IS 'Total revenue from this clien
 COMMENT ON COLUMN clients.total_events_count IS 'Number of events cooked for this client (computed)';
 COMMENT ON COLUMN clients.average_spend_cents IS 'Average spend per event (computed)';
 COMMENT ON CONSTRAINT clients_tenant_id_email_key ON clients IS 'Email unique per tenant (same email can exist for different chefs)';
-
 -- ============================================
 -- USER ROLES (Authoritative Role Assignment)
 -- ============================================
@@ -164,13 +153,10 @@ CREATE TABLE user_roles (
   entity_id UUID NOT NULL, -- References chefs.id OR clients.id
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
-
 CREATE UNIQUE INDEX idx_user_roles_auth_user ON user_roles(auth_user_id);
 CREATE INDEX idx_user_roles_entity ON user_roles(entity_id);
-
 COMMENT ON TABLE user_roles IS 'Authoritative role assignment - single source of truth for user roles';
 COMMENT ON COLUMN user_roles.entity_id IS 'If role=chef, references chefs.id; if role=client, references clients.id';
-
 -- ============================================
 -- CLIENT INVITATIONS (Invitation-based signup)
 -- ============================================
@@ -186,15 +172,12 @@ CREATE TABLE client_invitations (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   created_by UUID NOT NULL REFERENCES auth.users(id)
 );
-
 CREATE INDEX idx_invitations_tenant ON client_invitations(tenant_id);
 CREATE INDEX idx_invitations_token ON client_invitations(token);
 CREATE INDEX idx_invitations_email ON client_invitations(tenant_id, email);
-
 COMMENT ON TABLE client_invitations IS 'Client signup invitations sent by chefs';
 COMMENT ON COLUMN client_invitations.token IS 'Single-use cryptographically random token';
 COMMENT ON COLUMN client_invitations.used_at IS 'Timestamp when invitation was accepted (NULL = unused)';
-
 -- ============================================
 -- AUDIT LOG (General Purpose)
 -- ============================================
@@ -211,18 +194,15 @@ CREATE TABLE audit_log (
   after_values JSONB,
   change_summary TEXT -- Human-readable description of what changed
 );
-
 CREATE INDEX idx_audit_tenant ON audit_log(tenant_id);
 CREATE INDEX idx_audit_table ON audit_log(table_name);
 CREATE INDEX idx_audit_record ON audit_log(record_id);
 CREATE INDEX idx_audit_changed_at ON audit_log(changed_at DESC);
 CREATE INDEX idx_audit_changed_by ON audit_log(changed_by);
-
 COMMENT ON TABLE audit_log IS 'General-purpose audit trail for all mutations (who changed what, when, before/after)';
 COMMENT ON COLUMN audit_log.tenant_id IS 'Nullable - NULL for chef record mutations, populated for tenant-scoped records';
 COMMENT ON COLUMN audit_log.before_values IS 'JSONB snapshot of record before change (NULL for INSERT)';
 COMMENT ON COLUMN audit_log.after_values IS 'JSONB snapshot of record after change (NULL for DELETE)';
-
 -- ============================================
 -- HELPER FUNCTIONS (Role Resolution)
 -- ============================================
@@ -232,27 +212,21 @@ CREATE OR REPLACE FUNCTION get_current_user_role()
 RETURNS user_role AS $$
   SELECT role FROM user_roles WHERE auth_user_id = auth.uid()
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
-
 COMMENT ON FUNCTION get_current_user_role IS 'Returns chef or client - authoritative role from user_roles table';
-
 -- Get current user's tenant_id (if chef)
 CREATE OR REPLACE FUNCTION get_current_tenant_id()
 RETURNS UUID AS $$
   SELECT entity_id FROM user_roles
   WHERE auth_user_id = auth.uid() AND role = 'chef'
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
-
 COMMENT ON FUNCTION get_current_tenant_id IS 'Returns chefs.id if user is a chef, NULL otherwise';
-
 -- Get current user's client_id (if client)
 CREATE OR REPLACE FUNCTION get_current_client_id()
 RETURNS UUID AS $$
   SELECT entity_id FROM user_roles
   WHERE auth_user_id = auth.uid() AND role = 'client'
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
-
 COMMENT ON FUNCTION get_current_client_id IS 'Returns clients.id if user is a client, NULL otherwise';
-
 -- ============================================
 -- TRIGGER FUNCTIONS
 -- ============================================
@@ -265,9 +239,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 COMMENT ON FUNCTION update_updated_at_column IS 'Auto-updates updated_at timestamp on table modifications';
-
 -- Enforce client belongs to same tenant (for future event/relationship checks)
 CREATE OR REPLACE FUNCTION check_client_tenant_match()
 RETURNS TRIGGER AS $$
@@ -289,9 +261,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 COMMENT ON FUNCTION check_client_tenant_match IS 'Enforces tenant isolation - ensures client belongs to same tenant (used by future event tables)';
-
 -- General audit logging function
 CREATE OR REPLACE FUNCTION log_audit()
 RETURNS TRIGGER AS $$
@@ -351,9 +321,7 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 COMMENT ON FUNCTION log_audit IS 'Logs all mutations to audit_log table with before/after snapshots';
-
 -- ============================================
 -- TRIGGERS
 -- ============================================
@@ -362,20 +330,16 @@ COMMENT ON FUNCTION log_audit IS 'Logs all mutations to audit_log table with bef
 CREATE TRIGGER chefs_updated_at
 BEFORE UPDATE ON chefs
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER clients_updated_at
 BEFORE UPDATE ON clients
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- Audit logging
 CREATE TRIGGER chefs_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON chefs
 FOR EACH ROW EXECUTE FUNCTION log_audit();
-
 CREATE TRIGGER clients_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON clients
 FOR EACH ROW EXECUTE FUNCTION log_audit();
-
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
@@ -386,7 +350,6 @@ ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_invitations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
-
 -- ============================================
 -- CHEFS TABLE POLICIES
 -- ============================================
@@ -395,15 +358,12 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY chefs_select ON chefs
   FOR SELECT
   USING (auth.uid() = auth_user_id);
-
 -- Chefs can update their own record only
 CREATE POLICY chefs_update ON chefs
   FOR UPDATE
   USING (auth.uid() = auth_user_id);
-
 COMMENT ON POLICY chefs_select ON chefs IS 'Chefs can only see their own profile';
 COMMENT ON POLICY chefs_update ON chefs IS 'Chefs can only update their own profile';
-
 -- ============================================
 -- CLIENTS TABLE POLICIES
 -- ============================================
@@ -415,7 +375,6 @@ CREATE POLICY clients_chef_select ON clients
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can insert clients into their tenant
 CREATE POLICY clients_chef_insert ON clients
   FOR INSERT
@@ -423,7 +382,6 @@ CREATE POLICY clients_chef_insert ON clients
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Chefs can update their clients
 CREATE POLICY clients_chef_update ON clients
   FOR UPDATE
@@ -431,7 +389,6 @@ CREATE POLICY clients_chef_update ON clients
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Clients can read their own record
 CREATE POLICY clients_self_select ON clients
   FOR SELECT
@@ -439,7 +396,6 @@ CREATE POLICY clients_self_select ON clients
     get_current_user_role() = 'client' AND
     id = get_current_client_id()
   );
-
 -- Clients can update their own record (limited fields via app logic)
 CREATE POLICY clients_self_update ON clients
   FOR UPDATE
@@ -447,14 +403,12 @@ CREATE POLICY clients_self_update ON clients
     get_current_user_role() = 'client' AND
     id = get_current_client_id()
   );
-
 -- NO DELETE POLICY: Client records are NEVER hard-deleted.
 -- To remove a client, set status = 'dormant'.
 -- Deletion only occurs via CASCADE when auth.users or chefs is deleted.
 
 COMMENT ON POLICY clients_chef_select ON clients IS 'Chefs see only their tenant clients (multi-tenant isolation)';
 COMMENT ON POLICY clients_self_select ON clients IS 'Clients see only their own profile';
-
 -- ============================================
 -- USER_ROLES TABLE POLICIES
 -- ============================================
@@ -463,12 +417,10 @@ COMMENT ON POLICY clients_self_select ON clients IS 'Clients see only their own 
 CREATE POLICY user_roles_self_select ON user_roles
   FOR SELECT
   USING (auth.uid() = auth_user_id);
-
 -- No user-facing writes (only via service role during signup)
 -- This prevents role escalation attacks
 
 COMMENT ON POLICY user_roles_self_select ON user_roles IS 'Users can see their own role only (prevents role escalation)';
-
 -- ============================================
 -- CLIENT_INVITATIONS TABLE POLICIES
 -- ============================================
@@ -480,7 +432,6 @@ CREATE POLICY invitations_chef_all ON client_invitations
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
-
 -- Public can read invitation by token (for signup flow)
 -- This policy allows SELECT on valid invitations, but the app layer MUST
 -- always query with a specific token value in the WHERE clause to prevent enumeration.
@@ -493,10 +444,8 @@ CREATE POLICY invitations_public_select_by_token ON client_invitations
     used_at IS NULL AND
     expires_at > now()
   );
-
 COMMENT ON POLICY invitations_chef_all ON client_invitations IS 'Chefs manage their own invitations';
 COMMENT ON POLICY invitations_public_select_by_token ON client_invitations IS 'Public can read valid invitations for signup (token-based security). APP LAYER MUST FILTER BY SPECIFIC TOKEN VALUE - never query without WHERE token = $1 to prevent enumeration.';
-
 -- ============================================
 -- AUDIT_LOG TABLE POLICIES
 -- ============================================
@@ -508,11 +457,9 @@ CREATE POLICY audit_log_chef_select ON audit_log
     get_current_user_role() = 'chef' AND
     (tenant_id = get_current_tenant_id() OR (tenant_id IS NULL AND changed_by = auth.uid()))
   );
-
 -- No user writes to audit_log (only via triggers)
 
 COMMENT ON POLICY audit_log_chef_select ON audit_log IS 'Chefs can read audit logs for their tenant + their own chef-level mutations (tenant_id NULL records only visible to the chef who made the change)';
-
 -- ============================================
 -- VERIFICATION QUERIES
 -- ============================================

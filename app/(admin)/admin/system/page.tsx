@@ -53,7 +53,7 @@ export default async function AdminSystemPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200">
           {error}
         </div>
       )}
@@ -192,7 +192,7 @@ export default async function AdminSystemPage() {
                 {health.warnings.map((warning) => (
                   <li
                     key={warning}
-                    className="text-sm text-amber-700 bg-amber-950 rounded-lg px-3 py-2"
+                    className="text-sm text-amber-200 bg-amber-950 rounded-lg px-3 py-2"
                   >
                     {warning}
                   </li>

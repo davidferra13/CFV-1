@@ -231,7 +231,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                   </div>
                   {event.status === 'completed' ? (
                     eventLoyaltyPoints > 0 ? (
-                      <p className="text-xs text-emerald-700">
+                      <p className="text-xs text-emerald-200">
                         This event awarded {eventLoyaltyPoints} points.
                       </p>
                     ) : (

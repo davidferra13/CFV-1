@@ -39,7 +39,7 @@ function DishFrequencySection({ items }: { items: DishFrequencyItem[] }) {
 
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-stone-700 mb-3">Dish Frequency</h3>
+      <h3 className="text-sm font-semibold text-stone-200 mb-3">Dish Frequency</h3>
       <div className="space-y-2">
         {items.slice(0, 10).map((item) => (
           <div
@@ -123,7 +123,7 @@ export function ClientMealHistory({ history, frequency, clientName }: ClientMeal
           {grouped.map(([date, entries]) => (
             <Card key={date} className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-sm font-semibold text-stone-700">
+                <h3 className="text-sm font-semibold text-stone-200">
                   {format(new Date(date), 'EEEE, MMM d, yyyy')}
                 </h3>
                 <Badge variant="default">

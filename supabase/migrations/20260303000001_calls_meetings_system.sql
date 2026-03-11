@@ -73,11 +73,9 @@ CREATE TABLE scheduled_calls (
   completed_at              TIMESTAMPTZ,
   cancelled_at              TIMESTAMPTZ
 );
-
 -- ─── RLS ─────────────────────────────────────────────────────────────────────
 
 ALTER TABLE scheduled_calls ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chefs_own_calls"
   ON scheduled_calls
   FOR ALL
@@ -90,7 +88,6 @@ CREATE POLICY "chefs_own_calls"
         AND role = 'chef'
     )
   );
-
 -- ─── Indexes ─────────────────────────────────────────────────────────────────
 
 CREATE INDEX scheduled_calls_tenant_idx     ON scheduled_calls(tenant_id);
@@ -99,7 +96,6 @@ CREATE INDEX scheduled_calls_client_idx     ON scheduled_calls(client_id);
 CREATE INDEX scheduled_calls_status_idx     ON scheduled_calls(status);
 CREATE INDEX scheduled_calls_inquiry_idx    ON scheduled_calls(inquiry_id);
 CREATE INDEX scheduled_calls_event_idx      ON scheduled_calls(event_id);
-
 -- ─── Auto-updated_at trigger ─────────────────────────────────────────────────
 -- Reuses the existing update_updated_at_column() function from Layer 1.
 

@@ -11,6 +11,7 @@ import type { ClientPhoto } from '@/lib/clients/photo-actions'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { MOBILE_CAPTURE_IMAGE_ACCEPT } from '@/lib/uploads/mobile-capture-types'
 
 const CATEGORIES = [
   { value: 'all', label: 'All' },
@@ -146,7 +147,8 @@ export function ClientPhotoGallery({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+          accept={MOBILE_CAPTURE_IMAGE_ACCEPT}
+          capture="environment"
           multiple
           onChange={handleUpload}
           className="hidden"

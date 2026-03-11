@@ -76,10 +76,10 @@ import { RebookButton } from '@/components/clients/rebook-button'
 import { clientHasCompletedEvents } from '@/lib/clients/rebook-actions'
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-800',
+  bronze: 'bg-amber-900 text-amber-200',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-800',
-  platinum: 'bg-purple-900 text-purple-800',
+  gold: 'bg-yellow-900 text-yellow-200',
+  platinum: 'bg-purple-900 text-purple-200',
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -248,7 +248,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <p className="text-sm font-semibold text-amber-900">
               No events in {dormancyInfo.daysSinceLastEvent ?? 180}+ days
             </p>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-xs text-amber-200 mt-0.5">
               Last event:{' '}
               {dormancyInfo.lastEventDate
                 ? format(new Date(dormancyInfo.lastEventDate), 'MMMM d, yyyy')
@@ -267,7 +267,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             )}
             <Link
               href={`/clients/${client.id}#outreach`}
-              className="text-xs font-medium text-amber-800 underline shrink-0"
+              className="text-xs font-medium text-amber-200 underline shrink-0"
             >
               Send Message
             </Link>
@@ -442,9 +442,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 <span
                   className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     profitabilityHistory.trend === 'improving'
-                      ? 'bg-emerald-900 text-emerald-700'
+                      ? 'bg-emerald-900 text-emerald-200'
                       : profitabilityHistory.trend === 'declining'
-                        ? 'bg-red-900 text-red-700'
+                        ? 'bg-red-900 text-red-200'
                         : profitabilityHistory.trend === 'stable'
                           ? 'bg-stone-800 text-stone-300'
                           : 'bg-stone-800 text-stone-300'
@@ -661,7 +661,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   >
                     <div>
                       <p className="text-sm font-medium text-green-900">{reward.name}</p>
-                      <p className="text-xs text-green-700">{reward.points_required} points</p>
+                      <p className="text-xs text-green-200">{reward.points_required} points</p>
                     </div>
                     <RedeemRewardButton clientId={client.id} reward={reward} />
                   </div>
@@ -917,7 +917,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   </div>
                   {review.what_they_loved && (
                     <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-emerald-700">Loved: </span>
+                      <span className="font-medium text-emerald-200">Loved: </span>
                       {review.what_they_loved}
                     </p>
                   )}
@@ -926,7 +926,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   )}
                   {review.what_could_improve && (
                     <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-amber-700">Improve: </span>
+                      <span className="font-medium text-amber-200">Improve: </span>
                       {review.what_could_improve}
                     </p>
                   )}

@@ -17,9 +17,9 @@ function formatCents(cents: number | null): string {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  sent: 'bg-blue-900 text-blue-700',
-  accepted: 'bg-green-900 text-green-700',
-  declined: 'bg-red-900 text-red-700',
+  sent: 'bg-blue-900 text-blue-200',
+  accepted: 'bg-green-900 text-green-200',
+  declined: 'bg-red-900 text-red-200',
   expired: 'bg-stone-800 text-stone-500',
 }
 

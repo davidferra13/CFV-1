@@ -21,10 +21,8 @@ CREATE TABLE daily_plan_drafts (
   approved_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_daily_plan_drafts_chef_date ON daily_plan_drafts(chef_id, plan_date);
 CREATE INDEX idx_daily_plan_drafts_status ON daily_plan_drafts(chef_id, status) WHERE status = 'pending_review';
-
 -- ============================================
 -- 2. Daily Plan Dismissals
 -- Tracks items the chef skipped/snoozed for a given day.
@@ -38,23 +36,19 @@ CREATE TABLE daily_plan_dismissals (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(chef_id, item_key, dismissed_date)
 );
-
 CREATE INDEX idx_daily_plan_dismissals_chef_date ON daily_plan_dismissals(chef_id, dismissed_date);
-
 -- ============================================
 -- 3. RLS Policies
 -- ============================================
 
 ALTER TABLE daily_plan_drafts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_plan_dismissals ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef manages own drafts" ON daily_plan_drafts
   FOR ALL USING (
     chef_id IN (
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
     )
   );
-
 CREATE POLICY "Chef manages own dismissals" ON daily_plan_dismissals
   FOR ALL USING (
     chef_id IN (

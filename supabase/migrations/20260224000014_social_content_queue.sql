@@ -14,7 +14,6 @@ CREATE TYPE social_post_status AS ENUM (
   'published',
   'archived'
 );
-
 CREATE TYPE social_pillar AS ENUM (
   'recipe',
   'behind_scenes',
@@ -23,14 +22,12 @@ CREATE TYPE social_pillar AS ENUM (
   'offers',
   'seasonal'
 );
-
 CREATE TYPE social_media_type AS ENUM (
   'image',
   'video',
   'carousel',
   'text'
 );
-
 CREATE TYPE social_platform AS ENUM (
   'instagram',
   'facebook',
@@ -40,7 +37,6 @@ CREATE TYPE social_platform AS ENUM (
   'pinterest',
   'youtube_shorts'
 );
-
 CREATE TABLE social_queue_settings (
   tenant_id UUID PRIMARY KEY REFERENCES chefs(id) ON DELETE CASCADE,
   created_by UUID NOT NULL,
@@ -62,10 +58,8 @@ CREATE TABLE social_queue_settings (
     queue_days <@ ARRAY[1,2,3,4,5,6,7]::SMALLINT[]
   )
 );
-
 COMMENT ON TABLE social_queue_settings IS
   'Per-tenant defaults for annual social content planning and rolling queue cadence.';
-
 CREATE TABLE social_posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -112,49 +106,37 @@ CREATE TABLE social_posts (
   CONSTRAINT social_posts_unique_code_per_tenant UNIQUE (tenant_id, post_code),
   CONSTRAINT social_posts_unique_slot_per_tenant_year UNIQUE (tenant_id, target_year, week_number, slot_number)
 );
-
 COMMENT ON TABLE social_posts IS
   'Annual social content vault rows with platform variants and queue state for each scheduled slot.';
-
 COMMENT ON COLUMN social_posts.post_code IS
   'Human-readable slot id (for example 2026-W14-P3).';
-
 CREATE INDEX idx_social_posts_tenant_schedule
   ON social_posts (tenant_id, schedule_at ASC);
-
 CREATE INDEX idx_social_posts_tenant_status_schedule
   ON social_posts (tenant_id, status, schedule_at ASC);
-
 CREATE INDEX idx_social_posts_tenant_hot_swap
   ON social_posts (tenant_id, hot_swap_ready, schedule_at ASC);
-
 CREATE INDEX idx_social_posts_platforms
   ON social_posts USING GIN (platforms);
-
 CREATE TRIGGER social_queue_settings_updated_at
   BEFORE UPDATE ON social_queue_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER social_posts_updated_at
   BEFORE UPDATE ON social_posts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE social_queue_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE social_posts ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY social_queue_settings_select_own ON social_queue_settings
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 CREATE POLICY social_queue_settings_insert_own ON social_queue_settings
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
     AND created_by = auth.uid()
   );
-
 CREATE POLICY social_queue_settings_update_own ON social_queue_settings
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -164,20 +146,17 @@ CREATE POLICY social_queue_settings_update_own ON social_queue_settings
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 CREATE POLICY social_posts_select_own ON social_posts
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 CREATE POLICY social_posts_insert_own ON social_posts
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
     AND created_by = auth.uid()
   );
-
 CREATE POLICY social_posts_update_own ON social_posts
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -187,7 +166,6 @@ CREATE POLICY social_posts_update_own ON social_posts
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 CREATE POLICY social_posts_delete_own ON social_posts
   FOR DELETE USING (
     get_current_user_role() = 'chef'

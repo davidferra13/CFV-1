@@ -219,7 +219,7 @@ export function MenuModifications({
                         size="sm"
                         onClick={() => handleRemove(m.id)}
                         disabled={removingId === m.id || saving}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-200"
                       >
                         {removingId === m.id ? 'Removing...' : 'Remove'}
                       </Button>

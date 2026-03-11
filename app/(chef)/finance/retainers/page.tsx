@@ -45,7 +45,7 @@ export default async function RetainersPage() {
           <p className="text-sm text-stone-500 mt-1">Active retainers</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalMrrCents)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalMrrCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Monthly recurring revenue</p>
         </Card>
         <Card className="p-4">

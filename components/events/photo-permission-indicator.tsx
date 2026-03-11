@@ -28,10 +28,10 @@ export function PhotoPermissionIndicator({
     <div
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
         isRestricted
-          ? 'bg-red-900 text-red-700'
+          ? 'bg-red-900 text-red-200'
           : level === 'portfolio_only'
-            ? 'bg-amber-900 text-amber-700'
-            : 'bg-blue-900 text-blue-700'
+            ? 'bg-amber-900 text-amber-200'
+            : 'bg-blue-900 text-blue-200'
       }`}
       title={LABELS[level]}
     >

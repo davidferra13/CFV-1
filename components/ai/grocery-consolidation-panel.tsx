@@ -86,7 +86,7 @@ export function GroceryConsolidationPanel({ eventId }: { eventId: string }) {
           {result.dietaryFlags.map((flag, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 text-xs text-amber-800 bg-amber-950 border border-amber-200 rounded p-2"
+              className="flex items-start gap-2 text-xs text-amber-200 bg-amber-950 border border-amber-200 rounded p-2"
             >
               <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
               {flag}

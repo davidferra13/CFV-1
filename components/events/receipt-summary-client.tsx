@@ -29,10 +29,10 @@ function ConfidenceBadge({ score }: { score: number | null }) {
         : 'Low confidence — review carefully'
   const cls =
     score >= 0.8
-      ? 'bg-green-900 text-green-700'
+      ? 'bg-green-900 text-green-200'
       : score >= 0.5
-        ? 'bg-amber-900 text-amber-700'
-        : 'bg-red-900 text-red-700'
+        ? 'bg-amber-900 text-amber-200'
+        : 'bg-red-900 text-red-200'
   return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
 }
 
@@ -104,8 +104,8 @@ function LineItemRow({
             item.expenseTag === 'personal'
               ? 'border-stone-700 text-stone-400'
               : item.expenseTag === 'business'
-                ? 'border-green-200 text-green-700'
-                : 'border-amber-200 text-amber-700'
+                ? 'border-green-200 text-green-200'
+                : 'border-amber-200 text-amber-200'
           }`}
         >
           <option value="business">Business</option>
@@ -220,7 +220,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
                   {extraction?.storeName ?? 'Unknown Store'}
                 </h3>
                 {approved && (
-                  <span className="text-xs bg-green-900 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-green-900 text-green-200 font-medium px-2 py-0.5 rounded-full">
                     Approved
                   </span>
                 )}
@@ -247,6 +247,13 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
               )}
             </div>
           </div>
+
+          {!approved && (
+            <p className="mb-3 text-xs text-stone-500">
+              Parsed receipt data stays pending review until you approve it. Approval writes the
+              business items into expenses.
+            </p>
+          )}
 
           {/* No extraction yet */}
           {!extraction && receipt.uploadStatus !== 'approved' && (
@@ -377,7 +384,7 @@ export function ReceiptSummaryClient({ receipts, eventId }: Props) {
           )}
           {pendingCount > 0 && (
             <span>
-              <strong>{pendingCount}</strong> pending review
+              <strong>{pendingCount}</strong> not approved yet
             </span>
           )}
           {totalBusinessCents > 0 && (

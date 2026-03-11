@@ -1,6 +1,6 @@
 // Event Transitions Component
 // Shows action buttons for transitioning event status based on current state.
-// Readiness gates are shown inline — hard blocks disable the button, soft blocks warn.
+// Readiness gates are shown inline and block the action until resolved or bypassed.
 'use client'
 
 import { useState } from 'react'
@@ -40,7 +40,7 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
   if (blockers.length === 0) return null
 
   const hardBlocks = blockers.filter((g) => g.isHardBlock)
-  const softWarnings = blockers.filter((g) => !g.isHardBlock)
+  const pendingChecklist = blockers.filter((g) => !g.isHardBlock)
 
   return (
     <div className="space-y-2">
@@ -52,7 +52,7 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
             <div key={g.gate} className="flex items-start gap-2">
               <span className="mt-0.5 text-xs font-bold shrink-0 text-red-600">✕</span>
               <div>
-                <p className="text-xs font-medium text-red-800">{g.label}</p>
+                <p className="text-xs font-medium text-red-200">{g.label}</p>
                 <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
                 {g.details && (
                   <p className="text-[11px] text-red-600 mt-0.5 font-medium">{g.details}</p>
@@ -63,20 +63,20 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
         </div>
       )}
 
-      {/* Soft warnings — you can still proceed, but these are recommended */}
-      {softWarnings.length > 0 && (
+      {/* Pending checklist items — must be resolved or bypassed before proceeding */}
+      {pendingChecklist.length > 0 && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-1.5">
           <p className="text-xs font-semibold text-amber-900">
-            Recommended before proceeding (you can still continue):
+            Resolve these items or skip them with a reason before proceeding:
           </p>
-          {softWarnings.map((g) => (
+          {pendingChecklist.map((g) => (
             <div key={g.gate} className="flex items-start gap-2">
               <span className="mt-0.5 text-xs font-bold shrink-0 text-amber-500">!</span>
               <div>
-                <p className="text-xs font-medium text-amber-800">{g.label}</p>
+                <p className="text-xs font-medium text-amber-200">{g.label}</p>
                 <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
                 {g.details && (
-                  <p className="text-[11px] text-amber-700 mt-0.5 font-medium">{g.details}</p>
+                  <p className="text-[11px] text-amber-200 mt-0.5 font-medium">{g.details}</p>
                 )}
               </div>
             </div>
@@ -146,7 +146,7 @@ export function EventTransitions({
 
   // Derive gate blockers for the current transition from the passed readiness result
   const blockers: GateResult[] = readiness?.blockers ?? []
-  const isHardBlocked = readiness?.hardBlocked ?? false
+  const isTransitionBlocked = blockers.length > 0
 
   // Terminal states - no actions available
   if (event.status === 'completed' || event.status === 'cancelled') {
@@ -223,8 +223,12 @@ export function EventTransitions({
                 )
               }
               loading={loading}
-              disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve required items above before sending' : undefined}
+              disabled={loading || isTransitionBlocked}
+              title={
+                isTransitionBlocked
+                  ? 'Resolve the readiness items above before sending'
+                  : undefined
+              }
             >
               Send to Client
             </Button>
@@ -236,8 +240,12 @@ export function EventTransitions({
                 handleTransition(() => confirmEvent(event.id), undefined, 'Confirmed event')
               }
               loading={loading}
-              disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve required items above before confirming' : undefined}
+              disabled={loading || isTransitionBlocked}
+              title={
+                isTransitionBlocked
+                  ? 'Resolve the readiness items above before confirming'
+                  : undefined
+              }
             >
               Confirm Event
             </Button>
@@ -249,8 +257,12 @@ export function EventTransitions({
                 handleTransition(() => startEvent(event.id), undefined, 'Started event')
               }
               loading={loading}
-              disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve required items above before starting' : undefined}
+              disabled={loading || isTransitionBlocked}
+              title={
+                isTransitionBlocked
+                  ? 'Resolve the readiness items above before starting'
+                  : undefined
+              }
             >
               Start Event
             </Button>
@@ -266,8 +278,12 @@ export function EventTransitions({
                 )
               }
               loading={loading}
-              disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve required items above before completing' : undefined}
+              disabled={loading || isTransitionBlocked}
+              title={
+                isTransitionBlocked
+                  ? 'Resolve the readiness items above before completing'
+                  : undefined
+              }
             >
               Finish Event
             </Button>

@@ -27,19 +27,19 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-300',
-  proposed: 'bg-blue-900 text-blue-700',
-  accepted: 'bg-yellow-900 text-yellow-700',
-  paid: 'bg-emerald-900 text-emerald-700',
+  proposed: 'bg-blue-900 text-blue-200',
+  accepted: 'bg-yellow-900 text-yellow-200',
+  paid: 'bg-emerald-900 text-emerald-200',
   confirmed: 'bg-brand-900 text-brand-400',
   in_progress: 'bg-brand-950 text-brand-300',
-  completed: 'bg-green-900 text-green-700',
-  cancelled: 'bg-red-900 text-red-700',
+  completed: 'bg-green-900 text-green-200',
+  cancelled: 'bg-red-900 text-red-200',
 }
 
 const PREP_STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  ready: { label: 'Ready', color: 'bg-green-900 text-green-700' },
-  partial: { label: 'Partial', color: 'bg-yellow-900 text-yellow-700' },
-  not_started: { label: 'Not Started', color: 'bg-red-900 text-red-700' },
+  ready: { label: 'Ready', color: 'bg-green-900 text-green-200' },
+  partial: { label: 'Partial', color: 'bg-yellow-900 text-yellow-200' },
+  not_started: { label: 'Not Started', color: 'bg-red-900 text-red-200' },
 }
 
 export function EventDetailPopover({
@@ -160,7 +160,7 @@ export function EventDetailPopover({
             </span>
           )}
           {isPrep && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-900 text-amber-700">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-900 text-amber-200">
               Prep Day
             </span>
           )}

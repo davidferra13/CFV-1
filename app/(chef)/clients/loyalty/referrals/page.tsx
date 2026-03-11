@@ -18,10 +18,10 @@ const SOURCE_LABELS: Record<string, string> = {
 }
 
 const SOURCE_COLORS: Record<string, string> = {
-  referral: 'bg-green-900 text-green-700',
-  instagram: 'bg-pink-900 text-pink-700',
-  website: 'bg-blue-900 text-blue-700',
-  take_a_chef: 'bg-amber-900 text-amber-700',
+  referral: 'bg-green-900 text-green-200',
+  instagram: 'bg-pink-900 text-pink-200',
+  website: 'bg-blue-900 text-blue-200',
+  take_a_chef: 'bg-amber-900 text-amber-200',
   phone: 'bg-stone-800 text-stone-400',
   email: 'bg-stone-800 text-stone-400',
   other: 'bg-stone-800 text-stone-500',
@@ -69,7 +69,7 @@ export default async function ReferralsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Referrals</h1>
-          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-green-900 text-green-200 text-sm px-2 py-0.5 rounded-full">
             {referralClients.length} referred clients
           </span>
         </div>

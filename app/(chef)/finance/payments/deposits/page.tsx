@@ -30,7 +30,7 @@ export default async function DepositsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Deposits</h1>
-          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-green-900 text-green-200 text-sm px-2 py-0.5 rounded-full">
             {deposits.length}
           </span>
         </div>
@@ -39,7 +39,7 @@ export default async function DepositsPage() {
 
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalDeposits)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalDeposits)}</p>
           <p className="text-sm text-stone-500 mt-1">Total deposits received</p>
         </Card>
         <Card className="p-4">
@@ -85,7 +85,7 @@ export default async function DepositsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-green-700 font-semibold text-sm">
+                  <TableCell className="text-green-200 font-semibold text-sm">
                     +{formatCurrency(entry.amount_cents)}
                   </TableCell>
                 </TableRow>

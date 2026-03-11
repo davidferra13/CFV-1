@@ -4,5 +4,4 @@
 
 ALTER TABLE ai_preferences
 ADD COLUMN IF NOT EXISTS survey_state JSONB DEFAULT NULL;
-
 COMMENT ON COLUMN ai_preferences.survey_state IS 'Remy conversational survey progress — JSON with status, currentGroup, currentQuestion, answered[], skipped[]';

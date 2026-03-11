@@ -36,19 +36,15 @@ AS $$
       AND c.auth_user_id = auth.uid()
   );
 $$;
-
 COMMENT ON FUNCTION is_event_owner(UUID) IS
   'Returns true if the currently authenticated user owns the given event. '
   'Uses SECURITY DEFINER to bypass events RLS and prevent the infinite '
   'recursion that arises from event_owner_manages_collaborators checking '
   'events while collaborators_can_view_events checks event_collaborators.';
-
 GRANT EXECUTE ON FUNCTION is_event_owner(UUID) TO authenticated;
-
 -- ─── Recreate the offending policy using the definer function ─────
 
 DROP POLICY IF EXISTS "event_owner_manages_collaborators" ON event_collaborators;
-
 CREATE POLICY "event_owner_manages_collaborators"
   ON event_collaborators
   FOR ALL

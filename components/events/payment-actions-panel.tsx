@@ -43,7 +43,7 @@ export function RecordPaymentPanel({
             <h3 className="font-semibold text-amber-900">
               {isDepositDue ? 'Deposit Pending' : 'Balance Outstanding'}
             </h3>
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="text-sm text-amber-200 mt-1">
               {isDepositDue
                 ? `A deposit of ${formatCurrency(depositAmountCents)} is awaiting collection.`
                 : `${formatCurrency(outstandingBalanceCents)} remaining balance. Record it if paid offline.`}
@@ -95,7 +95,7 @@ export function ProcessRefundPanel({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="font-semibold text-blue-900">Refund Available</h3>
-            <p className="text-sm text-blue-700 mt-1">
+            <p className="text-sm text-blue-200 mt-1">
               {formatCurrency(netPaidCents)} was collected for this event.{' '}
               {recommendation.refundAmountCents > 0
                 ? `Policy recommends a ${formatCurrency(recommendation.refundAmountCents)} refund.`

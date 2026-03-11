@@ -56,8 +56,8 @@ export default async function TaxSummaryPage() {
       </div>
 
       <Card className="p-4 bg-amber-950 border-amber-200">
-        <p className="text-sm font-medium text-amber-800">Important disclaimer</p>
-        <p className="text-sm text-amber-700 mt-1">
+        <p className="text-sm font-medium text-amber-200">Important disclaimer</p>
+        <p className="text-sm text-amber-200 mt-1">
           This summary is for informational purposes only. ChefFlow does not provide tax advice.
           Consult a qualified CPA or tax professional before filing. Deductibility depends on your
           jurisdiction and business structure.
@@ -66,7 +66,7 @@ export default async function TaxSummaryPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
+          <p className="text-2xl font-bold text-green-200">
             {formatCurrency(summary.totalRevenueCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Gross income (all-time)</p>

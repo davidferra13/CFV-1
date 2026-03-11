@@ -13,22 +13,17 @@ CREATE TABLE IF NOT EXISTS public.quote_line_items (
   source_note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_quote_line_items_quote
   ON public.quote_line_items(quote_id);
 CREATE INDEX IF NOT EXISTS idx_quote_line_items_tenant
   ON public.quote_line_items(tenant_id);
-
 ALTER TABLE public.quotes
   ADD COLUMN IF NOT EXISTS show_cost_breakdown BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS exclusions_note TEXT;
-
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS default_show_cost_breakdown BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS default_exclusions_note TEXT;
-
 ALTER TABLE public.quote_line_items ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS quote_line_items_chef_all ON public.quote_line_items;
 CREATE POLICY quote_line_items_chef_all
   ON public.quote_line_items
@@ -51,7 +46,6 @@ CREATE POLICY quote_line_items_chef_all
       LIMIT 1
     )
   );
-
 DROP POLICY IF EXISTS quote_line_items_client_select ON public.quote_line_items;
 CREATE POLICY quote_line_items_client_select
   ON public.quote_line_items

@@ -41,7 +41,7 @@ export default async function SharedElementsPage() {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Shared Elements</h1>
-            <span className="bg-sky-900 text-sky-700 text-sm px-2 py-0.5 rounded-full">
+            <span className="bg-sky-900 text-sky-200 text-sm px-2 py-0.5 rounded-full">
               {shared.length}
             </span>
           </div>
@@ -58,11 +58,11 @@ export default async function SharedElementsPage() {
           <p className="text-sm text-stone-500 mt-1">Recipe-linked components</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-sky-700">{multiUse.length}</p>
+          <p className="text-2xl font-bold text-sky-200">{multiUse.length}</p>
           <p className="text-sm text-stone-500 mt-1">Used in multiple places</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-700">
+          <p className="text-2xl font-bold text-amber-200">
             {allComponents.filter((c) => c.is_make_ahead && c.recipe_id).length}
           </p>
           <p className="text-sm text-stone-500 mt-1">Make-ahead with recipe</p>
@@ -114,7 +114,7 @@ export default async function SharedElementsPage() {
                   <TableCell>
                     <Link
                       href={`/culinary/recipes/${comp.recipe_id}`}
-                      className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                      className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full hover:bg-green-200"
                     >
                       View Recipe
                     </Link>

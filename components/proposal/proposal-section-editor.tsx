@@ -315,7 +315,7 @@ export function ProposalSectionEditor({
                   key={option.type}
                   type="button"
                   onClick={() => handleAddSection(option.type)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors text-left"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-200 transition-colors text-left"
                 >
                   <span className="text-gray-400">{option.icon}</span>
                   {option.label}

@@ -226,7 +226,7 @@ export function AvailabilityGrid({
                       >
                         <div>{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]}</div>
                         <div
-                          className={`text-sm font-semibold ${isToday ? 'text-brand-600' : 'text-stone-700'}`}
+                          className={`text-sm font-semibold ${isToday ? 'text-brand-600' : 'text-stone-200'}`}
                         >
                           {d.getDate()}
                         </div>

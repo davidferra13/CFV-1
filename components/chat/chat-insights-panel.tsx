@@ -78,7 +78,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
     <div className="px-3 pb-3">
       <div className="flex items-center gap-1.5 mb-2">
         <Brain className="w-3 h-3 text-amber-500" />
-        <span className="text-xs font-medium text-amber-700">Smart Suggestions</span>
+        <span className="text-xs font-medium text-amber-200">Smart Suggestions</span>
         <span className="text-[10px] text-amber-500">({insights.length})</span>
       </div>
 
@@ -111,7 +111,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
                 type="button"
                 onClick={() => handleAccept(insight.id)}
                 disabled={isPending}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-green-700 bg-green-900 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-green-200 bg-green-900 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
               >
                 <Check className="w-2.5 h-2.5" />
                 Save as Note

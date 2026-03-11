@@ -17,9 +17,7 @@ SET converting_quote_id = la.quote_id
 FROM latest_accepted la
 WHERE e.id = la.event_id
   AND e.converting_quote_id IS NULL;
-
 DROP TRIGGER IF EXISTS prevent_event_pricing_drift_from_accepted_quote_trigger ON events;
-
 CREATE TRIGGER prevent_event_pricing_drift_from_accepted_quote_trigger
   BEFORE UPDATE OF quoted_price_cents, deposit_amount_cents, pricing_model ON events
   FOR EACH ROW

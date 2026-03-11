@@ -6,10 +6,10 @@ import { getWixSubmission, retryWixSubmission } from '@/lib/wix/submission-actio
 export const metadata: Metadata = { title: 'Wix Submission - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-900 text-amber-800',
-  processing: 'bg-blue-900 text-blue-800',
-  completed: 'bg-green-900 text-green-800',
-  failed: 'bg-red-900 text-red-800',
+  pending: 'bg-amber-900 text-amber-200',
+  processing: 'bg-blue-900 text-blue-200',
+  completed: 'bg-green-900 text-green-200',
+  failed: 'bg-red-900 text-red-200',
   duplicate: 'bg-stone-800 text-stone-400',
 }
 
@@ -51,7 +51,7 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
       {submission.inquiry_id && (
         <div className="bg-green-950 border border-green-200 rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-green-800">
+            <p className="text-sm font-medium text-green-200">
               Inquiry created from this submission
             </p>
             <p className="text-xs text-emerald-600 mt-0.5">
@@ -60,7 +60,7 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
           </div>
           <Link
             href={`/inquiries/${submission.inquiry_id}`}
-            className="text-sm font-medium text-green-700 hover:text-green-900 underline shrink-0 ml-4"
+            className="text-sm font-medium text-green-200 hover:text-green-900 underline shrink-0 ml-4"
           >
             View Inquiry →
           </Link>
@@ -70,7 +70,7 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
       {/* Processing error */}
       {submission.status === 'failed' && submission.error && (
         <div className="bg-red-950 border border-red-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-red-800">Processing failed</p>
+          <p className="text-sm font-medium text-red-200">Processing failed</p>
           <p className="text-xs text-red-600 mt-1 font-mono">{submission.error}</p>
           <p className="text-xs text-red-500 mt-1">
             Attempts: {submission.processing_attempts} / 3

@@ -129,7 +129,7 @@ export function POReceiving({ po, items }: Props) {
         )}
 
         {po.status === 'received' && (
-          <div className="mt-4 p-3 rounded-md bg-green-50 text-green-800 text-sm">
+          <div className="mt-4 p-3 rounded-md bg-green-50 text-green-200 text-sm">
             All items received on{' '}
             {po.received_at
               ? new Date(po.received_at).toLocaleDateString('en-US', {

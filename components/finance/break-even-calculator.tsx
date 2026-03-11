@@ -132,7 +132,7 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
           revenueCents > 0 &&
           variableCents > 0 && (
             <div className="rounded-xl bg-red-950 border border-red-200 p-4">
-              <p className="text-sm text-red-700 font-medium">
+              <p className="text-sm text-red-200 font-medium">
                 Variable cost per event exceeds revenue — you cannot break even at these numbers.
                 Increase your pricing or reduce variable costs.
               </p>

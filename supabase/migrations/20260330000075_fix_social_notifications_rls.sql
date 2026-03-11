@@ -5,7 +5,6 @@
 -- Fix: Restrict SELECT to only the recipient chef's own notifications.
 
 DROP POLICY IF EXISTS "csp_notifs_self" ON chef_social_notifications;
-
 CREATE POLICY "csp_notifs_self" ON chef_social_notifications
   FOR SELECT TO authenticated
   USING (

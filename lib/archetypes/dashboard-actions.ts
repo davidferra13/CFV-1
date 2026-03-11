@@ -9,6 +9,7 @@ import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getDashboardConfig, getAvailableWidgets } from './dashboard-config'
 import type { DashboardWidget } from './dashboard-config'
 import { createClient } from '@/lib/supabase/server'
+import { DEFAULT_ARCHETYPE_ID, getArchetypeRegistryEntry } from './registry'
 
 /**
  * Returns the dashboard widget configuration based on the chef's archetype.
@@ -21,24 +22,15 @@ export async function getDashboardWidgets(): Promise<{
 }> {
   const user = await requireChef()
   const archetype = await getCachedChefArchetype(user.entityId)
-  const key = archetype ?? 'private-chef'
+  const key = archetype ?? DEFAULT_ARCHETYPE_ID
 
   const widgets = getDashboardConfig(key)
-
-  // Map archetype keys to display labels
-  const labels: Record<string, string> = {
-    'private-chef': 'Private Chef',
-    caterer: 'Caterer',
-    'meal-prep': 'Meal Prep',
-    restaurant: 'Restaurant',
-    'food-truck': 'Food Truck',
-    bakery: 'Bakery',
-  }
+  const archetypeLabel = getArchetypeRegistryEntry(key)?.dashboardLabel ?? 'Chef'
 
   return {
     widgets,
     archetypeKey: key,
-    archetypeLabel: labels[key] ?? 'Chef',
+    archetypeLabel,
   }
 }
 
@@ -48,7 +40,7 @@ export async function getDashboardWidgets(): Promise<{
 export async function getAvailableDashboardWidgets(): Promise<DashboardWidget[]> {
   const user = await requireChef()
   const archetype = await getCachedChefArchetype(user.entityId)
-  const key = archetype ?? 'private-chef'
+  const key = archetype ?? DEFAULT_ARCHETYPE_ID
   return getAvailableWidgets(key)
 }
 
@@ -68,7 +60,7 @@ export async function saveDashboardLayout(
 
   // Validate all keys exist in the registry
   const archetype = await getCachedChefArchetype(user.entityId)
-  const available = getAvailableWidgets(archetype ?? 'private-chef')
+  const available = getAvailableWidgets(archetype ?? DEFAULT_ARCHETYPE_ID)
   const availableKeys = new Set(available.map((w) => w.key))
 
   const invalid = widgetKeys.filter((k) => !availableKeys.has(k))

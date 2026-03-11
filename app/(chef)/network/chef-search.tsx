@@ -137,7 +137,7 @@ export function ChefSearch() {
 
       {actionError && (
         <div className="bg-red-950 border border-red-200 rounded-lg p-3">
-          <p className="text-sm text-red-700">{actionError}</p>
+          <p className="text-sm text-red-200">{actionError}</p>
         </div>
       )}
 

@@ -88,7 +88,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-green-700 mb-1">
+              <div className="flex items-center gap-1 text-xs font-medium text-green-200 mb-1">
                 <CheckCircle className="w-3 h-3" />
                 What Went Well
               </div>
@@ -101,7 +101,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
               </ul>
             </div>
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-amber-700 mb-1">
+              <div className="flex items-center gap-1 text-xs font-medium text-amber-200 mb-1">
                 <AlertCircle className="w-3 h-3" />
                 Areas to Improve
               </div>

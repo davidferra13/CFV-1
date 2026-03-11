@@ -33,7 +33,7 @@ export default async function ChefProfilePage({ params }: { params: Promise<{ ch
     return (
       <div className="text-center py-12 space-y-3">
         <p className="text-stone-500">This is your own profile.</p>
-        <Link href="/settings/profile" className="text-amber-700 font-medium hover:underline">
+        <Link href="/settings/profile" className="text-amber-200 font-medium hover:underline">
           Edit your profile →
         </Link>
       </div>
@@ -69,7 +69,7 @@ export default async function ChefProfilePage({ params }: { params: Promise<{ ch
             {profile.profile_image_url && (
               <AvatarImage src={profile.profile_image_url} alt={authorName} />
             )}
-            <AvatarFallback className="bg-amber-900 text-amber-800 text-2xl font-bold">
+            <AvatarFallback className="bg-amber-900 text-amber-200 text-2xl font-bold">
               {authorName
                 .split(' ')
                 .map((w) => w[0])

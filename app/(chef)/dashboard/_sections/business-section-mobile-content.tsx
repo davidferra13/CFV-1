@@ -364,7 +364,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'contracts_collections',
       title: 'Contracts & Collections',
-      href: '/contracts',
+      href: '/quotes',
       rows: [
         { label: 'Templates', value: toInteger(contractTemplates.length) },
         { label: 'Open Quotes', value: toInteger(totalQuotes) },
@@ -397,7 +397,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'operations_readiness',
       title: 'Operations Readiness',
-      href: '/operations/readiness',
+      href: '/operations',
       rows: [
         { label: 'Open Safety Incidents', value: toInteger(openSafetyIncidents) },
         { label: 'Critical Incidents', value: toInteger(criticalSafetyIncidents) },
@@ -550,7 +550,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'reports_snapshot',
       title: 'Reports Snapshot',
-      href: '/reports/daily',
+      href: '/reports',
       rows: [
         { label: 'Latest Report', value: latestDailyReportDate ?? 'Not available' },
         {
@@ -563,7 +563,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'task_automation',
       title: 'Task & Automation',
-      href: '/automations',
+      href: '/settings/automations',
       rows: [
         { label: 'Automation Rules', value: toInteger(totalAutomations) },
         { label: 'Failed Runs', value: toInteger(automationFailureCount) },
@@ -626,7 +626,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'social_planner',
       title: 'Social Planner',
-      href: '/marketing/social',
+      href: '/social/planner',
       rows: [
         { label: 'Connected Accounts', value: toInteger(socialConnectedAccountCount) },
         { label: 'Pending Approval', value: toInteger(socialPendingApprovalCount) },
@@ -646,7 +646,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'imports_sync_health',
       title: 'Imports & Sync Health',
-      href: '/integrations',
+      href: '/settings/integrations',
       rows: [
         { label: 'Connected Integrations', value: toInteger(integrationOverview.totals.connected) },
         { label: 'Stale Integrations', value: toInteger(staleIntegrationCount) },

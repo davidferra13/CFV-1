@@ -9,15 +9,15 @@ import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
-  sent: 'bg-green-900 text-green-700',
-  failed: 'bg-red-900 text-red-700',
+  sent: 'bg-green-900 text-green-200',
+  failed: 'bg-red-900 text-red-200',
   skipped: 'bg-stone-800 text-stone-500',
 }
 
 const CHANNEL_COLORS: Record<string, string> = {
-  email: 'bg-blue-900 text-blue-700',
-  push: 'bg-purple-900 text-purple-700',
-  sms: 'bg-yellow-900 text-yellow-700',
+  email: 'bg-blue-900 text-blue-200',
+  push: 'bg-purple-900 text-purple-200',
+  sms: 'bg-yellow-900 text-yellow-200',
 }
 
 export default async function AdminNotificationsAuditPage() {

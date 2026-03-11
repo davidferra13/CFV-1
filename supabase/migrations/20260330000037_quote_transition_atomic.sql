@@ -102,7 +102,4 @@ BEGIN
     'metadata', COALESCE(p_metadata, '{}'::jsonb)
   );
 END;
-$$;
-
-
-
+$$;;

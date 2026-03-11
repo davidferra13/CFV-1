@@ -143,7 +143,7 @@ export function PlatingGuideCard({ guide, onEdit, onDelete, showActions = true }
               </Button>
             )}
             {onDelete && (
-              <Button variant="ghost" onClick={onDelete} className="text-xs px-2 py-1 h-auto text-red-600 hover:text-red-700">
+              <Button variant="ghost" onClick={onDelete} className="text-xs px-2 py-1 h-auto text-red-600 hover:text-red-200">
                 Delete
               </Button>
             )}
@@ -196,7 +196,7 @@ export function PlatingGuideCard({ guide, onEdit, onDelete, showActions = true }
             <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-1">
               Garnish
             </h4>
-            <p className="text-sm text-stone-700">{guide.garnish}</p>
+            <p className="text-sm text-stone-200">{guide.garnish}</p>
           </div>
         )}
 
@@ -206,7 +206,7 @@ export function PlatingGuideCard({ guide, onEdit, onDelete, showActions = true }
             <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-1">
               Sauce Technique
             </h4>
-            <p className="text-sm text-stone-700">{guide.sauce_technique}</p>
+            <p className="text-sm text-stone-200">{guide.sauce_technique}</p>
           </div>
         )}
 
@@ -216,7 +216,7 @@ export function PlatingGuideCard({ guide, onEdit, onDelete, showActions = true }
             <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-1">
               Temperature Notes
             </h4>
-            <p className="text-sm text-stone-700">{guide.temperature_notes}</p>
+            <p className="text-sm text-stone-200">{guide.temperature_notes}</p>
           </div>
         )}
 
@@ -226,7 +226,7 @@ export function PlatingGuideCard({ guide, onEdit, onDelete, showActions = true }
             <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-1">
               Special Instructions
             </h4>
-            <p className="text-sm text-stone-700">{guide.special_instructions}</p>
+            <p className="text-sm text-stone-200">{guide.special_instructions}</p>
           </div>
         )}
 

@@ -103,7 +103,7 @@ export default async function CapacityPlanningPage() {
           />
           <Link
             href="/insights"
-            className="inline-flex min-h-[44px] items-center text-sm font-medium text-violet-600 hover:text-violet-700"
+            className="inline-flex min-h-[44px] items-center text-sm font-medium text-violet-600 hover:text-violet-200"
           >
             All Intelligence
           </Link>
@@ -293,7 +293,7 @@ export default async function CapacityPlanningPage() {
                   <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">
                     {i + 1}
                   </span>
-                  <p className="text-sm text-stone-700">{rec}</p>
+                  <p className="text-sm text-stone-200">{rec}</p>
                 </li>
               ))}
             </ul>

@@ -86,7 +86,7 @@ export default async function DepreciationPage({
           <Card>
             <CardContent className="py-3">
               <p className="text-xs text-stone-500">Total Deduction</p>
-              <p className="text-xl font-semibold text-emerald-700">
+              <p className="text-xl font-semibold text-emerald-200">
                 {formatCurrency(yearSummary.totalDepreciationCents)}
               </p>
             </CardContent>

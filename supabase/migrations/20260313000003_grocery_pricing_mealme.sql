@@ -5,6 +5,5 @@
 
 ALTER TABLE grocery_price_quotes
   ADD COLUMN IF NOT EXISTS mealme_total_cents INT;
-
 ALTER TABLE grocery_price_quote_items
   ADD COLUMN IF NOT EXISTS mealme_price_cents INT;

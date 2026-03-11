@@ -267,7 +267,7 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-stone-700 dark:text-stone-200 truncate">
+        <p className="text-xs font-semibold text-stone-200 dark:text-stone-200 truncate">
           {partner.name}
         </p>
         {cityState && (
@@ -527,7 +527,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
 
         <div className="mt-16 text-center">
           <div className="mx-auto max-w-lg rounded-2xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 p-6 shadow-sm">
-            <p className="text-sm font-semibold text-stone-700 dark:text-stone-200">
+            <p className="text-sm font-semibold text-stone-200 dark:text-stone-200">
               Every chef on ChefFlow is vetted
             </p>
             <p className="mt-1.5 text-xs leading-relaxed text-stone-500">

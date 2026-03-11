@@ -41,7 +41,7 @@ export function ImpersonationBanner({ chefId, businessName, email }: Impersonati
         </span>
         <span className="hidden sm:inline">
           Viewing as <strong>{displayName}</strong>
-          {email && businessName && <span className="text-amber-800 ml-1">({email})</span>}
+          {email && businessName && <span className="text-amber-200 ml-1">({email})</span>}
         </span>
         <span className="sm:hidden">
           <strong>{displayName}</strong>

@@ -8,7 +8,6 @@ ALTER TABLE inquiries
   ADD COLUMN IF NOT EXISTS budget_range       TEXT,
   ADD COLUMN IF NOT EXISTS referral_source    TEXT,
   ADD COLUMN IF NOT EXISTS service_style_pref TEXT;
-
 -- budget_range expected values (free-text, UI enforces select):
 --   'under_500' | '500_1000' | '1000_2500' | '2500_plus'
 

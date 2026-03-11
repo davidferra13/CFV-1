@@ -113,12 +113,12 @@ export function AccountabilityPanel({ weeklyStats, closureStreak, overdueFollowU
         {/* Overdue follow-up alert */}
         {overdueFollowUpCount > 0 && (
           <div className="mt-4 flex items-center justify-between rounded-md bg-amber-950 border border-amber-200 px-3 py-2">
-            <p className="text-sm text-amber-800 font-medium">
+            <p className="text-sm text-amber-200 font-medium">
               {overdueFollowUpCount} follow-up{overdueFollowUpCount !== 1 ? 's' : ''} overdue
             </p>
             <Link
               href="/clients/communication/follow-ups"
-              className="text-xs text-amber-700 hover:text-amber-900 font-semibold"
+              className="text-xs text-amber-200 hover:text-amber-900 font-semibold"
             >
               Review →
             </Link>

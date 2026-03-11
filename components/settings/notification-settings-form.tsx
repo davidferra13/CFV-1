@@ -250,7 +250,7 @@ export function NotificationSettingsForm({
         <div className="mt-4 flex items-center justify-between gap-4">
           <div>
             {pushState === 'subscribed' && (
-              <p className="text-sm text-green-700 font-medium">Enabled on this device</p>
+              <p className="text-sm text-green-200 font-medium">Enabled on this device</p>
             )}
             {pushState === 'default' && (
               <p className="text-sm text-stone-400">Not yet enabled on this device</p>

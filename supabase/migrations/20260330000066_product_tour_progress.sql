@@ -28,21 +28,16 @@ CREATE TABLE IF NOT EXISTS product_tour_progress (
 
   UNIQUE(auth_user_id)
 );
-
 COMMENT ON TABLE product_tour_progress IS
   'Tracks per-user progress through role-specific product tours and onboarding checklists.';
 COMMENT ON COLUMN product_tour_progress.completed_steps IS
   'Array of step IDs the user has completed (e.g., chef.welcome, chef.first_event).';
-
 -- RLS
 ALTER TABLE product_tour_progress ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY tour_progress_own ON product_tour_progress
   FOR ALL USING (auth_user_id = auth.uid());
-
 -- Index
 CREATE INDEX IF NOT EXISTS idx_tour_progress_user
   ON product_tour_progress(auth_user_id);
-
 -- Grant service role full access (for server actions)
 GRANT ALL ON product_tour_progress TO service_role;

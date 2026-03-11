@@ -20,16 +20,13 @@ CREATE TABLE recipe_production_log (
 
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Indexes
 CREATE INDEX idx_prod_log_recipe ON recipe_production_log(recipe_id, produced_at DESC);
 CREATE INDEX idx_prod_log_tenant ON recipe_production_log(tenant_id, produced_at DESC);
 CREATE INDEX idx_prod_log_expiry ON recipe_production_log(tenant_id, discard_at)
   WHERE discard_at IS NOT NULL;
-
 -- RLS
 ALTER TABLE recipe_production_log ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef can manage own production logs"
   ON recipe_production_log
   FOR ALL
@@ -39,5 +36,4 @@ CREATE POLICY "Chef can manage own production logs"
   WITH CHECK (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
   ));
-
 COMMENT ON TABLE recipe_production_log IS 'Tracks every production run of a recipe — who made it, quantity, shelf life, notes';

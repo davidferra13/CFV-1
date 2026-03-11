@@ -25,7 +25,7 @@ export default async function MenuEngineeringPage() {
         </div>
         <Link
           href="/analytics"
-          className="inline-flex min-h-[44px] items-center text-sm font-medium text-violet-600 hover:text-violet-700"
+          className="inline-flex min-h-[44px] items-center text-sm font-medium text-violet-600 hover:text-violet-200"
         >
           All Analytics
         </Link>

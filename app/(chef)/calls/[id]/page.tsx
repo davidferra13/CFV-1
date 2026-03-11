@@ -36,10 +36,10 @@ function getContactLabel(call: Awaited<ReturnType<typeof getCall>>): string {
 }
 
 const STATUS_PILL: Record<string, string> = {
-  scheduled: 'bg-blue-900 text-blue-700',
-  confirmed: 'bg-green-900 text-green-700',
+  scheduled: 'bg-blue-900 text-blue-200',
+  confirmed: 'bg-green-900 text-green-200',
   completed: 'bg-stone-700 text-stone-400',
-  no_show: 'bg-red-900 text-red-700',
+  no_show: 'bg-red-900 text-red-200',
   cancelled: 'bg-stone-700 text-stone-500',
 }
 
@@ -189,8 +189,8 @@ export default async function CallDetailPage({ params }: Props) {
       {/* Completed outcome display */}
       {call.status === 'completed' && call.next_action && (
         <div className="bg-amber-950 border border-amber-200 rounded-xl p-4">
-          <p className="text-sm font-medium text-amber-800">Next action</p>
-          <p className="text-sm text-amber-700 mt-1">{call.next_action}</p>
+          <p className="text-sm font-medium text-amber-200">Next action</p>
+          <p className="text-sm text-amber-200 mt-1">{call.next_action}</p>
           {call.next_action_due_at && (
             <p className="text-xs text-amber-600 mt-1">
               Due: {format(new Date(call.next_action_due_at), 'MMM d, yyyy')}

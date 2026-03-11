@@ -506,7 +506,7 @@ export function ReceiptScanner({ events, defaultEventId }: Props) {
                 onClick={() => setIsBusiness(false)}
                 className={`px-3 py-1 rounded text-sm font-medium ${
                   !isBusiness
-                    ? 'bg-amber-900 text-amber-800 ring-1 ring-amber-300'
+                    ? 'bg-amber-900 text-amber-200 ring-1 ring-amber-300'
                     : 'bg-stone-800 text-stone-400'
                 }`}
               >

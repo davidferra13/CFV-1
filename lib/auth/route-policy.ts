@@ -2,25 +2,100 @@
 // This is the single source of truth for public/protected route matching.
 
 export const CHEF_PROTECTED_PATHS = [
-  '/dashboard',
-  '/queue',
-  '/leads',
-  '/clients',
-  '/events',
-  '/financials',
-  '/menus',
-  '/inquiries',
-  '/quotes',
-  '/expenses',
-  '/schedule',
-  '/settings',
   '/aar',
-  '/recipes',
-  '/loyalty',
-  '/import',
+  '/activity',
+  '/analytics',
+  '/bakery',
+  '/briefing',
+  '/calendar',
+  '/calls',
+  '/cannabis',
+  '/charity',
   '/chat',
+  '/chef',
+  '/circles',
+  '/client-requests',
+  '/clients',
+  '/commands',
+  '/commerce',
+  '/communications',
+  '/community',
+  '/compliance',
+  '/consulting',
+  '/contracts',
+  '/culinary',
+  '/culinary-board',
+  '/daily',
+  '/dashboard',
+  '/dev',
+  '/documents',
+  '/events',
+  '/expenses',
+  '/feedback',
+  '/finance',
+  '/financials',
+  '/food-cost',
+  '/food-truck',
+  '/games',
+  '/goals',
+  '/guest-analytics',
+  '/guest-leads',
+  '/guests',
+  '/help',
+  '/import',
+  '/inbox',
+  '/inquiries',
+  '/insights',
+  '/intelligence',
+  '/inventory',
+  '/leads',
+  '/loyalty',
+  '/marketing',
+  '/marketplace',
+  '/meal-prep',
+  '/messages',
+  '/menus',
   '/network',
+  '/notifications',
+  '/nutrition',
   '/onboarding',
+  '/open-tables',
+  '/operations',
+  '/packing-templates',
+  '/partners',
+  '/payments',
+  '/photos',
+  '/portfolio',
+  '/production',
+  '/proposals',
+  '/prospecting',
+  '/queue',
+  '/quotes',
+  '/rate-card',
+  '/receipts',
+  '/recipes',
+  '/remy',
+  '/reports',
+  '/reputation',
+  '/reviews',
+  '/safety',
+  '/schedule',
+  '/scheduling',
+  '/settings',
+  '/shopping',
+  '/social',
+  '/staff',
+  '/stations',
+  '/surveys',
+  '/tasks',
+  '/team',
+  '/templates',
+  '/testimonials',
+  '/training',
+  '/travel',
+  '/vendors',
+  '/waitlist',
+  '/wix-submissions',
 ] as const
 
 export const CLIENT_PROTECTED_PATHS = [
@@ -66,20 +141,16 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/experience',
   '/view',
   '/event',
-  '/chef',
   '/proposal',
   '/worksheet',
   '/guest-feedback',
-  '/staff',
   '/staff-portal',
   '/cannabis/public',
   '/cannabis-invite',
   '/partner-signup',
   '/partner-report',
   '/chefs',
-  '/open-tables',
   '/network/connect',
-  '/photos',
   '/rebook',
   '/refer',
   '/survey',
@@ -96,6 +167,14 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/g',
   '/availability',
   '/client',
+] as const
+
+// Overlapping roots need exact dynamic-shape matching so protected chef routes under the
+// same namespace do not get misclassified as public.
+const PUBLIC_DYNAMIC_PATH_PATTERNS = [
+  /^\/chef\/[^/]+(?:\/(?:gift-cards(?:\/success)?|inquire|partner-signup))?\/?$/,
+  /^\/open-tables\/[^/]+\/?$/,
+  /^\/photos\/[^/]+\/?$/,
 ] as const
 
 export const ADMIN_PATHS = ['/admin'] as const
@@ -137,6 +216,10 @@ export function matchesAnyPrefix(pathname: string, prefixes: readonly string[]):
   return prefixes.some((prefix) => pathname.startsWith(prefix))
 }
 
+function matchesAnyPattern(pathname: string, patterns: readonly RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(pathname))
+}
+
 export function isChefRoutePath(pathname: string): boolean {
   return matchesAnyPathOrChild(pathname, CHEF_PROTECTED_PATHS)
 }
@@ -154,7 +237,10 @@ export function isPartnerRoutePath(pathname: string): boolean {
 }
 
 export function isPublicUnauthenticatedPath(pathname: string): boolean {
-  return matchesAnyPathOrChild(pathname, PUBLIC_UNAUTHENTICATED_PATHS)
+  return (
+    matchesAnyPathOrChild(pathname, PUBLIC_UNAUTHENTICATED_PATHS) ||
+    matchesAnyPattern(pathname, PUBLIC_DYNAMIC_PATH_PATTERNS)
+  )
 }
 
 export function isAdminRoutePath(pathname: string): boolean {

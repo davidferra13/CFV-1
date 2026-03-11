@@ -47,8 +47,8 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
       {/* Disclaimer */}
       <Card className="border-blue-200 bg-blue-950">
         <CardContent className="py-3">
-          <p className="text-sm text-blue-800 font-medium">Reference Report Only</p>
-          <p className="text-xs text-blue-700 mt-1">
+          <p className="text-sm text-blue-200 font-medium">Reference Report Only</p>
+          <p className="text-xs text-blue-200 mt-1">
             This report is for tracking and accountant reference only. 1099-NEC forms must be filed
             with the IRS using IRS-approved software or through your accountant. Recipient copies
             are due by January 31; IRS filing deadline varies.
@@ -97,11 +97,11 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-red-800">
+                <p className="text-sm font-medium text-red-200">
                   {summary.missingW9Count} contractor{summary.missingW9Count !== 1 ? 's' : ''}{' '}
                   require a 1099 but have no W-9 on file.
                 </p>
-                <p className="text-xs text-red-700 mt-1">
+                <p className="text-xs text-red-200 mt-1">
                   Go to{' '}
                   <a href="/finance/contractors" className="underline">
                     1099 Contractors

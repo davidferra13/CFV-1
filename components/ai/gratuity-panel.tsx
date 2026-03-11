@@ -75,7 +75,7 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
       <div className="text-xs text-stone-400">{result.approachRationale}</div>
 
       {result.suggestedGratuityRangePercent && (
-        <div className="bg-green-950 rounded p-2 text-xs text-green-800">
+        <div className="bg-green-950 rounded p-2 text-xs text-green-200">
           Suggested range: {result.suggestedGratuityRangePercent.min}%–
           {result.suggestedGratuityRangePercent.max}%
         </div>

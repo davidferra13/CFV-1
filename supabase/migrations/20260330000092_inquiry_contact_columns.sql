@@ -4,7 +4,6 @@
 ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS contact_name TEXT;
 ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS contact_email TEXT;
 ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS contact_phone TEXT;
-
 -- Backfill from linked clients for existing records
 UPDATE inquiries i
 SET contact_name  = c.full_name,

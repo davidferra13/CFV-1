@@ -7,16 +7,12 @@
 -- ============================================================================
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS course_count INTEGER NOT NULL DEFAULT 1;
-
 ALTER TABLE events
   DROP CONSTRAINT IF EXISTS events_course_count_positive;
-
 ALTER TABLE events
   ADD CONSTRAINT events_course_count_positive CHECK (course_count > 0);
-
 COMMENT ON COLUMN events.course_count IS
   'Number of courses for the event. Used by cannabis control packet per-course tracking.';
-
 -- ============================================================================
 -- 2) Cannabis control packet snapshots (versioned)
 -- ============================================================================
@@ -50,18 +46,14 @@ CREATE TABLE IF NOT EXISTS cannabis_control_packet_snapshots (
 
   CONSTRAINT cannabis_control_packet_snapshot_event_version_unique UNIQUE (event_id, version_number)
 );
-
 CREATE INDEX IF NOT EXISTS idx_ccp_snapshots_tenant_event
   ON cannabis_control_packet_snapshots(tenant_id, event_id, version_number DESC);
-
 CREATE INDEX IF NOT EXISTS idx_ccp_snapshots_event_generated
   ON cannabis_control_packet_snapshots(event_id, generated_at DESC);
-
 DROP TRIGGER IF EXISTS set_ccp_snapshots_updated_at ON cannabis_control_packet_snapshots;
 CREATE TRIGGER set_ccp_snapshots_updated_at
   BEFORE UPDATE ON cannabis_control_packet_snapshots
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================================================
 -- 3) Reconciliation records (one per snapshot)
 -- ============================================================================
@@ -94,15 +86,12 @@ CREATE TABLE IF NOT EXISTS cannabis_control_packet_reconciliations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_ccp_recon_tenant_event
   ON cannabis_control_packet_reconciliations(tenant_id, event_id, reconciled_at DESC);
-
 DROP TRIGGER IF EXISTS set_ccp_reconciliation_updated_at ON cannabis_control_packet_reconciliations;
 CREATE TRIGGER set_ccp_reconciliation_updated_at
   BEFORE UPDATE ON cannabis_control_packet_reconciliations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================================================
 -- 4) Photo evidence linked to snapshot versions
 -- ============================================================================
@@ -119,13 +108,10 @@ CREATE TABLE IF NOT EXISTS cannabis_control_packet_evidence (
   uploaded_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_ccp_evidence_snapshot
   ON cannabis_control_packet_evidence(snapshot_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_ccp_evidence_tenant_event
   ON cannabis_control_packet_evidence(tenant_id, event_id, created_at DESC);
-
 -- ============================================================================
 -- 5) Guardrails: event ownership + cannabis eligibility checks
 -- ============================================================================
@@ -155,12 +141,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_validate_ccp_snapshot ON cannabis_control_packet_snapshots;
 CREATE TRIGGER trg_validate_ccp_snapshot
   BEFORE INSERT ON cannabis_control_packet_snapshots
   FOR EACH ROW EXECUTE FUNCTION validate_cannabis_control_packet_snapshot();
-
 CREATE OR REPLACE FUNCTION validate_cannabis_control_packet_reconciliation()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -190,12 +174,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_validate_ccp_reconciliation ON cannabis_control_packet_reconciliations;
 CREATE TRIGGER trg_validate_ccp_reconciliation
   BEFORE INSERT OR UPDATE ON cannabis_control_packet_reconciliations
   FOR EACH ROW EXECUTE FUNCTION validate_cannabis_control_packet_reconciliation();
-
 CREATE OR REPLACE FUNCTION validate_cannabis_control_packet_evidence()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -221,12 +203,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_validate_ccp_evidence ON cannabis_control_packet_evidence;
 CREATE TRIGGER trg_validate_ccp_evidence
   BEFORE INSERT ON cannabis_control_packet_evidence
   FOR EACH ROW EXECUTE FUNCTION validate_cannabis_control_packet_evidence();
-
 -- ============================================================================
 -- 6) Immutability and lock enforcement
 -- ============================================================================
@@ -270,12 +250,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_ccp_snapshot_immutable ON cannabis_control_packet_snapshots;
 CREATE TRIGGER trg_ccp_snapshot_immutable
   BEFORE UPDATE OR DELETE ON cannabis_control_packet_snapshots
   FOR EACH ROW EXECUTE FUNCTION enforce_cannabis_control_packet_snapshot_immutability();
-
 CREATE OR REPLACE FUNCTION enforce_cannabis_control_packet_reconciliation_lock()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -302,12 +280,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_ccp_reconciliation_lock ON cannabis_control_packet_reconciliations;
 CREATE TRIGGER trg_ccp_reconciliation_lock
   BEFORE UPDATE OR DELETE ON cannabis_control_packet_reconciliations
   FOR EACH ROW EXECUTE FUNCTION enforce_cannabis_control_packet_reconciliation_lock();
-
 CREATE OR REPLACE FUNCTION enforce_cannabis_control_packet_evidence_lock()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -325,19 +301,16 @@ BEGIN
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_ccp_evidence_lock ON cannabis_control_packet_evidence;
 CREATE TRIGGER trg_ccp_evidence_lock
   BEFORE DELETE ON cannabis_control_packet_evidence
   FOR EACH ROW EXECUTE FUNCTION enforce_cannabis_control_packet_evidence_lock();
-
 -- ============================================================================
 -- 7) RLS: chef-only access
 -- ============================================================================
 ALTER TABLE cannabis_control_packet_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cannabis_control_packet_reconciliations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cannabis_control_packet_evidence ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS ccp_snapshots_chef_select ON cannabis_control_packet_snapshots;
 CREATE POLICY ccp_snapshots_chef_select
   ON cannabis_control_packet_snapshots FOR SELECT
@@ -345,7 +318,6 @@ CREATE POLICY ccp_snapshots_chef_select
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_snapshots_chef_insert ON cannabis_control_packet_snapshots;
 CREATE POLICY ccp_snapshots_chef_insert
   ON cannabis_control_packet_snapshots FOR INSERT
@@ -353,7 +325,6 @@ CREATE POLICY ccp_snapshots_chef_insert
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_snapshots_chef_update ON cannabis_control_packet_snapshots;
 CREATE POLICY ccp_snapshots_chef_update
   ON cannabis_control_packet_snapshots FOR UPDATE
@@ -365,7 +336,6 @@ CREATE POLICY ccp_snapshots_chef_update
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_reconciliation_chef_select ON cannabis_control_packet_reconciliations;
 CREATE POLICY ccp_reconciliation_chef_select
   ON cannabis_control_packet_reconciliations FOR SELECT
@@ -373,7 +343,6 @@ CREATE POLICY ccp_reconciliation_chef_select
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_reconciliation_chef_insert ON cannabis_control_packet_reconciliations;
 CREATE POLICY ccp_reconciliation_chef_insert
   ON cannabis_control_packet_reconciliations FOR INSERT
@@ -381,7 +350,6 @@ CREATE POLICY ccp_reconciliation_chef_insert
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_reconciliation_chef_update ON cannabis_control_packet_reconciliations;
 CREATE POLICY ccp_reconciliation_chef_update
   ON cannabis_control_packet_reconciliations FOR UPDATE
@@ -393,7 +361,6 @@ CREATE POLICY ccp_reconciliation_chef_update
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_evidence_chef_select ON cannabis_control_packet_evidence;
 CREATE POLICY ccp_evidence_chef_select
   ON cannabis_control_packet_evidence FOR SELECT
@@ -401,7 +368,6 @@ CREATE POLICY ccp_evidence_chef_select
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_evidence_chef_insert ON cannabis_control_packet_evidence;
 CREATE POLICY ccp_evidence_chef_insert
   ON cannabis_control_packet_evidence FOR INSERT
@@ -409,7 +375,6 @@ CREATE POLICY ccp_evidence_chef_insert
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 DROP POLICY IF EXISTS ccp_evidence_chef_delete ON cannabis_control_packet_evidence;
 CREATE POLICY ccp_evidence_chef_delete
   ON cannabis_control_packet_evidence FOR DELETE
@@ -417,7 +382,6 @@ CREATE POLICY ccp_evidence_chef_delete
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
 -- ============================================================================
 -- 8) Private storage bucket for reconciliation photo evidence
 -- ============================================================================
@@ -434,54 +398,33 @@ SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
-
 -- Path format:
 -- cannabis-control-packets/{tenant_id}/{event_id}/{snapshot_id}/{evidence_id}.{ext}
 
-DO $$ BEGIN
-  DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
-EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE POLICY ccp_storage_chef_insert
-  ON storage.objects FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    bucket_id = 'cannabis-control-packets'
-    AND get_current_user_role() = 'chef'
-    AND split_part(name, '/', 1) = get_current_tenant_id()::text
-  );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
-EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE POLICY ccp_storage_chef_select
-  ON storage.objects FOR SELECT
-  TO authenticated
-  USING (
-    bucket_id = 'cannabis-control-packets'
-    AND get_current_user_role() = 'chef'
-    AND split_part(name, '/', 1) = get_current_tenant_id()::text
-  );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
-EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE POLICY ccp_storage_chef_delete
-  ON storage.objects FOR DELETE
-  TO authenticated
-  USING (
-    bucket_id = 'cannabis-control-packets'
-    AND get_current_user_role() = 'chef'
-    AND split_part(name, '/', 1) = get_current_tenant_id()::text
-  );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
+CREATE POLICY ccp_storage_chef_insert
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'cannabis-control-packets'
+  AND get_current_user_role() = 'chef'
+  AND split_part(name, '/', 1) = get_current_tenant_id()::text
+);
+DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
+CREATE POLICY ccp_storage_chef_select
+ON storage.objects FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'cannabis-control-packets'
+  AND get_current_user_role() = 'chef'
+  AND split_part(name, '/', 1) = get_current_tenant_id()::text
+);
+DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
+CREATE POLICY ccp_storage_chef_delete
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'cannabis-control-packets'
+  AND get_current_user_role() = 'chef'
+  AND split_part(name, '/', 1) = get_current_tenant_id()::text
+);

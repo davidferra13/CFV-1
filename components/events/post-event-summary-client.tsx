@@ -169,14 +169,14 @@ export function PostEventSummaryClient({
               </div>
               <div>
                 <div className="text-xs text-stone-500 mb-0.5">Amount Paid</div>
-                <div className="text-lg font-bold text-emerald-700">
+                <div className="text-lg font-bold text-emerald-200">
                   {formatCurrency(financial.totalPaidCents)}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-stone-500 mb-0.5">Balance</div>
                 <div
-                  className={`text-lg font-bold ${financial.outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-500'}`}
+                  className={`text-lg font-bold ${financial.outstandingBalanceCents > 0 ? 'text-red-200' : 'text-stone-500'}`}
                 >
                   {financial.outstandingBalanceCents > 0
                     ? formatCurrency(financial.outstandingBalanceCents)

@@ -104,7 +104,7 @@ export function SurveyForm({ token }: Props) {
       className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6 space-y-6"
     >
       {error && (
-        <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-200">
           {error}
         </div>
       )}

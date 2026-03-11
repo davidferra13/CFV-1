@@ -70,7 +70,7 @@ export default async function YearToDateSummaryPage() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-stone-400">Gross revenue</span>
-              <span className="text-sm font-semibold text-green-700">
+              <span className="text-sm font-semibold text-green-200">
                 {formatCurrency(ytdRevenue)}
               </span>
             </div>
@@ -83,7 +83,7 @@ export default async function YearToDateSummaryPage() {
             {ytdTips > 0 && (
               <div className="flex justify-between">
                 <span className="text-sm text-stone-400">Tips</span>
-                <span className="text-sm font-semibold text-emerald-700">
+                <span className="text-sm font-semibold text-emerald-200">
                   +{formatCurrency(ytdTips)}
                 </span>
               </div>
@@ -138,7 +138,7 @@ export default async function YearToDateSummaryPage() {
           <p className="text-sm text-stone-500 mt-1">Upcoming</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-emerald-700">{formatCurrency(ytdTips)}</p>
+          <p className="text-2xl font-bold text-emerald-200">{formatCurrency(ytdTips)}</p>
           <p className="text-sm text-stone-500 mt-1">Tips received</p>
         </Card>
       </div>
@@ -149,7 +149,7 @@ export default async function YearToDateSummaryPage() {
         </h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xl font-bold text-green-700">
+            <p className="text-xl font-bold text-green-200">
               {formatCurrency(summary.totalRevenueCents)}
             </p>
             <p className="text-xs text-stone-500 mt-0.5">Gross revenue (lifetime)</p>

@@ -80,8 +80,8 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
 
   const badge =
     entry.source === 'chef'
-      ? { bg: 'bg-emerald-900 text-emerald-700', label: 'You' }
-      : { bg: 'bg-blue-900 text-blue-700', label: 'Client' }
+      ? { bg: 'bg-emerald-900 text-emerald-200', label: 'You' }
+      : { bg: 'bg-blue-900 text-blue-200', label: 'Client' }
 
   const domainBadge = entry.domain
     ? DOMAIN_CONFIG[entry.domain as keyof typeof DOMAIN_CONFIG]

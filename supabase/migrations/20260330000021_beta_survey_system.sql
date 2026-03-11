@@ -23,14 +23,11 @@ CREATE TABLE IF NOT EXISTS beta_survey_definitions (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 COMMENT ON TABLE beta_survey_definitions IS 'Survey templates for pre-beta and post-beta feedback collection. Platform-level (no tenant scoping).';
 COMMENT ON COLUMN beta_survey_definitions.slug IS 'URL-safe unique identifier, e.g. pre-beta-v1, post-beta-v1';
 COMMENT ON COLUMN beta_survey_definitions.questions IS 'JSON array of question objects: [{id, type, label, options?, required, order}]. Types: single_select, multi_select, textarea, rating_scale, nps, yes_no, number';
 COMMENT ON COLUMN beta_survey_definitions.is_active IS 'Only one survey per type should be active at a time. Controls banner visibility.';
-
 CREATE INDEX idx_beta_survey_defs_type_active ON beta_survey_definitions(survey_type, is_active) WHERE is_active = true;
-
 -- ============================================
 -- TABLE 2: beta_survey_responses — all responses
 -- ============================================
@@ -65,17 +62,14 @@ CREATE TABLE IF NOT EXISTS beta_survey_responses (
   -- Prevent duplicate submissions for logged-in users
   CONSTRAINT beta_survey_one_per_user UNIQUE (survey_id, auth_user_id)
 );
-
 COMMENT ON TABLE beta_survey_responses IS 'Stores all beta survey responses. Logged-in users identified by auth_user_id, external testers by token.';
 COMMENT ON COLUMN beta_survey_responses.token IS 'Public access token for viewing/editing this response. Used for external tester links.';
 COMMENT ON COLUMN beta_survey_responses.answers IS 'JSONB object keyed by question ID, e.g. {"role": "chef", "pain_points": "..."}';
 COMMENT ON COLUMN beta_survey_responses.submitted_at IS 'NULL means the response is in progress (started but not finished).';
-
 CREATE INDEX idx_beta_survey_responses_survey ON beta_survey_responses(survey_id);
 CREATE INDEX idx_beta_survey_responses_submitted ON beta_survey_responses(submitted_at) WHERE submitted_at IS NOT NULL;
 CREATE INDEX idx_beta_survey_responses_role ON beta_survey_responses(respondent_role);
 CREATE INDEX idx_beta_survey_responses_user ON beta_survey_responses(auth_user_id) WHERE auth_user_id IS NOT NULL;
-
 -- ============================================
 -- TABLE 3: beta_survey_invites — external tester tokens
 -- ============================================
@@ -92,15 +86,12 @@ CREATE TABLE IF NOT EXISTS beta_survey_invites (
   expires_at      TIMESTAMPTZ,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 COMMENT ON TABLE beta_survey_invites IS 'Invite tokens for external testers to access beta surveys without an account.';
 COMMENT ON COLUMN beta_survey_invites.token IS 'UUID token used in the public URL: /beta-survey/{token}';
 COMMENT ON COLUMN beta_survey_invites.claimed_at IS 'Set when the invite link is first opened.';
 COMMENT ON COLUMN beta_survey_invites.response_id IS 'Linked to the response after the invite is used to submit.';
-
 CREATE INDEX idx_beta_survey_invites_token ON beta_survey_invites(token);
 CREATE INDEX idx_beta_survey_invites_survey ON beta_survey_invites(survey_id);
-
 -- ============================================
 -- RLS — all access through admin/service role client
 -- ============================================
@@ -108,7 +99,6 @@ CREATE INDEX idx_beta_survey_invites_survey ON beta_survey_invites(survey_id);
 ALTER TABLE beta_survey_definitions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beta_survey_responses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beta_survey_invites ENABLE ROW LEVEL SECURITY;
-
 -- ============================================
 -- TRIGGERS — auto-update updated_at
 -- ============================================
@@ -116,7 +106,6 @@ ALTER TABLE beta_survey_invites ENABLE ROW LEVEL SECURITY;
 CREATE TRIGGER beta_survey_definitions_updated_at
   BEFORE UPDATE ON beta_survey_definitions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- SEED DATA — initial survey definitions
 -- ============================================
@@ -301,7 +290,6 @@ VALUES
     ]'::jsonb,
     false
   );
-
 -- ============================================
 -- SUMMARY
 -- ============================================
@@ -309,4 +297,4 @@ VALUES
 -- Indexes: 7
 -- RLS: enabled on all 3 tables (admin client access only)
 -- Triggers: 1 (updated_at on definitions)
--- Seed data: 2 survey definitions (pre-beta-v1 active, post-beta-v1 inactive)
+-- Seed data: 2 survey definitions (pre-beta-v1 active, post-beta-v1 inactive);

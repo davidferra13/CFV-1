@@ -17,26 +17,20 @@ create table if not exists entity_photos (
   uploaded_by uuid,
   created_at timestamptz not null default now()
 );
-
 -- Indexes
 create index idx_entity_photos_lookup on entity_photos(tenant_id, entity_type, entity_id);
 create index idx_entity_photos_recent on entity_photos(tenant_id, created_at desc);
-
 -- RLS
 alter table entity_photos enable row level security;
-
 create policy "Chefs see own photos"
   on entity_photos for select
   using (tenant_id = auth.uid());
-
 create policy "Chefs insert own photos"
   on entity_photos for insert
   with check (tenant_id = auth.uid());
-
 create policy "Chefs update own photos"
   on entity_photos for update
   using (tenant_id = auth.uid());
-
 create policy "Chefs delete own photos"
   on entity_photos for delete
   using (tenant_id = auth.uid());

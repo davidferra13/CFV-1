@@ -13,13 +13,9 @@ CREATE TABLE IF NOT EXISTS hub_chef_recommendations (
   CONSTRAINT no_self_recommend CHECK (from_profile_id <> to_profile_id),
   CONSTRAINT unique_recommendation UNIQUE (chef_id, from_profile_id, to_profile_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_hub_chef_recs_to ON hub_chef_recommendations(to_profile_id);
 CREATE INDEX IF NOT EXISTS idx_hub_chef_recs_from ON hub_chef_recommendations(from_profile_id);
-
 ALTER TABLE hub_chef_recommendations ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "service_role_all" ON hub_chef_recommendations
   FOR ALL USING (true) WITH CHECK (true);
-
 COMMENT ON TABLE hub_chef_recommendations IS 'Chef recommendations shared between friends (cross-tenant)';

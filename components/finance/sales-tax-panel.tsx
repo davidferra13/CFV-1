@@ -104,7 +104,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Remitted</p>
-            <p className="text-2xl font-bold text-emerald-700 mt-1">
+            <p className="text-2xl font-bold text-emerald-200 mt-1">
               {formatCurrency(summary.remittedCents)}
             </p>
             <p className="text-xs text-stone-400 mt-1">{summary.remittedEventCount} events</p>
@@ -114,7 +114,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Outstanding</p>
             <p
-              className={`text-2xl font-bold mt-1 ${summary.outstandingCents > 0 ? 'text-amber-700' : 'text-stone-400'}`}
+              className={`text-2xl font-bold mt-1 ${summary.outstandingCents > 0 ? 'text-amber-200' : 'text-stone-400'}`}
             >
               {formatCurrency(summary.outstandingCents)}
             </p>
@@ -140,7 +140,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
         </CardHeader>
         <CardContent>
           {unremittedEvents.length === 0 ? (
-            <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-emerald-200 bg-emerald-950 rounded-lg px-4 py-3">
               <CheckCircle className="h-4 w-4" />
               All collected sales tax has been remitted.
             </div>
@@ -164,7 +164,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-amber-700">
+                    <span className="text-sm font-semibold text-amber-200">
                       {formatCurrency(ev.taxCollectedCents)}
                     </span>
                     {markingEventId === ev.eventId ? (

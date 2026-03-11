@@ -59,7 +59,6 @@ CREATE TABLE event_photos (
   -- Storage object is also removed when this is set
   deleted_at        TIMESTAMPTZ
 );
-
 -- =====================================================================================
 -- INDEXES
 -- =====================================================================================
@@ -68,12 +67,10 @@ CREATE TABLE event_photos (
 CREATE INDEX idx_event_photos_event_id
   ON event_photos (event_id, display_order)
   WHERE deleted_at IS NULL;
-
 -- Cross-event asset library queries (future chef portfolio page)
 CREATE INDEX idx_event_photos_tenant_id
   ON event_photos (tenant_id, created_at DESC)
   WHERE deleted_at IS NULL;
-
 -- =====================================================================================
 -- TRIGGER: auto-update updated_at
 -- =====================================================================================
@@ -81,29 +78,24 @@ CREATE INDEX idx_event_photos_tenant_id
 CREATE TRIGGER event_photos_updated_at
   BEFORE UPDATE ON event_photos
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- =====================================================================================
 -- ROW LEVEL SECURITY
 -- =====================================================================================
 
 ALTER TABLE event_photos ENABLE ROW LEVEL SECURITY;
-
 -- Chefs: full read access to their tenant
 CREATE POLICY event_photos_chef_select ON event_photos
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
-
 -- Chefs: insert photos in their tenant
 CREATE POLICY event_photos_chef_insert ON event_photos
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- Chefs: update caption, display_order, deleted_at in their tenant
 CREATE POLICY event_photos_chef_update ON event_photos
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- Clients: read active photos for their own events only
 -- Join: event_photos.event_id → events.id → events.client_id = get_current_client_id()
 CREATE POLICY event_photos_client_select ON event_photos
@@ -117,7 +109,6 @@ CREATE POLICY event_photos_client_select ON event_photos
         AND e.client_id = get_current_client_id()
     )
   );
-
 -- Hard DELETE is intentionally not allowed via RLS.
 -- All deletion is soft-delete via UPDATE setting deleted_at.
 -- The server action also cleans up the storage object independently.
@@ -130,15 +121,12 @@ COMMENT ON TABLE event_photos IS
   'Chef-uploaded photos of dishes and dinners, permanently linked to a specific event. '
   'Serves as chef portfolio asset library and client post-dinner gallery. '
   'Storage bucket: event-photos (private). Uses soft delete only (deleted_at).';
-
 COMMENT ON COLUMN event_photos.storage_path IS
   'Relative path in the event-photos bucket: {tenant_id}/{event_id}/{photo_id}.{ext}. '
   'Never store signed URLs here — always generate on demand.';
-
 COMMENT ON COLUMN event_photos.display_order IS
   'Sort order within the event gallery. Lower values display first. '
   'Managed by reorderEventPhotos server action.';
-
 COMMENT ON COLUMN event_photos.deleted_at IS
   'Soft delete. NULL = active photo. Set by deleteEventPhoto server action, '
   'which also removes the corresponding storage object.';

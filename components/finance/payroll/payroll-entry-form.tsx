@@ -102,7 +102,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         {saved && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-emerald-200 bg-emerald-950 rounded-lg px-3 py-2">
             <CheckCircle className="h-4 w-4" />
             Payroll recorded.
           </div>
@@ -264,7 +264,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
             <span>State Income Tax</span>
             <span>- {formatCurrency(form.stateIncomeTaxCents)}</span>
           </div>
-          <div className="flex justify-between font-bold text-green-700 border-t border-stone-700 pt-1.5">
+          <div className="flex justify-between font-bold text-green-200 border-t border-stone-700 pt-1.5">
             <span>Net Pay</span>
             <span>{formatCurrency(netPay)}</span>
           </div>

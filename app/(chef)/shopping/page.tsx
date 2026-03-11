@@ -29,7 +29,7 @@ export default async function ShoppingListsPage() {
     return (
       <div className="p-4 md:p-6 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">Shopping Lists</h1>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-200">
           Could not load shopping lists. Please try again.
         </div>
       </div>

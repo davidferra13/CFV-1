@@ -20,19 +20,19 @@ export function ContainerLabelCard({ label }: ContainerLabelCardProps) {
       </h3>
 
       {/* Dates row */}
-      <div className="flex justify-between text-xs text-stone-700 mb-2">
+      <div className="flex justify-between text-xs text-stone-200 mb-2">
         <div>
           <span className="font-semibold">Prepared:</span> {label.preparedDate}
         </div>
         <div>
-          <span className="font-semibold text-red-700">Use by:</span>{' '}
-          <span className="text-red-700 font-medium">{label.useByDate}</span>
+          <span className="font-semibold text-red-200">Use by:</span>{' '}
+          <span className="text-red-200 font-medium">{label.useByDate}</span>
         </div>
       </div>
 
       {/* Reheating instructions */}
       {label.reheatingInstructions && (
-        <div className="text-xs text-stone-700 mb-2">
+        <div className="text-xs text-stone-200 mb-2">
           <span className="font-semibold">Reheating:</span>{' '}
           {label.reheatingInstructions}
         </div>
@@ -44,7 +44,7 @@ export function ContainerLabelCard({ label }: ContainerLabelCardProps) {
           <span className="text-amber-600 font-bold flex-shrink-0">
             &#9888;
           </span>
-          <span className="text-amber-800 font-medium">
+          <span className="text-amber-200 font-medium">
             Contains: {label.allergens.join(', ')}
           </span>
         </div>

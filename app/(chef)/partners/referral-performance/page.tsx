@@ -46,11 +46,11 @@ export default async function ReferralPerformancePage() {
           <p className="text-sm text-stone-500 mt-1">Total partner revenue</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{totalEvents}</p>
+          <p className="text-2xl font-bold text-green-200">{totalEvents}</p>
           <p className="text-sm text-stone-500 mt-1">Events from partners</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-700">{totalInquiries}</p>
+          <p className="text-2xl font-bold text-amber-200">{totalInquiries}</p>
           <p className="text-sm text-stone-500 mt-1">Total partner inquiries</p>
         </Card>
       </div>

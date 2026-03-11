@@ -59,7 +59,7 @@ export default async function EventFinancialPage({ params }: { params: { id: str
             </div>
             <div>
               <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Cooking-Only Rate</p>
-              <p className="text-xl font-bold text-blue-700">
+              <p className="text-xl font-bold text-blue-200">
                 {formatCurrency(rphData.cookingOnlyRateCents)}/hr
               </p>
               <p className="text-xs text-stone-400 mt-0.5">{rphData.breakdown.cooking.toFixed(1)}h cooking</p>
@@ -68,8 +68,8 @@ export default async function EventFinancialPage({ params }: { params: { id: str
           {rphData.comparisonPercent !== null && rphData.averageRateCents !== null && (
             <div className={`mt-3 text-sm px-3 py-2 rounded-lg ${
               rphData.comparisonPercent >= 0
-                ? 'bg-emerald-50 text-emerald-800'
-                : 'bg-red-50 text-red-800'
+                ? 'bg-emerald-50 text-emerald-200'
+                : 'bg-red-50 text-red-200'
             }`}>
               {rphData.comparisonPercent >= 0 ? 'Above' : 'Below'} your average
               ({formatCurrency(rphData.averageRateCents)}/hr)

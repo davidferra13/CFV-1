@@ -75,7 +75,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
           </span>
         )}
         {isSlowing && !isStuck && (
-          <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-900 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 text-[10px] font-medium text-amber-200 bg-amber-900 px-1.5 py-0.5 rounded">
             {daysSinceUpdate}d
           </span>
         )}
@@ -108,7 +108,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
           <span />
         )}
         {budgetFormatted && (
-          <div className="flex items-center gap-0.5 text-xs font-medium text-emerald-700">
+          <div className="flex items-center gap-0.5 text-xs font-medium text-emerald-200">
             <DollarSign className="h-3 w-3 shrink-0" />
             <span>{budgetFormatted.replace('$', '')}</span>
           </div>

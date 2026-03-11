@@ -94,7 +94,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/business-health"
-              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -121,7 +121,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/insurance"
-              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -148,7 +148,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/certifications"
-              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -173,7 +173,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/nda"
-              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -198,7 +198,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/continuity"
-              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -222,7 +222,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/crisis"
-              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
             >
               Manage →
             </Link>

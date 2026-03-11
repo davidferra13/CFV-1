@@ -32,7 +32,7 @@ export default async function WastePage({ searchParams }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/meal-prep" className="text-stone-500 hover:text-stone-700 transition-colors">
+          <Link href="/meal-prep" className="text-stone-500 hover:text-stone-200 transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <h1 className="text-2xl font-bold text-stone-900">Waste & Yield Tracking</h1>

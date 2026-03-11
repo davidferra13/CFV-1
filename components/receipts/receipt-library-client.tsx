@@ -27,25 +27,31 @@ function ConfidenceBadge({ score }: { score: number | null }) {
     score >= 0.8 ? 'High confidence' : score >= 0.5 ? 'Medium confidence' : 'Low confidence'
   const cls =
     score >= 0.8
-      ? 'bg-green-900 text-green-700'
+      ? 'bg-green-900 text-green-200'
       : score >= 0.5
-        ? 'bg-amber-900 text-amber-700'
-        : 'bg-red-900 text-red-700'
+        ? 'bg-amber-900 text-amber-200'
+        : 'bg-red-900 text-red-200'
   return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
 }
 
 function StatusBadge({ status }: { status: AllReceiptPhoto['uploadStatus'] }) {
   const map: Record<string, string> = {
-    approved: 'bg-green-900 text-green-700',
-    extracted: 'bg-sky-900 text-sky-700',
-    processing: 'bg-amber-900 text-amber-700',
+    approved: 'bg-green-900 text-green-200',
+    extracted: 'bg-sky-900 text-sky-200',
+    processing: 'bg-amber-900 text-amber-200',
     pending: 'bg-stone-800 text-stone-500',
+  }
+  const labels: Record<AllReceiptPhoto['uploadStatus'], string> = {
+    approved: 'Approved',
+    extracted: 'Pending review',
+    processing: 'Extracting',
+    pending: 'Pending extraction',
   }
   return (
     <span
       className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? 'bg-stone-800'}`}
     >
-      {status}
+      {labels[status] ?? status}
     </span>
   )
 }
@@ -186,6 +192,13 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
             </div>
           </div>
 
+          {!approved && (
+            <p className="mb-3 text-xs text-stone-500">
+              This receipt is not final yet. Review the parsed items and approve before anything is
+              written to expenses.
+            </p>
+          )}
+
           {/* Pending state hint */}
           {!extraction && receipt.uploadStatus !== 'approved' && (
             <div className="text-sm text-stone-500 mb-3">
@@ -254,8 +267,8 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                             item.expenseTag === 'personal'
                               ? 'border-stone-700 text-stone-400'
                               : item.expenseTag === 'business'
-                                ? 'border-green-200 text-green-700'
-                                : 'border-amber-200 text-amber-700'
+                                ? 'border-green-200 text-green-200'
+                                : 'border-amber-200 text-amber-200'
                           }`}
                         >
                           <option value="business">Business</option>
@@ -418,7 +431,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
           )}
           {pendingCount > 0 && (
             <span>
-              <strong>{pendingCount}</strong> pending review
+              <strong>{pendingCount}</strong> not approved yet
             </span>
           )}
           {totalBusinessCents > 0 && (

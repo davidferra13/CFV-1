@@ -125,7 +125,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <h2 className="text-lg font-semibold text-stone-800">{formatDate(selectedDate)}</h2>
+          <h2 className="text-lg font-semibold text-stone-200">{formatDate(selectedDate)}</h2>
           <button
             onClick={() => navigateDay(1)}
             className="rounded-lg border border-stone-200 p-2 hover:bg-stone-800"
@@ -192,10 +192,10 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                     key={event.eventId}
                     className="flex items-center gap-3 rounded-md border-l-4 border-amber-400 bg-amber-950 px-3 py-2"
                   >
-                    <span className="text-sm font-semibold text-amber-800">
+                    <span className="text-sm font-semibold text-amber-200">
                       {event.serveTime || 'TBD'}
                     </span>
-                    <span className="text-sm text-stone-700">
+                    <span className="text-sm text-stone-200">
                       <strong>{event.occasion || 'Event'}</strong> — {event.clientName}
                       {event.guestCount ? ` (${event.guestCount} guests)` : ''}
                     </span>
@@ -239,7 +239,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
               </div>
             </div>
             {content.staleFollowUps > 0 && (
-              <p className="mt-3 text-sm text-amber-700">
+              <p className="mt-3 text-sm text-amber-200">
                 {content.staleFollowUps} stale follow-up{content.staleFollowUps !== 1 ? 's' : ''}{' '}
                 need attention
               </p>
@@ -292,7 +292,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
               </div>
             </div>
             {content.openClosureTasks > 0 && (
-              <p className="mt-3 text-sm text-amber-700">
+              <p className="mt-3 text-sm text-amber-200">
                 {content.openClosureTasks} event{content.openClosureTasks !== 1 ? 's' : ''} with
                 open closure tasks
               </p>
@@ -316,7 +316,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                     High-intent signals
                   </p>
                   {content.highIntentVisits.map((v, i) => (
-                    <p key={i} className="text-sm text-stone-700">
+                    <p key={i} className="text-sm text-stone-200">
                       <strong>{v.clientName}</strong> —{' '}
                       {v.eventType.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                     </p>
@@ -329,11 +329,11 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           {/* Schedule Conflicts */}
           {content.scheduleConflicts.length > 0 && (
             <section className="rounded-lg border border-amber-200 bg-amber-950 p-5">
-              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-700">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-200">
                 <AlertTriangle className="h-4 w-4" /> Schedule Conflicts
               </h3>
               {content.scheduleConflicts.map((c, i) => (
-                <p key={i} className="text-sm text-amber-800">
+                <p key={i} className="text-sm text-amber-200">
                   {new Date(c.date + 'T00:00:00Z').toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -351,7 +351,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                 <Gift className="h-4 w-4" /> Upcoming Milestones
               </h3>
               {content.upcomingMilestones.map((m, i) => (
-                <p key={i} className="text-sm text-stone-700">
+                <p key={i} className="text-sm text-stone-200">
                   <strong>{m.clientName}</strong> — {m.label}
                 </p>
               ))}
@@ -365,7 +365,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                 <UserMinus className="h-4 w-4" /> Re-engage These Clients
               </h3>
               {content.dormantClients.map((c, i) => (
-                <p key={i} className="text-sm text-stone-700">
+                <p key={i} className="text-sm text-stone-200">
                   <strong>{c.clientName}</strong> — {c.daysSinceLastEvent} days since last event
                 </p>
               ))}

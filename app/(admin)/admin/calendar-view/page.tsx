@@ -9,13 +9,13 @@ import { CsvExportButton } from '@/components/admin/csv-export-button'
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  proposed: 'bg-yellow-900 text-yellow-700',
-  accepted: 'bg-blue-900 text-blue-700',
-  paid: 'bg-indigo-900 text-indigo-700',
-  confirmed: 'bg-purple-900 text-purple-700',
-  in_progress: 'bg-orange-900 text-orange-700',
-  completed: 'bg-green-900 text-green-700',
-  cancelled: 'bg-red-900 text-red-700',
+  proposed: 'bg-yellow-900 text-yellow-200',
+  accepted: 'bg-blue-900 text-blue-200',
+  paid: 'bg-indigo-900 text-indigo-200',
+  confirmed: 'bg-purple-900 text-purple-200',
+  in_progress: 'bg-orange-900 text-orange-200',
+  completed: 'bg-green-900 text-green-200',
+  cancelled: 'bg-red-900 text-red-200',
 }
 
 function groupByDate(events: Awaited<ReturnType<typeof getAdminCalendarEvents>>) {

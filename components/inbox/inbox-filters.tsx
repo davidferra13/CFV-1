@@ -10,10 +10,10 @@ interface InboxFiltersProps {
 }
 
 const SOURCE_CONFIG: Record<InboxSource, { label: string; color: string }> = {
-  chat: { label: 'Chat', color: 'bg-blue-900 text-blue-700 border-blue-200' },
-  message: { label: 'Messages', color: 'bg-emerald-900 text-emerald-700 border-emerald-200' },
-  wix: { label: 'Wix', color: 'bg-purple-900 text-purple-700 border-purple-200' },
-  notification: { label: 'Notifications', color: 'bg-amber-900 text-amber-700 border-amber-200' },
+  chat: { label: 'Chat', color: 'bg-blue-900 text-blue-200 border-blue-200' },
+  message: { label: 'Messages', color: 'bg-emerald-900 text-emerald-200 border-emerald-200' },
+  wix: { label: 'Wix', color: 'bg-purple-900 text-purple-200 border-purple-200' },
+  notification: { label: 'Notifications', color: 'bg-amber-900 text-amber-200 border-amber-200' },
 }
 
 export function InboxFilters({ activeSources, onToggle, stats }: InboxFiltersProps) {

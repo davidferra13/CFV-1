@@ -95,7 +95,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
       </div>
 
       {success && (
-        <div className="bg-emerald-950 text-emerald-700 px-4 py-2 rounded-lg text-sm">
+        <div className="bg-emerald-950 text-emerald-200 px-4 py-2 rounded-lg text-sm">
           Photo uploaded!
         </div>
       )}

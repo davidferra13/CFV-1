@@ -3,9 +3,11 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowDown, ArrowUp } from '@/components/ui/icons'
-import { updateChefPreferences } from '@/lib/chef/actions'
+import { applyRecommendedPrimaryNav, updateChefPreferences } from '@/lib/chef/actions'
 import {
   DEFAULT_PRIMARY_SHORTCUT_HREFS,
+  REQUIRED_PRIMARY_SHORTCUT_HREFS,
+  ensureRequiredPrimaryShortcutHrefs,
   getPrimaryShortcutOptions,
 } from '@/components/navigation/nav-config'
 import { Button } from '@/components/ui/button'
@@ -14,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 type PrimaryShortcutOption = ReturnType<typeof getPrimaryShortcutOptions>[number]
 
 const ALL_SHORTCUT_OPTIONS: PrimaryShortcutOption[] = getPrimaryShortcutOptions()
+const REQUIRED_SHORTCUT_SET = new Set<string>(REQUIRED_PRIMARY_SHORTCUT_HREFS)
 
 function normalizeHrefOrder(hrefs: string[]): string[] {
   const seen = new Set<string>()
@@ -27,7 +30,7 @@ function normalizeHrefOrder(hrefs: string[]): string[] {
     normalized.push(href)
   }
 
-  return normalized
+  return ensureRequiredPrimaryShortcutHrefs(normalized)
 }
 
 function equalOrder(left: string[], right: string[]) {
@@ -52,8 +55,7 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
     getInitialSelection(initialPrimaryNavHrefs)
   )
   const [search, setSearch] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const selectedSet = useMemo(() => new Set(selectedHrefs), [selectedHrefs])
 
@@ -89,26 +91,22 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
       return next
     })
 
-    setSuccess(false)
-    setError(null)
+    setNotice(null)
   }
 
   const removeSelected = (href: string) => {
     setSelectedHrefs((prev) => prev.filter((item) => item !== href))
-    setSuccess(false)
-    setError(null)
+    setNotice(null)
   }
 
   const addShortcut = (href: string) => {
     setSelectedHrefs((prev) => [...prev, href])
-    setSuccess(false)
-    setError(null)
+    setNotice(null)
   }
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
-    setSuccess(false)
-    setError(null)
+    setNotice(null)
 
     const normalized = normalizeHrefOrder(selectedHrefs)
     const payload = equalOrder(normalized, DEFAULT_PRIMARY_SHORTCUT_HREFS) ? [] : normalized
@@ -116,10 +114,31 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
     startTransition(async () => {
       try {
         await updateChefPreferences({ primary_nav_hrefs: payload })
-        setSuccess(true)
+        setNotice({ type: 'success', text: 'Primary navigation saved.' })
         router.refresh()
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to save primary navigation')
+        setNotice({
+          type: 'error',
+          text: err instanceof Error ? err.message : 'Failed to save primary navigation',
+        })
+      }
+    })
+  }
+
+  const handleApplyRecommended = () => {
+    setNotice(null)
+    startTransition(async () => {
+      try {
+        await applyRecommendedPrimaryNav()
+        setSelectedHrefs([...DEFAULT_PRIMARY_SHORTCUT_HREFS])
+        setSearch('')
+        setNotice({ type: 'success', text: 'Recommended navigation applied.' })
+        router.refresh()
+      } catch (err) {
+        setNotice({
+          type: 'error',
+          text: err instanceof Error ? err.message : 'Failed to apply recommended navigation',
+        })
       }
     })
   }
@@ -146,7 +165,14 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
               <div key={option.href} className="rounded-lg border border-stone-700 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-stone-100">{option.label}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-stone-100">{option.label}</p>
+                      {REQUIRED_SHORTCUT_SET.has(option.href) && (
+                        <span className="rounded-full bg-brand-950 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-300">
+                          Required
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-stone-500">{option.context}</p>
                     <p className="text-xs text-stone-400">{option.href}</p>
                   </div>
@@ -176,8 +202,9 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
                       variant="ghost"
                       size="sm"
                       onClick={() => removeSelected(option.href)}
+                      disabled={REQUIRED_SHORTCUT_SET.has(option.href)}
                     >
-                      Remove
+                      {REQUIRED_SHORTCUT_SET.has(option.href) ? 'Required' : 'Remove'}
                     </Button>
                   </div>
                 </div>
@@ -234,15 +261,15 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
         </Card>
       </div>
 
-      {error && (
+      {notice?.type === 'error' && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-200">{notice.text}</p>
         </div>
       )}
 
-      {success && (
+      {notice?.type === 'success' && (
         <div className="rounded-lg border border-green-200 bg-green-950 p-4">
-          <p className="text-sm text-green-700">Primary navigation saved.</p>
+          <p className="text-sm text-green-200">{notice.text}</p>
         </div>
       )}
 
@@ -253,12 +280,19 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
           onClick={() => {
             setSelectedHrefs([...DEFAULT_PRIMARY_SHORTCUT_HREFS])
             setSearch('')
-            setSuccess(false)
-            setError(null)
+            setNotice(null)
           }}
           disabled={isPending}
         >
-          Reset to Default
+          Reset Form to Default
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleApplyRecommended}
+          disabled={isPending}
+        >
+          Apply Recommended Nav
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending ? 'Saving...' : 'Save Primary Bar'}

@@ -622,7 +622,7 @@ export default async function EventDetailPage({
             <p className="text-sm font-medium text-amber-900">
               Awaiting {formatCurrency((event as any).deposit_amount_cents - totalPaid)} deposit
             </p>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-xs text-amber-200 mt-0.5">
               {formatCurrency((event as any).deposit_amount_cents)} required â€¢{' '}
               {formatCurrency(totalPaid)} collected â€” record payment below to proceed to
               confirmation.
@@ -711,7 +711,7 @@ export default async function EventDetailPage({
                 </Link>
               </div>
               {(event as any).car_packed ? (
-                <p className="text-sm text-emerald-700 font-medium">Car packed</p>
+                <p className="text-sm text-emerald-200 font-medium">Car packed</p>
               ) : packingConfirmedCount > 0 ? (
                 <p className="text-sm text-stone-300">
                   {packingConfirmedCount} item{packingConfirmedCount !== 1 ? 's' : ''} confirmed
@@ -722,7 +722,7 @@ export default async function EventDetailPage({
               )}
             </div>
             {(event as any).car_packed && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-200">
                 Packed
               </span>
             )}

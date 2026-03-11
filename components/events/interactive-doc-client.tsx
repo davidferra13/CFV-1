@@ -137,9 +137,9 @@ function Section({
           <span
             className={`text-xs font-medium px-2 py-0.5 rounded-full ${
               allDone
-                ? 'bg-green-900 text-green-700'
+                ? 'bg-green-900 text-green-200'
                 : anyInProgress
-                  ? 'bg-amber-900 text-amber-700'
+                  ? 'bg-amber-900 text-amber-200'
                   : 'bg-stone-800 text-stone-300'
             }`}
           >
@@ -149,7 +149,7 @@ function Section({
       </div>
 
       {section.warning && (
-        <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1.5">
+        <p className="text-xs text-amber-200 bg-amber-950 border border-amber-200 rounded px-2 py-1.5">
           {section.warning}
         </p>
       )}
@@ -225,7 +225,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
       {/* Alert banners — allergy / safety warnings */}
       {spec.alerts.map((alert, i) => (
         <div key={i} className="bg-red-950 border border-red-300 rounded-lg px-4 py-3">
-          <p className="text-sm font-semibold text-red-800">{alert}</p>
+          <p className="text-sm font-semibold text-red-200">{alert}</p>
         </div>
       ))}
 

@@ -63,7 +63,7 @@ export function IncentiveRedemptionHistory({ redemptions }: Props) {
               <td className="py-3 pr-4 text-stone-300">
                 {r.event?.occasion || <span className="text-stone-400">—</span>}
               </td>
-              <td className="py-3 pr-4 text-right font-medium text-green-700">
+              <td className="py-3 pr-4 text-right font-medium text-green-200">
                 −{formatCurrency(r.applied_amount_cents)}
               </td>
               <td className="py-3 text-right text-stone-400">

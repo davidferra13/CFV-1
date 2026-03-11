@@ -73,40 +73,32 @@ CREATE TABLE IF NOT EXISTS ai_task_queue (
   completed_at    TIMESTAMPTZ,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
 -- Indexes for efficient queue operations
 -- Worker polls: pending tasks ordered by priority DESC, scheduled_for ASC
 -- The query adds "AND scheduled_for <= NOW()" at runtime (NOW() is not immutable)
 CREATE INDEX idx_ai_queue_worker_poll
   ON ai_task_queue (priority DESC, scheduled_for ASC)
   WHERE status = 'pending';
-
 -- Tenant's task history
 CREATE INDEX idx_ai_queue_tenant_status
   ON ai_task_queue (tenant_id, status, created_at DESC);
-
 -- Find tasks by type (for deduplication and scheduling)
 CREATE INDEX idx_ai_queue_type
   ON ai_task_queue (tenant_id, task_type, status);
-
 -- Awaiting approval (chef needs to review)
 CREATE INDEX idx_ai_queue_awaiting_approval
   ON ai_task_queue (tenant_id, status)
   WHERE status = 'awaiting_approval';
-
 -- Recurring task lookup
 CREATE INDEX idx_ai_queue_recurring
   ON ai_task_queue (tenant_id, task_type, recurrence)
   WHERE recurrence IS NOT NULL;
-
 -- Failed tasks for monitoring
 CREATE INDEX idx_ai_queue_failed
   ON ai_task_queue (status, created_at DESC)
   WHERE status IN ('failed', 'dead');
-
 -- RLS
 ALTER TABLE ai_task_queue ENABLE ROW LEVEL SECURITY;
-
 -- Chefs can see their own tasks
 CREATE POLICY ai_queue_chef_read ON ai_task_queue
   FOR SELECT USING (
@@ -115,7 +107,6 @@ CREATE POLICY ai_queue_chef_read ON ai_task_queue
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Chefs can approve/reject their own tasks
 CREATE POLICY ai_queue_chef_update ON ai_task_queue
   FOR UPDATE USING (
@@ -130,11 +121,9 @@ CREATE POLICY ai_queue_chef_update ON ai_task_queue
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Service role can do everything (worker runs as service role)
 CREATE POLICY ai_queue_service_role ON ai_task_queue
   FOR ALL USING (auth.role() = 'service_role');
-
 -- Updated_at trigger
 CREATE TRIGGER ai_task_queue_updated_at
   BEFORE UPDATE ON ai_task_queue

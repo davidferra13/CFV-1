@@ -3,7 +3,7 @@
 // Widgets are ordered by priority (highest first).
 // Universal widgets appear for all archetypes; specialty widgets are archetype-specific.
 
-import type { ArchetypeId } from './presets'
+import { DEFAULT_ARCHETYPE_ID, type ArchetypeId } from './registry'
 
 export type WidgetGridSpan = 1 | 2
 
@@ -21,15 +21,6 @@ export type DashboardWidget = {
 
 // ---- Master Widget Registry ----
 // Every available widget in the system, tagged with relevant archetypes.
-
-const ALL_ARCHETYPES: ArchetypeId[] = [
-  'private-chef',
-  'caterer',
-  'meal-prep',
-  'restaurant',
-  'food-truck',
-  'bakery',
-]
 
 export const WIDGET_REGISTRY: DashboardWidget[] = [
   // ---- Universal widgets (all archetypes) ----
@@ -397,8 +388,8 @@ const ARCHETYPE_DEFAULTS: Record<ArchetypeId, string[]> = {
  * If the archetype is unknown, falls back to private-chef defaults.
  */
 export function getDashboardConfig(archetypeKey: string): DashboardWidget[] {
-  const key = (archetypeKey || 'private-chef') as ArchetypeId
-  const widgetKeys = ARCHETYPE_DEFAULTS[key] ?? ARCHETYPE_DEFAULTS['private-chef']
+  const key = (archetypeKey || DEFAULT_ARCHETYPE_ID) as ArchetypeId
+  const widgetKeys = ARCHETYPE_DEFAULTS[key] ?? ARCHETYPE_DEFAULTS[DEFAULT_ARCHETYPE_ID]
 
   const widgetMap = new Map(WIDGET_REGISTRY.map((w) => [w.key, w]))
 
@@ -412,7 +403,7 @@ export function getDashboardConfig(archetypeKey: string): DashboardWidget[] {
  * Useful for a "widget picker" UI where chefs can add/remove widgets.
  */
 export function getAvailableWidgets(archetypeKey: string): DashboardWidget[] {
-  const key = (archetypeKey || 'private-chef') as ArchetypeId
+  const key = (archetypeKey || DEFAULT_ARCHETYPE_ID) as ArchetypeId
 
   return WIDGET_REGISTRY.filter(
     (w) => w.archetypes.length === 0 || w.archetypes.includes(key)

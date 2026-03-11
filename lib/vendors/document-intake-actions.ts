@@ -29,13 +29,25 @@ const ALLOWED_EXTENSIONS = new Set([
   'jpg',
   'jpeg',
   'png',
+  'heic',
+  'heif',
   'webp',
   'doc',
   'docx',
 ])
 
 const TABULAR_EXTENSIONS = new Set(['csv', 'xlsx', 'xls'])
-const TEXT_EXTRACTABLE_EXTENSIONS = new Set(['pdf', 'txt', 'jpg', 'jpeg', 'png', 'webp', 'docx'])
+const TEXT_EXTRACTABLE_EXTENSIONS = new Set([
+  'pdf',
+  'txt',
+  'jpg',
+  'jpeg',
+  'png',
+  'heic',
+  'heif',
+  'webp',
+  'docx',
+])
 const SUPPORTED_EXPENSE_CATEGORIES = new Set([
   'groceries',
   'alcohol',
@@ -242,7 +254,16 @@ function inferExtractionMethod(ext: string): string {
   if (ext === 'pdf') return 'pdf_text'
   if (ext === 'docx') return 'docx_text'
   if (ext === 'txt') return 'plain_text'
-  if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'webp') return 'ocr_image'
+  if (
+    ext === 'jpg' ||
+    ext === 'jpeg' ||
+    ext === 'png' ||
+    ext === 'heic' ||
+    ext === 'heif' ||
+    ext === 'webp'
+  ) {
+    return 'ocr_image'
+  }
   return 'text_extract'
 }
 

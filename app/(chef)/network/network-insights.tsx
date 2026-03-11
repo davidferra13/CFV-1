@@ -37,7 +37,7 @@ export function NetworkInsights({ insights }: NetworkInsightsProps) {
             Inquiries not yet referenced in a help/share outreach.
           </p>
           {insights.unshared_inquiry_ids.length === 0 ? (
-            <p className="text-sm text-emerald-700 mt-3">All inquiries are covered by outreach.</p>
+            <p className="text-sm text-emerald-200 mt-3">All inquiries are covered by outreach.</p>
           ) : (
             <ul className="mt-3 space-y-1.5">
               {insights.unshared_inquiry_ids.map((inquiryId) => (
@@ -58,7 +58,7 @@ export function NetworkInsights({ insights }: NetworkInsightsProps) {
             Clients not yet matched to a direct contact share.
           </p>
           {insights.unshared_client_names.length === 0 ? (
-            <p className="text-sm text-emerald-700 mt-3">
+            <p className="text-sm text-emerald-200 mt-3">
               All clients are covered by sharing activity.
             </p>
           ) : (

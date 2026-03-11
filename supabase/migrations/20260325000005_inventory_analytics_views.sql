@@ -46,7 +46,6 @@ SELECT
   ARRAY_AGG(DISTINCT ei.occasion) AS events
 FROM event_ingredients ei
 GROUP BY ei.chef_id, ei.ingredient_id, ei.ingredient_name, ei.unit, ei.last_price_cents;
-
 -- ============================================
 -- VIEW: inventory_expiry_alerts
 -- Batches expiring within 7 days
@@ -74,7 +73,6 @@ LEFT JOIN storage_locations sl ON sl.id = ib.location_id
 WHERE NOT ib.is_depleted
   AND ib.expiry_date IS NOT NULL
   AND ib.expiry_date <= CURRENT_DATE + INTERVAL '7 days';
-
 -- ============================================
 -- VIEW: event_inventory_variance
 -- Expected vs actual usage per event

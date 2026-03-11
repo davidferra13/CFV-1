@@ -48,23 +48,19 @@ CREATE TABLE IF NOT EXISTS social_platform_credentials (
   -- One active connection per platform per chef (reconnect upserts this row)
   CONSTRAINT social_platform_credentials_unique UNIQUE (tenant_id, platform)
 );
-
 -- ============================================================
 -- 2. Indexes
 -- ============================================================
 
 CREATE INDEX IF NOT EXISTS social_platform_credentials_tenant_idx
   ON social_platform_credentials (tenant_id, platform);
-
 CREATE INDEX IF NOT EXISTS social_platform_credentials_active_idx
   ON social_platform_credentials (tenant_id)
   WHERE is_active = true;
-
 -- For the token-refresh sweep in the publishing cron
 CREATE INDEX IF NOT EXISTS social_platform_credentials_expiry_idx
   ON social_platform_credentials (token_expires_at ASC)
   WHERE is_active = true AND token_expires_at IS NOT NULL;
-
 -- ============================================================
 -- 3. Auto-update updated_at
 -- ============================================================
@@ -72,7 +68,6 @@ CREATE INDEX IF NOT EXISTS social_platform_credentials_expiry_idx
 CREATE TRIGGER social_platform_credentials_updated_at
   BEFORE UPDATE ON social_platform_credentials
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================================
 -- 4. RLS
 -- Chefs can SELECT their own rows.
@@ -80,26 +75,20 @@ CREATE TRIGGER social_platform_credentials_updated_at
 -- ============================================================
 
 ALTER TABLE social_platform_credentials ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "chef_social_credentials_select"
   ON social_platform_credentials FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
-
 -- ============================================================
 -- 5. Comments
 -- ============================================================
 
 COMMENT ON TABLE social_platform_credentials IS
   'OAuth tokens for social media platform connections. Tokens are AES-256-GCM encrypted at the application layer before storage.';
-
 COMMENT ON COLUMN social_platform_credentials.access_token IS
   'Encrypted OAuth access token. Format: iv:authTag:ciphertext (all base64). Decrypt server-side using SOCIAL_TOKEN_ENCRYPTION_KEY.';
-
 COMMENT ON COLUMN social_platform_credentials.refresh_token IS
   'Encrypted OAuth refresh token, same format. Null for platforms without refresh tokens (Meta long-lived user tokens, Pinterest).';
-
 COMMENT ON COLUMN social_platform_credentials.additional_data IS
   'Platform-specific metadata: { page_id, page_access_token } for Facebook; { instagram_user_id, facebook_page_id } for Instagram; { open_id } for TikTok; { urn } for LinkedIn; { default_board_id } for Pinterest; { channel_id } for YouTube.';
-
 COMMENT ON COLUMN social_platform_credentials.failed_attempts IS
   'Consecutive failed publish attempts from this credential. Reset to 0 after first success. Chef is notified when this reaches 3.';

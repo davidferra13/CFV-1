@@ -112,7 +112,7 @@ export function BulkAssignEvents({
       {result && (
         <div
           className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
-            result.type === 'success' ? 'bg-green-950 text-green-800' : 'bg-red-950 text-red-800'
+            result.type === 'success' ? 'bg-green-950 text-green-200' : 'bg-red-950 text-red-200'
           }`}
         >
           {result.message}
@@ -216,9 +216,9 @@ export function BulkAssignEvents({
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
                         evt.status === 'completed'
-                          ? 'bg-green-900 text-green-700'
+                          ? 'bg-green-900 text-green-200'
                           : evt.status === 'cancelled'
-                            ? 'bg-red-900 text-red-700'
+                            ? 'bg-red-900 text-red-200'
                             : 'bg-stone-800 text-stone-400'
                       }`}
                     >

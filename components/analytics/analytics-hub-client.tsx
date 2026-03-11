@@ -1124,7 +1124,7 @@ export function AnalyticsHub(props: AnalyticsHubProps) {
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-amber-500 text-amber-700'
+                  ? 'border-amber-500 text-amber-200'
                   : 'border-transparent text-stone-500 hover:text-stone-300 hover:border-stone-600'
               }`}
             >

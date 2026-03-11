@@ -104,7 +104,7 @@ export default async function AdminGmailSyncPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${isStale ? 'bg-yellow-900 text-yellow-700' : isHealthy ? 'bg-green-900 text-green-700' : 'bg-red-900 text-red-700'}`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${isStale ? 'bg-yellow-900 text-yellow-200' : isHealthy ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}
                         >
                           {isStale ? 'Stale' : isHealthy ? 'Healthy' : 'Errors'}
                         </span>

@@ -80,7 +80,7 @@ function Step1({
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="displayName" className="mb-1 block text-sm font-medium text-stone-700">
+          <label htmlFor="displayName" className="mb-1 block text-sm font-medium text-stone-200">
             Display name
           </label>
           <input
@@ -97,7 +97,7 @@ function Step1({
         </div>
 
         <div>
-          <label htmlFor="bio" className="mb-1 block text-sm font-medium text-stone-700">
+          <label htmlFor="bio" className="mb-1 block text-sm font-medium text-stone-200">
             Bio
           </label>
           <textarea
@@ -170,7 +170,7 @@ function Step2({
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="tagline" className="mb-1 block text-sm font-medium text-stone-700">
+          <label htmlFor="tagline" className="mb-1 block text-sm font-medium text-stone-200">
             Tagline
           </label>
           <input
@@ -185,7 +185,7 @@ function Step2({
         </div>
 
         <div>
-          <label htmlFor="brandColor" className="mb-1 block text-sm font-medium text-stone-700">
+          <label htmlFor="brandColor" className="mb-1 block text-sm font-medium text-stone-200">
             Brand color
           </label>
           <div className="flex items-center gap-3">
@@ -287,7 +287,7 @@ function Step3({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="slug" className="block text-sm font-medium text-stone-700">
+        <label htmlFor="slug" className="block text-sm font-medium text-stone-200">
           Profile URL
         </label>
         <div className="flex items-center overflow-hidden rounded-lg border border-stone-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500">
@@ -374,15 +374,15 @@ function Step4({
 
       {connectStatus.connected ? (
         <div className="space-y-2 rounded-xl border border-green-200 bg-green-50 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-green-800">
+          <div className="flex items-center gap-2 text-sm font-medium text-green-200">
             <span className="text-green-500">OK</span>
             Stripe account connected
           </div>
-          <div className="flex items-center gap-2 text-sm text-green-700">
+          <div className="flex items-center gap-2 text-sm text-green-200">
             <span className="text-green-500">OK</span>
             Charges enabled - ready to accept payments
           </div>
-          <div className="flex items-center gap-2 text-sm text-green-700">
+          <div className="flex items-center gap-2 text-sm text-green-200">
             <span className="text-green-500">OK</span>
             Payouts enabled - funds transfer to your bank
           </div>
@@ -390,7 +390,7 @@ function Step4({
       ) : connectStatus.pending ? (
         <div className="space-y-4">
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm text-amber-800">
+            <p className="text-sm text-amber-200">
               Your Stripe account was created but onboarding is not complete yet. Click below to
               continue where you left off.
             </p>

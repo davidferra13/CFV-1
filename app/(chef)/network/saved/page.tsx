@@ -35,7 +35,7 @@ export default async function SavedPostsPage() {
           </p>
           <Link
             href="/network"
-            className="text-amber-700 text-sm font-medium hover:underline mt-3 block"
+            className="text-amber-200 text-sm font-medium hover:underline mt-3 block"
           >
             Browse the feed →
           </Link>

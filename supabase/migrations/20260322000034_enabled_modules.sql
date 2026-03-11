@@ -8,7 +8,6 @@
 ALTER TABLE chef_preferences
 ADD COLUMN IF NOT EXISTS enabled_modules TEXT[]
 DEFAULT ARRAY['dashboard','pipeline','events','calendar','clients','finance'];
-
 -- Backfill existing chefs: set ALL modules so existing users see no change.
 -- New signups get the DEFAULT (core modules only) from the column default.
 UPDATE chef_preferences

@@ -44,10 +44,10 @@ export function CategorySection({ category, goals, id, onCheckIn }: CategorySect
             <span
               className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 avgProgress >= 75
-                  ? 'bg-emerald-900 text-emerald-700'
+                  ? 'bg-emerald-900 text-emerald-200'
                   : avgProgress >= 40
-                    ? 'bg-amber-900 text-amber-700'
-                    : 'bg-red-900 text-red-700'
+                    ? 'bg-amber-900 text-amber-200'
+                    : 'bg-red-900 text-red-200'
               }`}
             >
               {avgProgress}%

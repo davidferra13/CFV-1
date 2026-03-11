@@ -186,7 +186,7 @@ export default async function StationDetailPage({ params }: { params: { id: stri
 
                 {/* Add component form (inline server action) */}
                 <details className="mt-3">
-                  <summary className="cursor-pointer text-xs text-amber-700 hover:text-amber-500">
+                  <summary className="cursor-pointer text-xs text-amber-200 hover:text-amber-500">
                     + Add Component
                   </summary>
                   <form
@@ -254,7 +254,7 @@ export default async function StationDetailPage({ params }: { params: { id: stri
 
           {/* Add menu item form */}
           <details>
-            <summary className="cursor-pointer text-sm text-amber-700 hover:text-amber-500 font-medium">
+            <summary className="cursor-pointer text-sm text-amber-200 hover:text-amber-500 font-medium">
               + Add Menu Item to Station
             </summary>
             <form

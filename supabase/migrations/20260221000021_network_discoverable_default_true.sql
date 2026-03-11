@@ -16,7 +16,6 @@
 -- Change default for new rows
 ALTER TABLE chef_preferences
   ALTER COLUMN network_discoverable SET DEFAULT true;
-
 -- Make all existing chefs discoverable
 UPDATE chef_preferences
   SET network_discoverable = true

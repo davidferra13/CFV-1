@@ -5,11 +5,11 @@ import { platformSearch, type SearchResult } from '@/lib/admin/platform-search'
 import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 
 const TYPE_COLORS: Record<string, string> = {
-  chef: 'bg-blue-900 text-blue-700',
-  client: 'bg-purple-900 text-purple-700',
-  event: 'bg-green-900 text-green-700',
-  recipe: 'bg-orange-900 text-orange-700',
-  inquiry: 'bg-yellow-900 text-yellow-700',
+  chef: 'bg-blue-900 text-blue-200',
+  client: 'bg-purple-900 text-purple-200',
+  event: 'bg-green-900 text-green-200',
+  recipe: 'bg-orange-900 text-orange-200',
+  inquiry: 'bg-yellow-900 text-yellow-200',
 }
 
 export function AdminSearchForm() {

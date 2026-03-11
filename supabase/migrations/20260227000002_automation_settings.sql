@@ -44,11 +44,9 @@ CREATE TABLE IF NOT EXISTS chef_automation_settings (
 
   UNIQUE (tenant_id)
 );
-
 -- ── 2. RLS for chef_automation_settings ────────────────────────────────────
 
 ALTER TABLE chef_automation_settings ENABLE ROW LEVEL SECURITY;
-
 -- Chefs read and write their own settings row
 CREATE POLICY "chef_automation_settings_chef_rw"
   ON chef_automation_settings
@@ -66,7 +64,6 @@ CREATE POLICY "chef_automation_settings_chef_rw"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- Service role (crons, webhooks) can read all settings
 CREATE POLICY "chef_automation_settings_service_all"
   ON chef_automation_settings
@@ -74,24 +71,20 @@ CREATE POLICY "chef_automation_settings_service_all"
   TO service_role
   USING (true)
   WITH CHECK (true);
-
 -- ── 3. Client automated-email opt-out ─────────────────────────────────────
 -- Chef can disable automated reminder emails for a specific client.
 -- Default: true (opt-out model).
 
 ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS automated_emails_enabled boolean NOT NULL DEFAULT true;
-
 COMMENT ON COLUMN clients.automated_emails_enabled IS
   'When false, this client is excluded from all automated system emails (e.g. day-before reminders). Chef-controlled only.';
-
 -- ── 4. Deduplication index on automation_executions ───────────────────────
 -- Used by the engine cooldown check: look up recent successful executions
 -- for the same rule + entity combination.
 
 CREATE INDEX IF NOT EXISTS automation_executions_dedup_idx
   ON automation_executions (rule_id, trigger_entity_id, status, executed_at DESC);
-
 -- ── 5. Updated_at trigger for chef_automation_settings ────────────────────
 
 CREATE OR REPLACE FUNCTION set_chef_automation_settings_updated_at()
@@ -101,7 +94,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 CREATE TRIGGER chef_automation_settings_updated_at
   BEFORE UPDATE ON chef_automation_settings
   FOR EACH ROW EXECUTE FUNCTION set_chef_automation_settings_updated_at();

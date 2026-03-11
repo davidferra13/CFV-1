@@ -22,12 +22,9 @@ CREATE TABLE IF NOT EXISTS permits (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_permits_tenant_expiry ON permits (tenant_id, expiry_date);
 CREATE INDEX IF NOT EXISTS idx_permits_tenant_status ON permits (tenant_id, status);
-
 ALTER TABLE permits ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can view own permits"
     ON permits FOR SELECT
@@ -35,7 +32,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can insert own permits"
     ON permits FOR INSERT
@@ -43,7 +39,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can update own permits"
     ON permits FOR UPDATE
@@ -51,7 +46,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can delete own permits"
     ON permits FOR DELETE
@@ -59,7 +53,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ============================================
 -- VEHICLE MAINTENANCE TABLE
 -- ============================================
@@ -80,12 +73,9 @@ CREATE TABLE IF NOT EXISTS vehicle_maintenance (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_vehicle_maintenance_tenant_due ON vehicle_maintenance (tenant_id, next_due_date);
 CREATE INDEX IF NOT EXISTS idx_vehicle_maintenance_tenant_date ON vehicle_maintenance (tenant_id, date_performed);
-
 ALTER TABLE vehicle_maintenance ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can view own vehicle maintenance"
     ON vehicle_maintenance FOR SELECT
@@ -93,7 +83,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can insert own vehicle maintenance"
     ON vehicle_maintenance FOR INSERT
@@ -101,7 +90,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can update own vehicle maintenance"
     ON vehicle_maintenance FOR UPDATE
@@ -109,7 +97,6 @@ DO $$ BEGIN
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
     ));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can delete own vehicle maintenance"
     ON vehicle_maintenance FOR DELETE

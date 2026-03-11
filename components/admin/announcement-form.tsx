@@ -17,9 +17,9 @@ type Props = {
 }
 
 const TYPE_OPTIONS: { value: AnnouncementType; label: string; color: string }[] = [
-  { value: 'info', label: 'Info (blue)', color: 'bg-blue-900 text-blue-700' },
-  { value: 'warning', label: 'Warning (amber)', color: 'bg-amber-900 text-amber-700' },
-  { value: 'critical', label: 'Critical (red)', color: 'bg-red-900 text-red-700' },
+  { value: 'info', label: 'Info (blue)', color: 'bg-blue-900 text-blue-200' },
+  { value: 'warning', label: 'Warning (amber)', color: 'bg-amber-900 text-amber-200' },
+  { value: 'critical', label: 'Critical (red)', color: 'bg-red-900 text-red-200' },
 ]
 
 export function AnnouncementForm({ currentText, currentType }: Props) {
@@ -93,10 +93,10 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
         <div
           className={`rounded-lg px-4 py-3 text-sm font-medium ${
             type === 'info'
-              ? 'bg-blue-950 text-blue-800 border border-blue-200'
+              ? 'bg-blue-950 text-blue-200 border border-blue-200'
               : type === 'warning'
-                ? 'bg-amber-950 text-amber-800 border border-amber-200'
-                : 'bg-red-950 text-red-800 border border-red-200'
+                ? 'bg-amber-950 text-amber-200 border border-amber-200'
+                : 'bg-red-950 text-red-200 border border-red-200'
           }`}
         >
           <span className="font-semibold mr-1">Preview:</span> {text}

@@ -128,15 +128,15 @@ export function GuestDetailList({ eventId, originalGuestCount }: GuestDetailList
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <div className="rounded-lg bg-emerald-950 px-3 py-2 text-center">
-          <div className="text-xl font-bold text-emerald-700">{data.summary.attending}</div>
+          <div className="text-xl font-bold text-emerald-200">{data.summary.attending}</div>
           <div className="text-xs text-emerald-600">Attending</div>
         </div>
         <div className="rounded-lg bg-amber-950 px-3 py-2 text-center">
-          <div className="text-xl font-bold text-amber-700">{data.summary.maybe}</div>
+          <div className="text-xl font-bold text-amber-200">{data.summary.maybe}</div>
           <div className="text-xs text-amber-600">Maybe</div>
         </div>
         <div className="rounded-lg bg-red-950 px-3 py-2 text-center">
-          <div className="text-xl font-bold text-red-700">{data.summary.declined}</div>
+          <div className="text-xl font-bold text-red-200">{data.summary.declined}</div>
           <div className="text-xs text-red-600">Declined</div>
         </div>
         <div className="rounded-lg bg-stone-800 px-3 py-2 text-center">

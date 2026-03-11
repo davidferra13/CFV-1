@@ -61,9 +61,9 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
   const label = EXPENSE_CATEGORY_LABELS[result.category]
   const confidenceColor =
     result.confidence === 'high'
-      ? 'text-green-700 bg-green-950 border-green-200'
+      ? 'text-green-200 bg-green-950 border-green-200'
       : result.confidence === 'medium'
-        ? 'text-amber-700 bg-amber-950 border-amber-200'
+        ? 'text-amber-200 bg-amber-950 border-amber-200'
         : 'text-stone-500 bg-stone-800 border-stone-700'
 
   return (

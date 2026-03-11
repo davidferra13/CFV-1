@@ -138,13 +138,13 @@ export default function ServerTablePanel() {
         </div>
         <div className="rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 px-3 py-2">
           <span className="text-blue-600 dark:text-blue-400">Seated: </span>
-          <span className="font-semibold text-blue-700 dark:text-blue-300">
+          <span className="font-semibold text-blue-200 dark:text-blue-300">
             {seatedTables.length}
           </span>
         </div>
         <div className="rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
           <span className="text-emerald-600 dark:text-emerald-400">Available: </span>
-          <span className="font-semibold text-emerald-700 dark:text-emerald-300">
+          <span className="font-semibold text-emerald-200 dark:text-emerald-300">
             {tables.filter((t) => t.status === 'available').length}
           </span>
         </div>
@@ -156,7 +156,7 @@ export default function ServerTablePanel() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-200 dark:bg-red-950 dark:text-red-300">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
             dismiss

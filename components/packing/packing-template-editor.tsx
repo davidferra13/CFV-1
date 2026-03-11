@@ -150,7 +150,7 @@ export function PackingTemplateEditor({
 
       {/* Name */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-200 mb-1">
           Template Name
         </label>
         <input
@@ -164,7 +164,7 @@ export function PackingTemplateEditor({
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-200 mb-1">
           Description (optional)
         </label>
         <input
@@ -178,7 +178,7 @@ export function PackingTemplateEditor({
 
       {/* Event Type */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-200 mb-1">
           Event Type
         </label>
         <select
@@ -206,7 +206,7 @@ export function PackingTemplateEditor({
           onChange={e => setIsDefault(e.target.checked)}
           className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500"
         />
-        <span className="text-sm text-stone-700">
+        <span className="text-sm text-stone-200">
           Default template (shown first when loading templates)
         </span>
       </label>
@@ -214,7 +214,7 @@ export function PackingTemplateEditor({
       {/* Items */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium text-stone-700">Items</label>
+          <label className="text-sm font-medium text-stone-200">Items</label>
           <Button variant="ghost" size="sm" onClick={addItem}>
             + Add Item
           </Button>

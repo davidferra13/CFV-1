@@ -14,13 +14,10 @@ CREATE TABLE IF NOT EXISTS bakery_ovens (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE bakery_ovens ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "bakery_ovens_tenant_isolation" ON bakery_ovens
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 -- Bake schedule entries
 CREATE TABLE IF NOT EXISTS bake_schedule (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,15 +36,11 @@ CREATE TABLE IF NOT EXISTS bake_schedule (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE bake_schedule ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "bake_schedule_tenant_isolation" ON bake_schedule
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 CREATE INDEX idx_bake_schedule_tenant_start ON bake_schedule (tenant_id, planned_start);
-
 -- Yield tracking per batch
 CREATE TABLE IF NOT EXISTS bakery_yield_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -65,11 +58,8 @@ CREATE TABLE IF NOT EXISTS bakery_yield_records (
   recorded_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 ALTER TABLE bakery_yield_records ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "bakery_yield_records_tenant_isolation" ON bakery_yield_records
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-
 CREATE INDEX idx_bakery_yield_tenant_date ON bakery_yield_records (tenant_id, recorded_at);

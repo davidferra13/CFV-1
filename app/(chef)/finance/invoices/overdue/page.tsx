@@ -64,10 +64,10 @@ export default async function OverdueInvoicesPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="border-red-200 bg-red-950 p-4">
             <p className="text-2xl font-bold text-red-900">{formatCurrency(totalValue)}</p>
-            <p className="mt-1 text-sm text-red-700">Total overdue value</p>
+            <p className="mt-1 text-sm text-red-200">Total overdue value</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-700">{overdue.length}</p>
+            <p className="text-2xl font-bold text-amber-200">{overdue.length}</p>
             <p className="mt-1 text-sm text-stone-500">Overdue events</p>
           </Card>
           <Card className="p-4">

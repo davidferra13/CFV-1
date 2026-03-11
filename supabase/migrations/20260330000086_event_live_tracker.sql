@@ -24,14 +24,12 @@ CREATE TABLE IF NOT EXISTS public.event_live_status (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT event_live_status_event_status_unique UNIQUE (event_id, status_key)
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_live_status_event
   ON public.event_live_status(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_live_status_tenant
   ON public.event_live_status(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_event_live_status_timestamp
   ON public.event_live_status(timestamp DESC);
-
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS live_tracker_visibility JSONB
   NOT NULL
@@ -46,9 +44,7 @@ ALTER TABLE public.chefs
     "cleanup": false,
     "complete": true
   }'::jsonb;
-
 ALTER TABLE public.event_live_status ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS event_live_status_chef_all ON public.event_live_status;
 CREATE POLICY event_live_status_chef_all
   ON public.event_live_status
@@ -71,7 +67,6 @@ CREATE POLICY event_live_status_chef_all
       LIMIT 1
     )
   );
-
 DROP POLICY IF EXISTS event_live_status_client_select ON public.event_live_status;
 CREATE POLICY event_live_status_client_select
   ON public.event_live_status

@@ -43,7 +43,7 @@ export default async function AtRiskClientsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">At-Risk Clients</h1>
-          <span className="bg-red-900 text-red-700 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-red-900 text-red-200 text-sm px-2 py-0.5 rounded-full">
             {atRisk.length}
           </span>
         </div>
@@ -75,7 +75,7 @@ export default async function AtRiskClientsPage() {
             <TableBody>
               {atRisk.map((client: any) => {
                 const days = daysSince(client.lastEventDate!)
-                const urgencyClass = days > 180 ? 'text-red-700 font-semibold' : 'text-amber-700'
+                const urgencyClass = days > 180 ? 'text-red-200 font-semibold' : 'text-amber-200'
                 return (
                   <TableRow key={client.id}>
                     <TableCell className="font-medium">

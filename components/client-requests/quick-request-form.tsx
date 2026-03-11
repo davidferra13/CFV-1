@@ -81,7 +81,7 @@ export function QuickRequestForm({ lastMenu, defaultGuestCount }: QuickRequestFo
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Date */}
           <div>
-            <label htmlFor="qr-date" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="qr-date" className="block text-sm font-medium text-stone-200 mb-1">
               Date <span className="text-red-500">*</span>
             </label>
             <input
@@ -97,7 +97,7 @@ export function QuickRequestForm({ lastMenu, defaultGuestCount }: QuickRequestFo
 
           {/* Time preference */}
           <div>
-            <label htmlFor="qr-time" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="qr-time" className="block text-sm font-medium text-stone-200 mb-1">
               Time Preference
             </label>
             <select
@@ -124,7 +124,7 @@ export function QuickRequestForm({ lastMenu, defaultGuestCount }: QuickRequestFo
 
           {/* Guest count */}
           <div>
-            <label htmlFor="qr-guests" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="qr-guests" className="block text-sm font-medium text-stone-200 mb-1">
               Guest Count
             </label>
             <input
@@ -148,7 +148,7 @@ export function QuickRequestForm({ lastMenu, defaultGuestCount }: QuickRequestFo
                 onChange={(e) => setRepeatMenu(e.target.checked)}
                 className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
               />
-              <label htmlFor="qr-repeat-menu" className="text-sm text-stone-700">
+              <label htmlFor="qr-repeat-menu" className="text-sm text-stone-200">
                 Repeat last menu: <span className="font-medium">{lastMenu.name}</span>
               </label>
             </div>
@@ -156,7 +156,7 @@ export function QuickRequestForm({ lastMenu, defaultGuestCount }: QuickRequestFo
 
           {/* Notes */}
           <div>
-            <label htmlFor="qr-notes" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="qr-notes" className="block text-sm font-medium text-stone-200 mb-1">
               Notes (optional)
             </label>
             <textarea
@@ -171,12 +171,12 @@ export function QuickRequestForm({ lastMenu, defaultGuestCount }: QuickRequestFo
 
           {/* Error/success */}
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-200">
               {error}
             </div>
           )}
           {success && (
-            <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-200">
               Request sent! Your chef will get back to you shortly.
             </div>
           )}

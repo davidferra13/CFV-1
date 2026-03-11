@@ -504,9 +504,9 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
                         <span
                           className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
                             directRate >= 50
-                              ? 'bg-green-900 text-green-800'
+                              ? 'bg-green-900 text-green-200'
                               : directRate > 0
-                                ? 'bg-amber-900 text-amber-800'
+                                ? 'bg-amber-900 text-amber-200'
                                 : 'bg-stone-800 text-stone-400'
                           }`}
                         >
@@ -567,7 +567,7 @@ export function InsightsClient({
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors rounded-t-lg ${
               activeTab === tab.id
-                ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-950/50'
+                ? 'text-violet-200 border-b-2 border-violet-600 bg-violet-950/50'
                 : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
             }`}
           >

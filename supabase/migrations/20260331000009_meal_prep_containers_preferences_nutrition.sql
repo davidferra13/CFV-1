@@ -25,33 +25,25 @@ CREATE TABLE IF NOT EXISTS container_inventory (
   created_at            timestamptz NOT NULL DEFAULT now(),
   updated_at            timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_container_inventory_chef
   ON container_inventory(chef_id);
-
 ALTER TABLE container_inventory ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef sees own container inventory"
   ON container_inventory FOR SELECT
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef inserts own container inventory"
   ON container_inventory FOR INSERT
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef updates own container inventory"
   ON container_inventory FOR UPDATE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef deletes own container inventory"
   ON container_inventory FOR DELETE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE TRIGGER set_container_inventory_updated_at
   BEFORE UPDATE ON container_inventory
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 -- Container Transactions
 CREATE TABLE IF NOT EXISTS container_transactions (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -66,26 +58,19 @@ CREATE TABLE IF NOT EXISTS container_transactions (
   notes                 text,
   created_at            timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_container_transactions_chef
   ON container_transactions(chef_id);
-
 CREATE INDEX idx_container_transactions_type
   ON container_transactions(container_type_id);
-
 CREATE INDEX idx_container_transactions_client
   ON container_transactions(client_id);
-
 ALTER TABLE container_transactions ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef sees own container transactions"
   ON container_transactions FOR SELECT
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef inserts own container transactions"
   ON container_transactions FOR INSERT
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 -- ============================================
 -- Feature 2: Client Meal Prep Preferences
 -- ============================================
@@ -129,36 +114,27 @@ CREATE TABLE IF NOT EXISTS client_meal_prep_preferences (
   updated_at              timestamptz NOT NULL DEFAULT now(),
   UNIQUE (chef_id, client_id)
 );
-
 CREATE INDEX idx_client_meal_prep_preferences_chef
   ON client_meal_prep_preferences(chef_id);
-
 CREATE INDEX idx_client_meal_prep_preferences_client
   ON client_meal_prep_preferences(client_id);
-
 ALTER TABLE client_meal_prep_preferences ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef sees own client preferences"
   ON client_meal_prep_preferences FOR SELECT
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef inserts own client preferences"
   ON client_meal_prep_preferences FOR INSERT
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef updates own client preferences"
   ON client_meal_prep_preferences FOR UPDATE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef deletes own client preferences"
   ON client_meal_prep_preferences FOR DELETE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE TRIGGER set_client_meal_prep_preferences_updated_at
   BEFORE UPDATE ON client_meal_prep_preferences
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- Feature 3: Recipe Nutrition Tracking
 -- ============================================
@@ -178,31 +154,23 @@ CREATE TABLE IF NOT EXISTS recipe_nutrition (
   updated_at      timestamptz NOT NULL DEFAULT now(),
   UNIQUE (chef_id, recipe_id)
 );
-
 CREATE INDEX idx_recipe_nutrition_chef
   ON recipe_nutrition(chef_id);
-
 CREATE INDEX idx_recipe_nutrition_recipe
   ON recipe_nutrition(recipe_id);
-
 ALTER TABLE recipe_nutrition ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Chef sees own recipe nutrition"
   ON recipe_nutrition FOR SELECT
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef inserts own recipe nutrition"
   ON recipe_nutrition FOR INSERT
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef updates own recipe nutrition"
   ON recipe_nutrition FOR UPDATE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE POLICY "Chef deletes own recipe nutrition"
   ON recipe_nutrition FOR DELETE
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE TRIGGER set_recipe_nutrition_updated_at
   BEFORE UPDATE ON recipe_nutrition
   FOR EACH ROW

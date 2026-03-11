@@ -21,7 +21,7 @@ interface ProductLookupPanelProps {
 
 function AllergenBadge({ allergen }: { allergen: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border border-orange-200 text-orange-700 bg-orange-950">
+    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border border-orange-200 text-orange-200 bg-orange-950">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"

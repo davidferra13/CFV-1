@@ -450,6 +450,55 @@ html {
   html:not(.dark) .public-shell .dark-surface .text-emerald-800 {
     color: #6ee7b7;
   }
+
+  /*
+    Chef portal contrast guardrail:
+    in light theme, the shared sidebar and card surfaces are light panels.
+    Force text on those surfaces to black so stone/muted utility classes cannot
+    drift close to the background again.
+  */
+  html:not(.dark) .chef-readable-shell :is(.surface-panel, .surface-card) {
+    color: #000;
+  }
+  html:not(.dark)
+    .chef-readable-shell
+    :is(.surface-panel, .surface-card)
+    :is(
+      .text-stone-100,
+      .text-stone-200,
+      .text-stone-300,
+      .text-stone-400,
+      .text-stone-500,
+      .text-stone-600,
+      .text-muted,
+      .text-muted-soft,
+      .text-muted-foreground,
+      .text-foreground
+    ) {
+    color: #000 !important;
+  }
+  html:not(.dark)
+    .chef-readable-shell
+    :is(.surface-panel, .surface-card)
+    :is(input, textarea, select).bg-stone-800,
+  html:not(.dark)
+    .chef-readable-shell
+    :is(.surface-panel, .surface-card)
+    :is(input, textarea, select).bg-stone-900,
+  html:not(.dark)
+    .chef-readable-shell
+    :is(.surface-panel, .surface-card)
+    :is(input, textarea, select).bg-stone-950,
+  html:not(.dark)
+    .chef-readable-shell
+    :is(.surface-panel, .surface-card)
+    .ui-button.bg-stone-800\/80,
+  html:not(.dark)
+    .chef-readable-shell
+    :is(.surface-panel, .surface-card)
+    .ui-badge.bg-stone-800\/80 {
+    color: #fafaf9 !important;
+  }
   .text-link {
     color: rgb(var(--brand-400));
     text-decoration: none;

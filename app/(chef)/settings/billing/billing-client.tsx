@@ -86,7 +86,7 @@ export function BillingClient({ status, upgraded }: Props) {
       {upgraded && (
         <div className="rounded-xl bg-green-950 border border-green-200 p-4 flex items-center gap-3">
           <CheckCircle2 size={18} className="text-green-600 shrink-0" />
-          <p className="text-sm font-medium text-green-800">
+          <p className="text-sm font-medium text-green-200">
             Welcome to ChefFlow Pro! Your subscription is now active.
           </p>
         </div>
@@ -145,7 +145,7 @@ export function BillingClient({ status, upgraded }: Props) {
           )}
 
           {status.isExpired && (
-            <div className="flex items-center gap-2 text-sm text-red-700">
+            <div className="flex items-center gap-2 text-sm text-red-200">
               <AlertTriangle size={15} className="shrink-0" />
               <span>Your trial has ended. Upgrade to Pro to unlock all features.</span>
             </div>

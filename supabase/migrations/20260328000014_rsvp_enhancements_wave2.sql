@@ -15,7 +15,6 @@ BEGIN
     CREATE TYPE event_join_request_status AS ENUM ('pending', 'approved', 'denied');
   END IF;
 END$$;
-
 ALTER TABLE event_shares
   ADD COLUMN IF NOT EXISTS require_join_approval BOOLEAN NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS rsvp_deadline_at TIMESTAMPTZ,
@@ -24,13 +23,11 @@ ALTER TABLE event_shares
   ADD COLUMN IF NOT EXISTS enforce_capacity BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS waitlist_enabled BOOLEAN NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS max_capacity INTEGER CHECK (max_capacity IS NULL OR max_capacity > 0);
-
 UPDATE event_shares es
 SET rsvp_deadline_at = (e.event_date::timestamp - interval '2 day')
 FROM events e
 WHERE e.id = es.event_id
   AND es.rsvp_deadline_at IS NULL;
-
 ALTER TABLE event_share_invites
   ADD COLUMN IF NOT EXISTS single_use BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS allow_join_request BOOLEAN NOT NULL DEFAULT true,
@@ -38,7 +35,6 @@ ALTER TABLE event_share_invites
   ADD COLUMN IF NOT EXISTS last_viewed_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS view_count INTEGER NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS revoked_reason TEXT;
-
 CREATE TABLE IF NOT EXISTS event_join_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -56,23 +52,19 @@ CREATE TABLE IF NOT EXISTS event_join_requests (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_join_requests_event ON event_join_requests(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_join_requests_tenant ON event_join_requests(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_event_join_requests_status ON event_join_requests(status);
 CREATE INDEX IF NOT EXISTS idx_event_join_requests_email ON event_join_requests(viewer_email);
-
 DROP TRIGGER IF EXISTS set_event_join_requests_updated_at ON event_join_requests;
 CREATE TRIGGER set_event_join_requests_updated_at
   BEFORE UPDATE ON event_join_requests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 ALTER TABLE event_guests
   ADD COLUMN IF NOT EXISTS attendance_queue_status TEXT NOT NULL DEFAULT 'none'
     CHECK (attendance_queue_status IN ('none', 'waitlisted', 'promoted')),
   ADD COLUMN IF NOT EXISTS waitlisted_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS promoted_at TIMESTAMPTZ;
-
 CREATE TABLE IF NOT EXISTS event_guest_dietary_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -86,16 +78,13 @@ CREATE TABLE IF NOT EXISTS event_guest_dietary_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_guest_dietary_items_event ON event_guest_dietary_items(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_guest_dietary_items_guest ON event_guest_dietary_items(guest_id);
 CREATE INDEX IF NOT EXISTS idx_event_guest_dietary_items_severity ON event_guest_dietary_items(severity);
-
 DROP TRIGGER IF EXISTS set_event_guest_dietary_items_updated_at ON event_guest_dietary_items;
 CREATE TRIGGER set_event_guest_dietary_items_updated_at
   BEFORE UPDATE ON event_guest_dietary_items
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TABLE IF NOT EXISTS event_guest_rsvp_audit (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -110,11 +99,9 @@ CREATE TABLE IF NOT EXISTS event_guest_rsvp_audit (
   changed_by TEXT NOT NULL DEFAULT 'public_token',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_guest_rsvp_audit_event ON event_guest_rsvp_audit(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_guest_rsvp_audit_guest ON event_guest_rsvp_audit(guest_id);
 CREATE INDEX IF NOT EXISTS idx_event_guest_rsvp_audit_critical ON event_guest_rsvp_audit(is_critical);
-
 CREATE TABLE IF NOT EXISTS event_share_invite_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -134,11 +121,9 @@ CREATE TABLE IF NOT EXISTS event_share_invite_events (
   metadata JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_event_share_invite_events_event ON event_share_invite_events(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_share_invite_events_invite ON event_share_invite_events(invite_id);
 CREATE INDEX IF NOT EXISTS idx_event_share_invite_events_type ON event_share_invite_events(event_type);
-
 CREATE TABLE IF NOT EXISTS rsvp_reminder_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -150,11 +135,9 @@ CREATE TABLE IF NOT EXISTS rsvp_reminder_log (
   status TEXT NOT NULL DEFAULT 'queued',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_rsvp_reminder_log_unique
   ON rsvp_reminder_log(guest_id, reminder_key);
 CREATE INDEX IF NOT EXISTS idx_rsvp_reminder_log_event ON rsvp_reminder_log(event_id);
-
 CREATE TABLE IF NOT EXISTS guest_communication_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -166,13 +149,10 @@ CREATE TABLE IF NOT EXISTS guest_communication_logs (
   created_by_auth_user UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_guest_communication_logs_event ON guest_communication_logs(event_id);
 CREATE INDEX IF NOT EXISTS idx_guest_communication_logs_tenant ON guest_communication_logs(tenant_id);
-
 ALTER TABLE guest_leads
   ADD COLUMN IF NOT EXISTS source_join_request_id UUID REFERENCES event_join_requests(id) ON DELETE SET NULL;
-
 DROP VIEW IF EXISTS event_rsvp_summary;
 CREATE VIEW event_rsvp_summary AS
 SELECT
@@ -203,7 +183,6 @@ SELECT
   ) AS all_allergies
 FROM event_guests eg
 GROUP BY eg.event_id, eg.tenant_id;
-
 -- RLS for new tables
 ALTER TABLE event_join_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_guest_dietary_items ENABLE ROW LEVEL SECURITY;
@@ -211,7 +190,6 @@ ALTER TABLE event_guest_rsvp_audit ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_share_invite_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rsvp_reminder_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE guest_communication_logs ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS event_join_requests_chef_all ON event_join_requests;
 CREATE POLICY event_join_requests_chef_all ON event_join_requests
   FOR ALL
@@ -221,7 +199,6 @@ CREATE POLICY event_join_requests_chef_all ON event_join_requests
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS event_join_requests_client_select ON event_join_requests;
 CREATE POLICY event_join_requests_client_select ON event_join_requests
   FOR SELECT
@@ -233,7 +210,6 @@ CREATE POLICY event_join_requests_client_select ON event_join_requests
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS event_join_requests_client_update ON event_join_requests;
 CREATE POLICY event_join_requests_client_update ON event_join_requests
   FOR UPDATE
@@ -245,7 +221,6 @@ CREATE POLICY event_join_requests_client_update ON event_join_requests
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS event_guest_dietary_items_chef_all ON event_guest_dietary_items;
 CREATE POLICY event_guest_dietary_items_chef_all ON event_guest_dietary_items
   FOR ALL
@@ -255,7 +230,6 @@ CREATE POLICY event_guest_dietary_items_chef_all ON event_guest_dietary_items
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS event_guest_dietary_items_client_select ON event_guest_dietary_items;
 CREATE POLICY event_guest_dietary_items_client_select ON event_guest_dietary_items
   FOR SELECT
@@ -267,7 +241,6 @@ CREATE POLICY event_guest_dietary_items_client_select ON event_guest_dietary_ite
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS event_guest_rsvp_audit_chef_all ON event_guest_rsvp_audit;
 CREATE POLICY event_guest_rsvp_audit_chef_all ON event_guest_rsvp_audit
   FOR ALL
@@ -277,7 +250,6 @@ CREATE POLICY event_guest_rsvp_audit_chef_all ON event_guest_rsvp_audit
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS event_guest_rsvp_audit_client_select ON event_guest_rsvp_audit;
 CREATE POLICY event_guest_rsvp_audit_client_select ON event_guest_rsvp_audit
   FOR SELECT
@@ -289,7 +261,6 @@ CREATE POLICY event_guest_rsvp_audit_client_select ON event_guest_rsvp_audit
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS event_share_invite_events_chef_all ON event_share_invite_events;
 CREATE POLICY event_share_invite_events_chef_all ON event_share_invite_events
   FOR ALL
@@ -299,7 +270,6 @@ CREATE POLICY event_share_invite_events_chef_all ON event_share_invite_events
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS event_share_invite_events_client_select ON event_share_invite_events;
 CREATE POLICY event_share_invite_events_client_select ON event_share_invite_events
   FOR SELECT
@@ -311,7 +281,6 @@ CREATE POLICY event_share_invite_events_client_select ON event_share_invite_even
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS rsvp_reminder_log_chef_all ON rsvp_reminder_log;
 CREATE POLICY rsvp_reminder_log_chef_all ON rsvp_reminder_log
   FOR ALL
@@ -321,7 +290,6 @@ CREATE POLICY rsvp_reminder_log_chef_all ON rsvp_reminder_log
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS rsvp_reminder_log_client_select ON rsvp_reminder_log;
 CREATE POLICY rsvp_reminder_log_client_select ON rsvp_reminder_log
   FOR SELECT
@@ -333,7 +301,6 @@ CREATE POLICY rsvp_reminder_log_client_select ON rsvp_reminder_log
       WHERE e.client_id = ur.entity_id
     )
   );
-
 DROP POLICY IF EXISTS guest_communication_logs_chef_all ON guest_communication_logs;
 CREATE POLICY guest_communication_logs_chef_all ON guest_communication_logs
   FOR ALL
@@ -343,7 +310,6 @@ CREATE POLICY guest_communication_logs_chef_all ON guest_communication_logs
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS guest_communication_logs_client_select ON guest_communication_logs;
 CREATE POLICY guest_communication_logs_client_select ON guest_communication_logs
   FOR SELECT

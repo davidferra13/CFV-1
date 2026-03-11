@@ -80,12 +80,12 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         <CardContent className="space-y-4">
           {error && (
             <div className="bg-red-950 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-200">{error}</p>
             </div>
           )}
           {success && (
             <div className="bg-emerald-950 border border-emerald-200 rounded-lg p-4">
-              <p className="text-sm text-emerald-700">Profile updated successfully.</p>
+              <p className="text-sm text-emerald-200">Profile updated successfully.</p>
             </div>
           )}
 

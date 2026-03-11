@@ -256,7 +256,7 @@ export function DailyChecklist({ openingItems, closingItems, date }: Props) {
 
         {/* Sign-off when 100% */}
         {percent === 100 && (
-          <div className="mt-4 p-3 rounded-md bg-green-50 text-green-800 text-sm text-center font-medium">
+          <div className="mt-4 p-3 rounded-md bg-green-50 text-green-200 text-sm text-center font-medium">
             {activeTab === 'opening' ? 'Opening' : 'Closing'} checklist complete
           </div>
         )}

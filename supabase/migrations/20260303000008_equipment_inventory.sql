@@ -12,7 +12,6 @@ CREATE TYPE equipment_category AS ENUM (
   'linen',
   'other'
 );
-
 -- ============================================
 -- TABLE 1: OWNED EQUIPMENT
 -- ============================================
@@ -39,18 +38,14 @@ CREATE TABLE equipment_items (
   created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_equipment_chef_category ON equipment_items(chef_id, category);
 CREATE INDEX idx_equipment_chef_status   ON equipment_items(chef_id, status);
-
 COMMENT ON TABLE equipment_items IS 'Chef-owned equipment inventory with maintenance schedule tracking.';
 COMMENT ON COLUMN equipment_items.maintenance_interval_days IS 'How often this item needs maintenance. NULL = no schedule.';
 COMMENT ON COLUMN equipment_items.last_maintained_at IS 'Date of last maintenance. Used to compute next due date.';
-
 CREATE TRIGGER trg_equipment_updated_at
   BEFORE UPDATE ON equipment_items
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 2: EQUIPMENT RENTALS (per event)
 -- ============================================
@@ -72,24 +67,19 @@ CREATE TABLE equipment_rentals (
 
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_equipment_rentals_chef  ON equipment_rentals(chef_id, rental_date DESC);
 CREATE INDEX idx_equipment_rentals_event ON equipment_rentals(event_id);
-
 COMMENT ON TABLE equipment_rentals IS 'Tracks rented equipment costs, optionally linked to a specific event.';
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE equipment_items   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipment_rentals ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY eq_chef_select ON equipment_items FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY eq_chef_insert ON equipment_items FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY eq_chef_update ON equipment_items FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY eq_chef_delete ON equipment_items FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 CREATE POLICY er_chef_select ON equipment_rentals FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY er_chef_insert ON equipment_rentals FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY er_chef_update ON equipment_rentals FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

@@ -105,7 +105,7 @@ export function MenuPairingEditor({ menuId, pairings, beverages, dishes }: Props
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-200 px-3 py-2 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -126,7 +126,7 @@ export function MenuPairingEditor({ menuId, pairings, beverages, dishes }: Props
                       <span className="text-xs font-medium text-stone-400">
                         Course {dish.courseNumber}
                       </span>
-                      <span className="font-medium text-stone-800">{dish.name}</span>
+                      <span className="font-medium text-stone-200">{dish.name}</span>
                     </div>
                     {!isAdding && (
                       <Button
@@ -150,7 +150,7 @@ export function MenuPairingEditor({ menuId, pairings, beverages, dishes }: Props
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <Badge variant="info">{p.beverage?.type ?? 'beverage'}</Badge>
-                            <span className="text-sm font-medium text-stone-700 truncate">
+                            <span className="text-sm font-medium text-stone-200 truncate">
                               {p.beverage?.name ?? 'Unknown'}
                             </span>
                             {p.pairing_note && (
@@ -170,7 +170,7 @@ export function MenuPairingEditor({ menuId, pairings, beverages, dishes }: Props
                               variant="ghost"
                               onClick={() => handleRemove(p.id)}
                               disabled={isPending}
-                              className="text-red-500 hover:text-red-700"
+                              className="text-red-500 hover:text-red-200"
                             >
                               Remove
                             </Button>

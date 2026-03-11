@@ -30,9 +30,9 @@ function weatherIcon(code: number): string {
 }
 
 function multiplierColor(m: number): string {
-  if (m >= 1.1) return 'bg-green-100 text-green-800 border-green-300'
-  if (m >= 0.9) return 'bg-yellow-100 text-yellow-800 border-yellow-300'
-  return 'bg-red-100 text-red-800 border-red-300'
+  if (m >= 1.1) return 'bg-green-100 text-green-200 border-green-300'
+  if (m >= 0.9) return 'bg-yellow-100 text-yellow-200 border-yellow-300'
+  return 'bg-red-100 text-red-200 border-red-300'
 }
 
 function multiplierLabel(m: number): string {
@@ -46,10 +46,10 @@ function formatCents(cents: number): string {
 }
 
 function riskBadgeClass(level: WeatherOperationalRisk['riskLevel']): string {
-  if (level === 'critical') return 'bg-red-100 text-red-800 border-red-300'
-  if (level === 'high') return 'bg-orange-100 text-orange-800 border-orange-300'
-  if (level === 'medium') return 'bg-yellow-100 text-yellow-800 border-yellow-300'
-  return 'bg-emerald-100 text-emerald-800 border-emerald-300'
+  if (level === 'critical') return 'bg-red-100 text-red-200 border-red-300'
+  if (level === 'high') return 'bg-orange-100 text-orange-200 border-orange-300'
+  if (level === 'medium') return 'bg-yellow-100 text-yellow-200 border-yellow-300'
+  return 'bg-emerald-100 text-emerald-200 border-emerald-300'
 }
 
 // ---- Default Par Levels (used when no par planning exists) ----
@@ -172,7 +172,7 @@ export default function WeatherDemand() {
         </p>
       </div>
 
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-200">{error}</div>}
 
       {/* Location Selection */}
       <div className="rounded-lg border bg-card p-4 space-y-3">

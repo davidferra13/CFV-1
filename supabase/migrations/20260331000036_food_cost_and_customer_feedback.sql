@@ -4,7 +4,6 @@
 -- Food cost target (default 30%)
 ALTER TABLE chef_preferences
 ADD COLUMN IF NOT EXISTS food_cost_target_percent integer DEFAULT 30;
-
 -- ========================================
 -- Customer Feedback: feedback_requests
 -- ========================================
@@ -23,20 +22,16 @@ CREATE TABLE IF NOT EXISTS feedback_requests (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_feedback_requests_token ON feedback_requests(token);
 CREATE INDEX IF NOT EXISTS idx_feedback_requests_tenant ON feedback_requests(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_requests_entity ON feedback_requests(entity_type, entity_id);
-
 ALTER TABLE feedback_requests ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can manage their feedback requests"
     ON feedback_requests FOR ALL
     USING (tenant_id = auth.uid())
     WITH CHECK (tenant_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- ========================================
 -- Customer Feedback: feedback_responses
 -- ========================================
@@ -50,16 +45,12 @@ CREATE TABLE IF NOT EXISTS feedback_responses (
   would_recommend boolean,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_feedback_responses_tenant ON feedback_responses(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_responses_request ON feedback_responses(request_id);
-
 ALTER TABLE feedback_responses ENABLE ROW LEVEL SECURITY;
-
 DO $$ BEGIN
   CREATE POLICY "Chefs can view their feedback responses"
     ON feedback_responses FOR SELECT
     USING (tenant_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- Public submission handled via service role in server actions (no RLS policy needed for insert from public)
+-- Public submission handled via service role in server actions (no RLS policy needed for insert from public);

@@ -125,19 +125,19 @@ export function RevenuePerHourAnalysis({ initialData, initialRange, fetchAction 
             </Card>
             <Card className="p-4">
               <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Effective Rate</p>
-              <p className="text-2xl font-bold text-emerald-700">{formatCurrency(data.revenuePerHourCents)}/hr</p>
+              <p className="text-2xl font-bold text-emerald-200">{formatCurrency(data.revenuePerHourCents)}/hr</p>
               <p className="text-xs text-stone-400 mt-1">All time included</p>
             </Card>
             <Card className="p-4">
               <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Cooking-Only Rate</p>
-              <p className="text-2xl font-bold text-blue-700">{formatCurrency(data.cookingOnlyPerHourCents)}/hr</p>
+              <p className="text-2xl font-bold text-blue-200">{formatCurrency(data.cookingOnlyPerHourCents)}/hr</p>
               <p className="text-xs text-stone-400 mt-1">{data.cookingOnlyHours.toFixed(1)}h cooking</p>
             </Card>
           </div>
 
           {/* Events without time data warning */}
           {data.eventsWithoutTimeData > 0 && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm">
+            <div className="bg-amber-50 border border-amber-200 text-amber-200 rounded-lg px-4 py-3 text-sm">
               {data.eventsWithoutTimeData} completed event{data.eventsWithoutTimeData > 1 ? 's' : ''} had
               no time tracking data and {data.eventsWithoutTimeData > 1 ? 'were' : 'was'} excluded from this analysis.
             </div>
@@ -146,11 +146,11 @@ export function RevenuePerHourAnalysis({ initialData, initialRange, fetchAction 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-4">
-              <h3 className="text-sm font-semibold text-stone-700 mb-3">Where Your Time Goes</h3>
+              <h3 className="text-sm font-semibold text-stone-200 mb-3">Where Your Time Goes</h3>
               <HoursBreakdownPie breakdown={data.breakdown} />
             </Card>
             <Card className="p-4">
-              <h3 className="text-sm font-semibold text-stone-700 mb-3">Monthly Trend</h3>
+              <h3 className="text-sm font-semibold text-stone-200 mb-3">Monthly Trend</h3>
               <MonthlyTrendChart trend={data.trend} />
             </Card>
           </div>
@@ -159,7 +159,7 @@ export function RevenuePerHourAnalysis({ initialData, initialRange, fetchAction 
           {avgDrivingPerEvent > 0 && data.eventsWithTimeData >= 2 && (
             <Card className="p-4 bg-blue-50 border-blue-200">
               <p className="text-sm font-medium text-blue-900">Time Insight</p>
-              <p className="text-sm text-blue-800 mt-1">
+              <p className="text-sm text-blue-200 mt-1">
                 You spend {data.nonCookingPercent}% of your time on non-cooking activities.
                 {avgDrivingPerEvent > 0.5 && potentialRateCents > data.revenuePerHourCents && (
                   <> If you could reduce travel by 30 minutes per event, your effective rate would
@@ -172,7 +172,7 @@ export function RevenuePerHourAnalysis({ initialData, initialRange, fetchAction 
           {/* Per-Event Table */}
           <Card className="overflow-hidden">
             <div className="px-5 py-3 border-b border-stone-100">
-              <h3 className="text-sm font-semibold text-stone-700">Per-Event Breakdown</h3>
+              <h3 className="text-sm font-semibold text-stone-200">Per-Event Breakdown</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -180,25 +180,25 @@ export function RevenuePerHourAnalysis({ initialData, initialRange, fetchAction 
                   <tr className="bg-stone-50 text-left">
                     <th className="px-4 py-2 font-medium text-stone-500">Event</th>
                     <th
-                      className="px-4 py-2 font-medium text-stone-500 cursor-pointer hover:text-stone-700"
+                      className="px-4 py-2 font-medium text-stone-500 cursor-pointer hover:text-stone-200"
                       onClick={() => toggleSort('date')}
                     >
                       Date{sortArrow('date')}
                     </th>
                     <th
-                      className="px-4 py-2 font-medium text-stone-500 text-right cursor-pointer hover:text-stone-700"
+                      className="px-4 py-2 font-medium text-stone-500 text-right cursor-pointer hover:text-stone-200"
                       onClick={() => toggleSort('revenue')}
                     >
                       Revenue{sortArrow('revenue')}
                     </th>
                     <th
-                      className="px-4 py-2 font-medium text-stone-500 text-right cursor-pointer hover:text-stone-700"
+                      className="px-4 py-2 font-medium text-stone-500 text-right cursor-pointer hover:text-stone-200"
                       onClick={() => toggleSort('hours')}
                     >
                       Hours{sortArrow('hours')}
                     </th>
                     <th
-                      className="px-4 py-2 font-medium text-stone-500 text-right cursor-pointer hover:text-stone-700"
+                      className="px-4 py-2 font-medium text-stone-500 text-right cursor-pointer hover:text-stone-200"
                       onClick={() => toggleSort('rate')}
                     >
                       Rate{sortArrow('rate')}
@@ -230,7 +230,7 @@ export function RevenuePerHourAnalysis({ initialData, initialRange, fetchAction 
                       <td className="px-4 py-2 text-right">
                         <span className={`font-medium ${
                           event.perHourCents >= data.revenuePerHourCents
-                            ? 'text-emerald-700'
+                            ? 'text-emerald-200'
                             : 'text-red-600'
                         }`}>
                           {formatCurrency(event.perHourCents)}/hr

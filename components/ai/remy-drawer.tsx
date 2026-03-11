@@ -1460,7 +1460,7 @@ export function RemyDrawer() {
                       </div>
                       <button
                         onClick={handleCancel}
-                        className="text-xs text-red-500 hover:text-red-700 underline transition-colors ml-1"
+                        className="text-xs text-red-500 hover:text-red-200 underline transition-colors ml-1"
                       >
                         Stop generating
                       </button>
@@ -1479,7 +1479,7 @@ export function RemyDrawer() {
                       </span>
                       <button
                         onClick={handleCancel}
-                        className="ml-2 text-xs text-red-500 hover:text-red-700 underline transition-colors"
+                        className="ml-2 text-xs text-red-500 hover:text-red-200 underline transition-colors"
                         title="Cancel request"
                       >
                         Cancel

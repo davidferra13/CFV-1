@@ -5,7 +5,6 @@
 
 ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS timezone TEXT NOT NULL DEFAULT 'America/New_York';
-
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS event_timezone TEXT;
 -- NULL = use chef.timezone for this event (safe fallback for all existing events)

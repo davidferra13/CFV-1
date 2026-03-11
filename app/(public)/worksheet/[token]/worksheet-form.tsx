@@ -74,8 +74,8 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
   if (submitted) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-        <p className="text-lg font-semibold text-emerald-800">Thank you!</p>
-        <p className="mt-2 text-sm text-emerald-700">
+        <p className="text-lg font-semibold text-emerald-200">Thank you!</p>
+        <p className="mt-2 text-sm text-emerald-200">
           Your details have been submitted. Your chef will use this to prepare for your dinner.
         </p>
       </div>
@@ -85,16 +85,16 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-200">
           {error}
         </div>
       )}
 
       <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
-        <h2 className="text-sm font-semibold text-stone-800 uppercase tracking-wider">Your Info</h2>
+        <h2 className="text-sm font-semibold text-stone-200 uppercase tracking-wider">Your Info</h2>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-200 mb-1">
             Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -109,7 +109,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-stone-200 mb-1">Email</label>
             <input
               type="email"
               value={email}
@@ -119,7 +119,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Phone</label>
+            <label className="block text-sm font-medium text-stone-200 mb-1">Phone</label>
             <input
               type="tel"
               value={phone}
@@ -132,13 +132,13 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
       </div>
 
       <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
-        <h2 className="text-sm font-semibold text-stone-800 uppercase tracking-wider">
+        <h2 className="text-sm font-semibold text-stone-200 uppercase tracking-wider">
           Event Details
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Guest Count</label>
+            <label className="block text-sm font-medium text-stone-200 mb-1">Guest Count</label>
             <input
               type="number"
               min="1"
@@ -149,7 +149,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Address</label>
+            <label className="block text-sm font-medium text-stone-200 mb-1">Address</label>
             <input
               type="text"
               value={address}
@@ -162,12 +162,12 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
       </div>
 
       <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
-        <h2 className="text-sm font-semibold text-stone-800 uppercase tracking-wider">
+        <h2 className="text-sm font-semibold text-stone-200 uppercase tracking-wider">
           Dietary & Preferences
         </h2>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-200 mb-1">
             Dietary Restrictions
           </label>
           <input
@@ -181,7 +181,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Allergies</label>
+          <label className="block text-sm font-medium text-stone-200 mb-1">Allergies</label>
           <input
             type="text"
             value={allergies}
@@ -195,7 +195,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Food Preferences</label>
+          <label className="block text-sm font-medium text-stone-200 mb-1">Food Preferences</label>
           <textarea
             value={preferences}
             onChange={(e) => setPreferences(e.target.value)}
@@ -206,7 +206,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Special Requests</label>
+          <label className="block text-sm font-medium text-stone-200 mb-1">Special Requests</label>
           <textarea
             value={specialRequests}
             onChange={(e) => setSpecialRequests(e.target.value)}

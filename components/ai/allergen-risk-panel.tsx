@@ -9,9 +9,9 @@ import { toast } from 'sonner'
 import { AiSourceBadge } from './ai-source-badge'
 
 const RISK_COLORS: Record<string, string> = {
-  safe: 'text-green-700 bg-green-950',
-  may_contain: 'text-amber-700 bg-amber-950',
-  contains: 'text-red-700 bg-red-950',
+  safe: 'text-green-200 bg-green-950',
+  may_contain: 'text-amber-200 bg-amber-950',
+  contains: 'text-red-200 bg-red-950',
   unknown: 'text-stone-500 bg-stone-800',
 }
 
@@ -99,7 +99,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
           {result.safetyFlags.map((flag, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 text-xs text-red-700 bg-red-950 rounded p-2"
+              className="flex items-start gap-2 text-xs text-red-200 bg-red-950 rounded p-2"
             >
               <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
               {flag}

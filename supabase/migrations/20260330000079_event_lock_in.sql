@@ -5,6 +5,5 @@
 
 ALTER TABLE chef_preferences
   ADD COLUMN IF NOT EXISTS locked_event_id UUID REFERENCES events(id) ON DELETE SET NULL DEFAULT NULL;
-
 COMMENT ON COLUMN chef_preferences.locked_event_id IS
   'When set, chef is in event lock-in mode. Nav shows only event-relevant sections.';

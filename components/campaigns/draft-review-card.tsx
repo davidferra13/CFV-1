@@ -240,7 +240,7 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
       {approved && (
         <div className="flex items-center gap-2 mt-3">
           <Check className="w-3.5 h-3.5 text-green-600" />
-          <span className="text-xs text-green-700">Will be sent when you launch</span>
+          <span className="text-xs text-green-200">Will be sent when you launch</span>
         </div>
       )}
     </div>

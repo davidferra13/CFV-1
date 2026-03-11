@@ -37,7 +37,7 @@ export function CapacityWarningBanner({ warnings }: Props) {
         <div className="flex-1">
           <p
             className={`text-sm font-semibold mb-1 ${
-              hasHardWarning ? 'text-amber-800' : 'text-blue-800'
+              hasHardWarning ? 'text-amber-200' : 'text-blue-200'
             }`}
           >
             {hasHardWarning ? 'Workload limit reached' : 'Workload notice'}
@@ -46,7 +46,7 @@ export function CapacityWarningBanner({ warnings }: Props) {
             {warnings.map((w, i) => (
               <li
                 key={i}
-                className={`text-sm ${hasHardWarning ? 'text-amber-700' : 'text-blue-700'}`}
+                className={`text-sm ${hasHardWarning ? 'text-amber-200' : 'text-blue-200'}`}
               >
                 {w.message}
               </li>
@@ -59,8 +59,8 @@ export function CapacityWarningBanner({ warnings }: Props) {
         onClick={() => setDismissed(true)}
         className={`mt-3 text-xs font-medium underline underline-offset-2 ${
           hasHardWarning
-            ? 'text-amber-700 hover:text-amber-900'
-            : 'text-blue-700 hover:text-blue-900'
+            ? 'text-amber-200 hover:text-amber-900'
+            : 'text-blue-200 hover:text-blue-900'
         }`}
       >
         I understand, continue anyway

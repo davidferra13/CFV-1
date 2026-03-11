@@ -14,7 +14,6 @@ CREATE TYPE contract_status AS ENUM (
   'signed',   -- Client signed
   'voided'    -- Voided by chef (superseded or cancelled)
 );
-
 -- ============================================
 -- TABLE 1: CONTRACT TEMPLATES
 -- Reusable templates per chef with Markdown body.
@@ -32,23 +31,18 @@ CREATE TABLE contract_templates (
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_contract_templates_chef ON contract_templates(chef_id);
-
 COMMENT ON TABLE contract_templates IS 'Chef-owned reusable contract templates. Body uses Markdown with {{merge_field}} placeholders.';
 COMMENT ON COLUMN contract_templates.is_default IS 'If true, this template is pre-selected when generating a contract.';
 COMMENT ON COLUMN contract_templates.version IS 'Incremented on each edit so event_contracts can reference the version used.';
-
 -- Only one default template per chef
 CREATE UNIQUE INDEX idx_contract_templates_one_default
   ON contract_templates(chef_id)
   WHERE is_default = true;
-
 -- Auto-update updated_at
 CREATE TRIGGER trg_contract_templates_updated_at
   BEFORE UPDATE ON contract_templates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 2: EVENT CONTRACTS
 -- One per event. Captures the rendered body (with merge fields already filled),
@@ -81,21 +75,17 @@ CREATE TABLE event_contracts (
   created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_event_contracts_event    ON event_contracts(event_id);
 CREATE INDEX idx_event_contracts_chef     ON event_contracts(chef_id, status);
 CREATE INDEX idx_event_contracts_client   ON event_contracts(client_id);
-
 COMMENT ON TABLE event_contracts IS 'Event-specific contracts generated from templates. Body is a frozen snapshot with merge fields substituted. Immutable after signing.';
 COMMENT ON COLUMN event_contracts.body_snapshot IS 'Rendered Markdown body with all merge fields substituted at generation time. Never updated after signing.';
 COMMENT ON COLUMN event_contracts.signature_data_url IS 'Base64-encoded PNG of the client canvas signature.';
 COMMENT ON COLUMN event_contracts.signer_ip_address IS 'Client IP at time of signing — legal evidence.';
-
 -- Auto-update updated_at
 CREATE TRIGGER trg_event_contracts_updated_at
   BEFORE UPDATE ON event_contracts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- Prevent modification of a signed contract's body or signature
 CREATE OR REPLACE FUNCTION prevent_signed_contract_mutation()
 RETURNS TRIGGER AS $$
@@ -111,18 +101,15 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trg_event_contracts_immutable
   BEFORE UPDATE ON event_contracts
   FOR EACH ROW EXECUTE FUNCTION prevent_signed_contract_mutation();
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE contract_templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_contracts    ENABLE ROW LEVEL SECURITY;
-
 -- ---- contract_templates: chef-only ----
 
 CREATE POLICY ct_chef_select ON contract_templates
@@ -130,25 +117,21 @@ CREATE POLICY ct_chef_select ON contract_templates
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY ct_chef_insert ON contract_templates
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY ct_chef_update ON contract_templates
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY ct_chef_delete ON contract_templates
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 -- ---- event_contracts: chef full access ----
 
 CREATE POLICY ec_chef_select ON event_contracts
@@ -156,19 +139,16 @@ CREATE POLICY ec_chef_select ON event_contracts
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY ec_chef_insert ON event_contracts
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 CREATE POLICY ec_chef_update ON event_contracts
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
-
 -- Chef cannot hard-delete a signed contract
 CREATE POLICY ec_chef_delete ON event_contracts
   FOR DELETE USING (
@@ -176,7 +156,6 @@ CREATE POLICY ec_chef_delete ON event_contracts
     chef_id = get_current_tenant_id() AND
     status NOT IN ('signed')
   );
-
 -- ---- event_contracts: client can view and sign their own ----
 
 CREATE POLICY ec_client_select ON event_contracts
@@ -184,7 +163,6 @@ CREATE POLICY ec_client_select ON event_contracts
     get_current_user_role() = 'client' AND
     client_id = get_current_client_id()
   );
-
 -- Client can only update to mark viewed or sign (status, viewed_at, signed_at, signature fields)
 CREATE POLICY ec_client_update ON event_contracts
   FOR UPDATE USING (

@@ -23,15 +23,11 @@ create table if not exists gift_cards (
   updated_at timestamptz not null default now(),
   unique (tenant_id, code)
 );
-
 create index if not exists idx_gift_cards_tenant_code on gift_cards(tenant_id, code);
 create index if not exists idx_gift_cards_tenant_status on gift_cards(tenant_id, status);
-
 alter table gift_cards enable row level security;
-
 create policy "gift_cards_tenant_isolation" on gift_cards
   for all using (tenant_id = auth.uid());
-
 create table if not exists gift_card_transactions (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references chefs(id) on delete cascade,
@@ -43,16 +39,11 @@ create table if not exists gift_card_transactions (
   sale_id uuid,
   created_at timestamptz not null default now()
 );
-
 create index if not exists idx_gc_txn_tenant on gift_card_transactions(tenant_id);
 create index if not exists idx_gc_txn_card on gift_card_transactions(gift_card_id);
-
 alter table gift_card_transactions enable row level security;
-
 create policy "gc_txn_tenant_isolation" on gift_card_transactions
   for all using (tenant_id = auth.uid());
-
-
 -- ═══════════════════════════════════════════════════════════════════════
 -- U15: Sales Tax Tracking (multi-jurisdiction)
 -- ═══════════════════════════════════════════════════════════════════════
@@ -69,14 +60,10 @@ create table if not exists tax_jurisdictions (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create index if not exists idx_tax_jurisdictions_tenant on tax_jurisdictions(tenant_id);
-
 alter table tax_jurisdictions enable row level security;
-
 create policy "tax_jurisdictions_tenant_isolation" on tax_jurisdictions
   for all using (tenant_id = auth.uid());
-
 create table if not exists tax_collected (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references chefs(id) on delete cascade,
@@ -88,14 +75,10 @@ create table if not exists tax_collected (
   notes text,
   created_at timestamptz not null default now()
 );
-
 create index if not exists idx_tax_collected_tenant_date on tax_collected(tenant_id, sale_date);
-
 alter table tax_collected enable row level security;
-
 create policy "tax_collected_tenant_isolation" on tax_collected
   for all using (tenant_id = auth.uid());
-
 create table if not exists tax_filings (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references chefs(id) on delete cascade,
@@ -109,10 +92,7 @@ create table if not exists tax_filings (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create index if not exists idx_tax_filings_tenant on tax_filings(tenant_id);
-
 alter table tax_filings enable row level security;
-
 create policy "tax_filings_tenant_isolation" on tax_filings
   for all using (tenant_id = auth.uid());

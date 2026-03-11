@@ -180,7 +180,7 @@ export function ConvertToQuoteButton({
               {/* Error message */}
               {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="text-sm text-red-200">{error}</p>
                 </div>
               )}
             </div>

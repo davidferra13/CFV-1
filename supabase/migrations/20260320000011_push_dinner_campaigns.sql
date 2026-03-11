@@ -19,7 +19,6 @@ ALTER TABLE marketing_campaigns ADD CONSTRAINT marketing_campaigns_campaign_type
     're_engagement', 'seasonal', 'announcement',
     'thank_you', 'promotion', 'other', 'push_dinner'
   ));
-
 -- Also update campaign_templates if it exists
 ALTER TABLE campaign_templates DROP CONSTRAINT IF EXISTS campaign_templates_campaign_type_check;
 ALTER TABLE campaign_templates ADD CONSTRAINT campaign_templates_campaign_type_check
@@ -27,7 +26,6 @@ ALTER TABLE campaign_templates ADD CONSTRAINT campaign_templates_campaign_type_c
     're_engagement', 'seasonal', 'announcement',
     'thank_you', 'promotion', 'other', 'push_dinner'
   ));
-
 -- ============================================================
 -- 2. Extend marketing_campaigns with push-dinner fields
 -- ============================================================
@@ -49,7 +47,6 @@ ALTER TABLE marketing_campaigns
   -- 'link_only'     = shareable link / QR code only — chef distributes manually
   -- Multiple modes can be active simultaneously.
   ADD COLUMN IF NOT EXISTS delivery_modes TEXT[] NOT NULL DEFAULT '{"email"}';
-
 -- ============================================================
 -- 3. Extend campaign_recipients with draft/approval workflow
 -- ============================================================
@@ -61,7 +58,6 @@ ALTER TABLE campaign_recipients
   ADD COLUMN IF NOT EXISTS responded_at               TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS converted_to_inquiry_id    UUID REFERENCES inquiries(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS chef_notes                 TEXT;
-
 -- ============================================================
 -- 4. Add campaign_response to inquiry_channel enum
 --    (used when a client books via the public shareable link)
@@ -76,7 +72,6 @@ BEGIN
     ALTER TYPE inquiry_channel ADD VALUE 'campaign_response';
   END IF;
 END $$;
-
 -- ============================================================
 -- 5. Indexes
 -- ============================================================
@@ -85,12 +80,10 @@ END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_campaigns_public_token
   ON marketing_campaigns(public_booking_token)
   WHERE public_booking_token IS NOT NULL;
-
 -- Fast query for "pending drafts" tab on campaign detail page
 CREATE INDEX IF NOT EXISTS idx_campaign_recipients_pending_drafts
   ON campaign_recipients(campaign_id, chef_approved)
   WHERE chef_approved = FALSE AND sent_at IS NULL;
-
 -- Fast seat-count update during public bookings
 CREATE INDEX IF NOT EXISTS idx_campaigns_seats
   ON marketing_campaigns(id, seats_available, seats_booked)

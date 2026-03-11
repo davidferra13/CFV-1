@@ -70,10 +70,10 @@ const STATUS_BADGE: Record<
 }
 
 const TIER_CLASS: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-800',
+  bronze: 'bg-amber-900 text-amber-200',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-800',
-  platinum: 'bg-purple-900 text-purple-800',
+  gold: 'bg-yellow-900 text-yellow-200',
+  platinum: 'bg-purple-900 text-purple-200',
 }
 
 function actionLabel(status: string, price: number | null): string {
@@ -208,7 +208,7 @@ function PortalContent({ portalData }: { portalData: PortalData }) {
                 {loyaltyStatus.pointsBalance.toLocaleString()} pts
               </span>
               {loyaltyStatus.nextReward && (
-                <span className="text-xs text-purple-700">
+                <span className="text-xs text-purple-200">
                   {loyaltyStatus.nextReward.pointsNeeded} pts to {loyaltyStatus.nextReward.name}
                 </span>
               )}

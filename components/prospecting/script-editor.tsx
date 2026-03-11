@@ -87,7 +87,7 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-950 px-4 py-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-lg bg-red-950 px-4 py-3 text-sm text-red-200">{error}</div>
         )}
 
         <div className="space-y-2">

@@ -219,7 +219,7 @@ export function SplitBillingForm({
             {totalPercentage !== 100 && <AlertCircle className="h-4 w-4 text-red-500" />}
             <span
               className={`text-sm font-medium ${
-                totalPercentage === 100 ? 'text-emerald-700' : 'text-red-700'
+                totalPercentage === 100 ? 'text-emerald-200' : 'text-red-200'
               }`}
             >
               Total: {totalPercentage}%
@@ -227,7 +227,7 @@ export function SplitBillingForm({
           </div>
           <span
             className={`text-sm font-medium ${
-              totalPercentage === 100 ? 'text-emerald-700' : 'text-red-700'
+              totalPercentage === 100 ? 'text-emerald-200' : 'text-red-200'
             }`}
           >
             ${(splits.reduce((sum, s) => sum + s.amountCents, 0) / 100).toFixed(2)}

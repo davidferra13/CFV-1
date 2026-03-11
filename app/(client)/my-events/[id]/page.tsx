@@ -363,7 +363,7 @@ export default async function EventDetailPage({
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-stone-100">Balance Due</span>
                 <span
-                  className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-100'}`}
+                  className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-200' : 'text-stone-100'}`}
                 >
                   {formatCurrency(outstandingBalanceCents)}
                 </span>

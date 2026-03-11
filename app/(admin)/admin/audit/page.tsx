@@ -36,7 +36,7 @@ export default async function AdminAuditPage() {
       </div>
 
       {note && (
-        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-200">
           {note}
         </div>
       )}

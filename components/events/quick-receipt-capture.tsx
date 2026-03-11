@@ -1,12 +1,12 @@
 'use client'
 
-// QuickReceiptCapture — Inline receipt upload widget for live events.
+// QuickReceiptCapture - Inline receipt upload widget for live events.
 // Shown on the event detail page for events in 'confirmed' or 'in_progress' state.
 // Allows the chef to snap a receipt photo, preview it, and upload with one tap.
-// On success, the receipt is queued for background OCR and the chef is linked to the receipt summary.
+// On success, the receipt is queued for background OCR and linked to the receipt summary.
 
-import { useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useRef, useState, useTransition } from 'react'
 import { quickCaptureReceipt } from '@/lib/receipts/quick-capture'
 import { Button } from '@/components/ui/button'
 
@@ -24,8 +24,8 @@ export function QuickReceiptCapture({ eventId }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [, startTransition] = useTransition()
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0]
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0]
     if (!selected) return
     setFile(selected)
     setPreviewUrl(URL.createObjectURL(selected))
@@ -43,9 +43,11 @@ export function QuickReceiptCapture({ eventId }: Props) {
 
   function handleUpload() {
     if (!file) return
+
     setState('uploading')
     const formData = new FormData()
     formData.set('receipt', file)
+
     startTransition(async () => {
       try {
         const result = await quickCaptureReceipt(eventId, formData)
@@ -55,12 +57,13 @@ export function QuickReceiptCapture({ eventId }: Props) {
           if (previewUrl) URL.revokeObjectURL(previewUrl)
           setPreviewUrl(null)
           if (fileInputRef.current) fileInputRef.current.value = ''
-        } else {
-          setErrorMsg(result.error)
-          setState('error')
+          return
         }
+
+        setErrorMsg(result.error)
+        setState('error')
       } catch {
-        setErrorMsg('Upload failed — please try again')
+        setErrorMsg('Upload failed - please try again')
         setState('error')
       }
     })
@@ -68,19 +71,20 @@ export function QuickReceiptCapture({ eventId }: Props) {
 
   if (state === 'success') {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-950 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-950 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-semibold text-emerald-800">
-            Receipt uploaded — OCR processing in background
+          <p className="text-sm font-semibold text-emerald-200">
+            Receipt uploaded - OCR processing in background
           </p>
-          <p className="text-xs text-emerald-600 mt-0.5">
-            Line items will be ready for review shortly.
+          <p className="mt-0.5 text-xs text-emerald-600">
+            Parsed line items will be ready for review shortly. Nothing is added to expenses until
+            you approve.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href={`/events/${eventId}/receipts`}
-            className="text-sm font-medium text-emerald-700 hover:text-emerald-900 underline"
+            className="text-sm font-medium text-emerald-200 underline hover:text-emerald-100"
           >
             Review receipts
           </Link>
@@ -94,11 +98,12 @@ export function QuickReceiptCapture({ eventId }: Props) {
 
   return (
     <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-stone-200">Quick Receipt Capture</h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Snap a receipt now — OCR extracts line items automatically
+          <p className="mt-0.5 text-xs text-stone-500">
+            Snap a receipt now. OCR extracts line items automatically, then holds them for review
+            before approval.
           </p>
         </div>
         {state === 'idle' && (
@@ -108,7 +113,6 @@ export function QuickReceiptCapture({ eventId }: Props) {
         )}
       </div>
 
-      {/* Hidden file input — capture="environment" triggers camera on mobile */}
       <input
         ref={fileInputRef}
         type="file"
@@ -125,12 +129,12 @@ export function QuickReceiptCapture({ eventId }: Props) {
           <img
             src={previewUrl}
             alt="Receipt preview"
-            className="max-h-48 w-full object-contain rounded-md border border-stone-700 bg-stone-900"
+            className="max-h-48 w-full rounded-md border border-stone-700 bg-stone-900 object-contain"
           />
-          <p className="text-xs text-stone-500 truncate">{file?.name}</p>
+          <p className="truncate text-xs text-stone-500">{file?.name}</p>
           <div className="flex gap-2">
             <Button size="sm" onClick={handleUpload}>
-              Upload &amp; Process
+              Upload and Process
             </Button>
             <Button variant="ghost" size="sm" onClick={handleCancel}>
               Cancel
@@ -140,12 +144,12 @@ export function QuickReceiptCapture({ eventId }: Props) {
       )}
 
       {state === 'uploading' && (
-        <div className="flex items-center gap-2 text-sm text-stone-400 py-1">
+        <div className="flex items-center gap-2 py-1 text-sm text-stone-400">
           <span
-            className="inline-block w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"
+            className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"
             aria-hidden="true"
           />
-          Uploading and queuing for OCR...
+          Uploading and queuing for OCR. Nothing is added to expenses until you review it.
         </div>
       )}
 

@@ -199,7 +199,7 @@ function SettingsTab() {
               : 'Workflow tools are currently turned off.'}
           </p>
           <p
-            className={`text-xs mt-0.5 ${prefs.remy_enabled ? 'text-emerald-700' : 'text-stone-500'}`}
+            className={`text-xs mt-0.5 ${prefs.remy_enabled ? 'text-emerald-200' : 'text-stone-500'}`}
           >
             {prefs.remy_enabled
               ? 'Your data stays within ChefFlow. Nothing is sent to outside processing services.'

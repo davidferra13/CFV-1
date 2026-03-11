@@ -50,7 +50,7 @@ export default async function PaidInvoicesPage() {
         </Link>
         <div className="mt-1 flex items-center gap-3">
           <h1 className="text-3xl font-bold text-stone-100">Paid Invoices</h1>
-          <span className="rounded-full bg-green-900 px-2 py-0.5 text-sm text-green-700">
+          <span className="rounded-full bg-green-900 px-2 py-0.5 text-sm text-green-200">
             {paid.length}
           </span>
         </div>
@@ -61,7 +61,7 @@ export default async function PaidInvoicesPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalValue)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalValue)}</p>
           <p className="mt-1 text-sm text-stone-500">Total invoice value</p>
         </Card>
         <Card className="p-4">

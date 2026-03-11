@@ -71,7 +71,7 @@ export function TaxDeductionPanel() {
         </div>
         <div className="flex items-center gap-2">
           {result.totalEstimatedMissedCents > 0 && (
-            <span className="text-xs font-medium text-amber-700">
+            <span className="text-xs font-medium text-amber-200">
               {formatDollars(result.totalEstimatedMissedCents)} potentially missed
             </span>
           )}

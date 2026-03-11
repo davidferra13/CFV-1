@@ -28,40 +28,34 @@ CREATE TABLE IF NOT EXISTS kds_tickets (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- Index for station-based queries (the primary KDS query pattern)
 CREATE INDEX idx_kds_tickets_station_status
   ON kds_tickets(station_id, status)
   WHERE status NOT IN ('served', 'voided');
-
 -- Index for chef-wide queries (expeditor view)
 CREATE INDEX idx_kds_tickets_chef_active
   ON kds_tickets(chef_id, status)
   WHERE status NOT IN ('served', 'voided');
-
 -- Index for sale lookups
 CREATE INDEX idx_kds_tickets_sale ON kds_tickets(sale_id) WHERE sale_id IS NOT NULL;
-
 -- Index for check lookups (FOH-BOH)
 CREATE INDEX idx_kds_tickets_check ON kds_tickets(check_id) WHERE check_id IS NOT NULL;
-
 -- Auto-update updated_at
 CREATE TRIGGER set_kds_tickets_updated_at
   BEFORE UPDATE ON kds_tickets
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
-
 -- RLS
 ALTER TABLE kds_tickets ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY kds_tickets_tenant_isolation ON kds_tickets
-  USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()))
-  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()));
-
--- Add station_id to products for KDS routing (which station handles this product)
-ALTER TABLE products ADD COLUMN IF NOT EXISTS station_id uuid REFERENCES stations(id) ON DELETE SET NULL;
-CREATE INDEX IF NOT EXISTS idx_products_station ON products(station_id) WHERE station_id IS NOT NULL;
-
+  USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
+  WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+-- Add station_id to product projections for KDS routing.
+ALTER TABLE product_projections
+  ADD COLUMN IF NOT EXISTS station_id uuid REFERENCES stations(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_product_projections_station
+  ON product_projections(station_id)
+  WHERE station_id IS NOT NULL;
 -- Daily ticket number sequence helper
 -- Assigns the next ticket number for today for a given chef
 CREATE OR REPLACE FUNCTION next_kds_ticket_number(p_chef_id uuid)

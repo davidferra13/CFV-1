@@ -19,7 +19,6 @@ ALTER TABLE staff_members
   ADD COLUMN IF NOT EXISTS w9_signed_date DATE DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS w9_document_url TEXT DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS w9_collected BOOLEAN NOT NULL DEFAULT false;
-
 COMMENT ON COLUMN staff_members.tin IS
   'Tax Identification Number (SSN or EIN). Display last 4 digits only in UI.';
 COMMENT ON COLUMN staff_members.tin_type IS

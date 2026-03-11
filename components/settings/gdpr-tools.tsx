@@ -79,7 +79,7 @@ export function GdprTools() {
 
       <Card className="border-red-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-700">
+          <CardTitle className="flex items-center gap-2 text-red-200">
             <AlertTriangle className="h-5 w-5" />
             Danger Zone
           </CardTitle>

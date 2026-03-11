@@ -96,7 +96,7 @@ export function TakeAChefImport({
             <span className="text-2xl">✓</span>
             <div>
               <p className="font-semibold text-green-900 text-lg">Take a Chef Booking Captured</p>
-              <p className="text-green-700 text-sm mt-1">
+              <p className="text-green-200 text-sm mt-1">
                 {result.clientCreated ? 'New client created' : 'Existing client matched'} · Inquiry
                 and draft event created · Tagged as Take a Chef source
               </p>

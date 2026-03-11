@@ -420,7 +420,7 @@ export function JourneyEntryPanel({
           </label>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
               {error}
             </div>
           )}
@@ -464,7 +464,7 @@ export function JourneyEntryPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
+                    className="text-red-600 hover:text-red-200 hover:bg-red-950"
                     onClick={() => handleDelete(entry)}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -496,7 +496,7 @@ export function JourneyEntryPanel({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {entry.favorite_meal && (
                     <div className="rounded-md border border-amber-200 bg-amber-950 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-amber-700">
+                      <p className="text-[11px] uppercase tracking-wide text-amber-200">
                         Favorite Meal
                       </p>
                       <p className="text-sm text-amber-900 mt-1 whitespace-pre-wrap">
@@ -506,7 +506,7 @@ export function JourneyEntryPanel({
                   )}
                   {entry.favorite_experience && (
                     <div className="rounded-md border border-sky-200 bg-sky-950 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-sky-700">
+                      <p className="text-[11px] uppercase tracking-wide text-sky-200">
                         Favorite Experience
                       </p>
                       <p className="text-sm text-sky-900 mt-1 whitespace-pre-wrap">
@@ -521,7 +521,7 @@ export function JourneyEntryPanel({
                 {entry.what_i_learned.map((learning, index) => (
                   <span
                     key={`${entry.id}-learned-${index}`}
-                    className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-700 px-2 py-0.5 text-[11px]"
+                    className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-200 px-2 py-0.5 text-[11px]"
                   >
                     <BookOpen className="w-3 h-3" />
                     {learning}
@@ -530,7 +530,7 @@ export function JourneyEntryPanel({
                 {entry.inspiration_taken.map((idea, index) => (
                   <span
                     key={`${entry.id}-idea-${index}`}
-                    className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-[11px]"
+                    className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-200 px-2 py-0.5 text-[11px]"
                   >
                     <Lightbulb className="w-3 h-3" />
                     {idea}
@@ -555,7 +555,7 @@ export function JourneyEntryPanel({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {entry.mistakes_made.length > 0 && (
                     <div className="rounded-md border border-red-200 bg-red-950 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-red-700">
+                      <p className="text-[11px] uppercase tracking-wide text-red-200">
                         Mistakes / Missteps
                       </p>
                       <p className="text-sm text-red-900 mt-1 whitespace-pre-wrap">
@@ -565,7 +565,7 @@ export function JourneyEntryPanel({
                   )}
                   {entry.proud_moments.length > 0 && (
                     <div className="rounded-md border border-emerald-200 bg-emerald-950 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-emerald-700">
+                      <p className="text-[11px] uppercase tracking-wide text-emerald-200">
                         Proud Moments
                       </p>
                       <p className="text-sm text-emerald-900 mt-1 whitespace-pre-wrap">
@@ -575,7 +575,7 @@ export function JourneyEntryPanel({
                   )}
                   {entry.what_to_change_next_time.length > 0 && (
                     <div className="rounded-md border border-violet-200 bg-violet-950 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-violet-700">
+                      <p className="text-[11px] uppercase tracking-wide text-violet-200">
                         Change Next Time
                       </p>
                       <p className="text-sm text-violet-900 mt-1 whitespace-pre-wrap">

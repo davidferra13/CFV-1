@@ -16,12 +16,10 @@ DO $$ BEGIN
   CREATE TYPE raffle_round_status AS ENUM ('active', 'drawing', 'completed', 'cancelled');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 DO $$ BEGIN
   CREATE TYPE raffle_entry_source AS ENUM ('scratch_card', 'pan_catch', 'bonus');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
 -- =====================================================================================
 -- TABLE 1: raffle_rounds — one per month per tenant
 -- =====================================================================================
@@ -56,9 +54,7 @@ CREATE TABLE IF NOT EXISTS raffle_rounds (
   CONSTRAINT raffle_rounds_month_unique UNIQUE (tenant_id, month_start),
   CONSTRAINT raffle_rounds_month_order CHECK (month_start < month_end)
 );
-
 COMMENT ON TABLE raffle_rounds IS 'Monthly raffle rounds. Chef defines a prize, clients earn entries via games, automated drawing selects winner.';
-
 -- =====================================================================================
 -- TABLE 2: raffle_entries — one per client per day per round
 -- =====================================================================================
@@ -81,13 +77,10 @@ CREATE TABLE IF NOT EXISTS raffle_entries (
   -- One entry per client per day per round
   CONSTRAINT raffle_entries_daily_unique UNIQUE (round_id, client_id, entry_date)
 );
-
 COMMENT ON TABLE raffle_entries IS 'Individual raffle entries earned by playing games. Max 1 per client per day per round. Anonymous via alias_emoji.';
-
 -- Deferred FK for winner_entry
 ALTER TABLE raffle_rounds
   ADD COLUMN IF NOT EXISTS winner_entry_id UUID REFERENCES raffle_entries(id) ON DELETE SET NULL;
-
 -- =====================================================================================
 -- INDEXES
 -- =====================================================================================
@@ -95,37 +88,29 @@ ALTER TABLE raffle_rounds
 CREATE INDEX IF NOT EXISTS idx_raffle_rounds_tenant ON raffle_rounds(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_raffle_rounds_tenant_status ON raffle_rounds(tenant_id, status);
 CREATE INDEX IF NOT EXISTS idx_raffle_rounds_tenant_month ON raffle_rounds(tenant_id, month_start);
-
 CREATE INDEX IF NOT EXISTS idx_raffle_entries_round ON raffle_entries(round_id);
 CREATE INDEX IF NOT EXISTS idx_raffle_entries_client ON raffle_entries(client_id);
 CREATE INDEX IF NOT EXISTS idx_raffle_entries_round_client ON raffle_entries(round_id, client_id);
-
 -- =====================================================================================
 -- RLS POLICIES
 -- =====================================================================================
 
 ALTER TABLE raffle_rounds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE raffle_entries ENABLE ROW LEVEL SECURITY;
-
 -- Chef: full access to own tenant's rounds
 CREATE POLICY tenant_select_raffle_rounds ON raffle_rounds
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_insert_raffle_rounds ON raffle_rounds
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_update_raffle_rounds ON raffle_rounds
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- Chef: full access to own tenant's entries
 CREATE POLICY tenant_select_raffle_entries ON raffle_entries
   FOR SELECT USING (tenant_id = get_current_tenant_id());
-
 CREATE POLICY tenant_insert_raffle_entries ON raffle_entries
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
-
 -- Client: read own entries
 CREATE POLICY client_read_own_raffle_entries ON raffle_entries
   FOR SELECT
@@ -135,7 +120,6 @@ CREATE POLICY client_read_own_raffle_entries ON raffle_entries
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 -- Client: read active/completed rounds for their tenant
 CREATE POLICY client_read_raffle_rounds ON raffle_rounds
   FOR SELECT
@@ -146,7 +130,6 @@ CREATE POLICY client_read_raffle_rounds ON raffle_rounds
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
     )
   );
-
 -- Client: insert own entries
 CREATE POLICY client_insert_raffle_entries ON raffle_entries
   FOR INSERT
@@ -156,7 +139,6 @@ CREATE POLICY client_insert_raffle_entries ON raffle_entries
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
-
 -- =====================================================================================
 -- TRIGGERS
 -- =====================================================================================

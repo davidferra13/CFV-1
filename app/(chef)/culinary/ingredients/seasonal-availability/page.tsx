@@ -16,22 +16,22 @@ const SEASONS = [
   {
     name: 'Spring',
     months: 'Mar-May',
-    color: 'bg-green-900 text-green-800 border-green-200',
+    color: 'bg-green-900 text-green-200 border-green-200',
   },
   {
     name: 'Summer',
     months: 'Jun-Aug',
-    color: 'bg-yellow-900 text-yellow-800 border-yellow-200',
+    color: 'bg-yellow-900 text-yellow-200 border-yellow-200',
   },
   {
     name: 'Fall',
     months: 'Sep-Nov',
-    color: 'bg-orange-900 text-orange-800 border-orange-200',
+    color: 'bg-orange-900 text-orange-200 border-orange-200',
   },
   {
     name: 'Winter',
     months: 'Dec-Feb',
-    color: 'bg-blue-900 text-blue-800 border-blue-200',
+    color: 'bg-blue-900 text-blue-200 border-blue-200',
   },
 ] as const
 

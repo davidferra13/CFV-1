@@ -60,7 +60,7 @@ export function ClientSignalNotificationToggle({ initialEnabled }: Props) {
       </div>
 
       {enabled ? (
-        <p className="text-xs text-green-700 bg-green-950 rounded-lg px-3 py-2">
+        <p className="text-xs text-green-200 bg-green-950 rounded-lg px-3 py-2">
           On — you will be notified when your chef posts available booking dates.
         </p>
       ) : (

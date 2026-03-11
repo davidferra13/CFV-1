@@ -195,7 +195,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                       {state.confirmedTags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800"
+                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-200 ring-1 ring-inset ring-emerald-800"
                         >
                           {tag}
                           <button
@@ -219,13 +219,13 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                         {state.suggestedTags.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-200 ring-1 ring-inset ring-amber-800"
                           >
                             {tag}
                             <button
                               type="button"
                               onClick={() => handleAcceptTag(photo.id, tag)}
-                              className="text-emerald-500 hover:text-emerald-700"
+                              className="text-emerald-500 hover:text-emerald-200"
                               aria-label={`Accept tag ${tag}`}
                             >
                               <Check className="h-3 w-3" />

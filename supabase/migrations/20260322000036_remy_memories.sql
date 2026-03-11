@@ -42,30 +42,24 @@ CREATE TABLE IF NOT EXISTS remy_memories (
   created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 -- Primary query: load memories for this tenant, ordered by relevance
 CREATE INDEX idx_remy_memories_tenant_active_importance
   ON remy_memories(tenant_id, is_active, importance DESC, last_accessed_at DESC)
   WHERE is_active = true;
-
 -- Category-based filtering
 CREATE INDEX idx_remy_memories_tenant_category
   ON remy_memories(tenant_id, category, importance DESC)
   WHERE is_active = true;
-
 -- Client-specific memories
 CREATE INDEX idx_remy_memories_client
   ON remy_memories(tenant_id, related_client_id, importance DESC)
   WHERE related_client_id IS NOT NULL AND is_active = true;
-
 -- Deduplication lookup
 CREATE UNIQUE INDEX idx_remy_memories_dedup
   ON remy_memories(tenant_id, content_hash)
   WHERE is_active = true;
-
 -- RLS
 ALTER TABLE remy_memories ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY remy_memories_select ON remy_memories
   FOR SELECT USING (
     tenant_id IN (
@@ -73,7 +67,6 @@ CREATE POLICY remy_memories_select ON remy_memories
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY remy_memories_insert ON remy_memories
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -81,7 +74,6 @@ CREATE POLICY remy_memories_insert ON remy_memories
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 CREATE POLICY remy_memories_update ON remy_memories
   FOR UPDATE USING (
     tenant_id IN (
@@ -89,7 +81,6 @@ CREATE POLICY remy_memories_update ON remy_memories
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 -- No hard-delete policy — memories are soft-deleted via is_active = false
 
 -- Auto-update updated_at

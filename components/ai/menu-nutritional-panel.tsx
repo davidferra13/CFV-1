@@ -94,7 +94,7 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
               <span className="text-stone-300 flex-1">{course.dishName}</span>
               <span className="text-stone-500">{course.calories ?? '?'} kcal</span>
               <span
-                className={`text-[10px] px-1 rounded ${course.confidence === 'high' ? 'bg-green-950 text-green-700' : course.confidence === 'medium' ? 'bg-amber-950 text-amber-700' : 'bg-stone-800 text-stone-500'}`}
+                className={`text-[10px] px-1 rounded ${course.confidence === 'high' ? 'bg-green-950 text-green-200' : course.confidence === 'medium' ? 'bg-amber-950 text-amber-200' : 'bg-stone-800 text-stone-500'}`}
               >
                 {course.confidence}
               </span>

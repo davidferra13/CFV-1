@@ -36,14 +36,14 @@ function statusBg(status: string): string {
 function priorityBadge(priority: string): React.ReactNode {
   if (priority === 'rush') {
     return (
-      <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-bold text-orange-800 dark:bg-orange-900 dark:text-orange-200 animate-pulse">
+      <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-bold text-orange-200 dark:bg-orange-900 dark:text-orange-200 animate-pulse">
         RUSH
       </span>
     )
   }
   if (priority === 'vip') {
     return (
-      <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-bold text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+      <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-bold text-purple-200 dark:bg-purple-900 dark:text-purple-200">
         VIP
       </span>
     )
@@ -126,7 +126,7 @@ export default function KDSStationView({ stationId, stationName }: KDSStationVie
       </div>
 
       {error && (
-        <div className="m-2 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <div className="m-2 rounded-md bg-red-50 p-3 text-sm text-red-200 dark:bg-red-950 dark:text-red-300">
           {error}
         </div>
       )}

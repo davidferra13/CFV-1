@@ -8,7 +8,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Crown, Lock, Focus, Eye, EyeOff } from '@/components/ui/icons'
+import { Crown, Lock, Focus, Eye } from '@/components/ui/icons'
 import { MODULES } from '@/lib/billing/modules'
 import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
@@ -28,7 +28,6 @@ export function ModulesClient({
   tier,
   isGrandfathered,
   focusMode: initialFocusMode,
-  isAdmin,
 }: Props) {
   const router = useRouter()
   const [enabled, setEnabled] = useState<Set<string>>(new Set(initial))
@@ -69,7 +68,7 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await updateEnabledModules(Array.from(next))
-        toast.success(next.has(slug) ? 'Module enabled' : 'Module hidden')
+        toast.success('Module preference updated')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to update module')
@@ -122,8 +121,8 @@ export function ModulesClient({
               <h3 className="text-base font-semibold text-stone-100">Focus Mode</h3>
               <p className="text-sm text-stone-400 mt-0.5">
                 {focusMode
-                  ? 'Strict Focus Mode is active: only Commands, Sales, Events, and Clients groups are shown (plus Admin when available), with fixed shortcuts.'
-                  : 'All modules visible. Turn on Focus Mode to enforce a strict simplified sidebar.'}
+                  ? 'Focus Mode is active: core workflows stay prioritized in defaults and recommendations, but the full portal remains visible.'
+                  : 'The full portal is visible. Turn on Focus Mode to bias defaults toward the core workflow without hiding navigation.'}
               </p>
             </div>
           </div>
@@ -147,7 +146,7 @@ export function ModulesClient({
         {focusMode && (
           <div className="mt-4 pt-4 border-t border-stone-700/50">
             <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">
-              Active in Focus Mode
+              Prioritized in Focus Mode
             </p>
             <div className="grid gap-1.5 sm:grid-cols-2">
               {[
@@ -156,10 +155,10 @@ export function ModulesClient({
                 { label: 'Inquiries', desc: 'Primary shortcut' },
                 { label: 'Events', desc: 'Primary shortcut' },
                 { label: 'Clients', desc: 'Primary shortcut' },
-                { label: 'Commands group', desc: 'Visible in strict Focus Mode' },
-                { label: 'Sales group', desc: 'Visible in strict Focus Mode' },
-                { label: 'Events group', desc: 'Visible in strict Focus Mode' },
-                { label: 'Clients group', desc: 'Visible in strict Focus Mode' },
+                { label: 'Sales workflow', desc: 'Prioritized in defaults' },
+                { label: 'Events workflow', desc: 'Prioritized in defaults' },
+                { label: 'Clients workflow', desc: 'Prioritized in defaults' },
+                { label: 'Culinary workflow', desc: 'Core module remains emphasized' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm text-stone-300">
                   <Eye size={12} className="text-brand-400 shrink-0" />
@@ -169,26 +168,8 @@ export function ModulesClient({
               ))}
             </div>
             <p className="text-xs text-stone-500 mt-3">
-              Other areas stay available by direct URL, but are hidden from the sidebar until Focus
-              Mode is turned off.
+              Other areas stay visible in the sidebar and remain available throughout the portal.
             </p>
-          </div>
-        )}
-
-        {/* Admin: show visibility registry */}
-        {isAdmin && focusMode && (
-          <div className="mt-3 pt-3 border-t border-stone-700/50">
-            <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">
-              Hidden in Focus Mode (admin view)
-            </p>
-            <div className="grid gap-1.5 sm:grid-cols-2">
-              {MODULES.filter((m) => !CORE_MODULES.includes(m.slug as any)).map((mod) => (
-                <div key={mod.slug} className="flex items-center gap-2 text-sm text-stone-500">
-                  <EyeOff size={12} className="shrink-0" />
-                  <span>{mod.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>

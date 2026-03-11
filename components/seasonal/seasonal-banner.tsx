@@ -12,10 +12,10 @@ const SEASON_TINTS: Record<string, string> = {
 }
 
 const SEASON_TEXT: Record<string, string> = {
-  Winter: 'text-sky-800',
-  Spring: 'text-emerald-800',
-  Summer: 'text-amber-800',
-  Autumn: 'text-orange-800',
+  Winter: 'text-sky-200',
+  Spring: 'text-emerald-200',
+  Summer: 'text-amber-200',
+  Autumn: 'text-orange-200',
 }
 
 export function SeasonalBanner({
@@ -57,7 +57,7 @@ export function SeasonalBanner({
                 key={`active-${i}`}
                 className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
                   isEnding
-                    ? 'bg-amber-900 text-amber-700 ring-1 ring-amber-800'
+                    ? 'bg-amber-900 text-amber-200 ring-1 ring-amber-800'
                     : 'bg-stone-900/70 text-stone-400 ring-1 ring-stone-700'
                 }`}
               >
@@ -72,7 +72,7 @@ export function SeasonalBanner({
             .map((w, i) => (
               <span
                 key={`ending-${i}`}
-                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-900 text-amber-700 ring-1 ring-amber-800"
+                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-900 text-amber-200 ring-1 ring-amber-800"
               >
                 {w.ingredient}
                 <span className="text-[10px] opacity-70">ending soon</span>

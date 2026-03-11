@@ -6,7 +6,6 @@
 -- ==============================================
 CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_ingredient
   ON recipe_ingredients(ingredient_id);
-
 -- ==============================================
 -- menu_approval_requests: missing index on menu reference
 -- (if table exists from gap closure migration)
@@ -19,7 +18,6 @@ DO $$ BEGIN
       ON menu_approval_requests(client_id);
   END IF;
 END $$;
-
 -- ==============================================
 -- hub_guest_profiles: missing indexes on profile FK columns
 -- (heavily referenced by hub_messages, hub_connections, hub_polls)
@@ -30,7 +28,6 @@ DO $$ BEGIN
       ON hub_messages(author_profile_id);
   END IF;
 END $$;
-
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'hub_connections') THEN
     CREATE INDEX IF NOT EXISTS idx_hub_connections_from_profile
@@ -39,7 +36,6 @@ DO $$ BEGIN
       ON hub_connections(to_profile_id);
   END IF;
 END $$;
-
 -- ==============================================
 -- hub_group_members: missing index on group_id FK
 -- ==============================================
@@ -49,7 +45,6 @@ DO $$ BEGIN
       ON hub_group_members(group_id);
   END IF;
 END $$;
-
 -- ==============================================
 -- guest_feedback: missing index on event_guest FK
 -- ==============================================
@@ -59,7 +54,6 @@ DO $$ BEGIN
       ON guest_feedback(event_guest_id);
   END IF;
 END $$;
-
 -- ==============================================
 -- Composite indexes for common tenant+FK query patterns
 -- ==============================================
@@ -69,7 +63,6 @@ CREATE INDEX IF NOT EXISTS idx_chef_documents_tenant_event
   ON chef_documents(tenant_id, event_id) WHERE event_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_chef_documents_tenant_client
   ON chef_documents(tenant_id, client_id) WHERE client_id IS NOT NULL;
-
 -- vendor_price_points: vendor + ingredient (common join pattern)
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'vendor_price_points') THEN

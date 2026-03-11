@@ -4,7 +4,7 @@
 //
 // NOT a server action file - no 'use server'.
 
-import type { ArchetypeId } from './presets'
+import type { ArchetypeId } from './registry'
 
 /** All translatable term keys used across the UI. */
 export type TermKey = 'event' | 'client' | 'guest' | 'menu' | 'quote' | 'booking'

@@ -1,4 +1,4 @@
-// System Health Page — Shows connection and service statuses at a glance.
+// System Health Page - Shows connection and service statuses at a glance.
 // Chef can see if Stripe, Gmail, Google Calendar, and DOP tasks are healthy.
 
 import type { Metadata } from 'next'
@@ -24,9 +24,9 @@ interface HealthCheck {
 }
 
 const STATUS_COLORS: Record<StatusLevel, string> = {
-  ok: 'text-emerald-700 bg-emerald-950 border-emerald-200',
-  warning: 'text-amber-700 bg-amber-950 border-amber-200',
-  error: 'text-red-700 bg-red-950 border-red-200',
+  ok: 'text-emerald-200 bg-emerald-950 border-emerald-200',
+  warning: 'text-amber-200 bg-amber-950 border-amber-200',
+  error: 'text-red-200 bg-red-950 border-red-200',
   unknown: 'text-stone-500 bg-stone-800 border-stone-700',
 }
 
@@ -96,7 +96,7 @@ export default async function SystemHealthPage() {
       status: 'error',
       detail: 'Not connected. Clients cannot pay online.',
       actionHref: '/settings',
-      actionLabel: 'Connect Stripe →',
+      actionLabel: 'Connect Stripe ->',
     })
   } else if (!stripeStatus.chargesEnabled) {
     checks.push({
@@ -104,13 +104,13 @@ export default async function SystemHealthPage() {
       status: 'warning',
       detail: 'Connected but charges not yet enabled. Complete Stripe onboarding.',
       actionHref: '/settings',
-      actionLabel: 'Fix in Settings →',
+      actionLabel: 'Fix in Settings ->',
     })
   } else {
     checks.push({
       label: 'Stripe Payments',
       status: 'ok',
-      detail: `Connected${stripeStatus.payoutsEnabled ? ' · Payouts enabled' : ' · Payouts pending'}`,
+      detail: `Connected${stripeStatus.payoutsEnabled ? ' - Payouts enabled' : ' - Payouts pending'}`,
     })
   }
 
@@ -127,7 +127,7 @@ export default async function SystemHealthPage() {
       status: 'warning',
       detail: 'Not connected. Email scanning and auto drafts unavailable.',
       actionHref: '/settings',
-      actionLabel: 'Connect Gmail →',
+      actionLabel: 'Connect Gmail ->',
     })
   } else if (gmailStatus.gmail.errorCount > 0) {
     checks.push({
@@ -135,7 +135,7 @@ export default async function SystemHealthPage() {
       status: 'warning',
       detail: `${gmailStatus.gmail.errorCount} sync error${gmailStatus.gmail.errorCount === 1 ? '' : 's'}. Check your Google connection.`,
       actionHref: '/settings',
-      actionLabel: 'Review →',
+      actionLabel: 'Review ->',
     })
   } else {
     const lastSync = gmailStatus.gmail.lastSync
@@ -144,7 +144,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Gmail Integration',
       status: 'ok',
-      detail: `${gmailStatus.gmail.email ?? 'Connected'} · ${lastSync}`,
+      detail: `${gmailStatus.gmail.email ?? 'Connected'} - ${lastSync}`,
     })
   }
 
@@ -159,18 +159,18 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Google Calendar',
       status: 'warning',
-      detail: "Not connected — confirmed events won't sync to your calendar",
-      actionHref: '/settings',
-      actionLabel: 'Connect Calendar →',
+      detail: "Not connected - confirmed events won't sync to your calendar",
+      actionHref: '/settings/calendar-sync',
+      actionLabel: 'Connect Calendar ->',
     })
   } else {
     const lastSync = calendarStatus.lastSync
       ? `Last synced ${formatDistanceToNow(new Date(calendarStatus.lastSync), { addSuffix: true })}`
-      : 'Connected — sync fires on event confirmation'
+      : 'Connected - sync fires on event confirmation'
     checks.push({
       label: 'Google Calendar',
       status: 'ok',
-      detail: `${calendarStatus.email ?? 'Connected'} · ${lastSync}`,
+      detail: `${calendarStatus.email ?? 'Connected'} - ${lastSync}`,
     })
   }
 
@@ -185,9 +185,9 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'DOP Tasks',
       status: 'error',
-      detail: `${dopDigest.overdueCount} overdue task${dopDigest.overdueCount === 1 ? '' : 's'} — action required`,
+      detail: `${dopDigest.overdueCount} overdue task${dopDigest.overdueCount === 1 ? '' : 's'} - action required`,
       actionHref: '/dashboard',
-      actionLabel: 'View Tasks →',
+      actionLabel: 'View Tasks ->',
     })
   } else if (dopDigest.dueTodayCount > 0) {
     checks.push({
@@ -195,7 +195,7 @@ export default async function SystemHealthPage() {
       status: 'warning',
       detail: `${dopDigest.dueTodayCount} task${dopDigest.dueTodayCount === 1 ? '' : 's'} due today`,
       actionHref: '/dashboard',
-      actionLabel: 'View →',
+      actionLabel: 'View ->',
     })
   } else {
     checks.push({
@@ -204,11 +204,10 @@ export default async function SystemHealthPage() {
       detail:
         dopDigest.totalIncomplete === 0
           ? 'All tasks complete'
-          : `${dopDigest.totalIncomplete} upcoming — nothing overdue`,
+          : `${dopDigest.totalIncomplete} upcoming - nothing overdue`,
     })
   }
 
-  // Overall status
   const hasError = checks.some((c) => c.status === 'error')
   const hasWarning = checks.some((c) => c.status === 'warning')
   const overallStatus: StatusLevel = hasError ? 'error' : hasWarning ? 'warning' : 'ok'
@@ -223,7 +222,7 @@ export default async function SystemHealthPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-300">
-          ← Settings
+          {'<- Settings'}
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">System Health</h1>
         <p className="text-stone-500 mt-1">
@@ -231,7 +230,6 @@ export default async function SystemHealthPage() {
         </p>
       </div>
 
-      {/* Overall status banner */}
       <Card className={`p-4 border ${STATUS_COLORS[overallStatus]}`}>
         <div className="flex items-center gap-3">
           <span
@@ -242,7 +240,6 @@ export default async function SystemHealthPage() {
         </div>
       </Card>
 
-      {/* Individual checks */}
       <div className="space-y-3">
         {checks.map((check) => (
           <HealthRow key={check.label} check={check} />

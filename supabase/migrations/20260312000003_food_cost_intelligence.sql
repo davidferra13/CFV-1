@@ -18,14 +18,11 @@ CREATE TABLE IF NOT EXISTS inventory_counts (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_inventory_counts_chef ON inventory_counts(chef_id);
 CREATE INDEX idx_inventory_counts_ingredient ON inventory_counts(chef_id, ingredient_name);
-
 CREATE TRIGGER trg_inventory_counts_updated_at
   BEFORE UPDATE ON inventory_counts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 2: WASTE LOGS
 -- ============================================
@@ -43,10 +40,8 @@ CREATE TABLE IF NOT EXISTS waste_logs (
   notes                 TEXT,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_waste_logs_chef ON waste_logs(chef_id, created_at DESC);
 CREATE INDEX idx_waste_logs_event ON waste_logs(event_id);
-
 -- ============================================
 -- TABLE 3: VENDOR INVOICES
 -- ============================================
@@ -64,14 +59,11 @@ CREATE TABLE IF NOT EXISTS vendor_invoices (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_vendor_invoices_chef ON vendor_invoices(chef_id, invoice_date DESC);
 CREATE INDEX idx_vendor_invoices_vendor ON vendor_invoices(vendor_id);
-
 CREATE TRIGGER trg_vendor_invoices_updated_at
   BEFORE UPDATE ON vendor_invoices
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- TABLE 4: VENDOR INVOICE ITEMS
 -- ============================================
@@ -87,9 +79,7 @@ CREATE TABLE IF NOT EXISTS vendor_invoice_items (
   price_changed           BOOLEAN NOT NULL DEFAULT false,
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX idx_vendor_invoice_items_invoice ON vendor_invoice_items(vendor_invoice_id);
-
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -98,25 +88,21 @@ ALTER TABLE inventory_counts      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE waste_logs            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendor_invoices       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendor_invoice_items  ENABLE ROW LEVEL SECURITY;
-
 -- inventory_counts
 CREATE POLICY ic_chef_select ON inventory_counts FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ic_chef_insert ON inventory_counts FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ic_chef_update ON inventory_counts FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ic_chef_delete ON inventory_counts FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- waste_logs
 CREATE POLICY wl_chef_select ON waste_logs FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY wl_chef_insert ON waste_logs FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY wl_chef_update ON waste_logs FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY wl_chef_delete ON waste_logs FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- vendor_invoices
 CREATE POLICY vi_chef_select ON vendor_invoices FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY vi_chef_insert ON vendor_invoices FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY vi_chef_update ON vendor_invoices FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY vi_chef_delete ON vendor_invoices FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
-
 -- vendor_invoice_items (via parent join)
 CREATE POLICY vii_chef_select ON vendor_invoice_items FOR SELECT USING (
   EXISTS (SELECT 1 FROM vendor_invoices vi WHERE vi.id = vendor_invoice_id AND vi.chef_id = get_current_tenant_id() AND get_current_user_role() = 'chef')

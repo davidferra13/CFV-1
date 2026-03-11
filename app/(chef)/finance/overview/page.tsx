@@ -85,21 +85,21 @@ export default async function FinanceOverviewPage() {
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
             Total Business Expenses
           </p>
-          <p className="text-3xl font-bold text-red-700">{formatCurrency(totalExpenses)}</p>
+          <p className="text-3xl font-bold text-red-200">{formatCurrency(totalExpenses)}</p>
           <p className="text-sm text-stone-500 mt-1">{expenses.length} expense records</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
             Completed Event Revenue
           </p>
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(completedRevenue)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(completedRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">{completedEvents.length} completed events</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
             Outstanding Balances
           </p>
-          <p className="text-2xl font-bold text-amber-700">{outstandingEvents.length}</p>
+          <p className="text-2xl font-bold text-amber-200">{outstandingEvents.length}</p>
           <p className="text-sm text-stone-500 mt-1">past events with unpaid balance</p>
         </Card>
       </div>

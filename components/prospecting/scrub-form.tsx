@@ -251,8 +251,8 @@ export function ScrubForm() {
           <div
             className={`p-4 rounded-lg text-sm ${
               result.success
-                ? 'bg-green-950 border border-green-200 text-green-800'
-                : 'bg-red-950 border border-red-200 text-red-800'
+                ? 'bg-green-950 border border-green-200 text-green-200'
+                : 'bg-red-950 border border-red-200 text-red-200'
             }`}
           >
             {result.success ? (

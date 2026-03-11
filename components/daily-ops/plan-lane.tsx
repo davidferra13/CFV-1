@@ -19,8 +19,8 @@ const LANE_COLORS: Record<string, { border: string; bg: string; text: string; ba
   quick_admin: {
     border: 'border-amber-200',
     bg: 'bg-amber-950/30',
-    text: 'text-amber-700',
-    badge: 'bg-amber-900 text-amber-700',
+    text: 'text-amber-200',
+    badge: 'bg-amber-900 text-amber-200',
   },
   event_prep: {
     border: 'border-brand-700',
@@ -31,14 +31,14 @@ const LANE_COLORS: Record<string, { border: string; bg: string; text: string; ba
   creative: {
     border: 'border-purple-200',
     bg: 'bg-purple-950/30',
-    text: 'text-purple-700',
-    badge: 'bg-purple-900 text-purple-700',
+    text: 'text-purple-200',
+    badge: 'bg-purple-900 text-purple-200',
   },
   relationship: {
     border: 'border-sky-200',
     bg: 'bg-sky-950/30',
-    text: 'text-sky-700',
-    badge: 'bg-sky-900 text-sky-700',
+    text: 'text-sky-200',
+    badge: 'bg-sky-900 text-sky-200',
   },
 }
 

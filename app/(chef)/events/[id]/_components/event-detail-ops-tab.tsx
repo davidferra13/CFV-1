@@ -326,7 +326,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-semibold">Post-Event Closure</h2>
             {closureStatus.allComplete && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-200">
                 All Complete
               </span>
             )}
@@ -425,7 +425,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
                     {aar.forgotten_items.map((item: string) => (
                       <span
                         key={item}
-                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-800"
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-200"
                       >
                         {item}
                       </span>

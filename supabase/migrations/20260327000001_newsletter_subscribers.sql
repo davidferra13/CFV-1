@@ -9,12 +9,9 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   unsubscribed_at timestamptz,
   source text DEFAULT 'website_footer'
 );
-
 -- Index for quick lookup
 CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_email ON newsletter_subscribers (email);
-
 -- RLS: Only service role can read/write (server actions use admin client)
 ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
-
 -- No public policies — all access via admin client (service role)
 COMMENT ON TABLE newsletter_subscribers IS 'Email signups from public footer newsletter form. Accessed only via admin client.';

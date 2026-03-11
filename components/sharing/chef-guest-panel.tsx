@@ -149,15 +149,15 @@ export function ChefGuestPanel({
           {/* Counts */}
           <div className="grid grid-cols-5 gap-2 text-center text-xs">
             <div>
-              <span className="font-bold text-emerald-700">{summary.attending_count}</span>
+              <span className="font-bold text-emerald-200">{summary.attending_count}</span>
               <span className="text-stone-500 ml-1">Attending</span>
             </div>
             <div>
-              <span className="font-bold text-amber-700">{summary.maybe_count}</span>
+              <span className="font-bold text-amber-200">{summary.maybe_count}</span>
               <span className="text-stone-500 ml-1">Maybe</span>
             </div>
             <div>
-              <span className="font-bold text-red-700">{summary.declined_count}</span>
+              <span className="font-bold text-red-200">{summary.declined_count}</span>
               <span className="text-stone-500 ml-1">Declined</span>
             </div>
             <div>
@@ -195,7 +195,7 @@ export function ChefGuestPanel({
                 {summary.all_dietary_restrictions.map((r) => (
                   <span
                     key={r}
-                    className="px-2 py-0.5 bg-amber-950 text-amber-700 rounded-full text-xs font-medium"
+                    className="px-2 py-0.5 bg-amber-950 text-amber-200 rounded-full text-xs font-medium"
                   >
                     {r}
                   </span>
@@ -210,7 +210,7 @@ export function ChefGuestPanel({
                 {summary.all_allergies.map((a) => (
                   <span
                     key={a}
-                    className="px-2 py-0.5 bg-red-950 text-red-700 rounded-full text-xs font-medium"
+                    className="px-2 py-0.5 bg-red-950 text-red-200 rounded-full text-xs font-medium"
                   >
                     {a}
                   </span>

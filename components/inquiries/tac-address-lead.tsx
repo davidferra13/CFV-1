@@ -84,7 +84,7 @@ export function TacAddressLead({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Badge variant={isStale ? 'error' : 'warning'}>{isStale ? 'Stale' : 'Untouched'}</Badge>
-          <p className="text-sm font-medium text-stone-800 truncate">
+          <p className="text-sm font-medium text-stone-200 truncate">
             {displayName} — new TakeAChef lead
           </p>
           <span

@@ -53,7 +53,7 @@ export function OrderStatusTracker({ orderId, chefSlug, initialStatus }: Props) 
       {/* Status timeline */}
       {isCancelled ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-          <p className="text-red-700 font-medium">Order Cancelled</p>
+          <p className="text-red-200 font-medium">Order Cancelled</p>
           <p className="text-red-500 text-sm mt-1">This order has been cancelled.</p>
         </div>
       ) : (
@@ -125,7 +125,7 @@ export function OrderStatusTracker({ orderId, chefSlug, initialStatus }: Props) 
         <div className="space-y-2">
           {status.items.map((item, i) => (
             <div key={i} className="flex justify-between text-sm">
-              <span className="text-stone-700">
+              <span className="text-stone-200">
                 {item.quantity}x {item.name}
               </span>
               <span className="text-stone-900 font-medium">

@@ -19,14 +19,14 @@ import { format } from 'date-fns'
 export const metadata: Metadata = { title: 'Transaction Log - ChefFlow' }
 
 const ENTRY_TYPE_STYLES: Record<string, string> = {
-  payment: 'bg-green-900 text-green-700',
-  deposit: 'bg-emerald-900 text-emerald-700',
-  installment: 'bg-teal-900 text-teal-700',
-  final_payment: 'bg-green-900 text-green-800',
-  add_on: 'bg-blue-900 text-blue-700',
-  credit: 'bg-sky-900 text-sky-700',
-  tip: 'bg-amber-900 text-amber-700',
-  refund: 'bg-red-900 text-red-700',
+  payment: 'bg-green-900 text-green-200',
+  deposit: 'bg-emerald-900 text-emerald-200',
+  installment: 'bg-teal-900 text-teal-200',
+  final_payment: 'bg-green-900 text-green-200',
+  add_on: 'bg-blue-900 text-blue-200',
+  credit: 'bg-sky-900 text-sky-200',
+  tip: 'bg-amber-900 text-amber-200',
+  refund: 'bg-red-900 text-red-200',
 }
 
 export default async function TransactionLogPage() {
@@ -68,7 +68,7 @@ export default async function TransactionLogPage() {
           <p className="text-sm text-stone-500 mt-1">Total entries</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalIn)}</p>
+          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalIn)}</p>
           <p className="text-sm text-stone-500 mt-1">Total collected</p>
         </Card>
         <Card className="p-4">
@@ -129,7 +129,7 @@ export default async function TransactionLogPage() {
                     {entry.payment_method?.replace(/_/g, ' ') ?? '—'}
                   </TableCell>
                   <TableCell
-                    className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-700'}`}
+                    className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-200'}`}
                   >
                     {entry.is_refund ? '−' : '+'}
                     {formatCurrency(Math.abs(entry.amount_cents))}

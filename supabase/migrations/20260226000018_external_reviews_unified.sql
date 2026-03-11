@@ -23,13 +23,10 @@ CREATE TABLE IF NOT EXISTS external_review_sources (
 
   CONSTRAINT uq_external_review_source_label UNIQUE (tenant_id, label)
 );
-
 CREATE INDEX IF NOT EXISTS idx_external_review_sources_tenant_active
   ON external_review_sources(tenant_id, active, provider);
-
 COMMENT ON TABLE external_review_sources IS
   'Configured external review connectors per chef tenant. Supports Google Places API and owned-site JSON-LD review parsing.';
-
 CREATE TABLE IF NOT EXISTS external_reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -53,19 +50,14 @@ CREATE TABLE IF NOT EXISTS external_reviews (
 
   CONSTRAINT uq_external_reviews_source UNIQUE (tenant_id, provider, source_review_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_external_reviews_tenant_date
   ON external_reviews(tenant_id, review_date DESC, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_external_reviews_source
   ON external_reviews(source_id, last_seen_at DESC);
-
 COMMENT ON TABLE external_reviews IS
   'Normalized external reviews with source attribution and direct links for unified portal display.';
-
 ALTER TABLE external_review_sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE external_reviews ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Chefs manage own external review sources" ON external_review_sources;
 CREATE POLICY "Chefs manage own external review sources"
   ON external_review_sources
@@ -82,7 +74,6 @@ CREATE POLICY "Chefs manage own external review sources"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS "Chefs manage own external reviews" ON external_reviews;
 CREATE POLICY "Chefs manage own external reviews"
   ON external_reviews
@@ -99,27 +90,23 @@ CREATE POLICY "Chefs manage own external reviews"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
-
 DROP POLICY IF EXISTS "Service role manages external review sources" ON external_review_sources;
 CREATE POLICY "Service role manages external review sources"
   ON external_review_sources
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 DROP POLICY IF EXISTS "Service role manages external reviews" ON external_reviews;
 CREATE POLICY "Service role manages external reviews"
   ON external_reviews
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
 DROP TRIGGER IF EXISTS trg_external_review_sources_updated_at ON external_review_sources;
 CREATE TRIGGER trg_external_review_sources_updated_at
   BEFORE UPDATE ON external_review_sources
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
 DROP TRIGGER IF EXISTS trg_external_reviews_updated_at ON external_reviews;
 CREATE TRIGGER trg_external_reviews_updated_at
   BEFORE UPDATE ON external_reviews

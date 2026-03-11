@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { MOBILE_CAPTURE_IMAGE_ACCEPT } from '@/lib/uploads/mobile-capture-types'
 import {
   uploadEventPhoto,
   deleteEventPhoto,
@@ -158,7 +159,7 @@ function PhotoCard({
               <button
                 type="button"
                 onClick={onDelete}
-                className="text-xs text-red-600 hover:text-red-800 font-medium px-1.5 py-0.5"
+                className="text-xs text-red-600 hover:text-red-200 font-medium px-1.5 py-0.5"
               >
                 Delete
               </button>
@@ -365,7 +366,7 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
 
         {/* Error banner */}
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950 border border-red-200 text-sm text-red-700 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-lg bg-red-950 border border-red-200 text-sm text-red-200 flex items-start gap-2">
             <svg
               className="w-4 h-4 mt-0.5 flex-shrink-0"
               fill="none"
@@ -414,7 +415,8 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+              accept={MOBILE_CAPTURE_IMAGE_ACCEPT}
+              capture="environment"
               multiple
               aria-label="Upload dinner photos"
               className="sr-only"

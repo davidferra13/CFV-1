@@ -17,13 +17,13 @@ import {
 export const metadata: Metadata = { title: 'Components - ChefFlow' }
 
 const CATEGORY_STYLES: Record<string, string> = {
-  sauce: 'bg-orange-900 text-orange-700',
-  protein: 'bg-red-900 text-red-700',
-  starch: 'bg-yellow-900 text-yellow-700',
-  vegetable: 'bg-green-900 text-green-700',
-  garnish: 'bg-lime-900 text-lime-700',
-  base: 'bg-amber-900 text-amber-700',
-  topping: 'bg-pink-900 text-pink-700',
+  sauce: 'bg-orange-900 text-orange-200',
+  protein: 'bg-red-900 text-red-200',
+  starch: 'bg-yellow-900 text-yellow-200',
+  vegetable: 'bg-green-900 text-green-200',
+  garnish: 'bg-lime-900 text-lime-200',
+  base: 'bg-amber-900 text-amber-200',
+  topping: 'bg-pink-900 text-pink-200',
   seasoning: 'bg-stone-800 text-stone-300',
   other: 'bg-stone-800 text-stone-400',
 }
@@ -37,11 +37,11 @@ const TRANSPORT_LABELS: Record<string, string> = {
 }
 
 const TRANSPORT_STYLES: Record<string, string> = {
-  cold: 'bg-blue-900 text-blue-700',
-  frozen: 'bg-sky-900 text-sky-700',
+  cold: 'bg-blue-900 text-blue-200',
+  frozen: 'bg-sky-900 text-sky-200',
   room_temp: 'bg-stone-800 text-stone-400',
-  fragile: 'bg-amber-900 text-amber-700',
-  liquid: 'bg-cyan-900 text-cyan-700',
+  fragile: 'bg-amber-900 text-amber-200',
+  liquid: 'bg-cyan-900 text-cyan-200',
 }
 
 export default async function ComponentsPage() {
@@ -77,7 +77,7 @@ export default async function ComponentsPage() {
             <p className="text-sm text-stone-500 mt-1">Total components</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-700">{linkedCount}</p>
+            <p className="text-2xl font-bold text-green-200">{linkedCount}</p>
             <p className="text-sm text-stone-500 mt-1">Linked to a recipe</p>
           </Card>
           <Card className="p-4">
@@ -85,7 +85,7 @@ export default async function ComponentsPage() {
             <p className="text-sm text-stone-500 mt-1">Missing recipe</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-700">{makeAheadCount}</p>
+            <p className="text-2xl font-bold text-amber-200">{makeAheadCount}</p>
             <p className="text-sm text-stone-500 mt-1">Make-ahead</p>
           </Card>
         </div>
@@ -145,7 +145,7 @@ export default async function ComponentsPage() {
                     {comp.recipe_id ? (
                       <Link
                         href={`/culinary/recipes/${comp.recipe_id}`}
-                        className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                        className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full hover:bg-green-200"
                       >
                         Linked
                       </Link>
@@ -155,7 +155,7 @@ export default async function ComponentsPage() {
                   </TableCell>
                   <TableCell>
                     {comp.is_make_ahead ? (
-                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
                         {comp.make_ahead_window_hours
                           ? `${comp.make_ahead_window_hours}h ahead`
                           : 'Make ahead'}

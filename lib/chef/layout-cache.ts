@@ -10,6 +10,7 @@
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { upgradeLegacyPrimaryNavHrefs } from '@/lib/navigation/primary-shortcuts'
 
 export const CHEF_LAYOUT_CACHE_TAG = 'chef-layout'
 
@@ -72,9 +73,11 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         portal_primary_color: chefResult.data?.portal_primary_color ?? null,
         portal_background_color: chefResult.data?.portal_background_color ?? null,
         portal_background_image_url: chefResult.data?.portal_background_image_url ?? null,
-        primary_nav_hrefs: Array.isArray(prefsResult.data?.primary_nav_hrefs)
-          ? (prefsResult.data.primary_nav_hrefs as string[])
-          : [],
+        primary_nav_hrefs: upgradeLegacyPrimaryNavHrefs(
+          Array.isArray(prefsResult.data?.primary_nav_hrefs)
+            ? (prefsResult.data.primary_nav_hrefs as string[])
+            : []
+        ),
         enabled_modules: Array.isArray((prefsResult.data as any)?.enabled_modules)
           ? ((prefsResult.data as any).enabled_modules as string[])
           : [],

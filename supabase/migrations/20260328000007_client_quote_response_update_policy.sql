@@ -2,7 +2,6 @@
 -- This restores DB-level enforcement for client quote acceptance/rejection flows.
 
 DROP POLICY IF EXISTS quotes_client_can_update_own_pending ON quotes;
-
 CREATE POLICY quotes_client_can_update_own_pending ON quotes
   FOR UPDATE
   USING (

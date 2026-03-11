@@ -3,6 +3,8 @@
 // Update this when adding new pages. nav-config.tsx is the visual config;
 // this is the text-only version for AI and tools.
 
+import { collectNavRouteEntries } from '@/components/navigation/nav-config'
+
 export interface RouteEntry {
   path: string
   label: string
@@ -16,7 +18,7 @@ export interface RouteEntry {
  * All navigable routes in ChefFlow.
  * When you add a new page, add it here too.
  */
-export const ROUTE_REGISTRY: RouteEntry[] = [
+const CURATED_ROUTE_REGISTRY: RouteEntry[] = [
   // Core
   { path: '/dashboard', label: 'Dashboard', description: 'Dashboard overview' },
   { path: '/briefing', label: 'Briefing', description: 'Morning briefing and daily prep' },
@@ -31,6 +33,13 @@ export const ROUTE_REGISTRY: RouteEntry[] = [
   // Clients
   { path: '/clients', label: 'Clients', description: 'Client directory' },
   { path: '/clients/new', label: 'New Client', description: 'Add a new client' },
+  {
+    path: '/communications',
+    label: 'Communications',
+    description: 'Client communication workspace',
+  },
+  { path: '/feedback', label: 'Feedback', description: 'Customer feedback and testimonial intake' },
+  { path: '/surveys', label: 'Surveys', description: 'Survey inbox and response tracking' },
   { path: '/circles', label: 'Circles', description: 'Client circles and community hub' },
 
   // Sales
@@ -60,6 +69,11 @@ export const ROUTE_REGISTRY: RouteEntry[] = [
   { path: '/quotes', label: 'Quotes', description: 'Quote management' },
   { path: '/quotes/new', label: 'New Quote', description: 'Create a new quote' },
   { path: '/proposals', label: 'Proposals', description: 'Proposal templates' },
+  {
+    path: '/wix-submissions',
+    label: 'Wix Submissions',
+    description: 'Inbound Wix lead submissions',
+  },
 
   // Events
   { path: '/events', label: 'All Events', description: 'All events list' },
@@ -81,28 +95,56 @@ export const ROUTE_REGISTRY: RouteEntry[] = [
   // Calendar
   { path: '/schedule', label: 'Calendar', description: 'Calendar and availability' },
   { path: '/calendar', label: 'Calendar Views', description: 'Calendar views' },
+  {
+    path: '/production',
+    label: 'Production Calendar',
+    description: 'Production planning calendar',
+  },
+  { path: '/scheduling', label: 'Scheduling', description: 'Scheduling dashboard' },
 
   // Culinary
+  {
+    path: '/culinary',
+    label: 'Culinary Hub',
+    description: 'Culinary workspace and kitchen systems',
+  },
   { path: '/recipes', label: 'Recipes', description: 'Recipe library' },
   { path: '/recipes/new', label: 'New Recipe', description: 'Create a new recipe' },
   { path: '/recipes/ingredients', label: 'Ingredients', description: 'Ingredient database' },
   { path: '/menus', label: 'Menus', description: 'Menu library' },
   { path: '/menus/new', label: 'New Menu', description: 'Create a new menu' },
+  { path: '/bakery/production', label: 'Bakery', description: 'Bakery production workflow' },
   { path: '/rate-card', label: 'Rate Card', description: 'Service rate card and pricing' },
 
   // Operations
+  { path: '/operations', label: 'Operations Hub', description: 'Kitchen operations hub' },
   { path: '/staff', label: 'Staff', description: 'Staff management' },
+  { path: '/team', label: 'Team', description: 'Team access and roster management' },
   { path: '/tasks', label: 'Tasks', description: 'Task board' },
   { path: '/stations', label: 'Stations', description: 'Kitchen stations and prep tracking' },
+  { path: '/training', label: 'Training', description: 'Training and SOP library' },
   { path: '/travel', label: 'Travel', description: 'Travel planning and mileage' },
   { path: '/documents', label: 'Documents', description: 'Document management' },
+  { path: '/vendors', label: 'Vendors', description: 'Vendor and purveyor management' },
+  {
+    path: '/inventory',
+    label: 'Inventory',
+    description: 'Inventory counts, audits, and waste tracking',
+  },
+  {
+    path: '/food-truck/loadout',
+    label: 'Food Truck',
+    description: 'Food truck operations workspace',
+  },
 
   // Finance
   { path: '/financials', label: 'Financial Hub', description: 'Financial overview and reports' },
+  { path: '/finance', label: 'Finance Home', description: 'Finance home and operational ledger' },
   { path: '/finance/overview', label: 'Finance Overview', description: 'Financial dashboard' },
   { path: '/finance/invoices', label: 'Invoices', description: 'Invoice management' },
   { path: '/finance/payments', label: 'Payments', description: 'Payment tracking' },
   { path: '/finance/reporting', label: 'Reports', description: 'Financial reports' },
+  { path: '/reports', label: 'Reports Hub', description: 'Cross-functional reporting hub' },
   { path: '/finance/tax', label: 'Tax', description: 'Tax summary and documents' },
   { path: '/expenses', label: 'Expenses', description: 'Expense tracker' },
   { path: '/expenses/new', label: 'New Expense', description: 'Add an expense' },
@@ -126,6 +168,9 @@ export const ROUTE_REGISTRY: RouteEntry[] = [
   { path: '/prospecting', label: 'Prospecting', description: 'Lead prospecting', adminOnly: true },
   { path: '/testimonials', label: 'Testimonials', description: 'Client testimonials' },
   { path: '/portfolio', label: 'Portfolio', description: 'Portfolio and gallery' },
+  { path: '/social', label: 'Social', description: 'Social content planner and publishing queue' },
+  { path: '/social/planner', label: 'Social Planner', description: 'Social content planner' },
+  { path: '/photos', label: 'Photos', description: 'Photo gallery and media vault' },
 
   // Analytics
   { path: '/analytics', label: 'Analytics', description: 'Analytics and reports' },
@@ -140,6 +185,15 @@ export const ROUTE_REGISTRY: RouteEntry[] = [
   { path: '/charity', label: 'Charity Hub', description: 'Charity and community', adminOnly: true },
   { path: '/partners', label: 'Partners', description: 'Partner network' },
   { path: '/waitlist', label: 'Waitlist', description: 'Availability waitlist' },
+  { path: '/network', label: 'Community', description: 'Chef community hub' },
+  {
+    path: '/community/templates',
+    label: 'Community Templates',
+    description: 'Shared community templates',
+  },
+  { path: '/notifications', label: 'Notifications', description: 'Notification center' },
+  { path: '/templates', label: 'Template Library', description: 'Template library' },
+  { path: '/onboarding', label: 'Onboarding', description: 'Onboarding hub and imports' },
 
   // Settings
   { path: '/settings', label: 'Settings', description: 'Account settings' },
@@ -187,6 +241,37 @@ export const ROUTE_REGISTRY: RouteEntry[] = [
   { path: '/remy', label: 'Remy History', description: 'Everything Remy has saved' },
   { path: '/queue', label: 'AI Queue', description: 'AI processing queue' },
 ]
+
+function buildNavFallbackDescription(label: string, path: string): string {
+  if (path.startsWith('/settings/')) return `${label} settings page`
+  if (path.startsWith('/admin/')) return `${label} admin page`
+  return `${label} page`
+}
+
+function buildNavFallbackRegistry(): RouteEntry[] {
+  return collectNavRouteEntries().map((route) => ({
+    path: route.href,
+    label: route.label,
+    description: buildNavFallbackDescription(route.label, route.href),
+    adminOnly: route.adminOnly,
+  }))
+}
+
+function dedupeRouteRegistry(entries: RouteEntry[]): RouteEntry[] {
+  const byPath = new Map<string, RouteEntry>()
+
+  for (const entry of entries) {
+    if (byPath.has(entry.path)) continue
+    byPath.set(entry.path, entry)
+  }
+
+  return Array.from(byPath.values())
+}
+
+export const ROUTE_REGISTRY: RouteEntry[] = dedupeRouteRegistry([
+  ...CURATED_ROUTE_REGISTRY,
+  ...buildNavFallbackRegistry(),
+])
 
 /**
  * Build a formatted route map string for Remy's system prompt.

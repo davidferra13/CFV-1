@@ -57,7 +57,7 @@ export function CreateRewardForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="p-3 rounded-lg bg-red-950 text-red-700 text-sm">{error}</div>}
+      {error && <div className="p-3 rounded-lg bg-red-950 text-red-200 text-sm">{error}</div>}
 
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-stone-300 mb-1">

@@ -14,19 +14,15 @@ CREATE TABLE IF NOT EXISTS public.dietary_confirmations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT dietary_confirmations_event_client_unique UNIQUE (event_id, client_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_dietary_confirmations_event
   ON public.dietary_confirmations(event_id);
 CREATE INDEX IF NOT EXISTS idx_dietary_confirmations_tenant
   ON public.dietary_confirmations(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_dietary_confirmations_client
   ON public.dietary_confirmations(client_id);
-
 ALTER TABLE public.chefs
   ADD COLUMN IF NOT EXISTS show_dietary_confirmation BOOLEAN NOT NULL DEFAULT true;
-
 ALTER TABLE public.dietary_confirmations ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS dietary_confirmations_chef_all ON public.dietary_confirmations;
 CREATE POLICY dietary_confirmations_chef_all
   ON public.dietary_confirmations
@@ -49,7 +45,6 @@ CREATE POLICY dietary_confirmations_chef_all
       LIMIT 1
     )
   );
-
 DROP POLICY IF EXISTS dietary_confirmations_client_select ON public.dietary_confirmations;
 CREATE POLICY dietary_confirmations_client_select
   ON public.dietary_confirmations

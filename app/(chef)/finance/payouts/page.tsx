@@ -51,7 +51,7 @@ export default async function PayoutsPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
+          <p className="text-2xl font-bold text-green-200">
             {formatCurrency(summary.totalRevenueCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Gross revenue</p>
