@@ -271,7 +271,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
                           href={`/events/${event.id}`}
                           className="text-amber-600 hover:text-amber-500"
                         >
-                          {event.title || 'Untitled Event'}
+                          {event.occasion || 'Untitled Event'}
                         </Link>
                       ) : (
                         <span className="text-stone-400">Unknown event</span>

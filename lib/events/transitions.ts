@@ -47,6 +47,99 @@ const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPe
   '*->cancelled': 'chef', // Chef can cancel anytime
 }
 
+type TransitionRpcError = {
+  code?: string | null
+  message?: string | null
+}
+
+function isLegacyTransitionRpcEnumCastError(error: TransitionRpcError | null | undefined): boolean {
+  const message = (error?.message ?? '').toLowerCase()
+  return error?.code === '42804' && message.includes('event_status') && message.includes('text')
+}
+
+async function applyTransitionCompatFallback({
+  supabase,
+  event,
+  eventId,
+  fromStatus,
+  toStatus,
+  transitionedBy,
+  metadata,
+}: {
+  supabase: any
+  event: any
+  eventId: string
+  fromStatus: EventStatus
+  toStatus: EventStatus
+  transitionedBy: string | null
+  metadata: Record<string, unknown>
+}) {
+  const timestamp = new Date().toISOString()
+  const cancellationReason = typeof metadata.reason === 'string' ? metadata.reason : null
+  const cancellationInitiatedBy =
+    toStatus === 'cancelled'
+      ? metadata.source === 'system'
+        ? 'mutual'
+        : metadata.actor_role === 'chef'
+          ? 'chef'
+          : metadata.actor_role === 'client'
+            ? 'client'
+            : event.cancellation_initiated_by
+      : event.cancellation_initiated_by
+
+  const { error: updateError } = await supabase
+    .from('events')
+    .update({
+      status: toStatus,
+      updated_by: transitionedBy,
+      cancelled_at: toStatus === 'cancelled' ? timestamp : event.cancelled_at,
+      cancellation_reason:
+        toStatus === 'cancelled' ? cancellationReason : event.cancellation_reason,
+      cancellation_initiated_by: cancellationInitiatedBy,
+    })
+    .eq('id', eventId)
+    .eq('tenant_id', event.tenant_id)
+
+  if (updateError) {
+    throw new Error(`Compatibility transition update failed: ${updateError.message}`)
+  }
+
+  const fallbackMetadata = {
+    ...metadata,
+    timestamp,
+    rpc_version: 'compat-fallback',
+    compat_mode: true,
+  }
+
+  const { error: auditError } = await supabase.from('event_state_transitions').insert({
+    tenant_id: event.tenant_id,
+    event_id: eventId,
+    from_status: fromStatus,
+    to_status: toStatus,
+    transitioned_by: transitionedBy,
+    reason: cancellationReason,
+    metadata: fallbackMetadata,
+  })
+
+  if (!auditError) {
+    return
+  }
+
+  await supabase
+    .from('events')
+    .update({
+      status: fromStatus,
+      updated_by: event.updated_by,
+      cancelled_at: event.cancelled_at,
+      cancellation_reason: event.cancellation_reason,
+      cancellation_initiated_by: event.cancellation_initiated_by,
+    })
+    .eq('id', eventId)
+    .eq('tenant_id', event.tenant_id)
+
+  throw new Error(`Compatibility transition audit failed: ${auditError.message}`)
+}
+
 /**
  * Core state transition function
  * Validates transition rules and permissions
@@ -130,8 +223,9 @@ export async function transitionEvent({
   const transitionedBy = user?.id || null
 
   // ── Readiness Gate Check (pre-transition) ────────────────────────────────
-  // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
-  // throw and abort. Soft warnings are logged in metadata but do not block.
+  // Evaluate gates for this transition. Any unresolved gate blocks the move
+  // until it is completed or explicitly overridden with a reason.
+  // Hard blocks (e.g., unconfirmed anaphylaxis) cannot be overridden.
   // System transitions (Stripe webhooks) skip readiness checks.
   let readinessWarnings: string[] = []
   if (!systemTransition) {
@@ -139,18 +233,17 @@ export async function transitionEvent({
       const { evaluateReadinessForTransition } = await import('@/lib/events/readiness')
       const readiness = await evaluateReadinessForTransition(eventId, fromStatus, toStatus)
 
-      if (readiness.hardBlocked) {
-        const hardBlockerDescriptions = readiness.blockers
-          .filter((b) => b.isHardBlock)
-          .map((b) => b.details || b.label)
+      if (readiness.blockers.length > 0) {
+        const blockerDescriptions = readiness.blockers
+          .map((blocker) => blocker.details || blocker.label)
           .join('; ')
-        throw new Error(`Cannot proceed: ${hardBlockerDescriptions}`)
+        throw new Error(`Cannot proceed: ${blockerDescriptions}`)
       }
 
-      // Collect soft warnings for metadata
-      readinessWarnings = readiness.blockers.filter((b) => !b.isHardBlock).map((b) => b.label)
+      // Collect bypassed gates for metadata/audit visibility.
+      readinessWarnings = readiness.warnings.map((warning) => warning.label)
     } catch (readinessErr: any) {
-      // Re-throw hard blocks; swallow infrastructure errors (non-blocking)
+      // Re-throw readiness blockers; swallow infrastructure errors (non-blocking)
       if (readinessErr.message?.startsWith('Cannot proceed:')) {
         throw readinessErr
       }
@@ -180,8 +273,25 @@ export async function transitionEvent({
   })
 
   if (transitionError) {
-    log.events.error('Atomic transition failed', { error: transitionError })
-    throw new Error('Failed to transition event status')
+    if (isLegacyTransitionRpcEnumCastError(transitionError)) {
+      log.events.warn('Atomic transition RPC enum cast mismatch; using compatibility fallback', {
+        context: { eventId: parsed.eventId, fromStatus, toStatus: parsed.toStatus },
+        error: transitionError,
+      })
+
+      await applyTransitionCompatFallback({
+        supabase,
+        event,
+        eventId: parsed.eventId,
+        fromStatus,
+        toStatus: parsed.toStatus,
+        transitionedBy,
+        metadata: transitionMetadata,
+      })
+    } else {
+      log.events.error('Atomic transition failed', { error: transitionError })
+      throw new Error('Failed to transition event status')
+    }
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -899,7 +1009,7 @@ export async function transitionEvent({
     success: true,
     fromStatus,
     toStatus,
-    warnings: readinessWarnings, // Soft gates that were bypassed (logged, not blocked)
+    warnings: readinessWarnings, // Bypassed gates logged on the transition metadata
   }
 }
 

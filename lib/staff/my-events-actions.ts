@@ -121,8 +121,8 @@ export async function getMyUpcomingEvents(): Promise<StaffEventSummary[]> {
         role
       ),
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, status, occasion, location_address,
-        guest_count, start_time, end_time, serve_time
+        id, occasion, event_date, status, location_address,
+        guest_count, arrival_time, serve_time
       )
     `
     )
@@ -140,20 +140,20 @@ export async function getMyUpcomingEvents(): Promise<StaffEventSummary[]> {
   // Filter to future events and map to summary shape
   return assignments
     .filter((a) => {
-      const eventDate = a.event?.date
+      const eventDate = a.event?.event_date
       return eventDate && eventDate >= today
     })
     .map((a) => ({
       id: a.id,
       event_id: a.event_id,
-      event_title: a.event?.title ?? 'Unnamed Event',
-      event_date: a.event?.date ?? '',
+      event_title: a.event?.occasion ?? 'Unnamed Event',
+      event_date: a.event?.event_date ?? '',
       event_status: a.event?.status ?? '',
       occasion: a.event?.occasion ?? null,
       location_address: a.event?.location_address ?? null,
       guest_count: a.event?.guest_count ?? null,
-      start_time: a.event?.start_time ?? null,
-      end_time: a.event?.end_time ?? null,
+      start_time: a.event?.arrival_time ?? null,
+      end_time: null,
       serve_time: a.event?.serve_time ?? null,
       role: a.role_override ?? a.staff_member?.role ?? 'Staff',
       scheduled_hours: a.scheduled_hours,
@@ -187,9 +187,9 @@ export async function getMyEventDetail(eventId: string): Promise<StaffEventDetai
         role
       ),
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, status, occasion,
+        id, occasion, event_date, status,
         location_address, location_city,
-        guest_count, start_time, end_time, serve_time,
+        guest_count, arrival_time, serve_time,
         special_requests, kitchen_notes,
         dietary_restrictions, allergies,
         prep_started_at, service_started_at, service_completed_at,
@@ -286,7 +286,7 @@ export async function getMyEventDetail(eventId: string): Promise<StaffEventDetai
     .select('id, title, status, priority, due_time')
     .eq('chef_id', user.tenantId)
     .eq('assigned_to', user.staffMemberId)
-    .eq('due_date', event.date)
+    .eq('due_date', event.event_date)
     .order('due_time', { ascending: true, nullsFirst: false })
 
   // Check for station assignment
@@ -315,15 +315,15 @@ export async function getMyEventDetail(eventId: string): Promise<StaffEventDetai
     assignment_notes: assignment.notes,
 
     event_id: event.id,
-    event_title: event.title ?? 'Unnamed Event',
-    event_date: event.date,
+    event_title: event.occasion ?? 'Unnamed Event',
+    event_date: event.event_date,
     event_status: event.status,
     occasion: event.occasion,
     location_address: event.location_address,
     location_city: event.location_city,
     guest_count: event.guest_count,
-    start_time: event.start_time,
-    end_time: event.end_time,
+    start_time: event.arrival_time,
+    end_time: null,
     serve_time: event.serve_time,
     special_requests: event.special_requests,
     kitchen_notes: event.kitchen_notes,
@@ -370,7 +370,7 @@ export async function getMyEventHistory(): Promise<StaffEventHistory[]> {
         role
       ),
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, occasion, status
+        id, occasion, event_date, status
       )
     `
     )
@@ -386,8 +386,8 @@ export async function getMyEventHistory(): Promise<StaffEventHistory[]> {
   return ((data ?? []) as any[])
     .map((a) => ({
       event_id: a.event_id,
-      event_title: a.event?.title ?? 'Unnamed Event',
-      event_date: a.event?.date ?? '',
+      event_title: a.event?.occasion ?? 'Unnamed Event',
+      event_date: a.event?.event_date ?? '',
       occasion: a.event?.occasion ?? null,
       role: a.role_override ?? a.staff_member?.role ?? 'Staff',
       scheduled_hours: a.scheduled_hours,

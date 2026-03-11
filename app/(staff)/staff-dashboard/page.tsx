@@ -210,17 +210,17 @@ export default async function StaffDashboardPage({
                     >
                       <div>
                         <div className="text-sm font-medium text-stone-200">
-                          {event?.title ?? 'Unnamed Event'}
+                          {event?.occasion ?? 'Unnamed Event'}
                         </div>
                         <div className="text-xs text-stone-500">
-                          {event?.date
-                            ? new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', {
+                          {event?.event_date
+                            ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
                                 weekday: 'short',
                                 month: 'short',
                                 day: 'numeric',
                               })
                             : 'Date TBD'}
-                          {event?.start_time && ` at ${event.start_time}`}
+                          {event?.arrival_time && ` at ${event.arrival_time}`}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">

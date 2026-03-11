@@ -79,28 +79,39 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function waitForServerReady(maxAttempts = 20): Promise<void> {
-  const readinessPaths = ['/api/health', '/auth/signin', '/']
+async function waitForServerReady(maxAttempts = isLocalBaseUrl(BASE_URL) ? 60 : 30): Promise<void> {
+  const requestTimeoutMs = isLocalBaseUrl(BASE_URL) ? 5_000 : 3_000
+  const readinessProbes = [
+    { path: '/api/health', method: 'HEAD' as const },
+    { path: '/api/health', method: 'GET' as const },
+    { path: '/', method: 'GET' as const },
+    { path: '/auth/signin', method: 'GET' as const },
+  ]
+
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    for (const path of readinessPaths) {
+    for (const probe of readinessProbes) {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 3_000)
-        const resp = await fetch(`${BASE_URL}${path}`, {
-          method: path === '/api/health' ? 'HEAD' : 'GET',
+        const timeout = setTimeout(() => controller.abort(), requestTimeoutMs)
+        const resp = await fetch(`${BASE_URL}${probe.path}`, {
+          method: probe.method,
           redirect: 'manual',
           signal: controller.signal,
         })
         clearTimeout(timeout)
         if (resp.status < 500) {
-          console.log(`[globalSetup] Test target is ready (${BASE_URL}) via ${path}`)
+          console.log(
+            `[globalSetup] Test target is ready (${BASE_URL}) via ${probe.method} ${probe.path}`
+          )
           return
         }
       } catch {
         // Probe next endpoint.
       }
     }
-    console.log(`[globalSetup] Waiting for test target (${attempt}/${maxAttempts})...`)
+    console.log(
+      `[globalSetup] Waiting for test target (${attempt}/${maxAttempts}) at ${BASE_URL}...`
+    )
     await sleep(2_000)
   }
 

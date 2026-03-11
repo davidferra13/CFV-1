@@ -166,7 +166,7 @@ export async function getFreelancerEventHistory(staffMemberId: string) {
     .select(
       `
       *,
-      events (id, title, event_date, status, location_address, location_city)
+      events (id, occasion, event_date, status, location_address, location_city)
     `
     )
     .eq('staff_member_id', staffMemberId)
@@ -268,7 +268,7 @@ export async function getUpcomingFreelancerAssignments() {
       `
       *,
       staff_members!inner (id, name, role, staff_type, day_rate_cents, hourly_rate_cents, agency_name, phone),
-      events!inner (id, title, event_date, status, location_address, location_city)
+      events!inner (id, occasion, event_date, status, location_address, location_city)
     `
     )
     .eq('chef_id', user.tenantId!)

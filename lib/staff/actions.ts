@@ -184,7 +184,7 @@ export async function getStaffMember(id: string) {
     .select(
       `
       *,
-      events (id, title, event_date, status)
+      events (id, occasion, event_date, status)
     `
     )
     .eq('staff_member_id', id)
@@ -242,7 +242,7 @@ export async function checkAssignmentConflict(
       `
       id,
       event_id,
-      events!inner (id, title, event_date)
+      events!inner (id, occasion, event_date)
     `
     )
     .eq('staff_member_id', staffMemberId)

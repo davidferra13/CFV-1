@@ -40,10 +40,10 @@ export type StaffAssignment = {
   notes: string | null
   event?: {
     id: string
-    title: string
-    date: string
-    start_time: string | null
-    end_time: string | null
+    occasion: string | null
+    event_date: string
+    arrival_time: string | null
+    serve_time: string | null
     status: string
   } | null
 }
@@ -282,7 +282,7 @@ export async function getMyAssignments(): Promise<StaffAssignment[]> {
       `
       id, event_id, staff_member_id, role_override, scheduled_hours, actual_hours, status, notes,
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, start_time, end_time, status
+        id, occasion, event_date, arrival_time, serve_time, status
       )
     `
     )
@@ -314,7 +314,7 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
       `
       id, event_id, staff_member_id, role_override, scheduled_hours, actual_hours, status, notes,
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, start_time, end_time, status
+        id, occasion, event_date, arrival_time, serve_time, status
       )
     `
     )
@@ -331,7 +331,7 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
   // Filter to events with date >= today (done client-side since join filtering is tricky)
   const assignments = (data ?? []) as unknown as StaffAssignment[]
   return assignments.filter((a) => {
-    const eventDate = (a.event as any)?.date
+    const eventDate = a.event?.event_date
     return eventDate && eventDate >= today
   })
 }
