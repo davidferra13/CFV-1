@@ -1,7 +1,13 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
-import { updateBetaSignupStatus, exportBetaSignupsCsv, deleteBetaSignup } from '@/lib/beta/actions'
+import { useEffect, useMemo, useState, useTransition } from 'react'
+import {
+  deleteBetaSignup,
+  exportBetaSignupsCsv,
+  updateBetaSignupStatus,
+  type UpdateBetaSignupStatusResult,
+} from '@/lib/beta/actions'
+import { buildBetaInviteUrl } from '@/lib/beta/invite-utils'
 import { Download, Copy, Check, Search, Trash2 } from '@/components/ui/icons'
 
 interface BetaSignup {
@@ -50,7 +56,10 @@ function formatDate(iso: string) {
 // ── Invite Link Copy Button ──
 function CopyInviteLinkButton({ email }: { email: string }) {
   const [copied, setCopied] = useState(false)
-  const signupUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/signup?ref=beta&email=${encodeURIComponent(email)}`
+  const signupUrl = buildBetaInviteUrl(
+    email,
+    typeof window !== 'undefined' ? window.location.origin : undefined
+  )
 
   async function handleCopy() {
     try {
@@ -86,17 +95,60 @@ function CopyInviteLinkButton({ email }: { email: string }) {
   )
 }
 
+type SignupUpdate = {
+  status?: string
+  notes?: string | null
+  invited_at?: string | null
+  onboarded_at?: string | null
+}
+
 // ── Individual Row ──
-function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: string) => void }) {
+function SignupRow({
+  signup,
+  onDelete,
+  onUpdate,
+}: {
+  signup: BetaSignup
+  onDelete: (id: string) => void
+  onUpdate: (id: string, update: SignupUpdate) => void
+}) {
   const [status, setStatus] = useState(signup.status)
   const [notes, setNotes] = useState(signup.notes || '')
   const [editingNotes, setEditingNotes] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
+  useEffect(() => {
+    setStatus(signup.status)
+  }, [signup.status])
+
+  useEffect(() => {
+    setNotes(signup.notes || '')
+  }, [signup.notes])
+
+  function applyUpdate(result: UpdateBetaSignupStatusResult) {
+    if (!result.updated) return
+
+    onUpdate(signup.id, {
+      status: result.updated.status,
+      notes: result.updated.notes,
+      invited_at: result.updated.invitedAt,
+      onboarded_at: result.updated.onboardedAt,
+    })
+    setStatus(result.updated.status)
+    setNotes(result.updated.notes || '')
+  }
+
+  function flashSuccess(message: string) {
+    setSuccessMessage(message)
+    setTimeout(() => setSuccessMessage(''), 3000)
+  }
 
   function handleDelete() {
     if (!confirm(`Remove ${signup.name} (${signup.email}) from the beta list?`)) return
     setError('')
+    setSuccessMessage('')
     startTransition(async () => {
       try {
         const result = await deleteBetaSignup(signup.id)
@@ -115,17 +167,23 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
     const previousStatus = status
     setStatus(newStatus)
     setError('')
+    setSuccessMessage('')
 
     startTransition(async () => {
       try {
         const result = await updateBetaSignupStatus(
           signup.id,
-          newStatus as 'pending' | 'invited' | 'onboarded' | 'declined'
+          newStatus as 'pending' | 'invited' | 'onboarded' | 'declined',
+          undefined,
+          { sendInviteEmail: newStatus === 'invited' }
         )
         if (!result.success) {
           setStatus(previousStatus)
           setError(result.error || 'Failed to update')
+          return
         }
+        applyUpdate(result)
+        if (result.message) flashSuccess(result.message)
       } catch {
         setStatus(previousStatus)
         setError('Failed to update status')
@@ -136,6 +194,7 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
   function handleNotesSave() {
     setEditingNotes(false)
     setError('')
+    setSuccessMessage('')
 
     startTransition(async () => {
       try {
@@ -146,7 +205,9 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
         )
         if (!result.success) {
           setError(result.error || 'Failed to save notes')
+          return
         }
+        applyUpdate(result)
       } catch {
         setError('Failed to save notes')
       }
@@ -189,6 +250,9 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
           <option value="declined">Declined</option>
         </select>
         {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+        {!error && successMessage && (
+          <p className="mt-1 text-xs text-emerald-400">{successMessage}</p>
+        )}
       </td>
       <td className="px-4 py-3">
         {editingNotes ? (
@@ -241,17 +305,39 @@ function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: st
 
 // ── Main Table with Search, Filter, CSV Export ──
 export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
+  const [rows, setRows] = useState(signups)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [exporting, setExporting] = useState(false)
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
 
   function handleDelete(id: string) {
-    setDeletedIds((prev) => new Set(prev).add(id))
+    setRows((prev) => prev.filter((signup) => signup.id !== id))
   }
 
+  function handleUpdate(id: string, update: SignupUpdate) {
+    setRows((prev) =>
+      prev.map((signup) =>
+        signup.id === id
+          ? {
+              ...signup,
+              ...update,
+              status: update.status ?? signup.status,
+              notes: update.notes !== undefined ? update.notes : signup.notes,
+              invited_at: update.invited_at !== undefined ? update.invited_at : signup.invited_at,
+              onboarded_at:
+                update.onboarded_at !== undefined ? update.onboarded_at : signup.onboarded_at,
+            }
+          : signup
+      )
+    )
+  }
+
+  useEffect(() => {
+    setRows(signups)
+  }, [signups])
+
   const filtered = useMemo(() => {
-    let list = signups.filter((s) => !deletedIds.has(s.id))
+    let list = rows
 
     // Status filter
     if (statusFilter !== 'all') {
@@ -272,7 +358,7 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
     }
 
     return list
-  }, [signups, search, statusFilter, deletedIds])
+  }, [rows, search, statusFilter])
 
   async function handleExportCsv() {
     setExporting(true)
@@ -349,7 +435,7 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
       {/* Results count */}
       {(search || statusFilter !== 'all') && (
         <p className="text-xs text-slate-500">
-          Showing {filtered.length} of {signups.length} signups
+          Showing {filtered.length} of {rows.length} signups
         </p>
       )}
 
@@ -380,7 +466,12 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
             </thead>
             <tbody>
               {filtered.map((signup) => (
-                <SignupRow key={signup.id} signup={signup} onDelete={handleDelete} />
+                <SignupRow
+                  key={signup.id}
+                  signup={signup}
+                  onDelete={handleDelete}
+                  onUpdate={handleUpdate}
+                />
               ))}
             </tbody>
           </table>

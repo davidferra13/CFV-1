@@ -1,12 +1,15 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/admin'
 import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
+import { BetaInviteEmail } from '@/lib/email/templates/beta-invite'
 import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
 import { getAdminNotificationRecipients, resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { createNotification } from '@/lib/notifications/actions'
+import { buildBetaInviteUrl } from './invite-utils'
 
 export interface BetaSignupInput {
   name: string
@@ -23,6 +26,24 @@ type BetaOnboardingLinkInput = {
   email: string
   name?: string
   source?: string
+}
+
+type BetaSignupStatus = 'pending' | 'invited' | 'onboarded' | 'declined'
+
+type UpdateBetaSignupStatusOptions = {
+  sendInviteEmail?: boolean
+}
+
+export type UpdateBetaSignupStatusResult = {
+  success: boolean
+  error?: string
+  message?: string
+  updated?: {
+    status: BetaSignupStatus
+    notes: string | null
+    invitedAt: string | null
+    onboardedAt: string | null
+  }
 }
 
 const ADMIN_NOTIFICATION_RECIPIENTS = getAdminNotificationRecipients()
@@ -260,6 +281,7 @@ export async function markBetaSignupOnboardedByEmail(
  * Get all beta signups for the admin view.
  */
 export async function getBetaSignups() {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
@@ -280,10 +302,48 @@ export async function getBetaSignups() {
  */
 export async function updateBetaSignupStatus(
   id: string,
-  status: 'pending' | 'invited' | 'onboarded' | 'declined',
-  notes?: string
-): Promise<{ success: boolean; error?: string }> {
+  status: BetaSignupStatus,
+  notes?: string,
+  options?: UpdateBetaSignupStatusOptions
+): Promise<UpdateBetaSignupStatusResult> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
+  const normalizedNotes = notes !== undefined ? notes.trim() || null : undefined
+  let inviteSent = false
+
+  if (status === 'invited' && options?.sendInviteEmail) {
+    const { data: signup, error: signupError } = await supabase
+      .from('beta_signups')
+      .select('name, email')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (signupError || !signup?.email) {
+      console.error('[beta-signup] Invite lookup failed:', signupError)
+      return { success: false, error: 'Failed to load signup before sending invite.' }
+    }
+
+    const inviteUrl = buildBetaInviteUrl(signup.email)
+    const emailResult = await sendEmail({
+      to: signup.email,
+      subject: 'Your ChefFlow beta invite is ready',
+      react: BetaInviteEmail({
+        name: signup.name?.trim() || signup.email.split('@')[0] || 'there',
+        inviteUrl,
+      }),
+    })
+
+    if (!emailResult.success) {
+      return {
+        success: false,
+        error: emailResult.skipped
+          ? 'Invite email could not be sent because email delivery is not configured.'
+          : emailResult.error || 'Failed to send invite email.',
+      }
+    }
+
+    inviteSent = true
+  }
 
   const updates: Record<string, unknown> = { status }
 
@@ -293,24 +353,44 @@ export async function updateBetaSignupStatus(
     updates.onboarded_at = new Date().toISOString()
   }
 
-  if (notes !== undefined) {
-    updates.notes = notes
+  if (normalizedNotes !== undefined) {
+    updates.notes = normalizedNotes
   }
 
-  const { error } = await supabase.from('beta_signups').update(updates).eq('id', id)
+  const { data, error } = await supabase
+    .from('beta_signups')
+    .update(updates)
+    .eq('id', id)
+    .select('status, notes, invited_at, onboarded_at')
+    .single()
 
   if (error) {
     console.error('[beta-signup] Status update failed:', error)
-    return { success: false, error: 'Failed to update status.' }
+    return {
+      success: false,
+      error: inviteSent
+        ? 'Invite email was sent, but the row failed to update. Refresh before retrying.'
+        : 'Failed to update status.',
+    }
   }
 
-  return { success: true }
+  return {
+    success: true,
+    message: inviteSent ? 'Invite email sent.' : undefined,
+    updated: {
+      status: data.status as BetaSignupStatus,
+      notes: (data.notes as string | null) ?? null,
+      invitedAt: (data.invited_at as string | null) ?? null,
+      onboardedAt: (data.onboarded_at as string | null) ?? null,
+    },
+  }
 }
 
 /**
  * Delete a beta signup (admin action).
  */
 export async function deleteBetaSignup(id: string): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { error } = await supabase.from('beta_signups').delete().eq('id', id)
@@ -345,6 +425,7 @@ export async function getBetaSignupCount(): Promise<number> {
  * Export beta signups as CSV string (admin action).
  */
 export async function exportBetaSignupsCsv(): Promise<string> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
