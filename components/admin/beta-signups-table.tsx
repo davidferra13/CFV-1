@@ -191,6 +191,29 @@ function SignupRow({
     })
   }
 
+  function handleResendInvite() {
+    if (status !== 'invited') return
+
+    setError('')
+    setSuccessMessage('')
+
+    startTransition(async () => {
+      try {
+        const result = await updateBetaSignupStatus(signup.id, 'invited', undefined, {
+          sendInviteEmail: true,
+        })
+        if (!result.success) {
+          setError(result.error || 'Failed to resend invite')
+          return
+        }
+        applyUpdate(result)
+        if (result.message) flashSuccess(result.message)
+      } catch {
+        setError('Failed to resend invite')
+      }
+    })
+  }
+
   function handleNotesSave() {
     setEditingNotes(false)
     setError('')
@@ -249,6 +272,16 @@ function SignupRow({
           <option value="onboarded">Onboarded</option>
           <option value="declined">Declined</option>
         </select>
+        {status === 'invited' && (
+          <button
+            type="button"
+            onClick={handleResendInvite}
+            disabled={isPending}
+            className="mt-1 block text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50"
+          >
+            Resend invite
+          </button>
+        )}
         {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
         {!error && successMessage && (
           <p className="mt-1 text-xs text-emerald-400">{successMessage}</p>
