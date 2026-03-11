@@ -62,8 +62,15 @@ echo "[6/7] Building..."
 BUILD_START=$(date +%s)
 rm -rf "$RELEASE_DIR"
 set +e
-NEXT_DIST_DIR="$RELEASE_NAME" NODE_OPTIONS="--max-old-space-size=16384" npx next build --no-lint 2>&1 | tail -15
+export NEXT_DIST_DIR="$RELEASE_NAME"
+export NODE_OPTIONS="--max-old-space-size=16384"
+npx next build --no-lint 2>&1 | tail -15
 BUILD_EXIT=${PIPESTATUS[0]}
+# Fallback: if PIPESTATUS failed (non-bash shell), check if build output exists
+if [ -z "$BUILD_EXIT" ] || [ "$BUILD_EXIT" = "" ]; then
+  if [ -f "$RELEASE_DIR/BUILD_ID" ]; then BUILD_EXIT=0; else BUILD_EXIT=1; fi
+fi
+unset NEXT_DIST_DIR
 set -e
 BUILD_END=$(date +%s)
 BUILD_DURATION=$((BUILD_END - BUILD_START))
