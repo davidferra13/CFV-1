@@ -1,30 +1,35 @@
 'use client'
 
-// BookingPageSettings — configure the public /book/[slug] page.
-// Enable/disable, set slug, headline, bio, and dual booking model (inquiry vs instant-book).
+// BookingPageSettings - configure the public /book/[slug] page.
+// Enable/disable, set slug, headline, bio, merchandising copy, and booking model.
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
-import { upsertBookingSettings, type BookingSettings } from '@/lib/booking/booking-settings-actions'
+import {
+  upsertBookingSettings,
+  type BookingSettings,
+  type FeaturedBookingMenuOption,
+} from '@/lib/booking/booking-settings-actions'
 
 type Props = {
   initialSettings: BookingSettings
+  menuOptions: FeaturedBookingMenuOption[]
 }
 
 const SITE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://cheflowhq.com'
 
-export function BookingPageSettings({ initialSettings }: Props) {
+export function BookingPageSettings({ initialSettings, menuOptions }: Props) {
   const [enabled, setEnabled] = useState(initialSettings.booking_enabled)
   const [slug, setSlug] = useState(initialSettings.booking_slug ?? '')
   const [headline, setHeadline] = useState(initialSettings.booking_headline ?? '')
   const [bio, setBio] = useState(initialSettings.booking_bio_short ?? '')
   const [minNotice, setMinNotice] = useState(String(initialSettings.booking_min_notice_days ?? 7))
 
-  // Dual booking model settings
   const [bookingModel, setBookingModel] = useState<'inquiry_first' | 'instant_book'>(
     initialSettings.booking_model ?? 'inquiry_first'
   )
@@ -47,6 +52,12 @@ export function BookingPageSettings({ initialSettings }: Props) {
       ? String(initialSettings.booking_deposit_fixed_cents / 100)
       : ''
   )
+  const [featuredMenuId, setFeaturedMenuId] = useState(
+    initialSettings.featured_booking_menu_id ?? ''
+  )
+  const [featuredBadge, setFeaturedBadge] = useState(initialSettings.featured_booking_badge ?? '')
+  const [featuredTitle, setFeaturedTitle] = useState(initialSettings.featured_booking_title ?? '')
+  const [featuredPitch, setFeaturedPitch] = useState(initialSettings.featured_booking_pitch ?? '')
 
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -66,7 +77,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
         booking_slug: slug || undefined,
         booking_headline: headline || undefined,
         booking_bio_short: bio || undefined,
-        booking_min_notice_days: parseInt(minNotice) || 7,
+        booking_min_notice_days: parseInt(minNotice, 10) || 7,
         booking_model: bookingModel,
         booking_base_price_cents: basePriceCents
           ? Math.round(parseFloat(basePriceCents) * 100)
@@ -79,6 +90,10 @@ export function BookingPageSettings({ initialSettings }: Props) {
           depositType === 'fixed' && depositFixedCents
             ? Math.round(parseFloat(depositFixedCents) * 100)
             : null,
+        featured_booking_menu_id: featuredMenuId || null,
+        featured_booking_badge: featuredBadge || null,
+        featured_booking_title: featuredTitle || null,
+        featured_booking_pitch: featuredPitch || null,
       })
 
       if (result.success) {
@@ -104,13 +119,12 @@ export function BookingPageSettings({ initialSettings }: Props) {
 
   return (
     <div className="space-y-5">
-      {/* Enable toggle */}
-      <label className="flex items-center gap-3 cursor-pointer">
+      <label className="flex cursor-pointer items-center gap-3">
         <input
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="w-4 h-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+          className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
         />
         <span className="text-sm font-medium text-stone-300">Enable public booking page</span>
       </label>
@@ -134,14 +148,14 @@ export function BookingPageSettings({ initialSettings }: Props) {
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-brand-600 hover:text-brand-400 underline"
+                className="text-xs text-brand-600 underline hover:text-brand-400"
               >
                 Preview booking page
               </a>
               <button
                 type="button"
                 onClick={copyLink}
-                className="text-xs text-stone-500 hover:text-stone-300 border border-stone-700 rounded px-2 py-1"
+                className="rounded border border-stone-700 px-2 py-1 text-xs text-stone-500 hover:text-stone-300"
               >
                 {copied ? 'Copied!' : 'Copy link'}
               </button>
@@ -158,7 +172,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
 
           <Textarea
             label="Short bio"
-            placeholder="A brief description of your style and what makes you unique…"
+            placeholder="A brief description of your style and what makes you unique..."
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
@@ -174,18 +188,76 @@ export function BookingPageSettings({ initialSettings }: Props) {
             helperText="Clients cannot book dates within this many days"
           />
 
-          {/* Booking Model Selection */}
-          <Card className="p-4 space-y-4">
+          <Card className="space-y-4 p-4">
+            <div>
+              <p className="text-sm font-medium text-stone-300">Featured ready-to-book menu</p>
+              <p className="mt-1 text-xs text-stone-500">
+                Showcase one menu clients can buy into immediately instead of starting with a fully
+                custom brief. Featured-menu bookings are always treated as one-off events.
+              </p>
+            </div>
+
+            <Select
+              label="Featured menu"
+              value={featuredMenuId}
+              onChange={(e) => setFeaturedMenuId(e.target.value)}
+              options={menuOptions.map((menu) => ({
+                value: menu.id,
+                label: `${menu.name}${menu.target_guest_count ? ` | ${menu.target_guest_count} guests` : ''}${menu.is_showcase ? ' | Showcase' : ''}`,
+              }))}
+              helperText={
+                menuOptions.length > 0
+                  ? 'Clients will see this menu on your public profile and can start a booking or request directly from it.'
+                  : 'Create a menu first if you want a ready-to-book option.'
+              }
+            />
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input
+                label="Offer badge"
+                placeholder="Signature Dinner"
+                value={featuredBadge}
+                onChange={(e) => setFeaturedBadge(e.target.value)}
+                helperText="Short eyebrow above the card. Leave blank to use the default label."
+              />
+
+              <Input
+                label="Offer headline"
+                placeholder="A menu I can take from yes to booked with almost no back-and-forth"
+                value={featuredTitle}
+                onChange={(e) => setFeaturedTitle(e.target.value)}
+                helperText="Use this to sell the offer, not just restate the menu name."
+              />
+            </div>
+
+            <Textarea
+              label="Offer pitch"
+              placeholder="Share why this menu works so well, what kind of evening it fits, and why clients should start here."
+              value={featuredPitch}
+              onChange={(e) => setFeaturedPitch(e.target.value)}
+              rows={3}
+              helperText="Shown on your public profile, inquiry page, and booking flow when this menu is selected."
+            />
+
+            {menuOptions.length === 0 && (
+              <p className="text-xs text-stone-500">
+                No eligible menus yet. Build one in your menu library, then come back and feature it
+                here.
+              </p>
+            )}
+          </Card>
+
+          <Card className="space-y-4 p-4">
             <p className="text-sm font-medium text-stone-300">Booking model</p>
 
             <div className="space-y-2">
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="radio"
                   name="bookingModel"
                   checked={bookingModel === 'inquiry_first'}
                   onChange={() => setBookingModel('inquiry_first')}
-                  className="mt-0.5 w-4 h-4 text-brand-600 focus:ring-brand-500"
+                  className="mt-0.5 h-4 w-4 text-brand-600 focus:ring-brand-500"
                 />
                 <div>
                   <span className="text-sm font-medium text-stone-100">Inquiry first</span>
@@ -195,13 +267,13 @@ export function BookingPageSettings({ initialSettings }: Props) {
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="radio"
                   name="bookingModel"
                   checked={bookingModel === 'instant_book'}
                   onChange={() => setBookingModel('instant_book')}
-                  className="mt-0.5 w-4 h-4 text-brand-600 focus:ring-brand-500"
+                  className="mt-0.5 h-4 w-4 text-brand-600 focus:ring-brand-500"
                 />
                 <div>
                   <span className="text-sm font-medium text-stone-100">Instant book</span>
@@ -213,12 +285,11 @@ export function BookingPageSettings({ initialSettings }: Props) {
               </label>
             </div>
 
-            {/* Instant-book pricing settings */}
             {bookingModel === 'instant_book' && (
-              <div className="space-y-3 pt-2 border-t border-stone-800">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-3 border-t border-stone-800 pt-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-stone-300">
                       Pricing type
                     </label>
                     <select
@@ -243,9 +314,9 @@ export function BookingPageSettings({ initialSettings }: Props) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-stone-300">
                       Deposit type
                     </label>
                     <select
@@ -314,7 +385,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
         loading={saving}
         disabled={saving}
       >
-        {saving ? 'Saving…' : 'Save Settings'}
+        {saving ? 'Saving...' : 'Save Settings'}
       </Button>
     </div>
   )

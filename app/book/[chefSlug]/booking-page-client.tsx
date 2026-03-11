@@ -6,6 +6,11 @@
 import { useState } from 'react'
 import { BookingCalendar } from '@/components/booking/booking-calendar'
 import { BookingForm } from '@/components/booking/booking-form'
+import { FeaturedBookingMenuCard } from '@/components/public/featured-booking-menu-card'
+import type {
+  FeaturedBookingMenuShowcase,
+  PublicFeaturedBookingMenu,
+} from '@/lib/booking/featured-menu-shared'
 
 export type BookingConfig = {
   bookingModel: 'inquiry_first' | 'instant_book'
@@ -19,23 +24,48 @@ export type BookingConfig = {
 type Props = {
   chefSlug: string
   bookingConfig: BookingConfig
+  selectedMenu?: PublicFeaturedBookingMenu | null
+  selectedMenuShowcase?: FeaturedBookingMenuShowcase | null
 }
 
-export function BookingPageClient({ chefSlug, bookingConfig }: Props) {
+export function BookingPageClient({
+  chefSlug,
+  bookingConfig,
+  selectedMenu = null,
+  selectedMenuShowcase = null,
+}: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const isInstantBook = bookingConfig.bookingModel === 'instant_book'
 
   return (
     <div className="space-y-6">
+      {selectedMenu && (
+        <FeaturedBookingMenuCard
+          menu={selectedMenu}
+          primaryColor="#57534e"
+          compact
+          eyebrow={selectedMenuShowcase?.badge || 'Featured Menu'}
+          title={selectedMenuShowcase?.title || selectedMenu.name}
+          description={
+            selectedMenuShowcase?.pitch ||
+            "You are booking the chef's featured menu. Pick a date and finish the details below."
+          }
+        />
+      )}
+
       {!selectedDate ? (
         <>
           <div>
             <h2 className="text-lg font-semibold text-stone-100 mb-1">Select a date</h2>
             <p className="text-sm text-stone-500">
-              {isInstantBook
-                ? 'Green dates are available. Click a date to book instantly.'
-                : 'Green dates are available. Click a date to begin your booking request.'}
+              {selectedMenu
+                ? isInstantBook
+                  ? 'Green dates are available. Pick one to book this featured menu.'
+                  : 'Green dates are available. Pick one to request this featured menu.'
+                : isInstantBook
+                  ? 'Green dates are available. Click a date to book instantly.'
+                  : 'Green dates are available. Click a date to begin your booking request.'}
             </p>
           </div>
           <BookingCalendar chefSlug={chefSlug} onSelectDate={setSelectedDate} selectedDate={null} />
@@ -57,6 +87,8 @@ export function BookingPageClient({ chefSlug, bookingConfig }: Props) {
             selectedDate={selectedDate}
             onBack={() => setSelectedDate(null)}
             bookingConfig={bookingConfig}
+            selectedMenu={selectedMenu}
+            selectedMenuShowcase={selectedMenuShowcase}
           />
         </>
       )}

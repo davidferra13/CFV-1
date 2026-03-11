@@ -6115,6 +6115,10 @@ export type Database = {
           booking_model: string | null
           booking_pricing_type: string | null
           booking_slug: string | null
+          featured_booking_badge: string | null
+          featured_booking_menu_id: string | null
+          featured_booking_pitch: string | null
+          featured_booking_title: string | null
           business_continuity_plan: Json | null
           business_name: string
           cancellation_cutoff_days: number
@@ -6192,6 +6196,10 @@ export type Database = {
           booking_model?: string | null
           booking_pricing_type?: string | null
           booking_slug?: string | null
+          featured_booking_badge?: string | null
+          featured_booking_menu_id?: string | null
+          featured_booking_pitch?: string | null
+          featured_booking_title?: string | null
           business_continuity_plan?: Json | null
           business_name: string
           cancellation_cutoff_days?: number
@@ -6269,6 +6277,10 @@ export type Database = {
           booking_model?: string | null
           booking_pricing_type?: string | null
           booking_slug?: string | null
+          featured_booking_badge?: string | null
+          featured_booking_menu_id?: string | null
+          featured_booking_pitch?: string | null
+          featured_booking_title?: string | null
           business_continuity_plan?: Json | null
           business_name?: string
           cancellation_cutoff_days?: number
@@ -17869,6 +17881,7 @@ export type Database = {
           partner_location_id: string | null
           referral_partner_id: string | null
           referral_source: string | null
+          selected_menu_id: string | null
           service_style_pref: string | null
           source_message: string | null
           status: Database["public"]["Enums"]["inquiry_status"]
@@ -17911,6 +17924,7 @@ export type Database = {
           partner_location_id?: string | null
           referral_partner_id?: string | null
           referral_source?: string | null
+          selected_menu_id?: string | null
           service_style_pref?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
@@ -17953,6 +17967,7 @@ export type Database = {
           partner_location_id?: string | null
           referral_partner_id?: string | null
           referral_source?: string | null
+          selected_menu_id?: string | null
           service_style_pref?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
@@ -18018,6 +18033,20 @@ export type Database = {
             columns: ["referral_partner_id"]
             isOneToOne: false
             referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_selected_menu_id_fkey"
+            columns: ["selected_menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_cost_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "inquiries_selected_menu_id_fkey"
+            columns: ["selected_menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
             referencedColumns: ["id"]
           },
           {

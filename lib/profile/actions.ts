@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { chefBrandTag } from '@/lib/chef/brand'
+import { getPublicFeaturedBookingMenu } from '@/lib/booking/featured-menu'
 import { z } from 'zod'
 
 const SlugSchema = z
@@ -95,7 +96,7 @@ export async function getPublicChefProfile(slug: string) {
   let { data: chef, error: chefError } = await supabase
     .from('chefs')
     .select(
-      'id, business_name, display_name, bio, profile_image_url, logo_url, tagline, website_url, show_website_on_public_profile, preferred_inquiry_destination, portal_primary_color, portal_background_color, portal_background_image_url'
+      'id, business_name, display_name, bio, profile_image_url, logo_url, tagline, website_url, show_website_on_public_profile, preferred_inquiry_destination, portal_primary_color, portal_background_color, portal_background_image_url, show_availability_signals, booking_enabled, booking_slug, booking_model, featured_booking_menu_id, featured_booking_badge, featured_booking_title, featured_booking_pitch'
     )
     .eq('slug', slug)
     .single()
@@ -105,7 +106,7 @@ export async function getPublicChefProfile(slug: string) {
     const fallback = await supabase
       .from('chefs')
       .select(
-        'id, business_name, display_name, bio, profile_image_url, tagline, portal_primary_color, portal_background_color, portal_background_image_url'
+        'id, business_name, display_name, bio, profile_image_url, tagline, portal_primary_color, portal_background_color, portal_background_image_url, show_availability_signals, booking_enabled, booking_slug, booking_model, featured_booking_menu_id'
       )
       .eq('slug', slug)
       .single()
@@ -142,6 +143,11 @@ export async function getPublicChefProfile(slug: string) {
     ),
   }))
 
+  const featuredMenu = await getPublicFeaturedBookingMenu(
+    chef.id,
+    chef.featured_booking_menu_id ?? null
+  )
+
   return {
     chef: {
       id: chef.id,
@@ -154,9 +160,23 @@ export async function getPublicChefProfile(slug: string) {
       website_url: chef.website_url,
       show_website_on_public_profile: chef.show_website_on_public_profile ?? true,
       preferred_inquiry_destination: chef.preferred_inquiry_destination ?? 'both',
+      show_availability_signals: chef.show_availability_signals ?? false,
+      booking_enabled: chef.booking_enabled ?? false,
+      booking_slug: chef.booking_slug ?? null,
+      booking_model: chef.booking_model ?? 'inquiry_first',
+      featured_booking_menu_id: chef.featured_booking_menu_id ?? null,
+      featured_booking_badge: chef.featured_booking_badge ?? null,
+      featured_booking_title: chef.featured_booking_title ?? null,
+      featured_booking_pitch: chef.featured_booking_pitch ?? null,
       portal_primary_color: chef.portal_primary_color,
       portal_background_color: chef.portal_background_color,
       portal_background_image_url: chef.portal_background_image_url,
+    },
+    featured_menu: featuredMenu,
+    featured_menu_showcase: {
+      badge: chef.featured_booking_badge ?? null,
+      title: chef.featured_booking_title ?? null,
+      pitch: chef.featured_booking_pitch ?? null,
     },
     partners: showcasePartners,
   }

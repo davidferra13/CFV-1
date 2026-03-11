@@ -6,8 +6,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { FeaturedBookingMenuCard } from '@/components/public/featured-booking-menu-card'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
+import type {
+  FeaturedBookingMenuShowcase,
+  PublicFeaturedBookingMenu,
+} from '@/lib/booking/featured-menu-shared'
 
 interface Props {
   chefSlug: string
@@ -23,6 +28,8 @@ interface Props {
   successDescription?: string
   prefillNotice?: string | null
   submitLabel?: string
+  selectedMenu?: PublicFeaturedBookingMenu | null
+  selectedMenuShowcase?: FeaturedBookingMenuShowcase | null
 }
 
 interface FormData {
@@ -159,6 +166,8 @@ export function PublicInquiryForm({
   successDescription,
   prefillNotice,
   submitLabel = 'Send inquiry',
+  selectedMenu = null,
+  selectedMenuShowcase = null,
 }: Props) {
   const [formData, setFormData] = useState<FormData>(() => createInitialFormData(initialValues))
 
@@ -169,7 +178,9 @@ export function PublicInquiryForm({
   const [returningClient, setReturningClient] = useState(
     Boolean(prefillNotice) || campaignSource === 'rebook_qr'
   )
-  const [lookupDone, setLookupDone] = useState(Boolean(initialValues?.email) || campaignSource === 'rebook_qr')
+  const [lookupDone, setLookupDone] = useState(
+    Boolean(initialValues?.email) || campaignSource === 'rebook_qr'
+  )
 
   useEffect(() => {
     setFormData(createInitialFormData(initialValues))
@@ -207,10 +218,8 @@ export function PublicInquiryForm({
           serve_time: prev.serve_time || data.prefill.serve_time,
           guest_count: prev.guest_count || data.prefill.guest_count,
           occasion: prev.occasion || data.prefill.occasion,
-          allergies_food_restrictions:
-            prev.allergies_food_restrictions || dietarySummary,
-          allergy_flag:
-            prev.allergy_flag || (dietarySummary ? 'yes' : ''),
+          allergies_food_restrictions: prev.allergies_food_restrictions || dietarySummary,
+          allergy_flag: prev.allergy_flag || (dietarySummary ? 'yes' : ''),
         }))
       }
       setLookupDone(true)
@@ -334,6 +343,7 @@ export function PublicInquiryForm({
 
       await submitPublicInquiry({
         chef_slug: chefSlug,
+        selected_menu_id: selectedMenu?.id,
         campaign_source: campaignSource,
         rebook_token: rebookToken,
         referral_code: referralCode,
@@ -412,7 +422,10 @@ export function PublicInquiryForm({
           </div>
           <h2 className="text-2xl font-bold text-stone-100 mb-2">{successTitle}</h2>
           <p className="text-stone-400 mb-6">
-            {successDescription || `${chefName} will review your details and reply within 24 hours.`}
+            {successDescription ||
+              (selectedMenu
+                ? `${chefName} will review your request for ${selectedMenu.name} and reply within 24 hours.`
+                : `${chefName} will review your details and reply within 24 hours.`)}
           </p>
           <button
             type="button"
@@ -456,6 +469,20 @@ export function PublicInquiryForm({
             <div className="rounded-lg border border-emerald-800 bg-emerald-950/70 px-4 py-3 text-sm text-emerald-400">
               {prefillNotice}
             </div>
+          )}
+
+          {selectedMenu && (
+            <FeaturedBookingMenuCard
+              menu={selectedMenu}
+              primaryColor={primaryColor}
+              compact
+              eyebrow={selectedMenuShowcase?.badge || 'Featured Menu'}
+              title={selectedMenuShowcase?.title || selectedMenu.name}
+              description={
+                selectedMenuShowcase?.pitch ||
+                'This inquiry will start from the featured menu below so you can move faster than a fully custom menu request.'
+              }
+            />
           )}
 
           <Input

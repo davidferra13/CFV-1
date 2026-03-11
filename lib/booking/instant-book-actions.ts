@@ -8,6 +8,12 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import {
+  buildFeaturedMenuContextLine,
+  cloneFeaturedMenuToEvent,
+  normalizeBookingServiceModeForMenu,
+  resolveRequestedFeaturedMenuId,
+} from '@/lib/booking/featured-menu'
+import {
   BookingServiceModeSchema,
   ScheduleRequestSchema,
   summarizeScheduleRequest,
@@ -30,6 +36,7 @@ function getStripe(): Stripe {
 
 const InstantBookSchema = z.object({
   chef_slug: z.string().min(1).max(200),
+  selected_menu_id: z.string().uuid().optional(),
   full_name: z.string().min(1, 'Name is required').max(200),
   email: z.string().email('Valid email required').max(320),
   phone: z.string().max(50).optional().or(z.literal('')),
@@ -97,6 +104,7 @@ export async function createInstantBookingCheckout(
       booking_base_price_cents, booking_pricing_type,
       booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents,
       booking_min_notice_days,
+      featured_booking_menu_id,
       stripe_account_id, stripe_onboarding_complete,
       platform_fee_percent, platform_fee_fixed_cents
     `
@@ -118,7 +126,33 @@ export async function createInstantBookingCheckout(
   }
 
   const tenantId = chef.id as string
-  const serviceMode = validated.service_mode ?? 'one_off'
+  const resolvedFeaturedMenuId = validated.selected_menu_id
+    ? resolveRequestedFeaturedMenuId(chef.featured_booking_menu_id, validated.selected_menu_id)
+    : null
+
+  if (validated.selected_menu_id && !resolvedFeaturedMenuId) {
+    throw new Error('This ready-to-book menu is no longer available. Please refresh and try again.')
+  }
+
+  const { data: selectedFeaturedMenu } = resolvedFeaturedMenuId
+    ? await supabase
+        .from('menus')
+        .select('id, name')
+        .eq('id', resolvedFeaturedMenuId)
+        .eq('tenant_id', tenantId)
+        .neq('status', 'archived')
+        .is('deleted_at', null)
+        .maybeSingle()
+    : { data: null }
+
+  if (resolvedFeaturedMenuId && !selectedFeaturedMenu) {
+    throw new Error('This ready-to-book menu is no longer available. Please refresh and try again.')
+  }
+
+  const serviceMode = normalizeBookingServiceModeForMenu(
+    validated.service_mode ?? 'one_off',
+    Boolean(selectedFeaturedMenu)
+  )
   const bookingSource = serviceMode === 'multi_day' ? 'series' : 'instant_book'
   const recurringSummary =
     serviceMode === 'recurring'
@@ -126,7 +160,9 @@ export async function createInstantBookingCheckout(
           validated.recurring_duration_weeks ?? 8
         } week(s); menu recommendation lead ${validated.menu_recommendation_lead_days ?? 7} day(s).`
       : null
-  const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
+  const scheduleSummary = summarizeScheduleRequest(
+    serviceMode === 'multi_day' ? validated.schedule_request_jsonb : undefined
+  )
 
   const totalCents =
     chef.booking_pricing_type === 'per_person'
@@ -160,11 +196,13 @@ export async function createInstantBookingCheckout(
       confirmed_guest_count: validated.guest_count,
       confirmed_location: validated.address.trim(),
       confirmed_occasion: validated.occasion.trim(),
-      source_message: `Instant-book request. Serve time: ${validated.serve_time}. Service mode: ${serviceMode}.${
+      source_message: `Instant-book request. Serve time: ${validated.serve_time}. Service mode: ${serviceMode}.${selectedFeaturedMenu?.name ? ` ${buildFeaturedMenuContextLine(selectedFeaturedMenu.name)}.` : ''}${
         recurringSummary ? ` ${recurringSummary}` : ''
       }${scheduleSummary ? ` ${scheduleSummary}` : ''}`,
+      selected_menu_id: selectedFeaturedMenu?.id ?? null,
       service_mode: serviceMode,
-      schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
+      schedule_request_jsonb:
+        serviceMode === 'multi_day' ? (validated.schedule_request_jsonb ?? null) : null,
       unknown_fields: {
         service_mode: serviceMode,
         recurring_frequency:
@@ -173,7 +211,10 @@ export async function createInstantBookingCheckout(
           serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
         menu_recommendation_lead_days:
           serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
-        schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
+        schedule_request_jsonb:
+          serviceMode === 'multi_day' ? (validated.schedule_request_jsonb ?? null) : null,
+        selected_menu_id: selectedFeaturedMenu?.id ?? null,
+        selected_menu_name: selectedFeaturedMenu?.name ?? null,
       },
       status: 'new',
     })
@@ -361,6 +402,7 @@ export async function createInstantBookingCheckout(
       pricing_model: pricingModel,
       service_mode: serviceMode,
       special_requests: [
+        selectedFeaturedMenu?.name ? buildFeaturedMenuContextLine(selectedFeaturedMenu.name) : null,
         validated.additional_notes?.trim() || null,
         recurringSummary,
         scheduleSummary,
@@ -423,6 +465,9 @@ export async function createInstantBookingCheckout(
         deposit_amount_cents: depositCents,
         service_mode: serviceMode,
         special_requests: [
+          selectedFeaturedMenu?.name
+            ? buildFeaturedMenuContextLine(selectedFeaturedMenu.name)
+            : null,
           validated.additional_notes?.trim() || null,
           recurringSummary,
           scheduleSummary,
@@ -440,6 +485,15 @@ export async function createInstantBookingCheckout(
     }
 
     checkoutEventId = event.id
+
+    if (selectedFeaturedMenu?.id) {
+      await cloneFeaturedMenuToEvent({
+        supabase,
+        tenantId,
+        eventId: event.id,
+        sourceMenuId: selectedFeaturedMenu.id,
+      })
+    }
 
     await supabase.from('event_state_transitions').insert({
       tenant_id: tenantId,
@@ -479,6 +533,7 @@ export async function createInstantBookingCheckout(
       payment_type: 'deposit',
       transfer_routed: 'true',
       booking_source: bookingSource,
+      selected_menu_id: selectedFeaturedMenu?.id ?? undefined,
     },
     transfer_data: {
       destination: chef.stripe_account_id,
@@ -505,7 +560,9 @@ export async function createInstantBookingCheckout(
     ],
     payment_intent_data: paymentIntentData as any,
     success_url: `${appUrl}/book/${validated.chef_slug}/thank-you?mode=instant&event=${checkoutEventId}`,
-    cancel_url: `${appUrl}/book/${validated.chef_slug}?booking=cancelled`,
+    cancel_url: `${appUrl}/book/${validated.chef_slug}?booking=cancelled${
+      selectedFeaturedMenu?.id ? `&menu=${selectedFeaturedMenu.id}` : ''
+    }`,
     customer_email: validated.email.toLowerCase().trim(),
     expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
   })

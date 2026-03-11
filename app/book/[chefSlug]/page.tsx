@@ -9,6 +9,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { BookingFlow } from '@/components/booking/booking-flow'
 import { BookingPageClient } from './booking-page-client'
 import type { PublicEventType } from '@/lib/booking/event-types-actions'
+import { getPublicFeaturedBookingMenu } from '@/lib/booking/featured-menu'
+import {
+  resolveRequestedFeaturedMenuId,
+  type FeaturedBookingMenuShowcase,
+} from '@/lib/booking/featured-menu-shared'
 
 type ChefPublicProfile = {
   id: string
@@ -23,6 +28,10 @@ type ChefPublicProfile = {
   booking_deposit_type: string | null
   booking_deposit_percent: number | null
   booking_deposit_fixed_cents: number | null
+  featured_booking_menu_id: string | null
+  featured_booking_badge: string | null
+  featured_booking_title: string | null
+  featured_booking_pitch: string | null
 }
 
 const getChefForBooking = unstable_cache(
@@ -35,7 +44,8 @@ const getChefForBooking = unstable_cache(
         `
         id, business_name, booking_slug, booking_enabled, booking_headline, booking_bio_short,
         booking_model, booking_base_price_cents, booking_pricing_type,
-        booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents
+        booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents,
+        featured_booking_menu_id, featured_booking_badge, featured_booking_title, featured_booking_pitch
       `
       )
       .eq('booking_slug', slug)
@@ -68,7 +78,13 @@ const getEventTypes = unstable_cache(
   { revalidate: 300, tags: ['chef-booking-profile'] }
 )
 
-export default async function BookingPage({ params }: { params: { chefSlug: string } }) {
+export default async function BookingPage({
+  params,
+  searchParams,
+}: {
+  params: { chefSlug: string }
+  searchParams?: { menu?: string }
+}) {
   const chef = await getChefForBooking(params.chefSlug)
 
   if (!chef) {
@@ -84,9 +100,24 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
     depositFixedCents: chef.booking_deposit_fixed_cents,
   }
 
+  const selectedMenuId = resolveRequestedFeaturedMenuId(
+    chef.featured_booking_menu_id,
+    typeof searchParams?.menu === 'string' ? searchParams.menu : null
+  )
+  const selectedMenu = selectedMenuId
+    ? await getPublicFeaturedBookingMenu(chef.id, selectedMenuId)
+    : null
+  const selectedMenuShowcase: FeaturedBookingMenuShowcase | null = selectedMenu
+    ? {
+        badge: chef.featured_booking_badge ?? null,
+        title: chef.featured_booking_title ?? null,
+        pitch: chef.featured_booking_pitch ?? null,
+      }
+    : null
+
   // Load event types (may be empty for chefs who haven't configured them)
   const eventTypes = await getEventTypes(chef.id)
-  const hasEventTypes = eventTypes.length > 0
+  const hasEventTypes = eventTypes.length > 0 && !selectedMenu
   const chefName = chef.business_name || 'Private Chef'
 
   return (
@@ -95,11 +126,15 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
         {/* Chef Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-stone-100">{chefName}</h1>
-          {chef.booking_headline && (
-            <p className="text-lg text-stone-400">{chef.booking_headline}</p>
+          {(selectedMenuShowcase?.title || chef.booking_headline) && (
+            <p className="text-lg text-stone-400">
+              {selectedMenuShowcase?.title || chef.booking_headline}
+            </p>
           )}
-          {chef.booking_bio_short && (
-            <p className="text-sm text-stone-500 max-w-md mx-auto">{chef.booking_bio_short}</p>
+          {(selectedMenuShowcase?.pitch || chef.booking_bio_short) && (
+            <p className="text-sm text-stone-500 max-w-md mx-auto">
+              {selectedMenuShowcase?.pitch || chef.booking_bio_short}
+            </p>
           )}
         </div>
 
@@ -112,7 +147,12 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
               bookingConfig={bookingConfig}
             />
           ) : (
-            <BookingPageClient chefSlug={params.chefSlug} bookingConfig={bookingConfig} />
+            <BookingPageClient
+              chefSlug={params.chefSlug}
+              bookingConfig={bookingConfig}
+              selectedMenu={selectedMenu}
+              selectedMenuShowcase={selectedMenuShowcase}
+            />
           )}
         </div>
 

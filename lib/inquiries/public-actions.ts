@@ -7,6 +7,12 @@
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
+import {
+  buildFeaturedMenuContextLine,
+  cloneFeaturedMenuToEvent,
+  normalizeBookingServiceModeForMenu,
+  resolveRequestedFeaturedMenuId,
+} from '@/lib/booking/featured-menu'
 import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import {
   BookingServiceModeSchema,
@@ -24,6 +30,7 @@ const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
 const PublicInquirySchema = z.object({
   chef_slug: z.string().optional(),
+  selected_menu_id: z.string().uuid().optional(),
   campaign_source: z.enum(['public_profile', 'rebook_qr', 'referral_qr']).optional(),
   rebook_token: z.string().optional(),
   referral_code: z.string().optional(),
@@ -79,15 +86,14 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     60 * 60_000
   )
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const allergiesList = validated.allergies_food_restrictions
     ? validated.allergies_food_restrictions
         .split(/[\n,]/)
         .map((item) => item.trim())
         .filter(Boolean)
     : null
-  const serviceMode = validated.service_mode ?? 'one_off'
-  const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
+  const requestedFeaturedMenuId = validated.selected_menu_id?.trim() || null
   const normalizedRebookToken = validated.rebook_token?.trim() || null
   const normalizedReferralCode = validated.referral_code?.trim().toUpperCase() || null
   let rebookContext: {
@@ -96,51 +102,12 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     clientId: string
   } | null = null
 
-  const sourceParts = [
-    `Serving Time: ${validated.serve_time.trim()}`,
-    `Service Mode: ${
-      serviceMode === 'recurring'
-        ? 'Recurring'
-        : serviceMode === 'multi_day'
-          ? 'Multi-day'
-          : 'One-off'
-    }`,
-    serviceMode === 'recurring'
-      ? `Recurring Plan: ${validated.recurring_frequency ?? 'weekly'} for ${
-          validated.recurring_duration_weeks ?? 8
-        } week(s); menu recommendation lead ${validated.menu_recommendation_lead_days ?? 7} day(s).`
-      : null,
-    scheduleSummary,
-    validated.budget_cents != null
-      ? `Exact Budget: $${(validated.budget_cents / 100).toFixed(2)}`
-      : validated.budget_range
-        ? `Budget Range: ${validated.budget_range}`
-        : null,
-    validated.favorite_ingredients_dislikes?.trim()
-      ? `Favorites/Dislikes: ${validated.favorite_ingredients_dislikes.trim()}`
-      : null,
-    validated.allergies_food_restrictions?.trim()
-      ? `Allergies/Food Restrictions: ${validated.allergies_food_restrictions.trim()}`
-      : null,
-    validated.additional_notes?.trim()
-      ? `Additional Notes: ${validated.additional_notes.trim()}`
-      : null,
-  ].filter(Boolean)
-  const sourceMessage = sourceParts.join('\n')
-  const serviceExpectations = [
-    `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
-    serviceMode === 'recurring'
-      ? `Recurring ${validated.recurring_frequency ?? 'weekly'} plan for ${
-          validated.recurring_duration_weeks ?? 8
-        } week(s). Menu recommendations requested ${validated.menu_recommendation_lead_days ?? 7} day(s) ahead.`
-      : null,
-    serviceMode === 'multi_day' && scheduleSummary ? scheduleSummary : null,
-  ]
-    .filter(Boolean)
-    .join(' ')
-
   // 1. Resolve chef / campaign context
-  let chef: { id: string; business_name: string | null } | null = null
+  let chef: {
+    id: string
+    business_name: string | null
+    featured_booking_menu_id: string | null
+  } | null = null
 
   if (normalizedRebookToken) {
     const { data: rebookToken } = await supabase
@@ -169,7 +136,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
     const lookup = await supabase
       .from('chefs')
-      .select('id, business_name, booking_slug, slug, public_slug')
+      .select('id, business_name, booking_slug, slug, public_slug, featured_booking_menu_id')
       .eq('id', rebookContext.tenantId)
       .maybeSingle()
 
@@ -192,31 +159,40 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     chef = {
       id: (lookup.data as any).id,
       business_name: (lookup.data as any).business_name ?? null,
+      featured_booking_menu_id: (lookup.data as any).featured_booking_menu_id ?? null,
     }
   } else if (validated.chef_slug) {
-    chef = await resolveChefByPublicSlug<{ id: string; business_name: string | null }>(
-      supabase,
-      validated.chef_slug,
-      'id, business_name'
-    )
+    chef = await resolveChefByPublicSlug<{
+      id: string
+      business_name: string | null
+      featured_booking_menu_id: string | null
+    }>(supabase, validated.chef_slug, 'id, business_name, featured_booking_menu_id')
   } else {
     const ownerChefId = await resolveOwnerChefId(supabase)
     if (ownerChefId) {
       const lookup = await supabase
         .from('chefs')
-        .select('id, business_name')
+        .select('id, business_name, featured_booking_menu_id')
         .eq('id', ownerChefId)
         .single()
-      chef = lookup.data as { id: string; business_name: string | null } | null
+      chef = lookup.data as {
+        id: string
+        business_name: string | null
+        featured_booking_menu_id: string | null
+      } | null
     }
 
     if (!chef) {
       const founderLookup = await supabase
         .from('chefs')
-        .select('id, business_name')
+        .select('id, business_name, featured_booking_menu_id')
         .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
         .single()
-      chef = founderLookup.data as { id: string; business_name: string | null } | null
+      chef = founderLookup.data as {
+        id: string
+        business_name: string | null
+        featured_booking_menu_id: string | null
+      } | null
     }
   }
 
@@ -226,6 +202,84 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   const tenantId = chef.id as string
   const chefName = (chef.business_name as string | null) || 'Your Chef'
+  const resolvedFeaturedMenuId = requestedFeaturedMenuId
+    ? resolveRequestedFeaturedMenuId(chef.featured_booking_menu_id, requestedFeaturedMenuId)
+    : null
+
+  if (requestedFeaturedMenuId && !resolvedFeaturedMenuId) {
+    throw new Error('This ready-to-book menu is no longer available. Please refresh and try again.')
+  }
+
+  const { data: selectedFeaturedMenu } = resolvedFeaturedMenuId
+    ? await supabase
+        .from('menus')
+        .select('id, name')
+        .eq('id', resolvedFeaturedMenuId)
+        .eq('tenant_id', tenantId)
+        .neq('status', 'archived')
+        .is('deleted_at', null)
+        .maybeSingle()
+    : { data: null }
+
+  if (resolvedFeaturedMenuId && !selectedFeaturedMenu) {
+    throw new Error('This ready-to-book menu is no longer available. Please refresh and try again.')
+  }
+
+  const selectedFeaturedMenuName =
+    typeof selectedFeaturedMenu?.name === 'string' ? selectedFeaturedMenu.name : null
+  const serviceMode = normalizeBookingServiceModeForMenu(
+    validated.service_mode ?? 'one_off',
+    Boolean(selectedFeaturedMenu)
+  )
+  const scheduleSummary = summarizeScheduleRequest(
+    serviceMode === 'multi_day' ? validated.schedule_request_jsonb : undefined
+  )
+  const sourceParts = [
+    `Serving Time: ${validated.serve_time.trim()}`,
+    `Service Mode: ${
+      serviceMode === 'recurring'
+        ? 'Recurring'
+        : serviceMode === 'multi_day'
+          ? 'Multi-day'
+          : 'One-off'
+    }`,
+    selectedFeaturedMenuName ? buildFeaturedMenuContextLine(selectedFeaturedMenuName) : null,
+    serviceMode === 'recurring'
+      ? `Recurring Plan: ${validated.recurring_frequency ?? 'weekly'} for ${
+          validated.recurring_duration_weeks ?? 8
+        } week(s); menu recommendation lead ${validated.menu_recommendation_lead_days ?? 7} day(s).`
+      : null,
+    scheduleSummary,
+    validated.budget_cents != null
+      ? `Exact Budget: $${(validated.budget_cents / 100).toFixed(2)}`
+      : validated.budget_range
+        ? `Budget Range: ${validated.budget_range}`
+        : null,
+    validated.favorite_ingredients_dislikes?.trim()
+      ? `Favorites/Dislikes: ${validated.favorite_ingredients_dislikes.trim()}`
+      : null,
+    validated.allergies_food_restrictions?.trim()
+      ? `Allergies/Food Restrictions: ${validated.allergies_food_restrictions.trim()}`
+      : null,
+    validated.additional_notes?.trim()
+      ? `Additional Notes: ${validated.additional_notes.trim()}`
+      : null,
+  ].filter(Boolean)
+  const sourceMessage = sourceParts.join('\n')
+  const serviceExpectations = [
+    `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
+    selectedFeaturedMenuName
+      ? `Start from the featured menu "${selectedFeaturedMenuName}" instead of a fully custom menu.`
+      : null,
+    serviceMode === 'recurring'
+      ? `Recurring ${validated.recurring_frequency ?? 'weekly'} plan for ${
+          validated.recurring_duration_weeks ?? 8
+        } week(s). Menu recommendations requested ${validated.menu_recommendation_lead_days ?? 7} day(s) ahead.`
+      : null,
+    serviceMode === 'multi_day' && scheduleSummary ? scheduleSummary : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
   const referralContext = await getReferralLandingContext(tenantId, normalizedReferralCode)
   const campaignSource =
     validated.campaign_source ??
@@ -270,8 +324,10 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_dietary_restrictions: allergiesList,
       referral_source: referralContext.isValid ? 'referral' : rebookContext ? 'rebook' : null,
       source_message: sourceMessage || null,
+      selected_menu_id: selectedFeaturedMenu?.id ?? null,
       service_mode: serviceMode,
-      schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
+      schedule_request_jsonb:
+        serviceMode === 'multi_day' ? (validated.schedule_request_jsonb ?? null) : null,
       unknown_fields: {
         campaign_source: campaignSource,
         address: validated.address.trim(),
@@ -290,7 +346,10 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
           serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
         menu_recommendation_lead_days:
           serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
-        schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
+        schedule_request_jsonb:
+          serviceMode === 'multi_day' ? (validated.schedule_request_jsonb ?? null) : null,
+        selected_menu_id: selectedFeaturedMenu?.id ?? null,
+        selected_menu_name: selectedFeaturedMenuName,
         rebook_token: normalizedRebookToken,
         source_completed_event_id: rebookContext?.eventId ?? null,
         source_client_id: rebookContext?.clientId ?? null,
@@ -401,6 +460,15 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   // 5. Log initial event state transition (null → draft)
+  if (selectedFeaturedMenu?.id) {
+    await cloneFeaturedMenuToEvent({
+      supabase,
+      tenantId,
+      eventId: event.id,
+      sourceMenuId: selectedFeaturedMenu.id,
+    })
+  }
+
   await supabase.from('event_state_transitions').insert({
     tenant_id: tenantId,
     event_id: event.id,
@@ -445,6 +513,8 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         budget_range: budgetRange,
         budget_cents: budgetCents,
         service_mode: serviceMode,
+        selected_menu_id: selectedFeaturedMenu?.id ?? null,
+        selected_menu_name: selectedFeaturedMenuName,
         recurring_frequency:
           serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : null,
         recurring_duration_weeks:
@@ -469,6 +539,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       budgetRange: budgetRange ?? undefined,
       guestCount: validated.guest_count ?? undefined,
       serviceMode,
+      selectedMenuId: selectedFeaturedMenu?.id ?? undefined,
       recurringFrequency:
         serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : undefined,
       campaignSource,

@@ -18,7 +18,11 @@ import { getChefSlug } from '@/lib/profile/actions'
 import { getBusinessMode } from '@/lib/chef/actions'
 import { getAvailabilitySignalSetting } from '@/lib/calendar/signal-settings-actions'
 import { getSchedulingRules } from '@/lib/availability/rules-actions'
-import { getBookingSettings, type BookingSettings } from '@/lib/booking/booking-settings-actions'
+import {
+  getBookingSettings,
+  getFeaturedBookingMenuOptions,
+  type BookingSettings,
+} from '@/lib/booking/booking-settings-actions'
 import { PreferencesForm } from '@/components/settings/preferences-form'
 import { SchedulingRulesForm } from '@/components/settings/scheduling-rules-form'
 import { BookingPageSettings } from '@/components/settings/booking-page-settings'
@@ -76,6 +80,7 @@ export default async function SettingsPage() {
     availabilitySignalEnabled,
     schedulingRules,
     bookingSettings,
+    featuredBookingMenuOptions,
     demoDataExists,
     userIsAdmin,
   ] = await Promise.all([
@@ -98,6 +103,7 @@ export default async function SettingsPage() {
     getAvailabilitySignalSetting().catch(() => false),
     getSchedulingRules().catch(() => null),
     getBookingSettings().catch(() => null),
+    getFeaturedBookingMenuOptions().catch(() => []),
     hasDemoData().catch(() => false),
     isAdmin().catch(() => false),
   ])
@@ -287,8 +293,13 @@ export default async function SettingsPage() {
                 booking_deposit_type: 'percent',
                 booking_deposit_percent: null,
                 booking_deposit_fixed_cents: null,
+                featured_booking_menu_id: null,
+                featured_booking_badge: null,
+                featured_booking_title: null,
+                featured_booking_pitch: null,
               } as BookingSettings)
             }
+            menuOptions={featuredBookingMenuOptions}
           />
         </SettingsCategory>
 

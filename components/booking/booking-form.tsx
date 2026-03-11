@@ -7,10 +7,16 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
 import { createInstantBookingCheckout } from '@/lib/booking/instant-book-actions'
+import {
+  normalizeBookingServiceModeForMenu,
+  type FeaturedBookingMenuShowcase,
+  type PublicFeaturedBookingMenu,
+} from '@/lib/booking/featured-menu-shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
+import { FeaturedBookingMenuCard } from '@/components/public/featured-booking-menu-card'
 import type { BookingConfig } from '@/app/book/[chefSlug]/booking-page-client'
 
 type Props = {
@@ -18,6 +24,8 @@ type Props = {
   selectedDate: string // YYYY-MM-DD pre-filled from calendar
   onBack: () => void
   bookingConfig?: BookingConfig
+  selectedMenu?: PublicFeaturedBookingMenu | null
+  selectedMenuShowcase?: FeaturedBookingMenuShowcase | null
 }
 
 type MultiDayMealSlot = 'breakfast' | 'lunch' | 'dinner' | 'late_snack' | 'dropoff' | 'other'
@@ -67,7 +75,14 @@ function formatDollars(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
-export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: Props) {
+export function BookingForm({
+  chefSlug,
+  selectedDate,
+  onBack,
+  bookingConfig,
+  selectedMenu = null,
+  selectedMenuShowcase = null,
+}: Props) {
   const router = useRouter()
 
   const isInstantBook = bookingConfig?.bookingModel === 'instant_book'
@@ -123,6 +138,12 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
 
     return { totalCents, depositCents }
   }, [isInstantBook, bookingConfig, guestCount])
+
+  useEffect(() => {
+    if (selectedMenu && serviceMode !== 'one_off') {
+      setServiceMode('one_off')
+    }
+  }, [selectedMenu, serviceMode])
 
   const multiDaySchedulePayload = useMemo(() => {
     if (serviceMode !== 'multi_day') return undefined
@@ -282,7 +303,12 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
       return
     }
 
-    if (serviceMode === 'multi_day') {
+    const effectiveServiceMode = normalizeBookingServiceModeForMenu(
+      serviceMode,
+      Boolean(selectedMenu)
+    )
+
+    if (effectiveServiceMode === 'multi_day') {
       if (!multiDayStartDate || !multiDayEndDate) {
         setError('Please provide both start and end dates for the multi-day service.')
         return
@@ -303,6 +329,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
         // Instant-book: create checkout session and redirect to Stripe
         const result = await createInstantBookingCheckout({
           chef_slug: chefSlug,
+          selected_menu_id: selectedMenu?.id,
           full_name: fullName.trim(),
           email: email.trim(),
           phone: phone.trim() || undefined,
@@ -313,17 +340,19 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           address: address.trim(),
           allergies_food_restrictions: allergies.trim() || undefined,
           additional_notes: notes.trim() || undefined,
-          service_mode: serviceMode,
-          recurring_frequency: serviceMode === 'recurring' ? recurringFrequency : undefined,
+          service_mode: effectiveServiceMode,
+          recurring_frequency:
+            effectiveServiceMode === 'recurring' ? recurringFrequency : undefined,
           recurring_duration_weeks:
-            serviceMode === 'recurring' && recurringDurationWeeks
+            effectiveServiceMode === 'recurring' && recurringDurationWeeks
               ? parseInt(recurringDurationWeeks)
               : undefined,
           menu_recommendation_lead_days:
-            serviceMode === 'recurring' && menuRecommendationLeadDays
+            effectiveServiceMode === 'recurring' && menuRecommendationLeadDays
               ? parseInt(menuRecommendationLeadDays)
               : undefined,
-          schedule_request_jsonb: multiDaySchedulePayload,
+          schedule_request_jsonb:
+            effectiveServiceMode === 'multi_day' ? multiDaySchedulePayload : undefined,
         })
         // Redirect to Stripe Checkout
         window.location.href = result.checkoutUrl
@@ -331,6 +360,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
         // Inquiry-first: submit inquiry and redirect to thank-you
         await submitPublicInquiry({
           chef_slug: chefSlug,
+          selected_menu_id: selectedMenu?.id,
           full_name: fullName.trim(),
           email: email.trim(),
           phone: phone.trim() || undefined,
@@ -341,17 +371,19 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           address: address.trim(),
           allergies_food_restrictions: allergies.trim() || undefined,
           additional_notes: notes.trim() || undefined,
-          service_mode: serviceMode,
-          recurring_frequency: serviceMode === 'recurring' ? recurringFrequency : undefined,
+          service_mode: effectiveServiceMode,
+          recurring_frequency:
+            effectiveServiceMode === 'recurring' ? recurringFrequency : undefined,
           recurring_duration_weeks:
-            serviceMode === 'recurring' && recurringDurationWeeks
+            effectiveServiceMode === 'recurring' && recurringDurationWeeks
               ? parseInt(recurringDurationWeeks)
               : undefined,
           menu_recommendation_lead_days:
-            serviceMode === 'recurring' && menuRecommendationLeadDays
+            effectiveServiceMode === 'recurring' && menuRecommendationLeadDays
               ? parseInt(menuRecommendationLeadDays)
               : undefined,
-          schedule_request_jsonb: multiDaySchedulePayload,
+          schedule_request_jsonb:
+            effectiveServiceMode === 'multi_day' ? multiDaySchedulePayload : undefined,
         })
         router.push(`/book/${chefSlug}/thank-you`)
       }
@@ -363,6 +395,20 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {selectedMenu && (
+        <FeaturedBookingMenuCard
+          menu={selectedMenu}
+          primaryColor="#57534e"
+          compact
+          eyebrow={selectedMenuShowcase?.badge || 'Featured Menu'}
+          title={selectedMenuShowcase?.title || selectedMenu.name}
+          description={
+            selectedMenuShowcase?.pitch ||
+            'This booking will use the featured menu below. Ready-to-book menus are handled as one-off events.'
+          }
+        />
+      )}
+
       <div className="rounded-lg bg-stone-800 border border-stone-700 px-4 py-2.5 flex items-center gap-3">
         <span className="text-sm font-medium text-stone-300">Date selected:</span>
         <span className="text-sm font-semibold text-stone-100">
@@ -417,283 +463,289 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
         />
       </div>
 
-      <div className="rounded-lg border border-stone-700 bg-stone-900 p-3 space-y-3">
-        <p className="text-sm font-medium text-stone-200">Service Type</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-800 p-3">
-            <input
-              type="radio"
-              name="service-mode"
-              checked={serviceMode === 'one_off'}
-              onChange={() => setServiceMode('one_off')}
-              className="mt-1"
-            />
-            <span>
-              <span className="block text-sm text-stone-100">One-off Event</span>
-              <span className="block text-xs text-stone-500">Single date service request.</span>
-            </span>
-          </label>
-          <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-800 p-3">
-            <input
-              type="radio"
-              name="service-mode"
-              checked={serviceMode === 'recurring'}
-              onChange={() => setServiceMode('recurring')}
-              className="mt-1"
-            />
-            <span>
-              <span className="block text-sm text-stone-100">Recurring Plan</span>
-              <span className="block text-xs text-stone-500">
-                Multi-week or standing service arrangement.
-              </span>
-            </span>
-          </label>
-          <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-800 p-3">
-            <input
-              type="radio"
-              name="service-mode"
-              checked={serviceMode === 'multi_day'}
-              onChange={() => setServiceMode('multi_day')}
-              className="mt-1"
-            />
-            <span>
-              <span className="block text-sm text-stone-100">Multi-day Service</span>
-              <span className="block text-xs text-stone-500">
-                Consecutive or mixed meal coverage across multiple days.
-              </span>
-            </span>
-          </label>
-        </div>
-
-        {serviceMode === 'recurring' && (
+      {!selectedMenu && (
+        <div className="rounded-lg border border-stone-700 bg-stone-900 p-3 space-y-3">
+          <p className="text-sm font-medium text-stone-200">Service Type</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-stone-400 mb-1">Frequency</label>
-              <select
-                className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
-                value={recurringFrequency}
-                onChange={(e) =>
-                  setRecurringFrequency(e.target.value as 'weekly' | 'biweekly' | 'monthly')
-                }
-              >
-                <option value="weekly">Weekly</option>
-                <option value="biweekly">Bi-weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-            <Input
-              label="Duration (weeks)"
-              type="number"
-              min="1"
-              max="52"
-              value={recurringDurationWeeks}
-              onChange={(e) => setRecurringDurationWeeks(e.target.value)}
-            />
-            <Input
-              label="Menu lead days"
-              type="number"
-              min="1"
-              max="21"
-              value={menuRecommendationLeadDays}
-              onChange={(e) => setMenuRecommendationLeadDays(e.target.value)}
-            />
+            <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-800 p-3">
+              <input
+                type="radio"
+                name="service-mode"
+                checked={serviceMode === 'one_off'}
+                onChange={() => setServiceMode('one_off')}
+                className="mt-1"
+              />
+              <span>
+                <span className="block text-sm text-stone-100">One-off Event</span>
+                <span className="block text-xs text-stone-500">Single date service request.</span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-800 p-3">
+              <input
+                type="radio"
+                name="service-mode"
+                checked={serviceMode === 'recurring'}
+                onChange={() => setServiceMode('recurring')}
+                className="mt-1"
+              />
+              <span>
+                <span className="block text-sm text-stone-100">Recurring Plan</span>
+                <span className="block text-xs text-stone-500">
+                  Multi-week or standing service arrangement.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-800 p-3">
+              <input
+                type="radio"
+                name="service-mode"
+                checked={serviceMode === 'multi_day'}
+                onChange={() => setServiceMode('multi_day')}
+                className="mt-1"
+              />
+              <span>
+                <span className="block text-sm text-stone-100">Multi-day Service</span>
+                <span className="block text-xs text-stone-500">
+                  Consecutive or mixed meal coverage across multiple days.
+                </span>
+              </span>
+            </label>
           </div>
-        )}
 
-        {serviceMode === 'multi_day' && (
-          <div className="space-y-4">
+          {serviceMode === 'recurring' && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-stone-400 mb-1">Frequency</label>
+                <select
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
+                  value={recurringFrequency}
+                  onChange={(e) =>
+                    setRecurringFrequency(e.target.value as 'weekly' | 'biweekly' | 'monthly')
+                  }
+                >
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Bi-weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
               <Input
-                label="Start date"
-                type="date"
-                value={multiDayStartDate}
-                onChange={(e) => setMultiDayStartDate(e.target.value)}
+                label="Duration (weeks)"
+                type="number"
+                min="1"
+                max="52"
+                value={recurringDurationWeeks}
+                onChange={(e) => setRecurringDurationWeeks(e.target.value)}
               />
               <Input
-                label="End date"
-                type="date"
-                min={multiDayStartDate || undefined}
-                value={multiDayEndDate}
-                onChange={(e) => setMultiDayEndDate(e.target.value)}
+                label="Menu lead days"
+                type="number"
+                min="1"
+                max="21"
+                value={menuRecommendationLeadDays}
+                onChange={(e) => setMenuRecommendationLeadDays(e.target.value)}
               />
-              <div className="sm:col-span-1 flex flex-col">
-                <label className="block text-xs font-medium text-stone-400 mb-1">Templates</label>
-                <div className="grid grid-cols-1 gap-2">
-                  <button
-                    type="button"
-                    className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 hover:bg-stone-700 text-left"
-                    onClick={() => applyMultiDayTemplate('retreat')}
-                  >
-                    Retreat Weekend
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 hover:bg-stone-700 text-left"
-                    onClick={() => applyMultiDayTemplate('vacation')}
-                  >
-                    Family Vacation Week
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 hover:bg-stone-700 text-left"
-                    onClick={() => applyMultiDayTemplate('rotation')}
-                  >
-                    Breakfast + Dinner Rotation
-                  </button>
+            </div>
+          )}
+
+          {serviceMode === 'multi_day' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Input
+                  label="Start date"
+                  type="date"
+                  value={multiDayStartDate}
+                  onChange={(e) => setMultiDayStartDate(e.target.value)}
+                />
+                <Input
+                  label="End date"
+                  type="date"
+                  min={multiDayStartDate || undefined}
+                  value={multiDayEndDate}
+                  onChange={(e) => setMultiDayEndDate(e.target.value)}
+                />
+                <div className="sm:col-span-1 flex flex-col">
+                  <label className="block text-xs font-medium text-stone-400 mb-1">Templates</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    <button
+                      type="button"
+                      className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 hover:bg-stone-700 text-left"
+                      onClick={() => applyMultiDayTemplate('retreat')}
+                    >
+                      Retreat Weekend
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 hover:bg-stone-700 text-left"
+                      onClick={() => applyMultiDayTemplate('vacation')}
+                    >
+                      Family Vacation Week
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 hover:bg-stone-700 text-left"
+                      onClick={() => applyMultiDayTemplate('rotation')}
+                    >
+                      Breakfast + Dinner Rotation
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="sm:col-span-3">
-              <Textarea
-                label="Schedule outline"
-                placeholder="Example: Day 1 lunch + dinner, Day 2 lunch/lunch/dinner, leave breakfast for Day 3."
-                value={multiDayOutline}
-                onChange={(e) => setMultiDayOutline(e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div className="rounded-lg border border-stone-700 bg-stone-950 p-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-stone-200">Itinerary Builder</p>
-                <button
-                  type="button"
-                  onClick={() => addSessionRow()}
-                  className="rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-xs text-stone-200 hover:bg-stone-700"
-                >
-                  + Add Session
-                </button>
+              <div className="sm:col-span-3">
+                <Textarea
+                  label="Schedule outline"
+                  placeholder="Example: Day 1 lunch + dinner, Day 2 lunch/lunch/dinner, leave breakfast for Day 3."
+                  value={multiDayOutline}
+                  onChange={(e) => setMultiDayOutline(e.target.value)}
+                  rows={3}
+                />
               </div>
 
-              <div className="space-y-3">
-                {multiDaySessions.map((session, index) => (
-                  <div
-                    key={session.id}
-                    className="rounded-md border border-stone-700 bg-stone-900 p-3"
+              <div className="rounded-lg border border-stone-700 bg-stone-950 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-stone-200">Itinerary Builder</p>
+                  <button
+                    type="button"
+                    onClick={() => addSessionRow()}
+                    className="rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-xs text-stone-200 hover:bg-stone-700"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-medium text-stone-400">Session {index + 1}</p>
-                      <button
-                        type="button"
-                        onClick={() => removeSessionRow(session.id)}
-                        disabled={multiDaySessions.length <= 1}
-                        className="text-xs text-red-300 disabled:text-stone-600 hover:text-red-200"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <Input
-                        label="Service date"
-                        type="date"
-                        min={multiDayStartDate || undefined}
-                        max={multiDayEndDate || undefined}
-                        value={session.service_date}
-                        onChange={(e) =>
-                          updateSessionRow(session.id, { service_date: e.target.value })
-                        }
-                      />
-                      <div>
-                        <label className="block text-xs font-medium text-stone-400 mb-1">
-                          Meal slot
-                        </label>
-                        <select
-                          className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
-                          value={session.meal_slot}
-                          onChange={(e) =>
-                            updateSessionRow(session.id, {
-                              meal_slot: e.target.value as MultiDayMealSlot,
-                            })
-                          }
-                        >
-                          {SESSION_MEAL_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-stone-400 mb-1">
-                          Service type
-                        </label>
-                        <select
-                          className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
-                          value={session.execution_type}
-                          onChange={(e) =>
-                            updateSessionRow(session.id, {
-                              execution_type: e.target.value as MultiDayExecutionType,
-                            })
-                          }
-                        >
-                          {SESSION_EXECUTION_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <Input
-                        label="Start time (optional)"
-                        type="time"
-                        value={session.start_time}
-                        onChange={(e) =>
-                          updateSessionRow(session.id, { start_time: e.target.value })
-                        }
-                      />
-                      <Input
-                        label="End time (optional)"
-                        type="time"
-                        value={session.end_time}
-                        onChange={(e) => updateSessionRow(session.id, { end_time: e.target.value })}
-                      />
-                      <Input
-                        label="Guest count (optional)"
-                        type="number"
-                        min="1"
-                        value={session.guest_count}
-                        onChange={(e) =>
-                          updateSessionRow(session.id, { guest_count: e.target.value })
-                        }
-                      />
-                      <div className="sm:col-span-3">
-                        <Textarea
-                          label="Session notes (optional)"
-                          rows={2}
-                          value={session.notes}
-                          onChange={(e) => updateSessionRow(session.id, { notes: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    + Add Session
+                  </button>
+                </div>
 
-            {rangeAvailabilityLoading && (
-              <p className="text-xs text-stone-400">
-                Checking availability across your selected range...
-              </p>
-            )}
-            {rangeAvailabilitySummary && (
-              <div className="rounded-md border border-stone-700 bg-stone-950 p-3 text-xs text-stone-300 space-y-1">
-                <p>
-                  Range check: {rangeAvailabilitySummary.blockedDates.length} blocked day(s),{' '}
-                  {rangeAvailabilitySummary.unavailableDates.length} unavailable day(s).
-                </p>
-                {Object.entries(rangeAvailabilitySummary.details)
-                  .slice(0, 4)
-                  .map(([date, reasons]) => (
-                    <p key={date} className="text-stone-400">
-                      {date}: {(reasons || []).join(', ')}
-                    </p>
+                <div className="space-y-3">
+                  {multiDaySessions.map((session, index) => (
+                    <div
+                      key={session.id}
+                      className="rounded-md border border-stone-700 bg-stone-900 p-3"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-stone-400">Session {index + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() => removeSessionRow(session.id)}
+                          disabled={multiDaySessions.length <= 1}
+                          className="text-xs text-red-300 disabled:text-stone-600 hover:text-red-200"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <Input
+                          label="Service date"
+                          type="date"
+                          min={multiDayStartDate || undefined}
+                          max={multiDayEndDate || undefined}
+                          value={session.service_date}
+                          onChange={(e) =>
+                            updateSessionRow(session.id, { service_date: e.target.value })
+                          }
+                        />
+                        <div>
+                          <label className="block text-xs font-medium text-stone-400 mb-1">
+                            Meal slot
+                          </label>
+                          <select
+                            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
+                            value={session.meal_slot}
+                            onChange={(e) =>
+                              updateSessionRow(session.id, {
+                                meal_slot: e.target.value as MultiDayMealSlot,
+                              })
+                            }
+                          >
+                            {SESSION_MEAL_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-stone-400 mb-1">
+                            Service type
+                          </label>
+                          <select
+                            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
+                            value={session.execution_type}
+                            onChange={(e) =>
+                              updateSessionRow(session.id, {
+                                execution_type: e.target.value as MultiDayExecutionType,
+                              })
+                            }
+                          >
+                            {SESSION_EXECUTION_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <Input
+                          label="Start time (optional)"
+                          type="time"
+                          value={session.start_time}
+                          onChange={(e) =>
+                            updateSessionRow(session.id, { start_time: e.target.value })
+                          }
+                        />
+                        <Input
+                          label="End time (optional)"
+                          type="time"
+                          value={session.end_time}
+                          onChange={(e) =>
+                            updateSessionRow(session.id, { end_time: e.target.value })
+                          }
+                        />
+                        <Input
+                          label="Guest count (optional)"
+                          type="number"
+                          min="1"
+                          value={session.guest_count}
+                          onChange={(e) =>
+                            updateSessionRow(session.id, { guest_count: e.target.value })
+                          }
+                        />
+                        <div className="sm:col-span-3">
+                          <Textarea
+                            label="Session notes (optional)"
+                            rows={2}
+                            value={session.notes}
+                            onChange={(e) =>
+                              updateSessionRow(session.id, { notes: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
                   ))}
+                </div>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+
+              {rangeAvailabilityLoading && (
+                <p className="text-xs text-stone-400">
+                  Checking availability across your selected range...
+                </p>
+              )}
+              {rangeAvailabilitySummary && (
+                <div className="rounded-md border border-stone-700 bg-stone-950 p-3 text-xs text-stone-300 space-y-1">
+                  <p>
+                    Range check: {rangeAvailabilitySummary.blockedDates.length} blocked day(s),{' '}
+                    {rangeAvailabilitySummary.unavailableDates.length} unavailable day(s).
+                  </p>
+                  {Object.entries(rangeAvailabilitySummary.details)
+                    .slice(0, 4)
+                    .map(([date, reasons]) => (
+                      <p key={date} className="text-stone-400">
+                        {date}: {(reasons || []).join(', ')}
+                      </p>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input

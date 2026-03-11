@@ -109,6 +109,7 @@ export async function onInquiryCreated(
     guestCount?: number
     serviceMode?: 'one_off' | 'recurring' | 'multi_day'
     recurringFrequency?: 'weekly' | 'biweekly' | 'monthly'
+    selectedMenuId?: string
   }
 ): Promise<void> {
   try {
@@ -127,6 +128,7 @@ export async function onInquiryCreated(
         guestCount: metadata?.guestCount,
         serviceMode: metadata?.serviceMode,
         recurringFrequency: metadata?.recurringFrequency,
+        selectedMenuId: metadata?.selectedMenuId,
       },
       priority: AI_PRIORITY.REACTIVE,
       relatedInquiryId: inquiryId,
