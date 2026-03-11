@@ -20547,6 +20547,7 @@ export type Database = {
           body: string
           channel: Database["public"]["Enums"]["message_channel"]
           client_id: string | null
+          conversation_thread_id: string | null
           created_at: string
           direction: Database["public"]["Enums"]["message_direction"]
           event_id: string | null
@@ -20555,6 +20556,7 @@ export type Database = {
           gmail_thread_id: string | null
           id: string
           inquiry_id: string | null
+          recipient_email: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["message_status"]
           subject: string | null
@@ -20568,6 +20570,7 @@ export type Database = {
           body: string
           channel: Database["public"]["Enums"]["message_channel"]
           client_id?: string | null
+          conversation_thread_id?: string | null
           created_at?: string
           direction: Database["public"]["Enums"]["message_direction"]
           event_id?: string | null
@@ -20576,6 +20579,7 @@ export type Database = {
           gmail_thread_id?: string | null
           id?: string
           inquiry_id?: string | null
+          recipient_email?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["message_status"]
           subject?: string | null
@@ -20589,6 +20593,7 @@ export type Database = {
           body?: string
           channel?: Database["public"]["Enums"]["message_channel"]
           client_id?: string | null
+          conversation_thread_id?: string | null
           created_at?: string
           direction?: Database["public"]["Enums"]["message_direction"]
           event_id?: string | null
@@ -20597,6 +20602,7 @@ export type Database = {
           gmail_thread_id?: string | null
           id?: string
           inquiry_id?: string | null
+          recipient_email?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["message_status"]
           subject?: string | null
@@ -20611,6 +20617,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_financial_summary"
             referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "messages_conversation_thread_id_fkey"
+            columns: ["conversation_thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_messages_event"
