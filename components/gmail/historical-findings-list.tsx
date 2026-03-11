@@ -193,6 +193,11 @@ function FindingCard({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-stone-100 truncate">{senderDisplay}</span>
             {dateDisplay && <span className="text-xs text-stone-400 shrink-0">{dateDisplay}</span>}
+            {finding.mailboxEmail && (
+              <span className="rounded-full border border-stone-700 bg-stone-800 px-2 py-0.5 text-[10px] text-stone-300">
+                {finding.mailboxEmail}
+              </span>
+            )}
           </div>
           {finding.subject && (
             <p className="text-sm text-stone-400 mt-0.5 truncate">{finding.subject}</p>
@@ -328,8 +333,8 @@ function BatchDismissButton({ onDone }: { onDone: () => void }) {
 
 function ClassificationBadge({ classification }: { classification: string }) {
   const styles: Record<string, string> = {
-    inquiry: 'bg-emerald-900 text-emerald-700',
-    existing_thread: 'bg-blue-900 text-blue-700',
+    inquiry: 'bg-emerald-900 text-emerald-200',
+    existing_thread: 'bg-blue-900 text-blue-200',
   }
   const labels: Record<string, string> = {
     inquiry: 'inquiry',

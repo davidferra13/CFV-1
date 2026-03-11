@@ -3,12 +3,15 @@
 // Runs with admin Supabase client (no user session required) so it works
 // from both the manual UI trigger and the cron endpoint.
 
-import { createServerClient } from '@/lib/supabase/server'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
-
-type DbClient = SupabaseClient<Database>
-import { getGoogleAccessToken } from '@/lib/google/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  getGoogleMailboxAccessToken,
+  getGoogleMailboxById,
+  isPersistedGoogleMailboxId,
+  listActiveGoogleMailboxesForChef,
+  syncLegacyGoogleConnectionFromPrimary,
+  type GoogleMailboxRecord,
+} from '@/lib/google/mailboxes'
 import {
   listRecentMessages,
   listMessagesSinceHistory,
@@ -47,7 +50,9 @@ import {
 import { parseCityStateFromConversation } from '@/lib/inquiries/conversation-scaffold'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 import type { SyncResult, ParsedEmail } from './types'
-import type { Json } from '@/types/database'
+import type { Database, Json } from '@/types/database'
+
+type DbClient = any
 
 // ─── Known Platform Domains ───────────────────────────────────────────────
 // Platform emails may be auto-archived by Gmail filters, so we run a second
@@ -77,9 +82,41 @@ function mapCannabisPreferenceToBoolean(value?: string | null): boolean | null {
   return ['yes', 'true', 'open'].some((option) => value.toLowerCase().includes(option))
 }
 
+type MailboxParsedEmail = ParsedEmail & {
+  mailboxId?: string
+  mailboxEmail?: string
+}
+
+function getStoredMailboxId(mailboxId?: string | null) {
+  return isPersistedGoogleMailboxId(mailboxId) ? mailboxId : null
+}
+
+async function getExistingSyncLogId(
+  supabase: DbClient,
+  tenantId: string,
+  gmailMessageId: string,
+  mailboxId?: string | null
+) {
+  const storedMailboxId = getStoredMailboxId(mailboxId)
+  let query = supabase.from('gmail_sync_log').select('id').eq('gmail_message_id', gmailMessageId)
+
+  if (storedMailboxId) {
+    query = query.eq('mailbox_id', storedMailboxId)
+  } else {
+    query = query.eq('tenant_id', tenantId)
+  }
+
+  const { data } = await query.maybeSingle()
+  return data?.id ?? null
+}
+
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
-export async function syncGmailInbox(chefId: string, tenantId: string): Promise<SyncResult> {
+export async function syncGmailInbox(
+  chefId: string,
+  tenantId: string,
+  mailboxId?: string
+): Promise<SyncResult> {
   const result: SyncResult = {
     processed: 0,
     inquiriesCreated: 0,
@@ -88,86 +125,134 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     errors: [],
   }
 
-  const supabase = createServerClient({ admin: true })
+  const supabase = createAdminClient() as any
+  const mailboxes = mailboxId
+    ? [await getGoogleMailboxById(mailboxId)].filter(Boolean)
+    : await listActiveGoogleMailboxesForChef(chefId)
 
-  // 1. Get valid access token (auto-refreshes if needed)
-  let accessToken: string
-  try {
-    accessToken = await getGoogleAccessToken(chefId)
-  } catch (err) {
-    const error = err as Error
-    result.errors.push(`Token error: ${error.message}`)
+  if (mailboxes.length === 0) {
+    result.errors.push('Gmail is not connected. Connect your Google account in Settings first.')
     return result
   }
 
-  // 2. Get current sync state
-  const { data: conn } = await supabase
-    .from('google_connections')
-    .select('gmail_history_id')
-    .eq('chef_id', chefId)
-    .single()
+  for (const mailbox of mailboxes) {
+    try {
+      await syncSingleGmailMailbox(
+        supabase,
+        mailbox as GoogleMailboxRecord,
+        chefId,
+        tenantId,
+        result
+      )
+    } catch (err) {
+      const error = err as Error
+      result.errors.push(`${(mailbox as GoogleMailboxRecord).email}: ${error.message}`)
+    }
+  }
 
-  const historyId = conn?.gmail_history_id
+  await syncLegacyGoogleConnectionFromPrimary(chefId, tenantId)
 
-  // 3. Fetch message IDs to process
+  return result
+}
+
+async function syncSingleGmailMailbox(
+  supabase: any,
+  mailbox: GoogleMailboxRecord,
+  chefId: string,
+  tenantId: string,
+  result: SyncResult
+) {
+  const startingErrorCount = result.errors.length
+  const storedMailboxId = getStoredMailboxId(mailbox.id)
+  let accessToken: string
+  try {
+    accessToken = await getGoogleMailboxAccessToken(mailbox.id)
+  } catch (err) {
+    const error = err as Error
+    result.errors.push(`Token error (${mailbox.email}): ${error.message}`)
+    return
+  }
+
+  const historyId = mailbox.gmailHistoryId
   let messageIds: string[]
 
   try {
     if (!historyId) {
-      // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
       const messages = await listRecentMessages(accessToken, {
         maxResults: 50,
         query: 'in:inbox -in:sent',
       })
       messageIds = messages.map((m) => m.id)
 
-      // Bootstrap the history ID for future incremental syncs
       const profile = await getGmailProfile(accessToken)
-      await supabase
-        .from('google_connections')
-        .update({ gmail_history_id: profile.historyId })
-        .eq('chef_id', chefId)
+      if (storedMailboxId) {
+        await supabase
+          .from('google_mailboxes')
+          .update({ gmail_history_id: profile.historyId })
+          .eq('id', storedMailboxId)
+      } else {
+        await supabase
+          .from('google_connections')
+          .update({ gmail_history_id: profile.historyId })
+          .eq('chef_id', chefId)
+      }
     } else {
-      // Incremental sync — only new messages since last history ID
       const historyResult = await listMessagesSinceHistory(accessToken, historyId)
       messageIds = historyResult.messageIds
 
       if (historyResult.latestHistoryId === '') {
-        // History ID too old — fall back to recent inbox messages
         const messages = await listRecentMessages(accessToken, {
           maxResults: 50,
           query: 'in:inbox -in:sent',
         })
         messageIds = messages.map((m) => m.id)
         const profile = await getGmailProfile(accessToken)
-        await supabase
-          .from('google_connections')
-          .update({ gmail_history_id: profile.historyId })
-          .eq('chef_id', chefId)
+        if (storedMailboxId) {
+          await supabase
+            .from('google_mailboxes')
+            .update({ gmail_history_id: profile.historyId })
+            .eq('id', storedMailboxId)
+        } else {
+          await supabase
+            .from('google_connections')
+            .update({ gmail_history_id: profile.historyId })
+            .eq('chef_id', chefId)
+        }
       } else if (historyResult.latestHistoryId) {
-        await supabase
-          .from('google_connections')
-          .update({ gmail_history_id: historyResult.latestHistoryId })
-          .eq('chef_id', chefId)
+        if (storedMailboxId) {
+          await supabase
+            .from('google_mailboxes')
+            .update({ gmail_history_id: historyResult.latestHistoryId })
+            .eq('id', storedMailboxId)
+        } else {
+          await supabase
+            .from('google_connections')
+            .update({ gmail_history_id: historyResult.latestHistoryId })
+            .eq('chef_id', chefId)
+        }
       }
     }
   } catch (err) {
     if (err instanceof GmailScopeError) {
-      // Mark connection as needing reauth so the UI shows a reconnect prompt
-      await supabase
-        .from('google_connections')
-        .update({ gmail_sync_errors: 99 })
-        .eq('chef_id', chefId)
+      if (storedMailboxId) {
+        await supabase
+          .from('google_mailboxes')
+          .update({ gmail_sync_errors: 99 })
+          .eq('id', storedMailboxId)
+      } else {
+        await supabase
+          .from('google_connections')
+          .update({ gmail_sync_errors: 99 })
+          .eq('chef_id', chefId)
+      }
       result.errors.push(
-        'Gmail permissions are insufficient. Please disconnect and reconnect your Gmail in Settings.'
+        `Gmail permissions are insufficient for ${mailbox.email}. Please disconnect and reconnect it in Settings.`
       )
-      return result
+      return
     }
     throw err
   }
 
-  // 3b. Also fetch platform emails that may have been auto-archived by Gmail filters
-  // These domains (TakeAChef, Yhangry, etc.) often get filtered out of inbox
   try {
     const platformQuery = PLATFORM_DOMAINS.map((d) => `from:${d}`).join(' OR ')
     const platformMessages = await listRecentMessages(accessToken, {
@@ -175,8 +260,6 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
       query: platformQuery,
     })
     const platformIds = platformMessages.map((m) => m.id)
-
-    // Merge with inbox results, deduplicate by message ID
     const existingSet = new Set(messageIds)
     for (const id of platformIds) {
       if (!existingSet.has(id)) {
@@ -184,16 +267,17 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
       }
     }
   } catch (platformErr) {
-    // Non-fatal — inbox messages were already fetched
-    console.error('[syncGmailInbox] Platform domain query failed (non-fatal):', platformErr)
+    console.error(
+      `[syncGmailInbox] Platform domain query failed for ${mailbox.email} (non-fatal):`,
+      platformErr
+    )
   }
 
-  // 4. Load known client emails for classification context
   const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
+  const knownClientEmails = (clients || [])
+    .map((c: { email: string | null }) => c.email)
+    .filter(Boolean) as string[]
 
-  const knownClientEmails = (clients || []).map((c) => c.email).filter(Boolean) as string[]
-
-  // 5. Process each message
   for (const messageId of messageIds) {
     try {
       await processMessage(
@@ -202,25 +286,25 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
         messageId,
         chefId,
         tenantId,
+        mailbox,
         knownClientEmails,
         result
       )
     } catch (err) {
       const error = err as Error
-      result.errors.push(`Message ${messageId}: ${error.message}`)
+      result.errors.push(`Message ${messageId} (${mailbox.email}): ${error.message}`)
     }
   }
 
-  // 6. Update sync timestamp
-  await supabase
-    .from('google_connections')
-    .update({
-      gmail_last_sync_at: new Date().toISOString(),
-      gmail_sync_errors: result.errors.length,
-    })
-    .eq('chef_id', chefId)
-
-  return result
+  const syncUpdate = {
+    gmail_last_sync_at: new Date().toISOString(),
+    gmail_sync_errors: result.errors.length - startingErrorCount,
+  }
+  if (storedMailboxId) {
+    await supabase.from('google_mailboxes').update(syncUpdate).eq('id', storedMailboxId)
+  } else {
+    await supabase.from('google_connections').update(syncUpdate).eq('chef_id', chefId)
+  }
 }
 
 // ─── Process Single Message ─────────────────────────────────────────────────
@@ -231,34 +315,29 @@ async function processMessage(
   messageId: string,
   chefId: string,
   tenantId: string,
+  mailbox: GoogleMailboxRecord,
   knownClientEmails: string[],
   result: SyncResult
 ) {
-  // Dedup check — skip if already processed
-  const { data: existing } = await supabase
-    .from('gmail_sync_log')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('gmail_message_id', messageId)
-    .single()
-
-  if (existing) {
+  const storedMailboxId = getStoredMailboxId(mailbox.id)
+  const existingLogId = await getExistingSyncLogId(supabase, tenantId, messageId, storedMailboxId)
+  if (existingLogId) {
     result.skipped++
     return
   }
 
-  // Fetch full message
-  const email = await getFullMessage(accessToken, messageId)
+  const email: MailboxParsedEmail = {
+    ...(await getFullMessage(accessToken, messageId)),
+    mailboxId: storedMailboxId,
+    mailboxEmail: mailbox.email,
+  }
   result.processed++
 
-  // Skip emails sent by the chef themselves (outbound)
-  const { data: conn } = await supabase
-    .from('google_connections')
-    .select('connected_email')
-    .eq('chef_id', chefId)
-    .single()
-
-  if (conn?.connected_email && email.from.email === conn.connected_email) {
+  if (
+    mailbox.email &&
+    email.from.email &&
+    email.from.email.toLowerCase() === mailbox.email.toLowerCase()
+  ) {
     await logSyncEntry(supabase, tenantId, email, {
       classification: 'personal',
       confidence: 'high',
@@ -569,6 +648,7 @@ async function handleInquiry(
         tenant_id: tenantId,
         inquiry_id: inquiry.id,
         client_id: clientId,
+        mailbox_id: email.mailboxId || null,
         channel: 'email' as const,
         direction: 'inbound' as const,
         status: 'logged' as const,
@@ -705,6 +785,7 @@ async function handleExistingThread(
       .insert({
         tenant_id: tenantId,
         client_id: client?.id || null,
+        mailbox_id: email.mailboxId || null,
         channel: 'email' as const,
         direction: 'inbound' as const,
         status: 'logged' as const,
@@ -720,14 +801,20 @@ async function handleExistingThread(
     // Link message to inquiry by thread and auto-advance inquiry status
     let linkedInquiryId: string | null = null
     if (email.threadId) {
-      const { data: threadMessage } = await supabase
+      let threadQuery = supabase
         .from('messages')
         .select('inquiry_id')
         .eq('tenant_id', tenantId)
         .eq('gmail_thread_id', email.threadId)
         .not('inquiry_id', 'is', null)
         .limit(1)
-        .maybeSingle()
+      if (email.mailboxId) {
+        threadQuery = threadQuery.eq('mailbox_id', email.mailboxId)
+      } else {
+        threadQuery = threadQuery.is('mailbox_id', null)
+      }
+
+      const { data: threadMessage } = await threadQuery.maybeSingle()
 
       if (threadMessage?.inquiry_id) {
         linkedInquiryId = threadMessage.inquiry_id
@@ -2726,7 +2813,6 @@ async function logSyncEntry(
     platform_email_type?: string | null
   }
 ) {
-  // Parse received_at from email date header
   let receivedAt: string | null = null
   if (email.date) {
     try {
@@ -2736,26 +2822,36 @@ async function logSyncEntry(
     }
   }
 
-  await supabase.from('gmail_sync_log').upsert(
-    {
-      tenant_id: tenantId,
-      gmail_message_id: email.messageId,
-      gmail_thread_id: email.threadId,
-      from_address: email.from.email,
-      subject: email.subject?.slice(0, 500) || null,
-      classification: entry.classification,
-      confidence: entry.confidence,
-      action_taken: entry.action_taken,
-      inquiry_id: entry.inquiry_id || null,
-      message_id: entry.message_id || null,
-      error: entry.error || null,
-      // Remy email awareness — store body content for search/context
-      body_preview: email.body?.slice(0, 2000) || null,
-      snippet: email.body?.slice(0, 200) || null,
-      to_address: email.to || null,
-      received_at: receivedAt,
-      platform_email_type: entry.platform_email_type || null,
-    },
-    { onConflict: 'tenant_id,gmail_message_id' }
+  const existingId = await getExistingSyncLogId(
+    supabase,
+    tenantId,
+    email.messageId,
+    email.mailboxId
   )
+  const payload = {
+    tenant_id: tenantId,
+    mailbox_id: getStoredMailboxId(email.mailboxId),
+    gmail_message_id: email.messageId,
+    gmail_thread_id: email.threadId,
+    from_address: email.from.email,
+    subject: email.subject?.slice(0, 500) || null,
+    classification: entry.classification,
+    confidence: entry.confidence,
+    action_taken: entry.action_taken,
+    inquiry_id: entry.inquiry_id || null,
+    message_id: entry.message_id || null,
+    error: entry.error || null,
+    body_preview: email.body?.slice(0, 2000) || null,
+    snippet: email.body?.slice(0, 200) || null,
+    to_address: email.to || null,
+    received_at: receivedAt,
+    platform_email_type: entry.platform_email_type || null,
+  }
+
+  if (existingId) {
+    await supabase.from('gmail_sync_log').update(payload).eq('id', existingId)
+    return
+  }
+
+  await supabase.from('gmail_sync_log').insert(payload)
 }

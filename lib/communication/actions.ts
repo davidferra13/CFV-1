@@ -1493,10 +1493,10 @@ export async function sendReplyViaChannel(input: {
 
   if (channel === 'email') {
     // Send via Gmail API
-    const { getGoogleAccessToken } = await import('@/lib/google/auth')
+    const { getPrimaryGoogleAccessTokenForChef } = await import('@/lib/google/mailboxes')
     const { sendEmail } = await import('@/lib/gmail/client')
 
-    const token = await getGoogleAccessToken(user.tenantId!)
+    const token = await getPrimaryGoogleAccessTokenForChef(user.entityId!)
 
     // Get thread context for email subject
     const { data: lastInbound } = await supabase

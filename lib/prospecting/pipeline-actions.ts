@@ -1084,8 +1084,8 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
   if (!recipientEmail) throw new Error('No email address for this prospect')
 
   // Get Gmail access token
-  const { getGoogleAccessToken } = await import('@/lib/google/auth')
-  const accessToken = await getGoogleAccessToken(user.entityId!)
+  const { getPrimaryGoogleAccessTokenForChef } = await import('@/lib/google/mailboxes')
+  const accessToken = await getPrimaryGoogleAccessTokenForChef(user.entityId!)
 
   // Send the email
   const { sendEmail } = await import('@/lib/gmail/client')

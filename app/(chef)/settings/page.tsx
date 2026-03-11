@@ -83,7 +83,15 @@ export default async function SettingsPage() {
     getGoogleConnection().catch((err) => {
       console.error('[Settings] getGoogleConnection failed:', err)
       return {
-        gmail: { connected: false, email: null, lastSync: null, errorCount: 0 },
+        gmail: {
+          connected: false,
+          email: null,
+          lastSync: null,
+          errorCount: 0,
+          connectedCount: 0,
+          primaryMailboxId: null,
+          mailboxes: [],
+        },
         calendar: { connected: false, email: null, lastSync: null },
       } as Awaited<ReturnType<typeof getGoogleConnection>>
     }),
@@ -533,10 +541,10 @@ export default async function SettingsPage() {
                   href="/settings/calendar-sync"
                   className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
                 >
-                  <p className="font-medium text-stone-100">Calendar Sync (iCal)</p>
+                  <p className="font-medium text-stone-100">Calendar Sync & Feeds</p>
                   <p className="text-sm text-stone-500 mt-1">
-                    Generate a subscribe-by-URL feed that auto-syncs events to Apple Calendar,
-                    Outlook, or Google Calendar.
+                    Connect Google Calendar for direct event sync, or generate a subscribe-by-URL
+                    feed for Apple Calendar, Outlook, and other calendar apps.
                   </p>
                 </Link>
                 <Link
@@ -566,7 +574,7 @@ export default async function SettingsPage() {
               className="block border border-emerald-200 rounded-lg p-4 bg-emerald-950/40 hover:bg-emerald-950 transition-colors"
             >
               <p className="font-semibold text-emerald-900">Privacy & Data Center</p>
-              <p className="text-sm text-emerald-700 mt-1">
+              <p className="text-sm text-emerald-200 mt-1">
                 See how drafting tools work, where your data goes, and manage privacy controls.
                 Review data practices and delete saved items anytime.
               </p>
@@ -887,7 +895,7 @@ export default async function SettingsPage() {
               href="/settings/delete-account"
               className="block border border-red-200 rounded-lg p-4 hover:bg-red-950 transition-colors"
             >
-              <p className="font-medium text-red-700">Delete Account</p>
+              <p className="font-medium text-red-200">Delete Account</p>
               <p className="text-sm text-red-500 mt-1">
                 Permanently delete your account and all associated data.
               </p>

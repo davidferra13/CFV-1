@@ -31,7 +31,8 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
 
   const enabled = status.enabled
   const isRunning = enabled && (status.status === 'in_progress' || status.status === 'idle')
-  const isComplete = enabled && status.status === 'completed'
+  const progressSummary = formatProgressSummary(status)
+  const lastRunLabel = formatScanTimestamp(status.lastRunAt)
 
   function handleStartClick() {
     setShowConfirm(true)
@@ -189,25 +190,51 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
         {enabled && (
           <div className="space-y-2">
             {status.status === 'idle' && (
-              <p className="text-xs text-stone-400">Scan queued &mdash; starting soon&hellip;</p>
+              <div className="space-y-2">
+                <p className="text-xs text-stone-400">Scan queued &mdash; starting soon&hellip;</p>
+                <ProgressMeter percent={status.percentComplete} />
+                <ScanMetaRow
+                  progressSummary={progressSummary}
+                  includeSpamTrash={status.includeSpamTrash}
+                  lastRunLabel={lastRunLabel}
+                />
+              </div>
             )}
             {status.status === 'in_progress' && (
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-brand-600 animate-pulse" />
-                <p className="text-xs text-brand-500">
-                  Scanning&hellip; {status.totalProcessed.toLocaleString()} emails filtered so far
-                </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-brand-600 animate-pulse" />
+                  <p className="text-xs text-brand-500">Scanning&hellip; {progressSummary}</p>
+                </div>
+                <ProgressMeter percent={status.percentComplete} />
+                <ScanMetaRow
+                  progressSummary={`Processed ${status.totalProcessed.toLocaleString()} new emails`}
+                  includeSpamTrash={status.includeSpamTrash}
+                  lastRunLabel={lastRunLabel}
+                />
               </div>
             )}
             {status.status === 'completed' && (
-              <p className="text-xs text-emerald-500">
-                Scan complete &mdash; {status.totalProcessed.toLocaleString()} emails filtered
-              </p>
+              <div className="space-y-2">
+                <p className="text-xs text-emerald-500">Scan complete &mdash; {progressSummary}</p>
+                <ProgressMeter percent={100} />
+                <ScanMetaRow
+                  progressSummary={`Processed ${status.totalProcessed.toLocaleString()} emails`}
+                  includeSpamTrash={status.includeSpamTrash}
+                  lastRunLabel={lastRunLabel}
+                />
+              </div>
             )}
             {status.status === 'paused' && (
-              <p className="text-xs text-stone-400">
-                Paused at {status.totalProcessed.toLocaleString()} emails
-              </p>
+              <div className="space-y-2">
+                <p className="text-xs text-stone-400">Paused at {progressSummary}</p>
+                <ProgressMeter percent={status.percentComplete} />
+                <ScanMetaRow
+                  progressSummary={`Processed ${status.totalProcessed.toLocaleString()} emails before pause`}
+                  includeSpamTrash={status.includeSpamTrash}
+                  lastRunLabel={lastRunLabel}
+                />
+              </div>
             )}
 
             {/* Link to review findings */}
@@ -255,6 +282,26 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
                 Resume Scan
               </Button>
             )}
+
+            {status.mailboxes.length > 1 && (
+              <div className="rounded-lg border border-stone-800 bg-stone-900/60 p-3">
+                <p className="text-xs font-medium text-stone-300">Inbox Breakdown</p>
+                <div className="mt-2 space-y-2">
+                  {status.mailboxes.map((mailbox) => (
+                    <div key={mailbox.id} className="space-y-1">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                        <span className="text-stone-200">
+                          {mailbox.email}
+                          {mailbox.isPrimary ? ' · primary' : ''}
+                        </span>
+                        <span className="text-stone-500">{formatProgressSummary(mailbox)}</span>
+                      </div>
+                      <ProgressMeter percent={mailbox.percentComplete} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -262,4 +309,61 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
       </div>
     </div>
   )
+}
+
+function ProgressMeter({ percent }: { percent: number | null }) {
+  return (
+    <div className="h-2 overflow-hidden rounded-full bg-stone-800">
+      <div
+        className="h-full rounded-full bg-brand-600 transition-[width] duration-300"
+        style={{ width: `${percent ?? 0}%` }}
+      />
+    </div>
+  )
+}
+
+function ScanMetaRow({
+  progressSummary,
+  includeSpamTrash,
+  lastRunLabel,
+}: {
+  progressSummary: string
+  includeSpamTrash: boolean
+  lastRunLabel: string | null
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-[11px] text-stone-500">
+      <span>{progressSummary}</span>
+      {includeSpamTrash && (
+        <span className="rounded-full border border-stone-700 bg-stone-900 px-2 py-0.5 text-stone-300">
+          Includes Spam &amp; Trash
+        </span>
+      )}
+      {lastRunLabel && <span>Last batch {lastRunLabel}</span>}
+    </div>
+  )
+}
+
+function formatProgressSummary(
+  status: Pick<HistoricalScanStatus, 'estimatedTotal' | 'percentComplete' | 'totalSeen'>
+): string {
+  const seen = status.totalSeen.toLocaleString()
+  if (status.estimatedTotal) {
+    const estimatedTotal = status.estimatedTotal.toLocaleString()
+    const percent = status.percentComplete != null ? ` (${status.percentComplete}%)` : ''
+    return `${seen} of about ${estimatedTotal} emails scanned${percent}`
+  }
+
+  return `${seen} emails scanned`
+}
+
+function formatScanTimestamp(value: string | null): string | null {
+  if (!value) return null
+
+  return new Date(value).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }

@@ -9,9 +9,17 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { randomBytes } from 'crypto'
 import type { GoogleConnectionStatus } from './types'
+import {
+  disconnectAllGoogleMailboxesForChef,
+  disconnectGoogleMailboxForChef,
+  getPrimaryGoogleMailboxForChef,
+  listGoogleMailboxesForChef,
+  setPrimaryGoogleMailboxForChef,
+  syncLegacyGoogleConnectionFromPrimary,
+  toGoogleMailboxSummary,
+} from './mailboxes'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
-const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke'
 
 // ─── Configuration Checks ───────────────────────────────────────────────────
@@ -92,11 +100,13 @@ export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirec
 // ─── Get Valid Access Token (refresh if needed) ─────────────────────────────
 
 export async function getGoogleAccessToken(chefId: string): Promise<string> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: conn, error } = await supabase
     .from('google_connections')
-    .select('access_token, refresh_token, token_expires_at, gmail_connected, gmail_sync_errors')
+    .select(
+      'access_token, refresh_token, token_expires_at, gmail_connected, calendar_connected, connected_email, scopes'
+    )
     .eq('chef_id', chefId)
     .single()
 
@@ -108,16 +118,17 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
     throw new Error('No refresh token - please reconnect your Google account')
   }
 
-  // Check if token is still valid (with 5-minute buffer)
   const expiresAt = conn.token_expires_at ? new Date(conn.token_expires_at) : new Date(0)
   const bufferMs = 5 * 60 * 1000
   if (conn.access_token && expiresAt.getTime() > Date.now() + bufferMs) {
     return conn.access_token
   }
 
-  // Refresh the token
-  const clientId = process.env.GOOGLE_CLIENT_ID!
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET!
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+  if (!clientId || !clientSecret) {
+    throw new Error('Google integration not configured')
+  }
 
   const response = await fetch(GOOGLE_TOKEN_URL, {
     method: 'POST',
@@ -131,16 +142,20 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
   })
 
   if (!response.ok) {
-    // Token was revoked — mark as disconnected
-    await supabase
-      .from('google_connections')
-      .update({
-        gmail_connected: false,
-        gmail_sync_errors: (conn.gmail_sync_errors || 0) + 1,
-      })
-      .eq('chef_id', chefId)
+    const disconnectUpdate: Record<string, unknown> = {
+      calendar_connected: false,
+      access_token: null,
+      token_expires_at: null,
+    }
 
-    throw new Error('Gmail connection expired. Please reconnect your Google account in Settings.')
+    if (!conn.gmail_connected) {
+      disconnectUpdate.connected_email = null
+      disconnectUpdate.refresh_token = null
+      disconnectUpdate.scopes = []
+    }
+
+    await supabase.from('google_connections').update(disconnectUpdate).eq('chef_id', chefId)
+    throw new Error('Google connection expired. Please reconnect your Google account in Settings.')
   }
 
   const tokens = await response.json()
@@ -162,33 +177,36 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
 export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
   const user = await requireChef()
   const supabase: any = createServerClient()
+  const [mailboxes, primaryMailbox, calendarRow] = await Promise.all([
+    listGoogleMailboxesForChef(user.entityId),
+    getPrimaryGoogleMailboxForChef(user.entityId),
+    supabase
+      .from('google_connections')
+      .select('connected_email, calendar_connected')
+      .eq('chef_id', user.entityId)
+      .maybeSingle()
+      .then((result: any) => result.data),
+  ])
 
-  const { data } = await supabase
-    .from('google_connections')
-    .select(
-      'connected_email, gmail_connected, gmail_last_sync_at, gmail_sync_errors, calendar_connected'
-    )
-    .eq('chef_id', user.entityId)
-    .single()
-
-  if (!data) {
-    const disconnectedStatus = { connected: false, email: null, lastSync: null }
-    return {
-      gmail: { ...disconnectedStatus, errorCount: 0 },
-      calendar: disconnectedStatus,
-    }
-  }
+  const mailboxSummaries = mailboxes.map(toGoogleMailboxSummary)
+  const connectedMailboxes = mailboxSummaries.filter(
+    (mailbox) => mailbox.connected && mailbox.isActive
+  )
+  const totalErrors = connectedMailboxes.reduce((sum, mailbox) => sum + mailbox.errorCount, 0)
 
   return {
     gmail: {
-      connected: data.gmail_connected || false,
-      email: data.connected_email || null,
-      lastSync: data.gmail_last_sync_at || null,
-      errorCount: data.gmail_sync_errors || 0,
+      connected: connectedMailboxes.length > 0,
+      email: primaryMailbox?.email ?? connectedMailboxes[0]?.email ?? null,
+      lastSync: primaryMailbox?.gmailLastSyncAt ?? connectedMailboxes[0]?.lastSync ?? null,
+      errorCount: totalErrors,
+      connectedCount: connectedMailboxes.length,
+      primaryMailboxId: primaryMailbox?.id ?? null,
+      mailboxes: mailboxSummaries,
     },
     calendar: {
-      connected: data.calendar_connected || false,
-      email: data.connected_email || null,
+      connected: calendarRow?.calendar_connected || false,
+      email: calendarRow?.connected_email || null,
       lastSync: null,
     },
   }
@@ -200,15 +218,24 @@ export async function disconnectGoogle(service: 'gmail' | 'calendar') {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
+  if (service === 'gmail') {
+    await disconnectAllGoogleMailboxesForChef(user.entityId)
+    await syncLegacyGoogleConnectionFromPrimary(user.entityId, user.tenantId || user.entityId)
+    return { success: true }
+  }
+
   const { data: conn } = await supabase
     .from('google_connections')
-    .select('gmail_connected, calendar_connected, refresh_token')
+    .select('calendar_connected, refresh_token')
     .eq('chef_id', user.entityId)
     .single()
 
   if (!conn) throw new Error('No Google connection found')
 
-  const otherServiceConnected = service === 'gmail' ? conn.calendar_connected : conn.gmail_connected
+  const mailboxes = await listGoogleMailboxesForChef(user.entityId)
+  const otherServiceConnected = mailboxes.some(
+    (mailbox) => mailbox.gmailConnected && mailbox.isActive
+  )
 
   if (!otherServiceConnected && conn.refresh_token) {
     // Both services being disconnected — revoke the token with Google
@@ -222,14 +249,7 @@ export async function disconnectGoogle(service: 'gmail' | 'calendar') {
   }
 
   const updates: Record<string, unknown> = {}
-  if (service === 'gmail') {
-    updates.gmail_connected = false
-    updates.gmail_history_id = null
-    updates.gmail_last_sync_at = null
-    updates.gmail_sync_errors = 0
-  } else {
-    updates.calendar_connected = false
-  }
+  updates.calendar_connected = false
 
   // If both disconnected, clear tokens entirely
   if (!otherServiceConnected) {
@@ -246,5 +266,18 @@ export async function disconnectGoogle(service: 'gmail' | 'calendar') {
     .eq('chef_id', user.entityId)
 
   if (error) throw new Error(error.message)
+  return { success: true }
+}
+
+export async function disconnectGoogleMailbox(mailboxId: string) {
+  const user = await requireChef()
+  await disconnectGoogleMailboxForChef(user.entityId, mailboxId)
+  return { success: true }
+}
+
+export async function setPrimaryGoogleMailbox(mailboxId: string) {
+  const user = await requireChef()
+  await setPrimaryGoogleMailboxForChef(user.entityId, mailboxId)
+  await syncLegacyGoogleConnectionFromPrimary(user.entityId, user.tenantId || user.entityId)
   return { success: true }
 }

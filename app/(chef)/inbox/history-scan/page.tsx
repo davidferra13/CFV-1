@@ -20,6 +20,9 @@ export default async function HistoryScanPage() {
     getHistoricalFindings('dismissed', 50),
   ])
 
+  const progressSummary = scanStatus ? formatProgressSummary(scanStatus) : null
+  const lastRunLabel = scanStatus ? formatScanTimestamp(scanStatus.lastRunAt) : null
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6">
       {/* Header */}
@@ -41,27 +44,24 @@ export default async function HistoryScanPage() {
       {/* Scan status bar */}
       {scanStatus && (
         <div className="mb-6 rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="text-sm">
               {scanStatus.status === 'idle' && (
                 <span className="text-stone-500">Scan starting soon&hellip;</span>
               )}
               {scanStatus.status === 'in_progress' && (
                 <span className="text-brand-400">
-                  Scanning your email history &mdash;{' '}
-                  <strong>{scanStatus.totalProcessed.toLocaleString()}</strong> emails processed so
-                  far
+                  Scanning your email history &mdash; <strong>{progressSummary}</strong>
                 </span>
               )}
               {scanStatus.status === 'completed' && (
-                <span className="text-emerald-700">
-                  Scan complete &mdash;{' '}
-                  <strong>{scanStatus.totalProcessed.toLocaleString()}</strong> emails scanned
+                <span className="text-emerald-200">
+                  Scan complete &mdash; <strong>{progressSummary}</strong>
                 </span>
               )}
               {scanStatus.status === 'paused' && (
                 <span className="text-stone-500">
-                  Scan paused at {scanStatus.totalProcessed.toLocaleString()} emails. Re-enable in{' '}
+                  Scan paused at {progressSummary}. Re-enable in{' '}
                   <Link href="/settings" className="underline">
                     Settings
                   </Link>{' '}
@@ -84,6 +84,43 @@ export default async function HistoryScanPage() {
               )}
             </div>
           </div>
+          {(scanStatus.status === 'in_progress' ||
+            scanStatus.status === 'completed' ||
+            scanStatus.status === 'paused' ||
+            scanStatus.status === 'idle') && (
+            <div className="mt-3 space-y-2">
+              <ProgressMeter
+                percent={scanStatus.status === 'completed' ? 100 : scanStatus.percentComplete}
+              />
+              <div className="flex flex-wrap items-center gap-2 text-xs text-stone-400">
+                <span>{scanStatus.totalProcessed.toLocaleString()} fully processed</span>
+                {scanStatus.includeSpamTrash && (
+                  <span className="rounded-full border border-stone-700 bg-stone-900 px-2 py-0.5 text-stone-300">
+                    Includes Spam &amp; Trash
+                  </span>
+                )}
+                {lastRunLabel && <span>Last batch {lastRunLabel}</span>}
+              </div>
+            </div>
+          )}
+          {scanStatus.mailboxes.length > 1 && (
+            <div className="mt-3 space-y-2 border-t border-stone-700 pt-3">
+              {scanStatus.mailboxes.map((mailbox) => (
+                <div key={mailbox.id} className="space-y-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
+                    <span>
+                      {mailbox.email}
+                      {mailbox.isPrimary ? ' · primary' : ''}
+                    </span>
+                    <span>{formatProgressSummary(mailbox)}</span>
+                  </div>
+                  <ProgressMeter
+                    percent={mailbox.status === 'completed' ? 100 : mailbox.percentComplete}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -95,4 +132,42 @@ export default async function HistoryScanPage() {
       />
     </div>
   )
+}
+
+function ProgressMeter({ percent }: { percent: number | null }) {
+  return (
+    <div className="h-2 overflow-hidden rounded-full bg-stone-900">
+      <div
+        className="h-full rounded-full bg-brand-600 transition-[width] duration-300"
+        style={{ width: `${percent ?? 0}%` }}
+      />
+    </div>
+  )
+}
+
+function formatProgressSummary(
+  scanStatus: Pick<
+    NonNullable<Awaited<ReturnType<typeof getHistoricalScanStatus>>>,
+    'estimatedTotal' | 'percentComplete' | 'totalSeen'
+  >
+): string {
+  const seen = scanStatus.totalSeen.toLocaleString()
+  if (scanStatus.estimatedTotal) {
+    const estimatedTotal = scanStatus.estimatedTotal.toLocaleString()
+    const percent = scanStatus.percentComplete != null ? ` (${scanStatus.percentComplete}%)` : ''
+    return `${seen} of about ${estimatedTotal} emails scanned${percent}`
+  }
+
+  return `${seen} emails scanned`
+}
+
+function formatScanTimestamp(value: string | null): string | null {
+  if (!value) return null
+
+  return new Date(value).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
