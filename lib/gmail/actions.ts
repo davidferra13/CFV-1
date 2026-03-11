@@ -1,24 +1,124 @@
 // Gmail Server Actions
-// UI-facing actions for triggering sync, viewing history, sending messages.
+// UI-facing actions for triggering sync, viewing history, and sending messages.
 
 'use server'
 
-import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { syncGmailInbox } from './sync'
-import { getGoogleAccessToken } from '@/lib/google/auth'
-import { sendEmail, getMessageHeaders } from './client'
+import { requireChef } from '@/lib/auth/get-user'
 import { isCommTriageEnabled } from '@/lib/features'
-import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
+import { getGoogleAccessToken } from '@/lib/google/auth'
+import { createServerClient } from '@/lib/supabase/server'
+import { getMessageHeaders, sendEmail } from './client'
+import { syncGmailInbox } from './sync'
+import type { GmailSyncLogEntry, SendMessageResult, SyncResult } from './types'
 
-// ─── Trigger Gmail Sync ─────────────────────────────────────────────────────
+type CreateDraftMessageInput = {
+  inquiryId?: string | null
+  clientId?: string | null
+  subject?: string | null
+  body: string
+  eventId?: string | null
+  conversationThreadId?: string | null
+  recipientEmail?: string | null
+  gmailThreadId?: string | null
+}
+
+export interface ApprovalQueueMessage {
+  id: string
+  subject: string | null
+  body: string
+  createdAt: string
+  recipientEmail: string | null
+  recipientName: string | null
+  inquiryId: string | null
+  eventId: string | null
+  clientId: string | null
+  conversationThreadId: string | null
+  href: string
+  contextLabel: string | null
+}
+
+function extractEmailFromIdentity(value: string | null | undefined): string | null {
+  if (!value) return null
+  const match = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+  return match ? match[0].toLowerCase() : null
+}
+
+function extractReplySubjectFromRawContent(rawContent: string | null | undefined): string | null {
+  if (!rawContent) return null
+  const normalized = rawContent.replace(/\r\n/g, '\n').trim()
+  if (!normalized) return null
+
+  const splitIndex = normalized.indexOf('\n\n')
+  const candidate =
+    splitIndex > 0
+      ? normalized.slice(0, splitIndex).trim()
+      : (normalized
+          .split('\n')
+          .find((line) => line.trim().length > 0)
+          ?.trim() ?? null)
+
+  if (!candidate) return null
+  return /^re:/i.test(candidate) ? candidate : `Re: ${candidate}`
+}
+
+async function getConversationThreadDraftContext(
+  supabase: any,
+  tenantId: string,
+  threadId: string
+): Promise<{
+  clientId: string | null
+  recipientEmail: string | null
+  suggestedSubject: string | null
+}> {
+  const { data: thread } = await supabase
+    .from('conversation_threads')
+    .select('id, client_id')
+    .eq('id', threadId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!thread) {
+    throw new Error('Conversation thread not found')
+  }
+
+  const { data: lastInbound } = await supabase
+    .from('communication_events')
+    .select('sender_identity, raw_content')
+    .eq('thread_id', threadId)
+    .eq('tenant_id', tenantId)
+    .eq('direction', 'inbound')
+    .order('timestamp', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return {
+    clientId: thread.client_id ?? null,
+    recipientEmail: extractEmailFromIdentity(lastInbound?.sender_identity),
+    suggestedSubject: extractReplySubjectFromRawContent(lastInbound?.raw_content),
+  }
+}
+
+function revalidateDraftSurfaces(input: {
+  inquiryId?: string | null
+  eventId?: string | null
+  clientId?: string | null
+  conversationThreadId?: string | null
+}) {
+  revalidatePath('/inquiries')
+  revalidatePath('/queue')
+  revalidatePath('/messages/approval-queue')
+
+  if (input.inquiryId) revalidatePath(`/inquiries/${input.inquiryId}`)
+  if (input.eventId) revalidatePath(`/events/${input.eventId}`)
+  if (input.clientId) revalidatePath(`/clients/${input.clientId}`)
+  if (input.conversationThreadId) revalidatePath(`/inbox/triage/${input.conversationThreadId}`)
+}
 
 export async function triggerGmailSync(): Promise<SyncResult> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Verify Gmail is connected
   const { data: conn } = await supabase
     .from('google_connections')
     .select('gmail_connected')
@@ -29,10 +129,8 @@ export async function triggerGmailSync(): Promise<SyncResult> {
     throw new Error('Gmail is not connected. Connect your Google account in Settings first.')
   }
 
-  // Run the sync
   const result = await syncGmailInbox(user.entityId!, user.tenantId!)
 
-  // Revalidate pages that show inquiry/message/inbox data
   revalidatePath('/inquiries')
   revalidatePath('/settings')
   revalidatePath('/inbox')
@@ -40,8 +138,6 @@ export async function triggerGmailSync(): Promise<SyncResult> {
 
   return result
 }
-
-// ─── Get Gmail Sync History ─────────────────────────────────────────────────
 
 export async function getGmailSyncHistory(limit = 20): Promise<GmailSyncLogEntry[]> {
   const user = await requireChef()
@@ -64,44 +160,81 @@ export async function getGmailSyncHistory(limit = 20): Promise<GmailSyncLogEntry
   return data || []
 }
 
-// ─── Create Draft Message ───────────────────────────────────────────────────
-// Creates a message record in 'draft' status, ready for chef review.
-// Called by the correspondence engine after generating an AI draft.
-
-export async function createDraftMessage(input: {
-  inquiryId: string
-  clientId: string
-  subject: string
-  body: string
-  eventId?: string | null
-}): Promise<{ messageId: string }> {
+export async function createDraftMessage(
+  input: CreateDraftMessageInput
+): Promise<{ messageId: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
+  const trimmedBody = input.body.trim()
 
-  // Verify client belongs to tenant
-  const { data: client } = await supabase
-    .from('clients')
-    .select('id, email')
-    .eq('id', input.clientId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+  if (!trimmedBody) throw new Error('Email body is required')
 
-  if (!client) throw new Error('Client not found')
-  if (!client.email) throw new Error('Client has no email address')
+  let clientId = input.clientId ?? null
+  let recipientEmail = input.recipientEmail?.trim().toLowerCase() || null
+  let subject = input.subject?.trim() || ''
+
+  if (input.conversationThreadId) {
+    const threadContext = await getConversationThreadDraftContext(
+      supabase,
+      user.tenantId!,
+      input.conversationThreadId
+    )
+    clientId = clientId || threadContext.clientId
+    recipientEmail = recipientEmail || threadContext.recipientEmail
+    subject = subject || threadContext.suggestedSubject || ''
+  }
+
+  if (clientId) {
+    const { data: client } = await supabase
+      .from('clients')
+      .select('id, email')
+      .eq('id', clientId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (!client) throw new Error('Client not found')
+    recipientEmail = recipientEmail || client.email || null
+  }
+
+  if (input.inquiryId && (!clientId || !recipientEmail)) {
+    const { data: inquiry } = await supabase
+      .from('inquiries')
+      .select('client_id, contact_email, client:clients(email)')
+      .eq('id', input.inquiryId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (!inquiry) throw new Error('Inquiry not found')
+    clientId = clientId || inquiry.client_id || null
+    recipientEmail =
+      recipientEmail ||
+      inquiry.contact_email ||
+      (inquiry.client as { email: string | null } | null)?.email ||
+      null
+  }
+
+  if (!input.inquiryId && !input.eventId && !clientId && !input.conversationThreadId) {
+    throw new Error('Draft must be attached to an inquiry, client, event, or inbox thread')
+  }
+  if (!recipientEmail) throw new Error('Recipient has no email address')
+  if (!subject) subject = input.inquiryId ? 'Re: Your inquiry' : 'Message from ChefFlow'
 
   const { data: message, error } = await supabase
     .from('messages')
     .insert({
       tenant_id: user.tenantId!,
-      inquiry_id: input.inquiryId,
+      inquiry_id: input.inquiryId || null,
       event_id: input.eventId || null,
-      client_id: input.clientId,
+      client_id: clientId,
+      conversation_thread_id: input.conversationThreadId || null,
+      recipient_email: recipientEmail,
       channel: 'email' as const,
       direction: 'outbound' as const,
       status: 'draft' as const,
-      subject: input.subject,
-      body: input.body,
+      subject,
+      body: trimmedBody,
       from_user_id: user.id,
+      gmail_thread_id: input.gmailThreadId?.trim() || null,
     })
     .select('id')
     .single()
@@ -111,19 +244,20 @@ export async function createDraftMessage(input: {
     throw new Error('Failed to create draft message')
   }
 
-  revalidatePath('/inquiries')
+  revalidateDraftSurfaces({
+    inquiryId: input.inquiryId,
+    eventId: input.eventId,
+    clientId,
+    conversationThreadId: input.conversationThreadId,
+  })
+
   return { messageId: message.id }
 }
-
-// ─── Approve and Send Message via Gmail ─────────────────────────────────────
-// Takes a draft message, approves it, and sends it through Gmail API.
-// This is the chef's "approve and send" action.
 
 export async function approveAndSendMessage(messageId: string): Promise<SendMessageResult> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // 1. Fetch the draft message
   const { data: message, error: msgErr } = await supabase
     .from('messages')
     .select('*, client:clients(email, full_name)')
@@ -135,16 +269,16 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
   if (message.status !== 'draft') throw new Error('Message is not in draft status')
   if (message.direction !== 'outbound') throw new Error('Can only send outbound messages')
 
-  const clientEmail = (message.client as { email: string | null })?.email
-  if (!clientEmail) throw new Error('Client has no email address')
+  const recipientEmail =
+    message.recipient_email || (message.client as { email: string | null } | null)?.email || null
+  if (!recipientEmail) throw new Error('Recipient has no email address')
 
-  // 2. Get Gmail access token
   const accessToken = await getGoogleAccessToken(user.entityId!)
 
-  // 3. Find the most recent inbound message in the same thread for reply threading
   let inReplyTo: string | undefined
   let references: string | undefined
-  let threadId: string | undefined
+  let threadId: string | undefined = message.gmail_thread_id || undefined
+  let replyTargetGmailMessageId: string | undefined
 
   if (message.inquiry_id) {
     const { data: lastInbound } = await supabase
@@ -159,40 +293,57 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       .maybeSingle()
 
     if (lastInbound?.gmail_message_id) {
-      threadId = lastInbound.gmail_thread_id || undefined
-
-      // Get the original message's Message-ID header for proper threading
-      try {
-        const headers = await getMessageHeaders(accessToken, lastInbound.gmail_message_id)
-        if (headers.messageIdHeader) {
-          inReplyTo = headers.messageIdHeader
-          references = headers.messageIdHeader
-        }
-        threadId = threadId || headers.threadId || undefined
-      } catch {
-        // Non-fatal — send without threading if headers fail
-        console.warn('[approveAndSendMessage] Could not fetch reply headers')
-      }
+      threadId = threadId || lastInbound.gmail_thread_id || undefined
+      replyTargetGmailMessageId = lastInbound.gmail_message_id
     }
   }
 
-  // 4. Resolve [PAYMENT_LINK] placeholder if present
+  if (!replyTargetGmailMessageId && message.conversation_thread_id) {
+    const { data: lastInboundEvent } = await supabase
+      .from('communication_events')
+      .select('external_id')
+      .eq('thread_id', message.conversation_thread_id)
+      .eq('tenant_id', user.tenantId!)
+      .eq('direction', 'inbound')
+      .not('external_id', 'is', null)
+      .order('timestamp', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (lastInboundEvent?.external_id) {
+      replyTargetGmailMessageId = lastInboundEvent.external_id
+    }
+  }
+
+  if (replyTargetGmailMessageId) {
+    try {
+      const headers = await getMessageHeaders(accessToken, replyTargetGmailMessageId)
+      if (headers.messageIdHeader) {
+        inReplyTo = headers.messageIdHeader
+        references = headers.messageIdHeader
+      }
+      threadId = threadId || headers.threadId || undefined
+    } catch {
+      console.warn('[approveAndSendMessage] Could not fetch reply headers')
+    }
+  }
+
   let emailBody = message.body || ''
   if (emailBody.includes('[PAYMENT_LINK]')) {
     let paymentUrl: string | null = null
 
     if (message.inquiry_id) {
-      const { data: inq } = await supabase
+      const { data: inquiry } = await supabase
         .from('inquiries')
         .select('converted_to_event_id')
         .eq('id', message.inquiry_id)
         .eq('tenant_id', user.tenantId!)
         .single()
 
-      if (inq?.converted_to_event_id) {
+      if (inquiry?.converted_to_event_id) {
         try {
           const { createPaymentCheckoutUrl } = await import('@/lib/stripe/checkout')
-          paymentUrl = await createPaymentCheckoutUrl(inq.converted_to_event_id, user.tenantId!)
+          paymentUrl = await createPaymentCheckoutUrl(inquiry.converted_to_event_id, user.tenantId!)
         } catch (err) {
           console.warn('[approveAndSendMessage] Payment link generation failed:', err)
         }
@@ -203,7 +354,6 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       ? emailBody.replace('[PAYMENT_LINK]', paymentUrl)
       : emailBody.replace('[PAYMENT_LINK]', '(payment link will be sent separately)')
 
-    // Persist the resolved body so the message record has the actual link
     await supabase
       .from('messages')
       .update({ body: emailBody })
@@ -211,10 +361,9 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       .eq('tenant_id', user.tenantId!)
   }
 
-  // 5. Send via Gmail API
   const subject = message.subject || 'Re: Your inquiry'
   const gmailResult = await sendEmail(accessToken, {
-    to: clientEmail,
+    to: recipientEmail,
     subject,
     body: emailBody,
     inReplyTo,
@@ -222,7 +371,6 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
     threadId,
   })
 
-  // 6. Update message record: draft → sent
   const now = new Date().toISOString()
   const { error: updateErr } = await supabase
     .from('messages')
@@ -239,34 +387,74 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
 
   if (updateErr) {
     console.error('[approveAndSendMessage] Status update failed:', updateErr)
-    // Message was sent but status update failed — log but don't throw
-    // The message DID go out to Gmail
   }
 
-  // 7. Ingest outbound message into communication pipeline (non-blocking)
-  // This ensures the inbox thread shows both inbound client messages AND chef replies.
-  if (isCommTriageEnabled()) {
+  const { data: conn } = await supabase
+    .from('google_connections')
+    .select('connected_email')
+    .eq('chef_id', user.entityId!)
+    .single()
+
+  if (message.conversation_thread_id) {
+    let linkedEntityType: 'inquiry' | 'event' | null = message.inquiry_id
+      ? 'inquiry'
+      : message.event_id
+        ? 'event'
+        : null
+    let linkedEntityId: string | null = message.inquiry_id || message.event_id || null
+
+    if (!linkedEntityId) {
+      const { data: lastLinked } = await supabase
+        .from('communication_events')
+        .select('linked_entity_type, linked_entity_id')
+        .eq('thread_id', message.conversation_thread_id)
+        .eq('tenant_id', user.tenantId!)
+        .not('linked_entity_id', 'is', null)
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      linkedEntityType = (lastLinked?.linked_entity_type as 'inquiry' | 'event' | null) ?? null
+      linkedEntityId = lastLinked?.linked_entity_id ?? null
+    }
+
+    await supabase.from('communication_events').insert({
+      tenant_id: user.tenantId!,
+      thread_id: message.conversation_thread_id,
+      source: 'email',
+      external_id: gmailResult.messageId,
+      timestamp: now,
+      sender_identity: conn?.connected_email ?? 'chef',
+      raw_content: `${subject}\n\n${emailBody}`.trim(),
+      normalized_content: `${subject}\n\n${emailBody}`.trim().toLowerCase().replace(/\s+/g, ' '),
+      direction: 'outbound',
+      linked_entity_type: linkedEntityType,
+      linked_entity_id: linkedEntityId,
+      resolved_client_id: message.client_id || null,
+      status: linkedEntityId ? 'linked' : 'unlinked',
+    })
+
+    await supabase
+      .from('conversation_threads')
+      .update({ last_activity_at: now })
+      .eq('id', message.conversation_thread_id)
+      .eq('tenant_id', user.tenantId!)
+  } else if (isCommTriageEnabled()) {
     try {
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
-
-      // Get the chef's connected Gmail address for senderIdentity
-      const { data: conn } = await supabase
-        .from('google_connections')
-        .select('connected_email')
-        .eq('chef_id', user.entityId!)
-        .single()
 
       await ingestCommunicationEvent({
         tenantId: user.tenantId!,
         source: 'email',
         externalId: gmailResult.messageId,
         externalThreadKey: gmailResult.threadId,
-        timestamp: new Date().toISOString(),
+        resolvedClientId: message.client_id || null,
+        timestamp: now,
         senderIdentity: conn?.connected_email ?? 'chef',
         rawContent: `${subject}\n\n${emailBody}`.trim(),
         direction: 'outbound',
-        linkedEntityType: message.inquiry_id ? 'inquiry' : null,
-        linkedEntityId: message.inquiry_id || null,
+        linkedEntityType: message.inquiry_id ? 'inquiry' : message.event_id ? 'event' : null,
+        linkedEntityId: message.inquiry_id || message.event_id || null,
         ingestionSource: 'manual',
         actorId: user.id,
       })
@@ -278,7 +466,6 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
     }
   }
 
-  // 8. Update inquiry: action tracking, auto-advance status, set follow-up timer
   if (message.inquiry_id) {
     const { data: currentInquiry } = await supabase
       .from('inquiries')
@@ -293,8 +480,6 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       follow_up_due_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
     }
 
-    // Auto-advance: new → awaiting_client, awaiting_chef → awaiting_client
-    // DB trigger auto-logs to inquiry_state_transitions
     if (currentInquiry?.status === 'new' || currentInquiry?.status === 'awaiting_chef') {
       updatePayload.status = 'awaiting_client'
     }
@@ -306,8 +491,12 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       .eq('tenant_id', user.tenantId!)
   }
 
-  revalidatePath('/inquiries')
-  revalidatePath(`/inquiries/${message.inquiry_id}`)
+  revalidateDraftSurfaces({
+    inquiryId: message.inquiry_id,
+    eventId: message.event_id,
+    clientId: message.client_id,
+    conversationThreadId: message.conversation_thread_id,
+  })
 
   return {
     success: true,
@@ -316,9 +505,6 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
     gmailThreadId: gmailResult.threadId,
   }
 }
-
-// ─── Update Draft Message ───────────────────────────────────────────────────
-// Chef edits the AI-generated draft before sending.
 
 export async function updateDraftMessage(
   messageId: string,
@@ -329,7 +515,7 @@ export async function updateDraftMessage(
 
   const { data: message } = await supabase
     .from('messages')
-    .select('status')
+    .select('status, inquiry_id, event_id, client_id, conversation_thread_id')
     .eq('id', messageId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -337,22 +523,32 @@ export async function updateDraftMessage(
   if (!message) throw new Error('Message not found')
   if (message.status !== 'draft') throw new Error('Can only edit draft messages')
 
+  const nextSubject = updates.subject?.trim()
+  const nextBody = updates.body?.trim()
+  if (updates.body !== undefined && !nextBody) {
+    throw new Error('Email body is required')
+  }
+
   const { error } = await supabase
     .from('messages')
     .update({
-      ...(updates.subject !== undefined && { subject: updates.subject }),
-      ...(updates.body !== undefined && { body: updates.body }),
+      ...(updates.subject !== undefined && { subject: nextSubject || null }),
+      ...(updates.body !== undefined && { body: nextBody }),
     })
     .eq('id', messageId)
     .eq('tenant_id', user.tenantId!)
 
   if (error) throw new Error('Failed to update draft')
 
+  revalidateDraftSurfaces({
+    inquiryId: message.inquiry_id,
+    eventId: message.event_id,
+    clientId: message.client_id,
+    conversationThreadId: message.conversation_thread_id,
+  })
+
   return { success: true }
 }
-
-// ─── Get Messages for Inquiry ───────────────────────────────────────────────
-// Returns the full email thread for an inquiry, ordered chronologically.
 
 export async function getMessagesForInquiry(inquiryId: string) {
   const user = await requireChef()
@@ -373,7 +569,96 @@ export async function getMessagesForInquiry(inquiryId: string) {
   return data || []
 }
 
-// ─── Delete Draft Message ───────────────────────────────────────────────────
+export async function getApprovalQueueMessages(): Promise<ApprovalQueueMessage[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: messages, error } = await supabase
+    .from('messages')
+    .select(
+      'id, subject, body, created_at, inquiry_id, event_id, client_id, conversation_thread_id, recipient_email, client:clients(full_name, email)'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('direction', 'outbound')
+    .eq('channel', 'email')
+    .eq('status', 'draft')
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('[getApprovalQueueMessages] Error:', error)
+    throw new Error('Failed to fetch approval queue')
+  }
+
+  const inquiryIds = Array.from(
+    new Set((messages || []).map((message: any) => message.inquiry_id).filter(Boolean))
+  ) as string[]
+  const eventIds = Array.from(
+    new Set((messages || []).map((message: any) => message.event_id).filter(Boolean))
+  ) as string[]
+
+  const [{ data: inquiries }, { data: events }] = await Promise.all([
+    inquiryIds.length
+      ? supabase
+          .from('inquiries')
+          .select('id, confirmed_occasion')
+          .eq('tenant_id', user.tenantId!)
+          .in('id', inquiryIds)
+      : Promise.resolve({ data: [] as any[] }),
+    eventIds.length
+      ? supabase
+          .from('events')
+          .select('id, occasion')
+          .eq('tenant_id', user.tenantId!)
+          .in('id', eventIds)
+      : Promise.resolve({ data: [] as any[] }),
+  ])
+
+  const inquiryTitleById = new Map(
+    (inquiries || []).map((inquiry: any) => [inquiry.id, inquiry.confirmed_occasion || 'Inquiry'])
+  )
+  const eventTitleById = new Map(
+    (events || []).map((event: any) => [event.id, event.occasion || 'Event'])
+  )
+
+  return (messages || []).map((message: any) => {
+    const recipientEmail =
+      message.recipient_email || (message.client as { email: string | null } | null)?.email || null
+    const recipientName =
+      (message.client as { full_name: string | null } | null)?.full_name || recipientEmail
+
+    let href = '/messages/approval-queue'
+    let contextLabel: string | null = null
+
+    if (message.inquiry_id) {
+      href = `/inquiries/${message.inquiry_id}`
+      contextLabel = inquiryTitleById.get(message.inquiry_id) ?? 'Inquiry'
+    } else if (message.conversation_thread_id) {
+      href = `/inbox/triage/${message.conversation_thread_id}`
+      contextLabel = 'Inbox thread'
+    } else if (message.event_id) {
+      href = `/events/${message.event_id}`
+      contextLabel = eventTitleById.get(message.event_id) ?? 'Event'
+    } else if (message.client_id) {
+      href = `/clients/${message.client_id}`
+      contextLabel = 'Client'
+    }
+
+    return {
+      id: message.id,
+      subject: message.subject,
+      body: message.body,
+      createdAt: message.created_at,
+      recipientEmail,
+      recipientName: recipientName || null,
+      inquiryId: message.inquiry_id || null,
+      eventId: message.event_id || null,
+      clientId: message.client_id || null,
+      conversationThreadId: message.conversation_thread_id || null,
+      href,
+      contextLabel,
+    }
+  })
+}
 
 export async function deleteDraftMessage(messageId: string) {
   const user = await requireChef()
@@ -381,7 +666,7 @@ export async function deleteDraftMessage(messageId: string) {
 
   const { data: message } = await supabase
     .from('messages')
-    .select('status')
+    .select('status, inquiry_id, event_id, client_id, conversation_thread_id')
     .eq('id', messageId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -397,6 +682,12 @@ export async function deleteDraftMessage(messageId: string) {
 
   if (error) throw new Error('Failed to delete draft')
 
-  revalidatePath('/inquiries')
+  revalidateDraftSurfaces({
+    inquiryId: message.inquiry_id,
+    eventId: message.event_id,
+    clientId: message.client_id,
+    conversationThreadId: message.conversation_thread_id,
+  })
+
   return { success: true }
 }
