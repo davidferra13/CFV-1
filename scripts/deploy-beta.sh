@@ -45,7 +45,14 @@ fi
 echo "[3/7] Syncing code to beta directory..."
 # Use robocopy on Windows (rsync equivalent). Exit codes 0-7 are success for robocopy.
 # Run via cmd.exe to avoid bash/robocopy interaction issues.
-cmd.exe /c "robocopy \"C:\\Users\\david\\Documents\\CFv1\" \"C:\\Users\\david\\Documents\\CFv1-beta\" /MIR /XD .next node_modules .git backups .auth /XF .env.local beta-server.log /NFL /NDL /NJH /NJS /NC /NS /NP" > /dev/null 2>&1 || true
+cmd.exe /c "robocopy \"C:\\Users\\david\\Documents\\CFv1\" \"C:\\Users\\david\\Documents\\CFv1-beta\" /MIR /XD .next .next-dev node_modules .git backups .auth .claude test-results playwright-report /XF .env.local beta-server.log /NFL /NDL /NJH /NJS /NC /NS /NP" > /dev/null 2>&1 || true
+# Verify sync: force-copy key source files if robocopy missed them (Windows timestamp edge case)
+for check_file in lib/auth/route-policy.ts middleware.ts next.config.js; do
+  if ! cmp -s "$SOURCE_DIR/$check_file" "$BETA_DIR/$check_file" 2>/dev/null; then
+    echo "  WARNING: robocopy missed $check_file, force-copying..."
+    cp "$SOURCE_DIR/$check_file" "$BETA_DIR/$check_file"
+  fi
+done
 echo "  Code synced"
 
 # Step 4: Copy beta env
