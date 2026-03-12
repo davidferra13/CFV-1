@@ -31,16 +31,24 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
   const lastKeyTimeRef = useRef<number>(0)
 
   const chordsRef = useRef<Chord[]>([
+    // Go-to navigation
     { first: 'g', second: 'd', action: () => router.push('/dashboard') },
     { first: 'g', second: 'c', action: () => router.push('/clients') },
     { first: 'g', second: 'i', action: () => router.push('/inquiries') },
     { first: 'g', second: 'e', action: () => router.push('/events') },
     { first: 'g', second: 'f', action: () => router.push('/finance') },
     { first: 'g', second: 's', action: () => router.push('/settings') },
+    { first: 'g', second: 'r', action: () => router.push('/recipes') },
+    { first: 'g', second: 'k', action: () => router.push('/calendar') },
+    { first: 'g', second: 'm', action: () => router.push('/menus') },
+    { first: 'g', second: 'l', action: () => router.push('/shopping') },
+    { first: 'g', second: 'o', action: () => router.push('/contracts') },
+    // Create new
     { first: 'n', second: 'i', action: () => router.push('/inquiries/new') },
     { first: 'n', second: 'e', action: () => router.push('/events/new') },
     { first: 'n', second: 'q', action: () => router.push('/quotes/new') },
     { first: 'n', second: 'c', action: () => router.push('/clients/new') },
+    { first: 'n', second: 'r', action: () => router.push('/events/new/recurring') },
   ])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -77,7 +85,10 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
 
     // Cmd+K or Ctrl+K — open Remy drawer (search uses "/" shortcut)
     if (key === 'k' && (e.metaKey || e.ctrlKey)) {
-      // Let the RemyProvider's keydown handler handle this
+      e.preventDefault()
+      window.dispatchEvent(new CustomEvent('open-remy'))
+      lastKeyRef.current = null
+      lastKeyTimeRef.current = 0
       return
     }
 
