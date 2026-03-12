@@ -61,7 +61,15 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const parsed = KioskInquirySchema.parse(body)
+    const rawParsed = KioskInquirySchema.parse(body)
+
+    // SECURITY: Strip HTML tags from freetext fields (defense-in-depth against stored XSS)
+    const stripHtml = (s: string | undefined | null) => (s ? s.replace(/<[^>]*>/g, '').trim() : s)
+    const parsed = {
+      ...rawParsed,
+      full_name: stripHtml(rawParsed.full_name) || rawParsed.full_name,
+      notes: stripHtml(rawParsed.notes) || rawParsed.notes,
+    }
 
     // Must have at least email or phone
     const email = parsed.email?.trim()

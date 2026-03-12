@@ -53,9 +53,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ found: false })
     }
 
+    // SECURITY: Only select the client ID to confirm existence.
+    // PII (name, phone, allergies, dietary restrictions) must NOT be returned
+    // without authentication. See security-audit-2026-03-11.md finding #4/#9.
     const { data: client } = await supabase
       .from('clients')
-      .select('id, full_name, phone, allergies, dietary_restrictions')
+      .select('id')
       .eq('tenant_id', chef.id)
       .eq('email', normalizedEmail)
       .maybeSingle()
@@ -64,11 +67,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ found: false })
     }
 
+    // SECURITY: Only return non-sensitive event prefill data.
+    // Location data is excluded (physical safety concern, finding #9).
     const { data: lastEvent } = await supabase
       .from('events')
-      .select(
-        'occasion, guest_count, serve_time, location_address, location_city, location_state, location_zip'
-      )
+      .select('occasion, guest_count, serve_time')
       .eq('tenant_id', chef.id)
       .eq('client_id', (client as any).id)
       .eq('status', 'completed')
@@ -76,26 +79,12 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .maybeSingle()
 
-    const address = [
-      (lastEvent as any)?.location_address,
-      (lastEvent as any)?.location_city,
-      (lastEvent as any)?.location_state,
-      (lastEvent as any)?.location_zip,
-    ]
-      .filter(Boolean)
-      .join(', ')
-
     return NextResponse.json({
       found: true,
       prefill: {
-        full_name: (client as any).full_name || '',
-        phone: (client as any).phone || '',
-        allergies: (client as any).allergies || [],
-        dietary_restrictions: (client as any).dietary_restrictions || [],
         occasion: (lastEvent as any)?.occasion || '',
         guest_count: (lastEvent as any)?.guest_count ? String((lastEvent as any).guest_count) : '',
         serve_time: formatTimeForFormInput((lastEvent as any)?.serve_time || ''),
-        address,
       },
     })
   } catch (error) {

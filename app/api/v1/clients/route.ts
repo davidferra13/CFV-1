@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateApiKey } from '@/lib/api/auth-api-key'
+import { validateApiKey, requireScope } from '@/lib/api/auth-api-key'
 import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -7,6 +7,9 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   const ctx = await validateApiKey(authHeader)
   if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const denied = requireScope(ctx, 'clients:read')
+  if (denied) return denied
 
   const { success } = await checkRateLimit(`api:${ctx.tenantId}`)
   if (!success) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })

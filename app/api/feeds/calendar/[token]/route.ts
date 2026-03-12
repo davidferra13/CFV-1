@@ -23,10 +23,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
 
   const supabase = createServerClient({ admin: true })
 
-  // Look up chef by feed token
+  // Look up chef by feed token, enforce expiration
   const { data: chef } = await (supabase
     .from('chefs')
-    .select('id, business_name')
+    .select('id, business_name, ical_feed_expires_at')
     .eq('ical_feed_token' as any, token)
     .eq('ical_feed_enabled' as any, true)
     .single() as any)
@@ -34,6 +34,22 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   if (!chef) {
     return NextResponse.json({ error: 'Feed not found or disabled' }, { status: 404 })
   }
+
+  // SECURITY: Reject expired feed tokens (finding #7, security audit 2026-03-11)
+  if (chef.ical_feed_expires_at && new Date(chef.ical_feed_expires_at) < new Date()) {
+    return NextResponse.json(
+      { error: 'Feed token expired. Regenerate in settings.' },
+      { status: 410 }
+    )
+  }
+
+  // Track last access (non-blocking, best-effort)
+  supabase
+    .from('chefs')
+    .update({ ical_feed_last_accessed_at: new Date().toISOString() } as any)
+    .eq('id', chef.id)
+    .then(() => {})
+    .catch(() => {})
 
   // Fetch events — include upcoming and recent past (30 days back)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()

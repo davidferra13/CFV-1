@@ -46,12 +46,15 @@ export async function toggleICalFeed(enabled: boolean) {
       .single()
 
     if (!chef?.ical_feed_token) {
+      // Set 90-day expiration on new tokens (security audit finding #7)
+      const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
       await supabase
         .from('chefs')
         .update({
           ical_feed_enabled: true,
           ical_feed_token: crypto.randomUUID(),
-        })
+          ical_feed_expires_at: expiresAt,
+        } as any)
         .eq('id', user.entityId)
     } else {
       await supabase.from('chefs').update({ ical_feed_enabled: true }).eq('id', user.entityId)
@@ -70,8 +73,16 @@ export async function regenerateICalFeedToken() {
   const supabase = createServerClient({ admin: true })
 
   const newToken = crypto.randomUUID()
+  const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
 
-  await supabase.from('chefs').update({ ical_feed_token: newToken }).eq('id', user.entityId)
+  await supabase
+    .from('chefs')
+    .update({
+      ical_feed_token: newToken,
+      ical_feed_expires_at: expiresAt,
+      ical_feed_last_accessed_at: null,
+    } as any)
+    .eq('id', user.entityId)
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3100'
 

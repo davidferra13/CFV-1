@@ -82,7 +82,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const data = parseResult.data
+    const rawData = parseResult.data
+
+    // SECURITY: Strip HTML tags from all freetext fields to prevent stored XSS.
+    // React auto-escapes on render, but defense-in-depth means sanitizing on input.
+    // See security-audit-2026-03-11.md finding #12.
+    const stripHtml = (s: string | undefined | null) => (s ? s.replace(/<[^>]*>/g, '').trim() : s)
+    const data = {
+      ...rawData,
+      full_name: stripHtml(rawData.full_name) || rawData.full_name,
+      phone: stripHtml(rawData.phone) || rawData.phone,
+      address: stripHtml(rawData.address) || rawData.address,
+      occasion: stripHtml(rawData.occasion) || rawData.occasion,
+      allergies_food_restrictions:
+        stripHtml(rawData.allergies_food_restrictions) || rawData.allergies_food_restrictions,
+      favorite_ingredients_dislikes:
+        stripHtml(rawData.favorite_ingredients_dislikes) || rawData.favorite_ingredients_dislikes,
+      additional_notes: stripHtml(rawData.additional_notes) || rawData.additional_notes,
+    }
 
     // Honeypot check — bots fill hidden fields
     if (data.website_url && data.website_url.length > 0) {

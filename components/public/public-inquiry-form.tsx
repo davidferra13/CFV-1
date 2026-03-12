@@ -200,26 +200,16 @@ export function PublicInquiryForm({
       })
       const data = await res.json()
       if (data.found && data.prefill) {
-        const dietarySummary = [
-          ...(Array.isArray(data.prefill.allergies) ? data.prefill.allergies : []),
-          ...(Array.isArray(data.prefill.dietary_restrictions)
-            ? data.prefill.dietary_restrictions
-            : []),
-        ]
-          .filter(Boolean)
-          .join(', ')
-
+        // NOTE: PII fields (name, phone, allergies, address) are intentionally
+        // NOT returned by the lookup endpoint for unauthenticated callers.
+        // Only non-sensitive event prefill (occasion, guest_count, serve_time)
+        // is available. See security-audit-2026-03-11.md findings #4/#9.
         setReturningClient(true)
         setFormData((prev) => ({
           ...prev,
-          full_name: prev.full_name || data.prefill.full_name,
-          address: prev.address || data.prefill.address,
-          phone: prev.phone || data.prefill.phone,
-          serve_time: prev.serve_time || data.prefill.serve_time,
-          guest_count: prev.guest_count || data.prefill.guest_count,
-          occasion: prev.occasion || data.prefill.occasion,
-          allergies_food_restrictions: prev.allergies_food_restrictions || dietarySummary,
-          allergy_flag: prev.allergy_flag || (dietarySummary ? 'yes' : ''),
+          serve_time: prev.serve_time || data.prefill.serve_time || '',
+          guest_count: prev.guest_count || data.prefill.guest_count || '',
+          occasion: prev.occasion || data.prefill.occasion || '',
         }))
       }
       setLookupDone(true)
