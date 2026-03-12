@@ -18,6 +18,7 @@ import { PendingInvitationsTable } from './pending-invitations-table'
 import { getClientHealthScores } from '@/lib/clients/health-score'
 import { getChurnPreventionTriggers } from '@/lib/intelligence/churn-prevention-triggers'
 import { RebookingBar } from '@/components/intelligence/rebooking-bar'
+import { DuplicateMergePanel } from '@/components/clients/duplicate-merge-panel'
 
 export default async function ClientsPage() {
   await requireChef()
@@ -70,6 +71,11 @@ export default async function ClientsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Duplicate Detection */}
+      <Suspense fallback={null}>
+        <DuplicateMergePanel />
+      </Suspense>
 
       {/* Clients List */}
       <Card data-info="client-table">
