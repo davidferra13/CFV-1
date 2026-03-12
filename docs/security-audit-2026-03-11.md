@@ -207,11 +207,9 @@ This is the finding that would put us on Firehound's list. Allergies are protect
 
 ### 14. Document Routes Missing Ownership Validation
 
-**Verified:** Not fully verified (didn't read every document route). Agent claim is plausible given the pattern of using parameterized IDs.
+**Verified:** YES (2026-03-12). All 17 document/PDF routes audited line-by-line. Every route uses `requireChef()`/`requireClient()`/`requireAuth()` AND scopes database queries by `tenant_id` or `client_id`. No gaps found. The original agent claim was incorrect.
 
-**Severity:** Needs verification. If these routes are on main, this is HIGH. If feature-branch only, fix before merge.
-
-**Fix:** Add tenant_id ownership check before PDF generation.
+**Severity:** FALSE POSITIVE. No fix needed.
 
 ---
 

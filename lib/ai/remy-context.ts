@@ -1640,7 +1640,9 @@ async function loadEventEntity(
     for (const a of approvals as Array<Record<string, unknown>>) {
       const status = (a.status as string).replace(/_/g, ' ')
       const sent = a.sent_at ? new Date(a.sent_at as string).toLocaleDateString() : 'not sent'
-      lines.push(`- ${status} (sent ${sent})${a.revision_notes ? `: ${a.revision_notes}` : ''}`)
+      lines.push(
+        `- ${status} (sent ${sent})${a.revision_notes ? `: ${sanitizeForPrompt(a.revision_notes as string)}` : ''}`
+      )
     }
   }
 
@@ -1694,8 +1696,8 @@ async function loadEventEntity(
     for (const exp of expenses as Array<Record<string, unknown>>) {
       const cat = (exp.category as string).replace(/_/g, ' ')
       const amt = `$${((exp.amount_cents as number) / 100).toFixed(2)}`
-      const vendor = exp.vendor_name ? ` at ${exp.vendor_name}` : ''
-      const desc = exp.description ? ` — ${exp.description}` : ''
+      const vendor = exp.vendor_name ? ` at ${sanitizeForPrompt(exp.vendor_name as string)}` : ''
+      const desc = exp.description ? ` - ${sanitizeForPrompt(exp.description as string)}` : ''
       lines.push(`- ${cat}: ${amt}${vendor}${desc}`)
     }
   }
@@ -1748,7 +1750,9 @@ async function loadEventEntity(
     for (const t of temps as Array<Record<string, unknown>>) {
       const safe = t.is_safe ? '' : ' ⚠ UNSAFE'
       const phase = (t.phase as string).replace(/_/g, ' ')
-      lines.push(`- ${t.item_description}: ${t.temp_fahrenheit}°F (${phase})${safe}`)
+      lines.push(
+        `- ${sanitizeForPrompt(t.item_description as string)}: ${t.temp_fahrenheit}°F (${phase})${safe}`
+      )
     }
   }
 
@@ -2243,8 +2247,8 @@ async function loadRecipeEntity(
   const lines: string[] = []
   lines.push(`RECIPE: ${data.name}`)
   if (data.category) lines.push(`Category: ${data.category}`)
-  if (data.description) lines.push(`Description: ${data.description}`)
-  if (data.yield_description) lines.push(`Yield: ${data.yield_description}`)
+  if (data.description) lines.push(`Description: ${sanitizeForPrompt(data.description)}`)
+  if (data.yield_description) lines.push(`Yield: ${sanitizeForPrompt(data.yield_description)}`)
   const times: string[] = []
   if (data.prep_time_minutes) times.push(`prep ${data.prep_time_minutes}m`)
   if (data.cook_time_minutes) times.push(`cook ${data.cook_time_minutes}m`)
@@ -2532,9 +2536,9 @@ async function loadMenuEntity(
   if (data.cuisine_type) lines.push(`Cuisine: ${data.cuisine_type}`)
   if (data.service_style) lines.push(`Style: ${data.service_style.replace(/_/g, ' ')}`)
   if (data.target_guest_count) lines.push(`Target guests: ${data.target_guest_count}`)
-  if (data.is_template) lines.push(`(Template — reusable)`)
-  if (data.description) lines.push(`Description: ${data.description}`)
-  if (data.notes) lines.push(`Notes: ${data.notes}`)
+  if (data.is_template) lines.push(`(Template - reusable)`)
+  if (data.description) lines.push(`Description: ${sanitizeForPrompt(data.description)}`)
+  if (data.notes) lines.push(`Notes: ${sanitizeForPrompt(data.notes)}`)
 
   const dishes = (dishesResult.data ?? []) as Array<Record<string, unknown>>
   if (dishes.length > 0) {

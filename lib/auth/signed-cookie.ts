@@ -2,15 +2,15 @@
 // HMAC-signs cookie values to prevent client-side tampering.
 // Uses Web Crypto API (works in both Edge Runtime and Node.js).
 //
-// The HMAC key is derived from CRON_SECRET (always available in production)
-// or a fallback for dev. This avoids adding yet another env var.
+// SECURITY: Uses a dedicated COOKIE_SIGNING_KEY, separate from CRON_SECRET,
+// to avoid reusing secrets across security domains (audit finding #11).
 
 const VALID_ROLES = ['chef', 'client', 'staff', 'partner'] as const
 
 function getSigningKey(): string {
-  // Use CRON_SECRET as the signing material — it's always set in production.
-  // In dev, fall back to a static string (cookie signing in dev is nice-to-have, not critical).
-  return process.env.CRON_SECRET || 'chefflow-dev-cookie-key'
+  // Prefer dedicated signing key; fall back to CRON_SECRET for backwards compat
+  // until COOKIE_SIGNING_KEY is added to all environments.
+  return process.env.COOKIE_SIGNING_KEY || process.env.CRON_SECRET || 'chefflow-dev-cookie-key'
 }
 
 async function hmacSign(value: string): Promise<string> {
