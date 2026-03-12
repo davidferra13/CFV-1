@@ -29,6 +29,8 @@ import { setActiveForm } from '@/lib/ai/remy-activity-tracker'
 import { PrepTimeEstimateHint } from '@/components/intelligence/prep-time-estimate-hint'
 import { EventTemplatePicker } from '@/components/events/event-template-picker'
 import type { EventTemplate } from '@/lib/events/template-actions'
+import { getClientAutoFill, type ClientAutoFillData } from '@/lib/clients/auto-fill'
+import { AutoFillBadge } from '@/components/events/auto-fill-badge'
 
 type Client = {
   id: string
@@ -141,6 +143,45 @@ export function EventForm({
     setActiveForm(mode === 'create' ? 'New Event' : 'Edit Event')
     return () => setActiveForm(null)
   }, [mode])
+
+  // Auto-fill from client history (create mode only)
+  const [autoFilled, setAutoFilled] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (mode !== 'create' || !clientId) return
+    let cancelled = false
+    getClientAutoFill(clientId)
+      .then((data) => {
+        if (cancelled || !data || data.event_count === 0) return
+        const filled = new Set<string>()
+        if (data.typical_guest_count && !guestCount) {
+          setGuestCount(data.typical_guest_count.toString())
+          filled.add('guest_count')
+        }
+        if (data.last_location?.address && !locationAddress) {
+          setLocationAddress(data.last_location.address)
+          if (data.last_location.city) setLocationCity(data.last_location.city)
+          if (data.last_location.state) setLocationState(data.last_location.state)
+          if (data.last_location.zip) setLocationZip(data.last_location.zip)
+          filled.add('location')
+        }
+        if (data.typical_occasion && !occasion) {
+          setOccasion(data.typical_occasion)
+          filled.add('occasion')
+        }
+        if (data.typical_price_cents && !totalAmount) {
+          setTotalAmount((data.typical_price_cents / 100).toString())
+          filled.add('price')
+        }
+        if (filled.size > 0) setAutoFilled(filled)
+      })
+      .catch(() => {
+        /* non-blocking */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [clientId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Conflict warning state
   const [conflictWarnings, setConflictWarnings] = useState<string[] | null>(null)
@@ -705,6 +746,18 @@ export function EventForm({
         {step === 1 && (
           <div className="space-y-4">
             {mode === 'create' && <EventTemplatePicker onApply={applyTemplate} />}
+            {autoFilled.size > 0 && (
+              <div className="flex items-center gap-2 text-xs text-brand-400 bg-brand-950/50 border border-brand-800/50 rounded-md px-3 py-2">
+                <AutoFillBadge label={`${autoFilled.size} fields from client history`} />
+                <button
+                  type="button"
+                  className="ml-auto text-stone-500 hover:text-stone-300"
+                  onClick={() => setAutoFilled(new Set())}
+                >
+                  dismiss
+                </button>
+              </div>
+            )}
             <Select
               label="Client"
               required

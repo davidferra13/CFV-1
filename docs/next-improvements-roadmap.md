@@ -28,9 +28,9 @@ This is the master list of every improvement identified for the chef portal, **o
 | #   | Feature                          | Area          | Status      |
 | --- | -------------------------------- | ------------- | ----------- |
 | 1   | Keyboard Power-User Mode         | Global        | Not started |
-| 2   | Recurring Events                 | Events        | Not started |
-| 3   | Event Templates                  | Events        | Not started |
-| 4   | Smart Auto-Fill                  | Events        | Not started |
+| 2   | Recurring Events                 | Events        | Done        |
+| 3   | Event Templates                  | Events        | Done        |
+| 4   | Smart Auto-Fill                  | Events        | Done        |
 | 5   | Cash Flow Forecasting            | Finance       | Not started |
 | 6   | Client Self-Service Portal       | Client Portal | Not started |
 | 7   | Offline-First for Kitchen        | Global        | Not started |
@@ -47,13 +47,13 @@ This is the master list of every improvement identified for the chef portal, **o
 | 18  | Message Templates                | Sales         | Not started |
 | 19  | Revenue Goal Tracking            | Analytics     | Not started |
 | 20  | Inventory & Pantry               | Inventory     | Not started |
-| 21  | Dark Mode Fix                    | Global        | Not started |
-| 22  | Toast Feedback                   | Global        | Not started |
-| 23  | Optimistic Rollback              | Global        | Not started |
-| 24  | Date Formatting Helpers          | Global        | Not started |
-| 25  | Status Color Registry            | Global        | Not started |
-| 26  | Error Boundaries                 | Global        | Not started |
-| 27  | Accessibility Fixes              | Global        | Not started |
+| 21  | Dark Mode Fix                    | Global        | Done        |
+| 22  | Toast Feedback                   | Global        | Done        |
+| 23  | Optimistic Rollback              | Global        | Done        |
+| 24  | Date Formatting Helpers          | Global        | Deferred    |
+| 25  | Status Color Registry            | Global        | Deferred    |
+| 26  | Error Boundaries                 | Global        | Done        |
+| 27  | Accessibility Fixes              | Global        | Done        |
 | 28  | In-Page Search                   | Global        | Not started |
 | 29  | Loading States (Async)           | Global        | Not started |
 | 30  | Pagination                       | Global        | Not started |
