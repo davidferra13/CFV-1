@@ -27,6 +27,8 @@ import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { setActiveForm } from '@/lib/ai/remy-activity-tracker'
 import { PrepTimeEstimateHint } from '@/components/intelligence/prep-time-estimate-hint'
+import { EventTemplatePicker } from '@/components/events/event-template-picker'
+import type { EventTemplate } from '@/lib/events/template-actions'
 
 type Client = {
   id: string
@@ -271,6 +273,23 @@ export function EventForm({
     mutation: (input: any) => updateEvent(event!.id, input),
   })
   const mutation = mode === 'create' ? createMutation : updateMutation
+
+  // Apply template defaults to form fields
+  function applyTemplate(t: EventTemplate) {
+    if (t.occasion) setOccasion(t.occasion)
+    if (t.serve_time) setServeTime(t.serve_time)
+    if (t.guest_count) setGuestCount(t.guest_count.toString())
+    if (t.location_address) setLocationAddress(t.location_address)
+    if (t.location_city) setLocationCity(t.location_city)
+    if (t.location_state) setLocationState(t.location_state)
+    if (t.location_zip) setLocationZip(t.location_zip)
+    if (t.special_requests) setSpecialRequests(t.special_requests)
+    if (t.quoted_price_cents) setTotalAmount((t.quoted_price_cents / 100).toString())
+    if (t.deposit_amount_cents) {
+      setDepositAmount((t.deposit_amount_cents / 100).toString())
+      setDepositSource('manual')
+    }
+  }
 
   const durableDraft = useDurableDraft<EventFormData>(
     'event-form',
@@ -685,6 +704,7 @@ export function EventForm({
         {/* ── Step 1: Core booking details ────────────────────────────────── */}
         {step === 1 && (
           <div className="space-y-4">
+            {mode === 'create' && <EventTemplatePicker onApply={applyTemplate} />}
             <Select
               label="Client"
               required

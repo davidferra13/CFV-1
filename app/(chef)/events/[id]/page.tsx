@@ -117,6 +117,7 @@ import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
+import { SaveAsTemplateButton } from '@/components/events/save-as-template-button'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { getReferralShareDataForChefEvent } from '@/lib/referrals/actions'
 import { getOrCreateRebookDataForChefEvent } from '@/lib/rebook/actions'
@@ -579,6 +580,7 @@ export default async function EventDetailPage({
               <Button variant="secondary">Create Story</Button>
             </Link>
           )}
+          <SaveAsTemplateButton eventId={params.id} defaultName={event.occasion || ''} />
           <EventLockInButton
             eventId={params.id}
             eventTitle={event.occasion || 'Event'}
