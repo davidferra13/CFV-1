@@ -51,6 +51,7 @@ const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   'quarterly-checkin': 2880,
   'brand-monitor': 2880,
   'operations-check': 2880,
+  'financial-alerts': 2880,
 }
 
 type CronStatus = {

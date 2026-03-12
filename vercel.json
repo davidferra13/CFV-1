@@ -142,6 +142,10 @@
     {
       "path": "/api/scheduled/operations-check",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/scheduled/financial-alerts",
+      "schedule": "0 8 * * *"
     }
   ]
 }

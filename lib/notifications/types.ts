@@ -137,6 +137,10 @@ export type NotificationAction =
   | 'equipment_maintenance_due'
   | 'dietary_accommodation_check'
   | 'stale_data_digest'
+  // Financial alerts
+  | 'expense_anomaly'
+  | 'budget_variance_warning'
+  | 'daily_settlement_summary'
 
 export type Notification = {
   id: string
@@ -331,6 +335,11 @@ export const NOTIFICATION_CONFIG: Record<
   equipment_maintenance_due: { category: 'ops', icon: 'Wrench', toastByDefault: true },
   dietary_accommodation_check: { category: 'event', icon: 'AlertTriangle', toastByDefault: true },
   stale_data_digest: { category: 'system', icon: 'Database', toastByDefault: false },
+
+  // Financial alerts
+  expense_anomaly: { category: 'payment', icon: 'AlertTriangle', toastByDefault: true },
+  budget_variance_warning: { category: 'payment', icon: 'AlertCircle', toastByDefault: true },
+  daily_settlement_summary: { category: 'payment', icon: 'DollarSign', toastByDefault: false },
 }
 
 // Category display names for preferences UI
