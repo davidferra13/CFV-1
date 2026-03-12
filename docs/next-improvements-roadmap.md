@@ -63,11 +63,11 @@ This is the master list of every improvement identified for the chef portal, **o
 | 34  | Staff Utilization Report         | Operations    | Not started                   |
 | 35  | Webhook Triggers                 | Settings      | Not started                   |
 | 36  | Notification Triggers            | Global        | Done                          |
-| 37  | Financial Alerts                 | Finance       | Not started                   |
-| 38  | Operational Reminders            | Operations    | Not started                   |
+| 37  | Financial Alerts                 | Finance       | Done                          |
+| 38  | Operational Reminders            | Operations    | Done (covered by #36)         |
 | 39  | Audit Trail Viewer               | Settings      | Not started                   |
 | 40  | Data Archival                    | Settings      | Not started                   |
-| 41  | Duplicate Detection              | Clients       | Not started                   |
+| 41  | Duplicate Detection              | Clients       | Done                          |
 | 42  | Bulk Import                      | Settings      | Not started                   |
 | 43  | Proactive Remy Nudges            | Remy AI       | Not started                   |
 | 44  | Remy Conversation-to-Action      | Remy AI       | Not started                   |
