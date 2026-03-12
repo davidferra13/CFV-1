@@ -572,6 +572,48 @@ export async function voidContract(contractId: string, reason?: string) {
 }
 
 /**
+ * List all contracts for the current chef, with client and event info.
+ */
+export async function listContracts(statusFilter?: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  let query = supabase
+    .from('event_contracts')
+    .select('*, clients!inner(full_name, email), events!inner(occasion, event_date)')
+    .eq('chef_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (statusFilter && statusFilter !== 'all') {
+    query = query.eq('status', statusFilter)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('[listContracts] Error:', error)
+    return []
+  }
+
+  return (data ?? []).map((c: any) => ({
+    id: c.id,
+    event_id: c.event_id,
+    client_name: c.clients?.full_name ?? 'Unknown',
+    client_email: c.clients?.email ?? '',
+    event_occasion: c.events?.occasion ?? 'Event',
+    event_date: c.events?.event_date ?? '',
+    status: c.status,
+    sent_at: c.sent_at,
+    viewed_at: c.viewed_at,
+    signed_at: c.signed_at,
+    voided_at: c.voided_at,
+    created_at: c.created_at,
+  }))
+}
+
+export type ContractListItem = Awaited<ReturnType<typeof listContracts>>[number]
+
+/**
  * Get the active contract for an event (chef view).
  */
 export async function getEventContract(eventId: string) {

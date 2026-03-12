@@ -25,60 +25,60 @@ This is the master list of every improvement identified for the chef portal, **o
 
 ### Feature Status Tracker
 
-| #   | Feature                          | Area          | Status      |
-| --- | -------------------------------- | ------------- | ----------- |
-| 1   | Keyboard Power-User Mode         | Global        | Not started |
-| 2   | Recurring Events                 | Events        | Done        |
-| 3   | Event Templates                  | Events        | Done        |
-| 4   | Smart Auto-Fill                  | Events        | Done        |
-| 5   | Cash Flow Forecasting            | Finance       | Not started |
-| 6   | Client Self-Service Portal       | Client Portal | Not started |
-| 7   | Offline-First for Kitchen        | Global        | Not started |
-| 8   | Scheduling + CRM Intelligence    | Sales         | Not started |
-| 9   | Vendor Price Tracking            | Vendors       | Not started |
-| 10  | Photo Portfolio                  | Marketing     | Not started |
-| 11  | Equipment Dashboard              | Operations    | Not started |
-| 12  | Contract Library                 | Operations    | Not started |
-| 13  | Staff Shift Scheduling           | Operations    | Not started |
-| 14  | Service-Time Dashboard           | Operations    | Not started |
-| 15  | Automated Follow-Up Sequences    | Marketing     | Not started |
-| 16  | Analytics Drill-Down             | Analytics     | Not started |
-| 17  | Public Chef Profile & SEO        | Marketing     | Not started |
-| 18  | Message Templates                | Sales         | Not started |
-| 19  | Revenue Goal Tracking            | Analytics     | Not started |
-| 20  | Inventory & Pantry               | Inventory     | Not started |
-| 21  | Dark Mode Fix                    | Global        | Done        |
-| 22  | Toast Feedback                   | Global        | Done        |
-| 23  | Optimistic Rollback              | Global        | Done        |
-| 24  | Date Formatting Helpers          | Global        | Deferred    |
-| 25  | Status Color Registry            | Global        | Deferred    |
-| 26  | Error Boundaries                 | Global        | Done        |
-| 27  | Accessibility Fixes              | Global        | Done        |
-| 28  | In-Page Search                   | Global        | Not started |
-| 29  | Loading States (Async)           | Global        | Not started |
-| 30  | Pagination                       | Global        | Not started |
-| 31  | Tax Reports                      | Finance       | Not started |
-| 32  | Event PDF Exports                | Events        | Not started |
-| 33  | Client Year-End Summary          | Clients       | Not started |
-| 34  | Staff Utilization Report         | Operations    | Not started |
-| 35  | Webhook Triggers                 | Settings      | Not started |
-| 36  | Notification Triggers            | Global        | Not started |
-| 37  | Financial Alerts                 | Finance       | Not started |
-| 38  | Operational Reminders            | Operations    | Not started |
-| 39  | Audit Trail Viewer               | Settings      | Not started |
-| 40  | Data Archival                    | Settings      | Not started |
-| 41  | Duplicate Detection              | Clients       | Not started |
-| 42  | Bulk Import                      | Settings      | Not started |
-| 43  | Proactive Remy Nudges            | Remy AI       | Not started |
-| 44  | Remy Conversation-to-Action      | Remy AI       | Not started |
-| 45  | Kitchen Display System (KDS)     | Commerce      | Not started |
-| 46  | POS Loyalty Integration          | Commerce      | Not started |
-| 47  | Recipe Versioning & Cost History | Culinary      | Not started |
-| 48  | Batch Prep Planner               | Culinary      | Not started |
-| 49  | Nutritional & Allergen Scoring   | Culinary      | Not started |
-| 50  | HACCP Food Safety Plan           | Protection    | Not started |
-| 51  | Supplier Recall Management       | Protection    | Not started |
-| 52  | Crisis Playbook Execution        | Protection    | Not started |
+| #   | Feature                          | Area          | Status              |
+| --- | -------------------------------- | ------------- | ------------------- |
+| 1   | Keyboard Power-User Mode         | Global        | Not started         |
+| 2   | Recurring Events                 | Events        | Done                |
+| 3   | Event Templates                  | Events        | Done                |
+| 4   | Smart Auto-Fill                  | Events        | Done                |
+| 5   | Cash Flow Forecasting            | Finance       | Not started         |
+| 6   | Client Self-Service Portal       | Client Portal | Not started         |
+| 7   | Offline-First for Kitchen        | Global        | Not started         |
+| 8   | Scheduling + CRM Intelligence    | Sales         | Not started         |
+| 9   | Vendor Price Tracking            | Vendors       | Not started         |
+| 10  | Photo Portfolio                  | Marketing     | Not started         |
+| 11  | Equipment Dashboard              | Operations    | Done (pre-existing) |
+| 12  | Contract Library                 | Operations    | Done                |
+| 13  | Staff Shift Scheduling           | Operations    | Not started         |
+| 14  | Service-Time Dashboard           | Operations    | Not started         |
+| 15  | Automated Follow-Up Sequences    | Marketing     | Not started         |
+| 16  | Analytics Drill-Down             | Analytics     | Not started         |
+| 17  | Public Chef Profile & SEO        | Marketing     | Not started         |
+| 18  | Message Templates                | Sales         | Not started         |
+| 19  | Revenue Goal Tracking            | Analytics     | Not started         |
+| 20  | Inventory & Pantry               | Inventory     | Not started         |
+| 21  | Dark Mode Fix                    | Global        | Done                |
+| 22  | Toast Feedback                   | Global        | Done                |
+| 23  | Optimistic Rollback              | Global        | Done                |
+| 24  | Date Formatting Helpers          | Global        | Deferred            |
+| 25  | Status Color Registry            | Global        | Deferred            |
+| 26  | Error Boundaries                 | Global        | Done                |
+| 27  | Accessibility Fixes              | Global        | Done                |
+| 28  | In-Page Search                   | Global        | Not started         |
+| 29  | Loading States (Async)           | Global        | Not started         |
+| 30  | Pagination                       | Global        | Not started         |
+| 31  | Tax Reports                      | Finance       | Not started         |
+| 32  | Event PDF Exports                | Events        | Not started         |
+| 33  | Client Year-End Summary          | Clients       | Not started         |
+| 34  | Staff Utilization Report         | Operations    | Not started         |
+| 35  | Webhook Triggers                 | Settings      | Not started         |
+| 36  | Notification Triggers            | Global        | Not started         |
+| 37  | Financial Alerts                 | Finance       | Not started         |
+| 38  | Operational Reminders            | Operations    | Not started         |
+| 39  | Audit Trail Viewer               | Settings      | Not started         |
+| 40  | Data Archival                    | Settings      | Not started         |
+| 41  | Duplicate Detection              | Clients       | Not started         |
+| 42  | Bulk Import                      | Settings      | Not started         |
+| 43  | Proactive Remy Nudges            | Remy AI       | Not started         |
+| 44  | Remy Conversation-to-Action      | Remy AI       | Not started         |
+| 45  | Kitchen Display System (KDS)     | Commerce      | Not started         |
+| 46  | POS Loyalty Integration          | Commerce      | Not started         |
+| 47  | Recipe Versioning & Cost History | Culinary      | Not started         |
+| 48  | Batch Prep Planner               | Culinary      | Not started         |
+| 49  | Nutritional & Allergen Scoring   | Culinary      | Not started         |
+| 50  | HACCP Food Safety Plan           | Protection    | Not started         |
+| 51  | Supplier Recall Management       | Protection    | Not started         |
+| 52  | Crisis Playbook Execution        | Protection    | Not started         |
 
 ### Where to Start
 
