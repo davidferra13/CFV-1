@@ -11,6 +11,7 @@ export const OPERATIONAL_DOCUMENT_TYPES = [
   'reset',
   'travel',
   'shots',
+  'dietary',
 ] as const
 
 export type OperationalDocumentType = (typeof OPERATIONAL_DOCUMENT_TYPES)[number]
@@ -158,6 +159,17 @@ export const DOCUMENT_DEFINITIONS: Record<OperationalDocumentType, DocumentDefin
     category: 'marketing',
     isCorePacket: false,
     requiredSignals: ['capture checklist', 'content goals'],
+  },
+  dietary: {
+    type: 'dietary',
+    label: 'Guest Dietary Cards',
+    docTypeLabel: 'Dietary Reference',
+    fallbackTitle: 'GUEST DIETARY REFERENCE',
+    filenameBase: 'dietary-cards',
+    templateSlug: 'guest-dietary-cards',
+    category: 'core',
+    isCorePacket: false,
+    requiredSignals: ['guest list', 'dietary restrictions', 'allergies'],
   },
 }
 
