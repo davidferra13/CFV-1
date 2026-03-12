@@ -232,7 +232,7 @@ The old files still exist for backward compatibility but are no longer imported 
 ## Related Documentation
 
 - `docs/goldmine-runtime-integration.md` — Phase 2: how extraction + scoring works at the Gmail sync level
-- `data/email-references/generated/goldmine/conversion-intelligence.json` — the raw GOLDMINE analysis data
+- `data/email-references/local-generated/goldmine/conversion-intelligence.json` — the raw GOLDMINE analysis data
 - `lib/gmail/extract-inquiry-fields.ts` — bridge module: `extractAndScoreEmail()` + `scoreInquiryFields()`
 - `lib/inquiries/goldmine-lead-score.ts` — the scoring formula with weights
 - `scripts/email-references/deterministic-extractors.ts` — regex extractors for all field types

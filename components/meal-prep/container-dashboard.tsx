@@ -4,7 +4,15 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Package, Plus, ArrowDown, ArrowUp, Warning, Clock, Trash } from '@/components/ui/icons'
+import {
+  Package,
+  Plus,
+  ArrowDown,
+  ArrowUp,
+  AlertTriangle,
+  Clock,
+  Trash2,
+} from '@/components/ui/icons'
 import type {
   ContainerInventoryItem,
   ContainerTransaction,
@@ -53,8 +61,8 @@ const TX_TYPE_ICONS: Record<TransactionType, typeof Plus> = {
   purchase: Plus,
   deploy: ArrowUp,
   return: ArrowDown,
-  retire: Trash,
-  lost: Warning,
+  retire: Trash2,
+  lost: AlertTriangle,
 }
 
 // ============================================

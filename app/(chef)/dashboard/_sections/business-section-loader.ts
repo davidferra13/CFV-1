@@ -103,6 +103,7 @@ import { getSocialConnections } from '@/lib/social/oauth-actions'
 import { getWixConnection, getWixSubmissions } from '@/lib/wix/actions'
 import { getIntegrationHubOverview } from '@/lib/integrations/integration-hub'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'
+import { DEFAULT_AI_RETENTION_DAYS } from '@/lib/ai/privacy-defaults'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { getRemyActionAuditSummary } from '@/lib/ai/remy-action-audit-actions'
 import { listRemyApprovalPolicies } from '@/lib/ai/remy-approval-policy-actions'
@@ -461,7 +462,7 @@ export async function loadBusinessSectionData({
       remy_enabled: false,
       onboarding_completed: false,
       onboarding_completed_at: null as string | null,
-      data_retention_days: null as number | null,
+      data_retention_days: DEFAULT_AI_RETENTION_DAYS,
       allow_memory: true,
       allow_suggestions: true,
       allow_document_drafts: true,

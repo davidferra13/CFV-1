@@ -329,6 +329,72 @@ export type MarketplaceUser = {
   }>
 }
 
+type MarketplaceProfileLookup = {
+  id: string
+}
+
+type MarketplaceClientLinkLookup = {
+  client_id: string
+}
+
+type MarketplaceClientLinkRecord = {
+  tenant_id: string
+  client_id: string
+  is_favorite: boolean
+}
+
+// Keep these query result shapes narrow so TS does not expand the full generated
+// Supabase builder types on a hot auth path.
+async function findMarketplaceProfile(adminClient: any, authUserId: string) {
+  const { data } = (await adminClient
+    .from('marketplace_profiles')
+    .select('id')
+    .eq('auth_user_id', authUserId)
+    .single()) as { data: MarketplaceProfileLookup | null }
+
+  return data
+}
+
+async function createMarketplaceProfile(adminClient: any, user: AuthUser) {
+  const { data, error } = (await adminClient
+    .from('marketplace_profiles')
+    .insert({
+      auth_user_id: user.id,
+      email: user.email,
+      primary_client_id: user.entityId,
+    })
+    .select('id')
+    .single()) as { data: MarketplaceProfileLookup | null; error: Error | null }
+
+  return { data, error }
+}
+
+async function listMarketplaceClientLinks(adminClient: any, marketplaceProfileId: string) {
+  const { data } = (await adminClient
+    .from('marketplace_client_links')
+    .select('tenant_id, client_id, is_favorite')
+    .eq('marketplace_profile_id', marketplaceProfileId)) as {
+    data: MarketplaceClientLinkRecord[] | null
+  }
+
+  return data ?? []
+}
+
+async function findMarketplaceClientLink(
+  adminClient: any,
+  marketplaceProfileId: string,
+  tenantId: string
+) {
+  const { data } = (await adminClient
+    .from('marketplace_client_links')
+    .select('client_id')
+    .eq('tenant_id', tenantId)
+    .eq('marketplace_profile_id', marketplaceProfileId)
+    .single()) as { data: MarketplaceClientLinkLookup | null }
+
+  return data
+}
+
 /**
  * Require a marketplace-enabled client.
  * Returns the user's marketplace profile and all linked chef tenants.
@@ -345,22 +411,10 @@ export async function requireMarketplaceClient(): Promise<MarketplaceUser> {
   const adminClient = createAdminClient()
 
   // Find or create marketplace profile
-  let { data: profile } = await adminClient
-    .from('marketplace_profiles')
-    .select('id')
-    .eq('auth_user_id', user.id)
-    .single()
+  let profile = await findMarketplaceProfile(adminClient, user.id)
 
   if (!profile) {
-    const { data: newProfile, error: createErr } = await adminClient
-      .from('marketplace_profiles')
-      .insert({
-        auth_user_id: user.id,
-        email: user.email,
-        primary_client_id: user.entityId,
-      })
-      .select('id')
-      .single()
+    const { data: newProfile, error: createErr } = await createMarketplaceProfile(adminClient, user)
 
     if (createErr || !newProfile) {
       throw new Error('Failed to create marketplace profile')
@@ -369,10 +423,7 @@ export async function requireMarketplaceClient(): Promise<MarketplaceUser> {
   }
 
   // Fetch all linked tenants
-  const { data: links } = await adminClient
-    .from('marketplace_client_links')
-    .select('tenant_id, client_id, is_favorite')
-    .eq('marketplace_profile_id', profile.id)
+  const links = await listMarketplaceClientLinks(adminClient, profile.id)
 
   return {
     id: user.id,
@@ -406,22 +457,13 @@ export async function requireClientForTenant(tenantId: string): Promise<AuthUser
 
   // Check marketplace_client_links for a cross-tenant relationship
   const adminClient = createAdminClient()
+  const profile = await findMarketplaceProfile(adminClient, user.id)
 
-  const { data: link } = await adminClient
-    .from('marketplace_client_links')
-    .select('client_id')
-    .eq('tenant_id', tenantId)
-    .eq(
-      'marketplace_profile_id',
-      (
-        await adminClient
-          .from('marketplace_profiles')
-          .select('id')
-          .eq('auth_user_id', user.id)
-          .single()
-      ).data?.id ?? ''
-    )
-    .single()
+  if (!profile) {
+    throw new Error('Unauthorized: No relationship with this chef')
+  }
+
+  const link = await findMarketplaceClientLink(adminClient, profile.id, tenantId)
 
   if (!link) {
     throw new Error('Unauthorized: No relationship with this chef')

@@ -11,8 +11,7 @@ type Props = {
 }
 
 export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Props) {
-  const photo = photos[currentIndex]
-  if (!photo) return null
+  const photo = photos[currentIndex] ?? null
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -27,6 +26,8 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Pro
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
+
+  if (!photo) return null
 
   return (
     <div

@@ -34,7 +34,7 @@ let yhangryParser: any
 function resolveFixturePath() {
   return path.resolve(
     process.cwd(),
-    'data/email-references/generated/privatechefmanager-yhangry/regression-fixtures.json'
+    'data/email-references/local-generated/privatechefmanager-yhangry/regression-fixtures.json'
   )
 }
 

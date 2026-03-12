@@ -1906,7 +1906,7 @@ async function handleTacPayment(
         action: 'inquiry_reply',
         title: `TakeAChef payment received${orderText}`,
         body: `Payment notification processed${amountText}${matchText}`,
-        actionUrl: matchedInquiryId ? `/inquiries/${matchedInquiryId}` : '/marketplace',
+        actionUrl: matchedInquiryId ? `/inquiries/${matchedInquiryId}` : '/dashboard/marketplace',
       })
     }
   } catch (notifErr) {

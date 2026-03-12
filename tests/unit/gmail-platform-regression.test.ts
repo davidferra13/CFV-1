@@ -25,7 +25,7 @@ type FixtureDoc = {
 function fixturePath() {
   return path.resolve(
     process.cwd(),
-    'data/email-references/generated/privatechefmanager-yhangry/regression-fixtures.json'
+    'tests/fixtures/email-references/private-platform-regression-fixtures.json'
   )
 }
 
@@ -100,7 +100,7 @@ describe('Gmail platform parser regression fixtures', () => {
   const p = fixturePath()
 
   it('fixture file exists', () => {
-    assert.ok(existsSync(p), `Fixture missing at ${p}. Run: npm run email:build:private-reference`)
+    assert.ok(existsSync(p), `Fixture missing at ${p}`)
   })
 
   it('all fixtures match parser outputs', () => {

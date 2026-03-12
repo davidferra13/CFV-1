@@ -10,6 +10,7 @@ import {
   getRemyActionAuditSummary,
   listRemyActionAuditLog,
 } from '@/lib/ai/remy-action-audit-actions'
+import { DEFAULT_AI_RETENTION_DAYS } from '@/lib/ai/privacy-defaults'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { RemyControlClient } from './remy-control-client'
 import { isFounderEmail } from '@/lib/platform/owner-account'
@@ -40,7 +41,7 @@ export default async function RemySettingsPage() {
       remy_enabled: false,
       onboarding_completed: false,
       onboarding_completed_at: null,
-      data_retention_days: null,
+      data_retention_days: DEFAULT_AI_RETENTION_DAYS,
       allow_memory: true,
       allow_suggestions: true,
       allow_document_drafts: true,

@@ -19,15 +19,15 @@
  * Input:
  *   .auth/EmailGOLDMINE/Takeout/Mail/Dinner Email Export.mbox
  *
- * Outputs:
- *   data/email-references/generated/goldmine/build-summary.json
- *   data/email-references/generated/goldmine/regression-fixtures.json
- *   data/email-references/generated/goldmine/thread-map.json
- *   data/email-references/generated/goldmine/rulepack.json
- *   data/email-references/generated/goldmine/report.md
- *   data/email-references/generated/goldmine/extracted-fields.json    (phases 2-4)
- *   data/email-references/generated/goldmine/thread-intelligence.json (phases 2-4)
- *   data/email-references/generated/goldmine/outbound-patterns.json   (phases 2-4)
+ * Outputs (local-only, git-ignored):
+ *   data/email-references/local-generated/goldmine/build-summary.json
+ *   data/email-references/local-generated/goldmine/regression-fixtures.json
+ *   data/email-references/local-generated/goldmine/thread-map.json
+ *   data/email-references/local-generated/goldmine/rulepack.json
+ *   data/email-references/local-generated/goldmine/report.md
+ *   data/email-references/local-generated/goldmine/extracted-fields.json    (phases 2-4)
+ *   data/email-references/local-generated/goldmine/thread-intelligence.json (phases 2-4)
+ *   data/email-references/local-generated/goldmine/outbound-patterns.json   (phases 2-4)
  *
  * Run:
  *   npx tsx scripts/email-references/build-goldmine-reference.ts
@@ -99,7 +99,10 @@ const DEFAULT_INPUT = path.resolve(
   process.cwd(),
   '.auth/EmailGOLDMINE/Takeout/Mail/Dinner Email Export.mbox'
 )
-const DEFAULT_OUT_DIR = path.resolve(process.cwd(), 'data/email-references/generated/goldmine')
+const DEFAULT_OUT_DIR = path.resolve(
+  process.cwd(),
+  'data/email-references/local-generated/goldmine'
+)
 
 // ─── Classification ────────────────────────────────────────────────────────
 

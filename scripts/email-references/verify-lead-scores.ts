@@ -12,7 +12,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 const ROOT = join(import.meta.dirname, '..', '..')
-const GOLDMINE_DIR = join(ROOT, 'data', 'email-references', 'generated', 'goldmine')
+const GOLDMINE_DIR = join(ROOT, 'data', 'email-references', 'local-generated', 'goldmine')
 
 // ── Inline lead scoring (mirrors lib/inquiries/goldmine-lead-score.ts) ──
 

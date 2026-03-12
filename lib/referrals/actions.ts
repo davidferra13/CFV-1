@@ -35,6 +35,25 @@ export type ReferralLandingContext = {
   referrerName: string | null
 }
 
+type ReferralRewardRow = {
+  id: string
+  referrer_client_id: string
+  referred_client_id: string | null
+  reward_awarded_at: string | null
+}
+
+type ClientReferralListRow = {
+  id: string
+  referred_client_id: string | null
+  converted_event_id: string | null
+  reward_points_awarded: number | null
+  reward_awarded_at: string | null
+  created_at: string
+  referred_client: {
+    full_name: string | null
+  } | null
+}
+
 function generateCandidateCode() {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   return Array.from(crypto.randomBytes(8))
@@ -100,6 +119,38 @@ async function ensureReferralCodeForClient(
     .single()
 
   return (updated as ReferralClientRow | null) ?? typedClient
+}
+
+async function findReferralRewardRow(supabase: any, tenantId: string, eventId: string) {
+  const { data } = (await supabase
+    .from('client_referrals')
+    .select('id, referrer_client_id, referred_client_id, reward_awarded_at')
+    .eq('tenant_id', tenantId)
+    .eq('converted_event_id', eventId)
+    .maybeSingle()) as { data: ReferralRewardRow | null }
+
+  return data
+}
+
+async function listClientReferralRows(supabase: any, tenantId: string, referrerClientId: string) {
+  const { data } = (await supabase
+    .from('client_referrals')
+    .select(
+      `
+      id,
+      referred_client_id,
+      converted_event_id,
+      reward_points_awarded,
+      reward_awarded_at,
+      created_at,
+      referred_client:clients!client_referrals_referred_client_id_fkey(full_name)
+    `
+    )
+    .eq('referrer_client_id', referrerClientId)
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false })) as { data: ClientReferralListRow[] | null }
+
+  return data ?? []
 }
 
 async function buildReferralShareData(eventId: string, scope: 'chef' | 'client', scopeId: string) {
@@ -227,13 +278,7 @@ export async function createClientReferralRecord(params: {
 
 async function awardReferralRewardForTenantEvent(tenantId: string, eventId: string) {
   const supabase = createServerClient({ admin: true })
-
-  const { data: referral } = await supabase
-    .from('client_referrals')
-    .select('id, referrer_client_id, referred_client_id, reward_awarded_at')
-    .eq('tenant_id', tenantId)
-    .eq('converted_event_id', eventId)
-    .maybeSingle()
+  const referral = await findReferralRewardRow(supabase, tenantId, eventId)
 
   const typedReferral = referral as {
     id: string
@@ -365,22 +410,7 @@ export async function getClientReferralStats(): Promise<ReferralStats> {
   }
 
   // Fetch all referrals by this client
-  const { data: referrals } = await supabase
-    .from('client_referrals')
-    .select(
-      `
-      id,
-      referred_client_id,
-      converted_event_id,
-      reward_points_awarded,
-      reward_awarded_at,
-      created_at,
-      referred_client:clients!client_referrals_referred_client_id_fkey(full_name)
-    `
-    )
-    .eq('referrer_client_id', user.entityId!)
-    .eq('tenant_id', client.tenant_id)
-    .order('created_at', { ascending: false })
+  const referrals = await listClientReferralRows(supabase, client.tenant_id, user.entityId!)
 
   const referralList = (referrals ?? []).map((r: any) => ({
     id: r.id,

@@ -15,7 +15,7 @@ export default async function MarketplaceCapturePage() {
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-sm text-stone-500">
-          <Link href="/marketplace" className="transition-colors hover:text-stone-300">
+          <Link href="/dashboard/marketplace" className="transition-colors hover:text-stone-300">
             Marketplace
           </Link>
           <span className="text-stone-600">/</span>
@@ -31,7 +31,7 @@ export default async function MarketplaceCapturePage() {
             </p>
           </div>
           <Link
-            href="/marketplace"
+            href="/dashboard/marketplace"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -37,12 +37,15 @@ type FieldMetric = {
 function fixturePath() {
   return path.resolve(
     process.cwd(),
-    'data/email-references/generated/privatechefmanager-yhangry/regression-fixtures.json'
+    'data/email-references/local-generated/privatechefmanager-yhangry/regression-fixtures.json'
   )
 }
 
 function outputDir() {
-  return path.resolve(process.cwd(), 'data/email-references/generated/privatechefmanager-yhangry')
+  return path.resolve(
+    process.cwd(),
+    'data/email-references/local-generated/privatechefmanager-yhangry'
+  )
 }
 
 function pct(numerator: number, denominator: number) {

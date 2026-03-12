@@ -75,7 +75,7 @@ type FixtureDoc = {
 
 const FIXTURE_PATH = path.resolve(
   process.cwd(),
-  'data/email-references/generated/goldmine/regression-fixtures.json'
+  'data/email-references/local-generated/goldmine/regression-fixtures.json'
 )
 
 // ─── Classification Logic (mirrors build-goldmine-reference.ts) ──────────
@@ -277,7 +277,7 @@ function main() {
 
   const THREAD_INTEL_PATH = path.resolve(
     process.cwd(),
-    'data/email-references/generated/goldmine/thread-intelligence.json'
+    'data/email-references/local-generated/goldmine/thread-intelligence.json'
   )
 
   if (existsSync(THREAD_INTEL_PATH)) {

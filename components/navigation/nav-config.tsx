@@ -252,7 +252,7 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/marketplace',
+        href: '/dashboard/marketplace',
         label: 'Marketplace',
         icon: Store,
         children: [{ href: '/marketplace/capture', label: 'Capture Leads' }],

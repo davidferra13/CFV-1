@@ -243,7 +243,7 @@ export async function TacDashboardWidget() {
       <CardFooter className="py-2 px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/marketplace"
+            href="/dashboard/marketplace"
             className="text-xs text-brand-600 hover:text-brand-400 font-medium"
           >
             Open marketplace command center

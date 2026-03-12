@@ -28,6 +28,10 @@ const SECRET_PATTERNS = [
     name: 'OpenAI key',
     regex: /\bsk-proj-[A-Za-z0-9_-]{20,}\b/g,
   },
+  {
+    name: 'Google API key',
+    regex: /\bAIza[0-9A-Za-z\-_]{20,}\b/g,
+  },
 ]
 
 const SKIP_PATH_PREFIXES = [
@@ -76,10 +80,14 @@ const SAFE_CONTEXT_MARKERS = [
 ]
 
 function listGitFiles() {
-  const out = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
-    encoding: 'buffer',
-    maxBuffer: 64 * 1024 * 1024,
-  })
+  const out = execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+    {
+      encoding: 'buffer',
+      maxBuffer: 64 * 1024 * 1024,
+    }
+  )
   return out
     .toString('utf8')
     .split('\0')

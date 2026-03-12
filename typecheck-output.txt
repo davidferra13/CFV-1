@@ -1,0 +1,483 @@
+
+> chefflow@0.1.0 typecheck
+> tsc --noEmit --skipLibCheck
+
+app/(admin)/admin/errors/page.tsx(112,9): error TS2322: Type '{} | null' is not assignable to type 'string | null'.
+  Type '{}' is not assignable to type 'string'.
+app/(admin)/admin/sla/page.tsx(72,3): error TS2322: Type '{ chefId: string; chefBusinessName: {} | null; totalInquiries: number; avgResponseHours: number | null; under1h: number; under24h: number; over24h: number; slaGrade: "A" | "B" | "C" | "D" | "F"; }[]' is not assignable to type 'SlaRow[]'.
+  Type '{ chefId: string; chefBusinessName: {} | null; totalInquiries: number; avgResponseHours: number | null; under1h: number; under24h: number; over24h: number; slaGrade: "A" | "B" | "C" | "D" | "F"; }' is not assignable to type 'SlaRow'.
+    Types of property 'chefBusinessName' are incompatible.
+      Type '{} | null' is not assignable to type 'string | null'.
+        Type '{}' is not assignable to type 'string'.
+app/(chef)/bakery/orders/page.tsx(14,7): error TS7034: Variable 'orders' implicitly has type 'any[]' in some locations where its type cannot be determined.
+app/(chef)/bakery/orders/page.tsx(41,34): error TS7005: Variable 'orders' implicitly has an 'any[]' type.
+app/(chef)/meal-prep/labels/page.tsx(55,42): error TS18047: 'searchParams' is possibly 'null'.
+app/(chef)/meal-prep/labels/page.tsx(61,17): error TS18047: 'searchParams' is possibly 'null'.
+app/(client)/my-events/request/page.tsx(112,9): error TS2322: Type '"quick_request_page_viewed"' is not assignable to type '"chat_message_sent" | "quote_viewed" | "portal_login" | "event_viewed" | "invoice_viewed" | "proposal_viewed" | "rsvp_submitted" | "form_submitted" | "page_viewed" | "payment_page_visited" | ... 5 more ... | "session_heartbeat"'.
+app/(client)/my-feedback/page.tsx(103,24): error TS2322: Type '"feedback_page_viewed"' is not assignable to type '"chat_message_sent" | "quote_viewed" | "portal_login" | "event_viewed" | "invoice_viewed" | "proposal_viewed" | "rsvp_submitted" | "form_submitted" | "page_viewed" | "payment_page_visited" | ... 5 more ... | "session_heartbeat"'.
+app/(client)/my-loyalty/page.tsx(44,26): error TS2322: Type '"loyalty_page_viewed"' is not assignable to type '"chat_message_sent" | "quote_viewed" | "portal_login" | "event_viewed" | "invoice_viewed" | "proposal_viewed" | "rsvp_submitted" | "form_submitted" | "page_viewed" | "payment_page_visited" | ... 5 more ... | "session_heartbeat"'.
+app/(client)/my-loyalty/page.tsx(128,24): error TS2322: Type '"loyalty_page_viewed"' is not assignable to type '"chat_message_sent" | "quote_viewed" | "portal_login" | "event_viewed" | "invoice_viewed" | "proposal_viewed" | "rsvp_submitted" | "form_submitted" | "page_viewed" | "payment_page_visited" | ... 5 more ... | "session_heartbeat"'.
+app/(client)/my-orders/page.tsx(34,24): error TS2322: Type '"orders_page_viewed"' is not assignable to type '"chat_message_sent" | "quote_viewed" | "portal_login" | "event_viewed" | "invoice_viewed" | "proposal_viewed" | "rsvp_submitted" | "form_submitted" | "page_viewed" | "payment_page_visited" | ... 5 more ... | "session_heartbeat"'.
+app/(client)/my-reservations/page.tsx(108,24): error TS2322: Type '"reservations_page_viewed"' is not assignable to type '"chat_message_sent" | "quote_viewed" | "portal_login" | "event_viewed" | "invoice_viewed" | "proposal_viewed" | "rsvp_submitted" | "form_submitted" | "page_viewed" | "payment_page_visited" | ... 5 more ... | "session_heartbeat"'.
+app/(public)/marketplace/marketplace-filters.tsx(85,42): error TS18047: 'searchParams' is possibly 'null'.
+app/(public)/staff-portal/[id]/page.tsx(54,43): error TS2339: Property 'chefId' does not exist on type '{ state: "ready"; data: StaffEventData; }'.
+app/api/feeds/calendar/[token]/route.ts(52,6): error TS2339: Property 'catch' does not exist on type 'PromiseLike<void>'.
+app/api/scheduled/ai-retention/route.ts(47,10): error TS7006: Parameter 'row' implicitly has an 'any' type.
+app/api/scheduled/automations/route.ts(49,29): error TS2352: Conversion of type '{ full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ full_name: any; }[]' but required in type '{ full_name: string; }'.
+app/api/scheduled/automations/route.ts(98,29): error TS2352: Conversion of type '{ full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ full_name: any; }[]' but required in type '{ full_name: string; }'.
+app/api/scheduled/automations/route.ts(133,29): error TS2352: Conversion of type '{ full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ full_name: any; }[]' but required in type '{ full_name: string; }'.
+app/api/scheduled/automations/route.ts(204,31): error TS2352: Conversion of type '{ full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ full_name: any; }[]' but required in type '{ full_name: string; }'.
+app/api/scheduled/follow-ups/route.ts(62,10): error TS2352: Conversion of type '{ id: any; full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ id: any; full_name: any; }[]' but required in type '{ full_name: string; }'.
+app/api/scheduled/follow-ups/route.ts(74,20): error TS2352: Conversion of type '{ id: any; full_name: any; }[]' to type '{ id: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'id' is missing in type '{ id: any; full_name: any; }[]' but required in type '{ id: string; }'.
+app/api/scheduled/lifecycle/route.ts(78,18): error TS2352: Conversion of type '{ id: any; full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ id: any; full_name: any; }[]' but required in type '{ full_name: string; }'.
+app/api/scheduled/lifecycle/route.ts(88,28): error TS2352: Conversion of type '{ id: any; full_name: any; }[]' to type '{ id: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'id' is missing in type '{ id: any; full_name: any; }[]' but required in type '{ id: string; }'.
+app/api/scheduled/waitlist-sweep/route.ts(73,26): error TS2352: Conversion of type '{ id: any; full_name: any; email: any; }[]' to type '{ id: string; full_name: string; email: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: any; full_name: any; email: any; }[]' is missing the following properties from type '{ id: string; full_name: string; email: string; }': id, full_name, email
+app/feedback/[token]/page.tsx(20,17): error TS18047: 'params' is possibly 'null'.
+components/ai/expense-categorize-suggest.tsx(61,17): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Record<"other" | "staff" | "marketing" | "equipment" | "transport" | "supplies" | "professional_services" | "utilities" | "insurance" | "food_cost" | "licenses_permits" | "rent", string>'.
+  No index signature with a parameter of type 'string' was found on type 'Record<"other" | "staff" | "marketing" | "equipment" | "transport" | "supplies" | "professional_services" | "utilities" | "insurance" | "food_cost" | "licenses_permits" | "rent", string>'.
+components/ai/expense-categorize-suggest.tsx(74,33): error TS2345: Argument of type 'string' is not assignable to parameter of type '"other" | "staff" | "marketing" | "equipment" | "transport" | "supplies" | "professional_services" | "utilities" | "insurance" | "food_cost" | "licenses_permits" | "rent"'.
+components/ai/expense-categorize-suggest.tsx(82,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '"other" | "staff" | "marketing" | "equipment" | "transport" | "supplies" | "professional_services" | "utilities" | "insurance" | "food_cost" | "licenses_permits" | "rent"'.
+components/ai/expense-categorize-suggest.tsx(86,15): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Record<"other" | "staff" | "marketing" | "equipment" | "transport" | "supplies" | "professional_services" | "utilities" | "insurance" | "food_cost" | "licenses_permits" | "rent", string>'.
+  No index signature with a parameter of type 'string' was found on type 'Record<"other" | "staff" | "marketing" | "equipment" | "transport" | "supplies" | "professional_services" | "utilities" | "insurance" | "food_cost" | "licenses_permits" | "rent", string>'.
+components/analytics/capacity-charts.tsx(118,11): error TS2322: Type '(value: number, name: string) => [string, string]' is not assignable to type 'Formatter<number, string> & ((value: number, name: string, item: Payload<number, string>, index: number, payload: Payload<number, string>[]) => ReactNode | [...])'.
+  Type '(value: number, name: string) => [string, string]' is not assignable to type 'Formatter<number, string>'.
+    Types of parameters 'value' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+components/analytics/capacity-charts.tsx(159,11): error TS2322: Type '(value: number, name: string) => [number, string] | [string, "Hours Used"] | [string, "Available"]' is not assignable to type 'Formatter<number, string> & ((value: number, name: string, item: Payload<number, string>, index: number, payload: Payload<number, string>[]) => ReactNode | [...])'.
+  Type '(value: number, name: string) => [number, string] | [string, "Hours Used"] | [string, "Available"]' is not assignable to type 'Formatter<number, string>'.
+    Types of parameters 'value' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+components/analytics/capacity-charts.tsx(438,11): error TS2322: Type '(value: number) => [string, "Estimated Hours"]' is not assignable to type 'Formatter<number, "Estimated Hours"> & ((value: number, name: "Estimated Hours", item: Payload<number, "Estimated Hours">, index: number, payload: Payload<number, "Estimated Hours">[]) => ReactNode | [...])'.
+  Type '(value: number) => [string, "Estimated Hours"]' is not assignable to type 'Formatter<number, "Estimated Hours">'.
+    Types of parameters 'value' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+components/clients/rebook-button.tsx(46,7): error TS2322: Type '"default" | "sm"' is not assignable to type '"sm" | "md" | "lg" | undefined'.
+  Type '"default"' is not assignable to type '"sm" | "md" | "lg" | undefined'.
+components/commerce/allergen-badges.tsx(22,39): error TS2345: Argument of type 'string' is not assignable to parameter of type '"wheat" | "milk" | "soy" | "fish" | "shellfish" | "eggs" | "peanuts" | "sesame" | "tree_nuts"'.
+components/commerce/allergen-badges.tsx(38,38): error TS2345: Argument of type 'string' is not assignable to parameter of type '"vegan" | "vegetarian" | "kosher" | "halal" | "keto" | "gluten_free" | "dairy_free" | "nut_free"'.
+components/commerce/allergen-badges.tsx(62,53): error TS2345: Argument of type 'string' is not assignable to parameter of type '"wheat" | "milk" | "soy" | "fish" | "shellfish" | "eggs" | "peanuts" | "sesame" | "tree_nuts"'.
+components/commerce/allergen-badges.tsx(65,39): error TS2345: Argument of type 'string' is not assignable to parameter of type '"wheat" | "milk" | "soy" | "fish" | "shellfish" | "eggs" | "peanuts" | "sesame" | "tree_nuts"'.
+components/communications/client-timeline.tsx(329,29): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/communications/client-timeline.tsx(333,35): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/dashboard/my-dashboard/widget-renderer.tsx(1131,5): error TS1117: An object literal cannot have multiple properties with the same name.
+components/events/event-form.tsx(184,7): error TS2448: Block-scoped variable 'clientId' used before its declaration.
+components/events/event-form.tsx(184,7): error TS2454: Variable 'clientId' is used before being assigned.
+components/events/service-style-picker.tsx(94,16): error TS2322: Type '"default" | "destructive"' is not assignable to type '"error" | "success" | "info" | "warning" | undefined'.
+  Type '"default"' is not assignable to type '"error" | "success" | "info" | "warning" | undefined'.
+components/finance/revenue-per-hour-charts.tsx(68,53): error TS18048: 'percent' is possibly 'undefined'.
+components/finance/revenue-per-hour-charts.tsx(76,11): error TS2322: Type '(value: number) => [string, ""]' is not assignable to type 'Formatter<number, ""> & ((value: number, name: "", item: Payload<number, "">, index: number, payload: Payload<number, "">[]) => ReactNode | [...])'.
+  Type '(value: number) => [string, ""]' is not assignable to type 'Formatter<number, "">'.
+    Types of parameters 'value' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+components/finance/revenue-per-hour-charts.tsx(114,11): error TS2322: Type '(value: number, name: string) => [string, "Effective Rate"] | [number, "Events"]' is not assignable to type 'Formatter<number, string> & ((value: number, name: string, item: Payload<number, string>, index: number, payload: Payload<number, string>[]) => ReactNode | [...])'.
+  Type '(value: number, name: string) => [string, "Effective Rate"] | [number, "Events"]' is not assignable to type 'Formatter<number, string>'.
+    Types of parameters 'value' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+components/hub/hub-message.tsx(193,19): error TS2367: This comparison appears to be unintentional because the types '"text" | "note" | "image" | "rsvp_update" | "menu_update" | "photo_share"' and '"system"' have no overlap.
+components/hub/hub-quick-actions.tsx(169,17): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+components/onboarding/onboarding-wizard.tsx(152,33): error TS2339: Property 'portal_primary_color' does not exist on type 'ChefFullProfile'.
+components/onboarding/recipe-entry-form.tsx(119,15): error TS2741: Property 'photo_url' is missing in type '{ id: any; name: any; category: any; method: any; dietary_tags: any; prep_time_minutes: any; cook_time_minutes: any; yield_quantity: any; yield_unit: any; times_cooked: number; last_cooked_at: null; ... 9 more ...; occasion_tags: never[]; }' but required in type 'RecipeListItem'.
+components/onboarding/tour-checklist.tsx(101,37): error TS2322: Type '(stepId?: string | undefined) => void' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLAnchorElement> | undefined'.
+  Type '(stepId?: string | undefined) => void' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+    Types of parameters 'stepId' and 'event' are incompatible.
+      Type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to type 'string'.
+components/onboarding/tour-spotlight.tsx(157,27): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+components/onboarding/tour-spotlight.tsx(159,43): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(160,39): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(162,21): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(164,17): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(166,34): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(173,17): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(179,53): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(182,40): error TS2345: Argument of type 'TourStep | null' is not assignable to parameter of type 'TourStep'.
+  Type 'null' is not assignable to type 'TourStep'.
+components/onboarding/tour-spotlight.tsx(191,13): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(191,65): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(192,37): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(193,35): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(203,17): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(204,16): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(205,17): error TS18047: 'step' is possibly 'null'.
+components/onboarding/tour-spotlight.tsx(208,17): error TS18047: 'step' is possibly 'null'.
+components/proposal/proposal-flow.tsx(32,29): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/proposal/proposal-flow.tsx(32,61): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/proposals/proposal-public-view.tsx(76,45): error TS2531: Object is possibly 'null'.
+components/queue/queue-item-inline-action.tsx(50,15): error TS2561: Object literal may only specify known properties, but 'channelId' does not exist in type '{ threadId: string; content: string; channel: "email" | "sms" | "whatsapp"; recipientAddress: string; }'. Did you mean to write 'channel'?
+components/queue/queue-item-inline-action.tsx(60,15): error TS2561: Object literal may only specify known properties, but 'conversationId' does not exist in type '{ conversation_id: string; message_type: "link" | "image" | "text" | "file" | "event_ref"; body?: string | undefined; link_url?: string | undefined; referenced_event_id?: string | undefined; }'. Did you mean to write 'conversation_id'?
+components/queue/queue-item-inline-action.tsx(68,15): error TS2353: Object literal may only specify known properties, and 'eventId' does not exist in type 'RecordPaymentInput'.
+components/receipts/receipt-cost-matcher.tsx(173,31): error TS2339: Property 'ingredientId' does not exist on type '{ ingredientName: string; oldCostCents: number | null; newCostCents: number; recipesAffected: number; }'.
+components/settings/google-integrations.tsx(456,42): error TS2322: Type '"secondary"' is not assignable to type '"error" | "default" | "success" | "warning" | "info" | undefined'.
+components/settings/google-integrations.tsx(457,43): error TS2322: Type '"secondary"' is not assignable to type '"error" | "default" | "success" | "warning" | "info" | undefined'.
+lib/ai/agent-actions/inquiry-response-actions.ts(66,3): error TS2322: Type '"safe"' is not assignable to type 'AgentSafetyLevel'.
+lib/ai/agent-actions/inquiry-response-actions.ts(98,7): error TS2353: Object literal may only specify known properties, and 'details' does not exist in type 'AgentActionPreview'.
+lib/ai/agent-actions/lifecycle-circle-actions.ts(16,3): error TS2322: Type '"safe"' is not assignable to type 'AgentSafetyLevel'.
+lib/ai/agent-actions/lifecycle-circle-actions.ts(106,7): error TS2353: Object literal may only specify known properties, and 'details' does not exist in type 'AgentActionPreview'.
+lib/ai/agent-actions/lifecycle-circle-actions.ts(147,3): error TS2322: Type '"safe"' is not assignable to type 'AgentSafetyLevel'.
+lib/ai/agent-actions/lifecycle-circle-actions.ts(183,7): error TS2353: Object literal may only specify known properties, and 'details' does not exist in type 'AgentActionPreview'.
+lib/ai/agent-actions/menu-proposal-actions.ts(125,3): error TS2322: Type '"safe"' is not assignable to type 'AgentSafetyLevel'.
+lib/ai/agent-actions/menu-proposal-actions.ts(175,7): error TS2353: Object literal may only specify known properties, and 'details' does not exist in type 'AgentActionPreview'.
+lib/ai/recipe-scaling.ts(76,24): error TS2339: Property 'name' does not exist on type 'never'.
+lib/ai/remy-intelligence-actions-3.ts(21,22): error TS2551: Property 'memberCount' does not exist on type 'ChefCircleSummary'. Did you mean 'member_count'?
+lib/ai/remy-intelligence-actions-3.ts(22,22): error TS2551: Property 'unreadCount' does not exist on type 'ChefCircleSummary'. Did you mean 'unread_count'?
+lib/ai/remy-intelligence-actions-3.ts(23,23): error TS2339: Property 'lastActivity' does not exist on type 'ChefCircleSummary'.
+lib/ai/remy-intelligence-actions-3.ts(24,20): error TS2551: Property 'groupType' does not exist on type 'ChefCircleSummary'. Did you mean 'group_type'?
+lib/ai/remy-intelligence-actions-3.ts(27,54): error TS2551: Property 'unreadCount' does not exist on type 'ChefCircleSummary'. Did you mean 'unread_count'?
+lib/ai/remy-intelligence-actions-3.ts(115,33): error TS2345: Argument of type '{ status: string; } | undefined' is not assignable to parameter of type '{ status?: "in_progress" | "done" | "pending" | undefined; assigned_to?: string | undefined; due_date?: string | undefined; station_id?: string | undefined; } | undefined'.
+  Type '{ status: string; }' is not assignable to type '{ status?: "in_progress" | "done" | "pending" | undefined; assigned_to?: string | undefined; due_date?: string | undefined; station_id?: string | undefined; }'.
+    Types of property 'status' are incompatible.
+      Type 'string' is not assignable to type '"in_progress" | "done" | "pending" | undefined'.
+lib/ai/remy-intelligence-actions-3.ts(136,26): error TS2339: Property 'map' does not exist on type '{ grouped: Record<string, { staffName: string; staffRole: string; tasks: Task[]; }>; unassigned: Task[]; }'.
+lib/ai/remy-intelligence-actions-3.ts(143,31): error TS2339: Property 'length' does not exist on type '{ grouped: Record<string, { staffName: string; staffRole: string; tasks: Task[]; }>; unassigned: Task[]; }'.
+lib/ai/remy-intelligence-actions-3.ts(177,41): error TS2353: Object literal may only specify known properties, and 'upcoming' does not exist in type '{ fromDate?: string | undefined; toDate?: string | undefined; status?: string | undefined; }'.
+lib/ai/remy-intelligence-actions-3.ts(196,41): error TS2353: Object literal may only specify known properties, and 'is_active' does not exist in type '{ category?: string | undefined; activeOnly?: boolean | undefined; search?: string | undefined; limit?: number | undefined; offset?: number | undefined; }'.
+lib/ai/remy-intelligence-actions-3.ts(198,32): error TS2339: Property 'slice' does not exist on type '{ products: any; total: any; }'.
+lib/ai/remy-intelligence-actions-3.ts(208,34): error TS2339: Property 'length' does not exist on type '{ products: any; total: any; }'.
+lib/ai/remy-intelligence-actions-3.ts(216,26): error TS2339: Property 'map' does not exist on type '{ sales: any; total: any; }'.
+lib/ai/remy-intelligence-actions-3.ts(225,31): error TS2339: Property 'length' does not exist on type '{ sales: any; total: any; }'.
+lib/ai/remy-intelligence-actions-3.ts(236,22): error TS2339: Property 'totalSales' does not exist on type 'DailySalesReport'.
+lib/ai/remy-intelligence-actions-3.ts(237,29): error TS2551: Property 'totalRevenueCents' does not exist on type 'DailySalesReport'. Did you mean 'revenueCents'?
+lib/ai/remy-intelligence-actions-3.ts(238,25): error TS2339: Property 'totalTaxCents' does not exist on type 'DailySalesReport'.
+lib/ai/remy-intelligence-actions-3.ts(239,28): error TS2339: Property 'averageSaleCents' does not exist on type 'DailySalesReport'.
+lib/ai/remy-intelligence-actions-3.ts(240,23): error TS2339: Property 'topProducts' does not exist on type 'DailySalesReport'.
+lib/ai/remy-intelligence-actions-3.ts(263,41): error TS2353: Object literal may only specify known properties, and 'is_active' does not exist in type '{ category?: string | undefined; activeOnly?: boolean | undefined; search?: string | undefined; limit?: number | undefined; offset?: number | undefined; }'.
+lib/ai/remy-intelligence-actions-3.ts(264,37): error TS2339: Property 'filter' does not exist on type '{ products: any; total: any; }'.
+lib/ai/remy-intelligence-actions-3.ts(343,45): error TS2345: Argument of type '{ stationId: string; } | undefined' is not assignable to parameter of type '{ page: number; per_page: number; station_id?: string | undefined; action_type?: string | undefined; start_date?: string | undefined; end_date?: string | undefined; } | undefined'.
+  Object literal may only specify known properties, but 'stationId' does not exist in type '{ page: number; per_page: number; station_id?: string | undefined; action_type?: string | undefined; start_date?: string | undefined; end_date?: string | undefined; }'. Did you mean to write 'station_id'?
+lib/ai/remy-intelligence-actions-3.ts(345,26): error TS2339: Property 'slice' does not exist on type '{ entries: any; total: any; page: number; per_page: number; total_pages: number; }'.
+lib/ai/remy-intelligence-actions-3.ts(353,29): error TS2339: Property 'length' does not exist on type '{ entries: any; total: any; page: number; per_page: number; total_pages: number; }'.
+lib/ai/service-timeline.ts(83,34): error TS2339: Property 'name' does not exist on type '{ name: any; role: any; }[]'.
+lib/ai/staff-briefing-ai.ts(90,17): error TS2352: Conversion of type '{ role_override: any; staff_members: { name: any; role: any; }[]; }[]' to type 'StaffAssignmentRow[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ role_override: any; staff_members: { name: any; role: any; }[]; }' is not comparable to type 'StaffAssignmentRow'.
+    Types of property 'staff_members' are incompatible.
+      Type '{ name: any; role: any; }[]' is missing the following properties from type '{ name: string; role: string; }': name, role
+lib/analytics/menu-engineering-actions.ts(204,26): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(204,55): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(224,42): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(381,37): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(381,66): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(395,42): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(396,28): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+lib/analytics/menu-engineering-actions.ts(474,37): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(474,66): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(509,42): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+lib/analytics/menu-engineering-actions.ts(510,41): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+lib/analytics/pipeline-analytics.ts(109,41): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(112,44): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(113,44): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(114,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(115,42): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(150,35): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(151,35): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(152,34): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(157,37): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(157,40): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(182,31): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(185,11): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(186,14): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(189,57): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(189,60): error TS7006: Parameter 'b' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(210,39): error TS7006: Parameter 'e' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(212,11): error TS7006: Parameter 'e' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(213,14): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(216,55): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(216,58): error TS7006: Parameter 'b' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(219,35): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(220,35): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(221,40): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(222,35): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(236,11): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(237,14): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(240,57): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(240,60): error TS7006: Parameter 'b' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(295,37): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(298,14): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(299,11): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(308,38): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(308,41): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(312,38): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(312,41): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(316,38): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(316,41): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(320,39): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(320,42): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/analytics/pipeline-analytics.ts(356,37): error TS7006: Parameter 'i' implicitly has an 'any' type.
+lib/archetypes/dashboard-actions.ts(11,10): error TS2459: Module '"@/lib/supabase/server"' declares 'createClient' locally, but it is not exported.
+lib/archetypes/hybrid-preset.ts(52,5): error TS2322: Type 'string' is not assignable to type '"Private Chef" | "Caterer" | "Meal Prep Chef" | "Restaurant" | "Food Truck" | "Bakery / Pastry"'.
+lib/archetypes/hybrid-preset.ts(53,5): error TS2322: Type '`Blended preset combining ${string}`' is not assignable to type '"Solo operator doing in-home dining experiences for clients" | "Event-based business with a team to coordinate" | "Weekly batch cooking and delivery for recurring clients" | "Fixed-location daily service with staff and guests" | "Mobile operation focused on locations, prep, and daily service" | "Order-driven product...'.
+lib/auth/actions.ts(115,42): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly chef: "/dashboard"; readonly client: "/my-events"; readonly staff: "/staff-dashboard"; readonly partner: "/partner/dashboard"; }'.
+lib/beta/actions.ts(694,29): error TS7006: Parameter 'row' implicitly has an 'any' type.
+lib/beta/email-triggers.ts(45,22): error TS2352: Conversion of type '{ id: any; full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ id: any; full_name: any; }[]' but required in type '{ full_name: string; }'.
+lib/beta/email-triggers.ts(51,13): error TS2339: Property 'sendEmail' does not exist on type 'typeof import("C:/Users/david/Documents/CFv1/lib/email/notifications")'.
+lib/beta/email-triggers.ts(153,21): error TS2352: Conversion of type '{ id: any; display_name: any; email: any; auth_user_id: any; }[]' to type '{ id: string; display_name: string; email: string | null; auth_user_id: string | null; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: any; display_name: any; email: any; auth_user_id: any; }[]' is missing the following properties from type '{ id: string; display_name: string; email: string | null; auth_user_id: string | null; }': id, display_name, email, auth_user_id
+lib/beta/email-triggers.ts(165,15): error TS2339: Property 'sendEmail' does not exist on type 'typeof import("C:/Users/david/Documents/CFv1/lib/email/notifications")'.
+lib/beta/lifecycle-email.ts(111,11): error TS2322: Type '{ label: string; detail: string; state: string; }[]' is not assignable to type 'BetaTrackerItem[]'.
+  Type '{ label: string; detail: string; state: string; }' is not assignable to type 'BetaTrackerItem'.
+    Types of property 'state' are incompatible.
+      Type 'string' is not assignable to type '"active" | "complete" | "closed" | "upcoming"'.
+lib/beta/lifecycle-email.ts(132,11): error TS2322: Type '{ label: string; detail: string; state: string; }[]' is not assignable to type 'BetaTrackerItem[]'.
+  Type '{ label: string; detail: string; state: string; }' is not assignable to type 'BetaTrackerItem'.
+    Types of property 'state' are incompatible.
+      Type 'string' is not assignable to type '"active" | "complete" | "closed" | "upcoming"'.
+lib/beta/lifecycle-email.ts(144,11): error TS2322: Type '{ label: string; detail: string; state: string; }[]' is not assignable to type 'BetaTrackerItem[]'.
+  Type '{ label: string; detail: string; state: string; }' is not assignable to type 'BetaTrackerItem'.
+    Types of property 'state' are incompatible.
+      Type 'string' is not assignable to type '"active" | "complete" | "closed" | "upcoming"'.
+lib/beta/onboarding-actions.ts(172,30): error TS2339: Property 'authUserId' does not exist on type 'AuthUser'.
+lib/beta/onboarding-actions.ts(208,30): error TS2339: Property 'authUserId' does not exist on type 'AuthUser'.
+lib/beta/onboarding-actions.ts(273,30): error TS2339: Property 'authUserId' does not exist on type 'AuthUser'.
+lib/beta/onboarding-actions.ts(304,30): error TS2339: Property 'authUserId' does not exist on type 'AuthUser'.
+lib/beta/onboarding-actions.ts(538,25): error TS2352: Conversion of type '{ known_dietary: any; known_allergies: any; }[]' to type '{ known_dietary: string[]; known_allergies: string[]; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ known_dietary: any; known_allergies: any; }[]' is missing the following properties from type '{ known_dietary: string[]; known_allergies: string[]; }': known_dietary, known_allergies
+lib/billing/pricing-catalog.ts(92,7): error TS2741: Property 'branding' is missing in type '{ ai: string; analytics: string; finance: string; marketing: string; clients: string; loyalty: string; staff: string; operations: string; protection: string; community: string; integrations: string; professional: string; calendar: string; commerce: string; }' but required in type 'Record<"staff" | "clients" | "marketing" | "ai" | "integrations" | "loyalty" | "protection" | "calendar" | "operations" | "commerce" | "community" | "finance" | "professional" | "analytics" | "branding", string>'.
+lib/clients/self-service-actions.ts(294,28): error TS7006: Parameter 'row' implicitly has an 'any' type.
+lib/commerce/kds-actions.ts(100,17): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/commerce/kds-actions.ts(100,20): error TS7006: Parameter 'b' implicitly has an 'any' type.
+lib/commerce/server-workflow-actions.ts(268,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+lib/commerce/server-workflow-actions.ts(269,5): error TS2322: Type 'number | null' is not assignable to type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.
+lib/costing/cascade-engine.ts(207,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+lib/costing/cascade-engine.ts(208,25): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+lib/costing/cascade-engine.ts(212,45): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  Type 'unknown' is not assignable to type 'string'.
+lib/costing/cascade-engine.ts(531,3): error TS2322: Type 'unknown[]' is not assignable to type 'string[]'.
+  Type 'unknown' is not assignable to type 'string'.
+lib/documents/download-response.ts(38,27): error TS2345: Argument of type 'Buffer<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Buffer<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 2 more.
+lib/email/notifications.ts(550,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(581,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(617,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(653,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(882,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(913,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(942,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(973,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1000,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1030,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1058,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1120,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1149,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1176,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1201,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1232,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1265,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1294,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1406,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1433,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1462,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1518,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/notifications.ts(1541,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'brand' does not exist in type 'Attributes & Props'.
+lib/email/templates/beta-survey-invite.tsx(18,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/beta-welcome.tsx(18,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/campaign.tsx(24,11): error TS2304: Cannot find name 'ChefBrandProps'.
+lib/email/templates/circle-digest.tsx(27,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/circle-message.tsx(24,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/circle-update-notification.tsx(27,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/client-visit-alert.tsx(29,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/collaboration-invite.tsx(37,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/commerce-sale-receipt.tsx(23,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/contract-sent.tsx(17,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/contract-signed-chef.tsx(24,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/daily-report.tsx(38,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/event-starting.tsx(28,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/follow-up-due-chef.tsx(30,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/friend-request.tsx(16,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/gift-card-purchased-chef.tsx(27,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/instant-booking-chef.tsx(32,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/instant-booking-client.tsx(30,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/menu-approval-request.tsx(29,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/menu-approved-chef.tsx(24,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/menu-revision-chef.tsx(26,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/new-inquiry-chef.tsx(36,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/new-message-chef.tsx(23,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/offline-payment-receipt.tsx(38,14): error TS2304: Cannot find name 'brand'.
+lib/email/templates/payment-received-chef.tsx(34,14): error TS2304: Cannot find name 'brand'.
+lib/email/templates/payment-reminder.tsx(42,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/post-event-circle-thanks.tsx(33,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/pre-event-dietary-summary.tsx(34,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/proposal-sent.tsx(23,3): error TS2339: Property 'brand' does not exist on type 'ProposalSentEmailProps'.
+lib/email/templates/quote-accepted-chef.tsx(28,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/quote-expired-chef.tsx(17,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/quote-expired-client.tsx(17,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/quote-rejected-chef.tsx(24,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/recipe-share.tsx(26,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/refund-initiated.tsx(28,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/review-submitted-chef.tsx(28,24): error TS2304: Cannot find name 'brand'.
+lib/email/templates/rsvp-reminder.tsx(9,11): error TS2304: Cannot find name 'ChefBrandProps'.
+lib/equipment/actions.ts(309,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/equipment/actions.ts(314,25): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/equipment/actions.ts(322,32): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/equipment/actions.ts(323,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/equipment/actions.ts(324,36): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/equipment/actions.ts(325,34): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/equipment/actions.ts(326,41): error TS7006: Parameter 'item' implicitly has an 'any' type.
+lib/events/transitions.ts(161,41): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(options: { admin: true; }): LooseSupabaseClient', gave the following error.
+    Type 'boolean' is not assignable to type 'true'.
+  Overload 2 of 2, '(options?: { admin?: false | undefined; } | undefined): LooseSupabaseClient', gave the following error.
+    Type 'boolean' is not assignable to type 'false'.
+lib/events/transitions.ts(538,23): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'eventId' does not exist in type 'Attributes & EventConfirmedProps'.
+lib/finance/deposit-automation-actions.ts(249,7): error TS2322: Type '"deposit_request_sent"' is not assignable to type 'ChefActivityAction'.
+lib/finance/deposit-automation-actions.ts(570,7): error TS2322: Type '"deposit_request_sent"' is not assignable to type 'ChefActivityAction'.
+lib/finance/food-cost-actions.ts(303,21): error TS2339: Property 'occasion' does not exist on type '{}'.
+lib/finance/food-cost-actions.ts(304,22): error TS2339: Property 'eventDate' does not exist on type '{}'.
+lib/finance/recurring-invoice-actions.ts(668,9): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type '{ tenantId: string; recipientId: string; category: NotificationCategory; action: NotificationAction; title: string; body?: string | undefined; ... 4 more ...; metadata?: Record<...> | undefined; }'.
+lib/food-truck/menu-board-actions.ts(93,21): error TS2352: Conversion of type '{ allergen_flags: any; }[]' to type '{ allergen_flags: string[]; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'allergen_flags' is missing in type '{ allergen_flags: any; }[]' but required in type '{ allergen_flags: string[]; }'.
+lib/food-truck/par-planning-actions.ts(161,17): error TS2352: Conversion of type '{ id: any; name: any; category: any; default_unit: any; }[]' to type '{ id: string; name: string; category: string; default_unit: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: any; name: any; category: any; default_unit: any; }[]' is missing the following properties from type '{ id: string; name: string; category: string; default_unit: string; }': id, name, category, default_unit
+lib/gmail/actions.ts(634,7): error TS2322: Type '{}' is not assignable to type 'string'.
+lib/gmail/actions.ts(640,7): error TS2322: Type '{}' is not assignable to type 'string'.
+lib/gmail/historical-scan.ts(182,5): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+lib/gmail/sync.ts(331,5): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+lib/gmail/sync.ts(938,13): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+lib/hub/chef-circle-actions.ts(41,30): error TS2339: Property 'userId' does not exist on type 'AuthUser'.
+lib/hub/chef-circle-actions.ts(127,30): error TS2339: Property 'userId' does not exist on type 'AuthUser'.
+lib/hub/chef-circle-actions.ts(244,5): error TS2561: Object literal may only specify known properties, but 'displayName' does not exist in type '{ display_name: string; email?: string | null | undefined; }'. Did you mean to write 'display_name'?
+lib/hub/chef-circle-actions.ts(245,22): error TS2339: Property 'userId' does not exist on type 'AuthUser'.
+lib/hub/chef-circle-actions.ts(350,5): error TS2561: Object literal may only specify known properties, but 'displayName' does not exist in type '{ display_name: string; email?: string | null | undefined; }'. Did you mean to write 'display_name'?
+lib/hub/chef-circle-actions.ts(351,22): error TS2339: Property 'userId' does not exist on type 'AuthUser'.
+lib/hub/pre-event-briefing-actions.ts(108,18): error TS2339: Property 'requires_oven' does not exist on type 'ChefServiceConfig'.
+lib/hub/pre-event-briefing-actions.ts(109,18): error TS2339: Property 'requires_stovetop' does not exist on type 'ChefServiceConfig'.
+lib/hub/pre-event-briefing-actions.ts(110,18): error TS2339: Property 'requires_grill' does not exist on type 'ChefServiceConfig'.
+lib/hub/social-feed-actions.ts(116,30): error TS2339: Property 'userId' does not exist on type 'AuthUser'.
+lib/ingredients/system-ingredients.ts(58,3): error TS2322: Type 'unknown[]' is not assignable to type 'string[]'.
+  Type 'unknown' is not assignable to type 'string'.
+lib/inquiries/public-actions.ts(545,7): error TS2353: Object literal may only specify known properties, and 'campaignSource' does not exist in type '{ channel?: string | undefined; clientName?: string | undefined; occasion?: string | undefined; budgetCents?: number | undefined; budgetMode?: "exact" | "unset" | "range" | "not_sure" | undefined; ... 4 more ...; selectedMenuId?: string | undefined; }'.
+lib/inquiries/take-a-chef-capture-actions.ts(354,20): error TS2352: Conversion of type '{ full_name: any; referral_source: any; }[]' to type '{ full_name: string; referral_source: string | null; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ full_name: any; referral_source: any; }[]' is missing the following properties from type '{ full_name: string; referral_source: string | null; }': full_name, referral_source
+lib/ledger/append.ts(62,41): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(options: { admin: true; }): LooseSupabaseClient', gave the following error.
+    Type 'boolean' is not assignable to type 'true'.
+  Overload 2 of 2, '(options?: { admin?: false | undefined; } | undefined): LooseSupabaseClient', gave the following error.
+    Type 'boolean' is not assignable to type 'false'.
+lib/marketplace/conversion-actions.ts(46,20): error TS2352: Conversion of type '{ full_name: any; referral_source: any; }[]' to type '{ full_name: string; referral_source: string | null; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ full_name: any; referral_source: any; }[]' is missing the following properties from type '{ full_name: string; referral_source: string | null; }': full_name, referral_source
+lib/meal-prep/batch-shopping-actions.ts(141,23): error TS7006: Parameter 'q' implicitly has an 'any' type.
+lib/meal-prep/batch-shopping-actions.ts(218,51): error TS7006: Parameter 'pi' implicitly has an 'any' type.
+lib/meal-prep/meal-history-actions.ts(198,54): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+lib/meal-prep/nutrition-actions.ts(195,26): error TS2339: Property 'calories' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(196,32): error TS2339: Property 'protein_g' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(197,30): error TS2339: Property 'carbs_g' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(198,28): error TS2339: Property 'fat_g' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(199,30): error TS2339: Property 'fiber_g' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(202,21): error TS2339: Property 'calories' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(203,27): error TS2339: Property 'protein_g' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(204,25): error TS2339: Property 'carbs_g' does not exist on type '{}'.
+lib/meal-prep/nutrition-actions.ts(205,23): error TS2339: Property 'fat_g' does not exist on type '{}'.
+lib/notifications/tier-config.ts(27,14): error TS2740: Type '{ new_inquiry: "critical"; inquiry_reply: "alert"; inquiry_expired: "info"; follow_up_due: "info"; wix_submission: "critical"; new_guest_lead: "alert"; quote_accepted: "alert"; quote_rejected: "alert"; ... 84 more ...; system_alert: "critical"; }' is missing the following properties from type 'Record<NotificationAction, NotificationTier>': equipment_maintenance_due, dietary_accommodation_check, stale_data_digest, expense_anomaly, and 2 more.
+lib/outreach/referral-sequence-actions.ts(309,26): error TS2339: Property 'full_name' does not exist on type '{}'.
+lib/outreach/referral-sequence-actions.ts(310,21): error TS2339: Property 'email' does not exist on type '{}'.
+lib/partners/actions.ts(1061,42): error TS2589: Type instantiation is excessively deep and possibly infinite.
+lib/photos/photo-actions.ts(59,25): error TS2339: Property 'userId' does not exist on type 'AuthUser'.
+lib/public-data/allergens.ts(127,27): error TS2345: Argument of type 'string' is not assignable to parameter of type '"Alcohol" | "Crustacean shellfish" | "Eggs" | "Fish" | "Milk" | "Peanuts" | "Sesame" | "Soybeans" | "Tree nuts" | "Wheat" | "Avocado" | "Celery" | "Citrus" | "Coconut" | "Corn" | ... 8 more ... | "Sulfites"'.
+lib/public-data/allergens.ts(128,27): error TS2345: Argument of type 'string' is not assignable to parameter of type '"Alcohol" | "Crustacean shellfish" | "Eggs" | "Fish" | "Milk" | "Peanuts" | "Sesame" | "Soybeans" | "Tree nuts" | "Wheat" | "Avocado" | "Celery" | "Citrus" | "Coconut" | "Corn" | ... 8 more ... | "Sulfites"'.
+lib/recipes/actions.ts(455,18): error TS2352: Conversion of type '{ id: any; course_name: any; menu: { id: any; name: any; event: { id: any; occasion: any; event_date: any; status: any; client: { full_name: any; }[]; }[]; }[]; }[]' to type 'LinkedDish' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'menu' is missing in type '{ id: any; course_name: any; menu: { id: any; name: any; event: { id: any; occasion: any; event_date: any; status: any; client: { full_name: any; }[]; }[]; }[]; }[]' but required in type '{ menu: { event: LinkedEvent | null; name: string; } | null; }'.
+lib/recipes/actions.ts(741,15): error TS2352: Conversion of type '{ tenant_id: any; }[]' to type '{ tenant_id: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'tenant_id' is missing in type '{ tenant_id: any; }[]' but required in type '{ tenant_id: string; }'.
+lib/recipes/actions.ts(782,15): error TS2352: Conversion of type '{ tenant_id: any; }[]' to type '{ tenant_id: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'tenant_id' is missing in type '{ tenant_id: any; }[]' but required in type '{ tenant_id: string; }'.
+lib/reviews/external-sync.ts(526,46): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(options: { admin: true; }): LooseSupabaseClient', gave the following error.
+    Type 'boolean' is not assignable to type 'true'.
+  Overload 2 of 2, '(options?: { admin?: false | undefined; } | undefined): LooseSupabaseClient', gave the following error.
+    Type 'boolean' is not assignable to type 'false'.
+lib/scaling/allergen-check.ts(201,28): error TS2339: Property 'course_name' does not exist on type '{}'.
+lib/scaling/prep-timeline.ts(212,22): error TS2339: Property 'course_name' does not exist on type '{}'.
+lib/scaling/prep-timeline.ts(213,26): error TS2339: Property 'course_number' does not exist on type '{}'.
+lib/scheduling/prep-checklist-actions.ts(90,22): error TS2339: Property 'name' does not exist on type '{}'.
+lib/scheduling/prep-checklist-actions.ts(91,24): error TS2339: Property 'courseName' does not exist on type '{}'.
+lib/scheduling/types.ts(173,14): error TS2741: Property 'capacity' is missing in type '{ todays_schedule: { category: "today"; size: "lg"; defaultEnabled: true; }; daily_plan: { category: "today"; size: "lg"; defaultEnabled: true; }; next_action: { category: "today"; size: "sm"; defaultEnabled: true; }; ... 104 more ...; vendor_costs: { ...; }; }' but required in type 'Record<"recipe_shares" | "staff_availability" | "activity" | "wellbeing" | "system_nerve_center" | "onboarding_accelerator" | "todays_schedule" | "daily_plan" | "next_action" | ... 99 more ... | "weekly_labor", WidgetMeta>'.
+lib/scheduling/types.ts(528,14): error TS2739: Type '{ system_nerve_center: string; onboarding_accelerator: string; todays_schedule: string; daily_plan: string; next_action: string; week_strip: string; dop_tasks: string; priority_queue: string; ... 97 more ...; capacity: string; }' is missing the following properties from type 'Record<"recipe_shares" | "staff_availability" | "activity" | "wellbeing" | "system_nerve_center" | "onboarding_accelerator" | "todays_schedule" | "daily_plan" | "next_action" | ... 99 more ... | "weekly_labor", string>': staff_availability, caterer_week_glance, weekly_labor
+lib/shopping/actions.ts(452,5): error TS2322: Type '"food_cost"' is not assignable to type '"other" | "marketing" | "equipment" | "vehicle" | "alcohol" | "groceries" | "specialty_items" | "supplies" | "education" | "gas_mileage" | "venue_rental" | "labor" | "uniforms" | "subscriptions" | "insurance_licenses" | "professional_services" | "utilities"'.
+lib/staff/staff-event-portal-actions.ts(387,36): error TS2353: Object literal may only specify known properties, and 'chefId' does not exist in type '{ state: "ready"; data: StaffEventData; }'.
+lib/stripe/checkout.ts(264,22): error TS2352: Conversion of type '{ email: any; full_name: any; }[]' to type '{ email: string | null; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'email' is missing in type '{ email: any; full_name: any; }[]' but required in type '{ email: string | null; }'.
+lib/supabase/server.ts(33,37): error TS2558: Expected 2 type arguments, but got 3.
+lib/supabase/server.ts(41,14): error TS7006: Parameter 'cookiesToSet' implicitly has an 'any' type.
+lib/supabase/server.ts(43,35): error TS7031: Binding element 'name' implicitly has an 'any' type.
+lib/supabase/server.ts(43,41): error TS7031: Binding element 'value' implicitly has an 'any' type.
+lib/supabase/server.ts(43,48): error TS7031: Binding element 'options' implicitly has an 'any' type.
+lib/surveys/actions.ts(134,29): error TS2339: Property 'occasion' does not exist on type '{ occasion: any; event_date: any; }[]'.
+lib/surveys/actions.ts(135,31): error TS2339: Property 'event_date' does not exist on type '{ occasion: any; event_date: any; }[]'.
+lib/surveys/actions.ts(138,32): error TS2339: Property 'display_name' does not exist on type '{ display_name: any; business_name: any; }[]'.
+lib/surveys/actions.ts(139,33): error TS2339: Property 'business_name' does not exist on type '{ display_name: any; business_name: any; }[]'.
+lib/travel/actions.ts(117,23): error TS2352: Conversion of type '{ full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ full_name: any; }[]' but required in type '{ full_name: string; }'.
+lib/travel/actions.ts(605,23): error TS2352: Conversion of type '{ full_name: any; }[]' to type '{ full_name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'full_name' is missing in type '{ full_name: any; }[]' but required in type '{ full_name: string; }'.
+lib/utils/date-format.ts(7,34): error TS2304: Cannot find name 'Locale'.
+scripts/backfill-primary-nav.ts(3,8): error TS1192: Module '"C:/Users/david/Documents/CFv1/lib/navigation/primary-shortcuts"' has no default export.
+scripts/run-historical-scan-catchup.ts(3,8): error TS1192: Module '"C:/Users/david/Documents/CFv1/lib/gmail/historical-scan"' has no default export.
+tmp-head-business-section.tsx(343,49): error TS2345: Argument of type '{ enabled: boolean; nudgeLevel: "gentle"; monthly: { start: string; end: string; targetCents: number; realizedCents: number; projectedCents: number; gapCents: number; progressPercent: number; }; ... 6 more ...; computedAt: string; }' is not assignable to parameter of type 'RevenueGoalSnapshot'.
+  Type '{ enabled: boolean; nudgeLevel: "gentle"; monthly: { start: string; end: string; targetCents: number; realizedCents: number; projectedCents: number; gapCents: number; progressPercent: number; }; ... 6 more ...; computedAt: string; }' is missing the following properties from type 'RevenueGoalSnapshot': smartOpenDatesThisMonth, typicalBookingDays, monthlyPaceStatus, monthlyPaceRatio, and 3 more.

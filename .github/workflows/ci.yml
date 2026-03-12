@@ -32,6 +32,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Secret scan
+        run: npm run verify:secrets
+
+      - name: Privacy artifact gate
+        run: npm run verify:privacy
+
       - name: Route policy gate (middleware + public coverage)
         run: node --test --import tsx tests/unit/middleware.routing.test.ts tests/unit/route-policy.public-coverage.test.ts
 

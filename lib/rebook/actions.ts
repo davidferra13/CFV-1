@@ -81,12 +81,7 @@ type RebookTokenRow = {
 }
 
 function buildAddress(event: CompletedEventRow) {
-  return [
-    event.location_address,
-    event.location_city,
-    event.location_state,
-    event.location_zip,
-  ]
+  return [event.location_address, event.location_city, event.location_state, event.location_zip]
     .filter(Boolean)
     .join(', ')
 }
@@ -250,6 +245,29 @@ async function getActiveTokenForEvent(supabase: any, eventId: string) {
   return (data as RebookTokenRow | null) ?? null
 }
 
+async function createRebookToken(
+  supabase: any,
+  payload: Pick<RebookTokenRow, 'tenant_id' | 'event_id' | 'client_id' | 'token'>
+) {
+  const { data, error } = (await supabase
+    .from('rebook_tokens')
+    .insert(payload)
+    .select('tenant_id, event_id, client_id, token, expires_at, used_at')
+    .single()) as { data: RebookTokenRow | null; error: Error | null }
+
+  return { data, error }
+}
+
+async function findRebookTokenByToken(supabase: any, token: string) {
+  const { data } = (await supabase
+    .from('rebook_tokens')
+    .select('tenant_id, event_id, client_id, token, expires_at, used_at')
+    .eq('token', token)
+    .maybeSingle()) as { data: RebookTokenRow | null }
+
+  return data
+}
+
 export async function getOrCreateRebookDataForCompletedEvent(eventId: string) {
   const context = await loadCompletedEventContext(eventId)
   if (!context) return null
@@ -260,16 +278,12 @@ export async function getOrCreateRebookDataForCompletedEvent(eventId: string) {
   }
 
   const token = await generateUniqueToken(context.supabase)
-  const { data: inserted, error } = await context.supabase
-    .from('rebook_tokens')
-    .insert({
-      tenant_id: context.event.tenant_id,
-      event_id: context.event.id,
-      client_id: context.client.id,
-      token,
-    })
-    .select('tenant_id, event_id, client_id, token, expires_at, used_at')
-    .single()
+  const { data: inserted, error } = await createRebookToken(context.supabase, {
+    tenant_id: context.event.tenant_id,
+    event_id: context.event.id,
+    client_id: context.client.id,
+    token,
+  })
 
   if (error || !inserted) {
     throw new Error('Failed to create rebook token')
@@ -314,12 +328,7 @@ export async function getOrCreateRebookDataForChefEvent(eventId: string) {
 
 export async function getRebookLandingData(token: string): Promise<RebookLandingData> {
   const supabase = createServerClient({ admin: true })
-
-  const { data: tokenRow } = await supabase
-    .from('rebook_tokens')
-    .select('tenant_id, event_id, client_id, token, expires_at, used_at')
-    .eq('token', token)
-    .maybeSingle()
+  const tokenRow = await findRebookTokenByToken(supabase, token)
 
   const typedToken = tokenRow as RebookTokenRow | null
   if (!typedToken) {

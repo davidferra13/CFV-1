@@ -240,7 +240,7 @@ export function TakeAChefCaptureTool() {
                   <Button variant="secondary">Open Event</Button>
                 </Link>
               )}
-              <Link href="/marketplace">
+              <Link href="/dashboard/marketplace">
                 <Button variant="ghost">Back to Marketplace</Button>
               </Link>
             </div>

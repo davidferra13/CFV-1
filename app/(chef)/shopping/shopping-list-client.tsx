@@ -30,9 +30,7 @@ export function CreateFromEventButton() {
         setEventId('')
         router.push(`/shopping/${result.id}`)
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : 'Failed to create list from event'
-        )
+        toast.error(err instanceof Error ? err.message : 'Failed to create list from event')
       }
     })
   }
@@ -50,9 +48,9 @@ export function CreateFromEventButton() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Create List from Event</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-stone-800 rounded-lg shadow-xl w-full max-w-md p-6">
+            <h2 className="text-lg font-semibold text-stone-100 mb-4">Create List from Event</h2>
+            <p className="text-sm text-stone-400 mb-4">
               Enter the event ID to generate a shopping list from its menu and recipes.
             </p>
             <input

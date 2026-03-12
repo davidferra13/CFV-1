@@ -405,7 +405,7 @@ function deriveLeadScoreWeights(threads: ThreadRecord[]) {
 // ─── Main ───────────────────────────────────────────────────────────────
 
 function main() {
-  const baseDir = path.resolve(process.cwd(), 'data/email-references/generated/goldmine')
+  const baseDir = path.resolve(process.cwd(), 'data/email-references/local-generated/goldmine')
   const threadIntelPath = path.join(baseDir, 'thread-intelligence.json')
   const outboundPath = path.join(baseDir, 'outbound-patterns.json')
 

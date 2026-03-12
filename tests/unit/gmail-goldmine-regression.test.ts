@@ -57,7 +57,7 @@ function classifySender(fromEmail: string): {
 function fixturePath() {
   return path.resolve(
     process.cwd(),
-    'data/email-references/generated/goldmine/regression-fixtures.json'
+    'tests/fixtures/email-references/goldmine-regression-fixtures.json'
   )
 }
 
@@ -65,7 +65,7 @@ describe('GOLDMINE email classification regression fixtures', () => {
   const p = fixturePath()
 
   it('fixture file exists', () => {
-    assert.ok(existsSync(p), `Fixture missing at ${p}. Run: npm run email:build:goldmine`)
+    assert.ok(existsSync(p), `Fixture missing at ${p}`)
   })
 
   it('sender-based classification matches all fixtures', () => {
@@ -118,21 +118,15 @@ describe('GOLDMINE email classification regression fixtures', () => {
       counts[f.expected_category] = (counts[f.expected_category] || 0) + 1
     }
 
-    // Verify expected categories exist with reasonable counts
-    assert.ok(counts['outbound'] > 100, `Expected 100+ outbound, got ${counts['outbound']}`)
-    assert.ok(
-      counts['direct_followup'] > 50,
-      `Expected 50+ direct_followup, got ${counts['direct_followup']}`
-    )
-    assert.ok(
-      counts['direct_first_contact'] > 10,
-      `Expected 10+ direct_first_contact, got ${counts['direct_first_contact']}`
-    )
-    assert.ok(
-      counts['partner_ember'] > 5,
-      `Expected 5+ partner_ember, got ${counts['partner_ember']}`
-    )
-    assert.ok(counts['wix_form'] > 3, `Expected 3+ wix_form, got ${counts['wix_form']}`)
+    assert.deepEqual(counts, {
+      outbound: 1,
+      direct_first_contact: 1,
+      direct_followup: 1,
+      partner_ember: 1,
+      wix_form: 1,
+      platform_takeachef: 1,
+      bounce: 1,
+    })
   })
 
   it('first-contact emails are tagged correctly per thread', () => {

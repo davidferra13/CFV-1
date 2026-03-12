@@ -4,10 +4,10 @@
  * Input defaults:
  *   data/email-references/privatechefmanager-yhangry/Takeout/Mail/*.mbox
  *
- * Outputs:
- *   data/email-references/generated/privatechefmanager-yhangry/build-summary.json
- *   data/email-references/generated/privatechefmanager-yhangry/rulepack.json
- *   data/email-references/generated/privatechefmanager-yhangry/report.md
+ * Outputs (local-only, git-ignored):
+ *   data/email-references/local-generated/privatechefmanager-yhangry/build-summary.json
+ *   data/email-references/local-generated/privatechefmanager-yhangry/rulepack.json
+ *   data/email-references/local-generated/privatechefmanager-yhangry/report.md
  *
  * Run:
  *   npx tsx scripts/email-references/build-private-platform-reference.ts
@@ -45,7 +45,7 @@ const DEFAULT_INPUT_ROOT = path.resolve(
 )
 const DEFAULT_OUT_DIR = path.resolve(
   process.cwd(),
-  'data/email-references/generated/privatechefmanager-yhangry'
+  'data/email-references/local-generated/privatechefmanager-yhangry'
 )
 
 let takeAChefParser: any

@@ -156,7 +156,7 @@ export default async function ChefProfilePage({ params }: Props) {
           {chef.acceptingInquiries && chef.slug && (
             <div className="mt-8">
               <Link
-                href={`/book/${chef.slug}`}
+                href={`/marketplace/${chef.slug}/inquire`}
                 className="inline-flex items-center rounded-lg bg-orange-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-orange-700"
               >
                 Send Inquiry

@@ -475,7 +475,8 @@ export async function saveTakeAChefPageCapture(
           platform: 'take_a_chef',
           clientId: linkedClientId ?? inquiry.client_id ?? null,
           eventId,
-          externalInquiryId: inquiry.external_inquiry_id || parsed.orderId || parsed.ctaUriToken || null,
+          externalInquiryId:
+            inquiry.external_inquiry_id || parsed.orderId || parsed.ctaUriToken || null,
           externalUrl: inquiry.external_link || parsed.primaryLink || validated.pageUrl,
           captureType,
           pageUrl: validated.pageUrl,
@@ -515,7 +516,7 @@ export async function saveTakeAChefPageCapture(
         )
       }
 
-      revalidatePath('/marketplace')
+      revalidatePath('/dashboard/marketplace')
       revalidatePath('/dashboard')
       revalidatePath('/inquiries')
       revalidatePath(`/inquiries/${existingInquiryId}`)
@@ -627,7 +628,7 @@ export async function saveTakeAChefPageCapture(
           })
         : null
 
-    revalidatePath('/marketplace')
+    revalidatePath('/dashboard/marketplace')
     revalidatePath('/dashboard')
     revalidatePath('/inquiries')
     revalidatePath('/clients')

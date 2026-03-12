@@ -59,7 +59,7 @@ By swapping only these 3 files, all 8 import modes (brain dump, clients, recipes
 2. Create a free API key
 3. Add to `.env.local`:
    ```
-   GEMINI_API_KEY=AIza...
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 4. Restart the dev server
 

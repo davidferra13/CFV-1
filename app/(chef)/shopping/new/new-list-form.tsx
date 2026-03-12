@@ -64,9 +64,7 @@ export function NewShoppingListForm() {
         toast.success('Shopping list created')
         router.push(`/shopping/${result.id}`)
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : 'Failed to create shopping list'
-        )
+        toast.error(err instanceof Error ? err.message : 'Failed to create shopping list')
       }
     })
   }
@@ -75,9 +73,7 @@ export function NewShoppingListForm() {
     <div className="space-y-6">
       {/* List name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          List Name
-        </label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">List Name</label>
         <input
           type="text"
           value={name}
@@ -123,7 +119,7 @@ export function NewShoppingListForm() {
             <select
               value={newItemCategory}
               onChange={(e) => setNewItemCategory(e.target.value)}
-              className="px-3 py-2 border rounded-lg bg-white"
+              className="px-3 py-2 border rounded-lg bg-stone-900 text-stone-100 border-stone-600"
             >
               {SHOPPING_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>

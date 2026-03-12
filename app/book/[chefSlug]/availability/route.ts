@@ -80,7 +80,7 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
         .lte('event_date', `${endDate}T23:59:59Z`),
       supabase
         .from('chef_availability_blocks')
-        .select('block_date, block_type')
+        .select('block_date')
         .eq('chef_id', tenantId)
         .gte('block_date', startDate)
         .lte('block_date', endDate),
@@ -112,10 +112,7 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
         ]
       } else if (bookedDates.has(dateStr) || manualBlocks.has(dateStr)) {
         availability[dateStr] = 'blocked'
-        const reasons: string[] = []
-        if (bookedDates.has(dateStr)) reasons.push('Existing confirmed event')
-        if (manualBlocks.has(dateStr)) reasons.push('Chef blocked availability')
-        conflictDetails[dateStr] = reasons
+        conflictDetails[dateStr] = ['Date unavailable']
       } else {
         availability[dateStr] = 'available'
       }

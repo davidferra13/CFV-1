@@ -123,6 +123,16 @@ function RemyInner() {
   }, [mode, isMascotChatOpen, closeMascotChat])
 
   useEffect(() => {
+    const handleOpenRemy = () => {
+      if (isMobile || mode !== 'hidden') return
+      setMode('docked')
+    }
+
+    window.addEventListener('open-remy', handleOpenRemy)
+    return () => window.removeEventListener('open-remy', handleOpenRemy)
+  }, [isMobile, mode, setMode])
+
+  useEffect(() => {
     // Hidden mode should be a hard off state. Close the drawer if anything
     // (keyboard shortcut, custom events) opens it while hidden.
     if (mode === 'hidden' && isDrawerOpen) {

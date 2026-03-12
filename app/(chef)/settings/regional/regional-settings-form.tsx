@@ -79,9 +79,9 @@ export function RegionalSettingsForm({ initialCurrency, initialLocale }: Props) 
   return (
     <div className="space-y-8">
       {/* Currency */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">Currency</h2>
-        <p className="mt-1 text-sm text-gray-500">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 p-6">
+        <h2 className="text-lg font-semibold text-stone-100">Currency</h2>
+        <p className="mt-1 text-sm text-stone-400">
           Choose the currency for your quotes, invoices, and payment links. Stripe will charge
           clients in this currency.
         </p>
@@ -91,7 +91,7 @@ export function RegionalSettingsForm({ initialCurrency, initialLocale }: Props) 
             value={currency}
             onChange={(e) => handleCurrencyChange(e.target.value)}
             disabled={isPending}
-            className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
+            className="w-full max-w-xs rounded-lg border border-stone-600 bg-stone-900 text-stone-100 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
           >
             {SUPPORTED_CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>
@@ -101,16 +101,16 @@ export function RegionalSettingsForm({ initialCurrency, initialLocale }: Props) 
           </select>
         </div>
 
-        <div className="mt-3 rounded-lg bg-gray-50 p-3">
-          <p className="text-xs font-medium uppercase text-gray-500">Preview</p>
-          <p className="mt-1 text-lg font-semibold text-gray-900">{previewFormatted}</p>
+        <div className="mt-3 rounded-lg bg-stone-900 p-3">
+          <p className="text-xs font-medium uppercase text-stone-400">Preview</p>
+          <p className="mt-1 text-lg font-semibold text-stone-100">{previewFormatted}</p>
         </div>
       </div>
 
       {/* Language */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">Language</h2>
-        <p className="mt-1 text-sm text-gray-500">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 p-6">
+        <h2 className="text-lg font-semibold text-stone-100">Language</h2>
+        <p className="mt-1 text-sm text-stone-400">
           Choose your preferred language for the ChefFlow interface. This also affects how dates and
           numbers are formatted.
         </p>
@@ -120,7 +120,7 @@ export function RegionalSettingsForm({ initialCurrency, initialLocale }: Props) 
             value={locale}
             onChange={(e) => handleLocaleChange(e.target.value)}
             disabled={isPending}
-            className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
+            className="w-full max-w-xs rounded-lg border border-stone-600 bg-stone-900 text-stone-100 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
           >
             {SUPPORTED_LANGUAGES.map((l) => (
               <option key={l.code} value={l.code}>

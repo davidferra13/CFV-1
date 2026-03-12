@@ -31,7 +31,7 @@ Extracted all MBOX parsing logic (MIME decoding, header parsing, boundary handli
 
 ### 2. GOLDMINE Build Pipeline (`scripts/email-references/build-goldmine-reference.ts`)
 
-Processes the MBOX file and outputs to `data/email-references/generated/goldmine/`:
+Processes the MBOX file and outputs to `data/email-references/local-generated/goldmine/`:
 
 - **build-summary.json** — Category counts, thread stats, heuristic accuracy metrics
 - **regression-fixtures.json** — All 299 emails with expected classification

@@ -51,6 +51,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/leads',
   '/loyalty',
   '/marketing',
+  '/marketplace',
   '/meal-prep',
   '/messages',
   '/menus',

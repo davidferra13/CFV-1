@@ -57,7 +57,7 @@ npm run email:eval:goldmine             # Regression check (strict mode, now inc
 
 ## Output Artifacts
 
-All output to `data/email-references/generated/goldmine/`:
+All output to `data/email-references/local-generated/goldmine/` (local-only, git-ignored):
 
 | File                       | Content                                                                |
 | -------------------------- | ---------------------------------------------------------------------- |

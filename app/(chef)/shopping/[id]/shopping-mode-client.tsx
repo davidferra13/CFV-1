@@ -17,14 +17,7 @@ import {
 } from '@/lib/shopping/actions'
 import { SHOPPING_CATEGORIES } from '@/lib/shopping/constants'
 import type { ShoppingList, ShoppingItem } from '@/lib/shopping/actions'
-import {
-  ArrowLeft,
-  Check,
-  CheckCircle2,
-  DollarSign,
-  ShoppingCart,
-  X,
-} from 'lucide-react'
+import { ArrowLeft, Check, CheckCircle2, DollarSign, ShoppingCart, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -80,14 +73,8 @@ export function ShoppingModeClient({ initialList }: Props) {
   // Stats
   const totalItems = list.items.length
   const checkedItems = list.items.filter((i) => i.checked).length
-  const estimatedTotal = list.items.reduce(
-    (sum, i) => sum + (i.estimated_price_cents || 0),
-    0
-  )
-  const actualTotal = list.items.reduce(
-    (sum, i) => sum + (i.actual_price_cents || 0),
-    0
-  )
+  const estimatedTotal = list.items.reduce((sum, i) => sum + (i.estimated_price_cents || 0), 0)
+  const actualTotal = list.items.reduce((sum, i) => sum + (i.actual_price_cents || 0), 0)
   const hasActualPrices = list.items.some((i) => i.actual_price_cents != null)
 
   // Find the original (flat) index for a grouped item
@@ -170,9 +157,7 @@ export function ShoppingModeClient({ initialList }: Props) {
         toast.success('Expense created from shopping list')
         router.push('/expenses')
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : 'Failed to create expense'
-        )
+        toast.error(err instanceof Error ? err.message : 'Failed to create expense')
       }
     })
   }
@@ -180,17 +165,17 @@ export function ShoppingModeClient({ initialList }: Props) {
   return (
     <div className="max-w-2xl mx-auto pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b px-4 py-3 shadow-sm">
+      <div className="sticky top-0 z-10 bg-stone-800 border-b border-stone-700 px-4 py-3 shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <Link
             href="/shopping"
-            className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+            className="flex items-center gap-1 text-stone-400 hover:text-stone-200"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-lg font-bold truncate flex-1 mx-3">{list.name}</h1>
+          <h1 className="text-lg font-bold truncate flex-1 mx-3 text-stone-100">{list.name}</h1>
           {isCompleted && (
-            <span className="text-xs bg-green-100 text-green-200 px-2 py-1 rounded-full font-medium">
+            <span className="text-xs bg-green-900/50 text-green-400 px-2 py-1 rounded-full font-medium">
               Done
             </span>
           )}
@@ -198,7 +183,7 @@ export function ShoppingModeClient({ initialList }: Props) {
 
         {/* Progress bar */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 bg-gray-200 rounded-full h-2.5">
+          <div className="flex-1 bg-stone-700 rounded-full h-2.5">
             <div
               className="bg-green-500 h-2.5 rounded-full transition-all duration-300"
               style={{
@@ -206,18 +191,16 @@ export function ShoppingModeClient({ initialList }: Props) {
               }}
             />
           </div>
-          <span className="text-sm font-medium text-gray-600 whitespace-nowrap">
+          <span className="text-sm font-medium text-stone-400 whitespace-nowrap">
             {checkedItems}/{totalItems}
           </span>
         </div>
 
         {/* Totals bar */}
-        <div className="flex items-center justify-between mt-2 text-sm text-gray-500">
-          {estimatedTotal > 0 && (
-            <span>Est: {formatCurrency(estimatedTotal)}</span>
-          )}
+        <div className="flex items-center justify-between mt-2 text-sm text-stone-400">
+          {estimatedTotal > 0 && <span>Est: {formatCurrency(estimatedTotal)}</span>}
           {hasActualPrices && actualTotal > 0 && (
-            <span className="font-medium text-gray-800">
+            <span className="font-medium text-stone-200">
               Actual: {formatCurrency(actualTotal)}
             </span>
           )}
@@ -231,11 +214,9 @@ export function ShoppingModeClient({ initialList }: Props) {
 
           return (
             <div key={category} className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2 sticky top-[110px] bg-white py-1 z-[5]">
+              <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide mb-2 sticky top-[110px] bg-stone-900 py-1 z-[5]">
                 {category}
-                <span className="ml-2 text-gray-400">
-                  ({unchecked.length + checked.length})
-                </span>
+                <span className="ml-2 text-stone-500">({unchecked.length + checked.length})</span>
               </h2>
 
               {/* Unchecked items first */}
@@ -252,9 +233,7 @@ export function ShoppingModeClient({ initialList }: Props) {
                     onStartPriceEdit={(idx) => {
                       setEditingPrice(idx)
                       setPriceInput(
-                        item.actual_price_cents
-                          ? (item.actual_price_cents / 100).toFixed(2)
-                          : ''
+                        item.actual_price_cents ? (item.actual_price_cents / 100).toFixed(2) : ''
                       )
                     }}
                     onPriceChange={setPriceInput}
@@ -282,9 +261,7 @@ export function ShoppingModeClient({ initialList }: Props) {
                       onStartPriceEdit={(idx) => {
                         setEditingPrice(idx)
                         setPriceInput(
-                          item.actual_price_cents
-                            ? (item.actual_price_cents / 100).toFixed(2)
-                            : ''
+                          item.actual_price_cents ? (item.actual_price_cents / 100).toFixed(2) : ''
                         )
                       }}
                       onPriceChange={setPriceInput}
@@ -303,7 +280,7 @@ export function ShoppingModeClient({ initialList }: Props) {
       </div>
 
       {/* Bottom action bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-stone-800 border-t border-stone-700 p-4 shadow-lg z-20">
         <div className="max-w-2xl mx-auto">
           {!isCompleted ? (
             <Button
@@ -317,11 +294,9 @@ export function ShoppingModeClient({ initialList }: Props) {
             </Button>
           ) : (
             <div className="space-y-2">
-              <div className="text-center text-sm text-gray-500 mb-2">
+              <div className="text-center text-sm text-stone-400 mb-2">
                 Completed{' '}
-                {list.completed_at
-                  ? new Date(list.completed_at).toLocaleDateString()
-                  : ''}
+                {list.completed_at ? new Date(list.completed_at).toLocaleDateString() : ''}
               </div>
               <Button
                 variant="primary"
@@ -373,8 +348,8 @@ function ShoppingItemRow({
     <div
       className={`flex items-center gap-3 py-3 px-3 rounded-lg border transition-colors ${
         item.checked
-          ? 'bg-gray-50 border-gray-200'
-          : 'bg-white border-gray-200 hover:border-gray-300'
+          ? 'bg-stone-900 border-stone-700'
+          : 'bg-stone-800 border-stone-700 hover:border-stone-500'
       }`}
     >
       {/* Checkbox - large tap target */}
@@ -384,7 +359,7 @@ function ShoppingItemRow({
         className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors ${
           item.checked
             ? 'bg-green-500 border-green-500 text-white'
-            : 'border-gray-300 hover:border-green-400'
+            : 'border-stone-600 hover:border-green-400'
         }`}
         aria-label={item.checked ? `Uncheck ${item.name}` : `Check ${item.name}`}
       >
@@ -395,25 +370,21 @@ function ShoppingItemRow({
       <div className="flex-1 min-w-0">
         <div
           className={`font-medium text-base ${
-            item.checked ? 'line-through text-gray-400' : 'text-gray-900'
+            item.checked ? 'line-through text-stone-500' : 'text-stone-100'
           }`}
         >
           {item.name}
         </div>
-        <div className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
+        <div className="text-sm text-stone-400 flex items-center gap-2 flex-wrap">
           {item.quantity != null && (
             <span>
               {item.quantity} {item.unit || ''}
             </span>
           )}
           {item.estimated_price_cents != null && (
-            <span className="text-gray-400">
-              ~{formatCurrency(item.estimated_price_cents)}
-            </span>
+            <span className="text-stone-500">~{formatCurrency(item.estimated_price_cents)}</span>
           )}
-          {item.notes && (
-            <span className="italic text-gray-400">{item.notes}</span>
-          )}
+          {item.notes && <span className="italic text-gray-400">{item.notes}</span>}
         </div>
       </div>
 
@@ -422,7 +393,7 @@ function ShoppingItemRow({
         <div className="flex-shrink-0">
           {isEditingThis ? (
             <div className="flex items-center gap-1">
-              <span className="text-gray-400 text-sm">$</span>
+              <span className="text-stone-400 text-sm">$</span>
               <input
                 type="number"
                 value={priceInput}
@@ -436,28 +407,20 @@ function ShoppingItemRow({
                   if (e.key === 'Escape') onPriceCancel()
                 }}
               />
-              <button
-                onClick={onPriceSubmit}
-                className="p-1 text-green-600 hover:text-green-200"
-              >
+              <button onClick={onPriceSubmit} className="p-1 text-green-600 hover:text-green-200">
                 <Check className="h-4 w-4" />
               </button>
-              <button
-                onClick={onPriceCancel}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={onPriceCancel} className="p-1 text-stone-400 hover:text-stone-200">
                 <X className="h-4 w-4" />
               </button>
             </div>
           ) : (
             <button
               onClick={() => onStartPriceEdit(originalIndex)}
-              className="text-sm px-2 py-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              className="text-sm px-2 py-1 rounded hover:bg-stone-700 text-stone-400 hover:text-stone-200"
               title="Enter actual price"
             >
-              {item.actual_price_cents != null
-                ? formatCurrency(item.actual_price_cents)
-                : '$?'}
+              {item.actual_price_cents != null ? formatCurrency(item.actual_price_cents) : '$?'}
             </button>
           )}
         </div>
@@ -465,7 +428,7 @@ function ShoppingItemRow({
 
       {/* Show actual price on completed lists */}
       {isCompleted && item.actual_price_cents != null && (
-        <span className="text-sm font-medium text-gray-600">
+        <span className="text-sm font-medium text-stone-400">
           {formatCurrency(item.actual_price_cents)}
         </span>
       )}
