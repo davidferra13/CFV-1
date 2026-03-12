@@ -13,8 +13,8 @@ import { z } from 'zod'
 import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { markBetaSignupOnboardedByEmail } from '@/lib/beta/actions'
-import { sendEmail } from '@/lib/email/send'
-import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
+import { sendBetaLifecycleEmail } from '@/lib/beta/lifecycle-email'
+import { upsertBetaSignupTracker } from '@/lib/beta/signup-tracker'
 import { seedDefaultBudgetQualificationAutomations } from '@/lib/automations/seed'
 import { signRoleCookie } from '@/lib/auth/signed-cookie'
 
@@ -62,8 +62,6 @@ export type ClientSignupInput = z.infer<typeof ClientSignupSchema>
 export type SignInInput = z.infer<typeof SignInSchema>
 
 const DEFAULT_TRIAL_DAYS = 14
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 const parsedBetaTrialDays = Number.parseInt(process.env.BETA_TRIAL_DAYS || '', 10)
 const BETA_TRIAL_DAYS =
   Number.isFinite(parsedBetaTrialDays) && parsedBetaTrialDays > 0
@@ -128,32 +126,63 @@ function resolveTrialDays(isBetaSignup: boolean): number {
 async function syncBetaOnboarding(
   email: string,
   name: string,
-  signupRef?: string
-): Promise<boolean> {
+  signupRef?: string,
+  chefId?: string,
+  authUserId?: string
+) {
   try {
     return await markBetaSignupOnboardedByEmail({
       email,
       name,
       source: isBetaRef(signupRef) ? 'beta_invite_link' : undefined,
+      chefId,
+      authUserId,
     })
   } catch (error) {
     log.auth.warn('Beta signup sync failed (non-blocking)', { error, context: { email } })
-    return false
+    return {
+      matched: false,
+      signup: null,
+      tracker: null,
+      onboardingProgress: null,
+    }
   }
 }
 
-async function sendBetaActivationEmail(email: string, name: string): Promise<void> {
+async function sendBetaActivationEmail(syncResult: Awaited<ReturnType<typeof syncBetaOnboarding>>) {
+  if (!syncResult.matched || !syncResult.signup) return
+  if (syncResult.tracker?.account_ready_sent_at) return
+
   try {
-    await sendEmail({
-      to: email,
-      subject: 'Your ChefFlow beta account is ready',
-      react: BetaAccountReadyEmail({
-        name,
-        signInUrl: `${SITE_URL}/auth/signin?redirect=/onboarding`,
-      }),
+    const emailResult = await sendBetaLifecycleEmail({
+      emailType: 'account_ready',
+      signup: syncResult.signup,
+      tracker: syncResult.tracker,
+      onboardingProgress: syncResult.onboardingProgress,
+    })
+
+    if (!emailResult.success) {
+      log.auth.warn('Beta activation email failed (non-blocking)', {
+        error: emailResult.error,
+        context: { email: syncResult.signup.email },
+      })
+      return
+    }
+
+    await upsertBetaSignupTracker({
+      signup: syncResult.signup,
+      supabase: createServerClient({ admin: true }),
+      emailType: 'account_ready',
+      chefId: syncResult.tracker?.chef_id ?? null,
+      authUserId: syncResult.tracker?.auth_user_id ?? null,
+      accountCreatedAt: syncResult.signup.onboarded_at,
+      onboardingProgress: syncResult.onboardingProgress,
     })
   } catch (error) {
-    log.auth.warn('Beta activation email failed (non-blocking)', { error, context: { email } })
+    log.auth.warn('Beta activation email failed (non-blocking)', {
+      error,
+      context: { email: syncResult.signup.email },
+    })
   }
 }
 
@@ -242,8 +271,14 @@ export async function signUpChef(input: ChefSignupInput) {
       })
     }
 
-    const isBetaSignup = await syncBetaOnboarding(email, businessName, validated.signup_ref)
-    const trialDays = resolveTrialDays(isBetaSignup)
+    const betaSync = await syncBetaOnboarding(
+      email,
+      businessName,
+      validated.signup_ref,
+      chef.id,
+      authData.user.id
+    )
+    const trialDays = resolveTrialDays(betaSync.matched)
 
     // Start 14-day trial and create Stripe customer — non-blocking
     try {
@@ -254,8 +289,8 @@ export async function signUpChef(input: ChefSignupInput) {
       log.auth.warn('Stripe customer/trial init failed (non-blocking)', { error: err })
     }
 
-    if (isBetaSignup) {
-      await sendBetaActivationEmail(email, businessName)
+    if (betaSync.matched) {
+      await sendBetaActivationEmail(betaSync)
     }
 
     return { success: true, userId: authData.user.id }
@@ -725,8 +760,14 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
         })
       }
 
-      const isBetaSignup = await syncBetaOnboarding(email, businessName, context?.signup_ref)
-      const trialDays = resolveTrialDays(isBetaSignup)
+      const betaSync = await syncBetaOnboarding(
+        email,
+        businessName,
+        context?.signup_ref,
+        chef.id,
+        user.id
+      )
+      const trialDays = resolveTrialDays(betaSync.matched)
 
       try {
         const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
@@ -738,8 +779,8 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
         })
       }
 
-      if (isBetaSignup) {
-        await sendBetaActivationEmail(email, businessName)
+      if (betaSync.matched) {
+        await sendBetaActivationEmail(betaSync)
       }
     } else if (role === 'client') {
       const fullName = user.user_metadata?.full_name || 'New Client'

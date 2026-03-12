@@ -1,6 +1,13 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { sendBetaLifecycleEmail } from '@/lib/beta/lifecycle-email'
+import {
+  getBetaOnboardingProgressForChef,
+  getBetaSignupByEmail,
+  getBetaSignupTrackerBySignupId,
+  upsertBetaSignupTracker,
+} from '@/lib/beta/signup-tracker'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { chefBrandTag } from '@/lib/chef/brand'
@@ -277,12 +284,84 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
 export async function markOnboardingComplete() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase: any = createServerClient({ admin: true })
+  const completedAt = new Date().toISOString()
 
-  await supabase
+  const { data: chef, error } = await supabase
     .from('chefs')
-    .update({ onboarding_completed_at: new Date().toISOString() })
+    .update({ onboarding_completed_at: completedAt })
     .eq('id', user.entityId)
+    .select('email, business_name')
+    .single()
+
+  if (error) {
+    console.error('[markOnboardingComplete] Error:', error)
+    throw new Error('Failed to complete onboarding')
+  }
+
+  if (chef?.email) {
+    try {
+      const signup = await getBetaSignupByEmail(chef.email, supabase)
+
+      if (signup) {
+        let syncedSignup = signup
+
+        if (signup.status !== 'onboarded' || !signup.onboarded_at) {
+          const { data: syncedRow } = await supabase
+            .from('beta_signups')
+            .update({
+              status: 'onboarded',
+              onboarded_at: signup.onboarded_at || completedAt,
+            })
+            .eq('id', signup.id)
+            .select('*')
+            .single()
+
+          if (syncedRow) {
+            syncedSignup = syncedRow
+          }
+        }
+
+        const existingTracker = await getBetaSignupTrackerBySignupId(syncedSignup.id, supabase)
+        const onboardingProgress = await getBetaOnboardingProgressForChef(user.entityId, supabase)
+        const tracker = await upsertBetaSignupTracker({
+          signup: syncedSignup,
+          supabase,
+          chefId: user.entityId,
+          authUserId: user.id,
+          accountCreatedAt: syncedSignup.onboarded_at,
+          forceCompleted: true,
+          onboardingProgress,
+        })
+
+        if (!existingTracker?.completed_sent_at) {
+          const emailResult = await sendBetaLifecycleEmail({
+            emailType: 'onboarding_complete',
+            signup: syncedSignup,
+            tracker,
+            onboardingProgress,
+          })
+
+          if (emailResult.success) {
+            await upsertBetaSignupTracker({
+              signup: syncedSignup,
+              supabase,
+              emailType: 'onboarding_complete',
+              chefId: user.entityId,
+              authUserId: user.id,
+              accountCreatedAt: syncedSignup.onboarded_at,
+              forceCompleted: true,
+              onboardingProgress,
+            })
+          } else {
+            console.error('[markOnboardingComplete] Completion email failed:', emailResult.error)
+          }
+        }
+      }
+    } catch (trackerError) {
+      console.error('[markOnboardingComplete] Beta completion sync failed:', trackerError)
+    }
+  }
 
   revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }

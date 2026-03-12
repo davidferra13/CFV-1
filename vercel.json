@@ -44,6 +44,10 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/scheduled/beta-onboarding-reminders",
+      "schedule": "0 14 * * *"
+    },
+    {
       "path": "/api/scheduled/reviews-sync",
       "schedule": "0 */6 * * *"
     },
