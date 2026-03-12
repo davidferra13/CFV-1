@@ -8,6 +8,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { breakers } from '@/lib/resilience/circuit-breaker'
 import { isConnectOnboardingRequiredForPayments } from '@/lib/stripe/payment-policy'
+import { getChefCurrency, toStripeCurrency } from '@/lib/currency/resolve'
 import type Stripe from 'stripe'
 
 export type CreatePaymentIntentResult =
@@ -119,9 +120,10 @@ export async function createPaymentIntent(eventId: string): Promise<CreatePaymen
   }
 
   // Build PaymentIntent params
+  const currency = toStripeCurrency(await getChefCurrency(event.tenant_id))
   const createParams: Stripe.PaymentIntentCreateParams = {
     amount: amountCents,
-    currency: 'usd',
+    currency,
     metadata: {
       event_id: eventId,
       tenant_id: event.tenant_id,

@@ -1512,6 +1512,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: Settings,
     context: 'Settings',
   },
+  {
+    href: '/settings/regional',
+    label: 'Currency & Language',
+    icon: Settings,
+    context: 'Settings',
+  },
   { href: '/settings/ai-privacy', label: 'Privacy & Data', icon: ShieldCheck, context: 'Settings' },
   { href: '/settings/api-keys', label: 'API Keys', icon: Settings, context: 'Settings' },
   { href: '/settings/webhooks', label: 'Webhooks', icon: Settings, context: 'Settings' },
