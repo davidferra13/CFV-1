@@ -314,8 +314,128 @@ export async function requireStaff(): Promise<StaffAuthUser> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Marketplace auth (overlay — does NOT modify existing flows)
+// ---------------------------------------------------------------------------
+
+export type MarketplaceUser = {
+  id: string // auth.users.id
+  email: string
+  marketplaceProfileId: string
+  linkedTenants: Array<{
+    tenantId: string
+    clientId: string
+    isFavorite: boolean
+  }>
+}
+
 /**
- * Require platform admin with chef context — email must be in ADMIN_EMAILS env var.
+ * Require a marketplace-enabled client.
+ * Returns the user's marketplace profile and all linked chef tenants.
+ * Creates a marketplace_profile on the fly if the client doesn't have one yet.
+ * Throws if the user is not authenticated or has no client role.
+ */
+export async function requireMarketplaceClient(): Promise<MarketplaceUser> {
+  const user = await getCurrentUser()
+
+  if (!user || user.role !== 'client') {
+    throw new Error('Unauthorized: Client access required')
+  }
+
+  const adminClient = createAdminClient()
+
+  // Find or create marketplace profile
+  let { data: profile } = await adminClient
+    .from('marketplace_profiles')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!profile) {
+    const { data: newProfile, error: createErr } = await adminClient
+      .from('marketplace_profiles')
+      .insert({
+        auth_user_id: user.id,
+        email: user.email,
+        primary_client_id: user.entityId,
+      })
+      .select('id')
+      .single()
+
+    if (createErr || !newProfile) {
+      throw new Error('Failed to create marketplace profile')
+    }
+    profile = newProfile
+  }
+
+  // Fetch all linked tenants
+  const { data: links } = await adminClient
+    .from('marketplace_client_links')
+    .select('tenant_id, client_id, is_favorite')
+    .eq('marketplace_profile_id', profile.id)
+
+  return {
+    id: user.id,
+    email: user.email,
+    marketplaceProfileId: profile.id,
+    linkedTenants: (links ?? []).map((l) => ({
+      tenantId: l.tenant_id,
+      clientId: l.client_id,
+      isFavorite: l.is_favorite,
+    })),
+  }
+}
+
+/**
+ * Require client auth scoped to a specific chef tenant.
+ * Validates the client has a relationship with that chef via marketplace_client_links.
+ * Returns a standard AuthUser with tenantId set to the requested tenant.
+ * Throws if the user has no link to that tenant.
+ */
+export async function requireClientForTenant(tenantId: string): Promise<AuthUser> {
+  const user = await getCurrentUser()
+
+  if (!user || user.role !== 'client') {
+    throw new Error('Unauthorized: Client access required')
+  }
+
+  // If the user's existing tenantId matches, use the fast path (legacy single-tenant)
+  if (user.tenantId === tenantId) {
+    return user
+  }
+
+  // Check marketplace_client_links for a cross-tenant relationship
+  const adminClient = createAdminClient()
+
+  const { data: link } = await adminClient
+    .from('marketplace_client_links')
+    .select('client_id')
+    .eq('tenant_id', tenantId)
+    .eq(
+      'marketplace_profile_id',
+      (
+        await adminClient
+          .from('marketplace_profiles')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .single()
+      ).data?.id ?? ''
+    )
+    .single()
+
+  if (!link) {
+    throw new Error('Unauthorized: No relationship with this chef')
+  }
+
+  return {
+    ...user,
+    entityId: link.client_id,
+    tenantId,
+  }
+}
+
+/**
+ * Require platform admin with chef context - email must be in ADMIN_EMAILS env var.
  * Returns full AuthUser (with tenantId) for server actions that need both admin + chef data.
  * For page-level admin gating (redirect on failure), use requireAdmin() from lib/auth/admin.ts.
  */

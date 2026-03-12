@@ -30,6 +30,8 @@ export type AppendLedgerEntryInput = {
   refunded_entry_id?: string | null
   received_at?: string | null
   created_by?: string | null // Null for webhook entries
+  currency_code?: string // Defaults to 'USD' in DB
+  exchange_rate_to_base?: number // Rate to USD at time of entry
 }
 
 /**
@@ -82,6 +84,8 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
       refunded_entry_id: input.refunded_entry_id,
       received_at: input.received_at,
       created_by: input.created_by,
+      currency_code: input.currency_code ?? 'USD',
+      exchange_rate_to_base: input.exchange_rate_to_base ?? 1.0,
     })
     .select()
     .single()

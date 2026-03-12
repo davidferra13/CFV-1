@@ -6,6 +6,10 @@
 //
 // Sentry: wrapped with withSentryConfig at the bottom for source maps + error tracking.
 // Requires NEXT_PUBLIC_SENTRY_DSN (and optionally SENTRY_ORG / SENTRY_PROJECT) in env.
+const path = require('path')
+const createNextIntlPlugin = require('next-intl/plugin')
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
+
 let withPWA
 if (process.env.ENABLE_PWA_BUILD === '1') {
   try {
@@ -50,6 +54,18 @@ const nextConfig = {
     // `npm run typecheck` remains the explicit type-safety gate.
     ignoreBuildErrors:
       process.env.APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging',
+  },
+  webpack: (config) => {
+    // npm can leave an empty nested @react-email namespace folder under
+    // @react-email/components on Windows. Force webpack to resolve the render
+    // package from the top-level install so App Router builds do not chase a
+    // non-existent nested dist/node entrypoint.
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@react-email/render': path.resolve(__dirname, 'node_modules/@react-email/render'),
+    }
+
+    return config
   },
   // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
   // When PWA dual-pass build is active, pin to a static ID to prevent
@@ -279,5 +295,5 @@ const sentryConfig = {
 }
 
 module.exports = withSentryConfig
-  ? withSentryConfig(withPWA(nextConfig), sentryConfig)
-  : withPWA(nextConfig)
+  ? withSentryConfig(withNextIntl(withPWA(nextConfig)), sentryConfig)
+  : withNextIntl(withPWA(nextConfig))
