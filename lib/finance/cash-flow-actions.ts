@@ -22,6 +22,10 @@ export type CashFlowForecast = {
   totalProjectedInCents: number
   totalConfirmedOutCents: number
   totalProjectedOutCents: number
+  /** Running cash position per period (cumulative net from start) */
+  runningBalanceCents: number[]
+  /** First period where running balance drops below threshold, or null */
+  warningPeriod: { label: string; balanceCents: number } | null
 }
 
 export type WhatIfScenario = {
@@ -130,12 +134,32 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
     cursor = addDays(periodEnd, 1)
   }
 
+  // Compute running balance (cumulative net cash position)
+  const runningBalanceCents: number[] = []
+  let cumulative = 0
+  for (const p of periods) {
+    cumulative += p.netCents
+    runningBalanceCents.push(cumulative)
+  }
+
+  // Warning: find first period where running balance drops below $500 (50000 cents)
+  const WARNING_THRESHOLD_CENTS = 50000
+  let warningPeriod: { label: string; balanceCents: number } | null = null
+  for (let i = 0; i < periods.length; i++) {
+    if (runningBalanceCents[i] < WARNING_THRESHOLD_CENTS) {
+      warningPeriod = { label: periods[i].label, balanceCents: runningBalanceCents[i] }
+      break
+    }
+  }
+
   return {
     periods,
     totalConfirmedInCents: periods.reduce((s, p) => s + p.confirmedIncomeCents, 0),
     totalProjectedInCents: periods.reduce((s, p) => s + p.projectedIncomeCents, 0),
     totalConfirmedOutCents: periods.reduce((s, p) => s + p.confirmedExpenseCents, 0),
     totalProjectedOutCents: periods.reduce((s, p) => s + p.projectedExpenseCents, 0),
+    runningBalanceCents,
+    warningPeriod,
   }
 }
 
