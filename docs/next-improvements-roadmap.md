@@ -31,7 +31,7 @@ This is the master list of every improvement identified for the chef portal, **o
 | 2   | Recurring Events                 | Events        | Done                          |
 | 3   | Event Templates                  | Events        | Done                          |
 | 4   | Smart Auto-Fill                  | Events        | Done                          |
-| 5   | Cash Flow Forecasting            | Finance       | Not started                   |
+| 5   | Cash Flow Forecasting            | Finance       | Done (enhanced pre-existing)  |
 | 6   | Client Self-Service Portal       | Client Portal | Not started                   |
 | 7   | Offline-First for Kitchen        | Global        | Not started                   |
 | 8   | Scheduling + CRM Intelligence    | Sales         | Not started                   |
@@ -62,7 +62,7 @@ This is the master list of every improvement identified for the chef portal, **o
 | 33  | Client Year-End Summary          | Clients       | Not started                   |
 | 34  | Staff Utilization Report         | Operations    | Not started                   |
 | 35  | Webhook Triggers                 | Settings      | Not started                   |
-| 36  | Notification Triggers            | Global        | Not started                   |
+| 36  | Notification Triggers            | Global        | Done                          |
 | 37  | Financial Alerts                 | Finance       | Not started                   |
 | 38  | Operational Reminders            | Operations    | Not started                   |
 | 39  | Audit Trail Viewer               | Settings      | Not started                   |
@@ -73,7 +73,7 @@ This is the master list of every improvement identified for the chef portal, **o
 | 44  | Remy Conversation-to-Action      | Remy AI       | Not started                   |
 | 45  | Kitchen Display System (KDS)     | Commerce      | Not started                   |
 | 46  | POS Loyalty Integration          | Commerce      | Not started                   |
-| 47  | Recipe Versioning & Cost History | Culinary      | Not started                   |
+| 47  | Recipe Versioning & Cost History | Culinary      | Done                          |
 | 48  | Batch Prep Planner               | Culinary      | Not started                   |
 | 49  | Nutritional & Allergen Scoring   | Culinary      | Not started                   |
 | 50  | HACCP Food Safety Plan           | Protection    | Not started                   |
