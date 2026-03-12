@@ -196,7 +196,7 @@ export function RemyConciergeSection() {
               href="/auth/signup"
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Sign up
+              Get started
             </Link>
           </div>
         </div>
@@ -311,7 +311,7 @@ export function RemyConciergeSection() {
                 href="/auth/signup"
                 className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
               >
-                Sign up
+                Get started
               </Link>
             </div>
           )}

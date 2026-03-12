@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'ChefFlow - Ops for Artists'
+export const alt = 'ChefFlow - Chef-built back office'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -76,7 +76,7 @@ export default async function Image() {
           letterSpacing: '0.05em',
         }}
       >
-        Ops for Artists
+        Chef-built back office
       </p>
 
       {/* Subtitle */}
@@ -88,7 +88,7 @@ export default async function Image() {
           fontWeight: 400,
         }}
       >
-        Private chef business operating system
+        Built by a working chef for private chefs
       </p>
 
       {/* Bottom accent */}

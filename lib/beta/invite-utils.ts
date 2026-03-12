@@ -14,3 +14,22 @@ export function buildBetaInviteUrl(email: string, fallbackOrigin?: string | null
   const normalizedEmail = email.trim().toLowerCase()
   return `${resolveBetaInviteBaseUrl(fallbackOrigin)}/auth/signup?ref=beta&email=${encodeURIComponent(normalizedEmail)}`
 }
+
+export function buildBetaSignInUrl(
+  redirectTo = '/onboarding',
+  fallbackOrigin?: string | null
+): string {
+  return `${resolveBetaInviteBaseUrl(fallbackOrigin)}/auth/signin?redirect=${encodeURIComponent(redirectTo)}`
+}
+
+export function buildBetaOnboardingUrl(fallbackOrigin?: string | null): string {
+  return `${resolveBetaInviteBaseUrl(fallbackOrigin)}/onboarding`
+}
+
+export function buildBetaDashboardUrl(fallbackOrigin?: string | null): string {
+  return `${resolveBetaInviteBaseUrl(fallbackOrigin)}/dashboard`
+}
+
+export function buildBetaContactUrl(fallbackOrigin?: string | null): string {
+  return `${resolveBetaInviteBaseUrl(fallbackOrigin)}/contact`
+}

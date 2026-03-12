@@ -53,12 +53,12 @@ export default function CustomersPage() {
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
           <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-            Ready to build your own operating baseline?
+            Ready to steady the work behind the service?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
             {isBeta
-              ? 'Join the closed beta and help shape the product with direct feedback loops.'
-              : 'Start with a free trial and implement one consistent workflow from inquiry to payout.'}
+              ? 'Join the closed beta and help shape the workflow with direct feedback.'
+              : 'Start with a setup that keeps inquiries, menus, payments, and follow-up in one place.'}
           </p>
           <TrackedLink
             href={PRIMARY_SIGNUP_HREF}

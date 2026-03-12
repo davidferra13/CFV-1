@@ -10,10 +10,10 @@ const IS_PUBLIC_LAUNCH = LAUNCH_MODE === 'public'
 
 export const metadata: Metadata = {
   title: `Pricing - ${PLATFORM_NAME} | Free, Pro, and Scale`,
-  description: `Start free, upgrade to Pro at $${PRO_PRICE_MONTHLY}/month, or request Scale rollout support for chef-led businesses growing beyond marketplace-only operations.`,
+  description: `Compare ChefFlow plans for private chefs who want a calmer back office, cleaner client follow-through, and deeper operational support as volume grows.`,
   openGraph: {
     title: `${PLATFORM_NAME} Pricing | Free, Pro, and Scale`,
-    description: `Free core workflow + Pro automation for $${PRO_PRICE_MONTHLY}/month. Built for private chefs keeping booking demand while owning client ops and margins.`,
+    description: `Compare ChefFlow tiers for chef-led businesses replacing scattered spreadsheets, notes, and disconnected workflows.`,
     url: `${BASE_URL}/pricing`,
     siteName: PLATFORM_NAME,
     type: 'website',
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${PLATFORM_NAME} Pricing | Free + Pro`,
     description: IS_PUBLIC_LAUNCH
-      ? `Start free. Pro is $${PRO_PRICE_MONTHLY}/month with a ${PRO_TRIAL_DAYS}-day free trial.`
-      : 'Pricing preview for closed beta food businesses. Join the waitlist for early access.',
+      ? `Explore ChefFlow tiers for private chefs. Pro is $${PRO_PRICE_MONTHLY}/month with a ${PRO_TRIAL_DAYS}-day trial.`
+      : 'Pricing preview for chef-led businesses in closed beta.',
   },
   alternates: {
     canonical: `${BASE_URL}/pricing`,
@@ -37,7 +37,7 @@ const PRICING_APPLICATION_JSON_LD = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   url: `${BASE_URL}/pricing`,
-  description: `Operating platform for ${PLATFORM_AUDIENCE_LABEL}.`,
+  description: `Chef operations software for ${PLATFORM_AUDIENCE_LABEL}.`,
   offers: [
     {
       '@type': 'Offer',
@@ -45,7 +45,7 @@ const PRICING_APPLICATION_JSON_LD = {
       price: '0',
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
-      description: 'Core workflow for independent food businesses.',
+      description: 'Core workflow for chefs replacing scattered notes and spreadsheets.',
     },
     {
       '@type': 'Offer',
@@ -54,8 +54,8 @@ const PRICING_APPLICATION_JSON_LD = {
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       description: IS_PUBLIC_LAUNCH
-        ? `Automation, drafting, and growth workflows with a ${PRO_TRIAL_DAYS}-day free trial.`
-        : 'Automation, drafting, and growth workflows available during beta onboarding.',
+        ? `Automation, drafting, and deeper workflow support with a ${PRO_TRIAL_DAYS}-day trial.`
+        : 'Automation, drafting, and deeper workflow support available during beta onboarding.',
     },
   ],
 }

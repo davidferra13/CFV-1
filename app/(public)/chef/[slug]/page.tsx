@@ -114,8 +114,8 @@ export default async function ChefProfilePage({ params }: Props) {
     : null
   const featuredMenuLabel =
     chef.booking_enabled && chef.booking_model === 'instant_book'
-      ? 'Book signature menu'
-      : 'Request signature menu'
+      ? 'Reserve signature menu'
+      : 'Ask about signature menu'
   const pageBackgroundStyle = optimizedBgUrl
     ? {
         backgroundColor,
@@ -195,7 +195,7 @@ export default async function ChefProfilePage({ params }: Props) {
                   href={`/chef/${params.slug}/inquire`}
                   className="inline-flex min-w-[220px] items-center justify-center rounded-2xl border border-stone-600 bg-white/95 px-6 py-3 text-sm font-medium text-stone-900 transition-colors hover:bg-white"
                 >
-                  Start custom inquiry
+                  Plan something custom
                 </a>
               )}
               {hasWebsiteLink && (
@@ -222,11 +222,11 @@ export default async function ChefProfilePage({ params }: Props) {
               </p>
               <h2 className="mt-3 text-3xl font-semibold text-stone-100">
                 {featuredShowcase.title ||
-                  `Start with a menu ${chef.display_name} is already ready to cook`}
+                  `Start with a signature menu ${chef.display_name} already loves to cook`}
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-300">
                 {featuredShowcase.pitch ||
-                  'This is the fastest way to move from interest to booked. Start from a menu the chef already wants to sell, then customize only if needed.'}
+                  'Start from a menu the chef already wants to cook, then tailor the details to your table if you want something more custom.'}
               </p>
             </div>
 
@@ -237,10 +237,13 @@ export default async function ChefProfilePage({ params }: Props) {
               title={featuredShowcase.title || featuredMenu.name}
               description={
                 featuredShowcase.pitch ||
-                `This is a menu ${chef.display_name} is already excited to cook. If you want less back-and-forth and a faster path to booking, start here.`
+                `This is a menu ${chef.display_name} is already excited to cook. If you want a simpler path to booking, start here and customize from there if needed.`
               }
               primaryAction={{ href: featuredMenuHref, label: featuredMenuLabel }}
-              secondaryAction={{ href: `/chef/${params.slug}/inquire`, label: 'Custom inquiry' }}
+              secondaryAction={{
+                href: `/chef/${params.slug}/inquire`,
+                label: 'Plan something custom',
+              }}
             />
           </div>
         </section>
@@ -312,7 +315,7 @@ export default async function ChefProfilePage({ params }: Props) {
                       className="ml-4 flex-shrink-0 rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      Inquire
+                      Start inquiry
                     </a>
                   </div>
                 )

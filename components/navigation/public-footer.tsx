@@ -5,21 +5,20 @@ import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 import {
   PLATFORM_AUDIENCE_LABEL,
   PLATFORM_SHORT_DESCRIPTION,
+  PLATFORM_TAGLINE,
 } from '@/lib/marketing/platform-positioning'
 
 const FOOTER_LINKS = {
-  product: [
-    { href: '/', label: 'Home' },
+  overview: [
+    { href: '/', label: 'Why ChefFlow' },
     { href: '/about', label: 'About' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/contact', label: 'Contact' },
-    { href: '/chefs', label: 'Chef Directory' },
   ],
   resources: [
-    { href: '/blog', label: 'Blog' },
     { href: '/faq', label: 'FAQ' },
+    { href: '/blog', label: 'Blog' },
     { href: '/trust', label: 'Trust Center' },
-    { href: '/partner-signup', label: 'Become a Partner' },
   ],
   legal: [
     { href: '/privacy', label: 'Privacy Policy' },
@@ -30,9 +29,10 @@ const FOOTER_LINKS = {
 export function PublicFooter() {
   const year = new Date().getFullYear()
   const isBeta = LAUNCH_MODE === 'beta'
+  const primaryActionLabel = isBeta ? 'Request access' : 'Get started'
   const resourcesLinks = [
     ...FOOTER_LINKS.resources,
-    { href: PRIMARY_SIGNUP_HREF, label: isBeta ? 'Join Beta' : 'Sign up' },
+    { href: PRIMARY_SIGNUP_HREF, label: primaryActionLabel },
   ]
 
   return (
@@ -46,17 +46,18 @@ export function PublicFooter() {
             </span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-            Built for {PLATFORM_AUDIENCE_LABEL}. {PLATFORM_SHORT_DESCRIPTION}
+            Built by a working chef for {PLATFORM_AUDIENCE_LABEL} who need calmer inquiries, cleaner
+            event handoffs, and better client memory.
           </p>
           <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-500/80">
-            Ops for Artists
+            {PLATFORM_TAGLINE}
           </p>
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Product</p>
+          <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Overview</p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_LINKS.product.map((link) => (
+            {FOOTER_LINKS.overview.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -88,7 +89,8 @@ export function PublicFooter() {
         <div>
           <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Stay Updated</p>
           <p className="mt-4 mb-3 text-sm text-stone-500 dark:text-stone-400">
-            Short guides for modern food-business operations.
+            Occasional notes on pricing, client follow-through, and the operational side of doing
+            this work well.
           </p>
           <NewsletterSignup />
 

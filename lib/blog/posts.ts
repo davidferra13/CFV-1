@@ -122,7 +122,7 @@ Round to $1,500 or $185/person. Clean, fair, profitable.
 
 Tracking your actual costs on every event is the only way to know if your pricing works. After 5–10 events with real data, you'll see exactly where your margins are and where to adjust.
 
-[ChefFlow](/) tracks food costs, labor, expenses, and profit per event automatically — so you always know your real numbers. Start a free trial and see your margins on the very first event.
+[ChefFlow](/) tracks food costs, labor, expenses, and profit per event automatically — so you can see your real numbers from the first event.
 
 ---
 
@@ -189,7 +189,7 @@ Professional client management isn't extra work — it's the foundation of a sus
 
 ---
 
-*[ChefFlow](/) handles client management, event tracking, proposals, and follow-ups in one system — so nothing falls through the cracks. [Start free](/auth/signup).*
+*[ChefFlow](/) keeps inquiries, event details, proposals, and follow-ups in one place — so nothing falls through the cracks. [Get started](/auth/signup).*
 
 **Related reading:** [How to Price a Private Dinner Party](/blog/how-to-price-a-private-dinner-party) | [Private Chef Contract Guide](/blog/private-chef-contract-template-guide)
 `,

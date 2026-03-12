@@ -2,41 +2,40 @@ export const PLATFORM_NAME = 'ChefFlow'
 
 export const PLATFORM_AUDIENCE_LABEL = 'private and personal chefs'
 
-export const PLATFORM_TAGLINE = 'Ops for Artists'
+export const PLATFORM_TAGLINE = 'Chef-built back office'
 
 export const PLATFORM_META_DESCRIPTION =
-  'Software for private chefs. Track clients, send quotes, collect payments, and see your real profit after every event. Free to start.'
+  'ChefFlow is the chef-built back office for private chefs who need calmer inquiries, cleaner event handoffs, and stronger client memory.'
 
 export const PLATFORM_SHORT_DESCRIPTION =
-  'Track your clients, events, and money in one place. Works alongside whatever booking channels you already use.'
+  'Built by a working chef for private chefs who want one place for inquiries, client details, menus, approvals, and follow-up.'
 
-export const PLATFORM_HERO_HEADLINE = 'Run your business. Not just your kitchen.'
+export const PLATFORM_HERO_HEADLINE = 'The back office private chefs wish already existed.'
 
 export const PLATFORM_HERO_COPY =
-  'Track clients, events, money, and follow-ups. Stop losing repeat business to forgotten texts and messy spreadsheets.'
+  'Keep inquiries, client details, event plans, menus, approvals, and follow-up in one place so the business side feels as considered as the food.'
 
 export const PLATFORM_KEYWORDS = [
-  'private chef software',
-  'personal chef software',
-  'private chef crm',
+  'private chef workflow',
+  'private chef back office',
   'private chef client management',
-  'private chef scheduling software',
-  'private chef invoicing software',
-  'private chef profit tracking',
-  'chef client retention software',
-  'private chef bookkeeping',
-  'private chef quote software',
-  'chef event management',
-  'private chef billing',
+  'private chef booking operations',
+  'private chef follow-up system',
+  'private chef event workflow',
+  'chef inquiry management',
+  'private chef business organization',
+  'chef client memory',
+  'private chef scheduling',
+  'private chef pricing and follow through',
 ]
 
 export const PLATFORM_STRUCTURED_DATA_FEATURES = [
+  'Inquiry tracking with client context attached',
   'Client profiles with dietary notes and household details',
-  'Event tracking from inquiry to completion',
-  'Quotes, proposals, and invoicing',
-  'Recipe management and food costing',
-  'Expense tracking and real profit visibility',
-  'Client portal for approvals and updates',
-  'Calendar and scheduling',
-  'Follow-up reminders and repeat client workflows',
+  'Menu, approval, and event planning workflows',
+  'Quotes, proposals, and payments',
+  'Expense tracking and event-level margin visibility',
+  'Follow-up reminders for repeat business',
+  'Calendar and scheduling coordination',
+  'Shared record of what was promised, cooked, and delivered',
 ]

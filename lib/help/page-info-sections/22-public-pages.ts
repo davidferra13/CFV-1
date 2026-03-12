@@ -3,14 +3,14 @@ import type { PageInfoEntry } from '../page-info-types'
 export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/': {
     title: 'ChefFlow Home',
-    description: 'Welcome to ChefFlow — the operations platform for private chefs.',
-    features: ['Platform overview', 'Feature highlights', 'Sign up or sign in'],
+    description: 'Welcome to ChefFlow - the chef-built back office for private chefs.',
+    features: ['Founder-led story', 'Workflow overview', 'Get started or get in touch'],
   },
 
   '/about': {
     title: 'About ChefFlow',
     description: 'The story behind ChefFlow and who built it.',
-    features: ['Founder story', 'What ChefFlow is and is not', 'Sign up or get in touch'],
+    features: ['Founder story', 'What ChefFlow is and is not', 'Get started or get in touch'],
   },
 
   '/chefs': {
@@ -27,8 +27,8 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/pricing': {
     title: 'Pricing',
-    description: 'ChefFlow pricing plans — free and professional tiers.',
-    features: ['Plan comparison', 'Feature lists', 'Upgrade options'],
+    description: 'ChefFlow plan options for private chefs.',
+    features: ['Plan comparison', 'Workflow details', 'Upgrade options'],
   },
 
   '/privacy': {
@@ -45,7 +45,7 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/chef/[slug]': {
     title: 'Chef Profile',
-    description: "A chef's public profile — portfolio, specialties, and booking information.",
+    description: "A chef's public profile - portfolio, specialties, and booking information.",
     features: ['Chef bio and portfolio', 'Specialty areas', 'Inquiry form', 'Gift card purchase'],
   },
 
@@ -69,13 +69,13 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/chef/[slug]/partner-signup': {
     title: 'Become a Partner',
-    description: 'Sign up as a referral partner for this chef.',
+    description: 'Apply as a referral partner for this chef.',
     features: ['Partner application form', 'Partnership benefits', 'Location setup'],
   },
 
   '/share/[token]': {
     title: 'Event Recap',
-    description: 'Shared event recap — photos, menu, and highlights from a recent event.',
+    description: 'Shared event recap - photos, menu, and highlights from a recent event.',
     features: ['Event photos', 'Menu served', 'Event highlights'],
   },
 
@@ -111,7 +111,7 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/partner-signup': {
     title: 'Partner Signup',
-    description: 'Sign up as a referral partner for ChefFlow.',
+    description: 'Apply as a referral partner for ChefFlow.',
     features: ['Application form', 'Partnership details', 'Location setup'],
   },
 

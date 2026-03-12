@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -39,9 +39,9 @@ const FAQ_ITEMS = [
 ]
 
 export const metadata: Metadata = {
-  title: 'ChefFlow FAQ | Private Chef Software Questions',
+  title: 'ChefFlow FAQ | Questions from Private Chefs',
   description:
-    'Answers to common questions about ChefFlow pricing, implementation, migration, and operations for private chefs.',
+    'Straight answers about workflow fit, migration, pricing, trust, and what ChefFlow is built to do.',
   openGraph: {
     title: 'ChefFlow FAQ',
     description:
@@ -57,6 +57,7 @@ export const metadata: Metadata = {
 
 export default function FaqPage() {
   const isBeta = LAUNCH_MODE === 'beta'
+  const primaryActionLabel = isBeta ? 'Request access' : 'Get started'
   const faqStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -85,10 +86,11 @@ export default function FaqPage() {
             FAQ
           </p>
           <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-900 dark:text-stone-100 md:text-6xl">
-            Common questions from private chef operators.
+            Questions private chefs usually ask before they commit.
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-600 dark:text-stone-300 md:text-lg">
-            Straight answers on setup, workflow fit, migration, and security expectations.
+            Straight answers on fit, migration, pricing, trust, and what the workflow actually feels
+            like.
           </p>
         </div>
       </section>
@@ -114,19 +116,20 @@ export default function FaqPage() {
       <section className="border-y border-stone-200 dark:border-stone-700/50 bg-stone-50/40 dark:bg-stone-900/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
           <h2 className="text-3xl font-display tracking-tight text-stone-900 dark:text-stone-100 md:text-4xl">
-            Ready to test the workflow in your own operation?
+            Want to talk through your workflow?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-600 dark:text-stone-300">
-            Start with one lifecycle and measure your response times, handoffs, and margin clarity.
+            Send a note if you want a direct answer about fit, migration, or where to start instead
+            of trying to read between the lines.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
-              href="/trust"
-              analyticsName="faq_trust_link"
+              href="/contact"
+              analyticsName="faq_contact_link"
               analyticsProps={{ section: 'faq_bottom' }}
               className="inline-flex items-center rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-7 py-3 text-sm font-semibold text-stone-900 dark:text-stone-200 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800"
             >
-              Review trust center
+              Talk to David
             </TrackedLink>
             <TrackedLink
               href={PRIMARY_SIGNUP_HREF}
@@ -134,7 +137,7 @@ export default function FaqPage() {
               analyticsProps={{ launch_mode: LAUNCH_MODE, section: 'faq_bottom' }}
               className="inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
             >
-              {isBeta ? 'Join beta waitlist' : PRIMARY_SIGNUP_LABEL}
+              {primaryActionLabel}
             </TrackedLink>
           </div>
         </div>

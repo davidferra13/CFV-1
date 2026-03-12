@@ -4,12 +4,30 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
-import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
+import { BetaPendingReviewEmail } from '@/lib/email/templates/beta-pending-review'
 import { BetaInviteEmail } from '@/lib/email/templates/beta-invite'
+import { BetaDeclinedEmail } from '@/lib/email/templates/beta-declined'
+import { BetaOnboardingReminderEmail } from '@/lib/email/templates/beta-onboarding-reminder'
+import { BetaOnboardingCompleteEmail } from '@/lib/email/templates/beta-onboarding-complete'
 import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
 import { getAdminNotificationRecipients, resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { createNotification } from '@/lib/notifications/actions'
-import { buildBetaInviteUrl } from './invite-utils'
+import {
+  buildBetaOnboardingUrl,
+  buildBetaDashboardUrl,
+  buildBetaInviteUrl,
+  buildBetaSignInUrl,
+} from './invite-utils'
+import {
+  buildBetaOnboardingTrackerItems,
+  formatBetaSignupTrackerStage,
+  getBetaOnboardingProgressForChef,
+  getBetaSignupByEmail,
+  type BetaSignupLifecycleEmailType,
+  type BetaSignupRecord,
+  type BetaSignupTrackerRow,
+  upsertBetaSignupTracker,
+} from './signup-tracker'
 
 export interface BetaSignupInput {
   name: string
@@ -26,12 +44,15 @@ type BetaOnboardingLinkInput = {
   email: string
   name?: string
   source?: string
+  chefId?: string
+  authUserId?: string
 }
 
 type BetaSignupStatus = 'pending' | 'invited' | 'onboarded' | 'declined'
 
 type UpdateBetaSignupStatusOptions = {
-  sendInviteEmail?: boolean
+  sendStatusEmail?: boolean
+  refreshStatusTimestamp?: boolean
 }
 
 export type UpdateBetaSignupStatusResult = {
@@ -43,7 +64,12 @@ export type UpdateBetaSignupStatusResult = {
     notes: string | null
     invitedAt: string | null
     onboardedAt: string | null
+    tracker: BetaSignupTrackerRow | null
   }
+}
+
+export type BetaSignupAdminRow = BetaSignupRecord & {
+  tracker: BetaSignupTrackerRow | null
 }
 
 const ADMIN_NOTIFICATION_RECIPIENTS = getAdminNotificationRecipients()
@@ -67,6 +93,68 @@ function checkRateLimit(ip: string): boolean {
     }
   }
   return bucket.count <= RATE_LIMIT_MAX
+}
+
+function normalizeSignupTracker(row: any): BetaSignupTrackerRow | null {
+  if (!row) return null
+  if (Array.isArray(row)) return (row[0] as BetaSignupTrackerRow) ?? null
+  return row as BetaSignupTrackerRow
+}
+
+function normalizeBetaSignupAdminRow(row: any): BetaSignupAdminRow {
+  return {
+    ...(row as BetaSignupRecord),
+    tracker: normalizeSignupTracker(row?.beta_signup_trackers),
+  }
+}
+
+async function sendLifecycleEmailForSignup(
+  signup: BetaSignupRecord,
+  emailType: BetaSignupLifecycleEmailType
+) {
+  switch (emailType) {
+    case 'pending_review':
+      return sendEmail({
+        to: signup.email,
+        subject: 'ChefFlow beta application received',
+        react: BetaPendingReviewEmail({
+          name: signup.name,
+          email: signup.email,
+          phone: signup.phone,
+          businessName: signup.business_name,
+          cuisineType: signup.cuisine_type,
+          yearsInBusiness: signup.years_in_business,
+          referralSource: signup.referral_source,
+        }),
+      })
+    case 'invited':
+      return sendEmail({
+        to: signup.email,
+        subject: 'Your ChefFlow beta invite is ready',
+        react: BetaInviteEmail({
+          name: signup.name?.trim() || signup.email.split('@')[0] || 'there',
+          inviteUrl: buildBetaInviteUrl(signup.email),
+          invitedAt: signup.invited_at,
+          businessName: signup.business_name,
+          email: signup.email,
+        }),
+      })
+    case 'declined':
+      return sendEmail({
+        to: signup.email,
+        subject: 'Update on your ChefFlow beta application',
+        react: BetaDeclinedEmail({
+          name: signup.name?.trim() || signup.email.split('@')[0] || 'there',
+          email: signup.email,
+          businessName: signup.business_name,
+        }),
+      })
+    default:
+      return {
+        success: false,
+        error: `Unsupported lifecycle email type: ${emailType}`,
+      }
+  }
 }
 
 /**

@@ -58,7 +58,7 @@ export default async function BetaSignupPage() {
 
       <div className="mt-8 text-center space-y-2">
         <p className="text-sm text-stone-500">
-          No credit card required. We will email you when your spot is ready.
+          No payment details needed. We will email you when your spot is ready.
         </p>
         <p className="text-xs text-stone-400">
           Your information is never shared. Read our{' '}

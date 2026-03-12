@@ -118,32 +118,32 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'free',
     name: 'Free',
-    tag: 'Start here',
+    tag: 'Steady foundation',
     price: '$0',
     cadence: 'forever',
-    summary: 'Everything you need to track clients, events, and money. Free forever.',
-    ctaLabel: 'Start Free',
+    summary: 'Core workflow for inquiries, events, menus, invoices, and payments.',
+    ctaLabel: 'Get started',
     ctaHref: '/auth/signup',
     points: [
       'Track inquiries, events, clients, recipes, and payments',
       'Unlimited records, no usage caps',
       'Client portal, booking pages, invoices, and payment collection',
-      'No credit card required',
+      'No payment details needed',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    tag: 'Most popular',
+    tag: 'For busy calendars',
     price: `$${PRO_PRICE_MONTHLY}`,
     cadence: 'per month',
-    badge: `${PRO_TRIAL_DAYS}-day free trial`,
-    summary: 'Save hours on admin. Email drafts, reports, and marketing tools.',
-    ctaLabel: 'Start Pro Trial',
+    badge: `Try Pro for ${PRO_TRIAL_DAYS} days`,
+    summary: 'Extra drafting, reporting, and outreach tools when the volume picks up.',
+    ctaLabel: 'Try Pro',
     ctaHref: '/auth/signup',
     highlighted: true,
     points: [
-      'Everything in Free, plus Remy (your AI admin assistant)',
+      'Everything in Free, plus Remy support for drafts and quick lookups',
       'Marketing campaigns, custom reports, and client insights',
       'Connect to tools you already use (Zapier, external systems)',
       'Best for chefs running frequent events or growing their client base',
@@ -225,7 +225,7 @@ export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
     label: 'What Pro adds',
     rows: [
       {
-        capability: 'Remy (AI admin assistant)',
+        capability: 'Remy support',
         detail:
           'Email drafts, profit breakdowns, client lookups. You review everything before it sends.',
         values: {
@@ -290,12 +290,12 @@ export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
 
 export const PRICING_FAQS = [
   {
-    question: 'Do I need a credit card to start?',
-    answer: 'No. Free is free. No card, no catch.',
+    question: 'Do I need payment details to start?',
+    answer: 'No. You can start on Free without entering a card.',
   },
   {
     question: 'What happens after the Pro trial ends?',
-    answer: `After ${PRO_TRIAL_DAYS} days, Pro continues at $${PRO_PRICE_MONTHLY}/month. You can cancel anytime before that and keep using the free tier.`,
+    answer: `After ${PRO_TRIAL_DAYS} days, Pro continues at $${PRO_PRICE_MONTHLY}/month. You can cancel anytime before that and move back to Free.`,
   },
   {
     question: 'Can I switch between Free and Pro?',

@@ -119,26 +119,33 @@ export default async function BookingPage({
   const eventTypes = await getEventTypes(chef.id)
   const hasEventTypes = eventTypes.length > 0 && !selectedMenu
   const chefName = chef.business_name || 'Private Chef'
+  const isInstantBook = bookingConfig.bookingModel === 'instant_book'
+  const introTitle =
+    selectedMenuShowcase?.title ||
+    chef.booking_headline ||
+    (isInstantBook ? 'Reserve a date directly.' : 'Plan your gathering.')
+  const introCopy =
+    selectedMenuShowcase?.pitch ||
+    chef.booking_bio_short ||
+    (isInstantBook
+      ? 'Choose a date, share the event details, and pay the deposit to hold the booking.'
+      : 'Choose a date, share the essentials, and the chef will follow up with next steps.')
 
   return (
-    <div className="min-h-screen bg-stone-900">
-      <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
-        {/* Chef Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-stone-100">{chefName}</h1>
-          {(selectedMenuShowcase?.title || chef.booking_headline) && (
-            <p className="text-lg text-stone-400">
-              {selectedMenuShowcase?.title || chef.booking_headline}
-            </p>
-          )}
-          {(selectedMenuShowcase?.pitch || chef.booking_bio_short) && (
-            <p className="text-sm text-stone-500 max-w-md mx-auto">
-              {selectedMenuShowcase?.pitch || chef.booking_bio_short}
-            </p>
-          )}
+    <div className="min-h-screen bg-[linear-gradient(180deg,_#fffdf9_0%,_#fff4e8_100%)]">
+      <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
+        <div className="mb-8 text-center">
+          <p className="inline-flex rounded-full border border-brand-200 bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-700 shadow-sm">
+            Private chef booking
+          </p>
+          <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-900 md:text-5xl">
+            {chefName}
+          </h1>
+          <p className="mt-4 text-lg text-stone-700">{introTitle}</p>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-stone-600">{introCopy}</p>
         </div>
 
-        <div className="bg-stone-800 rounded-xl border border-stone-700 p-6 shadow-lg">
+        <div className="rounded-[28px] border border-stone-700 bg-stone-900/95 p-5 shadow-[0_24px_80px_rgba(28,25,23,0.24)] md:p-6">
           {hasEventTypes ? (
             <BookingFlow
               chefSlug={params.chefSlug}
@@ -156,14 +163,13 @@ export default async function BookingPage({
           )}
         </div>
 
-        {/* Powered by ChefFlow */}
-        <p className="text-center text-xs text-stone-600">
-          Powered by{' '}
+        <p className="mt-6 text-center text-xs text-stone-500">
+          Booking experience powered by{' '}
           <a
             href="https://cheflowhq.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-stone-500 hover:text-stone-400 transition-colors"
+            className="text-stone-700 transition-colors hover:text-stone-900"
           >
             ChefFlow
           </a>

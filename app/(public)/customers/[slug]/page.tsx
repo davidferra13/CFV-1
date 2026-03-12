@@ -150,12 +150,12 @@ export default function CustomerStoryPage({ params }: Props) {
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-4xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
           <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-            Build your own baseline next.
+            Build a steadier back office next.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
             {isBeta
-              ? 'Join the beta waitlist and help prioritize the next operating workflows.'
-              : 'Start your trial and run the same inquiry-to-payout discipline in your business.'}
+              ? 'Join the beta waitlist and help prioritize the next workflow improvements.'
+              : 'Set up the same inquiry, menu, payment, and follow-through discipline in your business.'}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink

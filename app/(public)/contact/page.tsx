@@ -105,11 +105,11 @@ export default function ContactPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-4">
-            Questions? Let&apos;s talk.
+            Let&apos;s talk through the work.
           </h1>
           <p className="text-lg md:text-xl text-stone-600 dark:text-stone-300">
-            I&apos;m David, the chef who built ChefFlow. Ask me anything about the product, pricing,
-            or how it fits your workflow.
+            I&apos;m David, the chef who built ChefFlow. If you want to know whether it fits your
+            kind of clients, calendar, and workflow, send a note.
           </p>
         </div>
       </section>

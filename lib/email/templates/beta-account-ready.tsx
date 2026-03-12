@@ -1,90 +1,110 @@
-// Beta Account Ready Email
-// Sent when a beta user finishes account creation.
-
-import { Button, Link, Text } from '@react-email/components'
+import { Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import {
+  BetaBodyText,
+  BetaDetailsTable,
+  BetaLifecycleLayout,
+  BetaSectionCard,
+  BetaTimeline,
+  BetaTrackerCard,
+  type BetaDetailItem,
+  type BetaTrackerItem,
+} from './beta-email-kit'
 
 type BetaAccountReadyEmailProps = {
   name: string
   signInUrl: string
-  brand?: ChefBrandProps
+  onboardingUrl: string
+  stageLabel: string
+  progressPercent: number
+  nextAction: string
+  trackerItems: BetaTrackerItem[]
+  businessName?: string | null
+  email?: string | null
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+export function BetaAccountReadyEmail({
+  name,
+  signInUrl,
+  onboardingUrl,
+  stageLabel,
+  progressPercent,
+  nextAction,
+  trackerItems,
+  businessName,
+  email,
+}: BetaAccountReadyEmailProps) {
+  const details: BetaDetailItem[] = [
+    { label: 'Account email', value: email || 'The email used for signup' },
+    { label: 'Business', value: businessName || 'Can be finalized during onboarding' },
+    { label: 'Current stage', value: stageLabel },
+    { label: 'Next best step', value: nextAction },
+  ]
 
-export function BetaAccountReadyEmail({ name, signInUrl }: BetaAccountReadyEmailProps) {
   return (
-    <BaseLayout brand={brand} preview="Your ChefFlow beta account is ready.">
-      <Text style={heading}>Your beta account is live.</Text>
-      <Text style={paragraph}>Hi {name},</Text>
-      <Text style={paragraph}>
-        You are officially in. Your ChefFlow beta account has been created and is ready for
-        onboarding.
-      </Text>
+    <BetaLifecycleLayout
+      preview="Your ChefFlow beta account is live. Sign in and continue onboarding."
+      statusLabel="Account Ready"
+      statusTone="success"
+      headline="Your beta account is live."
+      intro={`Hi ${name}, your ChefFlow account has been created successfully. You can sign in now and move directly into onboarding.`}
+      action={{ label: 'Sign in and start onboarding', href: signInUrl }}
+      footerReason="You are receiving this because your ChefFlow beta account was created."
+    >
+      <BetaTrackerCard
+        stageLabel={stageLabel}
+        progressPercent={progressPercent}
+        nextAction={nextAction}
+        items={trackerItems}
+      />
 
-      <Button style={button} href={signInUrl}>
-        Sign in and start onboarding
-      </Button>
+      <BetaSectionCard title="Your first session plan" eyebrow="Recommended Flow">
+        <BetaTimeline
+          items={[
+            {
+              title: 'Enter the launch wizard',
+              detail:
+                'Complete the core five-step launch path so your profile, URL, and payout rails are usable.',
+            },
+            {
+              title: 'Continue into the setup hub',
+              detail:
+                'Use the setup hub to import clients, build recipes, configure loyalty, and add staff.',
+            },
+            {
+              title: 'Start with one real workflow',
+              detail:
+                'Do not try to configure everything at once. Get the first operating workflow live, then expand.',
+            },
+          ]}
+        />
+      </BetaSectionCard>
 
-      <Text style={paragraph}>
-        As a beta member, you get early access and direct feedback priority while we keep improving
-        the product with you.
-      </Text>
+      <BetaSectionCard title="Access summary" eyebrow="Account Snapshot">
+        <BetaDetailsTable rows={details} />
+      </BetaSectionCard>
 
-      <Text style={note}>
-        If you did not create this account, please contact us at{' '}
-        <Link href="mailto:info@cheflowhq.com" style={link}>
-          info@cheflowhq.com
-        </Link>
-        .
-      </Text>
-      <Text style={note}>
-        Learn more at{' '}
-        <Link href={SITE_URL} style={link}>
-          cheflowhq.com
-        </Link>
-        .
-      </Text>
-    </BaseLayout>
+      <BetaSectionCard title="Direct links" eyebrow="Use whichever path is fastest">
+        <BetaBodyText>
+          Sign in directly:{' '}
+          <Link href={signInUrl} style={link}>
+            {signInUrl}
+          </Link>
+        </BetaBodyText>
+        <BetaBodyText>
+          Open onboarding:{' '}
+          <Link href={onboardingUrl} style={link}>
+            {onboardingUrl}
+          </Link>
+        </BetaBodyText>
+      </BetaSectionCard>
+    </BetaLifecycleLayout>
   )
 }
 
-const heading = {
-  fontSize: '24px',
-  fontWeight: '600' as const,
-  color: '#18181b',
-  margin: '0 0 16px',
-}
-
-const paragraph = {
-  fontSize: '15px',
-  lineHeight: '1.6',
-  color: '#374151',
-  margin: '0 0 16px',
-}
-
-const button = {
-  backgroundColor: '#18181b',
-  color: '#ffffff',
-  padding: '12px 24px',
-  borderRadius: '6px',
-  fontSize: '15px',
-  fontWeight: '600' as const,
-  textDecoration: 'none',
-  display: 'inline-block' as const,
-  marginBottom: '24px',
-}
-
-const note = {
-  fontSize: '13px',
-  lineHeight: '1.6',
-  color: '#6b7280',
-  margin: '0 0 10px',
-}
-
 const link = {
-  color: '#e88f47',
-  textDecoration: 'none',
-  fontWeight: '600' as const,
+  color: '#b8642b',
+  textDecoration: 'underline',
+  fontWeight: '700' as const,
+  wordBreak: 'break-all' as const,
 }

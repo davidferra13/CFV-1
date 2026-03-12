@@ -1,89 +1,135 @@
-import { Button, Link, Text } from '@react-email/components'
+import { Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import {
+  BetaBodyText,
+  BetaDetailsTable,
+  BetaLifecycleLayout,
+  BetaSectionCard,
+  BetaTimeline,
+  BetaTrackerCard,
+  type BetaDetailItem,
+  type BetaTrackerItem,
+} from './beta-email-kit'
 
 type BetaInviteEmailProps = {
   name: string
   inviteUrl: string
-  brand?: ChefBrandProps
+  invitedAt?: string | null
+  businessName?: string | null
+  email?: string | null
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+export function BetaInviteEmail({
+  name,
+  inviteUrl,
+  invitedAt,
+  businessName,
+  email,
+}: BetaInviteEmailProps) {
+  const trackerItems: BetaTrackerItem[] = [
+    {
+      label: 'Create your account',
+      detail: 'Use the invite link below. Your email is pre-filled so setup moves faster.',
+      state: 'active',
+    },
+    {
+      label: 'Start the launch wizard',
+      detail: 'Complete the five-step onboarding wizard for profile, branding, URL, and payouts.',
+      state: 'upcoming',
+    },
+    {
+      label: 'Finish the setup hub',
+      detail: 'Import clients, recipes, loyalty, and staff when they matter to your operation.',
+      state: 'upcoming',
+    },
+    {
+      label: 'Activate your workspace',
+      detail: 'Once setup is complete, you will move into the live dashboard and full workflows.',
+      state: 'upcoming',
+    },
+  ]
 
-export function BetaInviteEmail({ name, inviteUrl, brand }: BetaInviteEmailProps) {
+  const details: BetaDetailItem[] = [
+    { label: 'Invite email', value: email || 'Pre-filled from your request' },
+    { label: 'Business', value: businessName || 'Will be confirmed during setup' },
+    {
+      label: 'Invite issued',
+      value: invitedAt ? new Date(invitedAt).toLocaleString('en-US') : 'Just now',
+    },
+    { label: 'Onboarding path', value: 'Account creation -> Launch wizard -> Setup hub' },
+  ]
+
   return (
-    <BaseLayout
-      brand={brand}
-      preview="Your ChefFlow beta invite is ready. Create your account to get started."
+    <BetaLifecycleLayout
+      preview="Your ChefFlow beta invite is ready. Create your account and start onboarding."
+      statusLabel="Invited"
+      statusTone="active"
+      headline="Your ChefFlow beta invite is ready."
+      intro={`Hi ${name}, your spot is open. Use the invitation below to create your ChefFlow account and move straight into onboarding.`}
+      action={{ label: 'Create my beta account', href: inviteUrl }}
+      footerReason="You are receiving this because your ChefFlow beta application was approved."
     >
-      <Text style={heading}>Your beta invite is ready.</Text>
-      <Text style={paragraph}>Hi {name},</Text>
-      <Text style={paragraph}>
-        A spot has opened for you in the ChefFlow beta. Use the link below to create your account
-        and start onboarding.
-      </Text>
+      <BetaTrackerCard
+        stageLabel="Account Creation"
+        progressPercent={35}
+        nextAction="Create your account from this invite to unlock the onboarding wizard and launch your workspace."
+        items={trackerItems}
+      />
 
-      <Button style={button} href={inviteUrl}>
-        Create my beta account
-      </Button>
+      <BetaSectionCard title="What happens after signup" eyebrow="Launch Sequence">
+        <BetaTimeline
+          items={[
+            {
+              title: 'Create your account',
+              detail:
+                'Your invite link carries the beta context and pre-fills your email to reduce friction.',
+            },
+            {
+              title: 'Complete the launch wizard',
+              detail:
+                'You will set your profile, brand the portal, claim your URL, and connect payouts.',
+            },
+            {
+              title: 'Move into the setup hub',
+              detail:
+                'From there, you can import clients, build recipes, turn on loyalty, and add staff.',
+            },
+          ]}
+        />
+      </BetaSectionCard>
 
-      <Text style={paragraph}>
-        This link pre-fills your email so you can get moving quickly. Once your account is created,
-        you&apos;ll land in onboarding and can start setting up your workflow right away.
-      </Text>
+      <BetaSectionCard title="What to have ready" eyebrow="Before You Start">
+        <BetaBodyText>
+          The best first session happens when you already know the business name you want visible,
+          your public-facing chef name, your first workflow priority, and whether you want to set up
+          payouts immediately.
+        </BetaBodyText>
+        <BetaBodyText>
+          You do not need to finish every setup step in one sitting, but getting through the launch
+          wizard in your first pass is the fastest way to unlock value.
+        </BetaBodyText>
+      </BetaSectionCard>
 
-      <Text style={note}>
-        If the button doesn&apos;t work, copy and paste this link into your browser:{' '}
-        <Link href={inviteUrl} style={link}>
-          {inviteUrl}
-        </Link>
-      </Text>
-      <Text style={note}>
-        Need context first? Learn more at{' '}
-        <Link href={SITE_URL} style={link}>
-          cheflowhq.com
-        </Link>
-        .
-      </Text>
-    </BaseLayout>
+      <BetaSectionCard title="Your access details" eyebrow="Invite Snapshot">
+        <BetaDetailsTable rows={details} />
+      </BetaSectionCard>
+
+      <BetaSectionCard title="Fallback access" eyebrow="If the button does not work">
+        <BetaBodyText>
+          Copy and paste this link into your browser:
+          <br />
+          <Link href={inviteUrl} style={link}>
+            {inviteUrl}
+          </Link>
+        </BetaBodyText>
+      </BetaSectionCard>
+    </BetaLifecycleLayout>
   )
 }
 
-const heading = {
-  fontSize: '24px',
-  fontWeight: '600' as const,
-  color: '#18181b',
-  margin: '0 0 16px',
-}
-
-const paragraph = {
-  fontSize: '15px',
-  lineHeight: '1.6',
-  color: '#374151',
-  margin: '0 0 16px',
-}
-
-const button = {
-  backgroundColor: '#18181b',
-  color: '#ffffff',
-  padding: '12px 24px',
-  borderRadius: '6px',
-  fontSize: '15px',
-  fontWeight: '600' as const,
-  textDecoration: 'none',
-  display: 'inline-block' as const,
-  marginBottom: '24px',
-}
-
-const note = {
-  fontSize: '13px',
-  lineHeight: '1.6',
-  color: '#6b7280',
-  margin: '0 0 10px',
-}
-
 const link = {
-  color: '#e88f47',
-  textDecoration: 'none',
-  fontWeight: '600' as const,
+  color: '#b8642b',
+  textDecoration: 'underline',
+  fontWeight: '700' as const,
+  wordBreak: 'break-all' as const,
 }

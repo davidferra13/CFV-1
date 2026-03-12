@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -46,11 +46,10 @@ const TRUST_SECTIONS = [
 export const metadata: Metadata = {
   title: 'Trust Center | ChefFlow',
   description:
-    'Security baseline, data handling practices, directory standards, and support commitments for ChefFlow.',
+    'Plain-language security, privacy, data handling, and support information for ChefFlow.',
   openGraph: {
     title: 'ChefFlow Trust Center',
-    description:
-      'Review security, privacy, and operational trust details before adopting ChefFlow.',
+    description: 'Review ChefFlow security, privacy, support, and data-handling commitments.',
     url: `${BASE_URL}/trust`,
     siteName: 'ChefFlow',
     type: 'website',
@@ -62,12 +61,13 @@ export const metadata: Metadata = {
 
 export default function TrustPage() {
   const isBeta = LAUNCH_MODE === 'beta'
+  const primaryActionLabel = isBeta ? 'Request access' : 'Get started'
   const trustStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'ChefFlow Trust Center',
     description:
-      'Security baseline, data handling practices, directory standards, and support commitments for ChefFlow.',
+      'Plain-language security, privacy, data handling, and support information for ChefFlow.',
     url: `${BASE_URL}/trust`,
     publisher: {
       '@type': 'Organization',
@@ -89,11 +89,11 @@ export default function TrustPage() {
             Trust Center
           </p>
           <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-900 dark:text-stone-100">
-            Security and reliability expectations, clearly stated.
+            Security, privacy, and support in plain language.
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-600 dark:text-stone-300 md:text-lg">
-            This page is the practical baseline: what is protected, how data is handled, and where
-            to escalate issues.
+            This page is the practical baseline: what is protected, how data is handled, and how to
+            reach a human when something matters.
           </p>
         </div>
       </section>
@@ -160,21 +160,31 @@ export default function TrustPage() {
       <section className="border-y border-stone-200 dark:border-stone-700/50 bg-stone-50/40 dark:bg-stone-900/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
           <h2 className="fluid-display-lg font-display tracking-tight text-stone-900 dark:text-stone-100">
-            Want to test these workflows in your own operation?
+            Need a direct answer before you trust us with your workflow?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-600 dark:text-stone-300">
             {isBeta
-              ? 'Join the beta waitlist and work directly with product during onboarding.'
-              : 'Start a trial and validate inquiry, event, and payout workflows end-to-end.'}
+              ? 'Talk with David about the beta, the way data is handled, and what onboarding looks like.'
+              : 'Talk with David directly or start an account when you are ready.'}
           </p>
-          <TrackedLink
-            href={PRIMARY_SIGNUP_HREF}
-            analyticsName="trust_primary_cta"
-            analyticsProps={{ launch_mode: LAUNCH_MODE }}
-            className="mt-8 inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            {PRIMARY_SIGNUP_LABEL}
-          </TrackedLink>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <TrackedLink
+              href="/contact"
+              analyticsName="trust_contact_cta"
+              analyticsProps={{ section: 'trust_bottom' }}
+              className="inline-flex items-center rounded-lg border border-stone-300 bg-white px-7 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+            >
+              Talk to David
+            </TrackedLink>
+            <TrackedLink
+              href={PRIMARY_SIGNUP_HREF}
+              analyticsName="trust_primary_cta"
+              analyticsProps={{ launch_mode: LAUNCH_MODE }}
+              className="inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              {primaryActionLabel}
+            </TrackedLink>
+          </div>
         </div>
       </section>
     </div>

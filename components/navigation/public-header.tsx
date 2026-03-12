@@ -10,10 +10,9 @@ import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Home' },
+  { href: '/', label: 'Why ChefFlow' },
   { href: '/about', label: 'About' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/blog', label: 'Blog' },
+  { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
 ]
 
@@ -22,6 +21,7 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const isBeta = LAUNCH_MODE === 'beta'
+  const primaryActionLabel = isBeta ? 'Request access' : 'Get started'
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12)
@@ -85,7 +85,7 @@ export function PublicHeader() {
             analyticsProps={{ section: 'public_header' }}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
           >
-            {isBeta ? 'Join Beta' : 'Sign up'}
+            {primaryActionLabel}
           </TrackedLink>
         </div>
 
@@ -140,7 +140,7 @@ export function PublicHeader() {
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              {isBeta ? 'Join Beta' : 'Sign up'}
+              {primaryActionLabel}
             </TrackedLink>
           </div>
         </div>

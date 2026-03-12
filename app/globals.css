@@ -207,7 +207,6 @@ html {
   /* Text link — distinct from button orange (lighter, with underline on hover) */
   /* Public pages default to readable light-surface text unless a view opts into a dark shell. */
   .public-shell {
-    background-color: #ffffff;
     color: #1c1917;
   }
 

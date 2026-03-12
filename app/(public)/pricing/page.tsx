@@ -49,26 +49,25 @@ function ComparisonPill({ cell }: { cell: ComparisonCell }) {
 
 export default function PricingPage() {
   const isBeta = LAUNCH_MODE === 'beta'
+  const primaryActionLabel = isBeta ? 'Request access' : 'Get started'
 
   return (
     <div>
-      {/* Hero */}
       <section className="relative overflow-hidden border-b border-stone-200 dark:border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[780px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px] hidden dark:block" />
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="fluid-display-xl font-display tracking-tight text-stone-900 dark:text-stone-100">
-              Simple pricing. Start free.
+              Plans that grow with your practice.
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-stone-600 dark:text-stone-300 md:text-lg">
-              Everything you need to track clients, events, and money is free. Upgrade when you want
-              help with the admin work.
+              Start with the essential workflow. Upgrade when you want deeper automation, drafting,
+              and support for a busier calendar.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Plan cards */}
       <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid gap-5 lg:grid-cols-3">
           {PRICING_PLANS.map((plan, index) => (
@@ -127,7 +126,7 @@ export default function PricingPage() {
                       : 'border border-stone-300 bg-white text-stone-900 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800'
                   }`}
                 >
-                  {isBeta ? 'Join beta waitlist' : plan.ctaLabel}
+                  {isBeta ? 'Request beta access' : plan.ctaLabel}
                   <ArrowRight className="h-4 w-4" />
                 </TrackedLink>
                 {plan.finePrint && (
@@ -141,11 +140,10 @@ export default function PricingPage() {
         </div>
         <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs text-stone-500 dark:text-[var(--text-muted-soft)]">
           <ShieldCheck className="h-3.5 w-3.5 text-brand-600 dark:text-brand-300" />
-          Same product on every plan. Free and paid use the exact same app.
+          Start lean. Move up only when the workflow earns its keep.
         </p>
       </section>
 
-      {/* Feature comparison - hidden on mobile, shown on desktop */}
       <section className="container mx-auto hidden px-4 pb-14 md:block md:pb-20">
         <h2 className="text-center text-2xl font-display text-stone-900 dark:text-stone-100 md:text-3xl">
           Full feature comparison
@@ -200,7 +198,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ + Final CTA */}
       <section className="border-t border-stone-200 bg-stone-50/40 dark:border-stone-700/50 dark:bg-stone-900/40">
         <div className="container mx-auto px-4 py-14 md:py-20">
           <div className="mx-auto max-w-3xl">
@@ -226,10 +223,13 @@ export default function PricingPage() {
 
           <div className="mt-14 text-center">
             <h2 className="text-2xl font-display tracking-tight text-stone-900 dark:text-stone-100 md:text-3xl">
-              {isBeta ? 'Join the beta.' : 'Start free today.'}
+              {isBeta
+                ? 'Choose the level of support you want from day one.'
+                : 'Choose the plan that matches how you work right now.'}
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-stone-600 dark:text-stone-300">
-              No credit card required. Cancel anytime.
+              Talk directly with David if you want help deciding where to begin, what to migrate
+              first, and when an upgrade actually makes sense.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <TrackedLink
@@ -238,7 +238,7 @@ export default function PricingPage() {
                 analyticsProps={{ section: 'pricing_bottom_cta' }}
                 className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               >
-                {isBeta ? 'Join beta waitlist' : 'Start Free'}
+                {primaryActionLabel}
               </TrackedLink>
               <TrackedLink
                 href="/contact"
@@ -246,7 +246,7 @@ export default function PricingPage() {
                 analyticsProps={{ section: 'pricing_bottom_cta' }}
                 className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
               >
-                Talk to the founder
+                Talk to David
               </TrackedLink>
             </div>
           </div>

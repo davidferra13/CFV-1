@@ -13,7 +13,7 @@ type InviteChefCardProps = {
 }
 
 /**
- * "Invite a Chef" card — shows a shareable referral link.
+ * "Invite a Chef" card - shows a shareable referral link.
  * Can be placed on the dashboard, settings, or anywhere in the chef app.
  * Uses the chef's public profile link as the share URL when available,
  * falls back to the main site URL.
@@ -23,8 +23,8 @@ export function InviteChefCard({ chefSlug, chefName }: InviteChefCardProps) {
 
   const referralUrl = `${SITE_URL}/auth/signup${chefSlug ? `?ref=${chefSlug}` : ''}`
   const shareText = chefName
-    ? `${chefName} invited you to try ChefFlow — the business OS for private chefs. Sign up free:`
-    : 'Check out ChefFlow — the business OS for private chefs. Sign up free:'
+    ? `${chefName} invited you to try ChefFlow, the chef-built back office for private chefs.`
+    : 'Check out ChefFlow, the chef-built back office for private chefs.'
 
   async function handleCopy() {
     try {
@@ -47,7 +47,7 @@ export function InviteChefCard({ chefSlug, chefName }: InviteChefCardProps) {
   function handleNativeShare() {
     if (navigator.share) {
       navigator.share({
-        title: 'ChefFlow — Ops for Artists',
+        title: 'ChefFlow - Chef-built back office',
         text: shareText,
         url: referralUrl,
       })
@@ -65,33 +65,31 @@ export function InviteChefCard({ chefSlug, chefName }: InviteChefCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-stone-400 mb-4">
-          Know a chef who&apos;d love ChefFlow? Share your invite link.
+        <p className="mb-4 text-sm text-stone-400">
+          Know a chef who would love ChefFlow? Share your invite link.
         </p>
 
-        {/* Link display + copy */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex-1 rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-xs text-stone-400 truncate font-mono">
+        <div className="mb-3 flex items-center gap-2">
+          <div className="flex-1 truncate rounded-md border border-stone-700 bg-stone-900 px-3 py-2 font-mono text-xs text-stone-400">
             {referralUrl}
           </div>
           <Button variant="secondary" size="sm" onClick={handleCopy} className="flex-shrink-0">
             {copied ? (
               <>
-                <Check className="h-3.5 w-3.5 mr-1" />
+                <Check className="mr-1 h-3.5 w-3.5" />
                 Copied
               </>
             ) : (
               <>
-                <Copy className="h-3.5 w-3.5 mr-1" />
+                <Copy className="mr-1 h-3.5 w-3.5" />
                 Copy
               </>
             )}
           </Button>
         </div>
 
-        {/* Share button (uses native share on mobile, copy on desktop) */}
         <Button variant="primary" size="sm" onClick={handleNativeShare} className="w-full">
-          <Share2 className="h-3.5 w-3.5 mr-1.5" />
+          <Share2 className="mr-1.5 h-3.5 w-3.5" />
           Share Invite Link
         </Button>
       </CardContent>

@@ -236,13 +236,13 @@ export function BookingFlow({ chefSlug, chefName, eventTypes, bookingConfig }: P
           </div>
           <h2 className="text-2xl font-bold text-stone-100">
             {bookingConfig.bookingModel === 'instant_book'
-              ? 'Booking Confirmed!'
-              : 'Request Submitted!'}
+              ? 'Your date is reserved.'
+              : 'Your request is in.'}
           </h2>
           <p className="text-stone-400 max-w-sm mx-auto">
             {bookingConfig.bookingModel === 'instant_book'
-              ? 'Your deposit has been processed and your event is booked. Check your email for confirmation details.'
-              : 'Your booking request has been submitted. Expect a response within 24 hours.'}
+              ? 'Your deposit has been processed and the chef has the booking details. Check your email for confirmation and next steps.'
+              : 'Your details have been sent. The chef will follow up soon with availability and next steps.'}
           </p>
           <p className="text-sm text-stone-500">
             A confirmation has been sent to your email address.

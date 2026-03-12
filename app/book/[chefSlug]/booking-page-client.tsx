@@ -57,15 +57,15 @@ export function BookingPageClient({
       {!selectedDate ? (
         <>
           <div>
-            <h2 className="text-lg font-semibold text-stone-100 mb-1">Select a date</h2>
+            <h2 className="mb-1 text-lg font-semibold text-stone-100">Choose a date</h2>
             <p className="text-sm text-stone-500">
               {selectedMenu
                 ? isInstantBook
-                  ? 'Green dates are available. Pick one to book this featured menu.'
-                  : 'Green dates are available. Pick one to request this featured menu.'
+                  ? 'Highlighted dates are currently open. Pick one to reserve this menu.'
+                  : 'Highlighted dates are currently open. Pick one to ask about this menu.'
                 : isInstantBook
-                  ? 'Green dates are available. Click a date to book instantly.'
-                  : 'Green dates are available. Click a date to begin your booking request.'}
+                  ? 'Highlighted dates are currently open. Pick one to move into the booking details.'
+                  : 'Highlighted dates are currently open. Pick one to begin the conversation.'}
             </p>
           </div>
           <BookingCalendar chefSlug={chefSlug} onSelectDate={setSelectedDate} selectedDate={null} />
@@ -74,12 +74,12 @@ export function BookingPageClient({
         <>
           <div>
             <h2 className="text-lg font-semibold text-stone-100 mb-1">
-              {isInstantBook ? 'Book your event' : 'Your details'}
+              {isInstantBook ? 'Confirm the booking details' : 'Tell us about the gathering'}
             </h2>
             <p className="text-sm text-stone-500">
               {isInstantBook
-                ? 'Fill in your details and pay the deposit to confirm your booking.'
-                : 'Tell us about the event and we will get back to you within 24 hours.'}
+                ? 'Share the essentials and pay the deposit to hold the date.'
+                : 'Share the essentials and the chef will follow up with next steps.'}
             </p>
           </div>
           <BookingForm

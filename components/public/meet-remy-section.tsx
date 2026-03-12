@@ -3,27 +3,27 @@ import { Layers, Mail, TrendingUp, Heart, BookOpen } from '@/components/ui/icons
 const FEATURE_HIGHLIGHTS = [
   {
     icon: Mail,
-    title: 'Email drafts',
+    title: 'Follow-up drafts',
     description:
-      'Thank-you notes, follow-ups, and referral asks. Remy drafts them, you review before sending.',
+      'Thank-you notes, follow-ups, and referral asks. Remy drafts them so you can review instead of starting from scratch.',
   },
   {
     icon: TrendingUp,
-    title: 'Profit breakdown',
+    title: 'Event recap numbers',
     description:
-      'Ask "how did the Johnson dinner do?" and get food cost, revenue, and what you actually kept.',
+      'Ask how a dinner performed and get the food cost, revenue, and what you actually kept.',
   },
   {
     icon: Heart,
-    title: 'Client memory',
+    title: 'Client context',
     description:
-      'Remy knows your clients. Allergies, past menus, preferences. Ask before you plan.',
+      'Surface allergies, past menus, and household preferences before you make the next recommendation.',
   },
   {
     icon: BookOpen,
-    title: 'Recipe search',
+    title: 'Recipe recall',
     description:
-      'Find your own recipes by ingredient, cuisine, or event type. Your recipe book, searchable.',
+      'Search your own recipe library by ingredient, cuisine, or event type when planning gets busy.',
   },
 ]
 
@@ -38,11 +38,11 @@ export function MeetRemySection() {
             <Layers className="h-6 w-6" />
           </div>
           <h2 className="text-3xl font-display tracking-tight text-stone-900 dark:text-stone-100 md:text-4xl">
-            Your admin assistant, built in
+            When the busywork piles up, Remy helps.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600 dark:text-stone-300">
-            Remy handles the admin side so you can focus on cooking. You review everything before it
-            goes out. Nothing sends without your approval.
+            Remy helps draft, summarize, and surface the details that are easy to lose between
+            service days. You stay in control of what actually goes out.
           </p>
         </div>
 
