@@ -3,7 +3,9 @@
 
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
+import DateRangePicker from '@/components/analytics/date-range-picker'
 
 const AnalyticsHub = dynamic(
   () => import('@/components/analytics/analytics-hub-client').then((m) => m.AnalyticsHub),
@@ -95,10 +97,18 @@ function currentMonth(): string {
   return new Date().toISOString().slice(0, 7)
 }
 
-export default async function AnalyticsHubPage() {
-  await requireChef()
+interface Props {
+  searchParams: Promise<{ start?: string; end?: string; compare?: string }>
+}
 
-  const { start, end } = periodDates(12)
+export default async function AnalyticsHubPage({ searchParams }: Props) {
+  await requireChef()
+  const params = await searchParams
+
+  const defaults = periodDates(12)
+  const start =
+    params.start && /^\d{4}-\d{2}-\d{2}$/.test(params.start) ? params.start : defaults.start
+  const end = params.end && /^\d{4}-\d{2}-\d{2}$/.test(params.end) ? params.end : defaults.end
   const thisMonth = currentMonth()
 
   // Fetch all analytics in parallel — each fetch is independent.
@@ -223,9 +233,17 @@ export default async function AnalyticsHubPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Analytics Hub</h1>
         <p className="text-stone-400 mt-1">
-          Every metric that matters — business, operations, clients, marketing, social, and culinary
+          Every metric that matters, with drill-down into the data behind every number
         </p>
       </div>
+
+      <Suspense fallback={null}>
+        <DateRangePicker
+          currentStart={start}
+          currentEnd={end}
+          comparisonEnabled={params.compare === '1'}
+        />
+      </Suspense>
 
       <AnalyticsHub
         monthRevenue={val(monthRevenue, null)}

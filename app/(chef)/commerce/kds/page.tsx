@@ -12,12 +12,15 @@ export default async function KDSPage() {
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
-  // Load stations for the selector
-  const { data: stations } = await supabase
-    .from('stations')
-    .select('id, name, display_order')
-    .eq('chef_id', user.tenantId!)
-    .order('display_order', { ascending: true })
+  // Load stations and current PIN in parallel
+  const [{ data: stations }, { data: chef }] = await Promise.all([
+    supabase
+      .from('stations')
+      .select('id, name, display_order')
+      .eq('chef_id', user.tenantId!)
+      .order('display_order', { ascending: true }),
+    supabase.from('chefs').select('kds_pin').eq('id', user.tenantId!).single(),
+  ])
 
   return (
     <KDSPageClient
@@ -25,6 +28,8 @@ export default async function KDSPage() {
         id: String(s.id),
         name: String(s.name),
       }))}
+      currentPin={(chef as any)?.kds_pin ?? null}
+      tenantId={user.tenantId!}
     />
   )
 }

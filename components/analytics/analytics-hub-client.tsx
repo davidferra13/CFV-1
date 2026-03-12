@@ -18,6 +18,12 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts'
+import {
+  downloadCsv,
+  exportRevenueByType,
+  exportRevenueByDay,
+  exportFunnel,
+} from '@/lib/analytics/export'
 import type {
   ClientRetentionStats,
   ClientChurnStats,
@@ -156,11 +162,13 @@ function StatCard({
   value,
   sub,
   variant,
+  href,
 }: {
   label: string
   value: string | number
   sub?: string
   variant?: 'success' | 'warning' | 'error' | 'default'
+  href?: string
 }) {
   const color =
     variant === 'success'
@@ -170,12 +178,54 @@ function StatCard({
         : variant === 'error'
           ? 'text-red-600'
           : 'text-stone-100'
+  const Wrapper = href ? 'a' : 'div'
   return (
-    <div className="bg-stone-900 rounded-lg border border-stone-700 p-4">
-      <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{label}</p>
+    <Wrapper
+      {...(href ? { href } : {})}
+      className={`bg-stone-900 rounded-lg border border-stone-700 p-4 ${href ? 'hover:border-stone-500 hover:bg-stone-800/50 transition-colors cursor-pointer group' : ''}`}
+    >
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs text-stone-500 uppercase tracking-wide">{label}</p>
+        {href && (
+          <svg
+            className="w-3.5 h-3.5 text-stone-600 group-hover:text-stone-400 transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        )}
+      </div>
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
       {sub && <p className="text-xs text-stone-300 mt-1">{sub}</p>}
-    </div>
+    </Wrapper>
+  )
+}
+
+function ExportButton({ onClick, label }: { onClick: () => void; label?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1 rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-300 hover:bg-stone-700 transition-colors touch-manipulation"
+    >
+      <svg
+        className="w-3.5 h-3.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+        />
+      </svg>
+      {label ?? 'Export CSV'}
+    </button>
   )
 }
 
@@ -205,11 +255,13 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
           value={fmt$(p.monthRevenue?.currentMonthRevenueCents ?? 0)}
           sub={`${revChange >= 0 ? '+' : ''}${revChange.toFixed(1)}% vs last month`}
           variant={revChange >= 0 ? 'success' : 'error'}
+          href="/finance/reporting"
         />
         <StatCard
           label="Events This Month"
           value={p.eventCounts?.thisMonth ?? 0}
           sub={`${p.eventCounts?.completedThisMonth ?? 0} completed`}
+          href="/events"
         />
         <StatCard
           label="NPS Score"
@@ -218,6 +270,7 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
           variant={
             p.npsStats.npsScore >= 50 ? 'success' : p.npsStats.npsScore >= 20 ? 'warning' : 'error'
           }
+          href="/analytics/benchmarks"
         />
         <StatCard
           label="Avg Review Rating"
@@ -233,22 +286,25 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Events YTD" value={p.eventCounts?.ytd ?? 0} />
+        <StatCard label="Events YTD" value={p.eventCounts?.ytd ?? 0} href="/events" />
         <StatCard
           label="Capacity This Month"
           value={p.capacity.maxEventsPerMonth ? `${p.capacity.utilization}%` : 'Not set'}
           sub={`${p.capacity.bookedThisMonth} booked`}
           variant={p.capacity.maxEventsPerMonth ? pctBadge(p.capacity.utilization, 60) : 'default'}
+          href="/analytics/capacity"
         />
         <StatCard
           label="Inquiry→Booking Rate"
           value={`${p.inquiryFunnel.overallConversionRate}%`}
           variant={pctBadge(p.inquiryFunnel.overallConversionRate, 40)}
+          href="/analytics/funnel"
         />
         <StatCard
           label="Repeat Booking Rate"
           value={`${p.clientRetention.repeatBookingRate}%`}
           variant={pctBadge(p.clientRetention.repeatBookingRate, 50)}
+          href="/analytics/client-ltv"
         />
       </div>
     </div>
@@ -283,7 +339,10 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h3 className="font-semibold text-stone-200 mb-4">Revenue by Day of Week</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-stone-200">Revenue by Day of Week</h3>
+            <ExportButton onClick={() => exportRevenueByDay(p.revenueByDayOfWeek as any)} />
+          </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={p.revenueByDayOfWeek}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f4" />
@@ -338,7 +397,12 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
         />
       </div>
       <Card className="p-6">
-        <h3 className="font-semibold text-stone-200 mb-4">Revenue by Event Type</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-stone-200">Revenue by Event Type</h3>
+          {p.revenueByEventType.length > 0 && (
+            <ExportButton onClick={() => exportRevenueByType(p.revenueByEventType as any)} />
+          )}
+        </div>
         {p.revenueByEventType.length === 0 ? (
           <p className="text-stone-300 text-sm">No completed events yet</p>
         ) : (
@@ -475,6 +539,7 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
           value={`${p.quoteAcceptance.acceptanceRate}%`}
           sub={`${p.quoteAcceptance.accepted} / ${p.quoteAcceptance.totalSent} sent`}
           variant={pctBadge(p.quoteAcceptance.acceptanceRate, 60)}
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Ghost Rate"
@@ -487,21 +552,27 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
                 ? 'warning'
                 : 'error'
           }
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Avg Lead Time"
           value={`${p.leadTime.avgLeadTimeDays}d`}
           sub="inquiry to event date"
+          href="/analytics/funnel"
         />
         <StatCard
           label="Avg Sales Cycle"
           value={`${p.leadTime.avgSalesCycleDays}d`}
           sub="inquiry to quote accepted"
+          href="/analytics/funnel"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h3 className="font-semibold text-stone-200 mb-4">Inquiry Funnel</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-stone-200">Inquiry Funnel</h3>
+            <ExportButton onClick={() => exportFunnel(p.inquiryFunnel)} />
+          </div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={funnelData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f4" />
@@ -604,23 +675,26 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Active Clients" value={p.clientRetention.activeClients} />
+        <StatCard label="Active Clients" value={p.clientRetention.activeClients} href="/clients" />
         <StatCard
           label="Repeat Clients"
           value={p.clientRetention.repeatClients}
           sub={`${p.clientRetention.repeatBookingRate}% repeat rate`}
           variant={pctBadge(p.clientRetention.repeatBookingRate, 50)}
+          href="/analytics/client-ltv"
         />
         <StatCard
           label="6-Month Retention"
           value={`${p.clientRetention.retentionRate}%`}
           variant={pctBadge(p.clientRetention.retentionRate, 60)}
+          href="/analytics/client-ltv"
         />
         <StatCard
           label="At-Risk Clients"
           value={p.clientChurn.totalAtRisk}
           sub="120+ days, 2+ events"
           variant={p.clientChurn.totalAtRisk === 0 ? 'success' : 'warning'}
+          href="/clients"
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -531,3 +531,23 @@ export async function getKDSStats(): Promise<{
     totalServedToday: servedTickets.length,
   }
 }
+
+// ─── KDS PIN Management ─────────────────────────────────────────
+
+export async function getKdsPin(): Promise<string | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const { data } = await supabase.from('chefs').select('kds_pin').eq('id', user.tenantId!).single()
+  return (data as any)?.kds_pin ?? null
+}
+
+export async function setKdsPin(pin: string | null): Promise<{ success: boolean }> {
+  const user = await requireChef()
+  if (pin !== null && !/^\d{4,6}$/.test(pin)) {
+    throw new Error('PIN must be 4-6 digits')
+  }
+  const supabase: any = createServerClient()
+  const { error } = await supabase.from('chefs').update({ kds_pin: pin }).eq('id', user.tenantId!)
+  if (error) throw new Error(`Failed to update KDS PIN: ${error.message}`)
+  return { success: true }
+}

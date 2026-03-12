@@ -39,10 +39,10 @@ This is the master list of every improvement identified for the chef portal, **o
 | 10  | Photo Portfolio                  | Marketing     | Not started                   |
 | 11  | Equipment Dashboard              | Operations    | Done (pre-existing)           |
 | 12  | Contract Library                 | Operations    | Done                          |
-| 13  | Staff Shift Scheduling           | Operations    | Not started                   |
+| 13  | Staff Shift Scheduling           | Operations    | Done (pre-existing)           |
 | 14  | Service-Time Dashboard           | Operations    | Not started                   |
-| 15  | Automated Follow-Up Sequences    | Marketing     | Not started                   |
-| 16  | Analytics Drill-Down             | Analytics     | Not started                   |
+| 15  | Automated Follow-Up Sequences    | Marketing     | Done (pre-existing)           |
+| 16  | Analytics Drill-Down             | Analytics     | Done (enhanced pre-existing)  |
 | 17  | Public Chef Profile & SEO        | Marketing     | Not started                   |
 | 18  | Message Templates                | Sales         | Done (pre-existing)           |
 | 19  | Revenue Goal Tracking            | Analytics     | Done (pre-existing)           |
@@ -71,7 +71,7 @@ This is the master list of every improvement identified for the chef portal, **o
 | 42  | Bulk Import                      | Settings      | Not started                   |
 | 43  | Proactive Remy Nudges            | Remy AI       | Done                          |
 | 44  | Remy Conversation-to-Action      | Remy AI       | Not started                   |
-| 45  | Kitchen Display System (KDS)     | Commerce      | Not started                   |
+| 45  | Kitchen Display System (KDS)     | Commerce      | Done (enhanced pre-existing)  |
 | 46  | POS Loyalty Integration          | Commerce      | Not started                   |
 | 47  | Recipe Versioning & Cost History | Culinary      | Done                          |
 | 48  | Batch Prep Planner               | Culinary      | Not started                   |
