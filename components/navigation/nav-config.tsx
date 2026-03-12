@@ -648,6 +648,7 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/culinary/prep/shopping', label: 'Prep Shopping' },
           { href: '/culinary/prep/timeline', label: 'Prep Timeline' },
+          { href: '/culinary/prep/batch-planner', label: 'Batch Planner' },
         ],
       },
       {
@@ -758,6 +759,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/time-clock/weekly', label: 'Weekly Time Clock' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
+          { href: '/staff/utilization', label: 'Utilization Report' },
           { href: '/staff/forecast', label: 'Staff Forecast' },
           { href: '/staff/freelancers', label: 'Freelancers' },
           { href: '/staff/live', label: 'Live Activity' },

@@ -54,13 +54,13 @@ This is the master list of every improvement identified for the chef portal, **o
 | 25  | Status Color Registry            | Global        | Deferred                      |
 | 26  | Error Boundaries                 | Global        | Done                          |
 | 27  | Accessibility Fixes              | Global        | Done                          |
-| 28  | In-Page Search                   | Global        | Not started                   |
+| 28  | In-Page Search                   | Global        | Done                          |
 | 29  | Loading States (Async)           | Global        | Not started                   |
-| 30  | Pagination                       | Global        | Not started                   |
+| 30  | Pagination                       | Global        | Done (safety limits added)    |
 | 31  | Tax Reports                      | Finance       | Done                          |
 | 32  | Event PDF Exports                | Events        | Done (enhanced pre-existing)  |
 | 33  | Client Year-End Summary          | Clients       | Not started                   |
-| 34  | Staff Utilization Report         | Operations    | Not started                   |
+| 34  | Staff Utilization Report         | Operations    | Done                          |
 | 35  | Webhook Triggers                 | Settings      | Not started                   |
 | 36  | Notification Triggers            | Global        | Done                          |
 | 37  | Financial Alerts                 | Finance       | Done                          |
@@ -74,7 +74,7 @@ This is the master list of every improvement identified for the chef portal, **o
 | 45  | Kitchen Display System (KDS)     | Commerce      | Done (enhanced pre-existing)  |
 | 46  | POS Loyalty Integration          | Commerce      | Not started                   |
 | 47  | Recipe Versioning & Cost History | Culinary      | Done                          |
-| 48  | Batch Prep Planner               | Culinary      | Not started                   |
+| 48  | Batch Prep Planner               | Culinary      | Done                          |
 | 49  | Nutritional & Allergen Scoring   | Culinary      | Not started                   |
 | 50  | HACCP Food Safety Plan           | Protection    | Done (enhanced pre-existing)  |
 | 51  | Supplier Recall Management       | Protection    | Not started                   |

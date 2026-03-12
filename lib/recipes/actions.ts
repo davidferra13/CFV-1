@@ -317,7 +317,7 @@ export async function getRecipes(filters?: {
     query = query.order('name', { ascending: true })
   }
 
-  const { data: recipes, error } = await query
+  const { data: recipes, error } = await query.limit(1000)
 
   if (error) {
     console.error('[getRecipes] Error:', error)
@@ -818,7 +818,7 @@ export async function getIngredients(filters?: { category?: string; search?: str
 
   query = query.order('name', { ascending: true })
 
-  const { data: ingredients, error } = await query
+  const { data: ingredients, error } = await query.limit(1000)
 
   if (error) {
     console.error('[getIngredients] Error:', error)

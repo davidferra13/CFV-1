@@ -1117,7 +1117,7 @@ export async function getAllComponents(filters?: {
     query = query.eq('is_make_ahead', true)
   }
 
-  const { data: components, error } = await query
+  const { data: components, error } = await query.limit(1000)
 
   if (error) {
     console.error('[getAllComponents] Error:', error)
