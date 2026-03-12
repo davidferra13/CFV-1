@@ -10,6 +10,7 @@ import { BeverageForm } from '@/components/beverages/beverage-form'
 import { deleteBeverage } from '@/lib/beverages/actions'
 import type { Beverage, BeverageType } from '@/lib/beverages/actions'
 import { formatCurrency } from '@/lib/utils/currency'
+import { toast } from 'sonner'
 
 const TABS: { key: BeverageType | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -21,7 +22,10 @@ const TABS: { key: BeverageType | 'all'; label: string }[] = [
   { key: 'non-alcoholic', label: 'Non-Alcoholic' },
 ]
 
-const TYPE_BADGE_VARIANT: Record<BeverageType, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
+const TYPE_BADGE_VARIANT: Record<
+  BeverageType,
+  'default' | 'success' | 'warning' | 'error' | 'info'
+> = {
   wine: 'error',
   cocktail: 'warning',
   mocktail: 'success',
@@ -67,14 +71,18 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
         await deleteBeverage(id)
         router.refresh()
       } catch (err) {
-        setDeleteError(err instanceof Error ? err.message : 'Failed to delete')
+        const message = err instanceof Error ? err.message : 'Failed to delete'
+        setDeleteError(message)
+        toast.error(message)
       }
     })
   }
 
   function computeMargin(b: Beverage): string {
     const cost = b.cost_cents
-    const sell = b.sell_price_cents ?? (cost != null ? Math.round(cost * (b.markup_percent ?? 200) / 100) : null)
+    const sell =
+      b.sell_price_cents ??
+      (cost != null ? Math.round((cost * (b.markup_percent ?? 200)) / 100) : null)
     if (cost == null || sell == null || cost === 0) return 'N/A'
     const margin = ((sell - cost) / sell) * 100
     return `${margin.toFixed(0)}%`
@@ -82,7 +90,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
 
   function computeSellPrice(b: Beverage): number | null {
     if (b.sell_price_cents != null) return b.sell_price_cents
-    if (b.cost_cents != null) return Math.round(b.cost_cents * (b.markup_percent ?? 200) / 100)
+    if (b.cost_cents != null) return Math.round((b.cost_cents * (b.markup_percent ?? 200)) / 100)
     return null
   }
 
@@ -92,8 +100,8 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
       <div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Beverage Library</h1>
-            <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Beverage Library</h1>
+            <span className="bg-stone-700 text-stone-300 text-sm px-2 py-0.5 rounded-full">
               {beverages.length}
             </span>
           </div>
@@ -106,14 +114,16 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
             Add Beverage
           </Button>
         </div>
-        <p className="text-stone-500 mt-1">Wine, cocktails, and beverage pairings for your events</p>
+        <p className="text-stone-500 mt-1">
+          Wine, cocktails, and beverage pairings for your events
+        </p>
       </div>
 
       {/* Form (add/edit) */}
       {(showForm || editingBeverage) && (
         <Card>
           <CardContent className="py-5">
-            <h2 className="text-lg font-semibold text-stone-900 mb-4">
+            <h2 className="text-lg font-semibold text-stone-100 mb-4">
               {editingBeverage ? `Edit: ${editingBeverage.name}` : 'New Beverage'}
             </h2>
             <BeverageForm
@@ -145,7 +155,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.key
                   ? 'bg-brand-600 text-white'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
               }`}
             >
               {tab.label}
@@ -173,11 +183,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
               : 'Try adjusting your search or switching tabs'}
           </p>
           {beverages.length === 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowForm(true)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setShowForm(true)}>
               Add First Beverage
             </Button>
           )}
@@ -192,14 +198,12 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
                   {/* Top row: name + type */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-stone-900 truncate">{b.name}</h3>
+                      <h3 className="font-semibold text-stone-100 truncate">{b.name}</h3>
                       {b.subtype && (
                         <p className="text-xs text-stone-400 capitalize">{b.subtype}</p>
                       )}
                     </div>
-                    <Badge variant={TYPE_BADGE_VARIANT[b.type]}>
-                      {b.type}
-                    </Badge>
+                    <Badge variant={TYPE_BADGE_VARIANT[b.type]}>{b.type}</Badge>
                   </div>
 
                   {/* Wine details */}
@@ -219,13 +223,17 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
                     {b.cost_cents != null && (
                       <div>
                         <span className="text-stone-400">Cost:</span>{' '}
-                        <span className="font-medium text-stone-200">{formatCurrency(b.cost_cents)}</span>
+                        <span className="font-medium text-stone-200">
+                          {formatCurrency(b.cost_cents)}
+                        </span>
                       </div>
                     )}
                     {sellPrice != null && (
                       <div>
                         <span className="text-stone-400">Sell:</span>{' '}
-                        <span className="font-medium text-green-200">{formatCurrency(sellPrice)}</span>
+                        <span className="font-medium text-green-200">
+                          {formatCurrency(sellPrice)}
+                        </span>
                       </div>
                     )}
                     <div>
@@ -240,7 +248,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
                       {b.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="bg-stone-100 text-stone-500 text-xs px-2 py-0.5 rounded-full"
+                          className="bg-stone-700 text-stone-300 text-xs px-2 py-0.5 rounded-full"
                         >
                           {tag}
                         </span>
@@ -249,7 +257,7 @@ export function BeverageLibraryClient({ initialBeverages }: Props) {
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-1 border-t border-stone-100">
+                  <div className="flex gap-2 pt-1 border-t border-stone-700">
                     <Button
                       size="sm"
                       variant="secondary"

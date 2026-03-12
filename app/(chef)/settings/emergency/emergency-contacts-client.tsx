@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { createEmergencyContact, deleteEmergencyContact } from '@/lib/contingency/actions'
+import { toast } from 'sonner'
 
 type Contact = {
   id: string
@@ -53,7 +54,9 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
       setShowForm(false)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save')
+      const message = err instanceof Error ? err.message : 'Failed to save'
+      setError(message)
+      toast.error(message)
     } finally {
       setSaving(false)
     }
@@ -70,8 +73,8 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
     try {
       await deleteEmergencyContact(removeTargetId)
       router.refresh()
-    } catch {
-      /* silent */
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove contact')
     }
   }
 

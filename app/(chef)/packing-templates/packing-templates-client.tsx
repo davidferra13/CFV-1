@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PackingTemplateEditor } from '@/components/packing/packing-template-editor'
-import {
-  deletePackingTemplate,
-  type PackingTemplate,
-} from '@/lib/packing/template-actions'
+import { deletePackingTemplate, type PackingTemplate } from '@/lib/packing/template-actions'
+import { toast } from 'sonner'
 
 type PackingTemplatesClientProps = {
   initialTemplates: PackingTemplate[]
@@ -19,19 +17,19 @@ type PackingTemplatesClientProps = {
 function categoryBadgeColor(category: string): string {
   switch (category) {
     case 'Knives':
-      return 'bg-red-100 text-red-200'
+      return 'bg-red-900/30 text-red-300'
     case 'Cookware':
-      return 'bg-orange-100 text-orange-200'
+      return 'bg-orange-900/30 text-orange-300'
     case 'Utensils':
-      return 'bg-blue-100 text-blue-200'
+      return 'bg-blue-900/30 text-blue-300'
     case 'Serving':
-      return 'bg-purple-100 text-purple-200'
+      return 'bg-purple-900/30 text-purple-300'
     case 'Storage':
-      return 'bg-teal-100 text-teal-200'
+      return 'bg-teal-900/30 text-teal-300'
     case 'Linens':
-      return 'bg-pink-100 text-pink-200'
+      return 'bg-pink-900/30 text-pink-300'
     default:
-      return 'bg-stone-100 text-stone-200'
+      return 'bg-stone-700 text-stone-300'
   }
 }
 
@@ -60,7 +58,7 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
     if (!confirm(`Delete "${template.name}"? This cannot be undone.`)) return
 
     const previous = templates
-    setTemplates(prev => prev.filter(t => t.id !== template.id))
+    setTemplates((prev) => prev.filter((t) => t.id !== template.id))
     setDeleteError(null)
 
     startTransition(async () => {
@@ -68,11 +66,14 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
         const result = await deletePackingTemplate(template.id)
         if (!result.success) {
           setTemplates(previous)
-          setDeleteError(result.error ?? 'Failed to delete template')
+          const msg = result.error ?? 'Failed to delete template'
+          setDeleteError(msg)
+          toast.error(msg)
         }
       } catch {
         setTemplates(previous)
         setDeleteError('Failed to delete template')
+        toast.error('Failed to delete template')
       }
     })
   }
@@ -105,9 +106,7 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
         </Button>
       </div>
 
-      {deleteError && (
-        <p className="text-sm text-red-600">{deleteError}</p>
-      )}
+      {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
 
       {/* Template cards */}
       {templates.length === 0 ? (
@@ -118,7 +117,7 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {templates.map(template => {
+          {templates.map((template) => {
             // Group items by category for display
             const categoryCounts: Record<string, number> = {}
             for (const item of template.items) {
@@ -129,7 +128,7 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
               <Card key={template.id} className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-stone-900">{template.name}</h3>
+                    <h3 className="font-semibold text-stone-100">{template.name}</h3>
                     {template.description && (
                       <p className="text-xs text-stone-500 mt-0.5">{template.description}</p>
                     )}
@@ -149,7 +148,7 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
                     {template.items.length} item{template.items.length !== 1 ? 's' : ''}
                   </span>
                   {template.event_type && (
-                    <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-stone-700 text-stone-300 px-2 py-0.5 rounded-full">
                       {template.event_type}
                     </span>
                   )}
@@ -169,11 +168,7 @@ export function PackingTemplatesClient({ initialTemplates }: PackingTemplatesCli
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-1">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleEdit(template)}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => handleEdit(template)}>
                     Edit
                   </Button>
                   <Button

@@ -11,6 +11,7 @@ import { PlatingGuideCard } from '@/components/recipes/plating-guide'
 import { PlatingGuideEditor } from '@/components/recipes/plating-guide-editor'
 import { deletePlatingGuide } from '@/lib/recipes/plating-actions'
 import type { PlatingGuide } from '@/lib/recipes/plating-actions'
+import { toast } from 'sonner'
 
 interface PlatingGuidesLibraryProps {
   initialGuides: PlatingGuide[]
@@ -32,15 +33,15 @@ export function PlatingGuidesLibrary({ initialGuides }: PlatingGuidesLibraryProp
 
     // Filter by linked/standalone
     if (filter === 'linked') {
-      guides = guides.filter(g => g.recipe_id)
+      guides = guides.filter((g) => g.recipe_id)
     } else if (filter === 'standalone') {
-      guides = guides.filter(g => !g.recipe_id)
+      guides = guides.filter((g) => !g.recipe_id)
     }
 
     // Search by dish name
     if (search.trim()) {
       const q = search.toLowerCase()
-      guides = guides.filter(g => g.dish_name.toLowerCase().includes(q))
+      guides = guides.filter((g) => g.dish_name.toLowerCase().includes(q))
     }
 
     return guides
@@ -62,6 +63,7 @@ export function PlatingGuidesLibrary({ initialGuides }: PlatingGuidesLibraryProp
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to delete'
         setDeleteError(message)
+        toast.error(message)
       }
     })
   }
@@ -78,13 +80,7 @@ export function PlatingGuidesLibrary({ initialGuides }: PlatingGuidesLibraryProp
   }
 
   if (showEditor) {
-    return (
-      <PlatingGuideEditor
-        guide={editingGuide}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
-    )
+    return <PlatingGuideEditor guide={editingGuide} onSave={handleSave} onCancel={handleCancel} />
   }
 
   return (
@@ -95,20 +91,26 @@ export function PlatingGuidesLibrary({ initialGuides }: PlatingGuidesLibraryProp
           <Input
             placeholder="Search by dish name..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
           <select
             value={filter}
-            onChange={e => setFilter(e.target.value as FilterMode)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            onChange={(e) => setFilter(e.target.value as FilterMode)}
+            className="rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-200 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           >
             <option value="all">All Guides</option>
             <option value="linked">Linked to Recipe</option>
             <option value="standalone">Standalone</option>
           </select>
-          <Button variant="primary" onClick={() => { setEditingGuide(null); setShowEditor(true) }}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setEditingGuide(null)
+              setShowEditor(true)
+            }}
+          >
             + New Guide
           </Button>
         </div>
@@ -129,18 +131,14 @@ export function PlatingGuidesLibrary({ initialGuides }: PlatingGuidesLibraryProp
               : 'No guides match your search.'}
           </p>
           {initialGuides.length === 0 && (
-            <Button
-              variant="primary"
-              className="mt-4"
-              onClick={() => setShowEditor(true)}
-            >
+            <Button variant="primary" className="mt-4" onClick={() => setShowEditor(true)}>
               Create First Plating Guide
             </Button>
           )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filtered.map(guide => (
+          {filtered.map((guide) => (
             <PlatingGuideCard
               key={guide.id}
               guide={guide}
@@ -151,9 +149,7 @@ export function PlatingGuidesLibrary({ initialGuides }: PlatingGuidesLibraryProp
         </div>
       )}
 
-      {isPending && (
-        <p className="text-sm text-stone-400 text-center">Updating...</p>
-      )}
+      {isPending && <p className="text-sm text-stone-400 text-center">Updating...</p>}
     </div>
   )
 }

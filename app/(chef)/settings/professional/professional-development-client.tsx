@@ -14,6 +14,7 @@ import {
   deleteLearningGoal,
   type AchievementInput,
 } from '@/lib/professional/actions'
+import { toast } from 'sonner'
 import { ACHIEVE_TYPE_LABELS, GOAL_CATEGORY_LABELS } from '@/lib/professional/constants'
 import { GrowthCheckinModal } from '@/components/professional/growth-checkin-modal'
 import { MomentumDashboard } from '@/components/professional/momentum-dashboard'
@@ -177,8 +178,8 @@ export function ProfessionalDevelopmentClient({
     try {
       await completeLearningGoal(id)
       router.refresh()
-    } catch {
-      /* silent */
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to complete goal')
     }
   }
 

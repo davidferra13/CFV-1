@@ -12,6 +12,7 @@ import type {
   JoinRequestView,
   MatchSuggestion,
 } from '@/lib/hub/open-table-actions'
+import { toast } from 'sonner'
 
 export function OpenTablesChefDashboard() {
   const [tables, setTables] = useState<ChefOpenTableView[]>([])
@@ -59,7 +60,7 @@ export function OpenTablesChefDashboard() {
         await loadData()
       } catch (err) {
         setRequests(previous)
-        alert(err instanceof Error ? err.message : 'Failed to review request')
+        toast.error(err instanceof Error ? err.message : 'Failed to review request')
       }
     })
   }

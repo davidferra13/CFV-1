@@ -51,7 +51,7 @@ export default async function CapacityPlanningPage() {
   if (!capacityData) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-stone-900 mb-4">Capacity Planning</h1>
+        <h1 className="text-2xl font-bold text-stone-100 mb-4">Capacity Planning</h1>
         <Card>
           <CardContent className="py-12 text-center">
             <AlertTriangle className="w-10 h-10 text-stone-400 mx-auto mb-3" />
@@ -92,7 +92,7 @@ export default async function CapacityPlanningPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Capacity Planning</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Capacity Planning</h1>
           <p className="text-sm text-stone-500 mt-1">Based on your last 90 days of activity</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -134,9 +134,9 @@ export default async function CapacityPlanningPage() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-stone-500">Used</span>
-                <span className="font-semibold text-stone-900">{analysis.weeklyHoursUsed}h</span>
+                <span className="font-semibold text-stone-100">{analysis.weeklyHoursUsed}h</span>
               </div>
-              <div className="w-full bg-stone-100 rounded-full h-3">
+              <div className="w-full bg-stone-700 rounded-full h-3">
                 <div
                   className="h-3 rounded-full transition-all duration-500"
                   style={{
@@ -180,7 +180,7 @@ export default async function CapacityPlanningPage() {
               {analysis.burnoutFactors.length > 0 ? (
                 <ul className="space-y-1">
                   {analysis.burnoutFactors.map((factor, i) => (
-                    <li key={i} className="text-sm text-stone-600 flex items-start gap-2">
+                    <li key={i} className="text-sm text-stone-400 flex items-start gap-2">
                       <span className="text-amber-500 mt-0.5">&#x2022;</span>
                       {factor}
                     </li>
@@ -290,7 +290,7 @@ export default async function CapacityPlanningPage() {
             <ul className="space-y-3">
               {analysis.recommendations.map((rec, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">
+                  <span className="w-6 h-6 rounded-full bg-violet-900/40 text-violet-300 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">
                     {i + 1}
                   </span>
                   <p className="text-sm text-stone-200">{rec}</p>

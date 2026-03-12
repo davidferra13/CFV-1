@@ -14,6 +14,7 @@ import {
   type VendorInput,
 } from '@/lib/vendors/actions'
 import { VENDOR_TYPE_LABELS } from '@/lib/vendors/constants'
+import { toast } from 'sonner'
 
 type Vendor = {
   id: string
@@ -81,7 +82,9 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
       setShowForm(false)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save')
+      const message = err instanceof Error ? err.message : 'Failed to save'
+      setError(message)
+      toast.error(message)
     } finally {
       setSaving(false)
     }
@@ -98,8 +101,8 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
     try {
       await deleteVendor(deleteTargetId)
       router.refresh()
-    } catch {
-      /* silent */
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete vendor')
     }
   }
 
@@ -107,8 +110,8 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
     try {
       await setVendorPreferred(id, !current)
       router.refresh()
-    } catch {
-      /* silent */
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update vendor')
     }
   }
 

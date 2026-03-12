@@ -8,6 +8,7 @@ import { awardBonusPoints, redeemReward, type LoyaltyReward } from '@/lib/loyalt
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 
 export function AwardBonusForm({ clientId }: { clientId: string }) {
   const [open, setOpen] = useState(false)
@@ -86,7 +87,7 @@ export function RedeemRewardButton({
     try {
       await redeemReward(clientId, reward.id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to redeem reward')
+      toast.error(err instanceof Error ? err.message : 'Failed to redeem reward')
     } finally {
       setLoading(false)
     }
