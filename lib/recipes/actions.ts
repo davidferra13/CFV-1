@@ -570,6 +570,14 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   const supabase = createServerClient()
   const validated = UpdateRecipeSchema.parse(input)
 
+  // Auto-snapshot current state before overwriting (non-blocking)
+  try {
+    const { snapshotRecipeVersion } = await import('@/lib/recipes/version-actions')
+    await snapshotRecipeVersion(recipeId, `Before edit`)
+  } catch (err) {
+    console.error('[updateRecipe] Version snapshot failed (non-fatal):', err)
+  }
+
   const updateData: Partial<RecipeUpdate> = { updated_by: user.id }
   if (validated.name !== undefined) updateData.name = validated.name
   if (validated.category !== undefined) updateData.category = validated.category as RecipeCategory

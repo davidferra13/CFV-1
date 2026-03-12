@@ -23,6 +23,7 @@ import { NutritionPanel } from '@/components/recipes/nutrition-panel'
 import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
+import { RecipeVersionHistory } from '@/components/recipes/recipe-version-history'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import {
   logProduction,
@@ -708,6 +709,9 @@ export function RecipeDetailClient({ recipe }: Props) {
           </CardContent>
         </Card>
       )}
+
+      {/* Version History */}
+      <RecipeVersionHistory recipeId={recipe.id} />
 
       {/* Event History */}
       {recipe.eventHistory.length > 0 && (
