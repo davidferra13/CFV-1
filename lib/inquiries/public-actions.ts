@@ -560,5 +560,46 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Push notification failed (non-blocking):', err)
   }
 
+  // 9. Upsert marketplace client link (non-blocking)
+  // If the submitter has an auth account, link them to this chef in the marketplace
+  if (existingClientId) {
+    try {
+      const { data: clientRow } = await supabase
+        .from('clients')
+        .select('auth_user_id')
+        .eq('id', existingClientId)
+        .single()
+
+      if (clientRow?.auth_user_id) {
+        const { data: mktProfile } = await supabase
+          .from('marketplace_profiles')
+          .upsert(
+            {
+              auth_user_id: clientRow.auth_user_id,
+              email: contactEmail,
+              display_name: contactName,
+            },
+            { onConflict: 'auth_user_id' }
+          )
+          .select('id')
+          .single()
+
+        if (mktProfile) {
+          await supabase.from('marketplace_client_links').upsert(
+            {
+              marketplace_profile_id: mktProfile.id,
+              client_id: existingClientId,
+              tenant_id: tenantId,
+              first_inquiry_at: new Date().toISOString(),
+            },
+            { onConflict: 'marketplace_profile_id,tenant_id' }
+          )
+        }
+      }
+    } catch (mktErr) {
+      console.error('[submitPublicInquiry] Marketplace link upsert failed (non-blocking):', mktErr)
+    }
+  }
+
   return { success: true, inquiryCreated: true, eventCreated: true }
 }

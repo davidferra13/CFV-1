@@ -98,6 +98,28 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-pathname', pathname)
   requestHeaders.set('x-request-id', requestId)
 
+  // Locale detection: cookie > Accept-Language > 'en'
+  const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'de', 'it', 'ja']
+  let locale = 'en'
+  const localeCookie = request.cookies.get('chefflow-locale')?.value
+  if (localeCookie && SUPPORTED_LOCALES.includes(localeCookie)) {
+    locale = localeCookie
+  } else {
+    const acceptLang = request.headers.get('accept-language')
+    if (acceptLang) {
+      const preferred = acceptLang
+        .split(',')
+        .map((part) => part.split(';')[0].trim().split('-')[0].toLowerCase())
+      for (const lang of preferred) {
+        if (SUPPORTED_LOCALES.includes(lang)) {
+          locale = lang
+          break
+        }
+      }
+    }
+  }
+  requestHeaders.set('x-locale', locale)
+
   // Create Supabase client for middleware with getAll/setAll cookie API
   let response = NextResponse.next({
     request: {

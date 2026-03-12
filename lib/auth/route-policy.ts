@@ -51,7 +51,6 @@ export const CHEF_PROTECTED_PATHS = [
   '/leads',
   '/loyalty',
   '/marketing',
-  '/marketplace',
   '/meal-prep',
   '/messages',
   '/menus',
@@ -112,6 +111,7 @@ export const CLIENT_PROTECTED_PATHS = [
   '/my-profile',
   '/my-rewards',
   '/book-now',
+  '/my-chefs',
 ] as const
 
 export const STAFF_PROTECTED_PATHS = [
@@ -161,6 +161,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/staff-login',
   '/reactivate-account',
   '/kiosk',
+  '/marketplace',
   '/beta',
   '/beta-survey',
   '/hub',

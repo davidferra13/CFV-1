@@ -434,6 +434,39 @@ export async function signUpClient(input: ClientSignupInput) {
       }
     }
 
+    // Create marketplace profile + link (non-blocking).
+    // Enables cross-chef browsing and multi-chef relationships.
+    try {
+      const { data: mktProfile } = await supabase
+        .from('marketplace_profiles')
+        .upsert(
+          {
+            auth_user_id: authData.user.id,
+            email,
+            display_name: validated.full_name.trim(),
+            phone: validated.phone?.trim() ?? null,
+            primary_client_id: client.id,
+          },
+          { onConflict: 'auth_user_id' }
+        )
+        .select('id')
+        .single()
+
+      if (mktProfile && tenantId) {
+        await supabase.from('marketplace_client_links').upsert(
+          {
+            marketplace_profile_id: mktProfile.id,
+            client_id: client.id,
+            tenant_id: tenantId,
+            first_inquiry_at: new Date().toISOString(),
+          },
+          { onConflict: 'marketplace_profile_id,tenant_id' }
+        )
+      }
+    } catch (mktErr) {
+      log.auth.warn('Marketplace profile creation failed (non-blocking)', { error: mktErr })
+    }
+
     return { success: true, userId: authData.user.id }
   } catch (error) {
     await supabase.auth.admin.deleteUser(authData.user.id)

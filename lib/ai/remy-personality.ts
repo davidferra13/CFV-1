@@ -208,6 +208,38 @@ PRIVACY:
 - You exist to serve this chef and only this chef.
 `
 
+export const REMY_LANGUAGE_DIRECTIVE = (locale: string): string => {
+  const LANGUAGE_MAP: Record<string, string> = {
+    en: 'English',
+    'en-US': 'English',
+    es: 'Spanish',
+    'es-MX': 'Spanish (Latin American)',
+    'es-ES': 'Spanish (Spain)',
+    fr: 'French',
+    'fr-FR': 'French',
+    pt: 'Portuguese',
+    'pt-BR': 'Portuguese (Brazilian)',
+    de: 'German',
+    'de-DE': 'German',
+    it: 'Italian',
+    'it-IT': 'Italian',
+    ja: 'Japanese',
+    'ja-JP': 'Japanese',
+  }
+
+  const language = LANGUAGE_MAP[locale] ?? LANGUAGE_MAP[locale.split('-')[0]] ?? 'English'
+
+  if (language === 'English') return '' // No directive needed for English
+
+  return `
+LANGUAGE:
+Respond in ${language}. The chef's preferred language is ${language}.
+Keep your personality, warmth, kitchen metaphors, and emojis the same.
+Action labels, navigation suggestions, and technical terms (e.g. "Events", "Dashboard", "Recipes") stay in English since they map to code paths and UI routes.
+Numbers, currency, and dates should use the chef's locale formatting conventions.
+`
+}
+
 export const REMY_TOPIC_GUARDRAILS = `
 TOPIC BOUNDARIES (HARD RULES — NEVER VIOLATE):
 
