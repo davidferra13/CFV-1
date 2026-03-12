@@ -4,6 +4,7 @@ import { buildCheckoutPaymentIdempotencyKey } from '@/lib/commerce/checkout-idem
 import { getSalesTaxRate } from '@/lib/tax/api-ninjas'
 import { hasTaxableItems } from '@/lib/commerce/tax-policy'
 import { computeLineTaxCents } from '@/lib/commerce/kiosk-policy'
+import { checkRateLimit } from '@/lib/rateLimit'
 import {
   authenticateOrderKioskRequest,
   assertStaffSession,
@@ -202,6 +203,17 @@ function canonicalizeModifiers(
 export async function POST(request: Request) {
   try {
     const { supabase, device } = await authenticateOrderKioskRequest(request)
+
+    // SECURITY: Rate limit checkout attempts per device to prevent abuse
+    // if a device token is compromised (10 checkouts per minute per device).
+    try {
+      await checkRateLimit(`kiosk-checkout:${device.deviceId}`, 10, 60_000)
+    } catch {
+      return NextResponse.json(
+        { error: 'Too many checkout attempts. Try again shortly.' },
+        { status: 429 }
+      )
+    }
 
     const body = await request.json()
     const parsed = CheckoutSchema.parse(body)
