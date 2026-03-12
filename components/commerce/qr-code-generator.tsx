@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import {
   QrCode,
   Plus,
-  Trash,
+  Trash2,
   Download,
   Printer,
   BarChart3,
@@ -276,6 +276,7 @@ export function QRCodeGenerator({
                       variant="ghost"
                       onClick={() => handlePrint(qr)}
                       title="Print"
+                      aria-label={`Print QR code for ${qr.label}`}
                       disabled={pending}
                     >
                       <Printer size={16} />
@@ -288,7 +289,11 @@ export function QRCodeGenerator({
                         rel="noopener noreferrer"
                         title={`Download QR code for ${qr.label}`}
                       >
-                        <Button variant="ghost" title="Download PNG">
+                        <Button
+                          variant="ghost"
+                          title="Download PNG"
+                          aria-label={`Download QR code for ${qr.label}`}
+                        >
                           <Download size={16} />
                         </Button>
                       </a>
@@ -297,6 +302,7 @@ export function QRCodeGenerator({
                       variant="ghost"
                       onClick={() => handleToggleActive(qr)}
                       title={qr.is_active ? 'Deactivate' : 'Activate'}
+                      aria-label={qr.is_active ? `Deactivate ${qr.label}` : `Activate ${qr.label}`}
                       disabled={pending}
                     >
                       {qr.is_active ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -305,9 +311,10 @@ export function QRCodeGenerator({
                       variant="ghost"
                       onClick={() => handleDelete(qr)}
                       title="Delete"
+                      aria-label={`Delete QR code for ${qr.label}`}
                       disabled={pending}
                     >
-                      <Trash size={16} />
+                      <Trash2 size={16} />
                     </Button>
                   </div>
                 </div>

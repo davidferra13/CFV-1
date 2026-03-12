@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Copy, Trash, Pencil, Search, Clock, Star, FileText } from '@/components/ui/icons'
+import { Copy, Trash2, Pencil, Search, Clock, Star, FileText } from '@/components/ui/icons'
 import {
   getTemplates,
   updateTemplate,
@@ -160,6 +160,7 @@ export function TemplateLibrary({ initialTemplates }: { initialTemplates: Entity
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 bg-stone-900 border border-stone-700 rounded-lg text-stone-100 text-sm"
             placeholder="Search templates..."
+            aria-label="Search templates"
           />
         </div>
         <div className="flex gap-1 flex-wrap">
@@ -214,6 +215,7 @@ export function TemplateLibrary({ initialTemplates }: { initialTemplates: Entity
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             className="w-full px-2 py-1 bg-stone-900 border border-stone-600 rounded text-stone-100 text-sm"
+                            aria-label="Template name"
                           />
                           <input
                             type="text"
@@ -221,6 +223,7 @@ export function TemplateLibrary({ initialTemplates }: { initialTemplates: Entity
                             onChange={(e) => setEditDescription(e.target.value)}
                             className="w-full px-2 py-1 bg-stone-900 border border-stone-600 rounded text-stone-100 text-sm"
                             placeholder="Description (optional)"
+                            aria-label="Template description"
                           />
                           <div className="flex gap-2">
                             <Button
@@ -280,6 +283,7 @@ export function TemplateLibrary({ initialTemplates }: { initialTemplates: Entity
                           onClick={() => handleStartEdit(template)}
                           disabled={pending}
                           title="Edit"
+                          aria-label={`Edit ${template.name}`}
                         >
                           <Pencil size={16} />
                         </Button>
@@ -288,8 +292,9 @@ export function TemplateLibrary({ initialTemplates }: { initialTemplates: Entity
                           onClick={() => handleDelete(template)}
                           disabled={pending}
                           title="Delete"
+                          aria-label={`Delete ${template.name}`}
                         >
-                          <Trash size={16} />
+                          <Trash2 size={16} />
                         </Button>
                       </div>
                     )}
