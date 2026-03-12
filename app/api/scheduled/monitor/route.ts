@@ -42,6 +42,7 @@ const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   lifecycle: 2880,
   sequences: 2880,
   'activity-cleanup': 2880,
+  'ai-retention': 2880,
   'loyalty-expiry': 2880,
   'waitlist-sweep': 2880,
   'push-cleanup': 2880,
@@ -49,6 +50,7 @@ const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   'cooling-alert': 2880,
   'quarterly-checkin': 2880,
   'brand-monitor': 2880,
+  'operations-check': 2880,
 }
 
 type CronStatus = {

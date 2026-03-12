@@ -84,6 +84,10 @@
       "schedule": "0 2 * * *"
     },
     {
+      "path": "/api/scheduled/ai-retention",
+      "schedule": "15 5 * * *"
+    },
+    {
       "path": "/api/scheduled/loyalty-expiry",
       "schedule": "0 1 * * *"
     },
@@ -134,6 +138,10 @@
     {
       "path": "/api/cron/morning-briefing",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/scheduled/operations-check",
+      "schedule": "0 7 * * *"
     }
   ]
 }

@@ -133,6 +133,10 @@ export type NotificationAction =
   | 'raffle_drawn_chef'
   // Deposit automation
   | 'deposit_request_sent'
+  // Operations proactive alerts
+  | 'equipment_maintenance_due'
+  | 'dietary_accommodation_check'
+  | 'stale_data_digest'
 
 export type Notification = {
   id: string
@@ -322,6 +326,11 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Deposit automation
   deposit_request_sent: { category: 'payment', icon: 'CreditCard', toastByDefault: true },
+
+  // Operations proactive alerts
+  equipment_maintenance_due: { category: 'ops', icon: 'Wrench', toastByDefault: true },
+  dietary_accommodation_check: { category: 'event', icon: 'AlertTriangle', toastByDefault: true },
+  stale_data_digest: { category: 'system', icon: 'Database', toastByDefault: false },
 }
 
 // Category display names for preferences UI
