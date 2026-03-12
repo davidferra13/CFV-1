@@ -57,8 +57,8 @@ This is the master list of every improvement identified for the chef portal, **o
 | 28  | In-Page Search                   | Global        | Not started                   |
 | 29  | Loading States (Async)           | Global        | Not started                   |
 | 30  | Pagination                       | Global        | Not started                   |
-| 31  | Tax Reports                      | Finance       | Not started                   |
-| 32  | Event PDF Exports                | Events        | Not started                   |
+| 31  | Tax Reports                      | Finance       | Done                          |
+| 32  | Event PDF Exports                | Events        | Done (enhanced pre-existing)  |
 | 33  | Client Year-End Summary          | Clients       | Not started                   |
 | 34  | Staff Utilization Report         | Operations    | Not started                   |
 | 35  | Webhook Triggers                 | Settings      | Not started                   |
@@ -69,14 +69,14 @@ This is the master list of every improvement identified for the chef portal, **o
 | 40  | Data Archival                    | Settings      | Not started                   |
 | 41  | Duplicate Detection              | Clients       | Done                          |
 | 42  | Bulk Import                      | Settings      | Not started                   |
-| 43  | Proactive Remy Nudges            | Remy AI       | Not started                   |
+| 43  | Proactive Remy Nudges            | Remy AI       | Done                          |
 | 44  | Remy Conversation-to-Action      | Remy AI       | Not started                   |
 | 45  | Kitchen Display System (KDS)     | Commerce      | Not started                   |
 | 46  | POS Loyalty Integration          | Commerce      | Not started                   |
 | 47  | Recipe Versioning & Cost History | Culinary      | Done                          |
 | 48  | Batch Prep Planner               | Culinary      | Not started                   |
 | 49  | Nutritional & Allergen Scoring   | Culinary      | Not started                   |
-| 50  | HACCP Food Safety Plan           | Protection    | Not started                   |
+| 50  | HACCP Food Safety Plan           | Protection    | Done (enhanced pre-existing)  |
 | 51  | Supplier Recall Management       | Protection    | Not started                   |
 | 52  | Crisis Playbook Execution        | Protection    | Not started                   |
 
