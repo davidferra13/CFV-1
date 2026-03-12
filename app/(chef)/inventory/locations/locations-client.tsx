@@ -10,6 +10,7 @@ import {
   deleteStorageLocation,
   setDefaultLocation,
 } from '@/lib/inventory/location-actions'
+import { toast } from 'sonner'
 
 const LOCATION_TYPES = [
   { value: 'home_fridge', label: 'Home Fridge' },
@@ -73,7 +74,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
         // Reload to get updated list
         window.location.reload()
       } catch (err) {
-        console.error('Failed to create location', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to create location')
       }
     })
   }
@@ -84,7 +85,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
         await setDefaultLocation(id)
         window.location.reload()
       } catch (err) {
-        console.error('Failed to set default', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to set default location')
       }
     })
   }
@@ -102,7 +103,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
         await deleteStorageLocation(deleteTargetId)
         window.location.reload()
       } catch (err) {
-        console.error('Failed to delete location', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to delete location')
       }
     })
   }

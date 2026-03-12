@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 
 const REWARD_TYPES = [
   { value: 'free_course', label: 'Free Course' },
@@ -51,6 +52,7 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
         await deactivateReward(reward.id)
       } catch {
         setError('Failed to remove reward')
+        toast.error('Failed to remove reward')
       }
     })
   }
@@ -89,7 +91,9 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
         await updateReward(reward.id, input)
         setMode('idle')
       } catch (err: any) {
-        setError(err?.message || 'Failed to save reward')
+        const message = err?.message || 'Failed to save reward'
+        setError(message)
+        toast.error(message)
       }
     })
   }
