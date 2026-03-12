@@ -33,6 +33,7 @@ const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   // Hourly crons — alert if stale > 2 hours
   'integrations-retry': 120,
   campaigns: 120,
+  'remy-alerts': 120,
   // 6-hour crons — alert if stale > 12 hours
   'revenue-goals': 720,
   'follow-ups': 720,
