@@ -91,8 +91,102 @@ export async function recordTemperature(input: {
     throw new Error(`Failed to record temperature: ${error.message}`)
   }
 
+  // Auto-create food safety incident for out-of-range temperatures (non-blocking)
+  if (isInRange === false) {
+    try {
+      const preset = TEMPERATURE_LOCATIONS.find((loc) => loc.id === input.location)
+      const locationName = preset?.label ?? input.location
+      const rangeStr =
+        targetMinF !== null && targetMaxF !== null
+          ? `${targetMinF}-${targetMaxF}°F`
+          : 'unknown range'
+      const { createIncident } = await import('@/lib/safety/incident-actions')
+      await createIncident({
+        incident_date: logDate,
+        incident_type: 'food_safety',
+        description: `Temperature deviation at ${locationName}: recorded ${input.temperatureF}°F (expected ${rangeStr}).${input.correctiveAction ? ` Corrective action taken: ${input.correctiveAction}` : ''}`,
+        immediate_action: input.correctiveAction ?? 'Investigate and take corrective action',
+        resolution_status: input.correctiveAction ? 'resolved' : 'open',
+      })
+    } catch (err) {
+      console.error('[non-blocking] Auto-incident creation failed:', err)
+    }
+  }
+
   revalidatePath('/compliance/daily')
   return mapTempLog(data)
+}
+
+export type CCPComplianceEntry = {
+  location: string
+  locationLabel: string
+  totalLogs: number
+  passCount: number
+  failCount: number
+  passRate: number
+  lastLogDate: string | null
+}
+
+/**
+ * Get CCP compliance report: per-location pass/fail rates over a date range.
+ * Maps temperature monitoring locations to Critical Control Points.
+ */
+export async function getCCPComplianceReport(
+  startDate: string,
+  endDate: string
+): Promise<CCPComplianceEntry[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('compliance_temp_logs')
+    .select('location, location_label, is_in_range, log_date')
+    .eq('chef_id', user.tenantId!)
+    .gte('log_date', startDate)
+    .lte('log_date', endDate)
+    .order('log_date', { ascending: false })
+
+  if (error) {
+    throw new Error(`Failed to load CCP compliance: ${error.message}`)
+  }
+
+  const logs = data ?? []
+  const byLocation = new Map<
+    string,
+    { label: string; total: number; pass: number; fail: number; lastDate: string | null }
+  >()
+
+  for (const log of logs) {
+    const loc = log.location as string
+    const entry = byLocation.get(loc) ?? {
+      label: (log.location_label as string) ?? loc,
+      total: 0,
+      pass: 0,
+      fail: 0,
+      lastDate: null,
+    }
+    entry.total++
+    if (log.is_in_range === true) entry.pass++
+    if (log.is_in_range === false) entry.fail++
+    if (!entry.lastDate) entry.lastDate = log.log_date as string
+    byLocation.set(loc, entry)
+  }
+
+  const result: CCPComplianceEntry[] = []
+  for (const [location, stats] of byLocation) {
+    const preset = TEMPERATURE_LOCATIONS.find((l) => l.id === location)
+    result.push({
+      location,
+      locationLabel: preset?.label ?? stats.label,
+      totalLogs: stats.total,
+      passCount: stats.pass,
+      failCount: stats.fail,
+      passRate: stats.total > 0 ? Math.round((stats.pass / stats.total) * 100) : 0,
+      lastLogDate: stats.lastDate,
+    })
+  }
+
+  return result.sort((a, b) => b.totalLogs - a.totalLogs)
 }
 
 export async function getTemperatureLogs(date: string): Promise<TempLogEntry[]> {

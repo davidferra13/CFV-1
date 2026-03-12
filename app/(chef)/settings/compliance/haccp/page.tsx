@@ -3,8 +3,10 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { ensureHACCPPlan, getHACCPPlan } from '@/lib/haccp/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
+import { Suspense } from 'react'
 import { HACCPPlanView } from '@/components/haccp/haccp-plan-view'
 import { HACCPWizard } from '@/components/haccp/haccp-wizard'
+import { CCPComplianceDashboard } from '@/components/haccp/ccp-compliance-dashboard'
 import { HACCPPageTabs } from './tabs-client'
 import type { HACCPPlanData } from '@/lib/haccp/types'
 
@@ -51,6 +53,17 @@ export default async function HACCPPage() {
       <HACCPPageTabs
         referenceView={<HACCPPlanView planData={planData} lastReviewedAt={plan.last_reviewed_at} />}
         wizardView={<HACCPWizard planData={planData} />}
+        complianceView={
+          <Suspense
+            fallback={
+              <div className="text-stone-500 text-sm py-8 text-center">
+                Loading compliance data...
+              </div>
+            }
+          >
+            <CCPComplianceDashboard />
+          </Suspense>
+        }
       />
     </div>
   )
