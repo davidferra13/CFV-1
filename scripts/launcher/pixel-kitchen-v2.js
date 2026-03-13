@@ -74,6 +74,7 @@
     weather: null,
     ingredients: [],
     history: [],
+    infrastructure: null,
   }
   let bizDataLoaded = false
   let lastBizPoll = 0
@@ -970,53 +971,44 @@
     let y = panelY + pad
 
     // ── LIVE BUSINESS METRICS ──
-    const metricsH = panelH * 0.14
+    const metricsH = panelH * 0.1
     drawBusinessMetrics(panelX + pad, y, panelW - pad * 2, metricsH)
     y += metricsH + 2 * s
 
-    // Divider
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-    ctx.beginPath()
-    ctx.moveTo(panelX + pad, y)
-    ctx.lineTo(panelX + panelW - pad, y)
-    ctx.stroke()
-    y += 2 * s
+    // Divider helper
+    function divider() {
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)'
+      ctx.beginPath()
+      ctx.moveTo(panelX + pad, y)
+      ctx.lineTo(panelX + panelW - pad, y)
+      ctx.stroke()
+      y += 2 * s
+    }
+    divider()
 
     // ── EVENT PIPELINE ──
-    const pipeH = panelH * 0.2
+    const pipeH = panelH * 0.16
     drawEventPipeline(panelX + pad, y, panelW - pad * 2, pipeH)
     y += pipeH + 2 * s
+    divider()
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-    ctx.beginPath()
-    ctx.moveTo(panelX + pad, y)
-    ctx.lineTo(panelX + panelW - pad, y)
-    ctx.stroke()
-    y += 2 * s
+    // ── INFRASTRUCTURE ──
+    const infraH = panelH * 0.28
+    drawInfrastructureRack(panelX + pad, y, panelW - pad * 2, infraH)
+    y += infraH + 2 * s
+    divider()
 
     // ── LIVE FEED ──
-    const feedH = panelH * 0.22
+    const feedH = panelH * 0.14
     drawActivityFeed(panelX + pad, y, panelW - pad * 2, feedH)
     y += feedH + 2 * s
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-    ctx.beginPath()
-    ctx.moveTo(panelX + pad, y)
-    ctx.lineTo(panelX + panelW - pad, y)
-    ctx.stroke()
-    y += 2 * s
+    divider()
 
     // ── BRIGADE ──
-    const teamH = panelH * 0.18
+    const teamH = panelH * 0.12
     drawBrigadeStatus(panelX + pad, y, panelW - pad * 2, teamH)
     y += teamH + 2 * s
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-    ctx.beginPath()
-    ctx.moveTo(panelX + pad, y)
-    ctx.lineTo(panelX + panelW - pad, y)
-    ctx.stroke()
-    y += 2 * s
+    divider()
 
     // ── CHEF LEVEL & ALERTS ──
     const alertH = panelH - (y - panelY) - pad
@@ -1665,6 +1657,99 @@
     }
   }
 
+  // ── OpenClaw Intercom (clickable radio on kitchen wall) ──
+  let ocIntercomPulse = 0
+  function drawOpenClawIntercom(kitchenW, kitchenH) {
+    const s = P
+    // Position: upper-right wall area, next to the pantry
+    const ix = kitchenW - 16 * s
+    const iy = 6 * s
+
+    ocIntercomPulse += 0.05
+
+    // Intercom box (mounted on wall)
+    ctx.fillStyle = '#2a2a3a'
+    ctx.fillRect(ix, iy, 12 * s, 14 * s)
+    ctx.fillStyle = '#3a3a4a'
+    ctx.fillRect(ix + s, iy + s, 10 * s, 12 * s)
+
+    // Speaker grille (horizontal lines)
+    ctx.fillStyle = '#222235'
+    for (let g = 0; g < 4; g++) {
+      ctx.fillRect(ix + 2 * s, iy + 2.5 * s + g * 2 * s, 8 * s, 0.8 * s)
+    }
+
+    // Status LED (green pulse if gateway online, red if offline)
+    const gwOnline = bizData.agentStates && bizData.agentStates.openclawGateway
+    const ledPulse = 0.5 + Math.sin(ocIntercomPulse) * 0.4
+    if (gwOnline) {
+      ctx.fillStyle = `rgba(34,197,94,${ledPulse})`
+    } else {
+      ctx.fillStyle = `rgba(239,68,68,${0.3 + Math.sin(ocIntercomPulse * 0.5) * 0.2})`
+    }
+    ctx.beginPath()
+    ctx.arc(ix + 9 * s, iy + 11.5 * s, 0.8 * s, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Talk button
+    ctx.fillStyle = '#e88f47'
+    roundRect(ix + 2 * s, iy + 10 * s, 5 * s, 2.5 * s, 0.5 * s, '#e88f47')
+    ctx.fillStyle = '#fff'
+    ctx.font = 'bold ' + 1.1 * s + 'px monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText('TALK', ix + 4.5 * s, iy + 11.7 * s)
+
+    // Label above
+    ctx.fillStyle = '#94a3b8'
+    ctx.font = 1.2 * s + 'px monospace'
+    ctx.fillText('OPENCLAW', ix + 6 * s, iy - s)
+    ctx.fillStyle = '#64748b'
+    ctx.font = 1 * s + 'px monospace'
+    ctx.fillText(gwOnline ? 'ONLINE' : 'OFFLINE', ix + 6 * s, iy + 15 * s)
+    ctx.textAlign = 'left'
+
+    // Antenna on top
+    ctx.strokeStyle = '#666'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(ix + 6 * s, iy)
+    ctx.lineTo(ix + 6 * s, iy - 3 * s)
+    ctx.lineTo(ix + 8 * s, iy - 4 * s)
+    ctx.stroke()
+
+    // Signal waves when online
+    if (gwOnline) {
+      const waveAlpha = 0.15 + Math.sin(ocIntercomPulse * 2) * 0.1
+      ctx.strokeStyle = `rgba(34,197,94,${waveAlpha})`
+      ctx.lineWidth = 0.8
+      for (let w = 1; w <= 3; w++) {
+        ctx.beginPath()
+        ctx.arc(ix + 8 * s, iy - 4 * s, w * 1.5 * s, -Math.PI * 0.6, -Math.PI * 0.1)
+        ctx.stroke()
+      }
+    }
+
+    // Click region - opens OpenClaw chat
+    registerClickRegion(
+      ix,
+      iy - 4 * s,
+      12 * s,
+      20 * s,
+      () => {
+        // Switch to OpenClaw panel and Chat tab
+        const navItem = document.querySelector('[data-section="openclaw"]')
+        if (navItem) navItem.click()
+        setTimeout(() => switchOpenClawTab('oc-chat'), 50)
+        // Focus the input
+        setTimeout(() => {
+          const input = document.getElementById('oc-chat-input')
+          if (input) input.focus()
+        }, 100)
+      },
+      'Talk to OpenClaw'
+    )
+  }
+
   // ── Weather overlay ──
   function drawWeatherOverlay(kitchenW, kitchenH) {
     const weather = bizData.weather
@@ -1826,6 +1911,185 @@
       },
       'Return to live view'
     )
+  }
+
+  // ── Infrastructure Rack (full stack visualization) ──
+  function drawInfrastructureRack(x, y, w, h) {
+    const s = P
+    const infra = bizData.infrastructure
+    if (!infra) return
+
+    ctx.fillStyle = '#e88f47'
+    ctx.font = 'bold ' + 2.5 * s + 'px Inter, monospace'
+    ctx.textAlign = 'left'
+    ctx.fillText('INFRASTRUCTURE', x, y + 3 * s)
+
+    // Service list - each row is a service with LED + name + detail
+    const services = [
+      {
+        name: 'Dev Server',
+        online: infra.devServer?.online,
+        detail: ':3100',
+        color: '#22c55e',
+        category: 'local',
+      },
+      {
+        name: 'Beta Server',
+        online: infra.betaServer?.online,
+        detail: ':3200',
+        color: '#3b82f6',
+        category: 'local',
+      },
+      {
+        name: 'Production',
+        online: infra.production?.online,
+        detail: 'cheflowhq.com',
+        color: '#a855f7',
+        category: 'cloud',
+      },
+      {
+        name: 'Ollama AI',
+        online: infra.ollama?.online,
+        detail: ':11434' + (infra.ollama?.modelReady ? ' \u2713' : ' \u2717'),
+        color: '#eab308',
+        category: 'local',
+      },
+      {
+        name: 'Supabase DB',
+        online: infra.supabase?.online,
+        detail: 'PostgreSQL',
+        color: '#22c55e',
+        category: 'cloud',
+      },
+      {
+        name: 'Mission Ctrl',
+        online: infra.missionControl?.online,
+        detail: ':' + (infra.missionControl?.port || '?'),
+        color: '#e88f47',
+        category: 'local',
+      },
+      {
+        name: 'CF Tunnel',
+        online: infra.cloudflare?.online,
+        detail: 'beta.cheflowhq',
+        color: '#f97316',
+        category: 'cloud',
+      },
+      {
+        name: 'OpenClaw Pi',
+        online: infra.openclawGateway?.online,
+        detail: '10.0.0.177',
+        color: '#06b6d4',
+        category: 'remote',
+      },
+    ]
+
+    // Git status row
+    const gitInfo = infra.git || {}
+
+    const rowH = 3 * s
+    let ry = y + 5.5 * s
+
+    // Category headers + service rows
+    let lastCategory = ''
+    services.forEach((svc) => {
+      if (svc.category !== lastCategory) {
+        // Category divider
+        ctx.fillStyle = '#334155'
+        ctx.font = 1.2 * s + 'px monospace'
+        ctx.fillText(svc.category.toUpperCase(), x, ry + 1.5 * s)
+        lastCategory = svc.category
+        ry += 2 * s
+      }
+
+      // LED dot (pulsing if online)
+      const ledPulse = svc.online ? 0.7 + Math.sin(tick * 0.05) * 0.3 : 1
+      ctx.fillStyle = svc.online ? `rgba(34,197,94,${ledPulse})` : 'rgba(239,68,68,0.8)'
+      ctx.beginPath()
+      ctx.arc(x + 2 * s, ry + 1 * s, s * 0.6, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Glow effect for online services
+      if (svc.online) {
+        ctx.fillStyle = 'rgba(34,197,94,0.15)'
+        ctx.beginPath()
+        ctx.arc(x + 2 * s, ry + 1 * s, s * 1.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Service name
+      ctx.fillStyle = svc.online ? '#e2e8f0' : '#64748b'
+      ctx.font = (svc.online ? 'bold ' : '') + 1.6 * s + 'px monospace'
+      ctx.fillText(svc.name, x + 4 * s, ry + 1.5 * s)
+
+      // Detail (port/url)
+      ctx.fillStyle = svc.online ? '#64748b' : '#475569'
+      ctx.font = 1.3 * s + 'px monospace'
+      ctx.textAlign = 'right'
+      ctx.fillText(svc.detail, x + w, ry + 1.5 * s)
+      ctx.textAlign = 'left'
+
+      // Latency if available
+      const latency =
+        svc.name === 'Dev Server'
+          ? infra.devServer?.latency
+          : svc.name === 'Beta Server'
+            ? infra.betaServer?.latency
+            : svc.name === 'Production'
+              ? infra.production?.latency
+              : null
+      if (latency && svc.online) {
+        ctx.fillStyle = latency < 200 ? '#22c55e60' : latency < 1000 ? '#eab30860' : '#ef444460'
+        ctx.font = 1.1 * s + 'px monospace'
+        ctx.textAlign = 'right'
+        ctx.fillText(latency + 'ms', x + w - 14 * s, ry + 1.5 * s)
+        ctx.textAlign = 'left'
+      }
+
+      ry += rowH
+    })
+
+    // Git status at bottom
+    ry += s
+    ctx.fillStyle = '#334155'
+    ctx.font = 1.2 * s + 'px monospace'
+    ctx.fillText('GIT', x, ry + 1.5 * s)
+    ry += 2 * s
+
+    // Branch badge
+    ctx.fillStyle = gitInfo.clean ? '#22c55e40' : '#eab30840'
+    roundRect(x + s, ry, 20 * s, 2.5 * s, s * 0.5, gitInfo.clean ? '#22c55e20' : '#eab30820')
+    ctx.fillStyle = gitInfo.clean ? '#22c55e' : '#eab308'
+    ctx.font = 1.4 * s + 'px monospace'
+    const branchName = (gitInfo.branch || 'unknown').slice(0, 18)
+    ctx.fillText('\u2387 ' + branchName, x + 2 * s, ry + 1.8 * s)
+
+    // Dirty files count
+    if (gitInfo.dirty > 0) {
+      ctx.fillStyle = '#eab308'
+      ctx.textAlign = 'right'
+      ctx.fillText(gitInfo.dirty + ' dirty', x + w, ry + 1.8 * s)
+      ctx.textAlign = 'left'
+    }
+
+    ry += 3.5 * s
+
+    // Online/offline summary
+    const onlineCount = services.filter((s) => s.online).length
+    const totalCount = services.length
+    ctx.fillStyle =
+      onlineCount === totalCount ? '#22c55e' : onlineCount > totalCount / 2 ? '#eab308' : '#ef4444'
+    ctx.font = 'bold ' + 1.8 * s + 'px monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText(onlineCount + '/' + totalCount + ' ONLINE', x + w / 2, ry + s)
+    ctx.textAlign = 'left'
+
+    // Overall health bar
+    ry += 2 * s
+    const healthPct = onlineCount / totalCount
+    roundRect(x, ry, w, 1.5 * s, s * 0.3, 'rgba(255,255,255,0.04)')
+    const healthColor = healthPct >= 1 ? '#22c55e' : healthPct >= 0.6 ? '#eab308' : '#ef4444'
+    roundRect(x, ry, w * healthPct, 1.5 * s, s * 0.3, healthColor + '60')
   }
 
   // ── Agent class ──
@@ -2055,6 +2319,9 @@
 
     // Kitchen expansion (extra rooms based on revenue)
     drawKitchenExpansion(kitchenW, h)
+
+    // OpenClaw intercom on kitchen wall
+    drawOpenClawIntercom(kitchenW, h)
 
     // Weather overlay on window
     drawWeatherOverlay(kitchenW, h)

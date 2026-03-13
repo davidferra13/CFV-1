@@ -7021,10 +7021,57 @@ async function handleRequest(req, res) {
       })
 
       // Agent states from process/service status
+      let openclawGwOnline = false
+      try {
+        const { stdout } = await execAsync(
+          'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null"',
+          { timeout: 5000 }
+        )
+        openclawGwOnline = stdout.trim() === 'active'
+      } catch { /* offline */ }
+
+      // Supabase health check
+      let supabaseOnline = false
+      try {
+        const sbResult = await supabaseQuery('chefs?select=id&limit=1')
+        supabaseOnline = Array.isArray(sbResult) || (sbResult && typeof sbResult === 'object')
+      } catch { /* offline */ }
+
+      // Production health (from getAllStatus)
+      const prodOnline = status.prod?.online || false
+      const prodLatency = status.prod?.latency || null
+
+      // Cloudflare Tunnel (check beta.cheflowhq.com)
+      let tunnelOnline = false
+      if (!global._pxTunnel || Date.now() - global._pxTunnel.ts > 120000) {
+        try {
+          const tr = await fetch('https://beta.cheflowhq.com/api/health', { signal: AbortSignal.timeout(5000) })
+          tunnelOnline = tr.ok || tr.status < 500
+          global._pxTunnel = { ts: Date.now(), online: tunnelOnline }
+        } catch {
+          global._pxTunnel = { ts: Date.now(), online: false }
+        }
+      }
+      tunnelOnline = global._pxTunnel?.online || false
+
       const agentStates = {
-        ollama: status.ollama?.pc === 'online' || status.ollama?.pcStatus === 'online',
-        devServer: status.dev?.running || false,
-        betaServer: status.beta?.running || false,
+        ollama: status.ollamaPc?.online || false,
+        devServer: status.dev?.online || false,
+        betaServer: status.beta?.online || false,
+        openclawGateway: openclawGwOnline,
+      }
+
+      // Full infrastructure status
+      const infrastructure = {
+        devServer: { online: status.dev?.online || false, port: 3100, latency: status.dev?.latency || null },
+        betaServer: { online: status.beta?.online || false, port: 3200, latency: status.beta?.latency || null },
+        production: { online: prodOnline, url: 'app.cheflowhq.com', latency: prodLatency },
+        ollama: { online: status.ollamaPc?.online || false, port: 11434, models: status.ollamaPc?.models || [], modelReady: status.ollamaPc?.modelReady || false },
+        supabase: { online: supabaseOnline, url: 'luefkpakzvxcsqroxyhz.supabase.co' },
+        missionControl: { online: true, port: CONFIG.port },
+        openclawGateway: { online: openclawGwOnline, host: '10.0.0.177', port: 18789 },
+        cloudflare: { online: tunnelOnline, url: 'beta.cheflowhq.com' },
+        git: { branch: status.git?.branch || 'unknown', dirty: status.git?.dirty || 0, clean: status.git?.clean || false },
       }
 
       // Git activity (recent commits in last hour)
@@ -7100,6 +7147,7 @@ async function handleRequest(req, res) {
         weather: global._pxWeather?.data || null,
         ingredients: ingredientStock,
         history: global._pxHistory || [],
+        infrastructure,
       })
     } catch (err) {
       return json(res, { ok: false, error: err.message }, 500)
@@ -7248,6 +7296,291 @@ async function handleRequest(req, res) {
     } catch (err) {
       return json(res, { ok: false, error: err.message }, 500)
     }
+  }
+
+  // ── OpenClaw Chat (talk to the team directly) ──────────────────
+  if (path === '/api/openclaw/chat' && method === 'POST') {
+    const body = await parseBody(req)
+    const { message, history = [] } = body
+
+    if (!message || typeof message !== 'string') {
+      return json(res, { error: 'Message is required' }, 400)
+    }
+
+    const endpoint = await getAvailableOllamaEndpoint()
+    if (!endpoint) {
+      return json(res, { error: 'No Ollama instance available. Start Ollama first.' }, 503)
+    }
+
+    // ── OpenClaw-specific tool registry ──
+    const OC_TOOLS = {
+      'oc/roadmap': {
+        desc: 'Show the current OpenClaw roadmap',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/apps/CFv1-openclaw-sandbox/ROADMAP.md 2>/dev/null"',
+              { timeout: 8000 }
+            )
+            return stdout.trim() || '(empty)'
+          } catch {
+            // Fall back to local config copy
+            try { return await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/ROADMAP.md'), 'utf-8') } catch { return 'Could not read roadmap' }
+          }
+        },
+      },
+      'oc/progress': {
+        desc: 'Show progress log (what has been done)',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/apps/CFv1-openclaw-sandbox/PROGRESS.md 2>/dev/null"',
+              { timeout: 8000 }
+            )
+            return stdout.trim() || '(empty)'
+          } catch {
+            try { return await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/PROGRESS.md'), 'utf-8') } catch { return 'Could not read progress' }
+          }
+        },
+      },
+      'oc/gateway': {
+        desc: 'Check OpenClaw gateway service status on Pi',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'ssh -o ConnectTimeout=5 pi "systemctl is-active openclaw-chefflow 2>/dev/null && echo PID:$(systemctl show openclaw-chefflow -p MainPID --value) && echo UPTIME:$(systemctl show openclaw-chefflow -p ActiveEnterTimestamp --value)"',
+              { timeout: 8000 }
+            )
+            return stdout.trim()
+          } catch (e) { return 'Gateway offline or SSH failed: ' + (e.message || '').substring(0, 100) }
+        },
+      },
+      'oc/logs': {
+        desc: 'Show recent gateway logs (last 40 lines)',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'ssh -o ConnectTimeout=5 pi "sudo journalctl -u openclaw-chefflow --no-pager -n 40 -o short-iso 2>/dev/null"',
+              { timeout: 10000 }
+            )
+            return stdout.trim() || '(no logs)'
+          } catch { return 'Could not fetch logs' }
+        },
+      },
+      'oc/git-log': {
+        desc: 'Show recent OpenClaw commits (last 20)',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'git log --oneline --no-decorate -20',
+              { cwd: OPENCLAW_CLONE_ROOT, timeout: 5000 }
+            )
+            return stdout.trim() || '(no commits)'
+          } catch { return 'Could not read git log' }
+        },
+      },
+      'oc/git-diff': {
+        desc: 'Show uncommitted changes in OpenClaw clone',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'git diff --stat',
+              { cwd: OPENCLAW_CLONE_ROOT, timeout: 5000 }
+            )
+            return stdout.trim() || '(no uncommitted changes)'
+          } catch { return 'Could not read diff' }
+        },
+      },
+      'oc/files': {
+        desc: 'Show recent file change activity in OpenClaw clone',
+        fn: async () => {
+          const summary = getOpenClawActivitySummary()
+          return JSON.stringify(summary, null, 2)
+        },
+      },
+      'oc/restart': {
+        desc: 'Restart the OpenClaw gateway service on Pi',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'ssh -o ConnectTimeout=5 pi "sudo systemctl restart openclaw-chefflow && sleep 1 && systemctl is-active openclaw-chefflow"',
+              { timeout: 15000 }
+            )
+            return 'Restart result: ' + stdout.trim()
+          } catch (e) { return 'Restart failed: ' + (e.message || '').substring(0, 120) }
+        },
+      },
+      'oc/today': {
+        desc: 'Show today\'s activity log from OpenClaw',
+        fn: async () => {
+          try {
+            const { stdout } = await execAsync(
+              'ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/apps/CFv1-openclaw-sandbox/logs/ACTIVITY_LOG.md 2>/dev/null | tail -100"',
+              { timeout: 8000 }
+            )
+            return stdout.trim() || '(no activity log)'
+          } catch {
+            try {
+              const content = await readFile(join(OPENCLAW_CLONE_ROOT, 'logs', 'ACTIVITY_LOG.md'), 'utf-8')
+              return content.split('\n').slice(-100).join('\n')
+            } catch { return 'No activity log found' }
+          }
+        },
+      },
+    }
+
+    // Build OpenClaw system prompt
+    const toolList = Object.entries(OC_TOOLS).map(([name, { desc }]) => `  - ${name}: ${desc}`).join('\n')
+
+    // Load identity files
+    let soulContent = '', roadmapContent = '', progressContent = ''
+    try { soulContent = await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/SOUL.md'), 'utf-8') } catch {}
+    try { roadmapContent = await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/ROADMAP.md'), 'utf-8') } catch {}
+    try { progressContent = await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/PROGRESS.md'), 'utf-8') } catch {}
+
+    // Check gateway status quickly
+    let gwStatus = 'unknown'
+    try {
+      const { stdout } = await execAsync(
+        'ssh -o ConnectTimeout=3 pi "systemctl is-active openclaw-chefflow 2>/dev/null"',
+        { timeout: 5000 }
+      )
+      gwStatus = stdout.trim()
+    } catch {}
+
+    const systemPrompt = `You are the OpenClaw Development Team. The developer is talking to you through the Mission Control intercom.
+
+## Your Identity
+${soulContent.substring(0, 1500)}
+
+## Current Status
+- Gateway: ${gwStatus}
+- Clone available: ${existsSync(OPENCLAW_CLONE_ROOT) ? 'yes' : 'no'}
+
+## Current Roadmap (what you should be working on)
+${roadmapContent.substring(0, 2000)}
+
+## Progress So Far
+${progressContent.substring(0, 1500)}
+
+## Available Actions
+Execute actions by including tags in your response.
+Format: <action>action/name</action>
+
+${toolList}
+
+## Rules
+1. You ARE the team. Speak as the team, not about the team. "We're working on..." not "The team is working on..."
+2. Be direct and concise. The developer doesn't want a novel.
+3. When asked about status, progress, or roadmap, use the relevant action to fetch live data.
+4. Execute actions when relevant. Just include <action>oc/roadmap</action> etc. in your response.
+5. When asked to do something, acknowledge and explain what you'll do. You can't write code through this chat, but you can report status, show progress, restart services, and relay information.
+6. Never use em dashes. Use commas, periods, semicolons, or parentheses instead.
+7. Use markdown for formatting (tables, code blocks, bold, lists).
+8. If the developer gives you a direction or priority change, acknowledge it clearly.
+`
+
+    const trimmedHistory = history.slice(-CHAT_CONFIG.maxHistoryMessages)
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...trimmedHistory,
+      { role: 'user', content: message },
+    ]
+
+    log('openclaw-chat', `Chat request via ${endpoint.source}: ${message.slice(0, 60)}`, 'info')
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'X-Chat-Source': 'openclaw-' + endpoint.source,
+    })
+
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), CHAT_CONFIG.timeoutMs)
+
+      const ollamaRes = await fetch(`${endpoint.url}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: endpoint.model,
+          messages,
+          stream: true,
+          think: false,
+          options: { num_predict: CHAT_CONFIG.maxTokens },
+        }),
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeout)
+
+      if (!ollamaRes.ok) {
+        res.write(JSON.stringify({ type: 'error', error: `Ollama returned ${ollamaRes.status}` }) + '\n')
+        return res.end()
+      }
+
+      let fullResponse = ''
+      const reader = ollamaRes.body.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n').filter(l => l.trim())
+
+        for (const line of lines) {
+          try {
+            const parsed = JSON.parse(line)
+            if (parsed.message?.content) {
+              fullResponse += parsed.message.content
+              res.write(JSON.stringify({ type: 'token', content: parsed.message.content }) + '\n')
+            }
+          } catch { /* skip malformed */ }
+        }
+      }
+
+      // Parse and execute OpenClaw actions
+      const actionRegex = /<action>([^<]+)<\/action>/g
+      let match
+      const actionResults = []
+      while ((match = actionRegex.exec(fullResponse)) !== null) {
+        const actionName = match[1].split(':')[0].trim()
+        const actionParam = match[1].includes(':') ? match[1].split(':').slice(1).join(':').trim() : null
+        const tool = OC_TOOLS[actionName]
+        if (tool) {
+          try {
+            const result = await tool.fn(actionParam)
+            actionResults.push({ action: actionName, ok: true, result: { message: typeof result === 'string' ? result.substring(0, 4000) : JSON.stringify(result).substring(0, 4000) } })
+          } catch (err) {
+            actionResults.push({ action: actionName, ok: false, error: err.message })
+          }
+        } else {
+          actionResults.push({ action: actionName, ok: false, error: `Unknown action: ${actionName}` })
+        }
+      }
+
+      if (actionResults.length > 0) {
+        res.write(JSON.stringify({ type: 'action_results', results: actionResults }) + '\n')
+      }
+
+      const actions = actionResults.map(r => r.action)
+      res.write(JSON.stringify({ type: 'done', fullResponse, actions }) + '\n')
+      res.end()
+
+    } catch (err) {
+      const errMsg = err.name === 'AbortError' ? 'Request timed out' : err.message
+      log('openclaw-chat', `Chat error: ${errMsg}`, 'error')
+      try {
+        res.write(JSON.stringify({ type: 'error', error: errMsg }) + '\n')
+        res.end()
+      } catch { /* response already closed */ }
+    }
+    return
   }
 
   // ── Team Dashboard (ROADMAP + PROGRESS + Agent Status) ─────────
