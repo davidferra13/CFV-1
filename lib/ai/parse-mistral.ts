@@ -11,6 +11,8 @@ import { incrementAiMetric, recordAiLatency } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 import { isMistralEnabled, getMistralConfig, getMistralModel } from './providers'
 import type { ModelTier } from './providers'
+import { MistralError } from './provider-errors'
+import type { ParseMistralOptions } from './provider-errors'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -19,33 +21,6 @@ function extractJsonPayload(rawText: string): string {
 
 function formatZodIssues(error: z.ZodError): string {
   return error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')
-}
-
-export class MistralError extends Error {
-  constructor(
-    message: string,
-    public code:
-      | 'not_configured'
-      | 'unreachable'
-      | 'timeout'
-      | 'rate_limited'
-      | 'invalid_json'
-      | 'validation_failed'
-      | 'empty_response'
-  ) {
-    super(message)
-    this.name = 'MistralError'
-  }
-}
-
-export interface ParseMistralOptions {
-  modelTier?: ModelTier
-  timeoutMs?: number
-  maxTokens?: number
-  model?: string
-  temperature?: number
-  /** Use Codestral endpoint instead of standard Mistral. */
-  useCodestral?: boolean
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000

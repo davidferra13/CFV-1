@@ -12,6 +12,8 @@ import { incrementAiMetric, recordAiLatency } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 import { isGroqEnabled, getGroqConfig, getGroqModel } from './providers'
 import type { ModelTier } from './providers'
+import { GroqError } from './provider-errors'
+import type { ParseProviderOptions } from './provider-errors'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -20,36 +22,6 @@ function extractJsonPayload(rawText: string): string {
 
 function formatZodIssues(error: z.ZodError): string {
   return error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')
-}
-
-export class GroqError extends Error {
-  constructor(
-    message: string,
-    public code:
-      | 'not_configured'
-      | 'unreachable'
-      | 'timeout'
-      | 'rate_limited'
-      | 'invalid_json'
-      | 'validation_failed'
-      | 'empty_response'
-  ) {
-    super(message)
-    this.name = 'GroqError'
-  }
-}
-
-export interface ParseGroqOptions {
-  /** Task-complexity tier for model routing. Default: 'fast'. */
-  modelTier?: ModelTier
-  /** Hard timeout in ms. Default: 30000 (30s). */
-  timeoutMs?: number
-  /** Max tokens to generate. Default: 512. */
-  maxTokens?: number
-  /** Override model name. */
-  model?: string
-  /** Temperature (0.0-1.0). Default: 0.0 for structured output. */
-  temperature?: number
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000
@@ -66,7 +38,7 @@ export async function parseWithGroq<T>(
   systemPrompt: string,
   userContent: string,
   schema: z.ZodType<T>,
-  options?: ParseGroqOptions
+  options?: ParseProviderOptions
 ): Promise<T> {
   if (!isGroqEnabled()) {
     throw new GroqError('GROQ_API_KEY is not set in environment', 'not_configured')

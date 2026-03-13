@@ -11,6 +11,8 @@ import { incrementAiMetric, recordAiLatency } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 import { isSambaNovaEnabled, getSambaNovaConfig, getSambaNovaModel } from './providers'
 import type { ModelTier } from './providers'
+import { SambaNovaError } from './provider-errors'
+import type { ParseProviderOptions } from './provider-errors'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -19,31 +21,6 @@ function extractJsonPayload(rawText: string): string {
 
 function formatZodIssues(error: z.ZodError): string {
   return error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')
-}
-
-export class SambaNovaError extends Error {
-  constructor(
-    message: string,
-    public code:
-      | 'not_configured'
-      | 'unreachable'
-      | 'timeout'
-      | 'rate_limited'
-      | 'invalid_json'
-      | 'validation_failed'
-      | 'empty_response'
-  ) {
-    super(message)
-    this.name = 'SambaNovaError'
-  }
-}
-
-export interface ParseSambaNovaOptions {
-  modelTier?: ModelTier
-  timeoutMs?: number
-  maxTokens?: number
-  model?: string
-  temperature?: number
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000
@@ -60,7 +37,7 @@ export async function parseWithSambaNova<T>(
   systemPrompt: string,
   userContent: string,
   schema: z.ZodType<T>,
-  options?: ParseSambaNovaOptions
+  options?: ParseProviderOptions
 ): Promise<T> {
   if (!isSambaNovaEnabled()) {
     throw new SambaNovaError('SAMBANOVA_API_KEY is not set in environment', 'not_configured')

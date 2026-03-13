@@ -1,6 +1,5 @@
-// Cerebras-backed AI Parser - NON-PRIVATE DATA ONLY
-// Free cloud inference via Cerebras (OpenAI-compatible API).
-// ~2000 tok/s on Llama models. Free tier available.
+// GitHub Models parser - NON-PRIVATE DATA ONLY
+// Uses GitHub Models chat completions for generic tasks only.
 // NEVER use this for client PII, financials, allergies, or messages.
 
 'use server'
@@ -9,9 +8,9 @@ import { z } from 'zod'
 import { log } from '@/lib/logger'
 import { incrementAiMetric, recordAiLatency } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
-import { isCerebrasEnabled, getCerebrasConfig, getCerebrasModel } from './providers'
+import { getGitHubModelsConfig, getGitHubModelsModel, isGitHubModelsEnabled } from './providers'
 import type { ModelTier } from './providers'
-import { CerebrasError } from './provider-errors'
+import { GitHubModelsError } from './provider-errors'
 import type { ParseProviderOptions } from './provider-errors'
 
 function extractJsonPayload(rawText: string): string {
@@ -26,28 +25,24 @@ function formatZodIssues(error: z.ZodError): string {
 const DEFAULT_TIMEOUT_MS = 30_000
 const DEFAULT_MAX_TOKENS = 512
 
-/**
- * Parse structured data using Cerebras cloud API.
- * OpenAI-compatible endpoint, ~2000 tok/s on Llama models.
- *
- * PRIVACY: This function sends data to Cerebras cloud servers.
- * ONLY use for non-private, generic tasks. NEVER for client data.
- */
-export async function parseWithCerebras<T>(
+export async function parseWithGitHubModels<T>(
   systemPrompt: string,
   userContent: string,
   schema: z.ZodType<T>,
   options?: ParseProviderOptions
 ): Promise<T> {
-  if (!isCerebrasEnabled()) {
-    throw new CerebrasError('CEREBRAS_API_KEY is not set in environment', 'not_configured')
+  if (!isGitHubModelsEnabled()) {
+    throw new GitHubModelsError('GITHUB_MODELS_TOKEN is not set in environment', 'not_configured')
   }
 
-  const config = getCerebrasConfig()
-  const model = options?.model || getCerebrasModel(options?.modelTier || 'fast')
+  const config = getGitHubModelsConfig()
+  const model = options?.model || getGitHubModelsModel(options?.modelTier || 'fast')
   const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
   const maxTokens = options?.maxTokens ?? DEFAULT_MAX_TOKENS
   const temperature = options?.temperature ?? 0.0
+  const endpoint = config.org
+    ? `${config.baseUrl}/orgs/${config.org}/inference/chat/completions`
+    : `${config.baseUrl}/inference/chat/completions`
 
   const startTime = Date.now()
 
@@ -56,11 +51,13 @@ export async function parseWithCerebras<T>(
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
 
-    const response = await fetch(`${config.baseUrl}/chat/completions`, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${config.apiKey}`,
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${config.token}`,
         'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': config.apiVersion,
       },
       body: JSON.stringify({
         model,
@@ -79,16 +76,16 @@ export async function parseWithCerebras<T>(
 
     if (response.status === 429) {
       const retryAfter = response.headers.get('retry-after')
-      throw new CerebrasError(
-        `Cerebras rate limited. Retry after ${retryAfter || 'unknown'}s`,
+      throw new GitHubModelsError(
+        `GitHub Models rate limited. Retry after ${retryAfter || 'unknown'}s`,
         'rate_limited'
       )
     }
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => 'unknown')
-      throw new CerebrasError(
-        `Cerebras API error ${response.status}: ${errorBody.slice(0, 200)}`,
+      throw new GitHubModelsError(
+        `GitHub Models API error ${response.status}: ${errorBody.slice(0, 200)}`,
         'unreachable'
       )
     }
@@ -96,34 +93,37 @@ export async function parseWithCerebras<T>(
     const data = await response.json()
     rawText = data.choices?.[0]?.message?.content || ''
   } catch (err) {
-    if (err instanceof CerebrasError) throw err
+    if (err instanceof GitHubModelsError) throw err
 
     const errMsg = err instanceof Error ? err.message : String(err)
     if (errMsg.includes('aborted') || errMsg.includes('AbortError')) {
-      const cbErr = new CerebrasError(
-        `Cerebras timed out after ${Math.round(timeoutMs / 1000)}s`,
+      const ghErr = new GitHubModelsError(
+        `GitHub Models timed out after ${Math.round(timeoutMs / 1000)}s`,
         'timeout'
       )
       incrementAiMetric('ai.call.timeout')
       incrementAiMetric('ai.call.failure')
-      log.ai.error('Cerebras timed out', { context: { model, timeoutMs }, error: err })
-      reportAppError(cbErr, { category: 'ai', action: 'parseWithCerebras' })
-      throw cbErr
+      log.ai.error('GitHub Models timed out', { context: { model, timeoutMs }, error: err })
+      reportAppError(ghErr, { category: 'ai', action: 'parseWithGitHubModels' })
+      throw ghErr
     }
 
-    const cbErr = new CerebrasError(`Cerebras unreachable: ${errMsg}`, 'unreachable')
+    const ghErr = new GitHubModelsError(`GitHub Models unreachable: ${errMsg}`, 'unreachable')
     incrementAiMetric('ai.call.failure')
-    log.ai.error('Cerebras unreachable', { context: { model }, error: err })
-    reportAppError(cbErr, { category: 'ai', action: 'parseWithCerebras' })
-    throw cbErr
+    log.ai.error('GitHub Models unreachable', { context: { model }, error: err })
+    reportAppError(ghErr, { category: 'ai', action: 'parseWithGitHubModels' })
+    throw ghErr
   }
 
   if (!rawText) {
-    const cbErr = new CerebrasError('Cerebras returned an empty response', 'empty_response')
+    const ghErr = new GitHubModelsError(
+      'GitHub Models returned an empty response',
+      'empty_response'
+    )
     incrementAiMetric('ai.call.failure')
-    log.ai.error('Empty response from Cerebras', { context: { model } })
-    reportAppError(cbErr, { category: 'ai', action: 'parseWithCerebras' })
-    throw cbErr
+    log.ai.error('Empty response from GitHub Models', { context: { model } })
+    reportAppError(ghErr, { category: 'ai', action: 'parseWithGitHubModels' })
+    throw ghErr
   }
 
   const jsonStr = extractJsonPayload(rawText)
@@ -131,33 +131,33 @@ export async function parseWithCerebras<T>(
   try {
     parsed = JSON.parse(jsonStr)
   } catch {
-    const cbErr = new CerebrasError(
-      `Cerebras response was not valid JSON. Raw: ${rawText.slice(0, 200)}`,
+    const ghErr = new GitHubModelsError(
+      `GitHub Models response was not valid JSON. Raw: ${rawText.slice(0, 200)}`,
       'invalid_json'
     )
     incrementAiMetric('ai.call.failure')
-    log.ai.error('Invalid JSON from Cerebras', {
+    log.ai.error('Invalid JSON from GitHub Models', {
       context: { model, rawSnippet: rawText.slice(0, 100) },
     })
-    reportAppError(cbErr, { category: 'ai', action: 'parseWithCerebras' })
-    throw cbErr
+    reportAppError(ghErr, { category: 'ai', action: 'parseWithGitHubModels' })
+    throw ghErr
   }
 
   const zodResult = schema.safeParse(parsed)
   if (!zodResult.success) {
     const issues = formatZodIssues(zodResult.error)
-    const cbErr = new CerebrasError(
-      `Cerebras response failed schema validation: ${issues}`,
+    const ghErr = new GitHubModelsError(
+      `GitHub Models response failed schema validation: ${issues}`,
       'validation_failed'
     )
     incrementAiMetric('ai.call.failure')
-    log.ai.error('Cerebras validation failed', { context: { model, issues } })
-    reportAppError(cbErr, { category: 'ai', action: 'parseWithCerebras' })
-    throw cbErr
+    log.ai.error('GitHub Models validation failed', { context: { model, issues } })
+    reportAppError(ghErr, { category: 'ai', action: 'parseWithGitHubModels' })
+    throw ghErr
   }
 
   const durationMs = Date.now() - startTime
-  log.ai.info('Cerebras parsed successfully', { context: { model }, durationMs })
+  log.ai.info('GitHub Models parsed successfully', { context: { model }, durationMs })
   incrementAiMetric('ai.call.success')
   recordAiLatency(durationMs)
   return zodResult.data

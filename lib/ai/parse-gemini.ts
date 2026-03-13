@@ -9,6 +9,8 @@ import { z } from 'zod'
 import { log } from '@/lib/logger'
 import { incrementAiMetric, recordAiLatency } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
+import { GeminiParseError } from './provider-errors'
+import type { ParseGeminiOptions } from './provider-errors'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -17,30 +19,6 @@ function extractJsonPayload(rawText: string): string {
 
 function formatZodIssues(error: z.ZodError): string {
   return error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')
-}
-
-export class GeminiParseError extends Error {
-  constructor(
-    message: string,
-    public code:
-      | 'not_configured'
-      | 'unreachable'
-      | 'timeout'
-      | 'rate_limited'
-      | 'invalid_json'
-      | 'validation_failed'
-      | 'empty_response'
-  ) {
-    super(message)
-    this.name = 'GeminiParseError'
-  }
-}
-
-export interface ParseGeminiOptions {
-  timeoutMs?: number
-  maxTokens?: number
-  model?: string
-  temperature?: number
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000
