@@ -114,6 +114,7 @@ export default async function NewQuotePage({
   let prefilledValidUntil = readDateString(searchParams, 'valid_until')
   let prefilledPricingNotes = readString(searchParams, 'pricing_notes', 1200)
   let prefilledInternalNotes = readString(searchParams, 'internal_notes', 1200)
+  let prefilledEventId = readString(searchParams, 'event_id', 80)
   let prefilledOccasion: string | null = null
   let prefilledEventDate: string | null = null
 
@@ -216,6 +217,7 @@ export default async function NewQuotePage({
         prefilledInternalNotes={prefilledInternalNotes}
         prefilledOccasion={prefilledOccasion}
         prefilledEventDate={prefilledEventDate}
+        prefilledEventId={prefilledEventId ?? undefined}
       />
     </div>
   )

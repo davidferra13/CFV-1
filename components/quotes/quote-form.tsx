@@ -15,7 +15,13 @@ import { SaveStateBadge } from '@/components/ui/save-state-badge'
 import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
 import { trackAction, setActiveForm } from '@/lib/ai/remy-activity-tracker'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
-import { createQuote, getQuoteById, updateQuote, type CreateQuoteInput } from '@/lib/quotes/actions'
+import {
+  createQuote,
+  getEventMenuCost,
+  getQuoteById,
+  updateQuote,
+  type CreateQuoteInput,
+} from '@/lib/quotes/actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
 import { CurrencyConversionHint } from '@/components/currency/currency-conversion-hint'
 import {
@@ -57,6 +63,7 @@ type PricingHistoryEntry = {
 type ExistingQuote = {
   id: string
   updated_at?: string
+  event_id?: string | null
   quote_name: string | null
   pricing_model: string | null
   total_quoted_cents: number
@@ -108,6 +115,7 @@ type QuoteFormProps = {
   prefilledInternalNotes?: string | null
   prefilledOccasion?: string | null
   prefilledEventDate?: string | null
+  prefilledEventId?: string | null
   existingQuote?: ExistingQuote
 }
 
@@ -135,6 +143,7 @@ export function QuoteForm({
   prefilledInternalNotes,
   prefilledOccasion,
   prefilledEventDate,
+  prefilledEventId,
   existingQuote,
 }: QuoteFormProps) {
   const router = useRouter()
@@ -148,6 +157,34 @@ export function QuoteForm({
     setActiveForm(isEditing ? 'Edit Quote' : 'New Quote')
     return () => setActiveForm(null)
   }, [isEditing])
+
+  // Menu cost hint state
+  const [menuCost, setMenuCost] = useState<{
+    menuId: string
+    menuName: string
+    totalFoodCostCents: number
+    costPerGuestCents: number | null
+    foodCostPercentage: number | null
+    hasAllCosts: boolean
+    guestCount: number | null
+  } | null>(null)
+
+  // Load menu cost when form has an event ID
+  useEffect(() => {
+    const eventId = existingQuote?.event_id ?? prefilledEventId ?? null
+    if (!eventId) return
+
+    let cancelled = false
+    getEventMenuCost(eventId)
+      .then((data) => {
+        if (!cancelled) setMenuCost(data)
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [existingQuote?.event_id, prefilledEventId])
 
   // Form state
   const [clientId, setClientId] = useState(prefilledClientId || '')
@@ -1073,6 +1110,58 @@ export function QuoteForm({
                   onChange={(e) => handleGuestCountChange(e.target.value)}
                 />
               </div>
+            )}
+
+            {/* Menu Food Cost hint — informational only, chef sets the price */}
+            {menuCost && (
+              <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800">
+                <div className="p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      Menu Food Cost
+                    </p>
+                    <a
+                      href={`/menus/${menuCost.menuId}`}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      {menuCost.menuName}
+                    </a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Total food cost</span>
+                      <p className="font-medium">{formatCurrency(menuCost.totalFoodCostCents)}</p>
+                    </div>
+                    {menuCost.costPerGuestCents != null && (
+                      <div>
+                        <span className="text-muted-foreground">Per guest</span>
+                        <p className="font-medium">{formatCurrency(menuCost.costPerGuestCents)}</p>
+                      </div>
+                    )}
+                    {menuCost.foodCostPercentage != null && menuCost.guestCount != null && (
+                      <div>
+                        <span className="text-muted-foreground">At current quote</span>
+                        <p
+                          className={`font-medium ${
+                            menuCost.foodCostPercentage <= 30
+                              ? 'text-green-600'
+                              : menuCost.foodCostPercentage <= 40
+                                ? 'text-amber-600'
+                                : 'text-red-600'
+                          }`}
+                        >
+                          {menuCost.foodCostPercentage.toFixed(1)}% food cost
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {!menuCost.hasAllCosts && (
+                    <p className="text-xs text-amber-600">
+                      Some recipe ingredients are missing price data
+                    </p>
+                  )}
+                </div>
+              </Card>
             )}
 
             <div>
