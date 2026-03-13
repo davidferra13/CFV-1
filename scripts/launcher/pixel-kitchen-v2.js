@@ -342,6 +342,123 @@
     return true
   }
 
+  // ── Speech Bubble (shows what each character is doing) ──
+  function drawSpeechBubble(x, y, lines, color) {
+    if (!lines || !lines.length) return
+    const padding = 6
+    const lineH = 10
+    const maxW = lines.reduce((max, l) => Math.max(max, ctx.measureText ? l.length * 5.5 : 60), 0)
+    const bw = Math.max(maxW + padding * 2, 50)
+    const bh = lines.length * lineH + padding * 2
+    const bx = x - bw / 2
+    const by = y - bh - 12
+
+    // Bubble background
+    roundRect(bx, by, bw, bh, 4, 'rgba(10,10,30,0.85)')
+    // Bubble border (colored accent)
+    ctx.strokeStyle = color || C.chrome
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.roundRect(bx, by, bw, bh, 4)
+    ctx.stroke()
+    // Tail triangle pointing down
+    ctx.fillStyle = 'rgba(10,10,30,0.85)'
+    ctx.beginPath()
+    ctx.moveTo(x - 5, by + bh)
+    ctx.lineTo(x + 5, by + bh)
+    ctx.lineTo(x, by + bh + 8)
+    ctx.closePath()
+    ctx.fill()
+    // Tail border
+    ctx.strokeStyle = color || C.chrome
+    ctx.beginPath()
+    ctx.moveTo(x - 5, by + bh)
+    ctx.lineTo(x, by + bh + 8)
+    ctx.lineTo(x + 5, by + bh)
+    ctx.stroke()
+
+    // Text lines
+    for (let i = 0; i < lines.length; i++) {
+      text(
+        lines[i],
+        x,
+        by + padding + 7 + i * lineH,
+        i === 0 ? color || C.cream : C.chrome,
+        8,
+        'center'
+      )
+    }
+  }
+
+  // ── Activity feed data (polled separately for recent file changes) ──
+  let activityFeed = []
+  let activityTickerOffset = 0
+  async function pollActivityFeed() {
+    try {
+      const resp = await fetch('/api/activity/summary')
+      if (!resp.ok) return
+      const data = await resp.json()
+      if (data.recent) {
+        activityFeed = data.recent.slice(0, 10).map((r) => {
+          const file = r.file.replace(/\.tmp\.\d+\.\d+$/, '')
+          const short = file.split('/').slice(-2).join('/')
+          return { type: r.type, file: short, time: r.time }
+        })
+      }
+    } catch {
+      /* retry */
+    }
+  }
+  pollActivityFeed()
+  setInterval(pollActivityFeed, 10000)
+
+  // ── Generate speech bubble text from live data ──
+  function getHeadChefBubble() {
+    const infr = bizData.infrastructure
+    if (!infr || !infr.ollama) return ['Checking...']
+    if (!infr.ollama.online) return ['OFFLINE', 'Start Ollama!']
+    const models = infr.ollama.models || []
+    // Show most relevant model (qwen3 preferred)
+    const main = models.find((m) => m.startsWith('qwen3:')) || models[0] || ''
+    return [models.length + ' models ready', main]
+  }
+  function getLineCookBubble(name) {
+    const infr = bizData.infrastructure
+    if (!infr) return ['Checking...']
+    if (name === 'Saute') {
+      if (!infr.devServer?.online) return ['DEV DOWN']
+      return ['localhost:3100', infr.devServer.latency + 'ms']
+    }
+    if (name === 'Grill') {
+      if (!infr.betaServer?.online) return ['BETA DOWN']
+      return ['localhost:3200', infr.betaServer.latency + 'ms']
+    }
+    if (name === 'Fry') {
+      if (!infr.production?.online) return ['PROD DOWN']
+      return ['cheflowhq.com', infr.production.latency + 'ms']
+    }
+    return null
+  }
+  function getExpoBubble() {
+    const act = bizData.activity
+    if (!act) return ['Watching...']
+    const lines = [act.recentFileChanges + ' file changes']
+    if (activityFeed.length > 0) {
+      lines.push(activityFeed[0].file)
+    }
+    return lines
+  }
+  function getWashBubble() {
+    const git = bizData.infrastructure?.git
+    if (!git) return ['Checking git...']
+    const lines = [git.dirty + ' dirty files']
+    if (git.branch) {
+      const short = git.branch.length > 20 ? git.branch.substring(0, 18) + '..' : git.branch
+      lines.push(short)
+    }
+    return lines
+  }
+
   // Initialize sprite loading immediately
   initSprites()
 
@@ -879,6 +996,8 @@
     const chefX = z.w * 0.35
     const chefY = z.y + z.h * 0.15
     drawScaled(chefX, chefY, 2.0, (ox, oy) => drawHeadChef(ox, oy))
+    // Head Chef speech bubble (drawn outside drawScaled for correct positioning)
+    drawSpeechBubble(chefX, chefY - 25, getHeadChefBubble(), C.statusGreen)
 
     // ── DISH PIT (far right) ──
     const pitX = z.w * 0.85
@@ -920,11 +1039,15 @@
     for (let lc = 0; lc < 3; lc++) {
       const lcX = z.w * 0.08 + lc * z.w * 0.15
       drawBigCook(lcX, cookY, cookNames[lc], cookColors[lc], cookStates[lc])
+      // Speech bubble showing live status
+      const bubble = getLineCookBubble(cookNames[lc])
+      if (bubble) drawSpeechBubble(lcX, cookY - 12, bubble, cookColors[lc])
     }
 
     // ── DISHWASHER (Git/Dish Pit worker) at dish pit ──
     const dwUp = (bizData.infrastructure?.git?.dirtyFiles || 0) > 0
     drawBigCook(z.w * 0.87, cookY, 'Wash', C.salmon, dwUp)
+    drawSpeechBubble(z.w * 0.87, cookY - 12, getWashBubble(), C.salmon)
   }
 
   // ── STOVE LINE (3 burners: Dev, Beta, Prod) ──
@@ -1909,7 +2032,26 @@
     }
 
     // ── EXPO CHEF (Mission Control) at the pass ──
-    drawBigExpo(z.x + 60, z.y - 75)
+    drawBigExpo(z.x + 80, z.y - 75)
+    drawSpeechBubble(z.x + 80, z.y - 90, getExpoBubble(), C.crimson)
+
+    // ── Activity ticker (scrolling recent file changes) ──
+    if (activityFeed.length > 0) {
+      activityTickerOffset = (activityTickerOffset + 0.5) % (activityFeed.length * 200)
+      const tickerY = z.y + z.h * 0.5
+      // Ticker background strip
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(z.x + 120, tickerY - 6, z.w - 240, 14)
+      ctx.clip()
+      for (let i = 0; i < activityFeed.length; i++) {
+        const item = activityFeed[i]
+        const tx = z.x + z.w - activityTickerOffset + i * 200
+        const icon = item.type === 'rename' ? '>' : '*'
+        text(icon + ' ' + item.file, tx, tickerY + 4, C.chrome, 7, 'left')
+      }
+      ctx.restore()
+    }
 
     // Pass label
     text('THE PASS', z.w / 2, z.y + z.h - 3, '#aaa', 8, 'center')
