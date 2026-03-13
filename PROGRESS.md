@@ -5,6 +5,32 @@
 
 ---
 
+## 2026-03-13 - Quote Builder: Menu Food Cost Integration (Priority 4 Connection)
+
+### Done
+
+- Connected the quote form to the menu costing engine so chefs see their food cost while pricing events.
+- Added `getEventMenuCost(eventId)` server action in `lib/quotes/actions.ts` that fetches the linked menu's cost summary.
+- Added a Menu Food Cost hint card to the quote form showing total food cost, cost per guest, and food cost % with color indicators.
+- Updated both new quote and edit quote pages to pass event context for cost loading.
+
+### Files changed
+
+- `lib/quotes/actions.ts` (new server action)
+- `components/quotes/quote-form.tsx` (menu cost state, loader, hint card)
+- `app/(chef)/quotes/[id]/edit/page.tsx` (passes prefilledEventId)
+- `app/(chef)/quotes/new/page.tsx` (reads event_id from search params)
+
+### Decisions
+
+- The hint is informational only. It does NOT auto-fill the quote amount. Chefs set their own prices; the cost data helps them make informed decisions.
+- Food cost % uses same industry-standard thresholds as menu editor (green <= 30%, amber 30-40%, red > 40%).
+- Links to the menu detail page so chefs can review the full costing breakdown.
+
+### Verification
+
+- ESLint passes on all 4 changed files with zero errors.
+
 ## 2026-03-13 - Menu Builder: Recipe Linking + Live Food Cost (Priority 1 Crown Jewel)
 
 ### Done
