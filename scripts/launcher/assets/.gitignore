@@ -1,0 +1,12 @@
+# Large asset archives (re-downloadable)
+*.zip
+*.ase
+
+# Black background variants (unused, transparent variants used instead)
+PNG (Black background)/
+
+# Unity samples (not needed for web)
+Unity samples/
+
+# Construct 3 exports (not needed)
+Construct 3/

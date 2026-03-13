@@ -56,6 +56,8 @@ const CONFIG = {
   prodHealthUrl: 'https://cheflowhq.com/api/health',
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
+  openclawOllamaUrl: process.env.OPENCLAW_OLLAMA_BASE_URL || process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+  openclawOllamaModel: process.env.OPENCLAW_OLLAMA_MODEL || 'qwen3:4b',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
@@ -6095,6 +6097,12 @@ async function getAvailableOllamaEndpoint() {
   return null
 }
 
+async function getOpenClawOllamaEndpoint() {
+  const pcCheck = await httpCheck(`${CONFIG.openclawOllamaUrl}/api/tags`)
+  if (pcCheck.ok) return { url: CONFIG.openclawOllamaUrl, model: CONFIG.openclawOllamaModel, source: 'PC' }
+  return null
+}
+
 async function buildChatSystemPrompt(memories = []) {
   const status = await getAllStatus()
   const toolList = Object.entries(TOOLS)
@@ -6341,6 +6349,45 @@ async function handleRequest(req, res) {
     } catch {
       res.writeHead(500)
       return res.end('Gustav storage JS not found')
+    }
+  }
+
+  // Pixel Kitchen V2+ engine (external JS)
+  if (path === '/pixel-kitchen-v2.js') {
+    try {
+      const js = await readFile(join(__dirname, 'pixel-kitchen-v2.js'), 'utf-8')
+      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' })
+      return res.end(js)
+    } catch {
+      res.writeHead(500)
+      return res.end('pixel-kitchen-v2.js not found')
+    }
+  }
+
+  // Pixel Kitchen assets (sprites, UI panels, effects, palettes)
+  // Sources: Kenney (CC0), OpenGameArt (CC0/CC-BY), LPC Flames (CC-BY 3.0, Sharm)
+  if (path.startsWith('/assets/')) {
+    try {
+      const decodedPath = decodeURIComponent(path)
+      const safePath = decodedPath.replace(/\.\./g, '').replace(/\/+/g, '/') // prevent directory traversal
+      const filePath = join(__dirname, safePath)
+      const data = await readFile(filePath)
+      const ext = filePath.split('.').pop().toLowerCase()
+      const mimeTypes = {
+        png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+        svg: 'image/svg+xml', json: 'application/json', txt: 'text/plain',
+        webp: 'image/webp', ico: 'image/x-icon',
+      }
+      const contentType = mimeTypes[ext] || 'application/octet-stream'
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=604800', // 1 week cache (assets don't change)
+        'Access-Control-Allow-Origin': '*',
+      })
+      return res.end(data)
+    } catch {
+      res.writeHead(404)
+      return res.end('Asset not found: ' + path)
     }
   }
 
@@ -7215,82 +7262,74 @@ async function handleRequest(req, res) {
     try {
       const cloneAvailable = existsSync(OPENCLAW_CLONE_ROOT)
       const result = { ok: true, cloneAvailable }
-
-      // 1. Gateway status + log from Pi (via SSH)
-      try {
-        const { stdout: gwStatus } = await execAsync(
-          'ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null && echo PID:$(systemctl show openclaw-chefflow -p MainPID --value)"',
-          { timeout: 8000 }
-        )
-        const lines = gwStatus.trim().split('\n')
+      const gatewayPromise = execAsync(
+        'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null && echo PID:$(systemctl show openclaw-chefflow -p MainPID --value)"',
+        { timeout: 4000 }
+      ).then(({ stdout }) => {
+        const lines = stdout.trim().split('\n').filter(Boolean)
         const pidLine = lines.find(l => l.startsWith('PID:'))
-        result.gateway = {
+        return {
           online: lines[0] === 'active',
           pid: pidLine ? pidLine.replace('PID:', '') : null,
         }
-      } catch (gwErr) {
-        result.gateway = { online: false, error: gwErr.message?.substring(0, 120) || 'SSH failed' }
-      }
+      }).catch((gwErr) => ({
+        online: false,
+        error: gwErr.message?.substring(0, 120) || 'SSH failed',
+      }))
 
-      // 2. Gateway log from Pi (last 80 lines, parsed to readable format)
-      try {
-        const { stdout: gwLog } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "sudo journalctl -u openclaw-chefflow --no-pager -n 80 -o short-iso 2>/dev/null"`,
-          { timeout: 10000 }
-        )
-        result.gatewayLog = gwLog.trim().split('\n').filter(l => l.trim())
-      } catch {
-        result.gatewayLog = []
-      }
+      const gatewayLogPromise = execAsync(
+        'ssh -o ConnectTimeout=3 pi "sudo journalctl -u openclaw-chefflow --no-pager -n 80 -o short-iso 2>/dev/null"',
+        { timeout: 5000 }
+      ).then(({ stdout }) => stdout.trim().split('\n').filter(l => l.trim()))
+        .catch(() => [])
 
-      // 3. File change activity from the watcher
-      if (cloneAvailable) {
-        result.fileChanges = buildActivitySummary(
-          openClawFileActivity,
-          activeOpenClawWatchDirs.length ? activeOpenClawWatchDirs : OPENCLAW_WATCH_DIRS
-        )
-      }
+      const gitLogPromise = cloneAvailable
+        ? execAsync('git log --oneline --no-decorate -30', {
+            cwd: OPENCLAW_CLONE_ROOT,
+            timeout: 3000,
+          }).then(({ stdout }) => stdout.trim().split('\n').filter(l => l.trim()))
+          .catch(() => [])
+        : Promise.resolve([])
 
-      // 4. Git log from clone (last 30 commits)
-      if (cloneAvailable) {
-        try {
-          const { stdout: gitLog } = await execAsync(
-            'git log --oneline --no-decorate -30',
-            { cwd: OPENCLAW_CLONE_ROOT, timeout: 5000 }
+      const devLogPromise = cloneAvailable
+        ? readFile(join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log'), 'utf-8')
+            .then((logContent) => logContent.trim().split('\n').slice(-60))
+            .catch(() => [])
+        : Promise.resolve([])
+
+      const gitDiffPromise = cloneAvailable
+        ? execAsync('git diff --stat && echo "---FULL---" && git diff', {
+            cwd: OPENCLAW_CLONE_ROOT,
+            timeout: 4000,
+            maxBuffer: 1024 * 1024,
+          }).then(({ stdout }) => {
+            const lines = stdout.trim().split('\n').filter(Boolean)
+            const trimmed = lines.slice(0, 500)
+            if (lines.length > 500) trimmed.push(`... (${lines.length - 500} more lines truncated)`)
+            return trimmed
+          }).catch(() => [])
+        : Promise.resolve([])
+
+      result.fileChanges = cloneAvailable
+        ? buildActivitySummary(
+            openClawFileActivity,
+            activeOpenClawWatchDirs.length ? activeOpenClawWatchDirs : OPENCLAW_WATCH_DIRS
           )
-          result.gitLog = gitLog.trim().split('\n').filter(l => l.trim())
-        } catch {
-          result.gitLog = []
-        }
-      }
+        : undefined
 
-      // 5. Dev server log (last 60 lines from the watch log)
-      if (cloneAvailable) {
-        const watchLogPath = join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log')
-        try {
-          const logContent = await readFile(watchLogPath, 'utf-8')
-          const lines = logContent.trim().split('\n')
-          result.devLog = lines.slice(-60)
-        } catch {
-          result.devLog = []
-        }
-      }
+      const [gateway, gatewayLog, gitLog, devLog, gitDiff] = await Promise.all([
+        gatewayPromise,
+        gatewayLogPromise,
+        gitLogPromise,
+        devLogPromise,
+        gitDiffPromise,
+      ])
 
-      // 6. Git diff (uncommitted changes)
-      if (cloneAvailable) {
-        try {
-          const { stdout: gitDiff } = await execAsync(
-            'git diff --stat && echo "---FULL---" && git diff',
-            { cwd: OPENCLAW_CLONE_ROOT, timeout: 10000, maxBuffer: 1024 * 1024 }
-          )
-          const lines = gitDiff.trim().split('\n')
-          // Limit to 500 lines to avoid huge payloads
-          result.gitDiff = lines.slice(0, 500)
-          if (lines.length > 500) result.gitDiff.push(`... (${lines.length - 500} more lines truncated)`)
-        } catch {
-          result.gitDiff = []
-        }
-      }
+      result.gateway = gateway
+      result.gatewayLog = gatewayLog
+      result.gitLog = gitLog
+      result.devLog = devLog
+      result.gitDiff = gitDiff
 
       return json(res, result)
     } catch (err) {
@@ -7307,10 +7346,11 @@ async function handleRequest(req, res) {
       return json(res, { error: 'Message is required' }, 400)
     }
 
-    const endpoint = await getAvailableOllamaEndpoint()
+    const endpoint = await getOpenClawOllamaEndpoint()
     if (!endpoint) {
       return json(res, { error: 'No Ollama instance available. Start Ollama first.' }, 503)
     }
+    const openClawMaxTokens = Number(process.env.OPENCLAW_CHAT_MAX_TOKENS || 600)
 
     // ── OpenClaw-specific tool registry ──
     const OC_TOOLS = {
@@ -7510,7 +7550,7 @@ ${toolList}
           messages,
           stream: true,
           think: false,
-          options: { num_predict: CHAT_CONFIG.maxTokens },
+          options: { num_predict: openClawMaxTokens },
         }),
         signal: controller.signal,
       })
