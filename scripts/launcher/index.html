@@ -10874,7 +10874,6 @@ loadInfra() // Populate Pi SSH status for SCC on startup
 setInterval(loadInfra, 30000) // Refresh Pi health every 30s
 connectSSE()
 loadPromptQueue() // Load prompt queue on startup since Home is default
-startPixelOffice() // Cook Kitchen is the default panel
 
 addLog('info', 'system', 'Mission Control connected')
 addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, [ Timeline, Ctrl+/ chat, = Observe, ? help, Ctrl+K command palette')
@@ -13922,6 +13921,9 @@ async function loadTeamDashboard() {
     officeRunning = false;
     if (officeRAF) cancelAnimationFrame(officeRAF);
   };
+
+  // Cook Kitchen is the default panel — start immediately
+  startPixelOffice();
 
   // Tooltip on hover
   document.addEventListener('mousemove', function(e) {
