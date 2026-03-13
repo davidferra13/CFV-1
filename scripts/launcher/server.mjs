@@ -14,7 +14,7 @@
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
 import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
-import { readFileSync, watch } from 'node:fs'
+import { readFileSync, watch, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
@@ -22,6 +22,7 @@ import { promisify } from 'node:util'
 const execAsync = promisify(exec)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
+const OPENCLAW_CLONE_ROOT = process.env.OPENCLAW_CLONE_DIR || join(PROJECT_ROOT, '..', 'CFv1-openclaw-clone')
 const PORT = 41937
 const PROJECT_TIMELINE_FILE = join(PROJECT_ROOT, 'docs', 'project-timeline.json')
 const PROJECT_EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json')
@@ -92,12 +93,87 @@ function log(source, message, type = 'info') {
 // ── File Watcher (VS Code Activity Tracking) ─────────────────────
 
 const fileActivity = []
+const openClawFileActivity = []
 const MAX_ACTIVITY = 500
 const WATCH_DIRS = ['app', 'components', 'lib', 'types', 'supabase/migrations']
+const OPENCLAW_WATCH_DIRS = ['app', 'components', 'lib', 'types', 'supabase', 'scripts', 'docs']
 const IGNORE_PATTERNS = /node_modules|\.next|\.git|\.swp$|\.tmp$|~$/
 let watchDebounce = new Map()
+let activeWatchDirs = [...WATCH_DIRS]
+let activeOpenClawWatchDirs = []
+
+function recordFileActivity(activityStore, dir, filename, eventType, source = 'vscode') {
+  const filePath = `${dir}/${filename.replace(/\\/g, '/')}`
+  const key = `${source}:${eventType}:${filePath}`
+  if (watchDebounce.has(key)) return
+  watchDebounce.set(key, true)
+  setTimeout(() => watchDebounce.delete(key), 500)
+
+  const entry = {
+    time: Date.now(),
+    type: eventType,
+    file: filePath,
+    dir: dir,
+    ext: filename.split('.').pop() || '',
+  }
+  activityStore.push(entry)
+  if (activityStore.length > MAX_ACTIVITY) activityStore.shift()
+
+  const action = eventType === 'rename' ? 'created/deleted' : 'modified'
+  const message = `${action}: ${filePath}`
+
+  if (source === 'openclaw') {
+    log('openclaw', message, 'info')
+    feedEvent('openclaw', message, 'info')
+  } else {
+    log('vscode', message, 'info')
+  }
+
+  if (filePath.endsWith('page.tsx') || filePath.endsWith('page.ts') ||
+      filePath.endsWith('route.ts') || filePath.endsWith('route.tsx')) {
+    scanCache = null
+    scanCacheTime = 0
+  }
+}
+
+function watchTree(rootPath, dirs, activityStore, source = 'vscode') {
+  const watchedDirs = []
+
+  for (const dir of dirs) {
+    const fullPath = join(rootPath, dir)
+    if (!existsSync(fullPath)) continue
+
+    try {
+      watch(fullPath, { recursive: true }, (eventType, filename) => {
+        if (!filename || IGNORE_PATTERNS.test(filename)) return
+        recordFileActivity(activityStore, dir, filename, eventType, source)
+      })
+      watchedDirs.push(dir)
+      if (source === 'openclaw') {
+        log('openclaw', `Watching clone ${dir}/`, 'info')
+      } else {
+        log('watcher', `Watching ${dir}/`, 'info')
+      }
+    } catch (err) {
+      const logSource = source === 'openclaw' ? 'openclaw' : 'watcher'
+      log(logSource, `Cannot watch ${dir}/: ${err.message}`, 'warn')
+    }
+  }
+
+  return watchedDirs
+}
 
 function initFileWatcher() {
+  activeWatchDirs = watchTree(PROJECT_ROOT, WATCH_DIRS, fileActivity, 'vscode')
+
+  if (existsSync(OPENCLAW_CLONE_ROOT)) {
+    activeOpenClawWatchDirs = watchTree(OPENCLAW_CLONE_ROOT, OPENCLAW_WATCH_DIRS, openClawFileActivity, 'openclaw')
+  } else {
+    activeOpenClawWatchDirs = []
+    log('openclaw', `Clone not found at ${OPENCLAW_CLONE_ROOT}`, 'warn')
+  }
+
+  return
   for (const dir of WATCH_DIRS) {
     const fullPath = join(PROJECT_ROOT, dir)
     try {
@@ -139,7 +215,85 @@ function initFileWatcher() {
   }
 }
 
+function buildActivitySummary(activityEntries, watchedDirs) {
+  const now = Date.now()
+  const last5min = activityEntries.filter(e => now - e.time < 5 * 60 * 1000)
+  const lastHour = activityEntries.filter(e => now - e.time < 60 * 60 * 1000)
+  const today = activityEntries.filter(e => {
+    const d = new Date(e.time)
+    const t = new Date()
+    return d.toDateString() === t.toDateString()
+  })
+
+  const byDir = {}
+  for (const e of today) {
+    if (!byDir[e.dir]) byDir[e.dir] = { count: 0, files: new Set() }
+    byDir[e.dir].count++
+    byDir[e.dir].files.add(e.file)
+  }
+
+  const seen = new Set()
+  const recent = []
+  for (let i = activityEntries.length - 1; i >= 0 && recent.length < 50; i--) {
+    const e = activityEntries[i]
+    if (!seen.has(e.file)) {
+      seen.add(e.file)
+      recent.push(e)
+    }
+  }
+
+  const fileCounts = {}
+  for (const e of today) {
+    fileCounts[e.file] = (fileCounts[e.file] || 0) + 1
+  }
+  const hotspots = Object.entries(fileCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([file, count]) => ({ file, count }))
+
+  return {
+    counts: {
+      last5min: last5min.length,
+      lastHour: lastHour.length,
+      today: today.length,
+      total: activityEntries.length,
+    },
+    byDir: Object.fromEntries(
+      Object.entries(byDir).map(([dir, data]) => [dir, { count: data.count, uniqueFiles: data.files.size }])
+    ),
+    recent,
+    hotspots,
+    watchedDirs,
+  }
+}
+
 function getActivitySummary() {
+  return buildActivitySummary(fileActivity, activeWatchDirs.length ? activeWatchDirs : WATCH_DIRS)
+}
+
+function getOpenClawActivitySummary() {
+  const watchLogPath = join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log')
+  const activityLogPath = join(OPENCLAW_CLONE_ROOT, 'logs', 'ACTIVITY_LOG.md')
+
+  return {
+    available: existsSync(OPENCLAW_CLONE_ROOT),
+    cloneDir: OPENCLAW_CLONE_ROOT,
+    watchLog: {
+      path: watchLogPath,
+      exists: existsSync(watchLogPath),
+    },
+    activityLog: {
+      path: activityLogPath,
+      exists: existsSync(activityLogPath),
+    },
+    ...buildActivitySummary(
+      openClawFileActivity,
+      activeOpenClawWatchDirs.length ? activeOpenClawWatchDirs : OPENCLAW_WATCH_DIRS
+    ),
+  }
+}
+
+function getLegacyActivitySummary() {
   const now = Date.now()
   const last5min = fileActivity.filter(e => now - e.time < 5 * 60 * 1000)
   const lastHour = fileActivity.filter(e => now - e.time < 60 * 60 * 1000)
@@ -223,6 +377,7 @@ const liveFeedBuffers = {
   ollama: [],
   beta: [],
   tunnel: [],
+  openclaw: [],
   system: [],
 }
 const MAX_FEED_BUFFER = 200 // per source
@@ -319,6 +474,46 @@ function startLiveFeedTaps() {
   }
 
   // System metrics — push CPU/memory every 10 seconds
+  const startPowerShellTail = (filePath, source, key, missingMessage) => {
+    if (!existsSync(filePath)) {
+      feedEvent(source, missingMessage, 'warn')
+      return
+    }
+
+    try {
+      const escaped = filePath.replace(/'/g, "''")
+      const tailProc = spawn('powershell', ['-Command', `Get-Content -Path '${escaped}' -Tail 20 -Wait`], {
+        shell: false,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      tailProc.stdout.on('data', (d) => {
+        const lines = d.toString().split('\n')
+        for (const line of lines) {
+          const clean = line.trim().replace(ANSI_REGEX, '')
+          if (clean) feedEvent(source, clean, parseLogLevel(clean))
+        }
+      })
+      tailProc.stderr.on('data', () => {})
+      tailProc.on('close', () => { delete liveFeedProcesses[key] })
+      liveFeedProcesses[key] = tailProc
+    } catch {
+      feedEvent(source, missingMessage, 'warn')
+    }
+  }
+
+  startPowerShellTail(
+    join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log'),
+    'openclaw',
+    'openclawWatchTail',
+    'OpenClaw watch log not found. Start the clone watch server to stream runtime output.'
+  )
+  startPowerShellTail(
+    join(OPENCLAW_CLONE_ROOT, 'logs', 'ACTIVITY_LOG.md'),
+    'openclaw',
+    'openclawActivityTail',
+    'OpenClaw activity log not found. If the agent writes one later, it will appear here after reconnect.'
+  )
+
   liveFeedProcesses.systemInterval = setInterval(() => {
     const mem = process.memoryUsage()
     feedEvent('system', `Mission Control heap: ${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB`, 'info')
@@ -6793,6 +6988,79 @@ async function handleRequest(req, res) {
     }
   }
 
+  // ── Pixel Kitchen Live Data ─────────────────────────────────────
+  if (path === '/api/pixel/data' && method === 'GET') {
+    try {
+      const [eventsResult, revenueResult, inquiriesResult, clientsResult, statusResult] = await Promise.allSettled([
+        getEventsByStatus(),
+        getRevenueSummary(),
+        getOpenInquiries(),
+        getClients(),
+        getAllStatus(),
+      ])
+
+      const events = eventsResult.status === 'fulfilled' && eventsResult.value.ok ? eventsResult.value : { counts: {}, total: 0 }
+      const revenue = revenueResult.status === 'fulfilled' && revenueResult.value.ok ? revenueResult.value : { summary: {} }
+      const inquiries = inquiriesResult.status === 'fulfilled' && inquiriesResult.value.ok ? inquiriesResult.value : { inquiries: [], total: 0 }
+      const clients = clientsResult.status === 'fulfilled' && clientsResult.value.ok ? clientsResult.value : { total: 0 }
+      const status = statusResult.status === 'fulfilled' ? statusResult.value : {}
+
+      // Check for overdue inquiries (SLA breach: >24h without response)
+      const overdueInquiries = (inquiries.inquiries || []).filter(inq => {
+        const received = new Date(inq.received)
+        const hoursOld = (Date.now() - received.getTime()) / (1000 * 60 * 60)
+        return hoursOld > 24 && (inq.status === 'new' || inq.status === 'open')
+      })
+
+      // Upcoming events (next 7 days)
+      const upcomingResult = await getUpcomingEvents()
+      const upcoming = upcomingResult.ok ? upcomingResult.events : []
+      const next7Days = upcoming.filter(e => {
+        const diff = (new Date(e.date) - Date.now()) / (1000 * 60 * 60 * 24)
+        return diff >= 0 && diff <= 7
+      })
+
+      // Agent states from process/service status
+      const agentStates = {
+        ollama: status.ollama?.pc === 'online' || status.ollama?.pcStatus === 'online',
+        devServer: status.dev?.running || false,
+        betaServer: status.beta?.running || false,
+      }
+
+      // Git activity (recent commits in last hour)
+      let recentGitActivity = 0
+      try {
+        const { stdout } = await execAsync('git log --oneline --since="1 hour ago" 2>/dev/null | wc -l', { cwd: PROJECT_ROOT, timeout: 5000 })
+        recentGitActivity = parseInt(stdout.trim()) || 0
+      } catch { /* ignore */ }
+
+      // File change rate (from activity watcher)
+      const activitySummary = getActivitySummary()
+      const recentFileChanges = (activitySummary.recent || []).length
+
+      return json(res, {
+        ok: true,
+        events: events.counts || {},
+        eventsTotal: events.total || 0,
+        revenue: revenue.summary || {},
+        inquiries: {
+          open: inquiries.total || 0,
+          overdue: overdueInquiries.length,
+          overdueList: overdueInquiries.slice(0, 5),
+        },
+        clients: { total: clients.total || 0 },
+        upcoming: next7Days.slice(0, 8),
+        agentStates,
+        activity: {
+          recentCommits: recentGitActivity,
+          recentFileChanges,
+        },
+      })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message }, 500)
+    }
+  }
+
   // ── Manual / Live Codebase Scan ──────────────────────────────────
   if (path === '/api/manual/scan' && method === 'GET') {
     try {
@@ -6844,6 +7112,164 @@ async function handleRequest(req, res) {
   // ── VS Code Activity Summary ──────────────────────────────────
   if (path === '/api/activity/summary' && method === 'GET') {
     return json(res, { ok: true, ...getActivitySummary() })
+  }
+  if (path === '/api/openclaw/summary' && method === 'GET') {
+    return json(res, { ok: true, ...getOpenClawActivitySummary() })
+  }
+
+  // ── OpenClaw Activity Panel (comprehensive) ──────────────────
+  if (path === '/api/openclaw/activity' && method === 'GET') {
+    try {
+      const cloneAvailable = existsSync(OPENCLAW_CLONE_ROOT)
+      const result = { ok: true, cloneAvailable }
+
+      // 1. Gateway status + log from Pi (via SSH)
+      try {
+        const { stdout: gwStatus } = await execAsync(
+          'ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null && echo PID:$(systemctl show openclaw-chefflow -p MainPID --value)"',
+          { timeout: 8000 }
+        )
+        const lines = gwStatus.trim().split('\n')
+        const pidLine = lines.find(l => l.startsWith('PID:'))
+        result.gateway = {
+          online: lines[0] === 'active',
+          pid: pidLine ? pidLine.replace('PID:', '') : null,
+        }
+      } catch (gwErr) {
+        result.gateway = { online: false, error: gwErr.message?.substring(0, 120) || 'SSH failed' }
+      }
+
+      // 2. Gateway log from Pi (last 80 lines, parsed to readable format)
+      try {
+        const { stdout: gwLog } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "sudo journalctl -u openclaw-chefflow --no-pager -n 80 -o short-iso 2>/dev/null"`,
+          { timeout: 10000 }
+        )
+        result.gatewayLog = gwLog.trim().split('\n').filter(l => l.trim())
+      } catch {
+        result.gatewayLog = []
+      }
+
+      // 3. File change activity from the watcher
+      if (cloneAvailable) {
+        result.fileChanges = buildActivitySummary(
+          openClawFileActivity,
+          activeOpenClawWatchDirs.length ? activeOpenClawWatchDirs : OPENCLAW_WATCH_DIRS
+        )
+      }
+
+      // 4. Git log from clone (last 30 commits)
+      if (cloneAvailable) {
+        try {
+          const { stdout: gitLog } = await execAsync(
+            'git log --oneline --no-decorate -30',
+            { cwd: OPENCLAW_CLONE_ROOT, timeout: 5000 }
+          )
+          result.gitLog = gitLog.trim().split('\n').filter(l => l.trim())
+        } catch {
+          result.gitLog = []
+        }
+      }
+
+      // 5. Dev server log (last 60 lines from the watch log)
+      if (cloneAvailable) {
+        const watchLogPath = join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log')
+        try {
+          const logContent = await readFile(watchLogPath, 'utf-8')
+          const lines = logContent.trim().split('\n')
+          result.devLog = lines.slice(-60)
+        } catch {
+          result.devLog = []
+        }
+      }
+
+      // 6. Git diff (uncommitted changes)
+      if (cloneAvailable) {
+        try {
+          const { stdout: gitDiff } = await execAsync(
+            'git diff --stat && echo "---FULL---" && git diff',
+            { cwd: OPENCLAW_CLONE_ROOT, timeout: 10000, maxBuffer: 1024 * 1024 }
+          )
+          const lines = gitDiff.trim().split('\n')
+          // Limit to 500 lines to avoid huge payloads
+          result.gitDiff = lines.slice(0, 500)
+          if (lines.length > 500) result.gitDiff.push(`... (${lines.length - 500} more lines truncated)`)
+        } catch {
+          result.gitDiff = []
+        }
+      }
+
+      return json(res, result)
+    } catch (err) {
+      return json(res, { ok: false, error: err.message }, 500)
+    }
+  }
+
+  // ── Team Dashboard (ROADMAP + PROGRESS + Agent Status) ─────────
+  if (path === '/api/team/dashboard' && method === 'GET') {
+    try {
+      const result = { ok: true }
+      const OC_ROOT = '/home/openclawcf/apps/CFv1-openclaw-sandbox'
+
+      // 1. ROADMAP.md tasks
+      try {
+        const { stdout } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "sudo cat ${OC_ROOT}/ROADMAP.md 2>/dev/null"`,
+          { timeout: 8000 }
+        )
+        result.roadmap = stdout.trim()
+      } catch { result.roadmap = '' }
+
+      // 2. PROGRESS.md (last 100 lines)
+      try {
+        const { stdout } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "sudo tail -100 ${OC_ROOT}/PROGRESS.md 2>/dev/null"`,
+          { timeout: 8000 }
+        )
+        result.progress = stdout.trim()
+      } catch { result.progress = '' }
+
+      // 3. Cron jobs
+      try {
+        const { stdout } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/.openclaw-chefflow/cron/jobs.json 2>/dev/null"`,
+          { timeout: 8000 }
+        )
+        result.cronJobs = JSON.parse(stdout)
+      } catch { result.cronJobs = { jobs: [] } }
+
+      // 4. Agent config (model assignments)
+      try {
+        const { stdout } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "sudo python3 -c \\"import json; c=json.load(open('/home/openclawcf/.openclaw-chefflow/openclaw.json')); print(json.dumps([{'id':a['id'],'model':a.get('model',c['agents']['defaults']['model']['primary'])} for a in c['agents']['list']]))\\" 2>/dev/null"`,
+          { timeout: 8000 }
+        )
+        result.agents = JSON.parse(stdout)
+      } catch { result.agents = [] }
+
+      // 5. Recent memory (today's log)
+      try {
+        const today = new Date().toISOString().slice(0, 10)
+        const { stdout } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "sudo cat ${OC_ROOT}/memory/${today}.md 2>/dev/null || echo '(no log for today yet)'"`,
+          { timeout: 8000 }
+        )
+        result.todayLog = stdout.trim()
+      } catch { result.todayLog = '' }
+
+      // 6. Gateway status
+      try {
+        const { stdout } = await execAsync(
+          `ssh -o ConnectTimeout=5 pi "systemctl is-active openclaw-chefflow 2>/dev/null"`,
+          { timeout: 5000 }
+        )
+        result.gatewayOnline = stdout.trim() === 'active'
+      } catch { result.gatewayOnline = false }
+
+      return json(res, result)
+    } catch (err) {
+      return json(res, { ok: false, error: err.message }, 500)
+    }
   }
 
   // ── Retroactive Activity Log (git archaeology) ─────────────────
