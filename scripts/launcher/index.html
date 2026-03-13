@@ -2009,7 +2009,12 @@ body {
           <span class="nav-group-chevron">&#x25BC;</span>
         </div>
         <div class="nav-group-items">
-          <a class="nav-item active" data-section="home" title="Home">
+          <a class="nav-item active" data-section="office" title="Cook Kitchen — Agent Activity">
+            <span class="nav-dot online" id="nd-office"></span>
+            <span class="nav-icon">&#x1F373;</span>
+            <span class="nav-label">Cook Kitchen</span>
+          </a>
+          <a class="nav-item" data-section="home" title="Home">
             <span class="nav-dot online" id="nd-home"></span>
             <span class="nav-icon">&#x1F3E0;</span>
             <span class="nav-label">Home</span>
@@ -2125,6 +2130,16 @@ body {
             <span class="nav-icon">&#x2699;&#xFE0F;</span>
             <span class="nav-label">Infra</span>
           </a>
+          <a class="nav-item" data-section="openclaw" title="OpenClaw Activity">
+            <span class="nav-dot checking" id="nd-openclaw"></span>
+            <span class="nav-icon">&#x1F9BE;</span>
+            <span class="nav-label">OpenClaw</span>
+          </a>
+          <a class="nav-item" data-section="teamboard" title="Team Dashboard — Workload & Progress">
+            <span class="nav-dot online" id="nd-teamboard"></span>
+            <span class="nav-icon">&#x1F4CB;</span>
+            <span class="nav-label">Team</span>
+          </a>
         </div>
       </div>
 
@@ -2220,7 +2235,7 @@ body {
     <!-- Content -->
     <div class="content">
       <!-- ─── Home Panel (Quick Actions) ─── -->
-      <div class="panel active" id="panel-home">
+      <div class="panel" id="panel-home">
         <div class="panel-header">
           <h2 class="panel-title">Quick Actions</h2>
           <span class="status-badge online" id="badge-home">
@@ -3880,6 +3895,9 @@ body {
             <button class="btn btn-ghost observe-source-btn" data-source="beta" onclick="observeToggleSource('beta')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">
               <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>BETA
             </button>
+            <button class="btn btn-ghost observe-source-btn" data-source="openclaw" onclick="observeToggleSource('openclaw')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(14,165,233,0.15);color:#0ea5e9;border:1px solid rgba(14,165,233,0.3);">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#0ea5e9;margin-right:4px;"></span>OPENCLAW
+            </button>
             <button class="btn btn-ghost observe-source-btn" data-source="tunnel" onclick="observeToggleSource('tunnel')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);">
               <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#fbbf24;margin-right:4px;"></span>TUNNEL
             </button>
@@ -3895,6 +3913,10 @@ body {
               <option value="error">Error Only</option>
             </select>
             <input id="observe-search" type="text" placeholder="Filter..." oninput="observeApplyFilters()" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-size:11px;width:140px;">
+          </div>
+
+          <div id="observe-openclaw-summary" style="padding:10px 24px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <span>OpenClaw summary loading...</span>
           </div>
 
           <!-- Log Body -->
@@ -5253,6 +5275,103 @@ body {
         <div id="admin-sla-list" style="overflow-y:auto;max-height:calc(100vh - 360px);"></div>
       </div>
 
+      <!-- ═══ OpenClaw Activity ═══ -->
+      <div class="panel" id="panel-openclaw">
+        <div class="panel-header">
+          <h2 class="panel-title">OpenClaw Activity</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);cursor:pointer;">
+              <input type="checkbox" id="openclaw-auto-refresh" checked onchange="toggleOpenClawAutoRefresh(this.checked)" style="accent-color:var(--brand);" />
+              Auto (10s)
+            </label>
+            <button class="btn btn-ghost" onclick="loadOpenClaw(true)" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge online" id="badge-openclaw"><span class="dot checking"></span><span id="openclaw-status">Loading...</span></span>
+          </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg-secondary);">
+          <button class="btn btn-ghost openclaw-tab active" data-tab="oc-gateway" onclick="switchOpenClawTab('oc-gateway')" style="border-radius:0;border-bottom:2px solid var(--brand);font-size:12px;">Gateway Log</button>
+          <button class="btn btn-ghost openclaw-tab" data-tab="oc-files" onclick="switchOpenClawTab('oc-files')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">File Changes</button>
+          <button class="btn btn-ghost openclaw-tab" data-tab="oc-git" onclick="switchOpenClawTab('oc-git')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Git Log</button>
+          <button class="btn btn-ghost openclaw-tab" data-tab="oc-devlog" onclick="switchOpenClawTab('oc-devlog')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Dev Server</button>
+          <button class="btn btn-ghost openclaw-tab" data-tab="oc-diff" onclick="switchOpenClawTab('oc-diff')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Git Diff</button>
+        </div>
+
+        <!-- Tab content -->
+        <div id="oc-gateway" class="openclaw-tab-content" style="display:block;overflow-y:auto;max-height:calc(100vh - 200px);padding:0;">
+          <pre id="oc-gateway-log" style="margin:0;padding:12px 16px;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading gateway log...</pre>
+        </div>
+        <div id="oc-files" class="openclaw-tab-content" style="display:none;overflow-y:auto;max-height:calc(100vh - 200px);padding:16px;">
+          <div id="oc-files-content">Loading file changes...</div>
+        </div>
+        <div id="oc-git" class="openclaw-tab-content" style="display:none;overflow-y:auto;max-height:calc(100vh - 200px);padding:0;">
+          <pre id="oc-git-log" style="margin:0;padding:12px 16px;font-size:12px;line-height:1.6;white-space:pre-wrap;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading git log...</pre>
+        </div>
+        <div id="oc-devlog" class="openclaw-tab-content" style="display:none;overflow-y:auto;max-height:calc(100vh - 200px);padding:0;">
+          <pre id="oc-devlog-content" style="margin:0;padding:12px 16px;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading dev server log...</pre>
+        </div>
+        <div id="oc-diff" class="openclaw-tab-content" style="display:none;overflow-y:auto;max-height:calc(100vh - 200px);padding:0;">
+          <pre id="oc-diff-content" style="margin:0;padding:12px 16px;font-size:12px;line-height:1.6;white-space:pre-wrap;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading git diff...</pre>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-teamboard">
+        <div class="panel-header">
+          <h2 class="panel-title">Team Dashboard</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="team-last-refresh" style="font-size:11px;color:var(--text-muted);"></span>
+            <button class="btn btn-ghost" onclick="loadTeamDashboard()" style="font-size:12px;padding:4px 10px;">Refresh</button>
+            <span class="status-badge checking" id="badge-teamboard"><span class="dot checking"></span><span id="teamboard-status">Loading...</span></span>
+          </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg-secondary);">
+          <button class="btn btn-ghost team-tab active" data-tab="team-overview" onclick="switchTeamTab('team-overview')" style="border-radius:0;border-bottom:2px solid var(--brand);font-size:12px;">Overview</button>
+          <button class="btn btn-ghost team-tab" data-tab="team-roadmap" onclick="switchTeamTab('team-roadmap')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Roadmap</button>
+          <button class="btn btn-ghost team-tab" data-tab="team-progress" onclick="switchTeamTab('team-progress')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Progress</button>
+          <button class="btn btn-ghost team-tab" data-tab="team-cron" onclick="switchTeamTab('team-cron')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Scheduled</button>
+          <button class="btn btn-ghost team-tab" data-tab="team-today" onclick="switchTeamTab('team-today')" style="border-radius:0;border-bottom:2px solid transparent;font-size:12px;">Today's Log</button>
+        </div>
+
+        <!-- Overview -->
+        <div id="team-overview" class="team-tab-content" style="display:block;overflow-y:auto;flex:1;padding:20px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:40px 0;">Loading team dashboard...</div>
+        </div>
+        <!-- Roadmap -->
+        <div id="team-roadmap" class="team-tab-content" style="display:none;overflow-y:auto;flex:1;padding:0;">
+          <pre id="team-roadmap-content" style="margin:0;padding:16px 20px;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading...</pre>
+        </div>
+        <!-- Progress -->
+        <div id="team-progress" class="team-tab-content" style="display:none;overflow-y:auto;flex:1;padding:0;">
+          <pre id="team-progress-content" style="margin:0;padding:16px 20px;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading...</pre>
+        </div>
+        <!-- Cron -->
+        <div id="team-cron" class="team-tab-content" style="display:none;overflow-y:auto;flex:1;padding:20px 24px;">
+          <div id="team-cron-content">Loading...</div>
+        </div>
+        <!-- Today -->
+        <div id="team-today" class="team-tab-content" style="display:none;overflow-y:auto;flex:1;padding:0;">
+          <pre id="team-today-content" style="margin:0;padding:16px 20px;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:'JetBrains Mono','Fira Code',monospace;color:var(--text-secondary);">Loading...</pre>
+        </div>
+      </div>
+
+      <div class="panel active" id="panel-office" style="background:#1a1a2e;position:relative;overflow:hidden;">
+        <div class="panel-header" style="z-index:10;position:relative;">
+          <h2 class="panel-title">Cook Kitchen</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="office-clock" style="font-family:monospace;font-size:13px;color:var(--text-muted);"></span>
+            <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+              <span class="dot online" style="background:var(--brand);"></span>
+              <span id="office-status">Live</span>
+            </span>
+          </div>
+        </div>
+        <canvas id="office-canvas" style="width:100%;height:100%;image-rendering:pixelated;cursor:default;"></canvas>
+        <div id="office-tooltip" style="display:none;position:absolute;background:rgba(15,20,32,0.95);border:1px solid var(--border-bright);border-radius:8px;padding:10px 14px;font-size:12px;pointer-events:none;z-index:20;max-width:240px;backdrop-filter:blur(8px);"></div>
+      </div>
+
       <!-- ═══ Console ═══ -->
       <div class="console-wrapper" id="console-wrapper">
         <div class="console-resize-handle" id="console-resize-handle"></div>
@@ -5429,7 +5548,7 @@ body {
 // ═══════════════════════════════════════════════════════════════════
 
 const API = 'http://localhost:41937'
-let currentSection = 'dev'
+let currentSection = 'office'
 let pendingAction = null
 let statusData = null
 
@@ -5504,6 +5623,8 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'manual') loadManual()
     if (section === 'marketing') loadMarketingPanel()
     if (section === 'remy') loadRemyPanel()
+  if (section === 'office') startPixelOffice()
+  if (section === 'teamboard') loadTeamDashboard()
     if (section === 'admin-users') loadAdminUsers()
     if (section === 'admin-flags') loadAdminFlags()
     if (section === 'admin-gmail') loadAdminGmail()
@@ -5519,6 +5640,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'admin-notifs') loadAdminNotifs()
     if (section === 'admin-sessions') loadAdminSessions()
     if (section === 'admin-sla') loadAdminSla()
+    if (section === 'openclaw') loadOpenClaw()
   })
 })
 
@@ -10424,6 +10546,7 @@ const OBSERVE_SOURCE_COLORS = {
   dev:    { badge: '#38bdf8', bg: 'rgba(56,189,248,0.12)' },
   ollama: { badge: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
   beta:   { badge: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
+  openclaw: { badge: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
   tunnel: { badge: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
   system: { badge: '#94a3b8', bg: 'rgba(148,163,184,0.12)' },
 }
@@ -10441,13 +10564,47 @@ let observeUserScrolledUp = false
 let observeNewCount = 0
 let observeEntries = []           // all entries (unfiltered)
 let observeHiddenSources = new Set()
+let openClawSummaryInterval = null
 const OBSERVE_MAX_ENTRIES = 5000
 const OBSERVE_TRIM = 500
+
+async function fetchOpenClawSummary() {
+  const el = document.getElementById('observe-openclaw-summary')
+  if (!el) return
+
+  try {
+    const res = await fetch(`${API}/api/openclaw/summary`)
+    const data = await res.json()
+    if (!data.ok) throw new Error('summary unavailable')
+
+    const cloneState = data.available ? 'Clone online' : 'Clone missing'
+    const watchState = data.watchLog?.exists ? 'watch log live' : 'watch log missing'
+    const activityState = data.activityLog?.exists ? 'activity log present' : 'activity log missing'
+    const last5 = data.counts?.last5min ?? 0
+    const lastHour = data.counts?.lastHour ?? 0
+    const topFile = data.hotspots?.[0]?.file || 'none yet'
+
+    el.innerHTML = `
+      <span style="color:${data.available ? 'var(--success)' : 'var(--error)'};font-weight:700;">OPENCLAW</span>
+      <span>${escapeHtml(cloneState)}</span>
+      <span>${escapeHtml(watchState)}</span>
+      <span>${escapeHtml(activityState)}</span>
+      <span>last 5 min: <strong style="color:var(--text-primary);">${last5}</strong></span>
+      <span>last hour: <strong style="color:var(--text-primary);">${lastHour}</strong></span>
+      <span>hot file: <code style="color:var(--brand);">${escapeHtml(topFile)}</code></span>
+    `
+  } catch {
+    el.textContent = 'OpenClaw summary unavailable.'
+  }
+}
 
 function observeConnect() {
   if (observeSSE && observeSSE.readyState !== 2) return // already connected
 
   observeSSE = new EventSource(`${API}/api/livefeed`)
+  fetchOpenClawSummary()
+  if (openClawSummaryInterval) clearInterval(openClawSummaryInterval)
+  openClawSummaryInterval = setInterval(fetchOpenClawSummary, 5000)
 
   observeSSE.addEventListener('log', (e) => {
     try {
@@ -10491,6 +10648,10 @@ function observeDisconnect() {
   if (observeSSE) {
     observeSSE.close()
     observeSSE = null
+  }
+  if (openClawSummaryInterval) {
+    clearInterval(openClawSummaryInterval)
+    openClawSummaryInterval = null
   }
 }
 
@@ -10713,6 +10874,7 @@ loadInfra() // Populate Pi SSH status for SCC on startup
 setInterval(loadInfra, 30000) // Refresh Pi health every 30s
 connectSSE()
 loadPromptQueue() // Load prompt queue on startup since Home is default
+startPixelOffice() // Cook Kitchen is the default panel
 
 addLog('info', 'system', 'Mission Control connected')
 addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, [ Timeline, Ctrl+/ chat, = Observe, ? help, Ctrl+K command palette')
@@ -12413,6 +12575,1385 @@ async function loadAdminSla() {
     adminSlaLoaded = true
   } catch (err) { setText('admin-sla-status', 'Connection error') }
 }
+
+// ── OpenClaw Activity Panel ──────────────────────────────────────
+
+let openClawAutoRefreshTimer = null
+
+function switchOpenClawTab(tabId) {
+  document.querySelectorAll('.openclaw-tab-content').forEach(el => el.style.display = 'none')
+  document.querySelectorAll('.openclaw-tab').forEach(btn => {
+    btn.classList.remove('active')
+    btn.style.borderBottom = '2px solid transparent'
+  })
+  const content = document.getElementById(tabId)
+  if (content) content.style.display = 'block'
+  const btn = document.querySelector(`.openclaw-tab[data-tab="${tabId}"]`)
+  if (btn) {
+    btn.classList.add('active')
+    btn.style.borderBottom = '2px solid var(--brand)'
+  }
+}
+
+function toggleOpenClawAutoRefresh(enabled) {
+  if (enabled) {
+    if (!openClawAutoRefreshTimer) {
+      openClawAutoRefreshTimer = setInterval(() => {
+        if (currentSection === 'openclaw') loadOpenClaw(true)
+      }, 10000)
+    }
+  } else {
+    if (openClawAutoRefreshTimer) {
+      clearInterval(openClawAutoRefreshTimer)
+      openClawAutoRefreshTimer = null
+    }
+  }
+}
+
+function colorizeLogLine(line) {
+  const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  if (/\[ERROR\]|error|Error|ECONNREFUSED|ENOENT|failed/i.test(line)) {
+    return `<span style="color:var(--error);">${escaped}</span>`
+  }
+  if (/\[WARN\]|warn|warning|deprecated/i.test(line)) {
+    return `<span style="color:var(--warning,#f0ad4e);">${escaped}</span>`
+  }
+  if (/\[DEBUG\]|debug/i.test(line)) {
+    return `<span style="color:var(--text-muted);">${escaped}</span>`
+  }
+  // Highlight timestamps
+  return escaped.replace(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[-+]\d{2}:\d{2})/g,
+    '<span style="color:var(--text-muted);">$1</span>')
+}
+
+function colorizeDiffLine(line) {
+  const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  if (line.startsWith('+') && !line.startsWith('+++')) {
+    return `<span style="color:#22c55e;">${escaped}</span>`
+  }
+  if (line.startsWith('-') && !line.startsWith('---')) {
+    return `<span style="color:#ef4444;">${escaped}</span>`
+  }
+  if (line.startsWith('@@')) {
+    return `<span style="color:#60a5fa;">${escaped}</span>`
+  }
+  if (line.startsWith('diff ') || line.startsWith('index ')) {
+    return `<span style="color:var(--text-muted);">${escaped}</span>`
+  }
+  return escaped
+}
+
+async function loadOpenClaw(silent) {
+  if (!silent) setText('openclaw-status', 'Loading...')
+  try {
+    const res = await fetch(`${API}/api/openclaw/activity`)
+    const data = await res.json()
+    if (!data.ok) {
+      setText('openclaw-status', data.error || 'Error')
+      setBadge('badge-openclaw', false, data.error || 'Error')
+      return
+    }
+
+    // Update status badge
+    const gw = data.gateway
+    if (gw && gw.online) {
+      setBadge('badge-openclaw', true, `Gateway up, PID ${gw.pid || '?'}`)
+      setDot('nd-openclaw', true)
+    } else if (gw && gw.error) {
+      setBadge('badge-openclaw', false, 'Gateway offline')
+      setDot('nd-openclaw', false)
+    } else {
+      setBadge('badge-openclaw', false, data.cloneAvailable ? 'Gateway unknown' : 'Clone not found')
+      setDot('nd-openclaw', false)
+    }
+
+    // Gateway log tab
+    if (data.gatewayLog && data.gatewayLog.length) {
+      const logHtml = data.gatewayLog.map(colorizeLogLine).join('\n')
+      document.getElementById('oc-gateway-log').innerHTML = logHtml
+      // Auto-scroll to bottom
+      const container = document.getElementById('oc-gateway')
+      container.scrollTop = container.scrollHeight
+    } else {
+      document.getElementById('oc-gateway-log').textContent = gw && gw.error
+        ? `Cannot reach Pi gateway: ${gw.error}`
+        : 'No gateway log entries yet.'
+    }
+
+    // File changes tab
+    if (data.fileChanges) {
+      const fc = data.fileChanges
+      let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--text-muted);">
+        Last 5 min: <strong>${fc.counts?.last5min || 0}</strong> |
+        Last hour: <strong>${fc.counts?.lastHour || 0}</strong> |
+        Today: <strong>${fc.counts?.today || 0}</strong>
+      </div>`
+
+      if (fc.hotspots && fc.hotspots.length) {
+        html += `<div style="margin-bottom:16px;">
+          <h3 style="font-size:13px;margin:0 0 8px;">Hotspots (most changed)</h3>
+          <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <thead><tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:4px 8px;">File</th>
+              <th style="text-align:right;padding:4px 8px;">Changes</th>
+            </tr></thead>
+            <tbody>${fc.hotspots.map(h => `<tr style="border-bottom:1px solid var(--border-dim,rgba(255,255,255,0.05));">
+              <td style="padding:4px 8px;font-family:monospace;font-size:11px;word-break:break-all;">${h.file}</td>
+              <td style="text-align:right;padding:4px 8px;"><strong>${h.count}</strong></td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>`
+      }
+
+      if (fc.recent && fc.recent.length) {
+        html += `<h3 style="font-size:13px;margin:0 0 8px;">Recent Changes</h3>
+          <div style="font-size:11px;font-family:monospace;">${fc.recent.map(r => {
+            const ago = timeAgo(new Date(r.time))
+            const typeIcon = r.type === 'rename' ? '+/-' : 'M'
+            return `<div style="padding:2px 0;color:var(--text-secondary);"><span style="color:var(--text-muted);width:60px;display:inline-block;">${ago}</span> <span style="color:${r.type === 'rename' ? '#22c55e' : '#60a5fa'};width:24px;display:inline-block;">${typeIcon}</span> ${r.file}</div>`
+          }).join('')}</div>`
+      }
+
+      if (!fc.hotspots?.length && !fc.recent?.length) {
+        html += '<div style="text-align:center;padding:20px;color:var(--text-muted);">No file changes detected yet. OpenClaw may not have started editing.</div>'
+      }
+
+      document.getElementById('oc-files-content').innerHTML = html
+    }
+
+    // Git log tab
+    if (data.gitLog) {
+      document.getElementById('oc-git-log').innerHTML = data.gitLog
+        .map(line => {
+          const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          // Color commit hashes
+          return escaped.replace(/^([a-f0-9]{7,12})\s/, '<span style="color:var(--brand);">$1</span> ')
+        }).join('\n') || 'No commits yet.'
+    }
+
+    // Dev server log tab
+    if (data.devLog && data.devLog.length) {
+      document.getElementById('oc-devlog-content').innerHTML = data.devLog.map(colorizeLogLine).join('\n')
+      const container = document.getElementById('oc-devlog')
+      container.scrollTop = container.scrollHeight
+    } else {
+      document.getElementById('oc-devlog-content').textContent = 'Dev server log is empty or not found.'
+    }
+
+    // Git diff tab
+    if (data.gitDiff) {
+      document.getElementById('oc-diff-content').innerHTML = data.gitDiff
+        .map(colorizeDiffLine).join('\n') || 'Working tree clean (no uncommitted changes).'
+    }
+
+    if (!silent) setText('openclaw-status', 'Loaded')
+
+    // Start auto-refresh if checkbox is checked
+    if (document.getElementById('openclaw-auto-refresh')?.checked && !openClawAutoRefreshTimer) {
+      toggleOpenClawAutoRefresh(true)
+    }
+  } catch (err) {
+    setText('openclaw-status', 'Connection error')
+    setBadge('badge-openclaw', false, 'Connection error')
+  }
+}
+
+
+
+// ── Team Dashboard ───────────────────────────────────────────────
+
+function switchTeamTab(tabId) {
+  document.querySelectorAll('.team-tab-content').forEach(el => el.style.display = 'none')
+  document.querySelectorAll('.team-tab').forEach(el => {
+    el.classList.remove('active')
+    el.style.borderBottomColor = 'transparent'
+  })
+  const tab = document.getElementById(tabId)
+  if (tab) tab.style.display = 'block'
+  const btn = document.querySelector(`.team-tab[data-tab="${tabId}"]`)
+  if (btn) { btn.classList.add('active'); btn.style.borderBottomColor = 'var(--brand)' }
+}
+
+let teamDashboardLoading = false
+async function loadTeamDashboard() {
+  if (teamDashboardLoading) return
+  teamDashboardLoading = true
+  const badge = document.getElementById('badge-teamboard')
+  const status = document.getElementById('teamboard-status')
+  if (badge) badge.className = 'status-badge checking'
+  if (status) status.textContent = 'Loading...'
+
+  try {
+    const resp = await fetch('/api/team/dashboard')
+    const data = await resp.json()
+    if (!data.ok) throw new Error(data.error || 'Failed')
+
+    // Update badge
+    if (badge) badge.className = 'status-badge online'
+    if (status) status.textContent = data.gatewayOnline ? 'Gateway Online' : 'Gateway Offline'
+    const refreshEl = document.getElementById('team-last-refresh')
+    if (refreshEl) refreshEl.textContent = 'Updated ' + new Date().toLocaleTimeString()
+
+    // ── Overview tab ──
+    const overview = document.getElementById('team-overview')
+    if (overview) {
+      // Parse ROADMAP for task counts
+      const roadmap = data.roadmap || ''
+      const totalTasks = (roadmap.match(/- \[ \]/g) || []).length
+      const doneTasks = (roadmap.match(/- \[x\]/g) || []).length
+
+      // Agent cards
+      const agentCards = (data.agents || []).map(a => {
+        const isLocal = a.model.includes('ollama')
+        const costClass = isLocal ? 'color:#22c55e' : a.model.includes('sonnet') ? 'color:#eab308' : 'color:#ef4444'
+        const costLabel = isLocal ? 'FREE (Ollama)' : 'Anthropic API'
+        const names = { main: 'Main (Orchestrator)', sonnet: 'Sonnet (Senior Eng)', build: 'Build (Engineer)', qa: 'QA (Quality)', runner: 'Runner (Tasks)' }
+        const colors = { main: '#e88f47', sonnet: '#3b82f6', build: '#22c55e', qa: '#a855f7', runner: '#eab308' }
+        return `<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid ${colors[a.id] || 'var(--brand)'};border-radius:var(--radius);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:600;color:${colors[a.id] || 'var(--text-primary)'};font-size:14px;">${names[a.id] || a.id}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;font-family:monospace;">${a.model}</div>
+          </div>
+          <span style="font-size:11px;font-weight:600;${costClass};background:${isLocal ? 'var(--success-dim)' : 'var(--warning-dim)'};padding:3px 8px;border-radius:4px;">${costLabel}</span>
+        </div>`
+      }).join('')
+
+      // Cron summary
+      const jobs = (data.cronJobs?.jobs || []).filter(j => j.enabled)
+      const cronSummary = jobs.map(j => {
+        const next = j.state?.nextRunAtMs ? new Date(j.state.nextRunAtMs).toLocaleString() : 'unknown'
+        const lastStatus = j.state?.lastRunStatus || 'pending'
+        const dot = lastStatus === 'ok' ? '#22c55e' : lastStatus === 'pending' ? '#eab308' : '#ef4444'
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <span style="font-weight:500;font-size:13px;">${j.name}</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">${j.schedule?.expr || ''}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:10px;color:var(--text-muted);">Next: ${next}</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:${dot};display:inline-block;"></span>
+          </div>
+        </div>`
+      }).join('')
+
+      overview.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--brand);">${data.agents?.length || 0}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Active Agents</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--success);">${doneTasks}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Tasks Done</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--warning);">${totalTasks}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Tasks Remaining</div>
+          </div>
+        </div>
+
+        <h3 style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">Agent Roster</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">${agentCards}</div>
+
+        <h3 style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">Scheduled Jobs (${jobs.length})</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;">${cronSummary || '<div style="color:var(--text-muted);font-size:12px;">No scheduled jobs</div>'}</div>
+
+        <h3 style="font-size:14px;font-weight:600;color:var(--text-primary);margin:24px 0 12px;">Gateway</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:${data.gatewayOnline ? '#22c55e' : '#ef4444'};display:inline-block;"></span>
+          <span style="font-weight:500;">${data.gatewayOnline ? 'Online' : 'Offline'}</span>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">Pi @ 10.0.0.177:18789</span>
+        </div>
+      `
+    }
+
+    // ── Roadmap tab ──
+    const roadmapEl = document.getElementById('team-roadmap-content')
+    if (roadmapEl) {
+      // Colorize roadmap markdown
+      let rm = (data.roadmap || '(empty)')
+        .replace(/^(#{1,3} .+)$/gm, '<span style="color:var(--brand);font-weight:bold;">$1</span>')
+        .replace(/- \[x\] (.+)/g, '<span style="color:#22c55e;">- [x] $1</span>')
+        .replace(/- \[ \] (.+)/g, '<span style="color:#eab308;">- [ ] $1</span>')
+      roadmapEl.innerHTML = rm
+    }
+
+    // ── Progress tab ──
+    const progressEl = document.getElementById('team-progress-content')
+    if (progressEl) {
+      let pg = (data.progress || '(empty)')
+        .replace(/^(#{1,3} .+)$/gm, '<span style="color:var(--brand);font-weight:bold;">$1</span>')
+        .replace(/^(### .+)$/gm, '<span style="color:#22c55e;font-weight:bold;">$1</span>')
+      progressEl.innerHTML = pg
+    }
+
+    // ── Cron tab ──
+    const cronEl = document.getElementById('team-cron-content')
+    if (cronEl) {
+      const jobs = data.cronJobs?.jobs || []
+      if (jobs.length === 0) {
+        cronEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px;">No scheduled jobs configured</div>'
+      } else {
+        cronEl.innerHTML = jobs.map(j => {
+          const lastRun = j.state?.lastRunAtMs ? new Date(j.state.lastRunAtMs).toLocaleString() : 'Never'
+          const nextRun = j.state?.nextRunAtMs ? new Date(j.state.nextRunAtMs).toLocaleString() : 'Unknown'
+          const lastStatus = j.state?.lastRunStatus || 'pending'
+          const statusColor = lastStatus === 'ok' ? '#22c55e' : lastStatus === 'pending' ? '#eab308' : '#ef4444'
+          return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-weight:600;font-size:14px;color:var(--text-primary);">${j.name}</span>
+              <span style="font-size:11px;font-weight:600;color:${statusColor};background:${statusColor}20;padding:2px 8px;border-radius:4px;">${lastStatus.toUpperCase()}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Agent: <strong>${j.agentId}</strong> | Schedule: <code style="background:var(--bg-secondary);padding:1px 4px;border-radius:3px;">${j.schedule?.expr || 'N/A'}</code> (${j.schedule?.tz || 'UTC'})</div>
+            <div style="font-size:11px;color:var(--text-muted);">Last: ${lastRun} | Next: ${nextRun} | Duration: ${j.state?.lastDurationMs ? (j.state.lastDurationMs / 1000).toFixed(1) + 's' : 'N/A'}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:4px;white-space:pre-wrap;">${j.payload?.text || 'No description'}</div>
+          </div>`
+        }).join('')
+      }
+    }
+
+    // ── Today tab ──
+    const todayEl = document.getElementById('team-today-content')
+    if (todayEl) {
+      todayEl.textContent = data.todayLog || '(No activity log for today yet. Agents will write here as they work.)'
+    }
+
+  } catch (err) {
+    if (badge) badge.className = 'status-badge error'
+    if (status) status.textContent = 'Error'
+    console.error('Team dashboard error:', err)
+  } finally {
+    teamDashboardLoading = false
+  }
+}
+
+// ── Pixel Kitchen ────────────────────────────────────────────────
+// Split-view command center: pixel art kitchen (left) + live dashboard (right)
+// Kitchen brigade hierarchy mirrors engineering team
+(function() {
+  const P = 6; // pixel scale
+
+  const AGENTS = [
+    { id: 'larry',  name: 'Larry',  role: 'Exec Chef',  kitchenRole: 'Calls the pass, reviews every plate',  color: '#e88f47', model: 'Claude Opus 4.6',   cost: '$$$',  station: 0, isBoss: true },
+    { id: 'sonnet', name: 'Sonnet', role: 'Sous Chef',  kitchenRole: 'Complex refactors, escalations',       color: '#3b82f6', model: 'Claude Sonnet 4.6', cost: '$$',   station: 1 },
+    { id: 'build',  name: 'Build',  role: 'Saucier',    kitchenRole: 'Builds every feature, writes all code', color: '#22c55e', model: 'qwen3-coder:30b',   cost: 'FREE', station: 2 },
+    { id: 'qa',     name: 'QA',     role: 'Tournant',   kitchenRole: 'Type checks, tests, hallucination scans', color: '#a855f7', model: 'qwen3:30b',       cost: 'FREE', station: 3 },
+    { id: 'runner', name: 'Runner', role: 'Expeditor',  kitchenRole: 'Remy classifier, intent routing, fast ops', color: '#eab308', model: 'qwen3:4b',       cost: 'FREE', station: 4 }
+  ];
+
+  // No fake activities. Brigade shows real roles and models only.
+
+  // ── Master Plan (simulated project progress) ──
+  const MASTER_PLAN = [
+    { text: 'Risk gap analysis', done: true },
+    { text: 'GOLDMINE email extraction', done: true },
+    { text: 'Loyalty program hardwiring', done: true },
+    { text: 'Guest dietary cards PDF', done: true },
+    { text: 'Unified deduction tracker', done: true },
+    { text: 'Batch prep planner', done: true },
+    { text: 'Public KDS route', done: true },
+    { text: 'Analytics drill-down', done: false, progress: 85 },
+    { text: 'Client portal RSVP flow', done: false, progress: 60 },
+    { text: 'Staff scheduling v2', done: false, progress: 35 },
+    { text: 'Cannabis control packets', done: false, progress: 15 },
+    { text: 'Bakery order management', done: false, progress: 0 },
+    { text: 'Food truck permits', done: false, progress: 0 },
+    { text: 'Meal prep operations', done: false, progress: 0 },
+  ];
+
+  // ── Real activity feed (from file watcher + git) ──
+  let realActivity = []; // { file, time, action }
+  let realActivityLoaded = false;
+  let realActivityPollTimer = 0;
+  const POLL_INTERVAL = 10000; // 10 seconds
+
+  async function pollRealActivity() {
+    try {
+      const resp = await fetch('/api/activity/summary');
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data.recent && data.recent.length) {
+        realActivity = data.recent.slice(0, 30).map(e => ({
+          file: e.file || e.path || 'unknown',
+          dir: e.dir || '',
+          time: e.time ? new Date(e.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '',
+          action: e.action || e.eventType || 'modified',
+          raw: e.time || 0,
+        }));
+        realActivityLoaded = true;
+      }
+    } catch (err) {
+      // silently fail, will retry
+    }
+  }
+  // Initial load
+  pollRealActivity();
+  setInterval(pollRealActivity, POLL_INTERVAL);
+
+  // ── Ticket rail (orders being worked) ──
+  const TICKETS = [
+    { table: 'T1', items: 'Seared Duck, Risotto', status: 'firing', timer: 0 },
+    { table: 'T3', items: 'Halibut, Beet Salad', status: 'plating', timer: 0 },
+    { table: 'T5', items: 'Beef Tenderloin x2', status: 'waiting', timer: 0 },
+    { table: 'T7', items: 'Tasting Menu (6)', status: 'in-progress', timer: 0 },
+    { table: 'T2', items: 'Lobster, Lamb Rack', status: 'fired', timer: 0 },
+  ];
+
+  let officeRunning = false, officeRAF = null, agents = [], canvas, ctx;
+  let lastW = 0, lastH = 0, tick = 0;
+
+  // ── Drawing helpers ──
+  function rect(x, y, w, h, col) {
+    ctx.fillStyle = col;
+    ctx.fillRect(Math.round(x), Math.round(y), w, h);
+  }
+
+  function roundRect(x, y, w, h, r, col) {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(Math.round(x), Math.round(y), w, h, r);
+    } else {
+      const rx = Math.round(x), ry = Math.round(y);
+      ctx.moveTo(rx + r, ry);
+      ctx.lineTo(rx + w - r, ry);
+      ctx.quadraticCurveTo(rx + w, ry, rx + w, ry + r);
+      ctx.lineTo(rx + w, ry + h - r);
+      ctx.quadraticCurveTo(rx + w, ry + h, rx + w - r, ry + h);
+      ctx.lineTo(rx + r, ry + h);
+      ctx.quadraticCurveTo(rx, ry + h, rx, ry + h - r);
+      ctx.lineTo(rx, ry + r);
+      ctx.quadraticCurveTo(rx, ry, rx + r, ry);
+    }
+    ctx.fill();
+  }
+
+  // ── Draw pixel character in chef attire ──
+  function drawCharacter(cx, cy, color, standing, frame, atStation, isBoss) {
+    const s = P;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(cx - 3*s, cy + 8*s, 6*s, 2*s);
+
+    // Legs (chef pants - checkered/dark)
+    ctx.fillStyle = '#2a2a3a';
+    const legBob = standing ? 0 : Math.sin(frame * 0.12) * s;
+    ctx.fillRect(cx - 2*s, cy + 3*s, 2*s, 5*s + legBob);
+    ctx.fillRect(cx + 0*s, cy + 3*s, 2*s, 5*s - legBob);
+    // Shoes (black kitchen clogs)
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx - 3*s, cy + 8*s + legBob, 3*s, s);
+    ctx.fillRect(cx + 0*s, cy + 8*s - legBob, 3*s, s);
+
+    // Chef coat (white with color accent)
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(cx - 3*s, cy - 4*s, 6*s, 7*s);
+    // Double-breasted buttons
+    ctx.fillStyle = '#ddd';
+    ctx.fillRect(cx - s, cy - 3*s, s, s);
+    ctx.fillRect(cx - s, cy - s, s, s);
+    ctx.fillRect(cx - s, cy + s, s, s);
+    // Color accent on collar/trim
+    ctx.fillStyle = color;
+    ctx.fillRect(cx - 3*s, cy - 4*s, 6*s, s); // collar
+
+    // Arms
+    ctx.fillStyle = '#f0f0f0';
+    if (atStation) {
+      // Arms reaching forward (working)
+      ctx.fillRect(cx - 5*s, cy - 2*s, 2*s, 3*s);
+      ctx.fillRect(cx + 3*s, cy - 2*s, 2*s, 3*s);
+      // Hands (skin)
+      ctx.fillStyle = '#ffcc88';
+      const workBob = Math.sin(frame * 0.15) * 0.5;
+      ctx.fillRect(cx - 5*s, cy + s + workBob, 2*s, s);
+      ctx.fillRect(cx + 3*s, cy + s - workBob, 2*s, s);
+    } else {
+      // Arms at sides (walking)
+      const armBob = Math.sin(frame * 0.12) * s;
+      ctx.fillRect(cx - 4*s, cy - 3*s, 2*s, 5*s + armBob);
+      ctx.fillRect(cx + 2*s, cy - 3*s, 2*s, 5*s - armBob);
+    }
+
+    // Apron (color-coded by role)
+    ctx.fillStyle = isBoss ? '#1a1a2e' : color + '40';
+    ctx.fillRect(cx - 2*s, cy - 2*s, 4*s, 6*s);
+    // Apron strings
+    ctx.fillStyle = isBoss ? '#333' : color + '60';
+    ctx.fillRect(cx - 3*s, cy - s, s, s);
+    ctx.fillRect(cx + 2*s, cy - s, s, s);
+
+    // Head (skin)
+    ctx.fillStyle = '#ffcc88';
+    ctx.fillRect(cx - 2*s, cy - 8*s, 4*s, 4*s);
+
+    // Eyes
+    ctx.fillStyle = '#222';
+    ctx.fillRect(cx - s, cy - 7*s, s, s);
+    ctx.fillRect(cx + s, cy - 7*s, s, s);
+    // Blink
+    if (frame % 180 > 175) {
+      ctx.fillStyle = '#ffcc88';
+      ctx.fillRect(cx - s, cy - 7*s, s, s);
+      ctx.fillRect(cx + s, cy - 7*s, s, s);
+    }
+
+    // Mouth
+    ctx.fillStyle = '#cc8866';
+    ctx.fillRect(cx - s, cy - 5*s, 2*s, s);
+
+    // ── Chef hat (toque) ──
+    if (isBoss) {
+      // Tall toque for exec chef
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 3*s, cy - 9*s, 6*s, 2*s); // hat brim
+      ctx.fillRect(cx - 2*s, cy - 15*s, 4*s, 6*s); // tall body
+      // Pleats
+      ctx.fillStyle = '#eee';
+      ctx.fillRect(cx - s, cy - 14*s, s, 5*s);
+      ctx.fillRect(cx + s, cy - 13*s, s, 4*s);
+      // Puff top
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(cx - 3*s, cy - 16*s, 6*s, 2*s);
+      // Gold band (exec chef distinction)
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(cx - 3*s, cy - 9*s, 6*s, s);
+    } else {
+      // Shorter toque / skull cap for line cooks
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 2*s, cy - 9*s, 4*s, s); // brim
+      ctx.fillRect(cx - 2*s, cy - 11*s, 4*s, 3*s); // cap body
+      // Color band to identify role
+      ctx.fillStyle = color;
+      ctx.fillRect(cx - 2*s, cy - 9*s, 4*s, s);
+    }
+  }
+
+  // ── Draw kitchen station (stove/counter) ──
+  function drawStation(sx, sy, agentColor, frame, hasAgent, stationType) {
+    const s = P;
+
+    // Counter base (stainless steel)
+    ctx.fillStyle = '#8a8a9a';
+    ctx.fillRect(sx - 15*s, sy, 30*s, 3*s);
+    // Counter edge highlight
+    ctx.fillStyle = '#a0a0b0';
+    ctx.fillRect(sx - 15*s, sy, 30*s, s);
+    // Counter legs
+    ctx.fillStyle = '#666';
+    ctx.fillRect(sx - 14*s, sy + 3*s, 2*s, 5*s);
+    ctx.fillRect(sx + 12*s, sy + 3*s, 2*s, 5*s);
+
+    if (stationType === 'pass') {
+      // The pass (exec chef station) - heat lamps + ticket rail
+      // Heat lamps
+      ctx.fillStyle = '#444';
+      ctx.fillRect(sx - 10*s, sy - 14*s, 2*s, 12*s); // left pole
+      ctx.fillRect(sx + 8*s, sy - 14*s, 2*s, 12*s);  // right pole
+      ctx.fillRect(sx - 12*s, sy - 15*s, 24*s, 2*s);  // bar
+      // Lamp bulbs (warm glow)
+      const glow = 0.6 + Math.sin(tick * 0.03) * 0.2;
+      ctx.fillStyle = `rgba(255,180,60,${glow})`;
+      ctx.fillRect(sx - 8*s, sy - 13*s, 4*s, 2*s);
+      ctx.fillRect(sx + 4*s, sy - 13*s, 4*s, 2*s);
+      // Warm glow on counter
+      ctx.fillStyle = 'rgba(255,160,40,0.08)';
+      ctx.fillRect(sx - 12*s, sy - 2*s, 24*s, 3*s);
+
+      // Ticket rail
+      ctx.fillStyle = '#555';
+      ctx.fillRect(sx - 14*s, sy - 4*s, 28*s, s);
+      // Tickets (paper clips)
+      if (hasAgent) {
+        for (let i = 0; i < 4; i++) {
+          const tx = sx - 12*s + i * 7*s;
+          const ticketBob = Math.sin(frame * 0.02 + i) * 0.3;
+          ctx.fillStyle = '#fff9e6';
+          ctx.fillRect(tx, sy - 8*s + ticketBob, 5*s, 4*s);
+          // Text lines on ticket
+          ctx.fillStyle = '#333';
+          ctx.fillRect(tx + s, sy - 7*s + ticketBob, 3*s, 0.5*s);
+          ctx.fillRect(tx + s, sy - 6*s + ticketBob, 2*s, 0.5*s);
+        }
+      }
+
+      // Plates on pass (ready to go)
+      if (hasAgent) {
+        ctx.fillStyle = '#f5f5f5';
+        ctx.beginPath();
+        ctx.arc(sx - 5*s, sy + s, 2.5*s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sx + 5*s, sy + s, 2.5*s, 0, Math.PI * 2);
+        ctx.fill();
+        // Food on plates
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(sx - 6*s, sy, 2*s, s);
+        ctx.fillStyle = '#228B22';
+        ctx.fillRect(sx - 4*s, sy, s, s);
+        ctx.fillStyle = '#DAA520';
+        ctx.fillRect(sx + 4*s, sy, 2*s, s);
+      }
+
+    } else if (stationType === 'stove') {
+      // Stove with burners
+      ctx.fillStyle = '#333';
+      ctx.fillRect(sx - 12*s, sy - 10*s, 24*s, 10*s);
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(sx - 11*s, sy - 9*s, 22*s, 8*s);
+      // Burner grates
+      ctx.fillStyle = '#444';
+      ctx.fillRect(sx - 8*s, sy - 7*s, 6*s, 4*s);
+      ctx.fillRect(sx + 2*s, sy - 7*s, 6*s, 4*s);
+      // Flames (animated)
+      if (hasAgent) {
+        const flicker = Math.sin(frame * 0.2) * 0.5;
+        ctx.fillStyle = '#ff6600';
+        ctx.fillRect(sx - 7*s, sy - 5*s - flicker, 4*s, s);
+        ctx.fillRect(sx + 3*s, sy - 5*s + flicker, 4*s, s);
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillRect(sx - 6*s, sy - 6*s + flicker, 2*s, s);
+        ctx.fillRect(sx + 4*s, sy - 6*s - flicker, 2*s, s);
+        // Pans on burners
+        ctx.fillStyle = '#555';
+        ctx.fillRect(sx - 9*s, sy - 8*s, 8*s, s);
+        ctx.fillRect(sx + 1*s, sy - 8*s, 8*s, s);
+        ctx.fillStyle = '#666';
+        ctx.fillRect(sx - 10*s, sy - 8*s, 2*s, s); // handle
+        ctx.fillRect(sx + 9*s, sy - 8*s, 2*s, s);  // handle
+        // Steam
+        if (frame % 40 < 30) {
+          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          ctx.fillRect(sx - 5*s, sy - 10*s - (frame % 15) * 0.4, s, s);
+          ctx.fillRect(sx + 5*s, sy - 11*s - (frame % 12) * 0.3, s, s);
+        }
+      }
+      // Knobs
+      ctx.fillStyle = '#888';
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect(sx - 7*s + i * 5*s, sy - s, s, s);
+      }
+
+    } else if (stationType === 'prep') {
+      // Prep station (cutting board, containers)
+      // Cutting board
+      ctx.fillStyle = '#c9a96e';
+      ctx.fillRect(sx - 8*s, sy - 2*s, 10*s, 2*s);
+      ctx.fillStyle = '#b89860';
+      ctx.fillRect(sx - 7*s, sy - s, 8*s, s);
+      // Knife
+      if (hasAgent) {
+        const chop = Math.sin(frame * 0.3) * s * 0.5;
+        ctx.fillStyle = '#ccc';
+        ctx.fillRect(sx + 3*s, sy - 3*s + chop, s, 2*s); // blade
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(sx + 3*s, sy - s + chop, s, s); // handle
+        // Chopped items
+        ctx.fillStyle = '#ff6347'; // tomato
+        ctx.fillRect(sx - 6*s, sy - 2*s, s, s);
+        ctx.fillRect(sx - 4*s, sy - 2*s, s, s);
+        ctx.fillStyle = '#228B22'; // herbs
+        ctx.fillRect(sx - 2*s, sy - 2*s, s, s);
+      }
+      // Mise en place containers (sixth pans)
+      ctx.fillStyle = '#999';
+      for (let i = 0; i < 3; i++) {
+        ctx.fillRect(sx - 12*s + i * 4*s, sy - 6*s, 3*s, 3*s);
+        // Contents (colorful ingredients)
+        const colors = ['#ff6347', '#228B22', '#ffd700'];
+        ctx.fillStyle = colors[i];
+        ctx.fillRect(sx - 11*s + i * 4*s, sy - 5*s, 2*s, s);
+      }
+
+    } else if (stationType === 'cold') {
+      // Cold station (garde manger / quality check)
+      // Lowboy fridge
+      ctx.fillStyle = '#bbb';
+      ctx.fillRect(sx - 12*s, sy - 8*s, 10*s, 8*s);
+      ctx.fillStyle = '#ccc';
+      ctx.fillRect(sx - 11*s, sy - 7*s, 8*s, 3*s); // top door
+      ctx.fillRect(sx - 11*s, sy - 3*s, 8*s, 3*s); // bottom door
+      // Door handles
+      ctx.fillStyle = '#999';
+      ctx.fillRect(sx - 4*s, sy - 6*s, s, s);
+      ctx.fillRect(sx - 4*s, sy - 2*s, s, s);
+      // Temp display
+      ctx.fillStyle = '#22c55e';
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('38\u00b0', sx - 7*s, sy - 8.5*s);
+      ctx.textAlign = 'left';
+      // Plating supplies
+      ctx.fillStyle = '#f5f5f5';
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(sx + 4*s + i * 4*s, sy + s, 1.5*s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Garnish tray
+      ctx.fillStyle = '#999';
+      ctx.fillRect(sx + 2*s, sy - 4*s, 10*s, 3*s);
+      ctx.fillStyle = '#228B22';
+      ctx.fillRect(sx + 3*s, sy - 3*s, 2*s, s);
+      ctx.fillStyle = '#ff69b4';
+      ctx.fillRect(sx + 6*s, sy - 3*s, s, s);
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(sx + 8*s, sy - 3*s, 2*s, s);
+    }
+  }
+
+  // ── Draw kitchen floor (tile) ──
+  function drawKitchenFloor(w, h) {
+    rect(0, 0, w, h, '#3a3a44');
+    const tileSize = P * 8;
+    for (let y = 0; y < h; y += tileSize) {
+      for (let x = 0; x < w; x += tileSize) {
+        const shade = ((x / tileSize + y / tileSize) % 2 === 0) ? '#383842' : '#3c3c48';
+        rect(x, y, tileSize, tileSize, shade);
+        // Tile grout
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.fillRect(x, y, tileSize, 1);
+        ctx.fillRect(x, y, 1, tileSize);
+      }
+    }
+    // Anti-fatigue mat under stations (dark rubber)
+    // (drawn per station area later)
+  }
+
+  // ── Draw kitchen wall + hood ──
+  function drawKitchenWall(w, h) {
+    const s = P;
+    // Back wall (white tile)
+    rect(0, 0, w, 28*s, '#d4d4d8');
+    // Tile pattern
+    const wallTile = 4 * s;
+    for (let y = 0; y < 28*s; y += wallTile) {
+      for (let x = 0; x < w; x += wallTile) {
+        ctx.fillStyle = ((x / wallTile + y / wallTile) % 2 === 0) ? '#d0d0d4' : '#d8d8dc';
+        ctx.fillRect(x, y, wallTile, wallTile);
+        ctx.fillStyle = 'rgba(0,0,0,0.03)';
+        ctx.fillRect(x, y, wallTile, 1);
+        ctx.fillRect(x, y, 1, wallTile);
+      }
+    }
+    // Stainless steel shelf/rail
+    rect(0, 26*s, w, 3*s, '#a0a0b0');
+    rect(0, 26*s, w, s, '#b8b8c8');
+
+    // Order window / pass sign
+    const signX = w / 2;
+    const signY = 6*s;
+    rect(signX - 24*s, signY, 48*s, 14*s, '#1a1a2e');
+    rect(signX - 23*s, signY + s, 46*s, 12*s, '#0f1420');
+    ctx.fillStyle = '#e88f47';
+    ctx.font = 'bold ' + (3*s) + 'px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('CHEFFLOW KITCHEN', signX, signY + 8*s);
+    ctx.fillStyle = '#e88f4780';
+    ctx.font = (2.0*s) + 'px monospace';
+    ctx.fillText('OPS FOR ARTISTS', signX, signY + 11.5*s);
+    ctx.textAlign = 'left';
+
+    // Hood vents (above stove stations)
+    ctx.fillStyle = '#888';
+    rect(w * 0.15, 0, w * 0.3, 6*s, '#999');
+    rect(w * 0.55, 0, w * 0.3, 6*s, '#999');
+    // Vent slats
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = '#777';
+      ctx.fillRect(w * 0.16, s + i * s * 1.2, w * 0.28, s * 0.5);
+      ctx.fillRect(w * 0.56, s + i * s * 1.2, w * 0.28, s * 0.5);
+    }
+  }
+
+  // ── Dashboard panels (right side, same as before) ──
+  function drawDashboardPanels(panelX, panelY, panelW, panelH) {
+    const s = P;
+    const pad = 3 * s;
+
+    roundRect(panelX, panelY, panelW, panelH, 3*s, 'rgba(15,20,32,0.95)');
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(panelX, panelY, panelW, panelH, 3*s);
+    ctx.stroke();
+
+    let y = panelY + pad;
+
+    // ── TICKET RAIL (kitchen-themed header) ──
+    const ticketH = panelH * 0.12;
+    drawTicketRail(panelX + pad, y, panelW - pad * 2, ticketH);
+    y += ticketH + 2*s;
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.moveTo(panelX + pad, y);
+    ctx.lineTo(panelX + panelW - pad, y);
+    ctx.stroke();
+    y += 2*s;
+
+    // ── MASTER PLAN ──
+    const planH = panelH * 0.40;
+    drawMasterPlan(panelX + pad, y, panelW - pad * 2, planH);
+    y += planH + 2*s;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.moveTo(panelX + pad, y);
+    ctx.lineTo(panelX + panelW - pad, y);
+    ctx.stroke();
+    y += 2*s;
+
+    // ── LIVE FEED ──
+    const feedH = panelH * 0.25;
+    drawActivityFeed(panelX + pad, y, panelW - pad * 2, feedH);
+    y += feedH + 2*s;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.moveTo(panelX + pad, y);
+    ctx.lineTo(panelX + panelW - pad, y);
+    ctx.stroke();
+    y += 2*s;
+
+    // ── BRIGADE ──
+    const teamH = panelH - (y - panelY) - pad;
+    drawBrigadeStatus(panelX + pad, y, panelW - pad * 2, teamH);
+  }
+
+  function drawTicketRail(x, y, w, h) {
+    const s = P;
+
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold ' + (2.5*s) + 'px Inter, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('TICKET RAIL', x, y + 3*s);
+
+    // Ticket count
+    ctx.fillStyle = '#64748b';
+    ctx.font = (1.8*s) + 'px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(TICKETS.length + ' open', x + w, y + 3*s);
+    ctx.textAlign = 'left';
+
+    // Mini tickets
+    let tx = x;
+    const ticketW = Math.floor((w - (TICKETS.length - 1) * s) / TICKETS.length);
+    TICKETS.forEach((ticket, i) => {
+      const statusColor =
+        ticket.status === 'firing' ? '#ef4444' :
+        ticket.status === 'plating' ? '#eab308' :
+        ticket.status === 'fired' ? '#22c55e' :
+        ticket.status === 'in-progress' ? '#3b82f6' : '#64748b';
+
+      roundRect(tx, y + 5*s, ticketW, h - 6*s, s, 'rgba(255,255,255,0.04)');
+
+      // Status dot
+      ctx.fillStyle = statusColor;
+      ctx.beginPath();
+      ctx.arc(tx + 2*s, y + 7*s, s * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Table
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold ' + (1.8*s) + 'px monospace';
+      ctx.fillText(ticket.table, tx + 3.5*s, y + 7.5*s);
+
+      // Status
+      ctx.fillStyle = statusColor;
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(ticket.status, tx + ticketW - s, y + 7.5*s);
+      ctx.textAlign = 'left';
+
+      tx += ticketW + s;
+    });
+
+    // Rotate ticket statuses occasionally
+    if (tick % 300 === 0) {
+      const states = ['waiting', 'firing', 'fired', 'plating', 'in-progress'];
+      TICKETS.forEach(t => {
+        const idx = states.indexOf(t.status);
+        t.status = states[(idx + 1) % states.length];
+      });
+    }
+  }
+
+  function drawMasterPlan(x, y, w, h) {
+    const s = P;
+
+    ctx.fillStyle = '#e88f47';
+    ctx.font = 'bold ' + (2.8*s) + 'px Inter, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('MASTER PLAN', x, y + 3*s);
+
+    const doneCount = MASTER_PLAN.filter(t => t.done).length;
+    const total = MASTER_PLAN.length;
+    const pct = Math.round(doneCount / total * 100);
+    ctx.fillStyle = '#64748b';
+    ctx.font = (1.8*s) + 'px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(doneCount + '/' + total + ' (' + pct + '%)', x + w, y + 3*s);
+    ctx.textAlign = 'left';
+
+    // Progress bar
+    const barY = y + 5.5*s;
+    roundRect(x, barY, w, 2.5*s, s, 'rgba(255,255,255,0.06)');
+    const filledW = w * (doneCount / total);
+    if (filledW > 0) {
+      roundRect(x, barY, filledW, 2.5*s, s, '#22c55e60');
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(Math.round(x + filledW - 1), Math.round(barY), 1, Math.round(2.5*s));
+    }
+    const inProgressItems = MASTER_PLAN.filter(t => !t.done && t.progress > 0);
+    if (inProgressItems.length > 0) {
+      const inProgressPct = inProgressItems.reduce((sum, t) => sum + t.progress / 100, 0) / total;
+      const ipW = w * inProgressPct;
+      if (ipW > 0) roundRect(x + filledW, barY, ipW, 2.5*s, s, '#eab30840');
+    }
+
+    // Task list
+    let ty = barY + 5*s;
+    const lineH = 3.2 * s;
+    const maxVisible = Math.floor((h - 12*s) / lineH);
+
+    MASTER_PLAN.slice(0, maxVisible).forEach((task, i) => {
+      const taskY = ty + i * lineH;
+
+      if (task.done) {
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold ' + (2*s) + 'px monospace';
+        ctx.fillText('\u2713', x + 0.5*s, taskY + 0.3*s);
+        ctx.fillStyle = '#4a5568';
+        ctx.font = (1.8*s) + 'px Inter, sans-serif';
+        ctx.fillText(task.text, x + 4.5*s, taskY);
+        const tw = ctx.measureText(task.text).width;
+        ctx.strokeStyle = '#4a556880';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(x + 4.5*s, taskY - 0.3*s);
+        ctx.lineTo(x + 4.5*s + tw, taskY - 0.3*s);
+        ctx.stroke();
+      } else if (task.progress > 0) {
+        const pulse = 0.5 + Math.sin(tick * 0.06 + i * 0.7) * 0.5;
+        ctx.fillStyle = 'rgba(234,179,8,' + pulse + ')';
+        ctx.beginPath();
+        ctx.arc(x + 1.5*s, taskY - 0.3*s, s * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = (1.8*s) + 'px Inter, sans-serif';
+        ctx.fillText(task.text, x + 4.5*s, taskY);
+        ctx.fillStyle = '#eab308';
+        ctx.font = 'bold ' + (2.0*s) + 'px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(task.progress + '%', x + w, taskY);
+        ctx.textAlign = 'left';
+        // Mini bar
+        const miniBarY = taskY + 1.2*s;
+        const textW = ctx.measureText(task.text).width;
+        const miniW = Math.min(textW, w - 10*s);
+        roundRect(x + 4.5*s, miniBarY, miniW, s * 0.6, s * 0.3, 'rgba(255,255,255,0.04)');
+        roundRect(x + 4.5*s, miniBarY, miniW * task.progress / 100, s * 0.6, s * 0.3, '#eab30860');
+      } else {
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x + 1.5*s, taskY - 0.3*s, s * 0.7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#64748b';
+        ctx.font = (1.8*s) + 'px Inter, sans-serif';
+        ctx.fillText(task.text, x + 4.5*s, taskY);
+      }
+    });
+
+    if (MASTER_PLAN.length > maxVisible) {
+      ctx.fillStyle = '#475569';
+      ctx.font = (2.0*s) + 'px monospace';
+      ctx.fillText('+ ' + (MASTER_PLAN.length - maxVisible) + ' more', x + 4.5*s, ty + maxVisible * lineH);
+    }
+  }
+
+  function drawActivityFeed(x, y, w, h) {
+    const s = P;
+
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = 'bold ' + (2.5*s) + 'px Inter, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('FILE CHANGES', x, y + 3*s);
+
+    // Live indicator
+    const blink = Math.sin(tick * 0.08) > 0;
+    ctx.fillStyle = realActivityLoaded ? (blink ? '#22c55e' : '#22c55e60') : '#ef444440';
+    ctx.beginPath();
+    ctx.arc(x + w - 2*s, y + 2*s, s * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#475569';
+    ctx.font = (1.8*s) + 'px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(realActivityLoaded ? 'live' : 'loading', x + w - 4*s, y + 3*s);
+    ctx.textAlign = 'left';
+
+    if (!realActivityLoaded || !realActivity.length) {
+      ctx.fillStyle = '#475569';
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.fillText('Waiting for file changes...', x, y + 8*s);
+      return;
+    }
+
+    let fy = y + 6*s;
+    const lineH = 2.8 * s;
+    const maxLines = Math.floor((h - 7*s) / lineH);
+
+    const visible = realActivity.slice(0, maxLines);
+    visible.forEach((entry, i) => {
+      const entryY = fy + i * lineH;
+      const alpha = Math.max(0.4, 1 - i * 0.06);
+      ctx.globalAlpha = alpha;
+
+      // Timestamp
+      ctx.fillStyle = '#475569';
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.fillText(entry.time, x, entryY);
+
+      // Action icon
+      const isCreate = entry.action === 'created' || entry.action === 'created/deleted' || entry.action === 'rename';
+      const isMod = entry.action === 'modified' || entry.action === 'change';
+      ctx.fillStyle = isCreate ? '#22c55e' : isMod ? '#eab308' : '#ef4444';
+      ctx.font = (1.8*s) + 'px monospace';
+      const icon = isCreate ? '+' : isMod ? '~' : '-';
+      ctx.fillText(icon, x + 10*s, entryY);
+
+      // Filename (truncate path, show just filename)
+      const parts = entry.file.replace(/\\/g, '/').split('/');
+      const shortFile = parts.length > 2
+        ? parts.slice(-2).join('/')
+        : entry.file;
+      const displayFile = shortFile.length > 32 ? '..' + shortFile.slice(-30) : shortFile;
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.fillText(displayFile, x + 12.5*s, entryY);
+
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawBrigadeStatus(x, y, w, h) {
+    const s = P;
+
+    ctx.fillStyle = '#a855f7';
+    ctx.font = 'bold ' + (2.5*s) + 'px Inter, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('BRIGADE', x, y + 3*s);
+
+    const freeCount = AGENTS.filter(a => a.cost === 'FREE').length;
+    ctx.fillStyle = '#475569';
+    ctx.font = (2.0*s) + 'px monospace';
+    ctx.fillText(AGENTS.length + ' cooks', x + 16*s, y + 3*s);
+    ctx.fillStyle = '#22c55e80';
+    ctx.fillText(freeCount + ' local', x + 28*s, y + 3*s);
+    ctx.fillStyle = '#eab30880';
+    ctx.fillText((AGENTS.length - freeCount) + ' cloud', x + 40*s, y + 3*s);
+
+    let cy = y + 6*s;
+    const cardH = 5.5 * s;
+
+    agents.forEach((a) => {
+      const cardY = cy;
+      cy += cardH;
+
+      // Status dot
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(x + 1.5*s, cardY + 1.2*s, s * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Boss crown
+      if (a.isBoss) {
+        ctx.fillStyle = '#ffd700';
+        ctx.font = (2.0*s) + 'px monospace';
+        ctx.fillText('\u{1F451}', x + 3*s, cardY + 1.8*s);
+      }
+
+      // Name + role
+      ctx.fillStyle = a.color;
+      ctx.font = 'bold ' + (2.2*s) + 'px Inter, sans-serif';
+      ctx.fillText(a.name, x + (a.isBoss ? 7 : 4)*s, cardY + 1.5*s);
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.fillText(a.role, x + 16*s, cardY + 1.5*s);
+
+      // Model + cost on second line
+      ctx.fillStyle = '#64748b';
+      ctx.font = (1.8*s) + 'px monospace';
+      ctx.fillText(a.model, x + 4*s, cardY + 4*s);
+      const cc = a.cost === 'FREE' ? '#22c55e' : a.cost === '$$' ? '#eab308' : '#ef4444';
+      ctx.fillStyle = cc;
+      ctx.font = 'bold ' + (1.8*s) + 'px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(a.cost === 'FREE' ? '$0/token' : a.cost, x + w, cardY + 4*s);
+      ctx.textAlign = 'left';
+    });
+  }
+
+  // ── Agent class (kitchen version) ──
+  class KitchenAgent {
+    constructor(def, slot) {
+      Object.assign(this, def);
+      this.slot = slot;
+      this.activity = this.kitchenRole; // real role, no fake activity
+      this.frame = Math.floor(Math.random() * 1000);
+      this.atStation = true;
+    }
+
+    getStationPosition(kitchenW, kitchenH) {
+      const s = P;
+      const wallBottom = 30 * s;
+      const rowH = 45 * s;
+      // Larry at the pass (top center, facing the kitchen)
+      // Sonnet + Build on the hot line (stoves, row 2)
+      // QA at cold station, Runner at prep (row 3)
+      const positions = [
+        { x: kitchenW * 0.5,  y: wallBottom + 6*s,          type: 'pass' },   // Larry - the pass
+        { x: kitchenW * 0.28, y: wallBottom + rowH * 0.75,  type: 'stove' },  // Sonnet - hot line left
+        { x: kitchenW * 0.72, y: wallBottom + rowH * 0.75,  type: 'stove' },  // Build - hot line right
+        { x: kitchenW * 0.28, y: wallBottom + rowH * 1.45,  type: 'cold' },   // QA - cold/quality
+        { x: kitchenW * 0.72, y: wallBottom + rowH * 1.45,  type: 'prep' },   // Runner - prep station
+      ];
+      return positions[this.slot] || positions[0];
+    }
+
+    update(kitchenW, kitchenH) {
+      this.frame++;
+    }
+
+    draw(kitchenW, kitchenH) {
+      const pos = this.getStationPosition(kitchenW, kitchenH);
+      const s = P;
+
+      // Anti-fatigue mat under station
+      ctx.fillStyle = 'rgba(40,40,50,0.5)';
+      ctx.fillRect(pos.x - 18*s, pos.y + 4*s, 36*s, 8*s);
+
+      // Station
+      drawStation(pos.x, pos.y, this.color, this.frame, true, pos.type);
+
+      // Character (always at station)
+      drawCharacter(pos.x, pos.y + 6*s, this.color, true, this.frame, true, this.isBoss);
+
+      // ── Status dot (always green, always at station) ──
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(pos.x + 5*s, (pos.y - 4*s) - (this.isBoss ? 12 : 6)*s, 2*s, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ── Role bubble ──
+      {
+        const bubbleText = this.role;
+        ctx.font = (2.2*s) + 'px monospace';
+        const tw = ctx.measureText(bubbleText).width;
+        const bx = pos.x - tw / 2 - 2*s;
+        const by = pos.y - (this.isBoss ? 30 : 22)*s;
+        const bw = tw + 4*s;
+        const bh = 4*s;
+
+        roundRect(bx, by, bw, bh, s, 'rgba(15,20,32,0.9)');
+        ctx.strokeStyle = this.color + '40';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, s);
+        ctx.stroke();
+
+        // Pointer
+        ctx.fillStyle = 'rgba(15,20,32,0.9)';
+        ctx.fillRect(pos.x - s, by + bh, 2*s, 1.5*s);
+
+        ctx.fillStyle = this.color + 'dd';
+        ctx.textAlign = 'center';
+        ctx.fillText(bubbleText, pos.x, by + 2.8*s);
+        ctx.textAlign = 'left';
+      }
+
+      // ── Name plate ──
+      const nameY = pos.y + 16*s;
+      const plateH = this.isBoss ? 16*s : 14*s;
+      roundRect(pos.x - 22*s, nameY, 44*s, plateH, s, 'rgba(10,14,23,0.85)');
+
+      ctx.textAlign = 'center';
+      if (this.isBoss) {
+        // EXEC CHEF badge
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold ' + (2.2*s) + 'px monospace';
+        ctx.fillText('\u2605 EXEC CHEF \u2605', pos.x, nameY + 3*s);
+        // Name
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = 'bold ' + (2.5*s) + 'px Inter, sans-serif';
+        ctx.fillText(this.name, pos.x, nameY + 6.5*s);
+        // What they do
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = (1.8*s) + 'px Inter, sans-serif';
+        ctx.fillText(this.kitchenRole, pos.x, nameY + 9.5*s);
+        // Cost
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold ' + (1.8*s) + 'px monospace';
+        ctx.fillText('$$$ (Anthropic) - use sparingly', pos.x, nameY + 12.5*s);
+      } else {
+        // Name + role title
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = 'bold ' + (2.5*s) + 'px Inter, sans-serif';
+        ctx.fillText(this.name, pos.x, nameY + 3.5*s);
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold ' + (2.0*s) + 'px monospace';
+        ctx.fillText(this.role, pos.x, nameY + 6.5*s);
+        // What they actually do
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = (1.8*s) + 'px Inter, sans-serif';
+        ctx.fillText(this.kitchenRole, pos.x, nameY + 9*s);
+        // Cost - emphasize FREE
+        const cc = this.cost === 'FREE' ? '#22c55e' : '#eab308';
+        ctx.fillStyle = cc;
+        ctx.font = 'bold ' + (1.8*s) + 'px monospace';
+        const costTxt = this.cost === 'FREE' ? 'FREE - $0/token (Ollama)' : this.cost + ' (Anthropic)';
+        ctx.fillText(costTxt, pos.x, nameY + 11.5*s);
+      }
+      ctx.textAlign = 'left';
+    }
+  }
+
+  // ── Init ──
+  function initOffice() {
+    canvas = document.getElementById('office-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    agents = AGENTS.map((a, i) => new KitchenAgent(a, i));
+
+    // Real activity feed loaded via polling (see pollRealActivity above)
+  }
+
+  // ── Main render ──
+  function drawScene() {
+    if (!canvas || !ctx) return;
+    const panel = canvas.parentElement;
+    const r = panel.getBoundingClientRect();
+    const w = Math.floor(r.width);
+    const h = Math.floor(r.height - 52);
+    if (w <= 0 || h <= 0) return;
+    if (w !== lastW || h !== lastH) {
+      canvas.width = w; canvas.height = h;
+      lastW = w; lastH = h;
+    }
+
+    tick++;
+    const s = P;
+
+    const splitX = Math.floor(w * 0.55);
+    const kitchenW = splitX;
+    const panelW = w - splitX;
+
+    // ── Left: Kitchen ──
+    drawKitchenFloor(kitchenW, h);
+    drawKitchenWall(kitchenW, h);
+
+    // Update and draw agents (back to front)
+    const drawOrder = [3, 4, 1, 2, 0];
+    drawOrder.forEach(i => {
+      agents[i].update(kitchenW, h);
+      agents[i].draw(kitchenW, h);
+    });
+
+    // ── Divider ──
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(splitX, 0);
+    ctx.lineTo(splitX, h);
+    ctx.stroke();
+
+    // ── Right: Dashboard ──
+    rect(splitX, 0, panelW, h, '#0c1018');
+    drawDashboardPanels(splitX + 2*s, 2*s, panelW - 4*s, h - 12*s);
+
+    // ── Bottom HUD ──
+    const barY = h - 8*s;
+    rect(0, barY, w, 8*s, 'rgba(10,14,23,0.92)');
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fillRect(0, barY, w, 1);
+
+    ctx.font = (2*s) + 'px monospace';
+    ctx.textAlign = 'left';
+    const freeCount = agents.filter(a => a.cost === 'FREE').length;
+    ctx.fillStyle = '#475569';
+    ctx.fillText('Brigade: ' + agents.length, 3*s, barY + 5*s);
+    ctx.fillStyle = '#22c55e80';
+    ctx.fillText(freeCount + ' Local', 20*s, barY + 5*s);
+    ctx.fillStyle = '#475569';
+    ctx.fillText('(Ollama)', 30*s, barY + 5*s);
+    ctx.fillStyle = '#eab30880';
+    ctx.fillText((agents.length - freeCount) + ' Cloud', 44*s, barY + 5*s);
+    ctx.fillStyle = '#475569';
+    ctx.fillText('(Anthropic)', 54*s, barY + 5*s);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#64748b';
+    const now = new Date();
+    ctx.fillText(now.toLocaleTimeString() + '  ' + now.toLocaleDateString(), w - 3*s, barY + 5*s);
+    ctx.textAlign = 'left';
+
+    const clockEl = document.getElementById('office-clock');
+    if (clockEl) clockEl.textContent = now.toLocaleTimeString();
+  }
+
+  function officeLoop() {
+    if (!officeRunning) return;
+    drawScene();
+    officeRAF = requestAnimationFrame(officeLoop);
+  }
+
+  window.startPixelOffice = function() {
+    if (officeRunning) return;
+    initOffice();
+    officeRunning = true;
+    officeLoop();
+  };
+
+  window.stopPixelOffice = function() {
+    officeRunning = false;
+    if (officeRAF) cancelAnimationFrame(officeRAF);
+  };
+
+  // Tooltip on hover
+  document.addEventListener('mousemove', function(e) {
+    const tooltip = document.getElementById('office-tooltip');
+    if (!tooltip || !canvas) return;
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const kitchenW = Math.floor(r.width * 0.55);
+    let found = null;
+    for (const a of agents) {
+      const pos = a.getStationPosition(kitchenW, r.height - 52);
+      const ax = a.atStation ? pos.x : a.walkX;
+      const ay = a.atStation ? pos.y : a.walkY;
+      if (Math.abs(mx - ax) < 50 && Math.abs(my - ay) < 60) { found = a; break; }
+    }
+    if (found) {
+      const costLabel = found.cost === 'FREE' ? 'Local (Ollama) - $0/token' : 'Anthropic API - ' + found.cost;
+      const costColor = found.cost === 'FREE' ? '#22c55e' : '#eab308';
+      tooltip.innerHTML =
+        '<div style="font-weight:700;color:' + found.color + ';font-size:14px;margin-bottom:6px;">' + (found.isBoss ? '\u2605 ' : '') + found.name + ' <span style="color:#94a3b8;font-weight:400;font-size:11px;">(' + found.kitchenRole + ')</span></div>' +
+        '<div style="color:#94a3b8;font-size:11px;margin-bottom:4px;">' + found.role + ' \u2022 ' + found.model + '</div>' +
+        '<div style="color:#e2e8f0;font-size:12px;margin-bottom:6px;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;">' + found.kitchenRole + '</div>' +
+        '<div style="font-size:11px;color:' + costColor + ';">' + costLabel + '</div>';
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(e.clientX - r.left + 16, r.width - 260) + 'px';
+      tooltip.style.top = Math.max(e.clientY - r.top - 80, 10) + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+})();
+
 
 </script>
 </body>
