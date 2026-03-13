@@ -7038,6 +7038,47 @@ async function handleRequest(req, res) {
       const activitySummary = getActivitySummary()
       const recentFileChanges = (activitySummary.recent || []).length
 
+      // Staff members
+      let staffMembers = []
+      try {
+        const staffResult = await supabaseQuery('staff_members?select=id,name,role,status,phone&limit=10')
+        if (Array.isArray(staffResult)) staffMembers = staffResult
+      } catch { /* no staff data */ }
+
+      // Weather (cached 30 min)
+      if (!global._pxWeather || Date.now() - global._pxWeather.ts > 1800000) {
+        try {
+          const wr = await fetch('https://wttr.in/?format=%C|%t|%h')
+          if (wr.ok) {
+            const wt = await wr.text()
+            const parts = wt.split('|').map(s => s.trim())
+            global._pxWeather = { ts: Date.now(), data: { condition: parts[0] || '', temp: parts[1] || '', humidity: parts[2] || '' } }
+          }
+        } catch { /* weather unavailable */ }
+      }
+
+      // Ingredients stock levels
+      let ingredientStock = []
+      try {
+        const ingResult = await supabaseQuery('ingredients?select=id,name,quantity,unit,par_level&order=name&limit=20')
+        if (Array.isArray(ingResult)) ingredientStock = ingResult
+      } catch { /* no ingredients data */ }
+
+      // History snapshots (ring buffer, every 5 min, 24 snapshots = 2 hours)
+      if (!global._pxHistory) global._pxHistory = []
+      if (!global._pxHistoryTs || Date.now() - global._pxHistoryTs > 300000) {
+        global._pxHistory.push({
+          ts: Date.now(),
+          revenue: (revenue.summary || {}).totalRevenue || '$0',
+          eventsTotal: events.total || 0,
+          inquiries: inquiries.total || 0,
+          overdue: overdueInquiries.length,
+          clients: clients.total || 0,
+        })
+        if (global._pxHistory.length > 24) global._pxHistory.shift()
+        global._pxHistoryTs = Date.now()
+      }
+
       return json(res, {
         ok: true,
         events: events.counts || {},
@@ -7055,6 +7096,10 @@ async function handleRequest(req, res) {
           recentCommits: recentGitActivity,
           recentFileChanges,
         },
+        staff: staffMembers,
+        weather: global._pxWeather?.data || null,
+        ingredients: ingredientStock,
+        history: global._pxHistory || [],
       })
     } catch (err) {
       return json(res, { ok: false, error: err.message }, 500)

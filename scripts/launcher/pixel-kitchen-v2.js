@@ -70,6 +70,10 @@
     upcoming: [],
     agentStates: { ollama: false, devServer: false, betaServer: false },
     activity: { recentCommits: 0, recentFileChanges: 0 },
+    staff: [],
+    weather: null,
+    ingredients: [],
+    history: [],
   }
   let bizDataLoaded = false
   let lastBizPoll = 0
@@ -90,6 +94,154 @@
   }
   pollBizData()
   setInterval(pollBizData, BIZ_POLL_INTERVAL)
+
+  // ── Achievement system ──
+  let achievementToasts = [] // { text, icon, color, age, maxAge }
+  let checkedMilestones = new Set()
+  try {
+    const saved = localStorage.getItem('pk2-milestones')
+    if (saved) checkedMilestones = new Set(JSON.parse(saved))
+  } catch {
+    /* ignore */
+  }
+
+  function parseDollars(d) {
+    const r = d.revenue
+    if (!r || !r.totalRevenue) return 0
+    return parseFloat(String(r.totalRevenue).replace(/[$,]/g, '')) || 0
+  }
+
+  const MILESTONES = [
+    {
+      id: 'client-1',
+      test: (d) => d.clients.total >= 1,
+      text: 'First Client!',
+      icon: '\u{1F464}',
+      color: '#a855f7',
+    },
+    {
+      id: 'client-5',
+      test: (d) => d.clients.total >= 5,
+      text: '5 Clients!',
+      icon: '\u{1F465}',
+      color: '#a855f7',
+    },
+    {
+      id: 'client-10',
+      test: (d) => d.clients.total >= 10,
+      text: '10 Clients!',
+      icon: '\u{1F389}',
+      color: '#a855f7',
+    },
+    {
+      id: 'event-1',
+      test: (d) => (d.events.completed || 0) >= 1,
+      text: 'First Event Done!',
+      icon: '\u2705',
+      color: '#22c55e',
+    },
+    {
+      id: 'event-5',
+      test: (d) => (d.events.completed || 0) >= 5,
+      text: '5 Events Done!',
+      icon: '\u{1F3C6}',
+      color: '#22c55e',
+    },
+    {
+      id: 'event-10',
+      test: (d) => (d.events.completed || 0) >= 10,
+      text: '10 Events Done!',
+      icon: '\u2B50',
+      color: '#ffd700',
+    },
+    {
+      id: 'rev-1k',
+      test: (d) => parseDollars(d) >= 1000,
+      text: '$1K Revenue!',
+      icon: '\u{1F4B0}',
+      color: '#22c55e',
+    },
+    {
+      id: 'rev-5k',
+      test: (d) => parseDollars(d) >= 5000,
+      text: '$5K Revenue!',
+      icon: '\u{1F4B0}',
+      color: '#3b82f6',
+    },
+    {
+      id: 'rev-10k',
+      test: (d) => parseDollars(d) >= 10000,
+      text: '$10K Revenue!',
+      icon: '\u{1F525}',
+      color: '#e88f47',
+    },
+    {
+      id: 'rev-25k',
+      test: (d) => parseDollars(d) >= 25000,
+      text: '$25K Revenue!',
+      icon: '\u{1F680}',
+      color: '#a855f7',
+    },
+    {
+      id: 'rev-50k',
+      test: (d) => parseDollars(d) >= 50000,
+      text: '$50K - HALF WAY!',
+      icon: '\u{1F48E}',
+      color: '#f59e0b',
+    },
+    {
+      id: 'rev-100k',
+      test: (d) => parseDollars(d) >= 100000,
+      text: '$100K GRAND CHEF!',
+      icon: '\u{1F451}',
+      color: '#ffd700',
+    },
+    {
+      id: 'zero-overdue',
+      test: (d) => d.inquiries.overdue === 0 && d.inquiries.open > 0,
+      text: 'Zero Overdue!',
+      icon: '\u2728',
+      color: '#22c55e',
+    },
+    {
+      id: 'brigade-online',
+      test: (d) => d.agentStates.ollama && d.agentStates.devServer,
+      text: 'Brigade Online!',
+      icon: '\u{1F7E2}',
+      color: '#22c55e',
+    },
+  ]
+
+  function checkAchievements() {
+    if (!bizDataLoaded) return
+    MILESTONES.forEach((m) => {
+      if (checkedMilestones.has(m.id)) return
+      try {
+        if (m.test(bizData)) {
+          checkedMilestones.add(m.id)
+          localStorage.setItem('pk2-milestones', JSON.stringify([...checkedMilestones]))
+          achievementToasts.push({
+            text: m.text,
+            icon: m.icon,
+            color: m.color,
+            age: 0,
+            maxAge: 360,
+          })
+          if (achievementToasts.length > 3) achievementToasts.shift()
+          playBell()
+        }
+      } catch {
+        /* ignore */
+      }
+    })
+  }
+
+  // ── History scrubber state ──
+  let historyViewIndex = -1 // -1 = live data
+
+  // ── Remy bubble state ──
+  let remyBubbleAge = 0
+  let remyBubbleText = ''
 
   // ── Real file activity feed ──
   let realActivity = []
@@ -448,6 +600,17 @@
           ctx.fillStyle = '#333'
           ctx.fillRect(tx + s, sy - 7 * s + ticketBob, 3 * s, 0.5 * s)
           ctx.fillRect(tx + s, sy - 6 * s + ticketBob, 2 * s, 0.5 * s)
+          // Click ticket to open specific event
+          if (ev.id) {
+            registerClickRegion(
+              tx,
+              sy - 8 * s,
+              5 * s,
+              4 * s,
+              () => window.open('http://localhost:3100/events/' + ev.id, '_blank'),
+              (ev.name || 'Event') + ' - click to view'
+            )
+          }
         }
       } else if (hasAgent) {
         // Placeholder tickets when no data
@@ -672,6 +835,15 @@
     ctx.font = 2.0 * s + 'px monospace'
     ctx.fillText('OPS FOR ARTISTS', signX, signY + 11.5 * s)
     ctx.textAlign = 'left'
+    // Click sign to open dashboard
+    registerClickRegion(
+      signX - 24 * s,
+      signY,
+      48 * s,
+      14 * s,
+      () => window.open('http://localhost:3100/dashboard', '_blank'),
+      'ChefFlow Dashboard'
+    )
 
     // Hood vents
     ctx.fillStyle = '#888'
@@ -762,7 +934,25 @@
       ctx.textAlign = 'center'
       ctx.fillText('$' + Math.round(outstanding), x + w - 5 * s, y - s)
       ctx.textAlign = 'left'
+      // Click invoices to open finance
+      registerClickRegion(
+        x + w - 8 * s,
+        y,
+        6 * s,
+        plateStack * 2 * s,
+        () => window.open('http://localhost:3100/finance', '_blank'),
+        'Outstanding invoices - click to view'
+      )
     }
+    // Click dining tables to open clients
+    registerClickRegion(
+      x,
+      y,
+      w * 0.7,
+      h,
+      () => window.open('http://localhost:3100/clients', '_blank'),
+      'Dining room - view clients'
+    )
   }
 
   // ── Dashboard panels (right side) ──
@@ -1228,6 +1418,416 @@
     lastOverdueCount = currentOverdue
   }
 
+  // ── Staff members at stations ──
+  function drawStaffMembers(kitchenW, kitchenH) {
+    const staff = bizData.staff || []
+    if (!staff.length) return
+    const s = P
+    const wallBottom = 30 * s
+    const staffPositions = [
+      { x: kitchenW * 0.15, y: wallBottom + 45 * s * 0.75 + 8 * s },
+      { x: kitchenW * 0.85, y: wallBottom + 45 * s * 0.75 + 8 * s },
+      { x: kitchenW * 0.15, y: wallBottom + 45 * s * 1.45 + 8 * s },
+      { x: kitchenW * 0.85, y: wallBottom + 45 * s * 1.45 + 8 * s },
+    ]
+    staff.slice(0, 4).forEach((member, i) => {
+      if (i >= staffPositions.length) return
+      const pos = staffPositions[i]
+      const col = ['#e06050', '#50a0e0', '#50e080', '#e0a050'][i]
+      const ms = s * 0.6
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.1)'
+      ctx.fillRect(pos.x - 2 * ms, pos.y + 5 * ms, 4 * ms, ms)
+      // Body
+      ctx.fillStyle = '#f0f0f0'
+      ctx.fillRect(pos.x - 2 * ms, pos.y - 2 * ms, 4 * ms, 4 * ms)
+      ctx.fillStyle = col
+      ctx.fillRect(pos.x - 2 * ms, pos.y - 2 * ms, 4 * ms, ms)
+      // Head
+      ctx.fillStyle = '#ffcc88'
+      ctx.fillRect(pos.x - ms, pos.y - 5 * ms, 2 * ms, 3 * ms)
+      // Eyes
+      ctx.fillStyle = '#222'
+      ctx.fillRect(pos.x - 0.5 * ms, pos.y - 4 * ms, 0.4 * ms, 0.4 * ms)
+      ctx.fillRect(pos.x + 0.3 * ms, pos.y - 4 * ms, 0.4 * ms, 0.4 * ms)
+      // Hat
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(pos.x - ms, pos.y - 6 * ms, 2 * ms, ms)
+      // Legs
+      ctx.fillStyle = '#2a2a3a'
+      ctx.fillRect(pos.x - ms, pos.y + 2 * ms, ms, 3 * ms)
+      ctx.fillRect(pos.x, pos.y + 2 * ms, ms, 3 * ms)
+      // Name
+      ctx.fillStyle = '#94a3b8'
+      ctx.font = 1.2 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText((member.name || 'Staff').split(' ')[0].slice(0, 8), pos.x, pos.y + 8 * ms)
+      // Role tag
+      ctx.fillStyle = col + '80'
+      ctx.font = 1 * s + 'px monospace'
+      ctx.fillText((member.role || '').slice(0, 6), pos.x, pos.y + 10 * ms)
+      // Status dot
+      ctx.fillStyle = member.status === 'active' ? '#22c55e' : '#eab308'
+      ctx.beginPath()
+      ctx.arc(pos.x + 3 * ms, pos.y - 5 * ms, 0.5 * ms, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.textAlign = 'left'
+    })
+  }
+
+  // ── Remy concierge bubble ──
+  function drawRemyBubble(kitchenW, kitchenH) {
+    const s = P
+    const wallBottom = 30 * s
+    const rx = kitchenW * 0.5 + 22 * s
+    const ry = wallBottom + 10 * s
+    // Remy character (small)
+    ctx.fillStyle = '#2563eb'
+    ctx.fillRect(rx - s, ry - 3 * s, 2 * s, 4 * s)
+    ctx.fillStyle = '#ffcc88'
+    ctx.fillRect(rx - s, ry - 6 * s, 2 * s, 3 * s)
+    ctx.fillStyle = '#222'
+    ctx.fillRect(rx - 0.5 * s, ry - 5 * s, 0.4 * s, 0.4 * s)
+    ctx.fillRect(rx + 0.3 * s, ry - 5 * s, 0.4 * s, 0.4 * s)
+    // Beret
+    ctx.fillStyle = '#1e40af'
+    ctx.fillRect(rx - 1.5 * s, ry - 7 * s, 3 * s, s)
+    ctx.fillRect(rx - s, ry - 8 * s, 2 * s, s)
+    // Speech bubble when active
+    const hasActivity = bizData.activity.recentFileChanges > 0 || bizData.activity.recentCommits > 0
+    if (hasActivity) {
+      remyBubbleAge++
+      const bubbleTexts = ['Order up!', 'Behind!', 'Heard!', 'Fire it!', 'Corner!', 'Hot pan!']
+      if (remyBubbleAge % 300 === 1) {
+        remyBubbleText = bubbleTexts[Math.floor(Math.random() * bubbleTexts.length)]
+      }
+      if (remyBubbleText) {
+        ctx.font = 1.5 * s + 'px monospace'
+        const bw = ctx.measureText(remyBubbleText).width + 3 * s
+        roundRect(rx - bw / 2, ry - 12 * s, bw, 3 * s, s, 'rgba(255,255,255,0.95)')
+        ctx.fillStyle = '#1a1a2e'
+        ctx.textAlign = 'center'
+        ctx.fillText(remyBubbleText, rx, ry - 10 * s)
+        ctx.textAlign = 'left'
+        ctx.fillStyle = 'rgba(255,255,255,0.95)'
+        ctx.beginPath()
+        ctx.moveTo(rx - s, ry - 9 * s)
+        ctx.lineTo(rx, ry - 8 * s)
+        ctx.lineTo(rx + s, ry - 9 * s)
+        ctx.fill()
+      }
+    } else {
+      remyBubbleAge = 0
+      if (tick % 90 < 45) {
+        ctx.fillStyle = '#94a3b8'
+        for (let d = 0; d < 3; d++) {
+          ctx.beginPath()
+          ctx.arc(rx - s + d * s, ry - 9 * s, 0.3 * s, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
+    }
+    ctx.fillStyle = '#2563eb'
+    ctx.font = 'bold ' + 1.2 * s + 'px monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText('REMY', rx, ry + 3 * s)
+    ctx.textAlign = 'left'
+    registerClickRegion(
+      rx - 3 * s,
+      ry - 12 * s,
+      6 * s,
+      16 * s,
+      () => window.open('http://localhost:3100/dashboard', '_blank'),
+      'Remy concierge'
+    )
+  }
+
+  // ── Achievement toasts ──
+  function drawAchievementToasts(w, h) {
+    const s = P
+    achievementToasts = achievementToasts.filter((t) => t.age < t.maxAge)
+    achievementToasts.forEach((toast, i) => {
+      toast.age++
+      const fadeIn = Math.min(1, toast.age / 30)
+      const fadeOut = Math.max(0, 1 - (toast.age - toast.maxAge + 60) / 60)
+      ctx.globalAlpha = Math.min(fadeIn, fadeOut)
+      const ty = 10 * s + i * 7 * s
+      const tx = w * 0.5 - 20 * s
+      roundRect(tx, ty, 40 * s, 5 * s, 1.5 * s, 'rgba(15,20,32,0.95)')
+      ctx.strokeStyle = toast.color + '80'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      if (ctx.roundRect) ctx.roundRect(tx, ty, 40 * s, 5 * s, 1.5 * s)
+      ctx.stroke()
+      if (toast.age < 60) {
+        ctx.strokeStyle = toast.color + '30'
+        ctx.beginPath()
+        ctx.arc(tx + 20 * s, ty + 2.5 * s, toast.age * 0.5 * s, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+      ctx.font = 3 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#fff'
+      ctx.fillText(toast.icon, tx + 5 * s, ty + 3.8 * s)
+      ctx.fillStyle = toast.color
+      ctx.font = 'bold ' + 2.2 * s + 'px Inter, monospace'
+      ctx.fillText(toast.text, tx + 23 * s, ty + 3.5 * s)
+      ctx.textAlign = 'left'
+      ctx.globalAlpha = 1
+    })
+  }
+
+  // ── Kitchen expansion (more rooms at higher revenue) ──
+  function drawKitchenExpansion(kitchenW, kitchenH) {
+    const s = P
+    const dollars = parseDollars(bizData)
+    // $10k+ : Walk-in cooler door
+    if (dollars >= 10000) {
+      const wx = 2 * s,
+        wy = 30 * s + 5 * s
+      ctx.fillStyle = '#8898a8'
+      ctx.fillRect(wx, wy, 10 * s, 18 * s)
+      ctx.fillStyle = '#9aa8b8'
+      ctx.fillRect(wx + s, wy + s, 8 * s, 16 * s)
+      ctx.fillStyle = '#bbb'
+      ctx.fillRect(wx + 7 * s, wy + 8 * s, s, 2 * s)
+      ctx.fillStyle = '#22c55e80'
+      ctx.font = 1.3 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('WALK-IN', wx + 5 * s, wy - s)
+      ctx.fillStyle = '#22c55e'
+      ctx.font = 'bold ' + 1.2 * s + 'px monospace'
+      ctx.fillText('38\u00b0F', wx + 5 * s, wy + 19.5 * s)
+      ctx.textAlign = 'left'
+    }
+    // $25k+ : Pantry shelving
+    if (dollars >= 25000) {
+      const px = kitchenW - 14 * s,
+        py = 30 * s + 5 * s
+      ctx.fillStyle = '#6a5a4a'
+      ctx.fillRect(px, py, 12 * s, 20 * s)
+      for (let sh = 0; sh < 4; sh++) {
+        ctx.fillStyle = '#7a6a5a'
+        ctx.fillRect(px + s, py + s + sh * 5 * s, 10 * s, s)
+        const colors = ['#ff6347', '#ffd700', '#228B22', '#daa520', '#8b4513']
+        for (let it = 0; it < 3; it++) {
+          ctx.fillStyle = colors[(sh * 3 + it) % colors.length]
+          ctx.fillRect(px + 2 * s + it * 3 * s, py + sh * 5 * s, 2 * s, s)
+        }
+      }
+      ctx.fillStyle = '#94a3b880'
+      ctx.font = 1.3 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('PANTRY', px + 6 * s, py - s)
+      ctx.textAlign = 'left'
+    }
+    // $50k+ : Private dining booth
+    if (dollars >= 50000) {
+      const bx = kitchenW * 0.15,
+        by = kitchenH * 0.82
+      ctx.fillStyle = '#3a2520'
+      ctx.fillRect(bx, by, 14 * s, 8 * s)
+      ctx.fillStyle = '#5a3a2a'
+      ctx.fillRect(bx + s, by + s, 12 * s, 2 * s)
+      ctx.fillStyle = '#4a2a1a'
+      ctx.fillRect(bx, by, 2 * s, 8 * s)
+      ctx.fillRect(bx + 12 * s, by, 2 * s, 8 * s)
+      ctx.fillStyle = '#ffd700'
+      ctx.fillRect(bx + 6 * s, by - s, s, s)
+      const flicker = 0.5 + Math.sin(tick * 0.15) * 0.3
+      ctx.fillStyle = `rgba(255,200,50,${flicker})`
+      ctx.fillRect(bx + 6 * s, by - 2 * s, s, s)
+      ctx.fillStyle = '#daa52080'
+      ctx.font = 1.1 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('VIP', bx + 7 * s, by + 9.5 * s)
+      ctx.textAlign = 'left'
+    }
+    // $100k+ : Chef's office
+    if (dollars >= 100000) {
+      const ox = kitchenW - 14 * s,
+        oy = kitchenH * 0.7
+      ctx.fillStyle = '#2a2535'
+      ctx.fillRect(ox, oy, 12 * s, 10 * s)
+      ctx.fillStyle = '#5a4a3a'
+      ctx.fillRect(ox + 2 * s, oy + 3 * s, 8 * s, 4 * s)
+      ctx.fillStyle = '#333'
+      ctx.fillRect(ox + 4 * s, oy + s, 4 * s, 3 * s)
+      ctx.fillStyle = '#3b82f640'
+      ctx.fillRect(ox + 4.5 * s, oy + 1.5 * s, 3 * s, 2 * s)
+      ctx.fillStyle = '#1a1a2e'
+      ctx.fillRect(ox + 4 * s, oy + 6 * s, 4 * s, 3 * s)
+      ctx.fillStyle = '#ffd70060'
+      ctx.font = 1.1 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('OFFICE', ox + 6 * s, oy - s)
+      ctx.textAlign = 'left'
+    }
+  }
+
+  // ── Weather overlay ──
+  function drawWeatherOverlay(kitchenW, kitchenH) {
+    const weather = bizData.weather
+    if (!weather) return
+    const s = P
+    const cond = (weather.condition || '').toLowerCase()
+    const winX = kitchenW * 0.02,
+      winY = 4 * s,
+      winW = 8 * s,
+      winH = 12 * s
+    // Window frame
+    ctx.fillStyle = '#666'
+    ctx.fillRect(winX, winY, winW, winH)
+    ctx.fillStyle = '#88b4d8'
+    ctx.fillRect(winX + 0.5 * s, winY + 0.5 * s, winW - s, winH - s)
+    ctx.fillStyle = '#777'
+    ctx.fillRect(winX + winW / 2 - 0.2 * s, winY, 0.4 * s, winH)
+    ctx.fillRect(winX, winY + winH / 2 - 0.2 * s, winW, 0.4 * s)
+    if (cond.includes('rain') || cond.includes('drizzle') || cond.includes('shower')) {
+      ctx.fillStyle = 'rgba(100,150,255,0.6)'
+      for (let r = 0; r < 8; r++) {
+        const rx = winX + s + ((tick * 0.3 + r * 37) % (winW - 2 * s))
+        const ry = winY + s + ((tick * 2 + r * 53) % (winH - 2 * s))
+        ctx.fillRect(rx, ry, 0.3 * s, 1.2 * s)
+      }
+    } else if (cond.includes('snow') || cond.includes('blizzard') || cond.includes('sleet')) {
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'
+      for (let f = 0; f < 6; f++) {
+        const fx =
+          winX + s + ((tick * 0.2 + f * 41 + Math.sin(tick * 0.01 + f) * 10) % (winW - 2 * s))
+        const fy = winY + s + ((tick * 0.8 + f * 67) % (winH - 2 * s))
+        ctx.beginPath()
+        ctx.arc(fx, fy, 0.4 * s, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    } else if (cond.includes('cloud') || cond.includes('overcast') || cond.includes('fog')) {
+      ctx.fillStyle = 'rgba(200,200,210,0.4)'
+      const cx = winX + s + ((tick * 0.1) % (winW + 4 * s)) - 2 * s
+      ctx.beginPath()
+      ctx.arc(cx, winY + 3 * s, 1.5 * s, 0, Math.PI * 2)
+      ctx.arc(cx + s, winY + 2.5 * s, 1.8 * s, 0, Math.PI * 2)
+      ctx.arc(cx + 2 * s, winY + 3 * s, 1.5 * s, 0, Math.PI * 2)
+      ctx.fill()
+    } else if (cond.includes('sun') || cond.includes('clear')) {
+      const glare = 0.1 + Math.sin(tick * 0.02) * 0.05
+      ctx.fillStyle = `rgba(255,240,180,${glare})`
+      ctx.fillRect(winX + 0.5 * s, winY + 0.5 * s, winW - s, winH - s)
+      ctx.strokeStyle = 'rgba(255,220,100,0.15)'
+      ctx.lineWidth = 0.5 * s
+      for (let ray = 0; ray < 4; ray++) {
+        const angle = tick * 0.003 + ray * 0.8
+        ctx.beginPath()
+        ctx.moveTo(winX + winW * 0.7, winY + winH * 0.3)
+        ctx.lineTo(
+          winX + winW * 0.7 + Math.cos(angle) * 6 * s,
+          winY + winH * 0.3 + Math.sin(angle) * 6 * s
+        )
+        ctx.stroke()
+      }
+    }
+    if (weather.temp) {
+      ctx.fillStyle = '#94a3b8'
+      ctx.font = 1.2 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText(weather.temp, winX + winW / 2, winY + winH + 2 * s)
+      ctx.textAlign = 'left'
+    }
+  }
+
+  // ── Inventory heatmap ──
+  function drawInventoryHeatmap(x, y, w, h) {
+    const ingredients = bizData.ingredients || []
+    if (!ingredients.length) return
+    const s = P
+    const cols = 4
+    const rows = Math.ceil(Math.min(ingredients.length, 12) / cols)
+    const cellW = w / cols
+    const cellH = Math.min(3 * s, h / rows)
+    // Title
+    ctx.fillStyle = '#64748b'
+    ctx.font = 1 * s + 'px monospace'
+    ctx.fillText('STOCK', x, y - s)
+    ingredients.slice(0, 12).forEach((ing, i) => {
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      const ix = x + col * cellW
+      const iy = y + row * cellH
+      const qty = ing.quantity || 0
+      const par = ing.par_level || 10
+      const ratio = par > 0 ? qty / par : 1
+      const color = ratio >= 1 ? '#22c55e40' : ratio >= 0.5 ? '#eab30840' : '#ef444440'
+      ctx.fillStyle = color
+      ctx.fillRect(ix, iy, cellW - 1, cellH - 1)
+      ctx.fillStyle = '#e2e8f0'
+      ctx.font = 0.9 * s + 'px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText((ing.name || '?').slice(0, 5), ix + cellW / 2, iy + cellH * 0.7)
+      ctx.textAlign = 'left'
+    })
+  }
+
+  // ── History scrubber ──
+  function drawHistoryScrubber(x, y, w) {
+    const history = bizData.history || []
+    if (history.length < 2) return
+    const s = P
+    const barH = 2 * s
+    roundRect(x, y, w, barH, s * 0.5, 'rgba(255,255,255,0.06)')
+    const dotSpacing = w / (history.length + 1)
+    history.forEach((snap, i) => {
+      const dx = x + dotSpacing * (i + 1)
+      const isActive = i === historyViewIndex
+      ctx.fillStyle = isActive ? '#e88f47' : '#475569'
+      ctx.beginPath()
+      ctx.arc(dx, y + barH / 2, isActive ? s * 0.8 : s * 0.4, 0, Math.PI * 2)
+      ctx.fill()
+    })
+    const liveActive = historyViewIndex === -1
+    ctx.fillStyle = liveActive ? '#22c55e' : '#475569'
+    ctx.beginPath()
+    ctx.arc(x + w - s, y + barH / 2, s * 0.6, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = liveActive ? '#22c55e' : '#475569'
+    ctx.font = 1.2 * s + 'px monospace'
+    ctx.textAlign = 'right'
+    ctx.fillText('LIVE', x + w - 2 * s, y + barH / 2 + 0.4 * s)
+    ctx.textAlign = 'left'
+    if (historyViewIndex >= 0 && historyViewIndex < history.length) {
+      const snap = history[historyViewIndex]
+      const time = new Date(snap.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      ctx.fillStyle = '#e88f47'
+      ctx.font = 1.4 * s + 'px monospace'
+      ctx.fillText(
+        'Viewing: ' + time + ' | Rev: ' + snap.revenue + ' | Events: ' + snap.eventsTotal,
+        x,
+        y - 1.5 * s
+      )
+    }
+    history.forEach((snap, i) => {
+      const dx = x + dotSpacing * (i + 1)
+      registerClickRegion(
+        dx - 2 * s,
+        y - s,
+        4 * s,
+        barH + 2 * s,
+        () => {
+          historyViewIndex = i
+        },
+        'View ' + new Date(snap.ts).toLocaleTimeString()
+      )
+    })
+    registerClickRegion(
+      x + w - 4 * s,
+      y - s,
+      4 * s,
+      barH + 2 * s,
+      () => {
+        historyViewIndex = -1
+      },
+      'Return to live view'
+    )
+  }
+
   // ── Agent class ──
   class KitchenAgent {
     constructor(def, slot) {
@@ -1390,13 +1990,22 @@
       ctx.textAlign = 'left'
 
       // Register click region for this agent
+      // Granular click: open page relevant to this agent's role
+      const agentPages = {
+        larry: '/dashboard',
+        sonnet: '/events',
+        build: '/events',
+        qa: '/settings',
+        runner: '/inquiries',
+      }
+      const agentPage = agentPages[this.id] || '/'
       registerClickRegion(
         pos.x - 20 * s,
         pos.y - 20 * s,
         40 * s,
         50 * s,
-        () => window.open('http://localhost:3100', '_blank'),
-        'Open ChefFlow'
+        () => window.open('http://localhost:3100' + agentPage, '_blank'),
+        this.name + ' - open ' + agentPage
       )
     }
   }
@@ -1434,6 +2043,8 @@
 
     // Check for notifications every 5 seconds
     if (tick % 300 === 0) checkNotifications()
+    // Check achievements every 10 seconds
+    if (tick % 600 === 0) checkAchievements()
 
     // ── Left: Kitchen ──
     drawKitchenFloor(kitchenW, h)
@@ -1441,6 +2052,21 @@
 
     // Draw dining room at bottom of kitchen
     drawDiningRoom(0, h * 0.75, kitchenW, h * 0.2)
+
+    // Kitchen expansion (extra rooms based on revenue)
+    drawKitchenExpansion(kitchenW, h)
+
+    // Weather overlay on window
+    drawWeatherOverlay(kitchenW, h)
+
+    // Staff members at stations
+    drawStaffMembers(kitchenW, h)
+
+    // Remy concierge near the pass
+    drawRemyBubble(kitchenW, h)
+
+    // Inventory heatmap in cold station area
+    drawInventoryHeatmap(kitchenW * 0.08, h * 0.6, kitchenW * 0.15, 10 * P)
 
     // Update and draw agents (back to front)
     const drawOrder = [3, 4, 1, 2, 0]
@@ -1463,6 +2089,9 @@
 
     // ── Notifications overlay ──
     drawNotifications(w, h)
+
+    // ── Achievement toasts ──
+    drawAchievementToasts(w, h)
 
     // ── Bottom HUD ──
     const barY = h - 8 * s
@@ -1519,6 +2148,18 @@
     ctx.fillStyle = lvl.color
     ctx.font = 'bold ' + 2 * s + 'px monospace'
     ctx.fillText('Lv.' + lvl.level + ' ' + lvl.title, 3 * s, barY + 6.5 * s)
+
+    // Weather in HUD
+    if (bizData.weather) {
+      ctx.fillStyle = '#64748b'
+      ctx.font = 1.8 * s + 'px monospace'
+      const wStr =
+        (bizData.weather.temp || '') + ' ' + (bizData.weather.condition || '').slice(0, 12)
+      ctx.fillText(wStr, 34 * s, barY + 6.5 * s)
+    }
+
+    // History scrubber
+    drawHistoryScrubber(w * 0.35, barY + 7 * s, w * 0.3)
 
     // Clock
     ctx.textAlign = 'right'
