@@ -460,7 +460,7 @@ export async function searchRecipesForEditor(query: string) {
   const costMap = new Map((costs || []).map((c: any) => [c.recipe_id, c]))
 
   return recipes.map((r: any) => {
-    const cost = costMap.get(r.id)
+    const cost: any = costMap.get(r.id)
     return {
       id: r.id,
       name: r.name,
