@@ -17,6 +17,8 @@ import {
   addEditorCourse,
   deleteEditorCourse,
   reorderEditorCourse,
+  unlinkRecipeFromEditorDish,
+  getEditorMenuCost,
   type EditorMenu,
   type EditorDish,
   type EditorEvent,
@@ -24,6 +26,7 @@ import {
 } from '@/lib/menus/editor-actions'
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
+import { RecipeLinkPicker } from '@/components/menus/recipe-link-picker'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -211,6 +214,8 @@ function CourseBlock({
   onUpdate,
   onMoveUp,
   onMoveDown,
+  onUnlinkRecipe,
+  onRecipeLinked,
   scheduleSave,
 }: {
   dish: EditorDish
@@ -222,6 +227,8 @@ function CourseBlock({
   onUpdate: (id: string, data: Partial<EditorDish>) => void
   onMoveUp: (id: string) => void
   onMoveDown: (id: string) => void
+  onUnlinkRecipe: (dishId: string, recipeId: string, componentId: string) => void
+  onRecipeLinked: () => void
   scheduleSave: (key: string, fn: () => Promise<void>) => void
 }) {
   const [courseName, setCourseName] = useState(dish.course_name)
@@ -239,6 +246,7 @@ function CourseBlock({
   const [showTagPicker, setShowTagPicker] = useState(false)
   const [showAllergenPicker, setShowAllergenPicker] = useState(false)
   const [deleting, startDelete] = useTransition()
+  const [unlinking, startUnlink] = useTransition()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [photoUrl, setPhotoUrl] = useState<string | null>(dish.photo_url)
 
@@ -656,6 +664,45 @@ function CourseBlock({
         )
       )}
 
+      {/* Linked Recipes */}
+      {dish.linkedRecipes.length > 0 && (
+        <div className="mt-4 space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-400 mb-1.5">
+            Linked Recipes
+          </p>
+          {dish.linkedRecipes.map((lr) => (
+            <div
+              key={lr.componentId}
+              className="flex items-center justify-between text-sm bg-brand-950/40 border border-brand-800/40 rounded px-2.5 py-1.5"
+            >
+              <span className="text-stone-300 text-xs truncate">{lr.recipeName}</span>
+              {!locked && (
+                <button
+                  type="button"
+                  disabled={unlinking}
+                  onClick={() => {
+                    startUnlink(async () => {
+                      await unlinkRecipeFromEditorDish(dish.id, lr.recipeId)
+                      onUnlinkRecipe(dish.id, lr.recipeId, lr.componentId)
+                    })
+                  }}
+                  className="text-xs text-red-400 hover:text-red-300 hover:underline ml-2 shrink-0 disabled:opacity-50"
+                >
+                  Unlink
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Recipe Link Picker */}
+      {!locked && (
+        <div className="mt-3">
+          <RecipeLinkPicker dishId={dish.id} menuId={menuId} onLinked={onRecipeLinked} />
+        </div>
+      )}
+
       <ConfirmModal
         open={showDeleteConfirm}
         title={`Remove "${courseName}" course?`}
@@ -782,12 +829,21 @@ function AddCourseRow({
 
 // ─── ContextSidebar ───────────────────────────────────────────────────────────
 
+type MenuCostData = {
+  totalCostCents: number | null
+  costPerGuestCents: number | null
+  foodCostPercentage: number | null
+  hasAllCosts: boolean | null
+  componentCount: number | null
+} | null
+
 function ContextSidebar({
   event,
   previousMenus,
   pricePerPerson,
   onPriceChange,
   locked,
+  menuCost,
   onCocktailSelect,
 }: {
   event: EditorEvent | null
@@ -795,6 +851,7 @@ function ContextSidebar({
   pricePerPerson: string
   onPriceChange: (v: string) => void
   locked: boolean
+  menuCost: MenuCostData
   onCocktailSelect?: (cocktail: {
     name: string
     glass: string
@@ -826,6 +883,52 @@ function ContextSidebar({
 
   return (
     <div className="sticky top-16 space-y-3 text-sm">
+      {/* Food Cost Summary */}
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Food Cost</p>
+        {menuCost && (menuCost.componentCount ?? 0) > 0 ? (
+          <div className="space-y-1.5">
+            {menuCost.totalCostCents != null && (
+              <div className="flex justify-between text-sm">
+                <span className="text-stone-400">Total food cost</span>
+                <span className="font-semibold text-stone-100">
+                  ${(menuCost.totalCostCents / 100).toFixed(2)}
+                </span>
+              </div>
+            )}
+            {menuCost.costPerGuestCents != null && (
+              <div className="flex justify-between text-sm">
+                <span className="text-stone-400">Per guest</span>
+                <span className="font-semibold text-stone-100">
+                  ${(menuCost.costPerGuestCents / 100).toFixed(2)}
+                </span>
+              </div>
+            )}
+            {menuCost.foodCostPercentage != null && (
+              <div className="flex justify-between text-sm">
+                <span className="text-stone-400">Food cost %</span>
+                <span
+                  className={`font-semibold ${
+                    menuCost.foodCostPercentage <= 30
+                      ? 'text-emerald-400'
+                      : menuCost.foodCostPercentage <= 40
+                        ? 'text-amber-400'
+                        : 'text-red-400'
+                  }`}
+                >
+                  {menuCost.foodCostPercentage.toFixed(1)}%
+                </span>
+              </div>
+            )}
+            {!menuCost.hasAllCosts && (
+              <p className="text-xs text-amber-600 mt-1">Some recipes missing cost data</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-stone-500">Link recipes to dishes to see costs</p>
+        )}
+      </div>
+
       {/* Event panel */}
       {event ? (
         <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
@@ -989,6 +1092,18 @@ export function MenuDocEditor({
   const { saveState, scheduleSave } = useAutoSave()
   const locked = initialMenu.status === 'locked'
 
+  // Food cost state
+  const [menuCost, setMenuCost] = useState<MenuCostData>(null)
+
+  const refreshCost = useCallback(async () => {
+    const cost = await getEditorMenuCost(initialMenu.id)
+    setMenuCost(cost)
+  }, [initialMenu.id])
+
+  useEffect(() => {
+    refreshCost()
+  }, [refreshCost])
+
   // Menu-level state
   const [menuName, setMenuName] = useState(initialMenu.name)
   const [cuisineType, setCuisineType] = useState(initialMenu.cuisine_type ?? '')
@@ -1062,6 +1177,22 @@ export function MenuDocEditor({
 
   const handleCourseAdded = (dish: EditorDish) => {
     setDishes((prev) => [...prev, dish])
+  }
+
+  const handleUnlinkRecipe = (dishId: string, recipeId: string, componentId: string) => {
+    setDishes((prev) =>
+      prev.map((d) =>
+        d.id === dishId
+          ? { ...d, linkedRecipes: d.linkedRecipes.filter((r) => r.componentId !== componentId) }
+          : d
+      )
+    )
+    refreshCost()
+  }
+
+  const handleRecipeLinked = () => {
+    router.refresh()
+    refreshCost()
   }
 
   // ─── Cocktail pairing ──────────────────────────────────────────────────────
@@ -1363,6 +1494,8 @@ export function MenuDocEditor({
                     onUpdate={handleDishUpdate}
                     onMoveUp={handleMoveUp}
                     onMoveDown={handleMoveDown}
+                    onUnlinkRecipe={handleUnlinkRecipe}
+                    onRecipeLinked={handleRecipeLinked}
                     scheduleSave={scheduleSave}
                   />
                 ))}
@@ -1387,6 +1520,7 @@ export function MenuDocEditor({
             pricePerPerson={pricePerPerson}
             onPriceChange={handlePricePerPerson}
             locked={locked}
+            menuCost={menuCost}
             onCocktailSelect={handleCocktailSelect}
           />
         </div>

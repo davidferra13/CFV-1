@@ -24,6 +24,7 @@ export type EditorDish = {
   plating_instructions: string | null
   beverage_pairing: string | null
   beverage_pairing_notes: string | null
+  linkedRecipes: Array<{ recipeId: string; recipeName: string; componentId: string }>
 }
 
 export type EditorMenu = {
@@ -100,6 +101,31 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
     .eq('tenant_id', user.tenantId!)
     .order('course_number', { ascending: true })
 
+  // Load linked recipes per dish via components
+  const dishIds = (dishes ?? []).map((d: any) => d.id)
+  let dishRecipeMap: Record<
+    string,
+    Array<{ recipeId: string; recipeName: string; componentId: string }>
+  > = {}
+
+  if (dishIds.length > 0) {
+    const { data: components } = await supabase
+      .from('components')
+      .select('id, dish_id, recipe_id, name')
+      .in('dish_id', dishIds)
+      .eq('tenant_id', user.tenantId!)
+      .not('recipe_id', 'is', null)
+
+    for (const comp of components || []) {
+      if (!dishRecipeMap[comp.dish_id]) dishRecipeMap[comp.dish_id] = []
+      dishRecipeMap[comp.dish_id].push({
+        recipeId: comp.recipe_id,
+        recipeName: comp.name,
+        componentId: comp.id,
+      })
+    }
+  }
+
   const editorMenu: EditorMenu = {
     id: menu.id,
     name: menu.name,
@@ -127,6 +153,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
       plating_instructions: d.plating_instructions ?? null,
       beverage_pairing: d.beverage_pairing ?? null,
       beverage_pairing_notes: d.beverage_pairing_notes ?? null,
+      linkedRecipes: dishRecipeMap[d.id] || [],
     })),
   }
 
@@ -342,6 +369,7 @@ export async function addEditorCourse(
     plating_instructions: null,
     beverage_pairing: null,
     beverage_pairing_notes: null,
+    linkedRecipes: [],
   } as EditorDish
 }
 
@@ -404,4 +432,130 @@ export async function reorderEditorCourse(
     .update({ sort_order: a.sort_order })
     .eq('id', b.id)
     .eq('tenant_id', user.tenantId!)
+}
+
+// ─── searchRecipesForEditor ───────────────────────────────────────────────────
+
+export async function searchRecipesForEditor(query: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: recipes } = await (supabase as any)
+    .from('recipes')
+    .select('id, name, category, servings')
+    .eq('tenant_id', user.tenantId!)
+    .eq('archived', false)
+    .ilike('name', `%${query}%`)
+    .order('name', { ascending: true })
+    .limit(15)
+
+  if (!recipes?.length) return []
+
+  const recipeIds = recipes.map((r: any) => r.id)
+  const { data: costs } = await (supabase as any)
+    .from('recipe_cost_summary')
+    .select('recipe_id, total_ingredient_cost_cents, has_all_prices, ingredient_count')
+    .in('recipe_id', recipeIds)
+
+  const costMap = new Map((costs || []).map((c: any) => [c.recipe_id, c]))
+
+  return recipes.map((r: any) => {
+    const cost = costMap.get(r.id)
+    return {
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      servings: r.servings,
+      totalCostCents: cost?.total_ingredient_cost_cents ?? null,
+      hasAllPrices: cost?.has_all_prices ?? false,
+      ingredientCount: cost?.ingredient_count ?? 0,
+    }
+  })
+}
+
+// ─── linkRecipeToEditorDish ───────────────────────────────────────────────────
+
+export async function linkRecipeToEditorDish(dishId: string, recipeId: string, recipeName: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: existing } = await supabase
+    .from('components')
+    .select('id')
+    .eq('dish_id', dishId)
+    .eq('recipe_id', recipeId)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  if (existing) return { success: true, alreadyLinked: true }
+
+  const { error } = await supabase
+    .from('components')
+    .insert({
+      tenant_id: user.tenantId!,
+      dish_id: dishId,
+      name: recipeName,
+      category: 'main',
+      recipe_id: recipeId,
+      scale_factor: 1,
+      is_make_ahead: false,
+      sort_order: 0,
+      created_by: user.id,
+      updated_by: user.id,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[linkRecipeToEditorDish] Error:', error)
+    throw new Error('Failed to link recipe')
+  }
+
+  return { success: true, alreadyLinked: false }
+}
+
+// ─── unlinkRecipeFromEditorDish ───────────────────────────────────────────────
+
+export async function unlinkRecipeFromEditorDish(dishId: string, recipeId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { error } = await supabase
+    .from('components')
+    .delete()
+    .eq('dish_id', dishId)
+    .eq('recipe_id', recipeId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[unlinkRecipeFromEditorDish] Error:', error)
+    throw new Error('Failed to unlink recipe')
+  }
+
+  return { success: true }
+}
+
+// ─── getEditorMenuCost ────────────────────────────────────────────────────────
+
+export async function getEditorMenuCost(menuId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data } = await supabase
+    .from('menu_cost_summary')
+    .select(
+      'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs, total_component_count'
+    )
+    .eq('menu_id', menuId)
+    .maybeSingle()
+
+  return data
+    ? {
+        totalCostCents: data.total_recipe_cost_cents,
+        costPerGuestCents: data.cost_per_guest_cents,
+        foodCostPercentage: data.food_cost_percentage,
+        hasAllCosts: data.has_all_recipe_costs,
+        componentCount: data.total_component_count,
+      }
+    : null
 }
