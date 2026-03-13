@@ -2,7 +2,7 @@
 // No 'use server' — safe to import from any context (client, server, edge)
 // Routing decisions and config for the privacy-first hybrid LLM system
 
-export type AIProvider = 'gemini' | 'ollama'
+export type AIProvider = 'gemini' | 'ollama' | 'groq'
 
 /** Model tier for task-complexity routing. */
 export type ModelTier = 'fast' | 'standard' | 'complex'
@@ -67,6 +67,48 @@ export function isPiEndpointConfigured(): false {
  */
 export function getModelForEndpoint(_endpoint: 'pc' | 'pi', tier: ModelTier = 'standard'): string {
   return getOllamaModel(tier)
+}
+
+// ─── Groq (Free Cloud — NON-PRIVATE tasks only) ─────────────────────────────
+
+/**
+ * Returns true if Groq API is configured.
+ * Set GROQ_API_KEY in .env.local to enable.
+ */
+export function isGroqEnabled(): boolean {
+  return !!process.env.GROQ_API_KEY
+}
+
+/**
+ * Returns Groq connection config.
+ * Groq uses the OpenAI-compatible API at api.groq.com.
+ */
+export function getGroqConfig(): { apiKey: string; baseUrl: string } {
+  return {
+    apiKey: process.env.GROQ_API_KEY || '',
+    baseUrl: process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1',
+  }
+}
+
+/**
+ * Returns the Groq model for a given task-complexity tier.
+ *
+ * Env vars:
+ *   GROQ_MODEL_FAST    — fastest model for simple tasks (default: llama-3.1-8b-instant)
+ *   GROQ_MODEL         — default model for structured output (default: llama-3.3-70b-versatile)
+ *   GROQ_MODEL_COMPLEX — largest model for reasoning (default: llama-3.3-70b-versatile)
+ *
+ * All models run on Groq's LPU hardware at ~800 tok/s. Free tier: ~30 req/min.
+ */
+export function getGroqModel(tier: ModelTier = 'fast'): string {
+  switch (tier) {
+    case 'fast':
+      return process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant'
+    case 'standard':
+      return process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
+    case 'complex':
+      return process.env.GROQ_MODEL_COMPLEX || 'llama-3.3-70b-versatile'
+  }
 }
 
 // NOTE: computeDynamicContext(), getContextSizeForEndpoint(), and getOllamaContextSize()

@@ -1,4 +1,4 @@
-# ChefFlow V1 — Project Rules
+000000Flow V1 — Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
@@ -745,14 +745,21 @@ Private data categories that must stay local:
 - Business analytics, insights, lead scores, pricing history
 - Temperature logs, staff data, event operational details
 
-### Gemini/Ollama Boundary (Audited 2026-02-27)
+### Gemini/Ollama/Groq Boundary (Updated 2026-03-13)
 
-The boundary below is **final**. Do not move files back to Gemini or add new Gemini calls for private data.
+Three AI backends, each with a clear purpose. Do not cross the privacy boundary.
+
+| Backend    | Purpose                                                      | Cost                | Privacy          |
+| ---------- | ------------------------------------------------------------ | ------------------- | ---------------- |
+| **Ollama** | Private data (client PII, financials, allergies)             | Free (local GPU)    | Data stays on PC |
+| **Gemini** | Generic cloud tasks (technique lists, kitchen specs)         | Paid (Google)       | No PII allowed   |
+| **Groq**   | Fast free cloud inference (OpenClaw build/QA, generic tasks) | Free (rate-limited) | No PII allowed   |
 
 | File                                                        | AI Backend | Why                                                    |
 | ----------------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| `lib/ai/gemini-service.ts`                                  | **Gemini** | Generic tasks, technique lists, kitchen specs — no PII |
-| `lib/ai/campaign-outreach.ts` (`draftCampaignConcept` only) | **Gemini** | Generic themes/occasions — no client data              |
+| `lib/ai/gemini-service.ts`                                  | **Gemini** | Generic tasks, technique lists, kitchen specs (no PII) |
+| `lib/ai/campaign-outreach.ts` (`draftCampaignConcept` only) | **Gemini** | Generic themes/occasions (no client data)              |
+| `lib/ai/parse-groq.ts`                                      | **Groq**   | Non-private structured parsing (generic tasks)         |
 | `lib/ai/campaign-outreach.ts` (`draftPersonalizedOutreach`) | **Ollama** | Client names, dietary prefs, event history             |
 | `lib/ai/parse-recipe.ts`                                    | **Ollama** | Chef IP (recipe text)                                  |
 | `lib/ai/parse-brain-dump.ts`                                | **Ollama** | Client names, notes, recipes                           |
@@ -764,7 +771,7 @@ The boundary below is **final**. Do not move files back to Gemini or add new Gem
 | `lib/ai/contract-generator.ts`                              | **Ollama** | Client PII, event details, pricing                     |
 | `lib/ai/remy-actions.ts`                                    | **Ollama** | All client/chef conversational data                    |
 
-**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions, no "just this once."
+**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions, no "just this once." Groq and Gemini are cloud services; private data never touches them.
 
 ---
 
@@ -809,6 +816,9 @@ The boundary below is **final**. Do not move files back to Gemini or add new Gem
 | Embed form page      | `app/embed/inquiry/[chefId]/page.tsx`                                            |
 | Embed form component | `components/embed/embed-inquiry-form.tsx`                                        |
 | Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                             |
+| AI providers config  | `lib/ai/providers.ts`                                                            |
+| Groq parser          | `lib/ai/parse-groq.ts`                                                           |
+| Groq setup guide     | `docs/groq-setup.md`                                                             |
 | App audit (living)   | `docs/app-complete-audit.md` **(update when UI changes)**                        |
 | Remy reference       | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**    |
 | Agent registry       | `docs/agent-registry.md`                                                         |
