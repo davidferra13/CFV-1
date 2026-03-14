@@ -47,99 +47,6 @@ const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPe
   '*->cancelled': 'chef', // Chef can cancel anytime
 }
 
-type TransitionRpcError = {
-  code?: string | null
-  message?: string | null
-}
-
-function isLegacyTransitionRpcEnumCastError(error: TransitionRpcError | null | undefined): boolean {
-  const message = (error?.message ?? '').toLowerCase()
-  return error?.code === '42804' && message.includes('event_status') && message.includes('text')
-}
-
-async function applyTransitionCompatFallback({
-  supabase,
-  event,
-  eventId,
-  fromStatus,
-  toStatus,
-  transitionedBy,
-  metadata,
-}: {
-  supabase: any
-  event: any
-  eventId: string
-  fromStatus: EventStatus
-  toStatus: EventStatus
-  transitionedBy: string | null
-  metadata: Record<string, unknown>
-}) {
-  const timestamp = new Date().toISOString()
-  const cancellationReason = typeof metadata.reason === 'string' ? metadata.reason : null
-  const cancellationInitiatedBy =
-    toStatus === 'cancelled'
-      ? metadata.source === 'system'
-        ? 'mutual'
-        : metadata.actor_role === 'chef'
-          ? 'chef'
-          : metadata.actor_role === 'client'
-            ? 'client'
-            : event.cancellation_initiated_by
-      : event.cancellation_initiated_by
-
-  const { error: updateError } = await supabase
-    .from('events')
-    .update({
-      status: toStatus,
-      updated_by: transitionedBy,
-      cancelled_at: toStatus === 'cancelled' ? timestamp : event.cancelled_at,
-      cancellation_reason:
-        toStatus === 'cancelled' ? cancellationReason : event.cancellation_reason,
-      cancellation_initiated_by: cancellationInitiatedBy,
-    })
-    .eq('id', eventId)
-    .eq('tenant_id', event.tenant_id)
-
-  if (updateError) {
-    throw new Error(`Compatibility transition update failed: ${updateError.message}`)
-  }
-
-  const fallbackMetadata = {
-    ...metadata,
-    timestamp,
-    rpc_version: 'compat-fallback',
-    compat_mode: true,
-  }
-
-  const { error: auditError } = await supabase.from('event_state_transitions').insert({
-    tenant_id: event.tenant_id,
-    event_id: eventId,
-    from_status: fromStatus,
-    to_status: toStatus,
-    transitioned_by: transitionedBy,
-    reason: cancellationReason,
-    metadata: fallbackMetadata,
-  })
-
-  if (!auditError) {
-    return
-  }
-
-  await supabase
-    .from('events')
-    .update({
-      status: fromStatus,
-      updated_by: event.updated_by,
-      cancelled_at: event.cancelled_at,
-      cancellation_reason: event.cancellation_reason,
-      cancellation_initiated_by: event.cancellation_initiated_by,
-    })
-    .eq('id', eventId)
-    .eq('tenant_id', event.tenant_id)
-
-  throw new Error(`Compatibility transition audit failed: ${auditError.message}`)
-}
-
 /**
  * Core state transition function
  * Validates transition rules and permissions
@@ -223,9 +130,8 @@ export async function transitionEvent({
   const transitionedBy = user?.id || null
 
   // ── Readiness Gate Check (pre-transition) ────────────────────────────────
-  // Evaluate gates for this transition. Any unresolved gate blocks the move
-  // until it is completed or explicitly overridden with a reason.
-  // Hard blocks (e.g., unconfirmed anaphylaxis) cannot be overridden.
+  // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
+  // throw and abort. Soft warnings are logged in metadata but do not block.
   // System transitions (Stripe webhooks) skip readiness checks.
   let readinessWarnings: string[] = []
   if (!systemTransition) {
@@ -233,17 +139,18 @@ export async function transitionEvent({
       const { evaluateReadinessForTransition } = await import('@/lib/events/readiness')
       const readiness = await evaluateReadinessForTransition(eventId, fromStatus, toStatus)
 
-      if (readiness.blockers.length > 0) {
-        const blockerDescriptions = readiness.blockers
-          .map((blocker) => blocker.details || blocker.label)
+      if (readiness.hardBlocked) {
+        const hardBlockerDescriptions = readiness.blockers
+          .filter((b) => b.isHardBlock)
+          .map((b) => b.details || b.label)
           .join('; ')
-        throw new Error(`Cannot proceed: ${blockerDescriptions}`)
+        throw new Error(`Cannot proceed: ${hardBlockerDescriptions}`)
       }
 
-      // Collect bypassed gates for metadata/audit visibility.
-      readinessWarnings = readiness.warnings.map((warning) => warning.label)
+      // Collect soft warnings for metadata
+      readinessWarnings = readiness.blockers.filter((b) => !b.isHardBlock).map((b) => b.label)
     } catch (readinessErr: any) {
-      // Re-throw readiness blockers; swallow infrastructure errors (non-blocking)
+      // Re-throw hard blocks; swallow infrastructure errors (non-blocking)
       if (readinessErr.message?.startsWith('Cannot proceed:')) {
         throw readinessErr
       }
@@ -273,25 +180,8 @@ export async function transitionEvent({
   })
 
   if (transitionError) {
-    if (isLegacyTransitionRpcEnumCastError(transitionError)) {
-      log.events.warn('Atomic transition RPC enum cast mismatch; using compatibility fallback', {
-        context: { eventId: parsed.eventId, fromStatus, toStatus: parsed.toStatus },
-        error: transitionError,
-      })
-
-      await applyTransitionCompatFallback({
-        supabase,
-        event,
-        eventId: parsed.eventId,
-        fromStatus,
-        toStatus: parsed.toStatus,
-        transitionedBy,
-        metadata: transitionMetadata,
-      })
-    } else {
-      log.events.error('Atomic transition failed', { error: transitionError })
-      throw new Error('Failed to transition event status')
-    }
+    log.events.error('Atomic transition failed', { error: transitionError })
+    throw new Error('Failed to transition event status')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -502,60 +392,17 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'confirmed' && fromStatus === 'paid') {
-        // Circle-first: post confirmation to circle, email points there
-        try {
-          const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
-          const datePart = event.event_date
-            ? ` for ${new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`
-            : ''
-          await circleFirstNotify({
-            eventId,
-            tenantId: event.tenant_id,
-            notificationType: 'event_confirmed',
-            body: `Event confirmed${datePart}! Prep is underway. I'll share the full plan here soon.`,
-            metadata: {
-              event_id: eventId,
-              event_date: event.event_date,
-              location,
-              guest_count: event.guest_count,
-            },
-            actionUrl: `/my-events/${eventId}`,
-            actionLabel: 'View Event Details',
-            fallbackEmail: client.email
-              ? {
-                  to: client.email,
-                  subject: `Event confirmed: ${occasion}`,
-                  react: (await import('react')).createElement(
-                    (await import('@/lib/email/templates/event-confirmed')).EventConfirmedEmail,
-                    {
-                      clientName: client.full_name,
-                      chefName,
-                      occasion,
-                      eventDate: event.event_date,
-                      serveTime: event.serve_time,
-                      location,
-                      guestCount: event.guest_count,
-                      eventId,
-                    }
-                  ),
-                }
-              : undefined,
-          })
-        } catch (cfErr) {
-          log.events.warn('Circle-first confirmed notify failed (non-blocking)', { error: cfErr })
-          // Fallback: send the email directly
-          await sendEventConfirmedEmail({
-            clientEmail: client.email,
-            clientName: client.full_name,
-            chefName,
-            occasion,
-            eventDate: event.event_date,
-            serveTime: event.serve_time,
-            location,
-            guestCount: event.guest_count,
-            eventId,
-          })
-        }
+        await sendEventConfirmedEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          occasion,
+          eventDate: event.event_date,
+          serveTime: event.serve_time,
+          location,
+          guestCount: event.guest_count,
+          eventId,
+        })
 
         // Persist an FOH HTML render for the linked event menu (non-blocking).
         try {
@@ -660,80 +507,14 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
-        let rebookUrl: string | null = null
-        try {
-          const { getOrCreateRebookDataForCompletedEvent } = await import('@/lib/rebook/actions')
-          const rebookData = await getOrCreateRebookDataForCompletedEvent(eventId)
-          rebookUrl = rebookData?.url ?? null
-        } catch (rebookErr) {
-          log.events.warn('Rebook link generation failed (non-blocking)', { error: rebookErr })
-        }
-
-        try {
-          const { awardReferralRewardForCompletedEventSystem } =
-            await import('@/lib/referrals/actions')
-          await awardReferralRewardForCompletedEventSystem(event.tenant_id, eventId)
-        } catch (referralRewardErr) {
-          log.events.warn('Referral reward award failed (non-blocking)', {
-            error: referralRewardErr,
-          })
-        }
-
-        // Circle-first: post completion to circle
-        try {
-          const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
-          const clientFirst = client.full_name?.split(' ')[0] || ''
-          let thankYou = 'Thank you for a wonderful evening!'
-          if (clientFirst) thankYou = `Thank you for a wonderful evening, ${clientFirst}!`
-          thankYou += " I hope everyone enjoyed the meal. I'll share photos here soon."
-
-          await circleFirstNotify({
-            eventId,
-            tenantId: event.tenant_id,
-            notificationType: 'event_completed',
-            body: thankYou,
-            metadata: { event_id: eventId },
-            actionUrl: `/my-events/${eventId}`,
-            actionLabel: 'Leave a Review',
-            fallbackEmail: client.email
-              ? {
-                  to: client.email,
-                  subject: `Thank you for a wonderful evening!`,
-                  react: (await import('react')).createElement(
-                    (await import('@/lib/email/templates/event-completed')).EventCompletedEmail,
-                    {
-                      clientName: client.full_name,
-                      chefName,
-                      occasion,
-                      eventDate: new Date(`${event.event_date}T00:00:00`).toLocaleDateString(
-                        'en-US',
-                        {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        }
-                      ),
-                      receiptUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-events/${eventId}`,
-                      reviewUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-events/${eventId}#review`,
-                      rebookUrl,
-                    }
-                  ),
-                }
-              : undefined,
-          })
-        } catch (cfErr) {
-          log.events.warn('Circle-first completed notify failed (non-blocking)', { error: cfErr })
-          await sendEventCompletedEmail({
-            clientEmail: client.email,
-            clientName: client.full_name,
-            chefName,
-            eventId,
-            occasion,
-            eventDate: event.event_date,
-            rebookUrl,
-          })
-        }
+        await sendEventCompletedEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          eventId,
+          occasion,
+          eventDate: event.event_date,
+        })
       }
 
       if (toStatus === 'cancelled') {
@@ -762,8 +543,6 @@ export async function transitionEvent({
   } catch (emailErr) {
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
-
-  // Circle posts for confirmed + completed are now handled by circleFirstNotify() above
 
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
@@ -863,14 +642,6 @@ export async function transitionEvent({
     } catch (err) {
       log.events.warn('Google Calendar delete failed (non-blocking)', { error: err })
     }
-
-    // Remove auto-blocked calendar entry (non-blocking)
-    try {
-      const { removeEventDateBlock } = await import('@/lib/calendar/auto-block')
-      await removeEventDateBlock(eventId, event.tenant_id)
-    } catch (err) {
-      log.events.warn('Calendar auto-block removal failed (non-blocking)', { error: err })
-    }
   }
 
   // Fire automations (non-blocking)
@@ -889,36 +660,6 @@ export async function transitionEvent({
     })
   } catch (err) {
     log.events.warn('Automation evaluation failed (non-blocking)', { error: err })
-  }
-
-  // Fire workflow automations (non-blocking)
-  try {
-    const { processEventTrigger } = await import('@/lib/automations/workflow-actions')
-    await processEventTrigger(event.tenant_id, 'event_stage_changed', {
-      entityId: eventId,
-      entityType: 'event',
-      fields: {
-        from_status: fromStatus,
-        to_status: toStatus,
-        status: toStatus,
-        occasion: event.occasion || null,
-        client_name: event.client_id,
-        guest_count: event.guest_count,
-        event_date: event.event_date,
-      },
-    })
-  } catch (err) {
-    log.events.warn('Workflow trigger failed (non-blocking)', { error: err })
-  }
-
-  // Cancel active workflows when event is cancelled (non-blocking)
-  if (toStatus === 'cancelled') {
-    try {
-      const { cancelWorkflowsForEntity } = await import('@/lib/automations/workflow-engine')
-      await cancelWorkflowsForEntity(eventId, event.tenant_id)
-    } catch (err) {
-      log.events.warn('Workflow cancellation failed (non-blocking)', { error: err })
-    }
   }
 
   // Enqueue Remy reactive AI tasks (non-blocking)
@@ -954,18 +695,6 @@ export async function transitionEvent({
       }
     } catch (err) {
       log.events.warn('Push notification failed (non-blocking)', { error: err })
-    }
-  }
-
-  // Trigger post-event referral request sequence (non-blocking)
-  // Checks eligibility (relationship quality, cooldown) and logs the request.
-  if (toStatus === 'completed' && fromStatus === 'in_progress') {
-    try {
-      const { triggerPostEventReferralRequest } =
-        await import('@/lib/outreach/referral-sequence-actions')
-      await triggerPostEventReferralRequest(eventId, event.tenant_id)
-    } catch (err) {
-      log.events.warn('Post-event referral trigger failed (non-blocking)', { error: err })
     }
   }
 
@@ -1009,7 +738,7 @@ export async function transitionEvent({
     success: true,
     fromStatus,
     toStatus,
-    warnings: readinessWarnings, // Bypassed gates logged on the transition metadata
+    warnings: readinessWarnings, // Soft gates that were bypassed (logged, not blocked)
   }
 }
 

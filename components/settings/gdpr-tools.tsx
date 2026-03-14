@@ -2,7 +2,7 @@
 import { useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Shield, AlertTriangle } from '@/components/ui/icons'
+import { Download, Shield, AlertTriangle } from 'lucide-react'
 import { exportMyData } from '@/lib/compliance/data-export'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -79,7 +79,7 @@ export function GdprTools() {
 
       <Card className="border-red-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-200">
+          <CardTitle className="flex items-center gap-2 text-red-700">
             <AlertTriangle className="h-5 w-5" />
             Danger Zone
           </CardTitle>

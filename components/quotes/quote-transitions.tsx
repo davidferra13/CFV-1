@@ -103,7 +103,7 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actions</h2>
-        <p className="text-green-200">
+        <p className="text-green-700">
           This quote has been accepted by the client. Pricing is frozen.
         </p>
       </Card>
@@ -183,6 +183,42 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           {quote.status === 'sent' && (
             <>
               <Button
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'medium',
+                      reversible: false,
+                      entityName: quote.id,
+                      impactPreview: 'This quote will move to accepted.',
+                      actionLabel: 'Mark Accepted',
+                    },
+                    () => handleTransition('accepted')
+                  )
+                }
+                loading={loading}
+                disabled={loading}
+              >
+                Mark Accepted
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'high',
+                      reversible: false,
+                      entityName: quote.id,
+                      impactPreview: 'This quote will be marked rejected.',
+                      actionLabel: 'Mark Rejected',
+                    },
+                    () => handleTransition('rejected')
+                  )
+                }
+                disabled={loading}
+              >
+                Mark Rejected
+              </Button>
+              <Button
                 variant="secondary"
                 onClick={() =>
                   requestPolicyConfirmation(
@@ -217,8 +253,8 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           )}
           {quote.status === 'sent' && (
             <p>
-              Quote sent to client. Waiting for their response in the client portal. If it is no
-              longer valid, mark it expired and send a revised version.
+              Quote sent to client. Waiting for their response. You can also mark it manually if
+              they respond outside the portal.
             </p>
           )}
           {quote.status === 'expired' && (

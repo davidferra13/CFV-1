@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Plus, Trash2, X, Filter, Users, Search } from '@/components/ui/icons'
+import { Plus, Trash2, X, Filter, Users, Search } from 'lucide-react'
 import { buildBehavioralSegment, getSegmentPreview } from '@/lib/marketing/segmentation-actions'
 import { toast } from 'sonner'
 

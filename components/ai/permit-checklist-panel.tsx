@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardCheck, Loader2, Bot, AlertTriangle, CheckCircle } from '@/components/ui/icons'
+import { ClipboardCheck, Loader2, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -42,7 +42,7 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Checklist
               </>
             )}
@@ -109,7 +109,7 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
 
       <div className="text-xs text-stone-400 bg-stone-800 rounded p-2">{result.keyContacts}</div>
 
-      <div className="flex items-start gap-2 text-[11px] text-amber-200 bg-amber-950 border border-amber-200 rounded p-2">
+      <div className="flex items-start gap-2 text-[11px] text-amber-800 bg-amber-950 border border-amber-200 rounded p-2">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
         {result.disclaimer}
       </div>

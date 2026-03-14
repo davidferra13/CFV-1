@@ -25,7 +25,6 @@ import {
   type PricingBreakdown,
 } from '@/lib/pricing/compute'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
-import { SmartPricingHint } from '@/components/intelligence/smart-pricing-hint'
 import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
@@ -33,18 +32,11 @@ import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/conflict'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
-import Link from 'next/link'
-import { Calculator } from 'lucide-react'
-import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
-import { ClientMenuHistoryBanner } from '@/components/clients/client-menu-history-banner'
 
 type Client = {
   id: string
   full_name: string
   email: string
-  recurring_pricing_model?: 'none' | 'flat_rate' | 'per_person' | null
-  recurring_price_cents?: number | null
-  recurring_pricing_notes?: string | null
 }
 
 type PricingHistoryEntry = {
@@ -114,8 +106,6 @@ type QuoteFormProps = {
   prefilledEventDate?: string | null
   existingQuote?: ExistingQuote
 }
-
-const RECURRING_PRICE_WARNING_PERCENT = 20
 
 export function QuoteForm({
   tenantId,
@@ -201,93 +191,6 @@ export function QuoteForm({
   const [internalNotes, setInternalNotes] = useState(
     existingQuote?.internal_notes || prefilledInternalNotes || ''
   )
-
-  const selectedClient = useMemo(
-    () => clients.find((client) => client.id === clientId) ?? null,
-    [clientId, clients]
-  )
-
-  const recurringPricingCheck = useMemo(() => {
-    if (isEditing || !selectedClient) return null
-
-    const recurringModel = selectedClient.recurring_pricing_model
-    const recurringRateRaw = selectedClient.recurring_price_cents
-    if (
-      !recurringModel ||
-      recurringModel === 'none' ||
-      typeof recurringRateRaw !== 'number' ||
-      !Number.isFinite(recurringRateRaw) ||
-      recurringRateRaw <= 0
-    ) {
-      return null
-    }
-    const recurringRateCents = Math.round(recurringRateRaw)
-
-    const guestCountNum = Number.parseInt(guestCount, 10)
-    const hasGuestCount = Number.isFinite(guestCountNum) && guestCountNum > 0
-    const totalCents = totalAmount.trim() ? parseCurrencyToCents(totalAmount) : Number.NaN
-    const perPersonCents = pricePerPerson.trim() ? parseCurrencyToCents(pricePerPerson) : Number.NaN
-
-    if (pricingModel === 'per_person' && recurringModel === 'per_person') {
-      const hasComparablePerPerson = Number.isFinite(perPersonCents) && perPersonCents > 0
-      if (!hasComparablePerPerson) {
-        return {
-          recurringModel,
-          recurringRateCents,
-          needsGuestCountForComparison: false,
-          comparison: null,
-        }
-      }
-      return {
-        recurringModel,
-        recurringRateCents,
-        needsGuestCountForComparison: false,
-        comparison: {
-          basis: 'per_person' as const,
-          baselineCents: recurringRateCents,
-          currentCents: perPersonCents,
-          deltaPercent: ((perPersonCents - recurringRateCents) / recurringRateCents) * 100,
-        },
-      }
-    }
-
-    if (!Number.isFinite(totalCents) || totalCents <= 0) {
-      return {
-        recurringModel,
-        recurringRateCents,
-        needsGuestCountForComparison: recurringModel === 'per_person' && !hasGuestCount,
-        comparison: null,
-      }
-    }
-
-    const baselineTotalCents =
-      recurringModel === 'flat_rate'
-        ? recurringRateCents
-        : hasGuestCount
-          ? recurringRateCents * guestCountNum
-          : null
-
-    if (!baselineTotalCents || baselineTotalCents <= 0) {
-      return {
-        recurringModel,
-        recurringRateCents,
-        needsGuestCountForComparison: recurringModel === 'per_person' && !hasGuestCount,
-        comparison: null,
-      }
-    }
-
-    return {
-      recurringModel,
-      recurringRateCents,
-      needsGuestCountForComparison: false,
-      comparison: {
-        basis: 'total' as const,
-        baselineCents: baselineTotalCents,
-        currentCents: totalCents,
-        deltaPercent: ((totalCents - baselineTotalCents) / baselineTotalCents) * 100,
-      },
-    }
-  }, [guestCount, isEditing, pricePerPerson, pricingModel, selectedClient, totalAmount])
 
   // ── Pricing Calculator state ─────────────────────────────────────────────
   const [calcOpen, setCalcOpen] = useState(false)
@@ -670,13 +573,6 @@ export function QuoteForm({
     { value: 'per_person', label: 'Per Person' },
     { value: 'custom', label: 'Custom' },
   ]
-  const recurringComparison = recurringPricingCheck?.comparison ?? null
-  const recurringDeviationPercent = recurringComparison
-    ? Math.abs(recurringComparison.deltaPercent)
-    : null
-  const showRecurringDeviationWarning =
-    recurringDeviationPercent != null &&
-    recurringDeviationPercent >= RECURRING_PRICE_WARNING_PERCENT
 
   return (
     <div className="space-y-6">
@@ -719,25 +615,6 @@ export function QuoteForm({
         suggestion={pricingSuggestion ?? null}
         benchmarkHint={benchmarkHint}
       />
-
-      {/* ── Smart Pricing (Intelligence Engine) ──────────────────────────── */}
-      <SmartPricingHint
-        guestCount={parseInt(guestCount) || 0}
-        onSuggestedPrice={(totalCents) => setTotalAmount((totalCents / 100).toFixed(2))}
-      />
-
-      {/* ── Full Pricing Calculator link ──────────────────────────────────── */}
-      <div className="flex items-center gap-2 text-sm">
-        <Calculator className="h-4 w-4 text-muted-foreground" />
-        <span className="text-muted-foreground">Not sure what to charge?</span>
-        <Link
-          href="/finance/pricing-calculator"
-          target="_blank"
-          className="font-medium text-primary hover:underline"
-        >
-          Open the full Pricing Calculator
-        </Link>
-      </div>
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}
       <Card className="overflow-hidden">
@@ -853,7 +730,7 @@ export function QuoteForm({
 
             <div className="space-y-1.5">
               {!guestCount || parseInt(guestCount) <= 0 ? (
-                <p className="text-xs text-amber-200 bg-amber-950 border border-amber-200 rounded px-2 py-1">
+                <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
                   Fill in &ldquo;Number of Guests&rdquo; in the main form first — the calculator
                   uses that count.
                 </p>
@@ -879,7 +756,7 @@ export function QuoteForm({
             {calcResult && (
               <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
                 {calcResult.requiresCustomPricing ? (
-                  <p className="text-sm text-amber-200 font-medium">
+                  <p className="text-sm text-amber-700 font-medium">
                     Requires custom pricing — use the notes fields below.
                   </p>
                 ) : (
@@ -928,7 +805,7 @@ export function QuoteForm({
                         </div>
                       )}
                       {calcResult.minimumApplied && (
-                        <div className="text-xs text-amber-200">Minimum booking floor applied</div>
+                        <div className="text-xs text-amber-700">Minimum booking floor applied</div>
                       )}
                       <div className="flex justify-between border-t border-stone-700 pt-1 font-semibold text-stone-100">
                         <span>Total</span>
@@ -988,40 +865,6 @@ export function QuoteForm({
               Review values below, select client, and save as a draft quote.
             </div>
           )}
-          {prefilledSource === 'recurring_default' && (
-            <div className="rounded-lg bg-emerald-950 border border-emerald-700 px-4 py-3 text-sm text-emerald-200">
-              <span className="font-medium text-emerald-600">
-                Prefilled from recurring client default pricing.
-              </span>{' '}
-              Confirm totals for this service before sending.
-            </div>
-          )}
-          {recurringPricingCheck && (
-            <div className="rounded-lg bg-stone-900 border border-stone-700 px-4 py-3 text-sm text-stone-300">
-              <span className="font-medium text-stone-100">Repeat-client default: </span>
-              {recurringPricingCheck.recurringModel === 'per_person'
-                ? `${formatCurrency(recurringPricingCheck.recurringRateCents)} per person`
-                : `${formatCurrency(recurringPricingCheck.recurringRateCents)} flat rate`}
-              {selectedClient?.recurring_pricing_notes && (
-                <span className="text-stone-500"> · {selectedClient.recurring_pricing_notes}</span>
-              )}
-            </div>
-          )}
-          {recurringPricingCheck?.needsGuestCountForComparison && (
-            <Alert variant="info" title="Recurring pricing check">
-              Add an estimated guest count to compare this total against the client&apos;s
-              per-person recurring default.
-            </Alert>
-          )}
-          {showRecurringDeviationWarning && recurringComparison && (
-            <Alert variant="warning" title="Recurring pricing drift">
-              This quote is {Math.round(recurringDeviationPercent ?? 0)}%{' '}
-              {recurringComparison.deltaPercent >= 0 ? 'above' : 'below'} the recurring{' '}
-              {recurringComparison.basis === 'per_person' ? 'per-person rate' : 'total benchmark'} (
-              {formatCurrency(recurringComparison.baselineCents)} baseline vs{' '}
-              {formatCurrency(recurringComparison.currentCents)} currently entered).
-            </Alert>
-          )}
 
           {/* Client Selection (create only) */}
           {!isEditing && (
@@ -1036,21 +879,11 @@ export function QuoteForm({
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
                 helperText={
-                  prefilledSource === 'recurring_default'
-                    ? 'Pre-selected repeat client defaults applied'
-                    : prefilledClientId
-                      ? 'Pre-selected from inquiry'
-                      : 'Select the client for this quote'
+                  prefilledClientId
+                    ? 'Pre-selected from inquiry'
+                    : 'Select the client for this quote'
                 }
               />
-            </div>
-          )}
-
-          {/* Client Dietary Pre-population */}
-          {clientId && (
-            <div className="space-y-3">
-              <ClientDietaryBanner clientId={clientId} />
-              <ClientMenuHistoryBanner clientId={clientId} />
             </div>
           )}
 

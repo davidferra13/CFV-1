@@ -17,10 +17,10 @@ const STATUS_CONFIG: Record<
   { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
 > = {
   new: { label: 'New', variant: 'warning' },
-  awaiting_client: { label: 'Waiting for Reply', variant: 'info' },
-  awaiting_chef: { label: 'Needs Response', variant: 'warning' },
-  quoted: { label: 'Quote Sent', variant: 'info' },
-  confirmed: { label: 'Ready to Book', variant: 'success' },
+  awaiting_client: { label: 'Awaiting Client', variant: 'info' },
+  awaiting_chef: { label: 'Awaiting Chef', variant: 'default' },
+  quoted: { label: 'Quoted', variant: 'info' },
+  confirmed: { label: 'Confirmed', variant: 'success' },
   declined: { label: 'Declined', variant: 'error' },
   expired: { label: 'Expired', variant: 'error' },
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2, AlertCircle } from '@/components/ui/icons'
+import { Plus, Trash2, AlertCircle } from 'lucide-react'
 import { setSplitBilling } from '@/lib/operations/split-billing-actions'
 import { toast } from 'sonner'
 
@@ -219,7 +219,7 @@ export function SplitBillingForm({
             {totalPercentage !== 100 && <AlertCircle className="h-4 w-4 text-red-500" />}
             <span
               className={`text-sm font-medium ${
-                totalPercentage === 100 ? 'text-emerald-200' : 'text-red-200'
+                totalPercentage === 100 ? 'text-emerald-700' : 'text-red-700'
               }`}
             >
               Total: {totalPercentage}%
@@ -227,7 +227,7 @@ export function SplitBillingForm({
           </div>
           <span
             className={`text-sm font-medium ${
-              totalPercentage === 100 ? 'text-emerald-200' : 'text-red-200'
+              totalPercentage === 100 ? 'text-emerald-700' : 'text-red-700'
             }`}
           >
             ${(splits.reduce((sum, s) => sum + s.amountCents, 0) / 100).toFixed(2)}

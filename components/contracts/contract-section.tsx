@@ -63,7 +63,7 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
 
       {/* Signed date detail */}
       {contract?.status === 'signed' && contract.signed_at && (
-        <p className="text-sm text-emerald-200 mb-4">
+        <p className="text-sm text-emerald-700 mb-4">
           Signed on {format(new Date(contract.signed_at), 'MMMM d, yyyy')}
         </p>
       )}

@@ -4,7 +4,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Check, Plus, X, Info } from '@/components/ui/icons'
+import { Check, Plus, X, Info } from 'lucide-react'
 import {
   addAgendaItem,
   toggleAgendaItem,

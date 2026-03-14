@@ -26,11 +26,6 @@ import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/c
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { setActiveForm } from '@/lib/ai/remy-activity-tracker'
-import { PrepTimeEstimateHint } from '@/components/intelligence/prep-time-estimate-hint'
-import { EventTemplatePicker } from '@/components/events/event-template-picker'
-import type { EventTemplate } from '@/lib/events/template-actions'
-import { getClientAutoFill, type ClientAutoFillData } from '@/lib/clients/auto-fill'
-import { AutoFillBadge } from '@/components/events/auto-fill-badge'
 
 type Client = {
   id: string
@@ -143,45 +138,6 @@ export function EventForm({
     setActiveForm(mode === 'create' ? 'New Event' : 'Edit Event')
     return () => setActiveForm(null)
   }, [mode])
-
-  // Auto-fill from client history (create mode only)
-  const [autoFilled, setAutoFilled] = useState<Set<string>>(new Set())
-
-  useEffect(() => {
-    if (mode !== 'create' || !clientId) return
-    let cancelled = false
-    getClientAutoFill(clientId)
-      .then((data) => {
-        if (cancelled || !data || data.event_count === 0) return
-        const filled = new Set<string>()
-        if (data.typical_guest_count && !guestCount) {
-          setGuestCount(data.typical_guest_count.toString())
-          filled.add('guest_count')
-        }
-        if (data.last_location?.address && !locationAddress) {
-          setLocationAddress(data.last_location.address)
-          if (data.last_location.city) setLocationCity(data.last_location.city)
-          if (data.last_location.state) setLocationState(data.last_location.state)
-          if (data.last_location.zip) setLocationZip(data.last_location.zip)
-          filled.add('location')
-        }
-        if (data.typical_occasion && !occasion) {
-          setOccasion(data.typical_occasion)
-          filled.add('occasion')
-        }
-        if (data.typical_price_cents && !totalAmount) {
-          setTotalAmount((data.typical_price_cents / 100).toString())
-          filled.add('price')
-        }
-        if (filled.size > 0) setAutoFilled(filled)
-      })
-      .catch(() => {
-        /* non-blocking */
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [clientId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Conflict warning state
   const [conflictWarnings, setConflictWarnings] = useState<string[] | null>(null)
@@ -314,23 +270,6 @@ export function EventForm({
     mutation: (input: any) => updateEvent(event!.id, input),
   })
   const mutation = mode === 'create' ? createMutation : updateMutation
-
-  // Apply template defaults to form fields
-  function applyTemplate(t: EventTemplate) {
-    if (t.occasion) setOccasion(t.occasion)
-    if (t.serve_time) setServeTime(t.serve_time)
-    if (t.guest_count) setGuestCount(t.guest_count.toString())
-    if (t.location_address) setLocationAddress(t.location_address)
-    if (t.location_city) setLocationCity(t.location_city)
-    if (t.location_state) setLocationState(t.location_state)
-    if (t.location_zip) setLocationZip(t.location_zip)
-    if (t.special_requests) setSpecialRequests(t.special_requests)
-    if (t.quoted_price_cents) setTotalAmount((t.quoted_price_cents / 100).toString())
-    if (t.deposit_amount_cents) {
-      setDepositAmount((t.deposit_amount_cents / 100).toString())
-      setDepositSource('manual')
-    }
-  }
 
   const durableDraft = useDurableDraft<EventFormData>(
     'event-form',
@@ -713,7 +652,7 @@ export function EventForm({
             {step === 1 ? '1' : '✓'}
           </div>
           <span
-            className={`text-sm font-medium ${step === 1 ? 'text-stone-100' : 'text-green-200'}`}
+            className={`text-sm font-medium ${step === 1 ? 'text-stone-100' : 'text-green-700'}`}
           >
             Event Details
           </span>
@@ -745,19 +684,6 @@ export function EventForm({
         {/* ── Step 1: Core booking details ────────────────────────────────── */}
         {step === 1 && (
           <div className="space-y-4">
-            {mode === 'create' && <EventTemplatePicker onApply={applyTemplate} />}
-            {autoFilled.size > 0 && (
-              <div className="flex items-center gap-2 text-xs text-brand-400 bg-brand-950/50 border border-brand-800/50 rounded-md px-3 py-2">
-                <AutoFillBadge label={`${autoFilled.size} fields from client history`} />
-                <button
-                  type="button"
-                  className="ml-auto text-stone-500 hover:text-stone-300"
-                  onClick={() => setAutoFilled(new Set())}
-                >
-                  dismiss
-                </button>
-              </div>
-            )}
             <Select
               label="Client"
               required
@@ -810,12 +736,6 @@ export function EventForm({
               helperText="All times for this event are in this timezone"
             />
 
-            {mode === 'edit' && (
-              <p className="text-xs text-stone-400">
-                Need a multi-day event? Enable it from the event detail page after saving.
-              </p>
-            )}
-
             <Input
               label="Number of Guests"
               type="number"
@@ -826,11 +746,6 @@ export function EventForm({
               value={guestCount}
               onChange={(e) => setGuestCount(e.target.value)}
             />
-
-            {/* Prep time estimate — appears when guest count is entered */}
-            {parseInt(guestCount) > 0 && (
-              <PrepTimeEstimateHint guestCount={parseInt(guestCount)} occasion={occasion || null} />
-            )}
 
             <AddressAutocomplete
               label="Address"
@@ -867,10 +782,10 @@ export function EventForm({
             {/* Conflict warning banner */}
             {conflictWarnings && conflictWarnings.length > 0 && (
               <div className="rounded-lg border border-amber-300 bg-amber-950 p-4 space-y-3">
-                <p className="text-sm font-semibold text-amber-200">Scheduling conflict detected</p>
+                <p className="text-sm font-semibold text-amber-800">Scheduling conflict detected</p>
                 <ul className="space-y-1">
                   {conflictWarnings.map((w, i) => (
-                    <li key={i} className="text-sm text-amber-200 flex gap-2">
+                    <li key={i} className="text-sm text-amber-700 flex gap-2">
                       <span className="mt-0.5 shrink-0">⚠</span>
                       <span>{w}</span>
                     </li>
@@ -883,7 +798,7 @@ export function EventForm({
                     onChange={(e) => setConflictOverride(e.target.checked)}
                     className="rounded border-amber-400 text-amber-600 focus:ring-amber-500"
                   />
-                  <span className="text-sm text-amber-200 font-medium">
+                  <span className="text-sm text-amber-800 font-medium">
                     I understand — create the event anyway
                   </span>
                 </label>

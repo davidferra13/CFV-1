@@ -14,7 +14,6 @@ type Props = {
 
 const navLinks = [
   { href: '/staff-dashboard', label: 'Dashboard' },
-  { href: '/staff-events', label: 'My Events' },
   { href: '/staff-tasks', label: 'Tasks' },
   { href: '/staff-time', label: 'Time' },
   { href: '/staff-station', label: 'Station' },

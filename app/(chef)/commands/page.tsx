@@ -1,19 +1,15 @@
 import { Metadata } from 'next'
-import { requireAdmin } from '@/lib/auth/admin'
-import { redirect } from 'next/navigation'
+import { requireChef } from '@/lib/auth/get-user'
 import { RemyHubDashboard } from '@/components/ai/remy-hub-dashboard'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata: Metadata = {
-  title: 'Command Center — ChefFlow',
-  description: 'Commands, conversations, saved context, and privacy controls — all in one place.',
+  title: 'Remy — ChefFlow',
+  description:
+    'Your AI assistant. Commands, conversations, history, memory, and privacy — all in one place.',
 }
 
 export default async function CommandsPage() {
-  const admin = await requireAdmin()
-  if (!isFounderEmail(admin.email)) {
-    redirect('/unauthorized')
-  }
+  await requireChef()
 
   return (
     <div className="container max-w-4xl py-8">

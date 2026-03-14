@@ -1,6 +1,6 @@
 'use client'
 
-// Google Calendar Connect - settings card for managing the chef's Google Calendar integration.
+// Google Calendar Connect — Settings card for managing the chef's Google Calendar integration.
 // Mirrors the ConnectedAccounts (Gmail) card pattern.
 // Backend is fully wired: confirmed events auto-sync, cancelled events auto-delete.
 
@@ -21,6 +21,7 @@ interface GoogleCalendarConnectProps {
   connection: CalendarConnection
 }
 
+// Google Calendar icon
 function CalendarIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
@@ -84,11 +85,11 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
           <>
             <p className="text-sm text-stone-400">
               Connect Google Calendar to automatically sync your confirmed events. When you confirm
-              an event in ChefFlow it appears in your calendar; when you cancel it, it is removed.
+              an event in ChefFlow it appears in your calendar; when you cancel it, it's removed.
             </p>
             <ul className="text-sm text-stone-500 list-disc list-inside space-y-1">
-              <li>Confirmed events - auto-added to your calendar</li>
-              <li>Cancelled events - auto-removed from your calendar</li>
+              <li>Confirmed events → auto-added to your calendar</li>
+              <li>Cancelled events → auto-removed from your calendar</li>
               <li>Event details: occasion, date, time, location, guest count</li>
             </ul>
             <Button variant="primary" onClick={handleConnect} loading={connecting}>
@@ -109,7 +110,7 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
                   </p>
                 ) : (
                   <p className="text-xs text-stone-400 mt-1">
-                    No events synced yet. Sync happens automatically when events are confirmed.
+                    No events synced yet — sync happens automatically when events are confirmed.
                   </p>
                 )}
               </div>
@@ -125,9 +126,9 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
 
             <div className="rounded-md bg-stone-800 border border-stone-700 px-3 py-2 text-xs text-stone-400 space-y-0.5">
               <p className="font-medium text-stone-300">How sync works</p>
-              <p>Confirming an event - creates a calendar entry automatically.</p>
-              <p>Cancelling an event - removes it from your calendar.</p>
-              <p>Reconnect or reconfirm if you need to force a fresh calendar sync.</p>
+              <p>Confirming an event → creates a calendar entry automatically.</p>
+              <p>Cancelling an event → removes it from your calendar.</p>
+              <p>Edits to event date/time/location → update the calendar entry.</p>
             </div>
           </>
         )}

@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation'
 import { getBlogPost, getAllBlogSlugs, BLOG_POSTS } from '@/lib/blog/posts'
 import { JsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
 import { BlogMarkdown } from '@/components/blog/blog-markdown'
-import { PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -96,7 +95,7 @@ export default function BlogPostPage({ params }: Props) {
           {/* Back link */}
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-200 dark:hover:text-stone-300 transition-colors mb-8"
+            className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300 transition-colors mb-8"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -114,7 +113,7 @@ export default function BlogPostPage({ params }: Props) {
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40"
+                className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-950 text-brand-400 border border-brand-800/40"
               >
                 {tag}
               </span>
@@ -122,12 +121,12 @@ export default function BlogPostPage({ params }: Props) {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 leading-tight mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-100 leading-tight mb-4">
             {post.title}
           </h1>
 
           {/* Meta */}
-          <div className="flex items-center gap-4 text-sm text-stone-500 mb-10 pb-10 border-b border-stone-200 dark:border-stone-700">
+          <div className="flex items-center gap-4 text-sm text-stone-500 mb-10 pb-10 border-b border-stone-700">
             <span>{post.author}</span>
             <span>
               {new Date(post.publishedAt).toLocaleDateString('en-US', {
@@ -143,18 +142,18 @@ export default function BlogPostPage({ params }: Props) {
           <BlogMarkdown content={post.content} />
 
           {/* CTA */}
-          <div className="mt-16 rounded-xl border border-brand-200 dark:border-brand-700/50 bg-brand-50/40 dark:bg-brand-950/40 p-8 text-center">
-            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2">
+          <div className="mt-16 rounded-xl border border-brand-700/50 bg-brand-950/40 p-8 text-center">
+            <h2 className="text-2xl font-bold text-stone-100 mb-2">
               Ready to run smoother service?
             </h2>
-            <p className="text-stone-600 dark:text-stone-300 mb-6">
-              ChefFlow keeps inquiries, events, menus, and payments in one place.
+            <p className="text-stone-300 mb-6">
+              ChefFlow keeps events, clients, menus, and payments in one place.
             </p>
             <Link
-              href={PRIMARY_SIGNUP_HREF}
+              href="/auth/signup"
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              {PRIMARY_SIGNUP_LABEL}
+              Sign up
             </Link>
           </div>
 
@@ -165,22 +164,20 @@ export default function BlogPostPage({ params }: Props) {
             ).slice(0, 3)
             if (related.length === 0) return null
             return (
-              <div className="mt-12 pt-12 border-t border-stone-200 dark:border-stone-700">
-                <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-6">
-                  Related articles
-                </h2>
+              <div className="mt-12 pt-12 border-t border-stone-700">
+                <h2 className="text-2xl font-bold text-stone-100 mb-6">Related articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {related.map((relatedPost) => (
                     <Link
                       href={`/blog/${relatedPost.slug}`}
                       key={relatedPost.slug}
-                      className="group rounded-lg border border-stone-200 dark:border-stone-700 p-4 transition-colors hover:border-brand-500"
+                      className="group rounded-lg border border-stone-700 p-4 transition-colors hover:border-brand-500"
                     >
                       <p className="text-xs text-stone-500 mb-2">{relatedPost.readingTime}</p>
-                      <h3 className="font-semibold text-stone-900 dark:text-stone-100 text-sm line-clamp-2 mb-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                      <h3 className="font-semibold text-stone-100 text-sm line-clamp-2 mb-2 group-hover:text-brand-400 transition-colors">
                         {relatedPost.title}
                       </h3>
-                      <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-3">
+                      <p className="text-xs text-stone-400 line-clamp-3">
                         {relatedPost.description}
                       </p>
                     </Link>

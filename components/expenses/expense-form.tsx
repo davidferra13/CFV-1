@@ -17,7 +17,6 @@ import { ExpenseCategorizeSuggest } from '@/components/ai/expense-categorize-sug
 import { EXPENSE_CATEGORY_GROUPS } from '@/lib/constants/expense-categories'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
-import { MOBILE_CAPTURE_IMAGE_ACCEPT } from '@/lib/uploads/mobile-capture-types'
 import { format } from 'date-fns'
 
 type EventOption = {
@@ -132,7 +131,8 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
       // Call server action
       const { parseReceiptImage } = await import('@/lib/ai/parse-receipt')
-      const result = await parseReceiptImage(base64, receiptFile.type || 'image/jpeg')
+      const mediaType = receiptFile.type as 'image/jpeg' | 'image/png' | 'image/webp'
+      const result = await parseReceiptImage(base64, mediaType)
 
       setExtraction(result)
 
@@ -425,7 +425,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                 onClick={() => setIsBusiness(false)}
                 className={`px-3 py-1 rounded text-sm font-medium ${
                   !isBusiness
-                    ? 'bg-amber-900 text-amber-200 ring-1 ring-amber-300'
+                    ? 'bg-amber-900 text-amber-800 ring-1 ring-amber-300'
                     : 'bg-stone-800 text-stone-400'
                 }`}
               >
@@ -474,14 +474,13 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
               <label className="block text-sm font-medium text-stone-300 mb-2">Receipt Photo</label>
               <input
                 type="file"
-                accept={MOBILE_CAPTURE_IMAGE_ACCEPT}
+                accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
                 capture="environment"
                 onChange={handleFileChange}
                 className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-brand-950 file:text-brand-400 hover:file:bg-brand-900"
               />
               <p className="text-xs text-stone-500 mt-1">
-                On mobile, opens the rear camera directly. JPEG, PNG, HEIC/HEIF, or WebP. Max
-                10MB.
+                On mobile, opens camera directly. JPEG, PNG, HEIC, or WebP. Max 10MB.
               </p>
             </div>
 
@@ -539,10 +538,10 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                   <span
                     className={`text-xs px-2 py-0.5 rounded font-medium ${
                       extraction.confidence === 'high'
-                        ? 'bg-green-900 text-green-200'
+                        ? 'bg-green-900 text-green-800'
                         : extraction.confidence === 'medium'
-                          ? 'bg-yellow-900 text-yellow-200'
-                          : 'bg-red-900 text-red-200'
+                          ? 'bg-yellow-900 text-yellow-800'
+                          : 'bg-red-900 text-red-800'
                     }`}
                   >
                     {extraction.confidence} confidence
@@ -614,7 +613,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                           className={`text-xs px-2 py-0.5 rounded font-medium ${
                             item.isBusiness
                               ? 'bg-brand-900 text-brand-300'
-                              : 'bg-amber-900 text-amber-200'
+                              : 'bg-amber-900 text-amber-800'
                           }`}
                         >
                           {item.isBusiness ? 'Biz' : 'Personal'}

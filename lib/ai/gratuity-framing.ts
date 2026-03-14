@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { calculateGratuityFormula } from '@/lib/formulas/gratuity-calc'
 
@@ -115,8 +115,7 @@ Return JSON: {
       }),
     // AI: enhanced framing with personalized messaging (when Ollama is online)
     async () => {
-      const aiResult = (await dispatchPrivate(systemPrompt, userContent, GratuityFramingSchema))
-        .result
+      const aiResult = await parseWithOllama(systemPrompt, userContent, GratuityFramingSchema)
       return { ...aiResult, generatedAt: new Date().toISOString() }
     }
   )

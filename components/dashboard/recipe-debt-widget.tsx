@@ -3,7 +3,7 @@
 // Appears on the dashboard when debt > 0 — daily habit trigger.
 
 import Link from 'next/link'
-import { BookOpen, ArrowRight, AlertCircle } from '@/components/ui/icons'
+import { BookOpen, ArrowRight, AlertCircle } from 'lucide-react'
 import type { RecipeDebt } from '@/lib/recipes/actions'
 
 type Props = {
@@ -24,7 +24,7 @@ export function RecipeDebtWidget({ debt }: Props) {
         </div>
         <Link
           href="/recipes"
-          className="text-xs text-green-200 hover:text-green-200 font-medium whitespace-nowrap"
+          className="text-xs text-green-700 hover:text-green-800 font-medium whitespace-nowrap"
         >
           View all
         </Link>
@@ -36,7 +36,7 @@ export function RecipeDebtWidget({ debt }: Props) {
     debt.last7Days > 0 ? 'border-red-300 bg-red-950' : 'border-amber-300 bg-amber-950'
 
   const urgencyTextColor = debt.last7Days > 0 ? 'text-red-900' : 'text-amber-900'
-  const urgencySubColor = debt.last7Days > 0 ? 'text-red-200' : 'text-amber-200'
+  const urgencySubColor = debt.last7Days > 0 ? 'text-red-700' : 'text-amber-700'
   const iconColor = debt.last7Days > 0 ? 'text-red-500' : 'text-amber-500'
 
   return (

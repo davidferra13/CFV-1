@@ -1,15 +1,14 @@
 import type { Metadata, Viewport } from 'next'
-import { DM_Sans, DM_Serif_Display } from 'next/font/google'
-import { Suspense } from 'react'
+import { Inter, DM_Serif_Display } from 'next/font/google'
 import { CookieConsent } from '@/components/ui/cookie-consent'
-import { IconProvider } from '@/components/ui/icon-provider'
+import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { SwRegister } from '@/components/pwa/sw-register'
+import { HolidayOverlay } from '@/components/ui/holiday-overlay'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
-import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
-import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import './globals.css'
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
@@ -31,11 +30,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChefFlow - Chef-Built Back Office for Private Chefs',
+    default: 'ChefFlow — Private Chef Business Software',
     template: '%s | ChefFlow',
   },
   description:
-    'ChefFlow is the chef-built back office for private chefs who need calmer inquiries, cleaner event handoffs, and stronger client memory.',
+    'Ops for Artists — The business operating system built by a chef, for chefs. Manage events, clients, menus, and payments from one calm workspace.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -49,22 +48,17 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'ChefFlow',
   },
-  other: {
-    'mobile-web-app-capable': 'yes',
-  },
   openGraph: {
-    title: 'ChefFlow - Chef-Built Back Office for Private Chefs',
-    description:
-      'Built by a working chef for private chefs who want one place for inquiries, client details, menus, approvals, and follow-up.',
+    title: 'ChefFlow — Private Chef Business Software',
+    description: 'Ops for Artists — The business operating system built by a chef, for chefs.',
     siteName: 'ChefFlow',
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow - Chef-Built Back Office for Private Chefs',
-    description:
-      'Built by a working chef for private chefs who want one place for inquiries, client details, menus, approvals, and follow-up.',
+    title: 'ChefFlow — Private Chef Business Software',
+    description: 'Ops for Artists — The business OS built by a chef, for chefs.',
   },
   robots: {
     index: true,
@@ -102,10 +96,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
-      <head>
-        <PaletteScript />
-      </head>
+    <html lang="en" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <body className="font-sans">
         {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
         <a
@@ -115,18 +106,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
 
-        <IconProvider>
-          <ColorPaletteProvider>
-            <PostHogProvider>
-              <Suspense fallback={null}>
-                <PerformanceTelemetry />
-              </Suspense>
-              {children}
-            </PostHogProvider>
-          </ColorPaletteProvider>
-        </IconProvider>
+        <TestAccountBanner />
+        <PostHogProvider>{children}</PostHogProvider>
         <CookieConsent />
+        <PresenceBeacon />
         <SwRegister />
+        <HolidayOverlay />
       </body>
     </html>
   )

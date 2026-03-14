@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PIPELINE_STAGE_LABELS, PIPELINE_STAGE_COLORS } from '@/lib/prospecting/constants'
 import type { PipelineStage } from '@/lib/prospecting/constants'
-import { BarChart3 } from '@/components/ui/icons'
+import { BarChart3 } from 'lucide-react'
 
 interface FunnelStage {
   stage: string

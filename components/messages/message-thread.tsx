@@ -19,11 +19,11 @@ const CHANNEL_LABELS: Record<string, string> = {
 }
 
 const CHANNEL_COLORS: Record<string, string> = {
-  text: 'bg-green-900 text-green-200',
-  email: 'bg-blue-900 text-blue-200',
-  instagram: 'bg-pink-900 text-pink-200',
-  take_a_chef: 'bg-purple-900 text-purple-200',
-  phone: 'bg-amber-900 text-amber-200',
+  text: 'bg-green-900 text-green-800',
+  email: 'bg-blue-900 text-blue-800',
+  instagram: 'bg-pink-900 text-pink-800',
+  take_a_chef: 'bg-purple-900 text-purple-800',
+  phone: 'bg-amber-900 text-amber-800',
   internal_note: 'bg-stone-800 text-stone-400',
 }
 
@@ -83,9 +83,7 @@ export function MessageThread({ messages, showEntityLinks = false }: MessageThre
                   : format(new Date(msg.created_at), 'MMM d, h:mm a')}
               </span>
               {msg.direction === 'outbound' && msg.channel !== 'internal_note' && (
-                <span className="text-xs text-stone-400">
-                  {msg.status === 'draft' ? 'Draft' : 'Sent'}
-                </span>
+                <span className="text-xs text-stone-400">Sent</span>
               )}
               {msg.direction === 'inbound' && (
                 <span className="text-xs text-stone-400">Received</span>

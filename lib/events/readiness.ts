@@ -26,27 +26,22 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { EventStatus } from './transitions'
-import {
-  canMarkReadinessGatePassed,
-  getReadinessTransitionGates,
-  type ReadinessGate,
-} from './readiness-config'
-export type { ReadinessGate } from './readiness-config'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type GateStatus = 'pending' | 'passed' | 'overridden'
+export type ReadinessGate =
+  | 'allergies_verified'
+  | 'menu_client_approved'
+  | 'documents_generated'
+  | 'deposit_collected'
+  | 'packing_reviewed'
+  | 'equipment_confirmed'
+  | 'receipts_uploaded'
+  | 'kitchen_clean'
+  | 'dop_complete'
+  | 'financial_reconciled'
 
-type ReadinessEventRow = {
-  tenant_id: string
-  client_id: string | null
-  packing_list_ready?: boolean | null
-  equipment_list_ready?: boolean | null
-  car_packed?: boolean | null
-  reset_complete?: boolean | null
-  financial_closed?: boolean | null
-  financially_closed?: boolean | null
-}
+export type GateStatus = 'pending' | 'passed' | 'overridden'
 
 export interface GateResult {
   gate: ReadinessGate
@@ -79,8 +74,8 @@ const GATE_CATALOG: Record<ReadinessGate, { label: string; description: string }
     description: 'Client has reviewed and approved the proposed menu',
   },
   documents_generated: {
-    label: 'Documents Ready',
-    description: 'Front-of-house menu, prep sheet, and packing list have enough data to generate',
+    label: 'Documents Generated',
+    description: 'Front-of-house menu, prep sheet, and packing list have been generated',
   },
   packing_reviewed: {
     label: 'Packing List Reviewed',
@@ -112,237 +107,11 @@ const GATE_CATALOG: Record<ReadinessGate, { label: string; description: string }
   },
 }
 
-const READINESS_OVERRIDE_TASK_PREFIX = 'readiness_override:'
-
-function getReadinessOverrideTaskKey(gate: ReadinessGate): string {
-  return `${READINESS_OVERRIDE_TASK_PREFIX}${gate}`
-}
-
-function isMissingRelationError(
-  error: { code?: string | null; message?: string | null } | null | undefined,
-  relation: string
-): boolean {
-  const message = (error?.message ?? '').toLowerCase()
-  return (
-    error?.code === 'PGRST205' ||
-    message.includes(`public.${relation}`.toLowerCase()) ||
-    message.includes(`relation "${relation.toLowerCase()}" does not exist`)
-  )
-}
-
-function buildGateRecordMap(
-  rows: Array<{ gate: string; status: string; override_reason?: string | null }>
-) {
-  return new Map<string, { status: string; override_reason: string | null }>(
-    rows.map((row) => [
-      row.gate,
-      {
-        status: row.status,
-        override_reason: row.override_reason ?? null,
-      },
-    ])
-  )
-}
-
-async function loadPersistedGateStates(
-  supabase: any,
-  eventId: string,
-  tenantId: string,
-  gates: ReadinessGate[]
-) {
-  const { data: gateRows, error: gateError } = await supabase
-    .from('event_readiness_gates' as any)
-    .select('gate, status, override_reason')
-    .eq('event_id', eventId)
-    .in('gate', gates)
-
-  if (!gateError) {
-    return buildGateRecordMap(gateRows || [])
-  }
-
-  if (!isMissingRelationError(gateError, 'event_readiness_gates')) {
-    console.error('[readiness] Failed to load persisted gate states:', gateError)
-    return new Map<string, { status: string; override_reason: string | null }>()
-  }
-
-  const taskKeys = [...gates, ...gates.map(getReadinessOverrideTaskKey)]
-  const { data: completionRows, error: completionError } = await supabase
-    .from('dop_task_completions')
-    .select('task_key, notes, completed_at')
-    .eq('event_id', eventId)
-    .eq('tenant_id', tenantId)
-    .in('task_key', taskKeys)
-
-  if (completionError) {
-    console.error('[readiness] Failed to load fallback gate states:', completionError)
-    return new Map<string, { status: string; override_reason: string | null }>()
-  }
-
-  const rows = [...(completionRows || [])].sort(
-    (a: any, b: any) =>
-      new Date(b.completed_at ?? 0).getTime() - new Date(a.completed_at ?? 0).getTime()
-  )
-
-  const mappedRows: Array<{ gate: string; status: string; override_reason?: string | null }> = []
-  for (const row of rows) {
-    if (typeof row.task_key !== 'string') continue
-
-    if (row.task_key.startsWith(READINESS_OVERRIDE_TASK_PREFIX)) {
-      const gate = row.task_key.slice(READINESS_OVERRIDE_TASK_PREFIX.length)
-      if (!gates.includes(gate as ReadinessGate)) continue
-      if (!mappedRows.some((existing) => existing.gate === gate)) {
-        mappedRows.push({
-          gate,
-          status: 'overridden',
-          override_reason: row.notes ?? null,
-        })
-      }
-      continue
-    }
-
-    if (!gates.includes(row.task_key as ReadinessGate)) continue
-    if (!mappedRows.some((existing) => existing.gate === row.task_key)) {
-      mappedRows.push({
-        gate: row.task_key,
-        status: 'passed',
-        override_reason: null,
-      })
-    }
-  }
-
-  return buildGateRecordMap(mappedRows)
-}
-
-function getCanonicalEventUpdatesForPassedGate(
-  gate: ReadinessGate,
-  resolvedAt: string
-): Record<string, unknown> | null {
-  switch (gate) {
-    case 'packing_reviewed':
-      return { packing_list_ready: true }
-    case 'equipment_confirmed':
-      return { equipment_list_ready: true }
-    case 'kitchen_clean':
-      return { reset_complete: true, reset_completed_at: resolvedAt }
-    case 'financial_reconciled':
-      return {
-        financial_closed: true,
-        financial_closed_at: resolvedAt,
-        financially_closed: true,
-      }
-    default:
-      return null
-  }
-}
-
-async function applyCanonicalEventGateUpdates(
-  supabase: any,
-  eventId: string,
-  tenantId: string,
-  gate: ReadinessGate,
-  resolvedAt: string
-) {
-  const updates = getCanonicalEventUpdatesForPassedGate(gate, resolvedAt)
-  if (!updates) return
-
-  const { error } = await supabase
-    .from('events')
-    .update(updates)
-    .eq('id', eventId)
-    .eq('tenant_id', tenantId)
-
-  if (error) {
-    console.error('[readiness] Failed to sync canonical event gate fields:', error)
-    throw new Error('Failed to sync gate status to event')
-  }
-}
-
-async function persistFallbackGateState(
-  supabase: any,
-  eventId: string,
-  tenantId: string,
-  gate: ReadinessGate,
-  mode: 'passed' | 'overridden',
-  reason?: string | null
-) {
-  const taskKey = mode === 'passed' ? gate : getReadinessOverrideTaskKey(gate)
-  const { error: deleteError } = await supabase
-    .from('dop_task_completions')
-    .delete()
-    .eq('event_id', eventId)
-    .eq('tenant_id', tenantId)
-    .in('task_key', [gate, getReadinessOverrideTaskKey(gate)])
-
-  if (deleteError) {
-    console.error('[readiness] Failed to clear fallback gate state:', deleteError)
-    throw new Error('Failed to update fallback gate state')
-  }
-
-  const { error: insertError } = await supabase.from('dop_task_completions').insert({
-    event_id: eventId,
-    tenant_id: tenantId,
-    task_key: taskKey,
-    notes: mode === 'overridden' ? (reason ?? null) : null,
-  })
-
-  if (insertError) {
-    console.error('[readiness] Failed to persist fallback gate state:', insertError)
-    throw new Error('Failed to persist fallback gate state')
-  }
-}
-
-async function persistGateState({
-  supabase,
-  eventId,
-  tenantId,
-  gate,
-  mode,
-  metadata,
-  reason,
-}: {
-  supabase: any
-  eventId: string
-  tenantId: string
-  gate: ReadinessGate
-  mode: 'passed' | 'overridden'
-  metadata?: Record<string, unknown>
-  reason?: string | null
-}) {
-  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
-    {
-      tenant_id: tenantId,
-      event_id: eventId,
-      gate,
-      status: mode,
-      resolved_at: new Date().toISOString(),
-      overridden_by:
-        mode === 'overridden' && typeof metadata?.overridden_by === 'string'
-          ? metadata.overridden_by
-          : null,
-      override_reason: mode === 'overridden' ? (reason?.trim() ?? null) : null,
-      metadata: metadata || null,
-    },
-    { onConflict: 'event_id,gate' }
-  )
-
-  if (!error) return
-
-  if (!isMissingRelationError(error, 'event_readiness_gates')) {
-    console.error('[readiness] Failed to persist gate state:', error)
-    throw new Error(`Failed to ${mode === 'passed' ? 'mark gate as passed' : 'override gate'}`)
-  }
-
-  await persistFallbackGateState(supabase, eventId, tenantId, gate, mode, reason)
-}
-
-function revalidateReadinessPaths(eventId: string) {
-  revalidatePath(`/events/${eventId}`)
-  revalidatePath(`/events/${eventId}/schedule`)
-  revalidatePath(`/events/${eventId}/pack`)
-  revalidatePath(`/events/${eventId}/financial`)
-  revalidatePath('/dashboard')
-  revalidatePath('/queue')
-  revalidatePath('/briefing')
+// Which gates apply to which transition
+const TRANSITION_GATES: Record<string, ReadinessGate[]> = {
+  'paid->confirmed': ['allergies_verified', 'documents_generated', 'deposit_collected'],
+  'confirmed->in_progress': ['packing_reviewed'],
+  'in_progress->completed': ['receipts_uploaded', 'kitchen_clean', 'financial_reconciled'],
 }
 
 // ─── Main Readiness Evaluator ─────────────────────────────────────────────────
@@ -361,7 +130,8 @@ export async function evaluateReadinessForTransition(
 ): Promise<ReadinessResult> {
   const supabase: any = createServerClient({ admin: true })
 
-  const requiredGates = getReadinessTransitionGates(fromStatus, toStatus)
+  const transitionKey = `${fromStatus}->${toStatus}`
+  const requiredGates = TRANSITION_GATES[transitionKey] || []
 
   // If no gates defined for this transition, it's always ready
   if (requiredGates.length === 0) {
@@ -379,9 +149,7 @@ export async function evaluateReadinessForTransition(
   // Fetch event to get client_id and tenant_id
   const { data: event } = await supabase
     .from('events')
-    .select(
-      'tenant_id, client_id, packing_list_ready, equipment_list_ready, car_packed, reset_complete, financial_closed, financially_closed'
-    )
+    .select('tenant_id, client_id')
     .eq('id', eventId)
     .single()
 
@@ -398,17 +166,20 @@ export async function evaluateReadinessForTransition(
   }
 
   // Fetch existing gate records for this event
-  const existingMap = await loadPersistedGateStates(
-    supabase,
-    eventId,
-    event.tenant_id,
-    requiredGates
+  const { data: existingGates } = await supabase
+    .from('event_readiness_gates' as any)
+    .select('*')
+    .eq('event_id', eventId)
+    .in('gate', requiredGates)
+
+  const existingMap = new Map<string, { status: string; override_reason: string | null }>(
+    (existingGates || []).map((g: any) => [g.gate, g])
   )
 
   // Check each gate dynamically
   const results = await Promise.all(
     requiredGates.map((gate) =>
-      evaluateGate(gate, eventId, event as ReadinessEventRow, existingMap, supabase)
+      evaluateGate(gate, eventId, event.tenant_id, event.client_id, existingMap, supabase)
     )
   )
 
@@ -433,7 +204,8 @@ export async function evaluateReadinessForTransition(
 async function evaluateGate(
   gate: ReadinessGate,
   eventId: string,
-  event: ReadinessEventRow,
+  tenantId: string,
+  clientId: string | null,
   existingMap: Map<string, { status: string; override_reason: string | null }>,
   supabase: any
 ): Promise<GateResult> {
@@ -465,7 +237,7 @@ async function evaluateGate(
   // Otherwise: dynamically check
   switch (gate) {
     case 'allergies_verified':
-      return checkAllergyGate(gate, eventId, event.tenant_id, event.client_id, catalog, supabase)
+      return checkAllergyGate(gate, eventId, tenantId, clientId, catalog, supabase)
 
     case 'documents_generated':
       return checkDocumentsGate(gate, eventId, catalog, supabase)
@@ -477,70 +249,29 @@ async function evaluateGate(
       return checkDepositGate(gate, eventId, catalog, supabase)
 
     case 'packing_reviewed':
-      if (event.packing_list_ready || event.car_packed) {
-        return {
-          gate,
-          status: 'passed',
-          label: catalog.label,
-          description: catalog.description,
-          isHardBlock: false,
-        }
-      }
-      break
-
     case 'equipment_confirmed':
-      if (event.equipment_list_ready) {
-        return {
-          gate,
-          status: 'passed',
-          label: catalog.label,
-          description: catalog.description,
-          isHardBlock: false,
-        }
-      }
-      break
-
     case 'receipts_uploaded':
-      return checkReceiptsGate(gate, eventId, event, catalog, supabase)
-
     case 'kitchen_clean':
-      if (event.reset_complete) {
-        return {
-          gate,
-          status: 'passed',
-          label: catalog.label,
-          description: catalog.description,
-          isHardBlock: false,
-        }
-      }
-      break
-
-    case 'financial_reconciled':
-      if (event.financial_closed || event.financially_closed) {
-        return {
-          gate,
-          status: 'passed',
-          label: catalog.label,
-          description: catalog.description,
-          isHardBlock: false,
-        }
-      }
-      break
-
     case 'dop_complete':
-      break
+    case 'financial_reconciled':
+      // These require explicit chef action — they're pending until marked
+      return {
+        gate,
+        status: 'pending',
+        label: catalog.label,
+        description: catalog.description,
+        isHardBlock: false,
+        details: 'Tap to confirm this has been completed',
+      }
 
     default:
-      break
-  }
-
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: false,
-    details: 'Tap to confirm this has been completed',
+      return {
+        gate,
+        status: 'pending',
+        label: catalog.label,
+        description: catalog.description,
+        isHardBlock: false,
+      }
   }
 }
 
@@ -667,34 +398,17 @@ async function checkDocumentsGate(
   catalog: { label: string; description: string },
   supabase: any
 ): Promise<GateResult> {
+  // Check if at minimum a prep sheet has been generated
+  // (FOH menu auto-generates on confirm, so we just check if it was ever generated)
+  const { data: event } = await supabase
+    .from('events')
+    .select('prep_sheet_generated_at, packing_list_generated_at')
+    .eq('id', eventId)
+    .single()
+
   const missingDocs: string[] = []
-
-  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', eventId).limit(1)
-
-  const menuId = menus?.[0]?.id as string | undefined
-
-  if (!menuId) {
-    missingDocs.push('Front-of-House Menu', 'Prep Sheet')
-  } else {
-    const { data: dishes, count: dishCount } = await supabase
-      .from('dishes')
-      .select('id', { count: 'exact' })
-      .eq('menu_id', menuId)
-
-    if (!dishCount || dishCount <= 0) {
-      missingDocs.push('Front-of-House Menu', 'Prep Sheet')
-    } else {
-      const dishIds = (dishes || []).map((dish: any) => dish.id)
-      const { count: componentCount } = await supabase
-        .from('components')
-        .select('id', { count: 'exact', head: true })
-        .in('dish_id', dishIds)
-
-      if (!componentCount || componentCount <= 0) {
-        missingDocs.push('Prep Sheet')
-      }
-    }
-  }
+  if (!event?.prep_sheet_generated_at) missingDocs.push('Prep Sheet')
+  if (!event?.packing_list_generated_at) missingDocs.push('Packing List')
 
   if (missingDocs.length === 0) {
     return {
@@ -712,87 +426,11 @@ async function checkDocumentsGate(
     label: catalog.label,
     description: catalog.description,
     isHardBlock: false,
-    details: `Still missing data for: ${missingDocs.join(', ')}`,
+    details: `Not yet generated: ${missingDocs.join(', ')}`,
   }
 }
 
 // ─── Gate: Menu Client Approved ───────────────────────────────────────────────
-
-async function checkReceiptsGate(
-  gate: ReadinessGate,
-  eventId: string,
-  event: ReadinessEventRow,
-  catalog: { label: string; description: string },
-  supabase: any
-): Promise<GateResult> {
-  if (event.financial_closed || event.financially_closed) {
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  const { data: expenses, error: expenseError } = await supabase
-    .from('expenses')
-    .select('receipt_uploaded')
-    .eq('event_id', eventId)
-    .eq('tenant_id', event.tenant_id)
-
-  if (!expenseError && expenses && expenses.length > 0) {
-    const missingReceipts = expenses.filter((expense: any) => !expense.receipt_uploaded).length
-
-    if (missingReceipts === 0) {
-      return {
-        gate,
-        status: 'passed',
-        label: catalog.label,
-        description: catalog.description,
-        isHardBlock: false,
-      }
-    }
-
-    return {
-      gate,
-      status: 'pending',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-      details: `${missingReceipts} event expense receipt${missingReceipts === 1 ? '' : 's'} still need to be uploaded`,
-    }
-  }
-
-  try {
-    const { count } = await supabase
-      .from('receipt_photos')
-      .select('id', { count: 'exact', head: true })
-      .eq('event_id', eventId)
-      .eq('tenant_id', event.tenant_id)
-
-    if ((count ?? 0) > 0) {
-      return {
-        gate,
-        status: 'passed',
-        label: catalog.label,
-        description: catalog.description,
-        isHardBlock: false,
-      }
-    }
-  } catch {
-    // Receipt digitization can be absent in older environments.
-  }
-
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: false,
-    details: 'No uploaded receipt records found for this event yet',
-  }
-}
 
 async function checkMenuApprovalGate(
   gate: ReadinessGate,
@@ -962,13 +600,7 @@ export async function markGatePassed(
   metadata?: Record<string, unknown>
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
-
-  if (!canMarkReadinessGatePassed(gate)) {
-    throw new Error(
-      'This gate is system-tracked. Complete the underlying workflow or skip it with a reason.'
-    )
-  }
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase
@@ -980,18 +612,24 @@ export async function markGatePassed(
 
   if (!event) throw new Error('Event not found')
 
-  const resolvedAt = new Date().toISOString()
-  await applyCanonicalEventGateUpdates(supabase, eventId, user.tenantId!, gate, resolvedAt)
-  await persistGateState({
-    supabase,
-    eventId,
-    tenantId: user.tenantId!,
-    gate,
-    mode: 'passed',
-    metadata,
-  })
+  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
+    {
+      tenant_id: user.tenantId!,
+      event_id: eventId,
+      gate,
+      status: 'passed',
+      resolved_at: new Date().toISOString(),
+      metadata: metadata || null,
+    },
+    { onConflict: 'event_id,gate' }
+  )
 
-  revalidateReadinessPaths(eventId)
+  if (error) {
+    console.error('[markGatePassed] Error:', error)
+    throw new Error('Failed to mark gate as passed')
+  }
+
+  revalidatePath(`/events/${eventId}`)
   return { success: true }
 }
 
@@ -1001,7 +639,7 @@ export async function markGatePassed(
  */
 export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const supabase: any = createServerClient()
 
   if (!reason || reason.trim().length < 5) {
     throw new Error('A reason of at least 5 characters is required to override a gate')
@@ -1034,17 +672,25 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
     }
   }
 
-  await persistGateState({
-    supabase,
-    eventId,
-    tenantId: user.tenantId!,
-    gate,
-    mode: 'overridden',
-    reason: reason.trim(),
-    metadata: { overridden_by: user.id },
-  })
+  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
+    {
+      tenant_id: user.tenantId!,
+      event_id: eventId,
+      gate,
+      status: 'overridden',
+      resolved_at: new Date().toISOString(),
+      overridden_by: user.id,
+      override_reason: reason.trim(),
+    },
+    { onConflict: 'event_id,gate' }
+  )
 
-  revalidateReadinessPaths(eventId)
+  if (error) {
+    console.error('[overrideGate] Error:', error)
+    throw new Error('Failed to override gate')
+  }
+
+  revalidatePath(`/events/${eventId}`)
   return { success: true }
 }
 

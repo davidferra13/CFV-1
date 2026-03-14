@@ -1,17 +1,11 @@
 'use client'
 
-// FeedbackNudgeModal - One-time feedback prompt shown after 7 days.
+// FeedbackNudgeModal — One-time feedback prompt shown after 7 days.
 // Fires once per browser profile. Uses localStorage to prevent re-appearance.
 // Submits to user_feedback table via server action.
-//
-// NOTE: This component lives OUTSIDE OnboardingTourProvider in the chef layout,
-// so it checks localStorage directly (not tour context) to suppress itself
-// during an active tour.
 
 import { useState, useEffect, useTransition } from 'react'
 import { submitUserFeedback, type FeedbackSentiment } from '@/lib/feedback/user-feedback-actions'
-import { useIsDemoMode } from '@/lib/demo-mode'
-import { isAnyTourActiveInStorage } from '@/lib/onboarding/tour-storage'
 
 const STORAGE_KEY = 'chefflow:feedback-nudge-done'
 
@@ -23,7 +17,6 @@ const SENTIMENTS: { emoji: string; label: string; value: FeedbackSentiment }[] =
 ]
 
 export function FeedbackNudgeModal() {
-  const isDemo = useIsDemoMode()
   const [visible, setVisible] = useState(false)
   const [selected, setSelected] = useState<FeedbackSentiment | null>(null)
   const [message, setMessage] = useState('')
@@ -33,10 +26,8 @@ export function FeedbackNudgeModal() {
   useEffect(() => {
     try {
       if (localStorage.getItem(STORAGE_KEY)) return
-      // Don't show during an active tour walkthrough
-      if (isAnyTourActiveInStorage(localStorage)) return
     } catch {
-      // localStorage unavailable
+      // localStorage unavailable — still show once this session
     }
     const timer = setTimeout(() => setVisible(true), 5000)
     return () => clearTimeout(timer)
@@ -61,7 +52,7 @@ export function FeedbackNudgeModal() {
           pageContext: '/dashboard',
         })
       } catch {
-        // Fail silently
+        // Fail silently — feedback loss is acceptable
       }
       try {
         localStorage.setItem(STORAGE_KEY, '1')
@@ -72,7 +63,7 @@ export function FeedbackNudgeModal() {
     })
   }
 
-  if (isDemo || !visible) return null
+  if (!visible) return null
 
   return (
     <div
@@ -114,7 +105,7 @@ export function FeedbackNudgeModal() {
               How&apos;s ChefFlow treating you?
             </h2>
             <p className="text-stone-500 text-sm leading-relaxed">
-              You&apos;ve been using ChefFlow for a week - your honest take helps us make it better.
+              You&apos;ve been using ChefFlow for a week — your honest take helps us make it better.
             </p>
 
             {/* Sentiment picker */}

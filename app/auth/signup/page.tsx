@@ -20,9 +20,8 @@ import {
   normalizeWebsiteSignupErrorMessage,
   validateWebsiteSignupInput,
 } from '@/lib/auth/website-signup'
-import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getInvitationByToken } from '@/lib/auth/invitations'
-import { Chrome } from '@/components/ui/icons'
+import { Chrome } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
@@ -110,12 +109,6 @@ function SignUpForm() {
       return
     }
 
-    trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
-      role: 'chef',
-      method: 'email',
-      source: isBetaReferral ? 'beta' : 'website',
-    })
-
     setLoading(true)
     try {
       await signUpChef({
@@ -151,12 +144,6 @@ function SignUpForm() {
       return
     }
 
-    trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
-      role: 'client',
-      method: 'email',
-      source: token ? 'invitation' : 'website',
-    })
-
     setLoading(true)
     try {
       await signUpClient({
@@ -177,11 +164,6 @@ function SignUpForm() {
   const handleGoogleSignUp = async () => {
     if (isSubmitting) return
     setError(null)
-    trackEvent(ANALYTICS_EVENTS.SIGNUP_STARTED, {
-      role: 'chef',
-      method: 'google',
-      source: isBetaReferral ? 'beta' : 'website',
-    })
     setGoogleLoading(true)
     try {
       await signInWithGoogle(
@@ -287,7 +269,7 @@ function SignUpForm() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-          <p className="text-stone-400 mt-2">Run your chef business, your way</p>
+          <p className="text-stone-400 mt-2">Manage your chef work, your way</p>
         </div>
 
         <Card>
@@ -303,7 +285,9 @@ function SignUpForm() {
                   This signup is linked to your beta invitation and will be tracked automatically.
                 </Alert>
               )}
-              <Alert variant="info">Create your account with email and password.</Alert>
+              <Alert variant="info">
+                Recommended: create your account with email and password.
+              </Alert>
 
               <Input
                 type="email"

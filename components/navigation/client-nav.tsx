@@ -9,7 +9,6 @@ import {
   Calendar,
   CalendarPlus,
   ClipboardList,
-  Compass,
   DollarSign,
   FileText,
   Gift,
@@ -18,69 +17,29 @@ import {
   MessageCircle,
   User,
   Users,
-  UtensilsCrossed,
   X,
   ChevronLeft,
   ChevronRight,
-  Loader2,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
-import type { PortalOverview } from '@/lib/client-portal/portal-actions'
-import { Cake, Star, Trophy } from '@/components/ui/icons'
 
 interface ClientNavProps {
   userEmail: string
-  portalOverview?: PortalOverview | null
 }
 
 const BOOK_NOW_HREF = '/book-now'
 
-// Core nav items (always shown)
-const coreNavItems = [
+const navItems = [
   { href: '/my-events', label: 'My Events', icon: Calendar },
   { href: '/my-inquiries', label: 'My Inquiries', icon: ClipboardList },
   { href: '/my-quotes', label: 'My Quotes', icon: FileText },
   { href: '/my-chat', label: 'Messages', icon: MessageCircle },
-  { href: '/my-meals', label: 'My Meals', icon: UtensilsCrossed },
   { href: '/my-hub', label: 'My Hub', icon: Users },
-  { href: '/discover', label: 'Discover', icon: Compass },
   { href: '/my-rewards', label: 'Rewards', icon: Gift },
   { href: '/my-spending', label: 'Spending', icon: DollarSign },
+  { href: '/my-profile', label: 'Profile', icon: User },
 ]
-
-// Dynamic nav items (shown only when client has data for them)
-type DynamicNavItem = {
-  href: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  overviewKey: keyof PortalOverview
-}
-
-const dynamicNavItems: DynamicNavItem[] = [
-  { href: '/my-orders', label: 'My Orders', icon: Cake, overviewKey: 'hasEvents' }, // placeholder until bakery_orders exists
-  {
-    href: '/my-reservations',
-    label: 'Reservations',
-    icon: Calendar,
-    overviewKey: 'hasReservations',
-  },
-  { href: '/my-loyalty', label: 'Loyalty', icon: Trophy, overviewKey: 'hasLoyalty' },
-  { href: '/my-feedback', label: 'Feedback', icon: Star, overviewKey: 'hasFeedback' },
-]
-
-function getNavItems(overview?: PortalOverview | null) {
-  const visibleDynamic = overview
-    ? dynamicNavItems.filter((item) => overview[item.overviewKey])
-    : [] // If no overview data, hide dynamic items (safer than showing empty sections)
-
-  return [
-    ...coreNavItems,
-    ...visibleDynamic,
-    // Profile always last
-    { href: '/my-profile', label: 'Profile', icon: User },
-  ]
-}
 
 type ClientSidebarContextType = {
   collapsed: boolean
@@ -130,23 +89,9 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
   )
 }
 
-export function ClientSidebar({ userEmail, portalOverview }: ClientNavProps) {
+export function ClientSidebar({ userEmail }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
-  const [signingOut, setSigningOut] = useState(false)
-  const navItems = getNavItems(portalOverview)
-
-  const handleSignOut = async () => {
-    setSigningOut(true)
-    try {
-      await signOut()
-    } catch (e) {
-      console.error('[sign-out]', e)
-      setSigningOut(false)
-      return
-    }
-    window.location.href = '/'
-  }
 
   return (
     <aside
@@ -264,44 +209,32 @@ export function ClientSidebar({ userEmail, portalOverview }: ClientNavProps) {
         ) : null}
         <button
           type="button"
-          onClick={handleSignOut}
-          disabled={signingOut}
-          title={collapsed ? (signingOut ? 'Signing out...' : 'Sign Out') : undefined}
-          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors disabled:opacity-50 ${
+          onClick={async () => {
+            try {
+              await signOut()
+            } catch (e) {
+              console.error('[sign-out]', e)
+            }
+            window.location.href = '/'
+          }}
+          title={collapsed ? 'Sign Out' : undefined}
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
             collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
           }`}
         >
-          {signingOut ? (
-            <Loader2 className="w-[18px] h-[18px] flex-shrink-0 animate-spin" />
-          ) : (
-            <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-          )}
-          {!collapsed && (signingOut ? 'Signing out...' : 'Sign Out')}
+          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+          {!collapsed && 'Sign Out'}
         </button>
       </div>
     </aside>
   )
 }
 
-export function ClientMobileNav({ userEmail, portalOverview }: ClientNavProps) {
+export function ClientMobileNav({ userEmail }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
-  const navItems = getNavItems(portalOverview)
 
   const closeMenu = () => setMenuOpen(false)
-
-  const handleSignOut = async () => {
-    setSigningOut(true)
-    try {
-      await signOut()
-    } catch (e) {
-      console.error('[sign-out]', e)
-      setSigningOut(false)
-      return
-    }
-    window.location.href = '/'
-  }
 
   return (
     <>
@@ -384,16 +317,18 @@ export function ClientMobileNav({ userEmail, portalOverview }: ClientNavProps) {
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>
                 <button
                   type="button"
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 disabled:opacity-50"
+                  onClick={async () => {
+                    try {
+                      await signOut()
+                    } catch (e) {
+                      console.error('[sign-out]', e)
+                    }
+                    window.location.href = '/'
+                  }}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
                 >
-                  {signingOut ? (
-                    <Loader2 className="w-[18px] h-[18px] animate-spin" />
-                  ) : (
-                    <LogOut className="w-[18px] h-[18px]" />
-                  )}
-                  {signingOut ? 'Signing out...' : 'Sign Out'}
+                  <LogOut className="w-[18px] h-[18px]" />
+                  Sign Out
                 </button>
               </div>
             </nav>

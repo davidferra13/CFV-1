@@ -4,7 +4,7 @@
 // Dismissable per session (stored in sessionStorage).
 
 import { useState, useEffect } from 'react'
-import { X, Info, AlertTriangle, AlertOctagon } from '@/components/ui/icons'
+import { X, Info, AlertTriangle, AlertOctagon } from 'lucide-react'
 import type { AnnouncementType } from '@/lib/admin/platform-actions'
 
 type Props = {
@@ -14,15 +14,15 @@ type Props = {
 
 const STYLES: Record<AnnouncementType, { wrapper: string; icon: React.ReactNode }> = {
   info: {
-    wrapper: 'bg-blue-950 border-b border-blue-200 text-blue-200',
+    wrapper: 'bg-blue-950 border-b border-blue-200 text-blue-800',
     icon: <Info size={15} className="text-blue-500 shrink-0 mt-0.5" />,
   },
   warning: {
-    wrapper: 'bg-amber-950 border-b border-amber-200 text-amber-200',
+    wrapper: 'bg-amber-950 border-b border-amber-200 text-amber-800',
     icon: <AlertTriangle size={15} className="text-amber-500 shrink-0 mt-0.5" />,
   },
   critical: {
-    wrapper: 'bg-red-950 border-b border-red-200 text-red-200',
+    wrapper: 'bg-red-950 border-b border-red-200 text-red-800',
     icon: <AlertOctagon size={15} className="text-red-500 shrink-0 mt-0.5" />,
   },
 }

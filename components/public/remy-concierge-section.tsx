@@ -6,9 +6,8 @@
 // Falls back to a static FAQ accordion if Ollama is offline.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Send, Loader2, MessageCircle, ChevronDown } from '@/components/ui/icons'
+import { Send, Loader2, MessageCircle, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
-import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints, CHEFFLOW_FEATURE_MAP } from '@/lib/ai/chefflow-feature-map'
 import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
 
@@ -41,10 +40,6 @@ export function RemyConciergeSection() {
       const trimmed = (text ?? input).trim()
       if (!trimmed || isStreaming) return
 
-      trackEvent(ANALYTICS_EVENTS.REMY_MESSAGE_SENT, {
-        source: 'landing_section',
-        message_length: trimmed.length,
-      })
       setError(null)
 
       const userMsg: Message = {
@@ -196,7 +191,7 @@ export function RemyConciergeSection() {
               href="/auth/signup"
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Get started
+              Sign up
             </Link>
           </div>
         </div>
@@ -215,7 +210,7 @@ export function RemyConciergeSection() {
             Tell me your bottleneck.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
-            Describe your workflow and get a direct answer.
+            Ask Remy about your workflow and get a direct answer.
           </p>
         </div>
 
@@ -268,7 +263,7 @@ export function RemyConciergeSection() {
               ))}
 
               {error && (
-                <div className="mb-3 rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-xs text-red-200">
+                <div className="mb-3 rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-xs text-red-700">
                   {error}
                 </div>
               )}
@@ -304,6 +299,8 @@ export function RemyConciergeSection() {
             </button>
           </div>
 
+          <p className="mt-2 text-center text-xs text-stone-400">Powered by ChefFlow AI</p>
+
           {/* CTA after conversation */}
           {messages.length >= 4 && !isStreaming && (
             <div className="mt-6 text-center">
@@ -311,7 +308,7 @@ export function RemyConciergeSection() {
                 href="/auth/signup"
                 className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
               >
-                Get started
+                Sign up
               </Link>
             </div>
           )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Clock, Printer, Loader2, Bot, Users, ChefHat } from '@/components/ui/icons'
+import { Clock, Printer, Loader2, Sparkles, Users, ChefHat } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateServiceTimeline, type ServiceTimeline } from '@/lib/ai/service-timeline'
@@ -61,7 +61,7 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Timeline
               </>
             )}

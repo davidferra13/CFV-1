@@ -21,7 +21,6 @@ type CampaignEmailProps = {
   bodyText: string // Plain text body (after token rendering). Newlines become paragraphs.
   previewText?: string // Email preview/snippet (first ~90 chars visible in inbox)
   unsubscribeUrl: string
-  brand?: ChefBrandProps
 }
 
 export function CampaignEmail({
@@ -29,7 +28,6 @@ export function CampaignEmail({
   bodyText,
   previewText,
   unsubscribeUrl,
-  brand,
 }: CampaignEmailProps) {
   // Convert newline-separated paragraphs to individual Text elements
   const paragraphs = bodyText

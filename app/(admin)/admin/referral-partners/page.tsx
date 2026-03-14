@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Handshake, Globe, ExternalLink } from '@/components/ui/icons'
+import { Handshake, Globe, ExternalLink } from 'lucide-react'
 
 const PARTNER_TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',
@@ -16,7 +16,7 @@ const PARTNER_TYPE_LABELS: Record<string, string> = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-900 text-green-200',
+  active: 'bg-green-900 text-green-700',
   inactive: 'bg-stone-800 text-stone-500',
 }
 
@@ -74,7 +74,7 @@ export default async function AdminReferralPartnersPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
           Failed to load referral partners.
         </div>
       )}
@@ -89,13 +89,13 @@ export default async function AdminReferralPartnersPage() {
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">Active</p>
-          <p className="text-2xl font-bold text-green-200">{activeCount}</p>
+          <p className="text-2xl font-bold text-green-700">{activeCount}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             In Showcase
           </p>
-          <p className="text-2xl font-bold text-blue-200">{showcaseCount}</p>
+          <p className="text-2xl font-bold text-blue-700">{showcaseCount}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">

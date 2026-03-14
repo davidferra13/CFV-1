@@ -164,71 +164,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
     errors.push(`time_tracking_reminders: ${(err as Error).message}`)
   }
 
-  // ── 5. Workflow scheduled steps ──────────────────────────────────────────
-  // Process any workflow execution steps whose delay has elapsed.
-
-  let workflowStepsProcessed = 0
-  try {
-    const { processScheduledWorkflowSteps } = await import('@/lib/automations/workflow-engine')
-    const workflowResult = await processScheduledWorkflowSteps()
-    workflowStepsProcessed = workflowResult.processed
-    if (workflowResult.errors.length > 0) {
-      errors.push(...workflowResult.errors)
-    }
-  } catch (err) {
-    errors.push(`workflow_steps: ${(err as Error).message}`)
-  }
-
-  // ── 6. Days-before-event workflow triggers ───────────────────────────────
-  // Fire workflows with days_before_event trigger for events in the next 30 days.
-
-  try {
-    const now = new Date()
-    const in30d = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
-
-    const { data: upcomingEvents } = await supabase
-      .from('events')
-      .select('id, tenant_id, status, occasion, event_date, guest_count, client:clients(full_name)')
-      .in('status', ['confirmed', 'paid', 'accepted'])
-      .gte('event_date', now.toISOString())
-      .lte('event_date', in30d)
-
-    if (upcomingEvents && upcomingEvents.length > 0) {
-      const { processWorkflowTrigger } = await import('@/lib/automations/workflow-engine')
-
-      for (const event of upcomingEvents) {
-        try {
-          const daysUntil = Math.floor(
-            (new Date(event.event_date!).getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
-          )
-          const clientName = (event.client as { full_name: string } | null)?.full_name || 'Client'
-
-          // Only fire for 7, 2, 1 day milestones
-          if ([7, 2, 1].includes(daysUntil)) {
-            await processWorkflowTrigger(event.tenant_id, 'days_before_event', {
-              entityId: event.id,
-              entityType: 'event',
-              fields: {
-                days_offset: daysUntil,
-                status: event.status,
-                occasion: event.occasion,
-                client_name: clientName,
-                guest_count: event.guest_count,
-                event_date: event.event_date,
-              },
-            })
-            evaluated++
-          }
-        } catch (err) {
-          errors.push(`days_before_event event ${event.id}: ${(err as Error).message}`)
-        }
-      }
-    }
-  } catch (err) {
-    errors.push(`days_before_event: ${(err as Error).message}`)
-  }
-
-  return NextResponse.json({ evaluated, timeTrackingReminders, workflowStepsProcessed, errors })
+  return NextResponse.json({ evaluated, timeTrackingReminders, errors })
 }
 
 export { handleAutomations as GET, handleAutomations as POST }

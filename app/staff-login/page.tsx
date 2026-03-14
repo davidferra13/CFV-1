@@ -1,4 +1,4 @@
-// Staff Login Page - Limited portal for kitchen/service staff
+// Staff Login Page — Limited portal for kitchen/service staff
 'use client'
 
 import { useState, Suspense } from 'react'
@@ -40,13 +40,14 @@ function StaffLoginForm() {
     setLoading(true)
 
     try {
-      const result = await signIn(formData)
-      router.replace(result.destination)
-      return
+      await signIn(formData)
+      router.push('/staff-dashboard')
+      router.refresh()
     } catch (err) {
       const error = err as Error
-      setLoading(false)
       setError(normalizeAuthErrorMessage(error.message))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -98,7 +99,7 @@ function StaffLoginForm() {
 
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" variant="primary" className="w-full" loading={loading}>
-                {loading ? 'Signing In...' : 'Sign In'}
+                Sign In
               </Button>
 
               <p className="text-xs text-center text-stone-500">

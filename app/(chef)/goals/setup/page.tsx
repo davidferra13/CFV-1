@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ChevronLeft } from '@/components/ui/icons'
+import { ChevronLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { GoalWizardSteps } from '@/components/goals/goal-wizard-steps'
 import { Card, CardContent } from '@/components/ui/card'

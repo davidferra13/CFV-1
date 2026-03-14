@@ -50,13 +50,7 @@ export async function trackActivity(input: {
         clientId: input.clientId,
         clientName: (input.metadata?.clientName as string) || 'A client',
         eventType: input.eventType,
-      }).catch((err) => {
-        logActivityEvent('warn', 'triggerVisitorAlert failed (non-fatal)', {
-          eventType: input.eventType,
-          clientId: input.clientId,
-          error: err instanceof Error ? err.message : String(err),
-        })
-      })
+      }).catch(() => {}) // fire-and-forget
     }
   } catch (err) {
     incrementMetric('activity.track.failure')

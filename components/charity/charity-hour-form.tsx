@@ -10,7 +10,7 @@ import { logCharityHours, updateCharityHours } from '@/lib/charity/hours-actions
 import { searchNonprofits } from '@/lib/charity/propublica-actions'
 import type { CharityHourEntry, CharityOrganization } from '@/lib/charity/hours-types'
 import { toast } from 'sonner'
-import { Clock, MapPin, X } from '@/components/ui/icons'
+import { Clock, MapPin, X } from 'lucide-react'
 
 type FormMode = 'create' | 'edit'
 

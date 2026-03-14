@@ -65,7 +65,7 @@ const TIERS = [
   {
     priority: '③ Optional',
     subtitle: "Customize when you're ready — skip if you're just getting started",
-    icon: '🧩',
+    icon: '✨',
     color: PURPLE,
     items: [
       { icon: '🧩', name: 'Modules', why: 'Show/hide nav sections' },

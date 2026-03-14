@@ -127,16 +127,16 @@ export function ReferralAnalyticsDashboard({ data }: { data: ReferralAnalyticsDa
                     {funnel.sources.map((row) => (
                       <tr key={row.source} className="border-b border-stone-100 hover:bg-stone-50">
                         <td className="py-2 px-3 font-medium text-stone-900">{row.source}</td>
-                        <td className="py-2 px-3 text-right text-stone-200">{row.inquiryCount}</td>
-                        <td className="py-2 px-3 text-right text-stone-200">{row.quoteCount}</td>
-                        <td className="py-2 px-3 text-right text-stone-200">{row.acceptedCount}</td>
-                        <td className="py-2 px-3 text-right text-stone-200">
+                        <td className="py-2 px-3 text-right text-stone-700">{row.inquiryCount}</td>
+                        <td className="py-2 px-3 text-right text-stone-700">{row.quoteCount}</td>
+                        <td className="py-2 px-3 text-right text-stone-700">{row.acceptedCount}</td>
+                        <td className="py-2 px-3 text-right text-stone-700">
                           {row.completedCount}
                         </td>
-                        <td className="py-2 px-3 text-right text-stone-200 font-medium">
+                        <td className="py-2 px-3 text-right text-stone-700 font-medium">
                           {formatCurrency(row.totalRevenueCents)}
                         </td>
-                        <td className="py-2 px-3 text-right text-stone-200">
+                        <td className="py-2 px-3 text-right text-stone-700">
                           {row.avgEventValueCents > 0
                             ? formatCurrency(row.avgEventValueCents)
                             : '--'}
@@ -163,15 +163,15 @@ export function ReferralAnalyticsDashboard({ data }: { data: ReferralAnalyticsDa
                       <td className="py-2 px-3 text-right text-stone-900">
                         {funnel.totals.totalInquiries}
                       </td>
-                      <td className="py-2 px-3 text-right text-stone-200">--</td>
-                      <td className="py-2 px-3 text-right text-stone-200">--</td>
+                      <td className="py-2 px-3 text-right text-stone-700">--</td>
+                      <td className="py-2 px-3 text-right text-stone-700">--</td>
                       <td className="py-2 px-3 text-right text-stone-900">
                         {funnel.totals.totalCompleted}
                       </td>
                       <td className="py-2 px-3 text-right text-stone-900">
                         {formatCurrency(funnel.totals.totalRevenueCents)}
                       </td>
-                      <td className="py-2 px-3 text-right text-stone-200">--</td>
+                      <td className="py-2 px-3 text-right text-stone-700">--</td>
                       <td className="py-2 px-3 text-right">
                         <Badge variant="default">{funnel.totals.overallConversionRate}%</Badge>
                       </td>
@@ -248,13 +248,13 @@ export function ReferralAnalyticsDashboard({ data }: { data: ReferralAnalyticsDa
                   {clientAcquisition.map((row) => (
                     <tr key={row.source} className="border-b border-stone-100 hover:bg-stone-50">
                       <td className="py-2 px-3 font-medium text-stone-900">{row.source}</td>
-                      <td className="py-2 px-3 text-right text-stone-200">{row.clientCount}</td>
-                      <td className="py-2 px-3 text-right text-stone-200">
+                      <td className="py-2 px-3 text-right text-stone-700">{row.clientCount}</td>
+                      <td className="py-2 px-3 text-right text-stone-700">
                         {row.avgLifetimeValueCents > 0
                           ? formatCurrency(row.avgLifetimeValueCents)
                           : '--'}
                       </td>
-                      <td className="py-2 px-3 text-right text-stone-200 font-medium">
+                      <td className="py-2 px-3 text-right text-stone-700 font-medium">
                         {row.totalLifetimeValueCents > 0
                           ? formatCurrency(row.totalLifetimeValueCents)
                           : '--'}

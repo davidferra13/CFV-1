@@ -1,3 +1,4 @@
+// Page Info — Annotated Schematic Overlay
 // A small info button in the bottom-left corner of every page.
 // Click it to see what the page does and what every section is for.
 // Two modes: schematic (labels pointing at real elements) and summary (text card).
@@ -6,15 +7,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
-import { Info, X } from '@/components/ui/icons'
-import { type PageInfoEntry, type PageAnnotation } from '@/lib/help/page-info-registry'
+import { Info, X } from 'lucide-react'
+import {
+  PAGE_INFO_REGISTRY,
+  type PageInfoEntry,
+  type PageAnnotation,
+} from '@/lib/help/page-info-registry'
 
-type PageInfoRegistry = Record<string, PageInfoEntry>
-
-function findPageInfo(pathname: string, registry: PageInfoRegistry): PageInfoEntry | null {
+// ─── Route Matching ──────────────────────────────────
+function findPageInfo(pathname: string): PageInfoEntry | null {
   // 1. Exact match
-  if (registry[pathname]) return registry[pathname]
+  if (PAGE_INFO_REGISTRY[pathname]) return PAGE_INFO_REGISTRY[pathname]
 
+  // 2. Dynamic route match — replace UUID/numeric segments with [id]
   const segments = pathname.split('/').filter(Boolean)
   for (let i = segments.length; i > 0; i--) {
     const pattern =
@@ -23,12 +28,13 @@ function findPageInfo(pathname: string, registry: PageInfoRegistry): PageInfoEnt
         .slice(0, i)
         .map((seg) => (/^[0-9a-f-]{8,}$/i.test(seg) || /^\d+$/.test(seg) ? '[id]' : seg))
         .join('/')
-    if (registry[pattern]) return registry[pattern]
+    if (PAGE_INFO_REGISTRY[pattern]) return PAGE_INFO_REGISTRY[pattern]
   }
 
   return null
 }
 
+// ─── Resolved annotation with screen position ───────
 interface ResolvedAnnotation {
   annotation: PageAnnotation
   rect: DOMRect
@@ -45,6 +51,7 @@ function resolveAnnotations(annotations: PageAnnotation[]): ResolvedAnnotation[]
   return resolved
 }
 
+// ─── Label position calculator ───────────────────────
 function getLabelPosition(
   rect: DOMRect,
   scrollY: number,
@@ -97,6 +104,7 @@ function getLabelPosition(
   return { top, left, side }
 }
 
+// ─── SVG connector line between label and element ────
 function ConnectorLine({
   labelPos,
   rect,
@@ -157,6 +165,7 @@ function ConnectorLine({
   )
 }
 
+// ─── Schematic Overlay ───────────────────────────────
 function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: () => void }) {
   const [resolved, setResolved] = useState<ResolvedAnnotation[]>([])
   const [scrollY, setScrollY] = useState(0)
@@ -271,6 +280,7 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
   )
 }
 
+// ─── Fallback Summary Card ──────────────────────────
 function FallbackSummary({
   entry,
   onClose,
@@ -282,6 +292,7 @@ function FallbackSummary({
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
+  // Escape key (only if not inline — inline is inside SchematicOverlay which already handles it)
   useEffect(() => {
     if (inline) return
     const handleKey = (e: KeyboardEvent) => {
@@ -366,36 +377,11 @@ function FallbackSummary({
   return createPortal(card, document.body)
 }
 
+// ─── Main Component ─────────────────────────────────
 export function PageInfoButton() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const [entry, setEntry] = useState<PageInfoEntry | null>(null)
-  const [registryLoaded, setRegistryLoaded] = useState(false)
-
-  useEffect(() => {
-    let active = true
-    setRegistryLoaded(false)
-    setEntry(null)
-
-    async function loadRegistry() {
-      try {
-        const module = await import('@/lib/help/page-info-registry')
-        if (!active) return
-        setEntry(findPageInfo(pathname ?? '', module.PAGE_INFO_REGISTRY))
-      } catch {
-        if (!active) return
-        setEntry(null)
-      } finally {
-        if (active) setRegistryLoaded(true)
-      }
-    }
-
-    loadRegistry()
-
-    return () => {
-      active = false
-    }
-  }, [pathname])
+  const entry = findPageInfo(pathname ?? '')
 
   // Close on route change
   useEffect(() => {
@@ -406,7 +392,7 @@ export function PageInfoButton() {
   const handleToggle = useCallback(() => setIsOpen((v) => !v), [])
 
   // Don't render if no registry entry for this page
-  if (!registryLoaded || !entry) return null
+  if (!entry) return null
 
   const hasAnnotations = entry.annotations && entry.annotations.length > 0
 

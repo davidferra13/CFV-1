@@ -550,7 +550,7 @@ export default function TheLineGame() {
           s.streak++
           if (s.streak > s.bestStreak) s.bestStreak = s.streak
           addScorePopup(cx, cy - 20, '+100 PERFECT!', '#e88f47')
-          addParticles(cx, cy, '•', 6, 3)
+          addParticles(cx, cy, '✨', 6, 3)
           if (s.streak === 3) showRemy('streak3')
           else if (s.streak === 5) showRemy('streak5')
           else if (s.streak === 8) showRemy('streak8')

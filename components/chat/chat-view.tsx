@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { format as formatDate } from 'date-fns'
-import { Loader2 } from '@/components/ui/icons'
+import { Loader2 } from 'lucide-react'
 import { ChatHeader } from './chat-header'
 import { ChatMessageBubble } from './chat-message-bubble'
 import { ChatInputBar } from './chat-input-bar'

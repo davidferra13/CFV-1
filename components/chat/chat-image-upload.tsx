@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Upload, Loader2 } from '@/components/ui/icons'
+import { X, Upload, Loader2 } from 'lucide-react'
 
 interface ChatImageUploadProps {
   onUpload: (file: File, caption: string) => Promise<void>

@@ -1,1 +1,0 @@
-export const DEFAULT_AI_RETENTION_DAYS = 90

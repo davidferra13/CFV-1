@@ -24,7 +24,6 @@ export type ClientInquiryListItem = {
 
 export type ClientInquiryDetail = ClientInquiryListItem & {
   confirmed_budget_cents: number | null
-  unknown_fields: unknown
   confirmed_dietary_restrictions: string[] | null
   confirmed_service_expectations: string | null
   source_message: string | null
@@ -104,7 +103,6 @@ export async function getClientInquiryById(inquiryId: string): Promise<ClientInq
       confirmed_guest_count,
       confirmed_location,
       confirmed_budget_cents,
-      unknown_fields,
       confirmed_dietary_restrictions,
       confirmed_service_expectations,
       source_message,

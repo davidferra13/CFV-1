@@ -8,35 +8,16 @@ import { getSeasonalHeatmap } from '@/lib/analytics/demand-forecast-actions'
 import { getHolidayYearOverYear } from '@/lib/analytics/seasonality'
 import { DemandHeatmap } from '@/components/analytics/demand-heatmap'
 import { HolidayYoYTable } from '@/components/analytics/holiday-yoy-table'
-import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
 
 export const metadata: Metadata = { title: 'Demand Forecast - ChefFlow' }
 
 export default async function DemandForecastPage() {
-  await requireChef()
+  const user = await requireChef()
 
   const [heatmapData, holidayYoY] = await Promise.all([
     getSeasonalHeatmap().catch(() => null),
     getHolidayYearOverYear().catch(() => []),
   ])
-  const exportRows: Array<Array<string | number | null>> = [
-    ...(heatmapData?.months.map((month) => [
-      'forecast',
-      month.year,
-      month.month,
-      month.predictedInquiryCount,
-      month.actualInquiryCount,
-      month.confidence,
-    ]) ?? []),
-    ...(holidayYoY as any[]).map((row) => [
-      'holiday',
-      row.holidayName ?? row.holiday_name ?? row.holiday,
-      row.currentYearCount ?? row.current_year_count ?? '',
-      row.previousYearCount ?? row.previous_year_count ?? '',
-      row.yearOverYearPercent ?? row.year_over_year_percent ?? '',
-      row.currentYearRevenueCents ?? row.current_year_revenue_cents ?? '',
-    ]),
-  ]
 
   return (
     <div className="space-y-6">
@@ -50,13 +31,6 @@ export default async function DemandForecastPage() {
             Seasonal booking patterns to help you plan capacity, pricing, and outreach.
           </p>
         </div>
-        {exportRows.length > 0 && (
-          <StaticCSVDownloadButton
-            headers={['section', 'value_1', 'value_2', 'value_3', 'value_4', 'value_5']}
-            rows={exportRows}
-            filename="demand-forecast.csv"
-          />
-        )}
       </div>
 
       {heatmapData ? (

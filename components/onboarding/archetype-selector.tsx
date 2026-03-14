@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { ARCHETYPES } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 import { selectArchetype } from '@/lib/archetypes/actions'
-import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 export function ArchetypeSelector() {
   const [selected, setSelected] = useState<ArchetypeId | null>(null)
@@ -20,8 +19,6 @@ export function ArchetypeSelector() {
     startTransition(async () => {
       try {
         await selectArchetype(selected)
-        trackEvent(ANALYTICS_EVENTS.ONBOARDING_ARCHETYPE_SELECTED, { archetype: selected })
-        router.push('/dashboard')
         router.refresh()
       } catch (err) {
         setError('Something went wrong. Please try again.')
@@ -40,8 +37,7 @@ export function ArchetypeSelector() {
             We want to set up your portal perfectly. What type of chef are you?
           </p>
           <p className="text-stone-500 text-sm mt-2">
-            This customizes which sidebar sections and modules appear first. Nothing is locked out,
-            and you can rearrange everything in Settings.
+            This just sets your starting layout — you can change everything anytime in Settings.
           </p>
         </div>
 

@@ -119,7 +119,7 @@ export function AddressManager({
                   size="sm"
                   onClick={() => handleRemove(i)}
                   disabled={saving}
-                  className="text-red-600 hover:text-red-200"
+                  className="text-red-600 hover:text-red-700"
                 >
                   Remove
                 </Button>

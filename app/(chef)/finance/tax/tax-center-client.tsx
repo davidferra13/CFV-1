@@ -115,7 +115,7 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
   return (
     <div className="space-y-5">
       {/* Disclaimer */}
-      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-xs text-amber-200">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-xs text-amber-800">
         Estimates are for planning purposes only. Consult a CPA before filing.
       </div>
 

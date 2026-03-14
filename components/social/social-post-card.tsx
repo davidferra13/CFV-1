@@ -15,7 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Repeat2,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import type { SocialPost, ReactionType, SocialComment } from '@/lib/social/chef-social-actions'
 import {
   togglePostReaction,
@@ -61,7 +61,7 @@ function ChefAvatar({ author, size = 40 }: { author: SocialPost['author']; size?
           alt={author.display_name ?? author.business_name}
         />
       )}
-      <AvatarFallback className="bg-amber-900 text-amber-200 text-xs font-semibold">
+      <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
         {initials}
       </AvatarFallback>
     </Avatar>
@@ -146,7 +146,7 @@ function ReactionBar({
         disabled={pending}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
           myReaction
-            ? 'bg-amber-950 text-amber-200 border border-amber-200'
+            ? 'bg-amber-950 text-amber-700 border border-amber-200'
             : 'text-stone-400 hover:bg-stone-700'
         }`}
       >
@@ -333,7 +333,7 @@ function CommentRow({
           {(comment.replies_count > 0 || (comment.replies?.length ?? 0) > 0) && (
             <button
               onClick={() => setShowReplies((s) => !s)}
-              className="mt-1 text-xs font-medium text-amber-200 hover:text-amber-200 flex items-center gap-1"
+              className="mt-1 text-xs font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1"
             >
               {showReplies ? (
                 <ChevronUp className="h-3 w-3" />
@@ -501,7 +501,7 @@ export function SocialPostCard({
               {post.channel && (
                 <Link
                   href={`/network/channels/${post.channel.slug}`}
-                  className="flex items-center gap-1 text-xs font-medium text-amber-200 hover:text-amber-200"
+                  className="flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-800"
                 >
                   <span>{post.channel.icon}</span>
                   {post.channel.name}
@@ -555,7 +555,7 @@ export function SocialPostCard({
               <Link
                 key={tag}
                 href={`/network?tab=feed&mode=global&tag=${encodeURIComponent(tag)}`}
-                className="text-xs text-amber-200 font-medium hover:underline"
+                className="text-xs text-amber-700 font-medium hover:underline"
               >
                 #{tag}
               </Link>
@@ -625,7 +625,7 @@ export function SocialPostCard({
         <button
           onClick={handleSave}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            isSaved ? 'text-amber-200 bg-amber-950' : 'text-stone-400 hover:bg-stone-700'
+            isSaved ? 'text-amber-700 bg-amber-950' : 'text-stone-400 hover:bg-stone-700'
           }`}
         >
           {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
@@ -635,7 +635,7 @@ export function SocialPostCard({
         <button
           onClick={handleShare}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            copied ? 'text-green-200 bg-green-950' : 'text-stone-400 hover:bg-stone-700'
+            copied ? 'text-green-700 bg-green-950' : 'text-stone-400 hover:bg-stone-700'
           }`}
         >
           {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}

@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
-import { FileText, Link2, Unlink, AlertTriangle, Check } from '@/components/ui/icons'
+import { FileText, Link2, Unlink, AlertTriangle, Check } from 'lucide-react'
 import { matchInvoiceItems } from '@/lib/inventory/vendor-invoice-actions'
 import { toast } from 'sonner'
 
@@ -166,7 +166,7 @@ export function VendorInvoiceMatcher({
                     </span>
                   </div>
                   {hasPriceChange && knownPrice && (
-                    <p className="mt-1 text-xs text-amber-200">
+                    <p className="mt-1 text-xs text-amber-700">
                       Previous price: {formatMoney(knownPrice.lastPriceCents)} per unit (
                       {item.unitPriceCents > knownPrice.lastPriceCents ? '+' : ''}
                       {formatMoney(item.unitPriceCents - knownPrice.lastPriceCents)})

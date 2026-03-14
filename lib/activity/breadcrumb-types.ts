@@ -50,16 +50,13 @@ export type BreadcrumbQueryResult = {
 // Human-readable labels for known routes
 export const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'Dashboard',
-  '/daily': 'Daily Ops',
   '/daily-ops': 'Daily Ops',
-  '/stations/daily-ops': 'Stations Daily Ops',
   '/activity': 'Activity Log',
   '/pipeline/inquiries': 'Inquiries',
   '/pipeline/events': 'Events',
   '/pipeline/quotes': 'Quotes',
   '/pipeline/leads': 'Leads',
   '/clients': 'Clients',
-  '/clients/recurring': 'Recurring Board',
   '/culinary/menus': 'Menus',
   '/culinary/recipes': 'Recipes',
   '/calendar': 'Calendar',

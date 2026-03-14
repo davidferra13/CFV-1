@@ -9,7 +9,7 @@ import {
   FileSpreadsheet,
   File as FileIcon,
   Download,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { ChatEventRefCard } from './chat-event-ref-card'
 import { ChatSystemMessage } from './chat-system-message'
 import { getChatAttachmentUrl } from '@/lib/chat/actions'

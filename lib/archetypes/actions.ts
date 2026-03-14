@@ -123,7 +123,6 @@ export async function saveCustomNavDefault() {
   }
 
   revalidatePath('/settings/navigation')
-  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 

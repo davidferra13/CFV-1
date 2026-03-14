@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 const ROLE_LABELS: Record<string, string> = {
   primary: 'Primary Chef',
@@ -34,7 +34,7 @@ export function CollaborationInviteEmail({
   const roleLabel = ROLE_LABELS[role] ?? role
 
   return (
-    <BaseLayout brand={brand} preview={`${inviterName} invited you to collaborate on ${occasion}`}>
+    <BaseLayout preview={`${inviterName} invited you to collaborate on ${occasion}`}>
       <Text style={heading}>You&apos;ve been invited to collaborate</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

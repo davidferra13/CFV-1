@@ -7,7 +7,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Clock, MapPin, Play, Square, UserPlus, X } from '@/components/ui/icons'
+import { Clock, MapPin, Play, Square, UserPlus, X } from 'lucide-react'
 import { clockIn, clockOut } from '@/lib/staff/clock-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -213,7 +213,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
                     <div className="text-xs text-stone-500">
                       In at {formatTime(entry.clockInAt)}
                       {' \u2022 '}
-                      <span className="font-medium text-emerald-200">
+                      <span className="font-medium text-emerald-700">
                         {formatElapsed(entry.clockInAt)}
                       </span>
                     </div>

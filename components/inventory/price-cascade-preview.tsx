@@ -7,7 +7,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight, TrendingUp, TrendingDown, DollarSign, RefreshCw } from '@/components/ui/icons'
+import { ArrowRight, TrendingUp, TrendingDown, DollarSign, RefreshCw } from 'lucide-react'
 import { cascadeIngredientPrice } from '@/lib/inventory/price-cascade-actions'
 import { toast } from 'sonner'
 

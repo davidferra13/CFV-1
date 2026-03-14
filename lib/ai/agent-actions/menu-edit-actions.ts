@@ -17,7 +17,7 @@ import {
 } from '@/lib/menus/actions'
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── NL Parsers ──────────────────────────────────────────────────────────────
@@ -33,10 +33,7 @@ const ParsedDishSchema = z.object({
 async function parseDishFromNL(description: string) {
   const systemPrompt = `Extract dish data: menuName (which menu to add to), dishName, course (e.g. "appetizer", "main", "dessert", "side"), description, position (order number).
 Return ONLY valid JSON. Omit unmentioned fields.`
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedDishSchema, {
-    modelTier: 'standard',
-  })
-  return result
+  return parseWithOllama(systemPrompt, description, ParsedDishSchema, { modelTier: 'standard' })
 }
 
 const ParsedMenuUpdateSchema = z.object({
@@ -55,10 +52,9 @@ const ParsedMenuUpdateSchema = z.object({
 async function parseMenuUpdateFromNL(description: string) {
   const systemPrompt = `Extract menu name and fields to update: name, description, service_style (plated/family_style/buffet/cocktail/tasting_menu/other), cuisine_type, notes.
 Return JSON with "menuName" and "updates". Return ONLY valid JSON.`
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedMenuUpdateSchema, {
+  return parseWithOllama(systemPrompt, description, ParsedMenuUpdateSchema, {
     modelTier: 'standard',
   })
-  return result
 }
 
 const ParsedComponentSchema = z.object({
@@ -72,10 +68,9 @@ const ParsedComponentSchema = z.object({
 async function parseComponentFromNL(description: string) {
   const systemPrompt = `Extract component data: menuName (which menu), dishName (which dish), componentName (the component to add, e.g. "lemon butter sauce"), recipeName (link to existing recipe if mentioned), notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedComponentSchema, {
+  return parseWithOllama(systemPrompt, description, ParsedComponentSchema, {
     modelTier: 'standard',
   })
-  return result
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -250,18 +245,16 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: menuName, dishName (current name to find), updates (name, course, description). Return ONLY JSON.',
-          description,
-          z.object({
-            menuName: z.string(),
-            dishName: z.string(),
-            updates: z.record(z.string(), z.unknown()),
-          }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: menuName, dishName (current name to find), updates (name, course, description). Return ONLY JSON.',
+        description,
+        z.object({
+          menuName: z.string(),
+          dishName: z.string(),
+          updates: z.record(z.string(), z.unknown()),
+        }),
+        { modelTier: 'standard' }
+      )
 
       const menu = await findMenuByName(parsed.menuName)
       if (!menu) {

@@ -8,9 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { verifyTurnstileToken } from '@/lib/security/turnstile'
-import { findExistingClientByEmail } from '@/lib/clients/find-existing'
 import { checkRateLimit } from '@/lib/rateLimit'
-import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 
 // ── CORS headers for cross-origin embeds ──
 const corsHeaders = {
@@ -33,10 +31,7 @@ const EmbedInquirySchema = z.object({
   // Optional
   phone: z.string().max(50).optional().or(z.literal('')),
   address: z.string().max(500).optional().or(z.literal('')),
-  budget_cents: z.number().int().nonnegative().nullable().optional(),
-  budget_range: z
-    .enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000', 'not_sure'])
-    .optional(),
+  budget_range: z.enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000']).optional(),
   allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
   allergies_food_restrictions: z.string().max(2000).optional().or(z.literal('')),
   favorite_ingredients_dislikes: z.string().max(2000).optional().or(z.literal('')),
@@ -51,6 +46,14 @@ const EmbedInquirySchema = z.object({
   turnstile_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
+const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
+  under_500: 25000,
+  '500_1500': 100000,
+  '1500_3000': 225000,
+  '3000_5000': 400000,
+  over_5000: 600000,
+}
+
 // ── CORS preflight ──
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders })
@@ -58,10 +61,10 @@ export async function OPTIONS() {
 
 // ── Main submission handler ──
 export async function POST(request: NextRequest) {
-  // Rate limit by IP: 6 submissions per 5 minutes to limit spam
+  // Rate limit by IP: 10 submissions per 5 minutes (uses Upstash Redis when configured)
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   try {
-    await checkRateLimit(`embed-inquiry:${ip}`, 6, 5 * 60_000)
+    await checkRateLimit(`embed-inquiry:${ip}`, 10, 5 * 60_000)
   } catch {
     return NextResponse.json(
       { error: 'Too many submissions. Please try again later.' },
@@ -82,24 +85,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const rawData = parseResult.data
-
-    // SECURITY: Strip HTML tags from all freetext fields to prevent stored XSS.
-    // React auto-escapes on render, but defense-in-depth means sanitizing on input.
-    // See security-audit-2026-03-11.md finding #12.
-    const stripHtml = (s: string | undefined | null) => (s ? s.replace(/<[^>]*>/g, '').trim() : s)
-    const data = {
-      ...rawData,
-      full_name: stripHtml(rawData.full_name) || rawData.full_name,
-      phone: stripHtml(rawData.phone) || rawData.phone,
-      address: stripHtml(rawData.address) || rawData.address,
-      occasion: stripHtml(rawData.occasion) || rawData.occasion,
-      allergies_food_restrictions:
-        stripHtml(rawData.allergies_food_restrictions) || rawData.allergies_food_restrictions,
-      favorite_ingredients_dislikes:
-        stripHtml(rawData.favorite_ingredients_dislikes) || rawData.favorite_ingredients_dislikes,
-      additional_notes: stripHtml(rawData.additional_notes) || rawData.additional_notes,
-    }
+    const data = parseResult.data
 
     // Honeypot check — bots fill hidden fields
     if (data.website_url && data.website_url.length > 0) {
@@ -155,22 +141,51 @@ export async function POST(request: NextRequest) {
     const tenantId = chef.id as string
     const chefName = (chef.business_name as string | null) || 'Your Chef'
 
-    // Store contact info on the inquiry. Auto-link if already a client (read-only check).
+    // 2. Create or find existing client (idempotent by email)
     const clientEmail = data.email.toLowerCase().trim()
     const clientName = data.full_name.trim()
-    const clientPhone = data.phone?.trim() || null
-    const existingClientId = await findExistingClientByEmail(supabase, tenantId, clientEmail)
+
+    // Check for existing client under this chef
+    const { data: existingClient } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('chef_id', tenantId)
+      .ilike('email', clientEmail)
+      .single()
+
+    let clientId: string
+
+    if (existingClient) {
+      clientId = existingClient.id
+    } else {
+      const { data: newClient, error: clientCreateError } = await supabase
+        .from('clients')
+        .insert({
+          chef_id: tenantId,
+          full_name: clientName,
+          email: clientEmail,
+          phone: data.phone?.trim() || null,
+          referral_source: 'website',
+          address: data.address?.trim() || null,
+        })
+        .select('id')
+        .single()
+
+      if (clientCreateError || !newClient) {
+        console.error('[embed-inquiry] Client creation error:', clientCreateError)
+        return NextResponse.json(
+          { error: 'Failed to process inquiry' },
+          { status: 500, headers: corsHeaders }
+        )
+      }
+      clientId = newClient.id
+    }
 
     // 3. Build source message from optional fields
     const sourceParts = [
       `Source: Embedded widget`,
       `Serving Time: ${data.serve_time.trim()}`,
       data.address?.trim() ? `Address: ${data.address.trim()}` : null,
-      data.budget_cents != null
-        ? `Exact Budget: $${(data.budget_cents / 100).toFixed(2)}`
-        : data.budget_range
-          ? `Budget Range: ${data.budget_range}`
-          : null,
       data.favorite_ingredients_dislikes?.trim()
         ? `Favorites/Dislikes: ${data.favorite_ingredients_dislikes.trim()}`
         : null,
@@ -181,18 +196,10 @@ export async function POST(request: NextRequest) {
     ].filter(Boolean)
     const sourceMessage = sourceParts.join('\n')
 
-    // Only persist exact cents when explicitly provided.
-    const budgetCents = data.budget_cents ?? null
-    const budgetMode: 'exact' | 'range' | 'not_sure' | 'unset' =
-      budgetCents != null
-        ? 'exact'
-        : data.budget_range === 'not_sure'
-          ? 'not_sure'
-          : data.budget_range
-            ? 'range'
-            : 'unset'
-    const budgetRange = data.budget_range ?? null
-    const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
+    // Derive budget in cents from range
+    const budgetCents = data.budget_range
+      ? (BUDGET_RANGE_MIDPOINTS[data.budget_range] ?? null)
+      : null
 
     // Parse dietary restrictions
     const allergiesList = data.allergies_food_restrictions
@@ -208,10 +215,7 @@ export async function POST(request: NextRequest) {
       .insert({
         tenant_id: tenantId,
         channel: 'website',
-        client_id: existingClientId,
-        contact_name: clientName,
-        contact_email: clientEmail,
-        contact_phone: clientPhone,
+        client_id: clientId,
         first_contact_at: new Date().toISOString(),
         confirmed_date: data.event_date || null,
         confirmed_guest_count: data.guest_count,
@@ -226,9 +230,7 @@ export async function POST(request: NextRequest) {
           address: data.address?.trim() || null,
           serve_time: data.serve_time.trim(),
           allergy_flag: data.allergy_flag ?? null,
-          budget_mode: budgetMode,
           budget_range: data.budget_range ?? null,
-          budget_exact_cents: budgetCents,
           favorite_ingredients_dislikes: data.favorite_ingredients_dislikes?.trim() || null,
           allergies_food_restrictions: data.allergies_food_restrictions?.trim() || null,
           additional_notes: data.additional_notes?.trim() || null,
@@ -250,36 +252,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    try {
-      await recordInquiryStateTransition({
-        supabase,
-        tenantId,
-        inquiryId: inquiry.id,
-        fromStatus: null,
-        toStatus: 'new',
-        transitionedBy: null,
-        reason: 'embed_inquiry_submitted',
-        metadata: {
-          source: 'embed_widget',
-          utm_source: data.utm_source?.trim() || null,
-          utm_medium: data.utm_medium?.trim() || null,
-          utm_campaign: data.utm_campaign?.trim() || null,
-        },
-      })
-    } catch (transitionErr) {
-      console.error(
-        '[embed-inquiry] Initial inquiry transition insert failed (non-blocking):',
-        transitionErr
-      )
-    }
-
     // 5. Create draft event (non-blocking — if it fails, inquiry is still saved)
     try {
       const { data: event } = await supabase
         .from('events')
         .insert({
           tenant_id: tenantId,
-          client_id: existingClientId,
+          client_id: clientId,
           inquiry_id: inquiry.id,
           event_date: data.event_date,
           serve_time: data.serve_time.trim(),
@@ -314,30 +293,6 @@ export async function POST(request: NextRequest) {
       console.error('[embed-inquiry] Event creation failed (non-blocking):', eventErr)
     }
 
-    // 5b. Auto-create Dinner Circle (non-blocking)
-    let circleGroupToken: string | null = null
-    try {
-      const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
-      const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
-      const circle = await createInquiryCircle({
-        inquiryId: inquiry.id,
-        tenantId,
-        clientName,
-        clientEmail,
-        occasion: data.occasion.trim(),
-      })
-      circleGroupToken = circle.groupToken
-
-      // Post chef's first response in the circle
-      await postFirstCircleMessage({
-        groupId: circle.groupId,
-        inquiryId: inquiry.id,
-        tenantId,
-      })
-    } catch (circleErr) {
-      console.error('[embed-inquiry] Circle creation failed (non-blocking):', circleErr)
-    }
-
     // 6. Send acknowledgment email (non-blocking)
     try {
       const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
@@ -347,45 +302,19 @@ export async function POST(request: NextRequest) {
         chefName,
         occasion: data.occasion.trim(),
         eventDate: data.event_date || null,
-        circleUrl: circleGroupToken
-          ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
-          : undefined,
       })
     } catch (emailErr) {
       console.error('[embed-inquiry] Acknowledgment email failed (non-blocking):', emailErr)
     }
 
-    // 7. Fire automations (non-blocking)
-    try {
-      const { evaluateAutomations } = await import('@/lib/automations/engine')
-      await evaluateAutomations(tenantId, 'inquiry_created', {
-        entityId: inquiry.id,
-        entityType: 'inquiry',
-        fields: {
-          channel: 'website',
-          client_name: clientName,
-          occasion: data.occasion || null,
-          guest_count: data.guest_count ?? null,
-          budget_mode: budgetMode,
-          budget_known: budgetKnown,
-          budget_range: budgetRange,
-          budget_cents: budgetCents,
-        },
-      })
-    } catch (automationErr) {
-      console.error('[embed-inquiry] Automation evaluation failed (non-blocking):', automationErr)
-    }
-
-    // 8. Enqueue Remy AI lead scoring (non-blocking)
+    // 7. Enqueue Remy AI lead scoring (non-blocking)
     try {
       const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
-      await onInquiryCreated(tenantId, inquiry.id, existingClientId, {
+      await onInquiryCreated(tenantId, inquiry.id, clientId, {
         channel: 'website',
         clientName,
         occasion: data.occasion ?? undefined,
         budgetCents: budgetCents ?? undefined,
-        budgetMode,
-        budgetRange: budgetRange ?? undefined,
         guestCount: data.guest_count ?? undefined,
       })
     } catch (aiErr) {

@@ -4,22 +4,12 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import {
-  ChevronLeft,
-  Phone,
-  Clock,
-  User,
-  Building2,
-  Calendar,
-  FileText,
-} from '@/components/ui/icons'
+import { ChevronLeft, Phone, Clock, User, Building2, Calendar, FileText } from 'lucide-react'
 import { getCall } from '@/lib/calls/actions'
 import { CallPrepPanel } from '@/components/calls/call-prep-panel'
 import { CallOutcomeForm } from '@/components/calls/call-outcome-form'
 import { CallStatusActions } from '@/components/calls/call-status-actions'
 import { CallTypeBadge } from '@/components/calls/call-type-badge'
-import { PreCallBrief } from '@/components/calls/pre-call-brief'
-import { generatePreCallBrief } from '@/lib/calls/pre-call-brief-actions'
 
 type Props = { params: { id: string } }
 
@@ -36,10 +26,10 @@ function getContactLabel(call: Awaited<ReturnType<typeof getCall>>): string {
 }
 
 const STATUS_PILL: Record<string, string> = {
-  scheduled: 'bg-blue-900 text-blue-200',
-  confirmed: 'bg-green-900 text-green-200',
+  scheduled: 'bg-blue-900 text-blue-700',
+  confirmed: 'bg-green-900 text-green-700',
   completed: 'bg-stone-700 text-stone-400',
-  no_show: 'bg-red-900 text-red-200',
+  no_show: 'bg-red-900 text-red-700',
   cancelled: 'bg-stone-700 text-stone-500',
 }
 
@@ -47,14 +37,6 @@ export default async function CallDetailPage({ params }: Props) {
   const call = await getCall(params.id)
 
   if (!call) notFound()
-
-  // Generate pre-call intelligence brief (non-blocking, best-effort)
-  let brief = null
-  try {
-    brief = await generatePreCallBrief(params.id)
-  } catch (err) {
-    console.error('[CallDetail] Pre-call brief generation failed:', err)
-  }
 
   const contact = getContactLabel(call)
   const isTerminal = ['completed', 'no_show', 'cancelled'].includes(call.status)
@@ -170,13 +152,6 @@ export default async function CallDetailPage({ params }: Props) {
         <CallPrepPanel call={call} />
       </div>
 
-      {/* Intelligence Brief */}
-      {brief && (
-        <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
-          <PreCallBrief brief={brief} />
-        </div>
-      )}
-
       {/* Outcome */}
       {(call.status === 'scheduled' ||
         call.status === 'confirmed' ||
@@ -189,8 +164,8 @@ export default async function CallDetailPage({ params }: Props) {
       {/* Completed outcome display */}
       {call.status === 'completed' && call.next_action && (
         <div className="bg-amber-950 border border-amber-200 rounded-xl p-4">
-          <p className="text-sm font-medium text-amber-200">Next action</p>
-          <p className="text-sm text-amber-200 mt-1">{call.next_action}</p>
+          <p className="text-sm font-medium text-amber-800">Next action</p>
+          <p className="text-sm text-amber-700 mt-1">{call.next_action}</p>
           {call.next_action_due_at && (
             <p className="text-xs text-amber-600 mt-1">
               Due: {format(new Date(call.next_action_due_at), 'MMM d, yyyy')}

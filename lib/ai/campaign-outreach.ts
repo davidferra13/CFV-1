@@ -18,7 +18,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { format } from 'date-fns'
 
@@ -224,11 +224,7 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
 
   let draft: PersonalizedDraft
   try {
-    const { result } = await dispatchPrivate(systemPrompt, userContent, OutreachSchema, {
-      taskDescription: 'draft personalized outreach with client PII and event history',
-      contentType: 'generation',
-    })
-    draft = result
+    draft = await parseWithOllama(systemPrompt, userContent, OutreachSchema)
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
     throw new OllamaOfflineError(

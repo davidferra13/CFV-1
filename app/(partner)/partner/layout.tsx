@@ -7,8 +7,6 @@ import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 import { PartnerSidebar, PartnerMobileNav } from '@/components/navigation/partner-nav'
 import { ToastProvider } from '@/components/notifications/toast-provider'
-import { PresenceBeacon } from '@/components/admin/presence-beacon'
-import { TestAccountBanner } from '@/components/dev/test-account-banner'
 
 export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -29,9 +27,8 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   const partnerName = partner?.name ?? 'Partner'
 
   return (
-    <div className="dark-surface min-h-screen bg-stone-800 text-stone-200 flex">
+    <div className="min-h-screen bg-stone-800 flex">
       <ToastProvider />
-      <TestAccountBanner />
       <PartnerSidebar partnerName={partnerName} />
 
       <main className="flex-1 pt-14 lg:pt-0">
@@ -39,7 +36,6 @@ export default async function PartnerLayout({ children }: { children: React.Reac
       </main>
 
       <PartnerMobileNav />
-      <PresenceBeacon />
     </div>
   )
 }

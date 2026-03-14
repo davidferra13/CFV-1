@@ -1,43 +1,14 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import type { CoolingClient } from '@/lib/clients/cooling-alert'
-import { rebookClient } from '@/lib/clients/rebook-actions'
 
 interface CoolingAlertWidgetProps {
   coolingClients: CoolingClient[]
 }
 
 export function CoolingAlertWidget({ coolingClients }: CoolingAlertWidgetProps) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [rebookingId, setRebookingId] = useState<string | null>(null)
-
-  function handleRebook(clientId: string, clientName: string) {
-    setRebookingId(clientId)
-    startTransition(async () => {
-      try {
-        const result = await rebookClient(clientId)
-        if (result.success && result.eventId) {
-          router.push(`/events/${result.eventId}/edit`)
-        } else {
-          // If no completed events, fall back to creating a new event for this client
-          router.push(`/events/new?client_id=${clientId}`)
-        }
-      } catch (err) {
-        console.error('[CoolingAlertWidget] Rebook failed:', err)
-        // Fall back to new event page
-        router.push(`/events/new?client_id=${clientId}`)
-      } finally {
-        setRebookingId(null)
-      }
-    })
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -79,23 +50,12 @@ export function CoolingAlertWidget({ coolingClients }: CoolingAlertWidgetProps) 
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={isPending && rebookingId === client.clientId}
-                    onClick={() => handleRebook(client.clientId, client.name)}
-                    className="text-xs"
-                  >
-                    {isPending && rebookingId === client.clientId ? 'Creating...' : 'Rebook'}
-                  </Button>
-                  <Link
-                    href={`/clients/${client.clientId}?tab=messages`}
-                    className="text-xs font-medium text-brand-600 hover:text-brand-400 underline underline-offset-2"
-                  >
-                    {client.suggestedAction}
-                  </Link>
-                </div>
+                <Link
+                  href={`/clients/${client.clientId}?tab=messages`}
+                  className="flex-shrink-0 text-xs font-medium text-brand-600 hover:text-brand-400 underline underline-offset-2"
+                >
+                  {client.suggestedAction}
+                </Link>
               </li>
             ))}
           </ul>

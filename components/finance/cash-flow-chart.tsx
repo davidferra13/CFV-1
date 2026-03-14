@@ -11,12 +11,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ReferenceLine,
 } from 'recharts'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getCashFlowForecast, type CashFlowForecast } from '@/lib/finance/cash-flow-actions'
-import { TrendingUp } from '@/components/ui/icons'
+import { TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -52,13 +51,12 @@ export function CashFlowChart({ initialForecast }: Props) {
     })
   }
 
-  const chartData = forecast.periods.map((p, i) => ({
+  const chartData = forecast.periods.map((p) => ({
     label: p.label,
     'Confirmed In': p.confirmedIncomeCents,
     'Projected In': p.projectedIncomeCents,
     Expenses: -p.confirmedExpenseCents,
     Net: p.netCents,
-    'Cash Position': forecast.runningBalanceCents?.[i] ?? 0,
   }))
 
   const totalNet =
@@ -108,19 +106,6 @@ export function CashFlowChart({ initialForecast }: Props) {
         </Card>
       </div>
 
-      {/* Cash Warning */}
-      {forecast.warningPeriod && (
-        <div className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3">
-          <p className="text-sm text-red-300 font-medium">
-            Cash drops below $500 during {forecast.warningPeriod.label}
-          </p>
-          <p className="text-xs text-red-400 mt-0.5">
-            Projected cash position: {formatCents(forecast.warningPeriod.balanceCents)}
-            {forecast.warningPeriod.balanceCents < 0 ? ' (negative)' : ''}
-          </p>
-        </div>
-      )}
-
       {/* Period Selector */}
       <div className="flex gap-2">
         {([30, 60, 90] as const).map((d) => (
@@ -160,19 +145,11 @@ export function CashFlowChart({ initialForecast }: Props) {
               <Bar dataKey="Confirmed In" fill="#10b981" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Projected In" fill="#3b82f6" radius={[4, 4, 0, 0]} opacity={0.6} />
               <Bar dataKey="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
-              <ReferenceLine y={50000} stroke="#ef4444" strokeDasharray="6 3" strokeOpacity={0.5} />
               <Line
                 dataKey="Net"
                 stroke="#d47530"
                 strokeWidth={2}
                 dot={{ fill: '#d47530', r: 4 }}
-              />
-              <Line
-                dataKey="Cash Position"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                strokeDasharray="4 2"
-                dot={{ fill: '#3b82f6', r: 3 }}
               />
             </ComposedChart>
           </ResponsiveContainer>

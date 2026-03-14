@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { DocumentUploadField } from '@/components/documents/document-upload-field'
 import { Button } from '@/components/ui/button'
 import { addPolicy, updatePolicy } from '@/lib/protection/insurance-actions'
 import type { AddPolicyInput } from '@/lib/protection/insurance-actions'
@@ -15,7 +14,6 @@ interface ExistingPolicy {
   effective_date: string | null
   expiry_date: string | null
   notes: string | null
-  document_url: string | null
 }
 
 interface InsurancePolicyFormProps {
@@ -48,7 +46,6 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
     effective_date: policy?.effective_date ?? '',
     expiry_date: policy?.expiry_date ?? '',
     notes: policy?.notes ?? '',
-    document_url: policy?.document_url ?? '',
   })
 
   const [error, setError] = useState<string | null>(null)
@@ -79,7 +76,6 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
       effective_date: form.effective_date || undefined,
       expiry_date: form.expiry_date || undefined,
       notes: form.notes || undefined,
-      document_url: form.document_url || undefined,
     }
 
     startTransition(async () => {
@@ -192,31 +188,6 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
           placeholder="Any additional notes..."
           rows={2}
           className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
-        />
-      </div>
-
-      <DocumentUploadField
-        label="Proof of Insurance"
-        description="Upload your certificate of insurance or binder into ChefFlow."
-        documentType="policy"
-        entityType="insurance_policy"
-        entityId={policy?.id ?? null}
-        tags={['insurance', form.policy_type]}
-        revalidatePaths={['/documents', '/settings/protection/insurance']}
-        initialUrl={form.document_url || null}
-        initialName={form.document_url ? 'Current insurance document' : null}
-        onUploaded={(document) => update('document_url', document.url)}
-        onCleared={() => update('document_url', '')}
-      />
-
-      <div>
-        <label className="block text-xs font-medium text-stone-500 mb-1">Document Link</label>
-        <input
-          type="url"
-          value={form.document_url}
-          onChange={(e) => update('document_url', e.target.value)}
-          placeholder="Optional external link or uploaded ChefFlow file"
-          className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
         />
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote } from '@/components/ui/icons'
+import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote } from 'lucide-react'
 import {
   addClientNote,
   updateClientNote,
@@ -14,10 +14,10 @@ import { QuickNoteForm } from './quick-note-form'
 
 const CATEGORY_STYLES: Record<NoteCategory, { bg: string; text: string; label: string }> = {
   general: { bg: 'bg-stone-800', text: 'text-stone-300', label: 'General' },
-  dietary: { bg: 'bg-red-900', text: 'text-red-200', label: 'Dietary' },
-  preference: { bg: 'bg-blue-900', text: 'text-blue-200', label: 'Preference' },
-  logistics: { bg: 'bg-green-900', text: 'text-green-200', label: 'Logistics' },
-  relationship: { bg: 'bg-purple-900', text: 'text-purple-200', label: 'Relationship' },
+  dietary: { bg: 'bg-red-900', text: 'text-red-700', label: 'Dietary' },
+  preference: { bg: 'bg-blue-900', text: 'text-blue-700', label: 'Preference' },
+  logistics: { bg: 'bg-green-900', text: 'text-green-700', label: 'Logistics' },
+  relationship: { bg: 'bg-purple-900', text: 'text-purple-700', label: 'Relationship' },
 }
 
 interface QuickNotesProps {

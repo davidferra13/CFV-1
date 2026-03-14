@@ -4,7 +4,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'
 import { AdminPresencePanel } from '@/components/admin/admin-presence-panel'
-import { Radio } from '@/components/ui/icons'
+import { Radio } from 'lucide-react'
 
 export default async function AdminPresencePage() {
   try {

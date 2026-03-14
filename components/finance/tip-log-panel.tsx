@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { addTip, deleteTip } from '@/lib/finance/tip-actions'
 import type { TipEntry } from '@/lib/finance/tip-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Trash2, Plus, DollarSign } from '@/components/ui/icons'
+import { Trash2, Plus, DollarSign } from 'lucide-react'
 
 const TIP_METHODS = ['cash', 'venmo', 'zelle', 'paypal', 'other']
 
@@ -45,7 +45,7 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
         <DollarSign className="h-4 w-4 text-emerald-500 shrink-0" />
         <span className="text-sm text-stone-400">
           Total tips received:{' '}
-          <span className="font-semibold text-emerald-200">{formatCurrency(totalCents)}</span>
+          <span className="font-semibold text-emerald-700">{formatCurrency(totalCents)}</span>
         </span>
       </div>
 
@@ -67,7 +67,7 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-3">
-              <span className="font-semibold text-emerald-200">
+              <span className="font-semibold text-emerald-700">
                 {formatCurrency(tip.amountCents)}
               </span>
               <button

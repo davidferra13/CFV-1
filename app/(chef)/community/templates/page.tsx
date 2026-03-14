@@ -1,51 +1,17 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCommunityTemplates } from '@/lib/community/template-sharing'
-import { getMenus } from '@/lib/menus/actions'
-import { getRecipes } from '@/lib/recipes/actions'
-import { getResponseTemplates } from '@/lib/messages/actions'
-import { listProposalTemplates } from '@/lib/proposals/template-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Download, Globe } from '@/components/ui/icons'
+import { Button } from '@/components/ui/button'
+import { Download, Globe } from 'lucide-react'
 import { CommunityTemplateImport } from '@/components/community/community-template-import'
-import { CommunityTemplateShare } from '@/components/community/community-template-share'
 
 export const metadata: Metadata = { title: 'Community Templates - ChefFlow' }
 
 export default async function CommunityTemplatesPage() {
   await requireChef()
-
-  const [templates, menus, recipes, messageTemplates, proposalTemplates] = await Promise.all([
-    getCommunityTemplates(),
-    getMenus().catch(() => []),
-    getRecipes().catch(() => []),
-    getResponseTemplates().catch(() => []),
-    listProposalTemplates().catch(() => []),
-  ])
-
-  const menuItems = (menus as any[]).map((m) => ({
-    id: m.id,
-    name: m.name || 'Untitled Menu',
-    meta: m.cuisine_type || undefined,
-  }))
-
-  const recipeItems = (recipes as any[]).map((r) => ({
-    id: r.id,
-    name: r.name || 'Untitled Recipe',
-    meta: r.category || undefined,
-  }))
-
-  const msgItems = (messageTemplates as any[]).map((t) => ({
-    id: t.id,
-    name: t.name || 'Untitled Template',
-    meta: t.category || undefined,
-  }))
-
-  const proposalItems = (proposalTemplates as any[]).map((p) => ({
-    id: p.id,
-    name: p.name || 'Untitled Proposal',
-  }))
+  const templates = await getCommunityTemplates()
 
   const TEMPLATE_TYPE_LABELS: Record<string, string> = {
     menu: 'Menu',
@@ -61,12 +27,10 @@ export default async function CommunityTemplatesPage() {
           <h1 className="text-3xl font-bold text-stone-100">Community Templates</h1>
           <p className="text-stone-400 mt-1">Browse and import templates shared by other chefs</p>
         </div>
-        <CommunityTemplateShare
-          menus={menuItems}
-          recipes={recipeItems}
-          messageTemplates={msgItems}
-          proposalTemplates={proposalItems}
-        />
+        <Button variant="secondary" disabled title="Coming soon">
+          <Globe className="h-4 w-4 mr-2" />
+          Share a Template (Coming Soon)
+        </Button>
       </div>
 
       {templates.length === 0 ? (

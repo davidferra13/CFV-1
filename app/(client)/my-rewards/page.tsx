@@ -15,7 +15,6 @@ import { RewardCard } from './reward-card'
 import { ClientIncentiveList } from '@/components/incentives/client-incentive-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { HowToEarnPanel } from '@/components/loyalty/how-to-earn-panel'
-import { ReferralCard } from '@/components/referrals/referral-card'
 
 export const metadata: Metadata = { title: 'My Rewards - ChefFlow' }
 
@@ -29,10 +28,10 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 const TIER_BADGE: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-200',
+  bronze: 'bg-amber-900 text-amber-800',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-200',
-  platinum: 'bg-indigo-900 text-indigo-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-indigo-900 text-indigo-800',
 }
 
 type TierKey = (typeof TIER_ORDER)[number]
@@ -88,9 +87,7 @@ export default async function MyRewardsPage() {
   if (status.programMode === 'off') {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
-        <h1 data-tour="client-rewards" className="text-3xl font-bold text-stone-100">
-          Rewards
-        </h1>
+        <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
         <Alert variant="info">
           Your chef hasn&rsquo;t enabled a loyalty program yet. Check back later!
         </Alert>
@@ -131,7 +128,7 @@ export default async function MyRewardsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div data-tour="client-rewards" className="flex justify-between items-start">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
           <p className="text-stone-400 mt-1">
@@ -235,7 +232,7 @@ export default async function MyRewardsPage() {
             <Card className="border-amber-200 bg-amber-950/30">
               <CardHeader>
                 <CardTitle className="text-amber-900">Pending Rewards</CardTitle>
-                <p className="text-sm text-amber-200 mt-1">
+                <p className="text-sm text-amber-700 mt-1">
                   You have redeemed these rewards. Your chef will honour them at your next event.
                 </p>
               </CardHeader>
@@ -274,9 +271,6 @@ export default async function MyRewardsPage() {
           )}
         </>
       )}
-
-      {/* Refer a Friend */}
-      <ReferralCard />
 
       {/* Gift Cards & Vouchers */}
       <Card>
@@ -330,7 +324,7 @@ export default async function MyRewardsPage() {
                         </p>
                       </div>
                       <span
-                        className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-200' : 'text-stone-300'}`}
+                        className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-300'}`}
                       >
                         {tx.points >= 0 ? '+' : ''}
                         {tx.points}

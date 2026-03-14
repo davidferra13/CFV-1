@@ -55,7 +55,7 @@ function BudgetBar({
         <span className="text-stone-300">
           Estimated vs budget ({formatCurrency(ceilingCents)} food cost ceiling)
         </span>
-        <span className={`font-semibold ${overBudget ? 'text-red-600' : 'text-emerald-200'}`}>
+        <span className={`font-semibold ${overBudget ? 'text-red-600' : 'text-emerald-700'}`}>
           {pct}% of budget
           {overBudget && ' — over by ' + formatCurrency(averageCents - ceilingCents)}
         </span>
@@ -183,7 +183,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
           </div>
 
           {error && (
-            <div className="mt-4 rounded-md bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-200">
+            <div className="mt-4 rounded-md bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -210,7 +210,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                 <p className="text-sm font-medium text-emerald-900">
                   Add MealMe to see prices from your actual stores
                 </p>
-                <p className="text-sm text-emerald-200 mt-1">
+                <p className="text-sm text-emerald-700 mt-1">
                   MealMe covers Market Basket, Hannaford, Shaw&apos;s, Stop &amp; Shop, Whole Foods,
                   Walmart, and 1M+ more stores — all with real-time shelf prices. Contact{' '}
                   <a
@@ -239,7 +239,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <th className="text-left py-2 pr-4 font-medium text-stone-300 whitespace-nowrap">
                         Qty
                       </th>
-                      <th className="text-right py-2 pr-4 font-medium text-blue-200 whitespace-nowrap">
+                      <th className="text-right py-2 pr-4 font-medium text-blue-700 whitespace-nowrap">
                         USDA (NE)
                       </th>
                       <th className="text-right py-2 pr-4 font-medium text-stone-500 whitespace-nowrap">
@@ -249,7 +249,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         Kroger
                       </th>
                       <th
-                        className={`text-right py-2 pr-4 font-medium whitespace-nowrap ${mealMeConfigured ? 'text-emerald-200' : 'text-stone-300'}`}
+                        className={`text-right py-2 pr-4 font-medium whitespace-nowrap ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-300'}`}
                       >
                         Local Stores
                         {!mealMeConfigured && (
@@ -281,7 +281,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <td className="py-2 pr-4 text-stone-500 whitespace-nowrap">
                           {formatQty(item.quantity, item.unit)}
                         </td>
-                        <td className="py-2 pr-4 text-right text-blue-200 font-medium">
+                        <td className="py-2 pr-4 text-right text-blue-700 font-medium">
                           <PriceCell cents={item.usdaCents} />
                         </td>
                         <td className="py-2 pr-4 text-right text-stone-500">
@@ -291,7 +291,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                           <PriceCell cents={item.krogerCents} />
                         </td>
                         <td
-                          className={`py-2 pr-4 text-right ${mealMeConfigured ? 'text-emerald-200 font-medium' : 'text-stone-300'}`}
+                          className={`py-2 pr-4 text-right ${mealMeConfigured ? 'text-emerald-700 font-medium' : 'text-stone-300'}`}
                         >
                           {mealMeConfigured ? (
                             <PriceCell cents={item.mealMeCents} />
@@ -310,7 +310,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <td colSpan={2} className="py-3 font-semibold text-stone-100">
                         Total Estimate
                       </td>
-                      <td className="py-3 text-right font-semibold text-blue-200">
+                      <td className="py-3 text-right font-semibold text-blue-700">
                         <PriceCell cents={quote.usdaTotalCents} />
                       </td>
                       <td className="py-3 text-right text-stone-500">
@@ -320,7 +320,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <PriceCell cents={quote.krogerTotalCents} />
                       </td>
                       <td
-                        className={`py-3 text-right ${mealMeConfigured ? 'font-semibold text-emerald-200' : 'text-stone-300'}`}
+                        className={`py-3 text-right ${mealMeConfigured ? 'font-semibold text-emerald-700' : 'text-stone-300'}`}
                       >
                         {mealMeConfigured ? (
                           <PriceCell cents={quote.mealMeTotalCents} />
@@ -339,7 +339,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               {/* Source legend */}
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-300 border-t border-stone-800 pt-4">
                 <span>
-                  <span className="font-medium text-blue-200">USDA (NE)</span> — USDA Northeast
+                  <span className="font-medium text-blue-700">USDA (NE)</span> — USDA Northeast
                   Urban average retail prices. Already NE-regional, no API key needed.
                 </span>
                 <span>
@@ -348,7 +348,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                 </span>
                 <span>
                   <span
-                    className={`font-medium ${mealMeConfigured ? 'text-emerald-200' : 'text-stone-300'}`}
+                    className={`font-medium ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-300'}`}
                   >
                     Local Stores (MealMe)
                   </span>{' '}
@@ -396,7 +396,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                     <div>
                       <p className="text-stone-500 text-xs mb-0.5">Delta</p>
                       <p
-                        className={`font-semibold ${Math.abs(quote.accuracyDeltaPct) < 10 ? 'text-emerald-200' : 'text-amber-600'}`}
+                        className={`font-semibold ${Math.abs(quote.accuracyDeltaPct) < 10 ? 'text-emerald-700' : 'text-amber-600'}`}
                       >
                         {quote.accuracyDeltaPct > 0 ? '+' : ''}
                         {quote.accuracyDeltaPct.toFixed(1)}%
@@ -419,9 +419,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               <div className="flex flex-wrap gap-3">
                 {/* Instacart */}
                 {quote.instacartLink ? (
-                  <Button href={quote.instacartLink} target="_blank" rel="noopener noreferrer">
-                    Open in Instacart →
-                  </Button>
+                  <a href={quote.instacartLink} target="_blank" rel="noopener noreferrer">
+                    <Button>Open in Instacart →</Button>
+                  </a>
                 ) : (
                   <div className="rounded-md border border-stone-700 px-4 py-2.5 text-sm text-stone-500 bg-stone-800">
                     Instacart link unavailable — add INSTACART_API_KEY to enable
@@ -443,14 +443,14 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               </div>
 
               {saved && (
-                <p className="mt-3 text-sm text-emerald-200">
+                <p className="mt-3 text-sm text-emerald-700">
                   Average prices saved. Future grocery list projections will use these updated
                   prices.
                 </p>
               )}
 
               {quote && !quote.isFromCache && (
-                <p className="mt-3 text-sm text-blue-200">
+                <p className="mt-3 text-sm text-blue-700">
                   Estimate saved to event — visible in Profit Summary.
                 </p>
               )}

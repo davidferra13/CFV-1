@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { ShieldCheck } from '@/components/ui/icons'
+import { ShieldCheck } from 'lucide-react'
 
 export function NonprofitBadge({ verified }: { verified: boolean }) {
   if (!verified) return null

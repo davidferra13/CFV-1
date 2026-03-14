@@ -19,15 +19,15 @@ export async function GET() {
   const feed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ChefFlow Blog - Tips for Private Chefs</title>
+    <title>ChefFlow Blog — Tips for Private Chefs</title>
     <link>${BASE_URL}/blog</link>
-    <description>Tips, guides, and insights for private chefs - pricing strategies, client management, menu planning, and growing your business.</description>
+    <description>Tips, guides, and insights for private chefs — pricing strategies, client management, menu planning, and growing your business.</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${BASE_URL}/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>${BASE_URL}/logo.jpg</url>
-      <title>ChefFlow Blog - Tips for Private Chefs</title>
+      <title>ChefFlow Blog</title>
       <link>${BASE_URL}/blog</link>
     </image>${items}
   </channel>

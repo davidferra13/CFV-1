@@ -4,7 +4,7 @@
 
 import { getPartnerPortalData, updatePartnerProfile } from '@/lib/partners/portal-actions'
 import { revalidatePath } from 'next/cache'
-import { Eye, EyeOff } from '@/components/ui/icons'
+import { Eye, EyeOff } from 'lucide-react'
 
 async function saveProfile(formData: FormData) {
   'use server'

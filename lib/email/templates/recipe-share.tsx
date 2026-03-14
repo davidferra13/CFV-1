@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   chefName: string // Recipient chef's display name
@@ -23,7 +23,7 @@ export function RecipeShareEmail({
   dashboardUrl,
 }: Props) {
   return (
-    <BaseLayout brand={brand} preview={`${sharerName} shared a recipe with you: ${recipeName}`}>
+    <BaseLayout preview={`${sharerName} shared a recipe with you: ${recipeName}`}>
       <Text style={heading}>A chef shared a recipe with you</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

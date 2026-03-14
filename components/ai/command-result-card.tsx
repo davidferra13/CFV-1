@@ -10,7 +10,7 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import type { TaskResult } from '@/lib/ai/command-types'

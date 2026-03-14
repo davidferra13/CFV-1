@@ -17,10 +17,10 @@ import { format } from 'date-fns'
 export const metadata: Metadata = { title: 'Revenue Summary - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  completed: 'bg-green-900 text-green-200',
-  confirmed: 'bg-teal-900 text-teal-200',
-  paid: 'bg-emerald-900 text-emerald-200',
-  in_progress: 'bg-blue-900 text-blue-200',
+  completed: 'bg-green-900 text-green-700',
+  confirmed: 'bg-teal-900 text-teal-700',
+  paid: 'bg-emerald-900 text-emerald-700',
+  in_progress: 'bg-blue-900 text-blue-700',
 }
 
 export default async function RevenueSummaryPage() {
@@ -60,11 +60,11 @@ export default async function RevenueSummaryPage() {
           <p className="text-sm text-stone-500 mt-1">Total quoted revenue</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(completedRevenue)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(completedRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">From completed events</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-200">
+          <p className="text-2xl font-bold text-amber-700">
             {revenueEvents.length > 0
               ? formatCurrency(Math.round(totalRevenue / revenueEvents.length))
               : '$0'}

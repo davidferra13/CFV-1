@@ -5,7 +5,7 @@
 //
 // NOT a server action file — no 'use server'.
 
-import { ARCHETYPE_REGISTRY_BY_ID, type ArchetypeId } from '@/lib/archetypes/registry'
+import type { ArchetypeId } from '@/lib/archetypes/presets'
 import type {
   HACCPPlanData,
   ProcessStep,
@@ -16,12 +16,38 @@ import type {
 
 // ── Archetype Labels & Descriptions ─────────────────────────────────────
 
-const ARCHETYPE_META = Object.fromEntries(
-  Object.entries(ARCHETYPE_REGISTRY_BY_ID).map(([archetypeId, archetype]) => [
-    archetypeId,
-    archetype.haccp,
-  ])
-) as Record<ArchetypeId, (typeof ARCHETYPE_REGISTRY_BY_ID)[ArchetypeId]['haccp']>
+const ARCHETYPE_META: Record<ArchetypeId, { label: string; description: string }> = {
+  'private-chef': {
+    label: 'Private Chef',
+    description:
+      'Solo operator providing in-home dining experiences. Food is prepared in client kitchens or transported from a commissary. Unique risks include unfamiliar kitchen environments, transport cold chain, and allergen management in intimate settings.',
+  },
+  caterer: {
+    label: 'Caterer',
+    description:
+      'Event-based food service for groups. Food is prepared in a commercial kitchen and transported to event venues. Key risks include large-batch production, extended holding times, transport temperature control, and serving in non-kitchen environments.',
+  },
+  'meal-prep': {
+    label: 'Meal Prep Service',
+    description:
+      'Batch cooking and portioning meals for weekly delivery to recurring clients. Key risks include rapid cooling of large batches, packaging integrity, labeling accuracy (use-by dates), and delivery cold chain maintenance.',
+  },
+  restaurant: {
+    label: 'Restaurant',
+    description:
+      'Fixed-location daily food service with continuous production. Key risks include high-volume throughput, multiple simultaneous orders, holding temperatures at service line, and reheating previously prepared items.',
+  },
+  'food-truck': {
+    label: 'Food Truck',
+    description:
+      'Mobile food operation with limited space and equipment. Key risks include restricted water supply, compact storage, ambient temperature exposure, waste management on-site, and maintaining food safety in variable environments.',
+  },
+  bakery: {
+    label: 'Bakery / Pastry Shop',
+    description:
+      'Order-driven production of baked goods. Key risks include allergen cross-contact (flour, nuts, dairy, eggs), cooling after baking, cream/custard temperature control, and display case management for perishable items.',
+  },
+}
 
 // ── Shared Process Steps (all archetypes) ───────────────────────────────
 

@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Send } from '@/components/ui/icons'
+import { Send } from 'lucide-react'
 import type { PendingFollowUp } from '@/lib/inquiries/follow-up-actions'
 
 interface PendingFollowUpsWidgetProps {

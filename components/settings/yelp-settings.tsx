@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Search, Star, Loader2, RefreshCw, Unlink } from '@/components/ui/icons'
+import { Search, Star, Loader2, RefreshCw, Unlink } from 'lucide-react'
 
 type YelpBusiness = {
   id: string

@@ -25,7 +25,7 @@ import {
   Search,
   ShoppingCart,
   Utensils,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wizard'
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import { DataControls } from '@/components/ai-privacy/data-controls'
@@ -129,7 +129,7 @@ export default function AiPrivacyPage() {
         <div className="flex items-center gap-2">
           <div
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-              prefs.remy_enabled ? 'bg-emerald-900 text-emerald-200' : 'bg-stone-800 text-stone-500'
+              prefs.remy_enabled ? 'bg-emerald-900 text-emerald-700' : 'bg-stone-800 text-stone-500'
             }`}
           >
             <div
@@ -157,14 +157,14 @@ export default function AiPrivacyPage() {
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
-            Remy runs on ChefFlow&apos;s private AI infrastructure. Not OpenAI, not Google, not any
+            Remy runs on ChefFlow&apos;s private AI infrastructure — not OpenAI, not Google, not any
             third-party cloud AI service. When you talk to Remy, your conversation is processed on
             our private servers and the response is sent back to you.
           </p>
           <p>
             We don&apos;t store what you say or what Remy says. Your conversation history lives in
             your browser, on your device. If you switch browsers or clear your browser data, your
-            conversation history goes with it, because it was never on our servers to begin with.
+            conversation history goes with it — because it was never on our servers to begin with.
           </p>
         </div>
       </div>
@@ -177,17 +177,17 @@ export default function AiPrivacyPage() {
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
-            We can see that you used Remy: how often, which features, whether errors occurred. We
+            We can see that you used Remy — how often, which features, whether errors occurred. We
             cannot see what you talked about.
           </p>
           <p>
-            This isn&apos;t a policy choice. It&apos;s how the system is built. There is no database
-            table for your conversations. There is no log file. The data doesn&apos;t exist on our
-            servers.
+            This isn&apos;t a policy choice — it&apos;s how the system is built. There is no
+            database table for your conversations. There is no log file. The data doesn&apos;t exist
+            on our servers.
           </p>
         </div>
 
-        {/* Anonymous metrics summary - shows the chef what we actually have */}
+        {/* Anonymous metrics summary — shows the chef what we actually have */}
         {metrics && metrics.totalMessages > 0 && (
           <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
             <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function AiPrivacyPage() {
           <p>
             Some ChefFlow features use external APIs for things like grocery pricing, nutrition
             data, and store availability. These services receive only the specific item-level data
-            they need to function (e.g., &ldquo;broccoli price&rdquo;). Never your name, your
+            they need to function (e.g., &ldquo;broccoli price&rdquo;) — never your name, your
             clients&apos; names, or any personal information.
           </p>
           <p>

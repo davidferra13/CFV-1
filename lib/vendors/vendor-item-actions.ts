@@ -3,7 +3,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
-import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
 import { z } from 'zod'
 
 // ============================================
@@ -56,18 +55,6 @@ export async function addVendorItem(input: AddVendorItemInput) {
     throw new Error('Failed to add vendor item')
   }
 
-  await recordVendorPricePoint({
-    supabase,
-    tenantId: user.tenantId!,
-    vendorId: data.vendor_id,
-    ingredientId: data.ingredient_id ?? null,
-    itemName: data.vendor_item_name,
-    unitMeasure: data.unit_measure ?? null,
-    unitSize: data.unit_size ?? null,
-    priceCents: data.unit_price_cents,
-    notes: data.notes ?? null,
-  })
-
   revalidatePath('/vendors')
   return item
 }
@@ -76,20 +63,6 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
   const user = await requireChef()
   const supabase: any = createServerClient()
   const data = UpdateVendorItemSchema.parse(input)
-
-  const { data: existingItem, error: existingError } = await supabase
-    .from('vendor_items')
-    .select(
-      'id, vendor_id, ingredient_id, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes'
-    )
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
-    .single()
-
-  if (existingError || !existingItem) {
-    console.error('[vendor-items] updateVendorItem existing lookup error:', existingError)
-    throw new Error('Vendor item not found')
-  }
 
   const updateData: Record<string, unknown> = {}
   if (data.ingredient_id !== undefined) updateData.ingredient_id = data.ingredient_id || null
@@ -110,40 +83,6 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
   if (error) {
     console.error('[vendor-items] updateVendorItem error:', error)
     throw new Error('Failed to update vendor item')
-  }
-
-  const merged = {
-    ingredient_id:
-      data.ingredient_id !== undefined ? data.ingredient_id || null : existingItem.ingredient_id,
-    vendor_item_name:
-      data.vendor_item_name !== undefined ? data.vendor_item_name : existingItem.vendor_item_name,
-    unit_price_cents:
-      data.unit_price_cents !== undefined ? data.unit_price_cents : existingItem.unit_price_cents,
-    unit_size: data.unit_size !== undefined ? data.unit_size || null : existingItem.unit_size,
-    unit_measure:
-      data.unit_measure !== undefined ? data.unit_measure || null : existingItem.unit_measure,
-    notes: data.notes !== undefined ? data.notes || null : existingItem.notes,
-  }
-
-  const shouldRecordPricePoint =
-    merged.vendor_item_name !== existingItem.vendor_item_name ||
-    merged.unit_measure !== existingItem.unit_measure ||
-    merged.unit_size !== existingItem.unit_size ||
-    merged.unit_price_cents !== existingItem.unit_price_cents ||
-    merged.ingredient_id !== existingItem.ingredient_id
-
-  if (shouldRecordPricePoint) {
-    await recordVendorPricePoint({
-      supabase,
-      tenantId: user.tenantId!,
-      vendorId: existingItem.vendor_id,
-      ingredientId: merged.ingredient_id,
-      itemName: merged.vendor_item_name,
-      unitMeasure: merged.unit_measure,
-      unitSize: merged.unit_size,
-      priceCents: merged.unit_price_cents,
-      notes: merged.notes,
-    })
   }
 
   revalidatePath('/vendors')

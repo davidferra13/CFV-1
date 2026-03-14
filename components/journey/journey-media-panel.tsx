@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useState, useTransition } from 'react'
-import { Camera, FileText, Film, MapPin, Pencil, Plus, Star, Trash2 } from '@/components/ui/icons'
+import { Camera, FileText, Film, MapPin, Pencil, Plus, Star, Trash2 } from 'lucide-react'
 import {
   createChefJourneyMedia,
   deleteChefJourneyMedia,
@@ -414,7 +414,7 @@ export function JourneyMediaPanel({
           </label>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -499,7 +499,7 @@ export function JourneyMediaPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-200 hover:bg-red-950"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
                     onClick={() => handleDelete(item)}
                   >
                     <Trash2 className="w-4 h-4" />

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 // Ops Log Viewer — Searchable, paginated history of all station operations

@@ -1,6 +1,6 @@
 'use client'
 import { Button } from '@/components/ui/button'
-import { Download } from '@/components/ui/icons'
+import { Download } from 'lucide-react'
 import type { TaxPackage } from '@/lib/finance/tax-package'
 import { formatCurrency } from '@/lib/utils/currency'
 

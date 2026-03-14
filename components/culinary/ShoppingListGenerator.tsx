@@ -246,7 +246,7 @@ export function ShoppingListGenerator({ initialResult }: Props) {
                         </td>
                         <td
                           className={`px-2 py-2 text-right font-medium ${
-                            item.toBuy > 0 ? 'text-red-600' : 'text-green-200'
+                            item.toBuy > 0 ? 'text-red-600' : 'text-green-700'
                           }`}
                         >
                           {item.toBuy.toFixed(2)} {item.unit}

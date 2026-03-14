@@ -89,7 +89,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
                 className={[
                   'px-3 py-1.5 rounded-full border text-sm font-medium transition-all',
                   blocked
-                    ? 'bg-red-900 text-red-200 border-red-300'
+                    ? 'bg-red-900 text-red-800 border-red-300'
                     : 'bg-stone-800 text-stone-500 border-stone-700 hover:bg-stone-700',
                 ].join(' ')}
               >
@@ -124,7 +124,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
                 className={[
                   'px-3 py-1.5 rounded-full border text-sm font-medium transition-all',
                   preferred
-                    ? 'bg-green-900 text-green-200 border-green-300'
+                    ? 'bg-green-900 text-green-800 border-green-300'
                     : 'bg-stone-800 text-stone-500 border-stone-700 hover:bg-stone-700',
                 ].join(' ')}
               >

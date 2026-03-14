@@ -22,10 +22,10 @@ import { RewardActions } from './reward-actions'
 import { PendingDeliveriesPanel } from '@/components/loyalty/pending-deliveries-panel'
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-200',
+  bronze: 'bg-amber-900 text-amber-800',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-200',
-  platinum: 'bg-purple-900 text-purple-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-purple-900 text-purple-800',
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -69,11 +69,6 @@ export default async function LoyaltyDashboardPage() {
           {!isOff && (
             <Link href="/loyalty/raffle">
               <Button variant="ghost">Monthly Raffle</Button>
-            </Link>
-          )}
-          {!isOff && (
-            <Link href="/settings/embed">
-              <Button variant="ghost">Simulator Widget</Button>
             </Link>
           )}
           <Link href="/loyalty/learn">

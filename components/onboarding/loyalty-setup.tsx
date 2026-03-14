@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Star, Plus, Check, ArrowRight, AlertTriangle } from '@/components/ui/icons'
+import { Star, Plus, Check, ArrowRight, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +16,6 @@ import {
   type LoyaltyConfig,
   type LoyaltyReward,
 } from '@/lib/loyalty/actions'
-import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 type Client = {
   id: string
@@ -39,10 +38,6 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
   const [activeTab, setActiveTab] = useState<Tab>('config')
   const [isPending, startTransition] = useTransition()
 
-  useEffect(() => {
-    trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_STARTED, { phase: 'loyalty' })
-  }, [])
-
   // ─── Config state ───────────────────────────────────────────────
   const [config, setConfig] = useState({
     points_per_guest: initialConfig?.points_per_guest ?? 10,
@@ -56,14 +51,6 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
 
   function handleSaveConfig() {
     setConfigError(null)
-    if (config.tier_gold_min <= config.tier_silver_min) {
-      setConfigError('Gold threshold must be higher than Silver')
-      return
-    }
-    if (config.tier_platinum_min <= config.tier_gold_min) {
-      setConfigError('Platinum threshold must be higher than Gold')
-      return
-    }
     startTransition(async () => {
       try {
         await updateLoyaltyConfig({
@@ -74,7 +61,6 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           welcome_points: config.welcome_points,
           is_active: true,
         })
-        trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, { phase: 'loyalty' })
         setConfigSaved(true)
         router.refresh()
       } catch (e) {
@@ -193,12 +179,12 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           </CardHeader>
           <CardContent className="space-y-5">
             {configError && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                 {configError}
               </div>
             )}
             {configSaved && (
-              <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-200 flex items-center gap-2">
+              <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-700 flex items-center gap-2">
                 <Check className="h-4 w-4" /> Config saved
               </div>
             )}
@@ -232,9 +218,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                     }))
                   }
                 />
-                <p className="text-xs text-stone-400">
-                  One-time bonus awarded when a new client creates their portal account
-                </p>
+                <p className="text-xs text-stone-400">One-time bonus on portal signup</p>
               </div>
             </div>
 
@@ -345,7 +329,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             </CardHeader>
             <CardContent className="space-y-4">
               {rewardError && (
-                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
+                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                   {rewardError}
                 </div>
               )}
@@ -426,7 +410,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           <CardContent className="space-y-4">
             <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-200">
+              <p className="text-sm text-amber-800">
                 The points ledger is append-only. Once saved, balances can only be corrected with an
                 additional adjustment transaction — not deleted. Enter each client&apos;s historical
                 balance carefully.
@@ -434,7 +418,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             </div>
 
             {seedError && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                 {seedError}
               </div>
             )}

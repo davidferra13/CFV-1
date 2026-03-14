@@ -130,7 +130,7 @@ export function ShoppingSubstitutions({
                   size="sm"
                   onClick={() => handleRemove(item.id)}
                   disabled={saving}
-                  className="text-red-600 hover:text-red-200"
+                  className="text-red-600 hover:text-red-700"
                 >
                   Remove
                 </Button>

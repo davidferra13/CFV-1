@@ -8,16 +8,7 @@
 // Uses existing API: GET /api/ai/health for polling status
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  Power,
-  RefreshCw,
-  Loader2,
-  Wifi,
-  Cpu,
-  Server,
-  RotateCcw,
-  Stethoscope,
-} from '@/components/ui/icons'
+import { Power, RefreshCw, Loader2, Wifi, Cpu, Server, RotateCcw, Stethoscope } from 'lucide-react'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -265,7 +256,7 @@ export function OllamaStatusBadge() {
   let badgeLabel: string
 
   if (allOnline) {
-    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-200'
+    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
     badgeDot = 'bg-emerald-500 animate-pulse'
     if (endpoints.length === 2) {
       badgeLabel = `PC · ${endpoints[0].latencyMs ?? '?'}ms | Pi · ${endpoints[1].latencyMs ?? '?'}ms`
@@ -275,7 +266,7 @@ export function OllamaStatusBadge() {
     }
   } else if (pcHealthy) {
     // PC is fine, Pi is down — still green, Pi is a bonus not a requirement
-    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-200'
+    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
     badgeDot = 'bg-emerald-500 animate-pulse'
     badgeLabel =
       endpoints.length === 2
@@ -283,7 +274,7 @@ export function OllamaStatusBadge() {
         : `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
   } else if (anyOnline) {
     // PC is down but Pi is up — amber, degraded
-    badgeClass = 'border-amber-200 bg-amber-950 text-amber-200'
+    badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
     badgeDot = 'bg-amber-500 animate-pulse'
     badgeLabel =
       endpoints.length === 2
@@ -292,7 +283,7 @@ export function OllamaStatusBadge() {
             .join(' | ')
         : 'AI Degraded'
   } else {
-    badgeClass = 'border-red-300 bg-red-950 text-red-200'
+    badgeClass = 'border-red-300 bg-red-950 text-red-700'
     badgeDot = 'bg-red-500'
     badgeLabel = 'AI Offline'
   }

@@ -4,14 +4,7 @@ import { useState, useTransition, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { importProspectsFromCSV } from '@/lib/prospecting/pipeline-actions'
-import {
-  Upload,
-  FileText,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  Download,
-} from '@/components/ui/icons'
+import { Upload, FileText, Loader2, CheckCircle, AlertCircle, Download } from 'lucide-react'
 
 export function CSVImportForm() {
   const [csvText, setCsvText] = useState('')
@@ -186,8 +179,8 @@ export function CSVImportForm() {
             <div
               className={`p-4 rounded-lg text-sm flex items-start gap-3 ${
                 result.success
-                  ? 'bg-green-950 border border-green-200 text-green-200'
-                  : 'bg-red-950 border border-red-200 text-red-200'
+                  ? 'bg-green-950 border border-green-200 text-green-800'
+                  : 'bg-red-950 border border-red-200 text-red-800'
               }`}
             >
               {result.success ? (

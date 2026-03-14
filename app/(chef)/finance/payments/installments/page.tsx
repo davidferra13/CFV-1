@@ -41,7 +41,7 @@ export default async function InstallmentsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Installments</h1>
-          <span className="bg-blue-900 text-blue-200 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-blue-900 text-blue-700 text-sm px-2 py-0.5 rounded-full">
             {allEntries.length}
           </span>
         </div>
@@ -50,17 +50,17 @@ export default async function InstallmentsPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">
+          <p className="text-2xl font-bold text-green-700">
             {formatCurrency(totalInstallments + totalFinal)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Total received</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-blue-200">{formatCurrency(totalInstallments)}</p>
+          <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalInstallments)}</p>
           <p className="text-sm text-stone-500 mt-1">Installments ({installments.length})</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-emerald-200">{formatCurrency(totalFinal)}</p>
+          <p className="text-2xl font-bold text-emerald-700">{formatCurrency(totalFinal)}</p>
           <p className="text-sm text-stone-500 mt-1">Final payments ({finalPayments.length})</p>
         </Card>
       </div>
@@ -92,7 +92,7 @@ export default async function InstallmentsPage() {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'final_payment' ? 'bg-emerald-900 text-emerald-200' : 'bg-blue-900 text-blue-200'}`}
+                      className={`text-xs px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'final_payment' ? 'bg-emerald-900 text-emerald-700' : 'bg-blue-900 text-blue-700'}`}
                     >
                       {entry.entry_type.replace(/_/g, ' ')}
                     </span>
@@ -110,7 +110,7 @@ export default async function InstallmentsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-green-200 font-semibold text-sm">
+                  <TableCell className="text-green-700 font-semibold text-sm">
                     +{formatCurrency(entry.amount_cents)}
                   </TableCell>
                 </TableRow>

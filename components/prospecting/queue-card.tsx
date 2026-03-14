@@ -4,15 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Phone,
-  ChevronDown,
-  ChevronUp,
-  MapPin,
-  Clock,
-  User,
-  Building2,
-} from '@/components/ui/icons'
+import { Phone, ChevronDown, ChevronUp, MapPin, Clock, User, Building2 } from 'lucide-react'
 import type { Prospect } from '@/lib/prospecting/types'
 import { logProspectCall } from '@/lib/prospecting/queue-actions'
 import { CALL_OUTCOMES, PROSPECT_CATEGORY_LABELS } from '@/lib/prospecting/constants'
@@ -51,7 +43,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
 
   if (logged) {
     return (
-      <div className="p-4 rounded-lg border border-green-200 bg-green-950 text-green-200 text-sm">
+      <div className="p-4 rounded-lg border border-green-200 bg-green-950 text-green-800 text-sm">
         <span className="font-medium">{prospect.name}</span> — call logged!
       </div>
     )
@@ -131,7 +123,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
           {/* Gatekeeper Intel */}
           {(prospect.contact_person || prospect.gatekeeper_notes) && (
             <div className="bg-amber-950 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-amber-200 mb-1">Gatekeeper Intel</p>
+              <p className="text-xs font-medium text-amber-800 mb-1">Gatekeeper Intel</p>
               {prospect.contact_person && (
                 <p className="text-sm text-amber-900">
                   Ask for: <strong>{prospect.contact_person}</strong>{' '}
@@ -139,7 +131,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
                 </p>
               )}
               {prospect.gatekeeper_notes && (
-                <p className="text-xs text-amber-200 mt-1">{prospect.gatekeeper_notes}</p>
+                <p className="text-xs text-amber-700 mt-1">{prospect.gatekeeper_notes}</p>
               )}
             </div>
           )}
@@ -147,7 +139,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
           {/* Approach Strategy */}
           {prospect.approach_strategy && (
             <div className="bg-blue-950 border border-blue-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-blue-200 mb-1">Approach Strategy</p>
+              <p className="text-xs font-medium text-blue-800 mb-1">Approach Strategy</p>
               <p className="text-sm text-blue-900">{prospect.approach_strategy}</p>
             </div>
           )}

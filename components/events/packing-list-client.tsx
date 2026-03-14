@@ -185,7 +185,7 @@ function Section({
         <span
           className={`text-xs font-medium px-2 py-0.5 rounded-full ${
             checkedCount === items.length
-              ? 'bg-green-900 text-green-200'
+              ? 'bg-green-900 text-green-700'
               : 'bg-stone-800 text-stone-300'
           }`}
         >
@@ -193,7 +193,7 @@ function Section({
         </span>
       </div>
       {warning && (
-        <p className="text-xs text-amber-200 bg-amber-950 border border-amber-200 rounded px-2 py-1">
+        <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
           {warning}
         </p>
       )}
@@ -538,7 +538,7 @@ export function PackingListClient({
           </Button>
         ) : (
           <div className="text-center py-2">
-            <p className="text-green-200 font-semibold text-lg">Car packed. Have a great dinner!</p>
+            <p className="text-green-700 font-semibold text-lg">Car packed. Have a great dinner!</p>
           </div>
         )}
 

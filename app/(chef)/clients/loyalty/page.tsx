@@ -7,10 +7,10 @@ import { Card } from '@/components/ui/card'
 export const metadata: Metadata = { title: 'Client Loyalty - ChefFlow' }
 
 const TIER_STYLES: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-200',
+  bronze: 'bg-amber-900 text-amber-800',
   silver: 'bg-stone-700 text-stone-300',
-  gold: 'bg-yellow-900 text-yellow-200',
-  platinum: 'bg-sky-900 text-sky-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-sky-900 text-sky-800',
 }
 
 const VIEWS = [
@@ -65,7 +65,7 @@ export default async function ClientLoyaltyPage() {
           <p className="text-sm text-stone-500 mt-1">Clients enrolled</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-200">{totalPoints.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-amber-700">{totalPoints.toLocaleString()}</p>
           <p className="text-sm text-stone-500 mt-1">Total points outstanding</p>
         </Card>
         <Card className="p-4">

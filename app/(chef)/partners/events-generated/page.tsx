@@ -48,11 +48,11 @@ export default async function EventsGeneratedPage() {
             <p className="text-sm text-stone-500 mt-1">Total events from partners</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-200">{totalCompleted}</p>
+            <p className="text-2xl font-bold text-green-700">{totalCompleted}</p>
             <p className="text-sm text-stone-500 mt-1">Completed events</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-200">{formatCurrency(totalRevenue)}</p>
+            <p className="text-2xl font-bold text-amber-700">{formatCurrency(totalRevenue)}</p>
             <p className="text-sm text-stone-500 mt-1">Partner-attributed revenue</p>
           </Card>
         </div>

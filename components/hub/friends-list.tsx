@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { Check, Copy, ExternalLink, Loader2, UserMinus, X } from '@/components/ui/icons'
+import { Check, Copy, ExternalLink, Loader2, UserMinus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { acceptFriendRequest, declineFriendRequest, removeFriend } from '@/lib/hub/friend-actions'
 import type { HubFriend } from '@/lib/hub/friend-actions'

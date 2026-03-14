@@ -36,7 +36,7 @@ export default function CannabisError({
           {(error.message || error.digest) && (
             <div className="bg-red-950 border border-red-200 rounded-md p-3">
               {error.message && (
-                <p className="text-sm text-red-200 font-mono break-all">{error.message}</p>
+                <p className="text-sm text-red-800 font-mono break-all">{error.message}</p>
               )}
               {error.digest && (
                 <p className="text-xs text-red-600 mt-1">Error ID: {error.digest}</p>

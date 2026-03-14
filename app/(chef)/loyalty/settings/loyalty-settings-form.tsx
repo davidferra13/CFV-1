@@ -547,7 +547,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
           Back to Dashboard
         </Button>
         {saved && (
-          <span className="text-sm text-emerald-200 font-medium">Settings saved successfully.</span>
+          <span className="text-sm text-emerald-700 font-medium">Settings saved successfully.</span>
         )}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>

@@ -17,9 +17,6 @@ type ClientPreferencesValues = {
   preferred_service_style?: string | null
   budget_range_min_cents?: number | null
   budget_range_max_cents?: number | null
-  recurring_pricing_model?: 'none' | 'flat_rate' | 'per_person' | null
-  recurring_price_cents?: number | null
-  recurring_pricing_notes?: string | null
   cleanup_expectations?: string | null
   leftovers_preference?: string | null
 }
@@ -61,15 +58,6 @@ export function ClientPreferences({
   const [budgetMax, setBudgetMax] = useState(
     initialValues.budget_range_max_cents ? String(initialValues.budget_range_max_cents / 100) : ''
   )
-  const [recurringPricingModel, setRecurringPricingModel] = useState(
-    initialValues.recurring_pricing_model || 'none'
-  )
-  const [recurringPrice, setRecurringPrice] = useState(
-    initialValues.recurring_price_cents ? String(initialValues.recurring_price_cents / 100) : ''
-  )
-  const [recurringPricingNotes, setRecurringPricingNotes] = useState(
-    initialValues.recurring_pricing_notes || ''
-  )
   const [cleanupExpectations, setCleanupExpectations] = useState(
     initialValues.cleanup_expectations || ''
   )
@@ -98,14 +86,6 @@ export function ClientPreferences({
           preferred_service_style: preferredServiceStyle || undefined,
           budget_range_min_cents: budgetMin ? Math.round(Number(budgetMin) * 100) : null,
           budget_range_max_cents: budgetMax ? Math.round(Number(budgetMax) * 100) : null,
-          recurring_pricing_model: recurringPricingModel || null,
-          recurring_price_cents:
-            recurringPricingModel === 'none' ||
-            !recurringPrice ||
-            !Number.isFinite(Number(recurringPrice))
-              ? null
-              : Math.round(Number(recurringPrice) * 100),
-          recurring_pricing_notes: recurringPricingNotes || null,
           cleanup_expectations: cleanupExpectations || undefined,
           leftovers_preference: leftoversPreference || undefined,
         }
@@ -213,43 +193,7 @@ export function ClientPreferences({
               placeholder="0.00"
             />
           </label>
-          <label className="text-sm text-stone-300">
-            Recurring pricing model
-            <select
-              className="mt-1 h-10 w-full rounded-md border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100"
-              value={recurringPricingModel}
-              onChange={(event) =>
-                setRecurringPricingModel(event.target.value as 'none' | 'flat_rate' | 'per_person')
-              }
-            >
-              <option value="none">No default</option>
-              <option value="flat_rate">Flat rate (per service)</option>
-              <option value="per_person">Per person</option>
-            </select>
-          </label>
-          <label className="text-sm text-stone-300">
-            Recurring default price (USD)
-            <Input
-              className="mt-1"
-              type="number"
-              min={0}
-              step="0.01"
-              value={recurringPrice}
-              onChange={(event) => setRecurringPrice(event.target.value)}
-              placeholder="0.00"
-            />
-          </label>
         </div>
-
-        <label className="block text-sm text-stone-300">
-          Recurring pricing notes
-          <Textarea
-            className="mt-1"
-            value={recurringPricingNotes}
-            onChange={(event) => setRecurringPricingNotes(event.target.value)}
-            placeholder="Example: Weekly family meal prep rate, groceries billed separately"
-          />
-        </label>
 
         <label className="block text-sm text-stone-300">
           Cleanup expectations

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, ChevronUp, Clock, X } from '@/components/ui/icons'
+import { ChevronDown, ChevronUp, Clock, X } from 'lucide-react'
 import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
 
 const COLLAPSED_KEY = 'cf:recent-collapsed'
@@ -75,33 +75,34 @@ export function RecentPagesSection() {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          aria-expanded={!collapsed}
-          className="group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-        >
-          <Clock className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-          <span className="flex-1 text-left">Recent</span>
-          {collapsed ? (
-            <ChevronUp className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-          )}
-        </button>
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        aria-expanded={!collapsed}
+        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 group"
+      >
+        <Clock className="w-4 h-4 text-stone-500" />
+        <span className="flex-1 text-left">Recent</span>
         {!collapsed && recentPages.length > 0 && (
           <button
             type="button"
-            onClick={clearHistory}
-            className="rounded-md p-1 text-stone-500 transition-colors hover:bg-brand-100/70 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-300"
+            onClick={(e) => {
+              e.stopPropagation()
+              clearHistory()
+            }}
+            className="opacity-0 group-hover:opacity-100 text-stone-500 hover:text-stone-300 transition-opacity p-0.5 rounded"
             title="Clear recent pages"
             aria-label="Clear recent pages"
           >
             <X className="w-3 h-3" />
           </button>
         )}
-      </div>
+        {collapsed ? (
+          <ChevronUp className="w-4 h-4 text-stone-400" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-stone-400" />
+        )}
+      </button>
 
       <div
         className={`overflow-hidden transition-all duration-200 ${
@@ -114,10 +115,10 @@ export function RecentPagesSection() {
               key={page.path}
               type="button"
               onClick={() => router.push(page.path)}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm font-medium text-stone-700 transition-colors hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+              className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium text-stone-400 hover:bg-stone-800 hover:text-stone-100 transition-colors text-left"
             >
               <span className="flex-1 truncate">{page.label}</span>
-              <span className="flex-shrink-0 tabular-nums text-[10px] text-stone-500 dark:text-stone-500">
+              <span className="text-[10px] text-stone-500 flex-shrink-0 tabular-nums">
                 {relativeTime(page.visitedAt)}
               </span>
             </button>

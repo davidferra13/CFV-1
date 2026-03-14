@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
+import { FileText, Download, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateContract, type GeneratedContract } from '@/lib/ai/contract-generator'
@@ -53,7 +53,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Contract
               </>
             )}
@@ -88,7 +88,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
         </div>
       </div>
 
-      <div className="flex items-start gap-2 bg-amber-950 border border-amber-200 rounded p-2 text-xs text-amber-200">
+      <div className="flex items-start gap-2 bg-amber-950 border border-amber-200 rounded p-2 text-xs text-amber-800">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
         {result.disclaimer}
       </div>

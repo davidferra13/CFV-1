@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent } from '@/components/ui/card'
 import { HelpSearch } from '@/components/help/help-search'
-import { BookOpen, Calendar, DollarSign, Users, Settings, ChefHat } from '@/components/ui/icons'
+import { BookOpen, Calendar, DollarSign, Users, Settings, ChefHat } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Help Center — ChefFlow' }

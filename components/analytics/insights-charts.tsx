@@ -35,7 +35,7 @@ import type {
   FinancialIntelligence,
 } from '@/lib/analytics/insights-actions'
 
-// ─── Shared Helpers ──────────────────────────────────
+// â”€â”€â”€ Shared Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const COLORS = [
   '#8b5cf6',
@@ -63,7 +63,7 @@ function formatCurrency(cents: number): string {
 }
 
 function formatMinutes(minutes: number): string {
-  if (minutes === 0) return '—'
+  if (minutes === 0) return 'â€”'
   if (minutes < 60) return `${minutes}m`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
@@ -78,9 +78,9 @@ function EmptyChart({ message }: { message: string }) {
   )
 }
 
-// ─── Tab 1: Clientele ────────────────────────────────
+// â”€â”€â”€ Tab 1: Clientele â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// Dinner time histogram (11am–11pm)
+// Dinner time histogram (11amâ€“11pm)
 export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
   const hasData = data.some((d) => d.count > 0)
   if (!hasData) return <EmptyChart message="No event time data yet" />
@@ -100,7 +100,7 @@ export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
             <Cell
               key={i}
               fill={
-                // Highlight peak dinner hours 5pm–8pm
+                // Highlight peak dinner hours 5pmâ€“8pm
                 ['5pm', '6pm', '7pm', '8pm'].includes(entry.hour) ? '#7c3aed' : '#c4b5fd'
               }
             />
@@ -111,7 +111,7 @@ export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
   )
 }
 
-// Occasion breakdown (horizontal bar) — count as bar, revenue details in custom tooltip
+// Occasion breakdown (horizontal bar) â€” count as bar, revenue details in custom tooltip
 function OccasionTooltip({
   active,
   payload,
@@ -238,9 +238,9 @@ export function DietaryFrequencyChart({ data }: { data: DietaryFrequency[] }) {
   )
 }
 
-// ─── Tab 2: Seasons & Trends ─────────────────────────
+// â”€â”€â”€ Tab 2: Seasons & Trends â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// Monthly volume: bars (events) + line (revenue) — dual Y axis
+// Monthly volume: bars (events) + line (revenue) â€” dual Y axis
 export function MonthlyVolumeChart({ data }: { data: MonthlyVolume[] }) {
   const hasData = data.some((d) => d.events > 0)
   if (!hasData) return <EmptyChart message="No event history yet" />
@@ -368,7 +368,7 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
   )
 }
 
-// ─── Tab 3: Client Base ───────────────────────────────
+// â”€â”€â”€ Tab 3: Client Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Acquisition source pie
 export function AcquisitionSourcePieChart({ data }: { data: { name: string; count: number }[] }) {
@@ -533,7 +533,7 @@ export function LTVDistributionChart({ data }: { data: LTVBucket[] }) {
   )
 }
 
-// ─── Tab 4: Operations ───────────────────────────────
+// â”€â”€â”€ Tab 4: Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Phase time averages (horizontal bar)
 export function PhaseTimeChart({ data }: { data: { phase: string; avg_minutes: number }[] }) {

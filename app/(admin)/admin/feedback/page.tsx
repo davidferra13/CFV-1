@@ -9,10 +9,10 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Feedback - Admin' }
 
 const SENTIMENT_DISPLAY: Record<string, { emoji: string; label: string; color: string }> = {
-  love: { emoji: '😍', label: 'Love it', color: 'bg-emerald-900 text-emerald-200' },
-  frustrated: { emoji: '😤', label: 'Frustrated', color: 'bg-red-900 text-red-200' },
-  suggestion: { emoji: '💡', label: 'Suggestion', color: 'bg-yellow-900 text-yellow-200' },
-  bug: { emoji: '🐛', label: 'Bug', color: 'bg-orange-900 text-orange-200' },
+  love: { emoji: '😍', label: 'Love it', color: 'bg-emerald-900 text-emerald-800' },
+  frustrated: { emoji: '😤', label: 'Frustrated', color: 'bg-red-900 text-red-800' },
+  suggestion: { emoji: '💡', label: 'Suggestion', color: 'bg-yellow-900 text-yellow-800' },
+  bug: { emoji: '🐛', label: 'Bug', color: 'bg-orange-900 text-orange-800' },
   other: { emoji: '💬', label: 'Other', color: 'bg-stone-800 text-stone-300' },
 }
 

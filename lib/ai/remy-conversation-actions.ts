@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import type { RemyMessage } from '@/lib/ai/remy-types'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -173,14 +173,12 @@ export async function autoTitleConversation(
   const supabase: any = createServerClient()
 
   try {
-    const result = (
-      await dispatchPrivate(
-        'Generate a short title (3-6 words) for this conversation. Return JSON: { "title": "..." }',
-        `User: ${userMessage}\nAssistant: ${remyResponse.slice(0, 200)}`,
-        TitleSchema,
-        { modelTier: 'fast', cache: false }
-      )
-    ).result
+    const result = await parseWithOllama(
+      'Generate a short title (3-6 words) for this conversation. Return JSON: { "title": "..." }',
+      `User: ${userMessage}\nAssistant: ${remyResponse.slice(0, 200)}`,
+      TitleSchema,
+      { modelTier: 'fast', cache: false }
+    )
 
     await supabase
       .from('remy_conversations')
@@ -243,14 +241,12 @@ export async function summarizeConversationHistory(
         ),
     })
 
-    const result = (
-      await dispatchPrivate(
-        'Summarize this earlier conversation between a chef and their AI assistant Remy. Keep it concise — 2-4 sentences capturing the key topics, decisions, and facts.',
-        condensed,
-        SummarySchema,
-        { modelTier: 'fast', cache: false }
-      )
-    ).result
+    const result = await parseWithOllama(
+      'Summarize this earlier conversation between a chef and their AI assistant Remy. Keep it concise — 2-4 sentences capturing the key topics, decisions, and facts.',
+      condensed,
+      SummarySchema,
+      { modelTier: 'fast', cache: false }
+    )
 
     return { summary: result.summary, recentMessages }
   } catch {

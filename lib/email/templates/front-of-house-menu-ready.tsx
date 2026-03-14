@@ -1,13 +1,12 @@
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type FrontOfHouseMenuReadyEmailProps = {
   clientName: string
   chefName: string
   occasion: string
   eventDate: string
-  brand?: ChefBrandProps
 }
 
 export function FrontOfHouseMenuReadyEmail({
@@ -15,10 +14,9 @@ export function FrontOfHouseMenuReadyEmail({
   chefName,
   occasion,
   eventDate,
-  brand,
 }: FrontOfHouseMenuReadyEmailProps) {
   return (
-    <BaseLayout brand={brand} preview={`Your guest menu is ready for ${occasion}`}>
+    <BaseLayout preview={`Your guest menu is ready for ${occasion}`}>
       <Text style={heading}>Your guest menu is ready</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

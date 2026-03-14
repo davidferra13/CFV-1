@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState, useTransition } from 'react'
-import { Lightbulb, Pencil, Plus, Trash2 } from '@/components/ui/icons'
+import { Lightbulb, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   createChefJourneyIdea,
   deleteChefJourneyIdea,
@@ -406,7 +406,7 @@ export function JourneyIdeaPanel({
           </div>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -454,7 +454,7 @@ export function JourneyIdeaPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-200 hover:bg-red-950"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
                     onClick={() => handleDelete(idea)}
                   >
                     <Trash2 className="w-4 h-4" />

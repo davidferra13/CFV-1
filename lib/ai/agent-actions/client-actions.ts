@@ -10,7 +10,7 @@ import {
   getClientById,
   inviteClient,
 } from '@/lib/clients/actions'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── NL → Structured Client Parser ────────────────────────────────────────
@@ -19,12 +19,8 @@ const ParsedClientSchema = z.object({
   full_name: z.string(),
   email: z.string().optional(),
   phone: z.string().optional(),
-  birthday: z.string().optional(),
   dietary_restrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
-  dislikes: z.array(z.string()).optional(),
-  favorite_cuisines: z.array(z.string()).optional(),
-  spice_tolerance: z.enum(['none', 'mild', 'medium', 'hot', 'very_hot']).optional(),
   occupation: z.string().optional(),
   notes: z.string().optional(),
   address: z.string().optional(),
@@ -33,14 +29,10 @@ const ParsedClientSchema = z.object({
 
 async function parseClientFromText(description: string) {
   const systemPrompt = `You extract structured client data from natural language descriptions.
-Extract any of these fields: full_name, email, phone, birthday (month or date string), dietary_restrictions (array), allergies (array), dislikes (array - foods they hate or dislike), favorite_cuisines (array), spice_tolerance (none/mild/medium/hot/very_hot), occupation, notes, address, preferred_contact_method (phone/email/text/instagram).
-"hates X" or "doesn't like X" = dislikes. "allergic to X" = allergies. "gluten-free/vegan/etc" = dietary_restrictions.
+Extract any of these fields: full_name, email, phone, dietary_restrictions (array), allergies (array), occupation, notes, address, preferred_contact_method (phone/email/text/instagram).
 Return ONLY valid JSON. If a field is not mentioned, omit it.`
 
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedClientSchema, {
-    modelTier: 'standard',
-  })
-  return result
+  return parseWithOllama(systemPrompt, description, ParsedClientSchema, { modelTier: 'standard' })
 }
 
 // ─── NL → Client Update Parser ─────────────────────────────────────────────
@@ -71,10 +63,9 @@ Return JSON with "clientName" (the client to update) and "updates" (object with 
 Available update fields: full_name, email, phone, dietary_restrictions (array), allergies (array), occupation, status (active/dormant/repeat_ready/vip), address, preferred_contact_method, dislikes (array), favorite_cuisines (array), favorite_dishes (array), wine_beverage_preferences, spice_tolerance (none/mild/medium/hot/very_hot).
 Return ONLY valid JSON. Only include fields that are being changed.`
 
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedClientUpdateSchema, {
+  return parseWithOllama(systemPrompt, description, ParsedClientUpdateSchema, {
     modelTier: 'standard',
   })
-  return result
 }
 
 // ─── Action Definitions ────────────────────────────────────────────────────
@@ -94,11 +85,6 @@ export const clientAgentActions: AgentActionDefinition[] = [
     async executor(inputs) {
       const description = String(inputs.description ?? '')
       const parsed = await parseClientFromText(description)
-      const missingFields: string[] = []
-      if (!parsed.email) missingFields.push('email')
-      if (!parsed.phone) missingFields.push('phone')
-      if (!parsed.preferred_contact_method) missingFields.push('preferred_contact_method')
-      if (!parsed.address) missingFields.push('address')
 
       const fields: AgentActionPreview['fields'] = [
         { label: 'Full Name', value: parsed.full_name, editable: true },
@@ -114,22 +100,6 @@ export const clientAgentActions: AgentActionDefinition[] = [
       }
       if (parsed.allergies?.length) {
         fields.push({ label: 'Allergies', value: parsed.allergies.join(', '), editable: true })
-      }
-      if (parsed.dislikes?.length) {
-        fields.push({ label: 'Dislikes', value: parsed.dislikes.join(', '), editable: true })
-      }
-      if (parsed.birthday) {
-        fields.push({ label: 'Birthday', value: parsed.birthday, editable: true })
-      }
-      if (parsed.favorite_cuisines?.length) {
-        fields.push({
-          label: 'Favorite Cuisines',
-          value: parsed.favorite_cuisines.join(', '),
-          editable: true,
-        })
-      }
-      if (parsed.spice_tolerance) {
-        fields.push({ label: 'Spice Tolerance', value: parsed.spice_tolerance, editable: true })
       }
       if (parsed.occupation)
         fields.push({ label: 'Occupation', value: parsed.occupation, editable: true })
@@ -147,60 +117,24 @@ export const clientAgentActions: AgentActionDefinition[] = [
         actionType: 'agent.create_client',
         summary: `Create client: ${parsed.full_name}${parsed.email ? ` (${parsed.email})` : ''}`,
         fields,
-        warnings:
-          missingFields.length > 0
-            ? [
-                `Missing fields to capture later: ${missingFields
-                  .map((f) => f.replace(/_/g, ' '))
-                  .join(', ')}`,
-              ]
-            : undefined,
         safety: 'reversible',
       }
 
       return {
         preview,
-        commitPayload: { ...parsed, _rawDescription: description, _missingFields: missingFields },
+        commitPayload: { ...parsed, _rawDescription: description },
       }
     },
 
     async commitAction(payload) {
-      const fullName = String(payload.full_name ?? '').trim()
-      if (!fullName) {
-        return { success: false, message: 'Failed to create client: full name is required.' }
-      }
-      const email =
-        typeof payload.email === 'string' && payload.email.trim().length > 0
-          ? payload.email.trim()
-          : undefined
-      const phone =
-        typeof payload.phone === 'string' && payload.phone.trim().length > 0
-          ? payload.phone.trim()
-          : undefined
-      const notes =
-        typeof payload.notes === 'string' && payload.notes.trim().length > 0
-          ? payload.notes.trim()
-          : undefined
-
       const result = await createClient({
-        full_name: fullName,
-        email,
-        phone,
-        birthday: typeof payload.birthday === 'string' ? payload.birthday : undefined,
+        full_name: String(payload.full_name ?? ''),
+        email: String(payload.email ?? ''),
+        phone: payload.phone ? String(payload.phone) : undefined,
         dietary_restrictions: payload.dietary_restrictions as string[] | undefined,
         allergies: payload.allergies as string[] | undefined,
-        dislikes: payload.dislikes as string[] | undefined,
-        favorite_cuisines: payload.favorite_cuisines as string[] | undefined,
-        spice_tolerance: payload.spice_tolerance as
-          | 'none'
-          | 'mild'
-          | 'medium'
-          | 'hot'
-          | 'very_hot'
-          | undefined,
         occupation: payload.occupation ? String(payload.occupation) : undefined,
         address: payload.address ? String(payload.address) : undefined,
-        vibe_notes: notes ? `Created by Remy intake: ${notes}` : undefined,
         preferred_contact_method: payload.preferred_contact_method as
           | 'phone'
           | 'email'
@@ -215,7 +149,7 @@ export const clientAgentActions: AgentActionDefinition[] = [
       const clientId = (result as { client: { id: string } }).client?.id
       return {
         success: true,
-        message: `Client "${fullName}" created successfully!`,
+        message: `Client "${payload.full_name}" created successfully!`,
         redirectUrl: clientId ? `/clients/${clientId}` : '/clients',
       }
     },

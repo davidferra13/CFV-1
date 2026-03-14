@@ -4,7 +4,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 interface ProposalSentEmailProps {
   clientName: string
@@ -20,10 +20,9 @@ export function ProposalSentEmail({
   eventDate,
   chefName,
   proposalUrl,
-  brand,
 }: ProposalSentEmailProps) {
   return (
-    <BaseLayout brand={brand} preview={`${chefName} sent you a proposal for ${occasion}`}>
+    <BaseLayout preview={`${chefName} sent you a proposal for ${occasion}`}>
       <Text style={heading}>Your proposal is ready</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

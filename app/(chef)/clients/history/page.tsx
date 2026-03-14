@@ -54,11 +54,11 @@ export default async function ClientHistoryPage() {
           <p className="text-sm text-stone-500 mt-1">Total events completed</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">Lifetime client revenue</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-200">{clientsWithEvents}</p>
+          <p className="text-2xl font-bold text-amber-700">{clientsWithEvents}</p>
           <p className="text-sm text-stone-500 mt-1">Clients with past events</p>
         </Card>
       </div>

@@ -11,7 +11,7 @@ export default function TermsPage() {
     <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
       <div className="mb-10 border-b border-stone-700 pb-8">
         <h1 className="text-4xl font-bold tracking-tight text-stone-100">Terms of Service</h1>
-        <p className="mt-3 text-sm text-stone-500">Last updated: March 5, 2026 — Version 2.0</p>
+        <p className="mt-3 text-sm text-stone-500">Last updated: March 21, 2026 — Version 2.0</p>
       </div>
 
       {/* Table of Contents */}
@@ -37,7 +37,7 @@ export default function TermsPage() {
             'Account Termination & Suspension',
             'Privacy & Data Protection',
             'Third-Party Services',
-            'Workflow Tools Disclosure',
+            'AI Features Disclosure',
             'Acceptable Use Policy',
             'Loyalty Program',
             'Changes to These Terms',
@@ -106,8 +106,8 @@ export default function TermsPage() {
                 'The authenticated interface at /my-events, /my-quotes, /my-chat, and related pages where Clients view Events, approve Quotes, and make payments.',
               ],
               [
-                'Private Processing',
-                "ChefFlow's private processing infrastructure running on ChefFlow's own systems. Conversation content is processed privately and never stored on ChefFlow's servers — it stays in the Chef's browser.",
+                'Private AI',
+                "ChefFlow's private AI (Ollama) running on ChefFlow's own infrastructure. Conversation content is processed privately and never stored on ChefFlow's servers — it stays in the Chef's browser.",
               ],
               [
                 'Manual Payment',
@@ -166,7 +166,7 @@ export default function TermsPage() {
           <ul className="mb-6 list-disc space-y-2 pl-5 leading-relaxed">
             <li>
               Business management tools for independent Chefs: scheduling, client CRM, financial
-              tracking, quote and invoice generation, receipt management, draft assistance, and
+              tracking, quote and invoice generation, receipt management, AI-assisted drafting, and
               reporting
             </li>
             <li>
@@ -781,23 +781,20 @@ export default function TermsPage() {
             transmitted to and from ChefFlow is encrypted in transit (TLS) and at rest.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
-            Workflow Data Handling
-          </h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">AI Data Handling</h3>
           <p className="mb-4 leading-relaxed">
-            Conversations in ChefFlow&apos;s drafting and workflow tools are processed on
-            ChefFlow&apos;s private infrastructure and are{' '}
-            <strong>never stored on ChefFlow&apos;s servers</strong>. Conversation history lives in
-            the Chef&apos;s browser (IndexedDB) and never leaves their device. ChefFlow collects
-            only anonymous usage metrics (counts and categories — never conversation content).
+            Remy conversations are processed by ChefFlow&apos;s private AI infrastructure (Ollama)
+            and are <strong>never stored on ChefFlow&apos;s servers</strong>. Conversation history
+            lives in the Chef&apos;s browser (IndexedDB) and never leaves their device. ChefFlow
+            collects only anonymous usage metrics (counts and categories — never conversation
+            content).
           </p>
           <p className="mb-6 leading-relaxed">
             Some non-conversation features use external APIs for item-level data: Spoonacular
             (nutrition), Kroger and MealMe (grocery pricing), and Instacart (cart links). These
             services receive ingredient or product names only — never client PII, conversation
-            content, or personally identifiable information. If ChefFlow&apos;s private processing
-            service is offline, these tools display an error rather than fall back to any external
-            provider.
+            content, or personally identifiable information. If Ollama is offline, private AI
+            features display an error rather than fall back to any external AI service.
           </p>
 
           <h3 className="mb-2 text-base font-semibold text-stone-200">GDPR (EU Users)</h3>
@@ -857,8 +854,8 @@ export default function TermsPage() {
                   ['Vercel', 'Application hosting'],
                   ['Google', 'Calendar sync, Gmail integration (optional, Chef-authorized)'],
                   [
-                    'ChefFlow Processing Service',
-                    'Private drafting and workflow processing on ChefFlow infrastructure (conversations never stored on servers)',
+                    'Ollama',
+                    'Private AI inference on ChefFlow infrastructure (conversations never stored on servers)',
                   ],
                   ['Resend', 'Transactional email delivery'],
                   [
@@ -880,27 +877,25 @@ export default function TermsPage() {
 
         {/* §17 */}
         <section id="s17">
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">
-            17. Workflow Tools Disclosure
-          </h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">17. AI Features Disclosure</h2>
           <p className="mb-4 leading-relaxed">
-            ChefFlow incorporates drafting, scheduling, and workflow tools to help chefs move faster
-            without giving up control. By using these features, you acknowledge:
+            ChefFlow incorporates AI-assisted features to help chefs with drafting, scheduling, and
+            business analysis. By using these features, you acknowledge:
           </p>
           <ol className="list-decimal space-y-3 pl-5 leading-relaxed">
             <li>
-              <strong>All generated output is a draft or suggestion.</strong> No generated output
-              becomes canonical or takes effect without your explicit confirmation.
+              <strong>All AI output is a draft or suggestion.</strong> No AI output becomes
+              canonical or takes effect without your explicit confirmation.
             </li>
             <li>
-              <strong>The platform does not make autonomous decisions.</strong> ChefFlow never
-              initiates ledger entries, event state transitions, client data changes, or payments
-              without human approval.
+              <strong>AI does not make autonomous decisions.</strong> ChefFlow AI never initiates
+              ledger entries, event state transitions, client data changes, or payments without
+              human approval.
             </li>
             <li>
-              <strong>Conversations are private by architecture.</strong> Conversations are
-              processed on ChefFlow&apos;s own private infrastructure and are never stored on
-              ChefFlow&apos;s servers. Conversation history lives in your browser only. ChefFlow
+              <strong>Conversations are private by architecture.</strong> Remy conversations are
+              processed on ChefFlow&apos;s own private infrastructure (Ollama) and are never stored
+              on ChefFlow&apos;s servers. Conversation history lives in your browser only. ChefFlow
               structurally cannot access your conversation content.
             </li>
             <li>
@@ -909,13 +904,13 @@ export default function TermsPage() {
               only (e.g., &ldquo;broccoli price&rdquo;) — never client PII or conversation content.
             </li>
             <li>
-              <strong>Offline behavior.</strong> If ChefFlow&apos;s private processing service is
-              not running, these tools will fail with an error message and will not fall back to any
-              external provider.
+              <strong>Ollama offline behavior.</strong> If Ollama is not running, private AI
+              features will fail with an error message and will not fall back to any external AI
+              provider.
             </li>
             <li>
-              <strong>You may opt out.</strong> Any optional drafting or workflow tool may be
-              declined without losing access to the platform&apos;s core functionality.
+              <strong>You may opt out.</strong> Any AI feature may be declined without losing access
+              to the platform&apos;s core functionality.
             </li>
           </ol>
         </section>

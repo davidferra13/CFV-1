@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DollarSign, Loader2, Bot } from '@/components/ui/icons'
+import { DollarSign, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { draftGratuityFraming, type GratuityFramingDraft } from '@/lib/ai/gratuity-framing'
@@ -46,7 +46,7 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Get Guidance
               </>
             )}
@@ -75,7 +75,7 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
       <div className="text-xs text-stone-400">{result.approachRationale}</div>
 
       {result.suggestedGratuityRangePercent && (
-        <div className="bg-green-950 rounded p-2 text-xs text-green-200">
+        <div className="bg-green-950 rounded p-2 text-xs text-green-800">
           Suggested range: {result.suggestedGratuityRangePercent.min}%–
           {result.suggestedGratuityRangePercent.max}%
         </div>

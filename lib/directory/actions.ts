@@ -9,7 +9,12 @@
 // Other chefs must be approved by the admin to appear in the public listing.
 
 import { createServerClient } from '@/lib/supabase/server'
-import { isFounderEmail } from '@/lib/platform/owner-account'
+
+/**
+ * Hardcoded founder email — this account is ALWAYS listed in the directory,
+ * regardless of any flags. This is the platform owner.
+ */
+const FOUNDER_EMAIL = 'davidferra13@gmail.com'
 
 export type DirectoryPartnerLocation = {
   id: string
@@ -83,7 +88,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
 
   // Filter: must be directory_approved=true OR be the founder
   const approved = (data || []).filter((c: any) => {
-    const isFounder = isFounderEmail(c.email)
+    const isFounder = (c.email || '').toLowerCase() === FOUNDER_EMAIL
     return c.directory_approved === true || isFounder
   })
 
@@ -147,7 +152,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
     tagline: c.tagline ?? null,
     bio: c.bio ?? null,
     profile_image_url: c.profile_image_url ?? null,
-    is_founder: isFounderEmail(c.email),
+    is_founder: (c.email || '').toLowerCase() === FOUNDER_EMAIL,
     partners: partnersMap[c.id] || [],
   }))
 }

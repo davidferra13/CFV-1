@@ -34,7 +34,7 @@ import {
   ChevronRight,
   Bookmark,
   Plus,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 interface RemyConversationListProps {

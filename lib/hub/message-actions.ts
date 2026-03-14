@@ -65,19 +65,6 @@ export async function postHubMessage(
     .single()
 
   if (error) throw new Error(`Failed to post message: ${error.message}`)
-
-  // Non-blocking: notify other circle members via email
-  try {
-    const { notifyCircleMembers } = await import('./circle-notification-actions')
-    void notifyCircleMembers({
-      groupId: validated.groupId,
-      authorProfileId: profile.id,
-      messageBody: validated.body,
-    })
-  } catch {
-    // Non-blocking
-  }
-
   return data as HubMessage
 }
 
@@ -361,7 +348,7 @@ export async function deleteHubMessage(input: {
 }
 
 /**
- * Mark messages as read for a member. Also records per-message reads for "Seen by."
+ * Mark messages as read for a member.
  */
 export async function markHubRead(input: { groupId: string; profileToken: string }): Promise<void> {
   const supabase = createServerClient({ admin: true })
@@ -374,180 +361,11 @@ export async function markHubRead(input: { groupId: string; profileToken: string
 
   if (!profile) return
 
-  // Record per-message reads before updating last_read_at (order matters)
-  try {
-    await recordMessageReads(input)
-  } catch {
-    // Non-blocking: per-message reads are a nice-to-have
-  }
-
   await supabase
     .from('hub_group_members')
     .update({ last_read_at: new Date().toISOString() })
     .eq('group_id', input.groupId)
     .eq('profile_id', profile.id)
-}
-
-/**
- * Record per-message reads for "Seen by" feature.
- * Called alongside markHubRead to populate hub_message_reads.
- */
-export async function recordMessageReads(input: {
-  groupId: string
-  profileToken: string
-}): Promise<void> {
-  const supabase = createServerClient({ admin: true })
-
-  const { data: profile } = await supabase
-    .from('hub_guest_profiles')
-    .select('id')
-    .eq('profile_token', input.profileToken)
-    .single()
-
-  if (!profile) return
-
-  // Get member's last_read_at to find which messages are newly read
-  const { data: membership } = await supabase
-    .from('hub_group_members')
-    .select('last_read_at')
-    .eq('group_id', input.groupId)
-    .eq('profile_id', profile.id)
-    .single()
-
-  if (!membership) return
-
-  // Find messages in this group that this member hasn't read yet
-  let query = supabase
-    .from('hub_messages')
-    .select('id')
-    .eq('group_id', input.groupId)
-    .is('deleted_at', null)
-    .neq('author_profile_id', profile.id) // Don't record reads on own messages
-    .order('created_at', { ascending: false })
-    .limit(50) // Only track recent messages
-
-  if (membership.last_read_at) {
-    query = query.gt('created_at', membership.last_read_at)
-  }
-
-  const { data: unreadMessages } = await query
-  if (!unreadMessages || unreadMessages.length === 0) return
-
-  // Bulk upsert reads (ignore conflicts from duplicate reads)
-  const rows = unreadMessages.map((m) => ({
-    message_id: m.id,
-    profile_id: profile.id,
-  }))
-
-  await supabase.from('hub_message_reads').upsert(rows, {
-    onConflict: 'message_id,profile_id',
-    ignoreDuplicates: true,
-  })
-}
-
-/**
- * Get who has read a specific message. Returns profile names + avatars.
- */
-export async function getMessageReaders(
-  messageId: string
-): Promise<
-  { profile_id: string; display_name: string; avatar_url: string | null; read_at: string }[]
-> {
-  const supabase = createServerClient({ admin: true })
-
-  const { data, error } = await supabase
-    .from('hub_message_reads')
-    .select('profile_id, read_at, hub_guest_profiles!profile_id(display_name, avatar_url)')
-    .eq('message_id', messageId)
-    .order('read_at', { ascending: true })
-    .limit(20)
-
-  if (error || !data) return []
-
-  return data.map((r) => {
-    const profile = r.hub_guest_profiles as unknown as {
-      display_name: string
-      avatar_url: string | null
-    } | null
-    return {
-      profile_id: r.profile_id,
-      display_name: profile?.display_name ?? 'Guest',
-      avatar_url: profile?.avatar_url ?? null,
-      read_at: r.read_at,
-    }
-  })
-}
-
-/**
- * Edit a message body. Only the author can edit.
- */
-export async function editHubMessage(input: {
-  messageId: string
-  profileToken: string
-  body: string
-}): Promise<void> {
-  const supabase = createServerClient({ admin: true })
-
-  const { data: profile } = await supabase
-    .from('hub_guest_profiles')
-    .select('id')
-    .eq('profile_token', input.profileToken)
-    .single()
-
-  if (!profile) throw new Error('Invalid profile token')
-
-  const { data: message } = await supabase
-    .from('hub_messages')
-    .select('author_profile_id')
-    .eq('id', input.messageId)
-    .single()
-
-  if (!message) throw new Error('Message not found')
-  if (message.author_profile_id !== profile.id) {
-    throw new Error('Only the author can edit a message')
-  }
-
-  const trimmed = input.body.trim()
-  if (!trimmed || trimmed.length > 2000) throw new Error('Invalid message body')
-
-  const { error } = await supabase
-    .from('hub_messages')
-    .update({ body: trimmed, edited_at: new Date().toISOString() })
-    .eq('id', input.messageId)
-
-  if (error) throw new Error(`Failed to edit message: ${error.message}`)
-}
-
-/**
- * Search messages in a group by keyword.
- */
-export async function searchHubMessages(input: {
-  groupId: string
-  query: string
-  limit?: number
-}): Promise<HubMessage[]> {
-  const supabase = createServerClient({ admin: true })
-  const limit = input.limit ?? 20
-  const q = input.query.trim()
-
-  if (!q || q.length < 2) return []
-
-  const { data, error } = await supabase
-    .from('hub_messages')
-    .select('*, hub_guest_profiles!author_profile_id(*)')
-    .eq('group_id', input.groupId)
-    .is('deleted_at', null)
-    .ilike('body', `%${q}%`)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) return []
-
-  return (data ?? []).map((m) => ({
-    ...m,
-    author: m.hub_guest_profiles ?? undefined,
-    hub_guest_profiles: undefined,
-  })) as HubMessage[]
 }
 
 // ---------------------------------------------------------------------------

@@ -162,7 +162,7 @@ export const OVERLAY_CONFIGS: Record<string, HolidayOverlayConfig> = {
   },
   hanukkah: {
     label: 'Hanukkah',
-    emoji: '🕎',
+    emoji: '✨',
     type: 'falling',
     colors: ['#002868', '#d4af37', '#87ceeb'],
     count: 20,

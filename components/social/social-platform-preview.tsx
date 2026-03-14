@@ -2,7 +2,7 @@
 
 import type { SocialPlatform } from '@/lib/social/types'
 import { SOCIAL_PLATFORM_LABELS } from '@/lib/social/types'
-import { Image as ImageIcon } from '@/components/ui/icons'
+import { Image as ImageIcon } from 'lucide-react'
 
 const PLATFORM_CHAR_LIMITS: Record<SocialPlatform, number> = {
   instagram: 2200,

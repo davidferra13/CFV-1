@@ -187,7 +187,7 @@ export default async function SharePage({ params }: { params: { token: string } 
                       {eventData.dietaryInfo.restrictions.map((r: string) => (
                         <span
                           key={r}
-                          className="px-2.5 py-1 bg-amber-950 text-amber-200 rounded-full text-xs font-medium"
+                          className="px-2.5 py-1 bg-amber-950 text-amber-700 rounded-full text-xs font-medium"
                         >
                           {r}
                         </span>
@@ -202,7 +202,7 @@ export default async function SharePage({ params }: { params: { token: string } 
                     {eventData.dietaryInfo.allergies.map((a: string) => (
                       <span
                         key={a}
-                        className="px-2.5 py-1 bg-red-950 text-red-200 rounded-full text-xs font-medium"
+                        className="px-2.5 py-1 bg-red-950 text-red-700 rounded-full text-xs font-medium"
                       >
                         {a}
                       </span>

@@ -9,7 +9,7 @@ import {
 } from '@/lib/finance/sales-tax-actions'
 import { SalesTaxPanel } from '@/components/finance/sales-tax-panel'
 import { Badge } from '@/components/ui/badge'
-import { Settings } from '@/components/ui/icons'
+import { Settings } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Sales Tax — ChefFlow' }
 
@@ -54,7 +54,7 @@ export default async function SalesTaxPage() {
 
       {!settings?.enabled && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
-          <p className="text-sm text-amber-200">
+          <p className="text-sm text-amber-800">
             Sales tax collection is <strong>disabled</strong>.{' '}
             <Link href="/finance/sales-tax/settings" className="underline hover:text-amber-900">
               Enable it in Settings →
@@ -85,18 +85,12 @@ export default async function SalesTaxPage() {
 
       <SalesTaxPanel summary={summary} unremittedEvents={unremitted} remittances={remittances} />
 
-      <div className="pt-2 flex flex-col sm:flex-row gap-3">
+      <div className="pt-2">
         <Link
           href="/finance/sales-tax/remittances"
           className="text-sm text-brand-600 hover:underline"
         >
           View full remittance history →
-        </Link>
-        <Link
-          href="/finance/sales-tax/jurisdictions"
-          className="text-sm text-brand-600 hover:underline"
-        >
-          Manage tax jurisdictions & filings →
         </Link>
       </div>
     </div>

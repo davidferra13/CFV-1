@@ -9,22 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IncidentResolutionTracker } from '@/components/safety/incident-resolution-tracker'
 
-export const metadata: Metadata = { title: 'Incident Detail - ChefFlow' }
-
-const TYPE_VARIANT: Record<string, 'error' | 'warning' | 'info' | 'default'> = {
-  food_safety: 'error',
-  guest_injury: 'error',
-  property_damage: 'warning',
-  equipment_failure: 'warning',
-  near_miss: 'info',
-  other: 'default',
-}
-
-const STATUS_VARIANT: Record<string, 'warning' | 'info' | 'success'> = {
-  open: 'warning',
-  in_progress: 'info',
-  resolved: 'success',
-}
+export const metadata: Metadata = { title: 'Incident Detail — ChefFlow' }
 
 export default async function IncidentDetailPage({ params }: { params: { id: string } }) {
   const chef = await requireChef()
@@ -41,22 +26,39 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
     notFound()
   }
 
+  const severityVariant: Record<string, 'error' | 'warning' | 'info' | 'default'> = {
+    critical: 'error',
+    high: 'error',
+    medium: 'warning',
+    low: 'info',
+  }
+
+  const statusVariant: Record<string, 'warning' | 'success' | 'default'> = {
+    open: 'warning',
+    resolved: 'success',
+    closed: 'default',
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-100">Incident Report</h1>
-          <p className="mt-1 text-sm text-stone-500">#{params.id.slice(0, 8).toUpperCase()}</p>
+          <h1 className="text-2xl font-bold text-stone-100">
+            {(incident as any).title ?? 'Incident Report'}
+          </h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Incident #{params.id.slice(0, 8).toUpperCase()}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          {incident.incident_type && (
-            <Badge variant={TYPE_VARIANT[incident.incident_type] ?? 'default'}>
-              {incident.incident_type.replace(/_/g, ' ')}
+          {(incident as any).severity && (
+            <Badge variant={severityVariant[(incident as any).severity] ?? 'default'}>
+              {(incident as any).severity}
             </Badge>
           )}
-          {incident.resolution_status && (
-            <Badge variant={STATUS_VARIANT[incident.resolution_status] ?? 'default'}>
-              {incident.resolution_status.replace(/_/g, ' ')}
+          {(incident as any).status && (
+            <Badge variant={statusVariant[(incident as any).status] ?? 'default'}>
+              {(incident as any).status}
             </Badge>
           )}
         </div>
@@ -68,39 +70,36 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
           <CardTitle className="text-base">Incident Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-stone-300">
-          {incident.incident_date && (
+          {(incident as any).incident_date && (
             <div className="flex gap-2">
               <span className="font-medium text-stone-500 w-28 shrink-0">Date</span>
-              <span>
-                {new Date(incident.incident_date).toLocaleString('en-US', {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                })}
+              <span>{new Date((incident as any).incident_date).toLocaleDateString()}</span>
+            </div>
+          )}
+          {(incident as any).location && (
+            <div className="flex gap-2">
+              <span className="font-medium text-stone-500 w-28 shrink-0">Location</span>
+              <span>{(incident as any).location}</span>
+            </div>
+          )}
+          {(incident as any).incident_type && (
+            <div className="flex gap-2">
+              <span className="font-medium text-stone-500 w-28 shrink-0">Type</span>
+              <span className="capitalize">
+                {(incident as any).incident_type.replace(/_/g, ' ')}
               </span>
             </div>
           )}
-          {incident.incident_type && (
-            <div className="flex gap-2">
-              <span className="font-medium text-stone-500 w-28 shrink-0">Type</span>
-              <span className="capitalize">{incident.incident_type.replace(/_/g, ' ')}</span>
-            </div>
-          )}
-          {incident.parties_involved && (
-            <div className="flex gap-2">
-              <span className="font-medium text-stone-500 w-28 shrink-0">Parties</span>
-              <span>{incident.parties_involved}</span>
-            </div>
-          )}
-          {incident.description && (
+          {(incident as any).description && (
             <div>
               <p className="font-medium text-stone-500 mb-1">Description</p>
-              <p className="whitespace-pre-wrap">{incident.description}</p>
+              <p className="whitespace-pre-wrap">{(incident as any).description}</p>
             </div>
           )}
-          {incident.immediate_action && (
+          {(incident as any).immediate_actions && (
             <div>
-              <p className="font-medium text-stone-500 mb-1">Immediate Action Taken</p>
-              <p className="whitespace-pre-wrap">{incident.immediate_action}</p>
+              <p className="font-medium text-stone-500 mb-1">Immediate Actions Taken</p>
+              <p className="whitespace-pre-wrap">{(incident as any).immediate_actions}</p>
             </div>
           )}
         </CardContent>

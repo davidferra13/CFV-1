@@ -1,12 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Plus } from '@/components/ui/icons'
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 import type { GoalView, GoalCategory, GoalCheckIn } from '@/lib/goals/types'
 import { GOAL_CATEGORY_META } from '@/lib/goals/types'
 import { GoalCard } from './goal-card'
-import { GOAL_CATEGORY_ICON_MAP, DEFAULT_GOAL_CATEGORY_ICON } from './goal-category-icons'
+
+const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {}
+
+// Dynamic icon loading using lucide-react
+import * as LucideIcons from 'lucide-react'
+for (const [name, comp] of Object.entries(LucideIcons)) {
+  if (typeof comp === 'function') {
+    ICON_COMPONENTS[name] = comp as React.ComponentType<{ className?: string }>
+  }
+}
 
 interface CategorySectionProps {
   category: GoalCategory
@@ -22,7 +31,7 @@ export function CategorySection({ category, goals, id, onCheckIn }: CategorySect
 
   if (!meta) return null
 
-  const Icon = GOAL_CATEGORY_ICON_MAP[meta.icon] ?? DEFAULT_GOAL_CATEGORY_ICON
+  const Icon = ICON_COMPONENTS[meta.icon] ?? LucideIcons.Target
   const avgProgress =
     goals.length > 0
       ? Math.round(
@@ -44,10 +53,10 @@ export function CategorySection({ category, goals, id, onCheckIn }: CategorySect
             <span
               className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 avgProgress >= 75
-                  ? 'bg-emerald-900 text-emerald-200'
+                  ? 'bg-emerald-900 text-emerald-700'
                   : avgProgress >= 40
-                    ? 'bg-amber-900 text-amber-200'
-                    : 'bg-red-900 text-red-200'
+                    ? 'bg-amber-900 text-amber-700'
+                    : 'bg-red-900 text-red-700'
               }`}
             >
               {avgProgress}%

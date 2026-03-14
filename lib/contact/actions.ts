@@ -1,28 +1,19 @@
 // Contact Form Server Actions
 // Stores public contact form submissions for admin review.
-// Auto-assigns to the resolved platform owner account when available.
+// If PLATFORM_OWNER_CHEF_ID is set, auto-assigns to the platform owner.
 
 'use server'
 
-import { headers } from 'next/headers'
-import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
-import { resolveOwnerChefId } from '@/lib/platform/owner-account'
 
 interface ContactFormData {
   name: string
   email: string
   subject: string
   message: string
-  website?: string
 }
 
 export async function submitContactForm(data: ContactFormData) {
-  if (data.website?.trim()) {
-    // Honeypot filled by bots; return success to avoid retries.
-    return { success: true }
-  }
-
   const name = data.name?.trim()
   const email = data.email?.trim().toLowerCase()
   const subject = data.subject?.trim() || null
@@ -40,15 +31,6 @@ export async function submitContactForm(data: ContactFormData) {
     throw new Error('Message must be at least 10 characters')
   }
 
-  const hdrs = await headers()
-  const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  try {
-    await checkRateLimit(`contact:ip:${ip}`, 8, 5 * 60_000)
-    await checkRateLimit(`contact:email:${email}`, 4, 60 * 60_000)
-  } catch {
-    throw new Error('Too many submissions. Please try again later.')
-  }
-
   // Use admin client since this is a public form (no auth required)
   const supabase = createServerClient({ admin: true })
 
@@ -63,8 +45,8 @@ export async function submitContactForm(data: ContactFormData) {
     throw new Error('Failed to submit message. Please try again.')
   }
 
-  // Auto-assign to resolved owner account.
-  const ownerChefId = await resolveOwnerChefId(supabase)
+  // Auto-assign to platform owner if configured
+  const ownerChefId = process.env.PLATFORM_OWNER_CHEF_ID
   if (ownerChefId && submission?.id) {
     try {
       await autoAssignToOwner(supabase, submission.id, ownerChefId, {

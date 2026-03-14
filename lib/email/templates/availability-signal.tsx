@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type AvailabilitySignalProps = {
   clientName: string
@@ -11,7 +11,6 @@ type AvailabilitySignalProps = {
   title: string
   date: string
   publicNote: string | null
-  brand?: ChefBrandProps
 }
 
 export function AvailabilitySignalEmail({
@@ -20,10 +19,9 @@ export function AvailabilitySignalEmail({
   title,
   date,
   publicNote,
-  brand,
 }: AvailabilitySignalProps) {
   return (
-    <BaseLayout brand={brand} preview={`${chefName} has availability on ${date}`}>
+    <BaseLayout preview={`${chefName} has availability on ${date}`}>
       <Text style={heading}>New Availability</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

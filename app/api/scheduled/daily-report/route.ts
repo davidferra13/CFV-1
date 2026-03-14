@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       const chefName = chef.business_name || 'Chef'
 
       // Send email
-      const emailResult = await sendEmail({
+      const emailSent = await sendEmail({
         to: authUser.user.email,
         subject: `Daily Report — ${new Date(today + 'T00:00:00Z').toLocaleDateString('en-US', {
           weekday: 'long',
@@ -71,7 +71,7 @@ export async function GET(request: Request) {
         }),
       })
 
-      if (emailResult.success) {
+      if (emailSent) {
         // Mark email_sent_at
         await supabase
           .from('daily_reports')
@@ -80,7 +80,6 @@ export async function GET(request: Request) {
           .eq('report_date', today)
         sent++
       } else {
-        console.error('[daily-report-cron] Email send failed:', emailResult.error)
         failed++
       }
     } catch (err) {

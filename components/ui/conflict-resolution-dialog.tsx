@@ -110,8 +110,8 @@ export function ConflictResolutionDialog({
               {diffs.map((row) => (
                 <tr key={row.field} className="border-t border-stone-800 align-top">
                   <td className="px-3 py-2 font-medium text-stone-300">{row.field}</td>
-                  <td className="px-3 py-2 text-amber-200 whitespace-pre-wrap">{row.mine}</td>
-                  <td className="px-3 py-2 text-emerald-200 whitespace-pre-wrap">{row.latest}</td>
+                  <td className="px-3 py-2 text-amber-700 whitespace-pre-wrap">{row.mine}</td>
+                  <td className="px-3 py-2 text-emerald-700 whitespace-pre-wrap">{row.latest}</td>
                 </tr>
               ))}
             </tbody>

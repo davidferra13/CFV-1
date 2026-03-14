@@ -6,15 +6,7 @@
 // Replaces the flat allergy string[] with severity-aware, source-tracked records.
 
 import { useState, useTransition } from 'react'
-import {
-  ShieldAlert,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
-  Plus,
-  Trash2,
-  Loader2,
-} from '@/components/ui/icons'
+import { ShieldAlert, AlertTriangle, Info, CheckCircle2, Plus, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -257,7 +249,7 @@ function AllergyRecordRow({
             <>
               <button
                 onClick={() => setShowConfirmSeverity(!showConfirmSeverity)}
-                className="text-xs text-green-200 hover:text-green-200 font-medium flex items-center gap-0.5 border border-green-300 rounded px-1.5 py-0.5 bg-stone-900"
+                className="text-xs text-green-700 hover:text-green-800 font-medium flex items-center gap-0.5 border border-green-300 rounded px-1.5 py-0.5 bg-stone-900"
               >
                 <CheckCircle2 className="h-3 w-3" />
                 Confirm
@@ -357,7 +349,7 @@ export function AllergyRecordsPanel({ clientId, initialRecords }: AllergyRecords
           <AddAllergyForm clientId={clientId} onAdded={handleUpdate} />
         </div>
         {unconfirmed.length > 0 && (
-          <p className="text-xs text-amber-200 mt-1">
+          <p className="text-xs text-amber-700 mt-1">
             {unconfirmed.length} auto-detected allergen{unconfirmed.length > 1 ? 's' : ''} need your
             confirmation before they lock into planning documents.
           </p>

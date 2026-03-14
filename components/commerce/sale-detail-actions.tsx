@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Download, XCircle, RotateCcw, DollarSign } from '@/components/ui/icons'
+import { Download, XCircle, RotateCcw, DollarSign } from 'lucide-react'
 import { voidSale } from '@/lib/commerce/sale-actions'
 import { createRefund } from '@/lib/commerce/refund-actions'
 import { recordPayment } from '@/lib/commerce/payment-actions'
@@ -15,7 +15,6 @@ import { generateReceipt } from '@/lib/commerce/receipt-actions'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import type { SaleStatus } from '@/lib/commerce/constants'
 import { TERMINAL_SALE_STATUSES } from '@/lib/commerce/constants'
-import { MANUAL_REASON_MAX_LENGTH, MANUAL_REASON_MIN_LENGTH } from '@/lib/commerce/mutation-reason'
 
 type Props = {
   saleId: string
@@ -83,26 +82,11 @@ export function SaleDetailActions({
   }
 
   function handleVoid() {
-    const normalizedVoidReason = voidReason.trim()
-    if (!normalizedVoidReason) {
-      toast.error('Enter a reason for voiding this sale')
-      return
-    }
-    if (normalizedVoidReason.length < MANUAL_REASON_MIN_LENGTH) {
-      toast.error(`Void reason must be at least ${MANUAL_REASON_MIN_LENGTH} characters`)
-      return
-    }
-    if (normalizedVoidReason.length > MANUAL_REASON_MAX_LENGTH) {
-      toast.error(`Void reason must be <= ${MANUAL_REASON_MAX_LENGTH} characters`)
-      return
-    }
-
     startTransition(async () => {
       try {
-        await voidSale(saleId, normalizedVoidReason)
+        await voidSale(saleId, voidReason.trim() || 'Voided by chef')
         toast.success('Sale voided')
         setShowVoidConfirm(false)
-        setVoidReason('')
         router.refresh()
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to void sale')
@@ -122,14 +106,6 @@ export function SaleDetailActions({
     }
     if (!refundReason.trim()) {
       toast.error('Enter a reason for the refund')
-      return
-    }
-    if (refundReason.trim().length < MANUAL_REASON_MIN_LENGTH) {
-      toast.error(`Refund reason must be at least ${MANUAL_REASON_MIN_LENGTH} characters`)
-      return
-    }
-    if (refundReason.trim().length > MANUAL_REASON_MAX_LENGTH) {
-      toast.error(`Refund reason must be <= ${MANUAL_REASON_MAX_LENGTH} characters`)
       return
     }
 
@@ -253,12 +229,11 @@ export function SaleDetailActions({
               Are you sure you want to void this sale? This cannot be undone.
             </p>
             <div className="mb-3">
-              <label className="text-stone-400 text-sm block mb-1">Reason (required)</label>
+              <label className="text-stone-400 text-sm block mb-1">Reason (optional)</label>
               <Input
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}
                 placeholder="e.g. Entered in error"
-                maxLength={MANUAL_REASON_MAX_LENGTH}
               />
             </div>
             <div className="flex gap-2">
@@ -374,7 +349,6 @@ export function SaleDetailActions({
                   value={refundReason}
                   onChange={(e) => setRefundReason(e.target.value)}
                   placeholder="e.g. Customer dissatisfied"
-                  maxLength={MANUAL_REASON_MAX_LENGTH}
                 />
               </div>
             </div>

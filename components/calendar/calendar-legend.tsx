@@ -32,10 +32,10 @@ export function CalendarLegend() {
   const categories = Object.keys(grouped) as CalendarCategory[]
 
   return (
-    <div className="border border-stone-700 rounded-xl overflow-hidden">
+    <div className="border border-stone-200 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-stone-800 text-sm font-medium text-stone-300 hover:bg-stone-700 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-stone-50 text-sm font-medium text-stone-600 hover:bg-stone-100 transition-colors"
       >
         <span>Color Legend</span>
         <span className="text-stone-400">{open ? '▲' : '▼'}</span>
@@ -61,7 +61,7 @@ export function CalendarLegend() {
                         opacity: entry.borderStyle && entry.borderStyle !== 'solid' ? 0.6 : 1,
                       }}
                     />
-                    <span className="text-xs text-stone-300">{entry.label}</span>
+                    <span className="text-xs text-stone-600">{entry.label}</span>
                   </div>
                 ))}
               </div>

@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { DocumentUploadField } from '@/components/documents/document-upload-field'
 import { saveW9Data } from '@/lib/finance/contractor-actions'
-import { CheckCircle, AlertTriangle, FileText } from '@/components/ui/icons'
+import { CheckCircle, AlertTriangle, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 type W9Data = {
@@ -115,8 +114,8 @@ export function W9FormPanel({ staffMembers }: Props) {
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-200">W-9 Required</p>
-                <p className="text-xs text-amber-200 mt-1">
+                <p className="text-sm font-medium text-amber-800">W-9 Required</p>
+                <p className="text-xs text-amber-700 mt-1">
                   {missing
                     .map((m) => `${m.name} (${formatCents(m.ytdPaymentsCents)} YTD)`)
                     .join(', ')}{' '}
@@ -288,28 +287,6 @@ export function W9FormPanel({ staffMembers }: Props) {
               onChange={(e) => setForm({ ...form, w9SignedDate: e.target.value || null })}
             />
 
-            <DocumentUploadField
-              label="Upload W-9"
-              description="Store the signed W-9 directly in ChefFlow."
-              documentType="general"
-              entityType="staff_member"
-              entityId={selected}
-              tags={['w9', 'tax', 'staff']}
-              revalidatePaths={['/documents', '/finance/tax']}
-              initialUrl={form.w9DocumentUrl}
-              initialName={form.w9DocumentUrl ? 'Current W-9 file' : null}
-              onUploaded={(document) => setForm({ ...form, w9DocumentUrl: document.url })}
-              onCleared={() => setForm({ ...form, w9DocumentUrl: null })}
-            />
-
-            <Input
-              label="Document Link"
-              type="url"
-              value={form.w9DocumentUrl ?? ''}
-              onChange={(e) => setForm({ ...form, w9DocumentUrl: e.target.value || null })}
-              placeholder="Optional external link or uploaded ChefFlow file"
-            />
-
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
@@ -324,7 +301,7 @@ export function W9FormPanel({ staffMembers }: Props) {
             </div>
 
             {form.w9Collected && (
-              <div className="flex items-center gap-2 text-sm text-emerald-200 bg-emerald-950 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
                 <CheckCircle className="h-4 w-4" />
                 W-9 marked as on file
               </div>

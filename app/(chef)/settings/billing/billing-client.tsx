@@ -8,15 +8,7 @@ import type { SubscriptionStatus } from '@/lib/stripe/subscription'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PRO_FEATURES } from '@/lib/billing/pro-features'
-import {
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  CreditCard,
-  Crown,
-  Star,
-  X,
-} from '@/components/ui/icons'
+import { CheckCircle2, Clock, AlertTriangle, CreditCard, Star, Sparkles, X } from 'lucide-react'
 
 type Props = {
   status: SubscriptionStatus
@@ -41,7 +33,7 @@ const FREE_FEATURES = [
 
 // Group Pro features by category for display
 const PRO_CATEGORIES = [
-  { label: 'Command Center & Drafting', features: PRO_FEATURES.filter((f) => f.category === 'ai') },
+  { label: 'AI Assistant (Remy)', features: PRO_FEATURES.filter((f) => f.category === 'ai') },
   {
     label: 'Analytics & Insights',
     features: PRO_FEATURES.filter((f) => f.category === 'analytics'),
@@ -85,8 +77,8 @@ export function BillingClient({ status, upgraded }: Props) {
       {/* Post-upgrade success message */}
       {upgraded && (
         <div className="rounded-xl bg-green-950 border border-green-200 p-4 flex items-center gap-3">
-          <CheckCircle2 size={18} className="text-green-600 shrink-0" />
-          <p className="text-sm font-medium text-green-200">
+          <Sparkles size={18} className="text-green-600 shrink-0" />
+          <p className="text-sm font-medium text-green-800">
             Welcome to ChefFlow Pro! Your subscription is now active.
           </p>
         </div>
@@ -145,7 +137,7 @@ export function BillingClient({ status, upgraded }: Props) {
           )}
 
           {status.isExpired && (
-            <div className="flex items-center gap-2 text-sm text-red-200">
+            <div className="flex items-center gap-2 text-sm text-red-700">
               <AlertTriangle size={15} className="shrink-0" />
               <span>Your trial has ended. Upgrade to Pro to unlock all features.</span>
             </div>
@@ -195,7 +187,7 @@ export function BillingClient({ status, upgraded }: Props) {
         <div className="rounded-xl border-2 border-brand-600 bg-gradient-to-b from-brand-50/50 to-white p-6">
           <div className="flex items-center gap-2 mb-4">
             <h3 className="text-base font-semibold text-stone-100">Pro</h3>
-            <Crown size={14} className="text-brand-500" />
+            <Sparkles size={14} className="text-brand-500" />
           </div>
           <p className="text-xs text-stone-500 mb-3">Everything in Free, plus:</p>
           <div className="space-y-3">
@@ -210,7 +202,7 @@ export function BillingClient({ status, upgraded }: Props) {
                       key={feature.slug}
                       className="flex items-start gap-2.5 text-sm text-stone-300"
                     >
-                      <Crown size={12} className="shrink-0 text-brand-500 mt-0.5" />
+                      <Sparkles size={12} className="shrink-0 text-brand-500 mt-0.5" />
                       {feature.label}
                     </li>
                   ))}
@@ -222,7 +214,7 @@ export function BillingClient({ status, upgraded }: Props) {
           {!isPro && (
             <form action={redirectToCheckout} className="mt-5">
               <Button type="submit" variant="primary" className="w-full">
-                <Crown size={15} className="mr-2" />
+                <Sparkles size={15} className="mr-2" />
                 Upgrade to Pro
               </Button>
             </form>

@@ -9,7 +9,7 @@
  * what actually happens — a closed loop within ChefFlow.
  */
 
-import { Check, X, Shield, Server } from '@/components/ui/icons'
+import { Check, X, Shield, Server } from 'lucide-react'
 
 export function DataFlowSchematic() {
   return (
@@ -332,7 +332,7 @@ export function DataFlowSchematic() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-emerald-200 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
               Remy Can
             </p>
             {[

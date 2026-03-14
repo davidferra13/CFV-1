@@ -4,13 +4,13 @@
 import type { EventTimeline } from '@/lib/scheduling/types'
 
 const TYPE_COLORS: Record<string, string> = {
-  wake: 'bg-purple-900 text-purple-200 border-purple-200',
+  wake: 'bg-purple-900 text-purple-800 border-purple-200',
   prep: 'bg-brand-900 text-brand-300 border-brand-700',
-  shopping: 'bg-green-900 text-green-200 border-green-200',
-  packing: 'bg-yellow-900 text-yellow-200 border-yellow-200',
-  departure: 'bg-orange-900 text-orange-200 border-orange-200',
-  arrival: 'bg-red-900 text-red-200 border-red-200',
-  service: 'bg-red-900 text-red-200 border-red-200',
+  shopping: 'bg-green-900 text-green-800 border-green-200',
+  packing: 'bg-yellow-900 text-yellow-800 border-yellow-200',
+  departure: 'bg-orange-900 text-orange-800 border-orange-200',
+  arrival: 'bg-red-900 text-red-800 border-red-200',
+  service: 'bg-red-900 text-red-800 border-red-200',
   milestone: 'bg-stone-800 text-stone-200 border-stone-700',
 }
 
@@ -48,7 +48,7 @@ export function TimelineView({ timeline }: { timeline: EventTimeline }) {
         <div className="space-y-2">
           {timeline.warnings.map((warning, i) => (
             <div key={i} className="bg-amber-950 border border-amber-200 rounded-lg p-3">
-              <p className="text-sm text-amber-200">{warning}</p>
+              <p className="text-sm text-amber-800">{warning}</p>
             </div>
           ))}
         </div>

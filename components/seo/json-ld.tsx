@@ -25,7 +25,7 @@ export function OrganizationJsonLd() {
         url: BASE_URL,
         logo: `${BASE_URL}/logo.jpg`,
         description:
-          'Chef-built back office for private chefs juggling inquiries, client details, menus, approvals, and follow-up.',
+          'The business operating system built by a chef, for chefs. Events, clients, menus, and payments in one calm workspace.',
         foundingDate: '2025',
         sameAs: [],
         contactPoint: {
@@ -51,14 +51,14 @@ export function SoftwareApplicationJsonLd() {
         operatingSystem: 'Web',
         url: BASE_URL,
         description:
-          'Chef operations software for private chefs who need inquiry tracking, client history, proposals, payments, and post-event follow-through in one place.',
+          'Private chef business operating system — manage events, clients, menus, quotes, payments, and kitchen ops from one platform.',
         offers: {
           '@type': 'Offer',
           price: '29.00',
           priceCurrency: 'USD',
           priceValidUntil: '2027-12-31',
           availability: 'https://schema.org/InStock',
-          description: 'ChefFlow membership for private-chef workflow and client operations',
+          description: 'Everything You Need — 14-day free trial included',
         },
         featureList: [
           'Unlimited events & clients',
@@ -104,7 +104,7 @@ export function WebSiteJsonLd() {
         '@type': 'WebSite',
         name: 'ChefFlow',
         url: BASE_URL,
-        description: 'Chef-built back office for private chefs',
+        description: 'Ops for Artists — Private chef business operating system',
         potentialAction: {
           '@type': 'SearchAction',
           target: `${BASE_URL}/chefs?q={search_term_string}`,

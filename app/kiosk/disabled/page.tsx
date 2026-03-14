@@ -69,7 +69,7 @@ export default function KioskDisabledPage() {
               Unpair Device
             </button>
           ) : (
-            <p className="text-xs text-stone-200">Hold here for 3 seconds for device options</p>
+            <p className="text-xs text-stone-700">Hold here for 3 seconds for device options</p>
           )}
         </div>
       </div>

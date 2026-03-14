@@ -3,7 +3,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Copy, Plus, Trash2 } from '@/components/ui/icons'
+import { Copy, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createApiKey, revokeApiKey } from '@/lib/api/key-actions'
 
@@ -54,7 +54,7 @@ export function ApiKeyManager({ apiKeys }: { apiKeys: ApiKey[] }) {
       {newKey && (
         <Card className="border-green-300 bg-green-950">
           <CardContent className="py-4">
-            <p className="text-sm font-medium text-green-200 mb-2">
+            <p className="text-sm font-medium text-green-800 mb-2">
               Your new API key (copy it now — it won&apos;t be shown again):
             </p>
             <div className="flex items-center gap-2">

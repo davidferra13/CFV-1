@@ -59,11 +59,11 @@ export default async function PastMenusPage() {
             <p className="text-sm text-stone-500 mt-1">Event menus served</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-200">{templateMenus.length}</p>
+            <p className="text-2xl font-bold text-amber-700">{templateMenus.length}</p>
             <p className="text-sm text-stone-500 mt-1">Menu templates</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-200">{menus.length}</p>
+            <p className="text-2xl font-bold text-green-700">{menus.length}</p>
             <p className="text-sm text-stone-500 mt-1">Total menus in library</p>
           </Card>
         </div>
@@ -121,7 +121,7 @@ export default async function PastMenusPage() {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${menu.status === 'locked' ? 'bg-green-900 text-green-200' : 'bg-stone-700 text-stone-500'}`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${menu.status === 'locked' ? 'bg-green-900 text-green-700' : 'bg-stone-700 text-stone-500'}`}
                     >
                       {menu.status === 'locked' ? 'Approved' : 'Archived'}
                     </span>

@@ -1,7 +1,6 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { DEFAULT_AI_RETENTION_DAYS } from '@/lib/ai/privacy-defaults'
 import { createServerClient } from '@/lib/supabase/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -42,7 +41,7 @@ export async function getAiPreferences(): Promise<AiPreferences> {
       remy_enabled: false,
       onboarding_completed: false,
       onboarding_completed_at: null,
-      data_retention_days: DEFAULT_AI_RETENTION_DAYS,
+      data_retention_days: null,
       allow_memory: true,
       allow_suggestions: true,
       allow_document_drafts: true,

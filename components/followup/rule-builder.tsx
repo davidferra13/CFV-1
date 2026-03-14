@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createFollowupRule, toggleFollowupRule } from '@/lib/followup/rule-actions'
-import { Zap, Plus, Power } from '@/components/ui/icons'
+import { Zap, Plus, Power } from 'lucide-react'
 import { toast } from 'sonner'
 
 type FollowupRule = {

@@ -221,7 +221,7 @@ function ClientRow({ client, isOnline }: { client: ActiveClient; isOnline: boole
         <div className="relative shrink-0">
           <span
             className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-              isHighIntent ? 'bg-amber-900 text-amber-200' : 'bg-brand-900 text-brand-400'
+              isHighIntent ? 'bg-amber-900 text-amber-700' : 'bg-brand-900 text-brand-400'
             }`}
           >
             {client.client_name.charAt(0).toUpperCase()}

@@ -3,7 +3,7 @@
 
 import { Text, Button } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type PhotosReadyProps = {
   clientName: string
@@ -13,7 +13,6 @@ type PhotosReadyProps = {
   photoCount: number
   eventId: string
   appUrl: string
-  brand?: ChefBrandProps
 }
 
 export function PhotosReadyEmail({
@@ -24,12 +23,11 @@ export function PhotosReadyEmail({
   photoCount,
   eventId,
   appUrl,
-  brand,
 }: PhotosReadyProps) {
   const photoLabel = photoCount === 1 ? '1 photo' : `${photoCount} photos`
 
   return (
-    <BaseLayout brand={brand} preview={`Your ${occasion} photos are ready to view`}>
+    <BaseLayout preview={`Your ${occasion} photos are ready to view`}>
       <Text style={heading}>Your event photos are ready!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

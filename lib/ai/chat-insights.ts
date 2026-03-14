@@ -6,7 +6,7 @@
 'use server'
 
 import { z } from 'zod'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
 
 // ============================================
@@ -106,9 +106,11 @@ export async function analyzeMessageForInsights(
   }
 
   try {
-    const result = (
-      await dispatchPrivate(SYSTEM_PROMPT, userContent.join('\n'), ChatInsightsResponseSchema)
-    ).result
+    const result = await parseWithOllama(
+      SYSTEM_PROMPT,
+      userContent.join('\n'),
+      ChatInsightsResponseSchema
+    )
     return result.insights
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

@@ -2,10 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useIsDemoMode } from '@/lib/demo-mode'
-
-const DISMISS_KEY = 'cf-cookie-consent-dismissed-until'
-const DISMISS_DAYS = 7
 
 function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
@@ -18,87 +14,46 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 export function CookieConsent() {
-  const isDemo = useIsDemoMode()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (isDemo) return
     const consent = getCookie('cookieConsent')
-    if (consent) return
-
-    try {
-      const dismissedUntilRaw = window.localStorage.getItem(DISMISS_KEY)
-      const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
-      if (dismissedUntil && dismissedUntil > Date.now()) return
-    } catch {
-      // Ignore localStorage read failures and continue showing banner.
-    }
-
-    setVisible(true)
+    if (!consent) setVisible(true)
   }, [])
 
   function handleConsent(value: 'accepted' | 'declined') {
     setCookie('cookieConsent', value, 365)
-    window.dispatchEvent(new CustomEvent('cf:cookie-consent', { detail: value }))
-    setVisible(false)
-  }
-
-  function handleDismiss() {
-    try {
-      const dismissUntil = Date.now() + DISMISS_DAYS * 864e5
-      window.localStorage.setItem(DISMISS_KEY, String(dismissUntil))
-    } catch {
-      // Ignore localStorage write failures and just hide this render.
-    }
     setVisible(false)
   }
 
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-2 left-2 right-2 z-50 max-w-[calc(100vw-1rem)] overflow-hidden animate-slide-up-fade rounded-xl border border-stone-700/60 bg-stone-900/90 px-4 py-4 shadow-lg backdrop-blur-md sm:bottom-4 sm:left-1/2 sm:right-auto sm:w-[min(42rem,calc(100vw-2rem))] sm:max-w-none sm:-translate-x-1/2 sm:px-6">
-      <button
-        type="button"
-        className="absolute right-2 top-2 rounded-md p-1 text-stone-400 transition-colors hover:text-stone-200"
-        onClick={handleDismiss}
-        aria-label="Dismiss cookie banner"
-      >
-        <span aria-hidden>x</span>
-      </button>
-      <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-        <span className="text-stone-300 text-sm flex-1">
-          This site uses cookies for basic functionality and analytics. See our{' '}
-          <Link href="/privacy" className="underline hover:text-brand-400 transition-colors">
-            Privacy Policy
-          </Link>
-          .
-        </span>
-        <div className="grid w-full shrink-0 grid-cols-3 gap-2 md:w-auto md:grid-cols-none md:auto-cols-max md:grid-flow-col">
-          <button
-            type="button"
-            className="min-w-0 rounded-lg px-3 py-2 text-sm font-medium text-stone-300 transition-all hover:text-stone-100 md:px-4"
-            onClick={handleDismiss}
-            aria-label="Dismiss cookie banner for now"
-          >
-            Not now
-          </button>
-          <button
-            type="button"
-            className="min-w-0 rounded-lg px-3 py-2 text-sm font-medium text-stone-400 transition-all hover:text-stone-200 md:px-4"
-            onClick={() => handleConsent('declined')}
-            aria-label="Decline cookies"
-          >
-            Decline
-          </button>
-          <button
-            type="button"
-            className="min-w-0 rounded-lg bg-brand-600 px-3 py-2 text-sm font-bold text-white transition-all hover:bg-brand-700 md:px-4"
-            onClick={() => handleConsent('accepted')}
-            aria-label="Accept cookies"
-          >
-            Accept
-          </button>
-        </div>
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 backdrop-blur-md bg-stone-900/90 border border-stone-700/60 shadow-lg rounded-xl px-6 py-4 z-50 flex flex-col md:flex-row items-center gap-4 max-w-lg w-full animate-slide-up-fade">
+      <span className="text-stone-300 text-sm flex-1">
+        This site uses cookies for basic functionality and analytics. See our{' '}
+        <Link href="/privacy" className="underline hover:text-brand-400 transition-colors">
+          Privacy Policy
+        </Link>
+        .
+      </span>
+      <div className="flex gap-2 shrink-0">
+        <button
+          type="button"
+          className="text-stone-400 hover:text-stone-200 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          onClick={() => handleConsent('declined')}
+          aria-label="Decline cookies"
+        >
+          Decline
+        </button>
+        <button
+          type="button"
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand-700 transition-all"
+          onClick={() => handleConsent('accepted')}
+          aria-label="Accept cookies"
+        >
+          Accept
+        </button>
       </div>
     </div>
   )

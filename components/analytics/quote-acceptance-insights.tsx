@@ -22,7 +22,7 @@ export function QuoteAcceptanceInsightsPanel({ data }: QuoteAcceptanceInsightsPa
       {/* Expiring soon — always shown when present */}
       {data.expiringThisWeek.length > 0 && (
         <div className="mb-4 space-y-1">
-          <p className="text-xs font-medium text-amber-200 mb-1">Expiring this week:</p>
+          <p className="text-xs font-medium text-amber-700 mb-1">Expiring this week:</p>
           {data.expiringThisWeek.map((q) => (
             <Link
               key={q.id}
@@ -66,7 +66,7 @@ export function QuoteAcceptanceInsightsPanel({ data }: QuoteAcceptanceInsightsPa
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className="bg-emerald-950 rounded-lg px-3 py-2 text-center">
                 <p className="text-xs text-emerald-600 font-medium">Avg Accepted</p>
-                <p className="text-sm font-bold text-emerald-200">
+                <p className="text-sm font-bold text-emerald-700">
                   {formatCurrency(data.avgAcceptedValueCents)}
                 </p>
               </div>

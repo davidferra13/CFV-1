@@ -93,7 +93,7 @@ function EventMenuRow({ entry }: { entry: MenuHistoryEntry }) {
                     {dish.dietaryTags.map((t) => (
                       <span
                         key={t}
-                        className="text-[10px] px-1 py-0.5 rounded bg-emerald-950 text-emerald-200"
+                        className="text-[10px] px-1 py-0.5 rounded bg-emerald-950 text-emerald-700"
                       >
                         {t}
                       </span>

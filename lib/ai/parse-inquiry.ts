@@ -5,7 +5,7 @@
 
 import { z } from 'zod'
 import { type ParseResult } from './parse'
-import { dispatchPrivate } from './dispatch'
+import { parseWithOllama } from './parse-ollama'
 
 // ============================================
 // PARSED INQUIRY SCHEMA
@@ -69,9 +69,6 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
  * Parse inquiry details from text (messages, emails, DMs, notes)
  */
 export async function parseInquiryFromText(rawText: string): Promise<ParseResult<ParsedInquiry>> {
-  const { result } = await dispatchPrivate(INQUIRY_SYSTEM_PROMPT, rawText, ParsedInquirySchema, {
-    taskDescription: 'parse client inquiry from text with PII extraction',
-    contentType: 'structured_extraction',
-  })
+  const result = await parseWithOllama(INQUIRY_SYSTEM_PROMPT, rawText, ParsedInquirySchema)
   return result
 }

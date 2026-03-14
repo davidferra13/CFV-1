@@ -56,7 +56,7 @@ export default async function FermentsPage() {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Ferments</h1>
-            <span className="bg-teal-900 text-teal-200 text-sm px-2 py-0.5 rounded-full">
+            <span className="bg-teal-900 text-teal-700 text-sm px-2 py-0.5 rounded-full">
               {fermentRecipes.length + fermentComponents.length}
             </span>
           </div>

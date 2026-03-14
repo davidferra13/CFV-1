@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Users, MessageSquare } from '@/components/ui/icons'
+import { Users, MessageSquare } from 'lucide-react'
 import type { SocialChannel } from '@/lib/social/chef-social-actions'
 import { joinChannel, leaveChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'
@@ -97,7 +97,7 @@ export function SocialChannelCard({ channel }: { channel: SocialChannel }) {
             {channel.name}
           </Link>
           {channel.is_official && (
-            <span className="text-xs bg-amber-900 text-amber-200 px-1.5 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-amber-900 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
               Official
             </span>
           )}

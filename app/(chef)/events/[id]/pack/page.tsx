@@ -13,7 +13,6 @@ import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 import { PackingListClient } from '@/components/events/packing-list-client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PackPageTemplateBar } from '@/components/packing/pack-page-template-bar'
 import { format, parseISO } from 'date-fns'
 
 /**
@@ -70,15 +69,15 @@ export default async function PackPage({ params }: { params: { id: string } }) {
             {clientName} · {dateStr}
           </p>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
+        <a
           href={`/api/documents/${params.id}?type=packing`}
           target="_blank"
           rel="noopener noreferrer"
         >
-          Print PDF
-        </Button>
+          <Button variant="secondary" size="sm">
+            Print PDF
+          </Button>
+        </a>
       </div>
 
       {/* Departure callout — most urgent info, immediately visible */}
@@ -90,11 +89,11 @@ export default async function PackPage({ params }: { params: { id: string } }) {
             </p>
           )}
           {event.access_instructions && (
-            <p className="text-sm text-amber-200 mt-1">Access: {event.access_instructions}</p>
+            <p className="text-sm text-amber-800 mt-1">Access: {event.access_instructions}</p>
           )}
           {[event.location_address, event.location_city, event.location_state].filter(Boolean)
             .length > 0 && (
-            <p className="text-sm text-amber-200 mt-1">
+            <p className="text-sm text-amber-700 mt-1">
               {[event.location_address, event.location_city, event.location_state]
                 .filter(Boolean)
                 .join(', ')}
@@ -106,7 +105,7 @@ export default async function PackPage({ params }: { params: { id: string } }) {
       {/* Already packed confirmation */}
       {packingStatus.carPacked && (
         <Card className="p-4 bg-green-950 border-green-200">
-          <p className="text-green-200 font-medium">
+          <p className="text-green-800 font-medium">
             Car packed{' '}
             {packingStatus.carPackedAt
               ? `at ${format(new Date(packingStatus.carPackedAt), 'h:mm a')}`
@@ -117,9 +116,6 @@ export default async function PackPage({ params }: { params: { id: string } }) {
           </p>
         </Card>
       )}
-
-      {/* Template bar: load from template or save current list as template */}
-      <PackPageTemplateBar eventId={params.id} />
 
       {/* Interactive checklist */}
       <PackingListClient

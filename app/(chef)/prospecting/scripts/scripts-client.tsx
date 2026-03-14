@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScriptEditor, ScriptList } from '@/components/prospecting/script-editor'
 import type { CallScript } from '@/lib/prospecting/types'
-import { Plus } from '@/components/ui/icons'
+import { Plus } from 'lucide-react'
 
 interface ScriptsPageClientProps {
   scripts: CallScript[]

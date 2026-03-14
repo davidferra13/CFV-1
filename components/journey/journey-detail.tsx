@@ -134,19 +134,19 @@ export function JourneyDetail({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="rounded-lg border border-amber-200 bg-amber-950 px-3 py-2">
-              <p className="text-xs text-amber-200">Reflection Depth</p>
+              <p className="text-xs text-amber-700">Reflection Depth</p>
               <p className="text-sm text-amber-900 mt-0.5">
                 {reflectionCount} entries include mistakes, wins, or change notes.
               </p>
             </div>
             <div className="rounded-lg border border-sky-200 bg-sky-950 px-3 py-2">
-              <p className="text-xs text-sky-200">Mapped Memories</p>
+              <p className="text-xs text-sky-700">Mapped Memories</p>
               <p className="text-sm text-sky-900 mt-0.5">
                 {mappedCount} timeline items include precise map coordinates.
               </p>
             </div>
             <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-3 py-2">
-              <p className="text-xs text-emerald-200">Repeat Potential</p>
+              <p className="text-xs text-emerald-700">Repeat Potential</p>
               <p className="text-sm text-emerald-900 mt-0.5">
                 {repeatableCount}/{recipeLinks.length} recipe tests are marked worth repeating.
               </p>

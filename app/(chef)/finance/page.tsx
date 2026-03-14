@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
-import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
-import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 
 export const metadata: Metadata = { title: 'Finance - ChefFlow' }
 
@@ -60,12 +57,6 @@ const SECTIONS = [
     icon: '📈',
   },
   {
-    href: '/finance/revenue-per-hour',
-    label: 'Revenue Per Hour',
-    description: 'Your real effective hourly rate across all time spent per event',
-    icon: '⏱️',
-  },
-  {
     href: '/finance/tax',
     label: 'Tax Center',
     description: 'Mileage log, quarterly estimates, and accountant export',
@@ -113,12 +104,6 @@ const SECTIONS = [
     description: 'Recurring service agreements — monthly billing, event tracking',
     icon: '🔁',
   },
-  {
-    href: '/finance/food-cost',
-    label: 'Food Cost Tracker',
-    description: 'Live food cost % tracking against your target (industry benchmark: 28-35%)',
-    icon: '🥩',
-  },
 ]
 
 export default async function FinancePage() {
@@ -164,16 +149,6 @@ export default async function FinancePage() {
         </div>
       )}
 
-      {/* Financial Intelligence */}
-      <Suspense fallback={null}>
-        <FinanceHealthBar />
-      </Suspense>
-
-      {/* Pricing Intelligence */}
-      <Suspense fallback={null}>
-        <PricingIntelligenceBar />
-      </Suspense>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">
@@ -182,7 +157,7 @@ export default async function FinancePage() {
           <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">
+          <p className="text-2xl font-bold text-green-700">
             {formatCurrency(summary.netRevenueCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Net revenue (after refunds)</p>
@@ -195,7 +170,7 @@ export default async function FinancePage() {
         </Card>
         {carryForwardSavings > 0 && (
           <Card className="p-4 border-emerald-200 bg-emerald-950">
-            <p className="text-2xl font-bold text-emerald-200">
+            <p className="text-2xl font-bold text-emerald-700">
               {formatCurrency(carryForwardSavings)}
             </p>
             <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>

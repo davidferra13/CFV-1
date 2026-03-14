@@ -6,7 +6,6 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { getChefCurrency, toStripeCurrency } from '@/lib/currency/resolve'
 import type Stripe from 'stripe'
 
 function getStripe(): Stripe {
@@ -172,10 +171,9 @@ export async function resolveDeferredTransfers(
       }
 
       // Create Stripe Transfer
-      const transferCurrency = toStripeCurrency(await getChefCurrency(tenantId))
       const transfer = await stripe.transfers.create({
         amount: netTransfer,
-        currency: transferCurrency,
+        currency: 'usd',
         destination: stripeAccountId,
         metadata: {
           tenant_id: tenantId,

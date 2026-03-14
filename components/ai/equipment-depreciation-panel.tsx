@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Wrench, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
+import { Wrench, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -42,7 +42,7 @@ export function EquipmentDepreciationPanel() {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Explain My Equipment
               </>
             )}
@@ -75,7 +75,7 @@ export function EquipmentDepreciationPanel() {
           <div key={i} className="border border-stone-800 rounded p-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-stone-300">{item.itemName}</span>
-              <span className="text-xs text-green-200 font-medium">
+              <span className="text-xs text-green-700 font-medium">
                 ${item.annualDeductionDollars.toFixed(0)}/yr
               </span>
             </div>

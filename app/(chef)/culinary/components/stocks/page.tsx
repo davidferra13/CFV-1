@@ -58,7 +58,7 @@ export default async function StocksPage() {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Stocks &amp; Broths</h1>
-            <span className="bg-amber-900 text-amber-200 text-sm px-2 py-0.5 rounded-full">
+            <span className="bg-amber-900 text-amber-700 text-sm px-2 py-0.5 rounded-full">
               {stockRecipes.length + stockComponents.length}
             </span>
           </div>
@@ -155,7 +155,7 @@ export default async function StocksPage() {
                       {comp.recipe_id ? (
                         <Link
                           href={`/culinary/recipes/${comp.recipe_id}`}
-                          className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full"
+                          className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full"
                         >
                           Linked
                         </Link>

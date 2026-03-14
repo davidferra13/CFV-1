@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, BookMarked } from '@/components/ui/icons'
+import { ChevronDown, BookMarked } from 'lucide-react'
 import type { SocialHashtagSet } from '@/lib/social/hashtag-actions'
 
 type Props = {

@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── Get Recent Emails ──────────────────────────────────────────────────────
@@ -250,19 +250,17 @@ export async function draftEmailReply(messageId: string) {
     body: z.string(),
   })
 
-  const result = (
-    await dispatchPrivate(
-      `You are a private chef's email assistant. Draft a professional, warm reply to this email. Write in the chef's voice (first person singular "I"). Keep it concise (2-4 short paragraphs). Don't be salesy. Return JSON: { "subject": "Re: ...", "body": "..." }`,
-      `Reply to this email:
+  const result = await parseWithOllama(
+    `You are a private chef's email assistant. Draft a professional, warm reply to this email. Write in the chef's voice (first person singular "I"). Keep it concise (2-4 short paragraphs). Don't be salesy. Return JSON: { "subject": "Re: ...", "body": "..." }`,
+    `Reply to this email:
 From: ${email.from_address}
 Subject: ${email.subject ?? '(no subject)'}
 Body: ${email.body_preview?.slice(0, 1000) ?? '(no content)'}
 ${threadContext ? `\nThread history:\n${threadContext}` : ''}
 ${clientContext ? `\n${clientContext}` : ''}`,
-      ReplySchema,
-      { modelTier: 'standard' }
-    )
-  ).result
+    ReplySchema,
+    { modelTier: 'standard' }
+  )
 
   return {
     originalFrom: email.from_address,

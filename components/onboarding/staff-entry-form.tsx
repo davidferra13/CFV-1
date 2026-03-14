@@ -1,16 +1,15 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { UserPlus, ArrowRight } from '@/components/ui/icons'
+import { UserPlus, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { createStaffMember } from '@/lib/staff/actions'
-import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics/posthog'
 
 type StaffMember = {
   id: string
@@ -45,10 +44,6 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
   const [staff, setStaff] = useState<StaffMember[]>(initialStaff)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_STARTED, { phase: 'staff' })
-  }, [])
-
   function set(field: keyof typeof EMPTY_FORM, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -73,7 +68,6 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
           hourly_rate_cents: rateCents,
           notes: form.notes.trim() || undefined,
         })
-        trackEvent(ANALYTICS_EVENTS.ONBOARDING_HUB_PHASE_COMPLETED, { phase: 'staff' })
         setStaff((prev) => [
           ...prev,
           {
@@ -101,7 +95,7 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                 {error}
               </div>
             )}

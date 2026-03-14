@@ -72,7 +72,7 @@ export default async function PaymentsPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalReceived)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalReceived)}</p>
           <p className="text-sm text-stone-500 mt-1">
             Total received ({allInbound.length} entries)
           </p>

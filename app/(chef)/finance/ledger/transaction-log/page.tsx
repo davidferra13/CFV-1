@@ -5,10 +5,29 @@ import { getLedgerEntries } from '@/lib/ledger/actions'
 import { exportLedgerEntriesCSV } from '@/lib/finance/export-actions'
 import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { Card } from '@/components/ui/card'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
-import { TransactionTable } from './transaction-table'
+import { format } from 'date-fns'
 
 export const metadata: Metadata = { title: 'Transaction Log - ChefFlow' }
+
+const ENTRY_TYPE_STYLES: Record<string, string> = {
+  payment: 'bg-green-900 text-green-700',
+  deposit: 'bg-emerald-900 text-emerald-700',
+  installment: 'bg-teal-900 text-teal-700',
+  final_payment: 'bg-green-900 text-green-800',
+  add_on: 'bg-blue-900 text-blue-700',
+  credit: 'bg-sky-900 text-sky-700',
+  tip: 'bg-amber-900 text-amber-700',
+  refund: 'bg-red-900 text-red-700',
+}
 
 export default async function TransactionLogPage() {
   await requireChef()
@@ -49,7 +68,7 @@ export default async function TransactionLogPage() {
           <p className="text-sm text-stone-500 mt-1">Total entries</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalIn)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalIn)}</p>
           <p className="text-sm text-stone-500 mt-1">Total collected</p>
         </Card>
         <Card className="p-4">
@@ -66,7 +85,60 @@ export default async function TransactionLogPage() {
           </p>
         </Card>
       ) : (
-        <TransactionTable entries={entries as any} />
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Event</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead>Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {entries.map((entry: any) => (
+                <TableRow key={entry.id}>
+                  <TableCell className="text-stone-500 text-sm whitespace-nowrap">
+                    {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${ENTRY_TYPE_STYLES[entry.entry_type] ?? 'bg-stone-800 text-stone-400'}`}
+                    >
+                      {entry.entry_type.replace(/_/g, ' ')}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm">
+                    {entry.event ? (
+                      <Link
+                        href={`/events/${entry.event.id}`}
+                        className="text-brand-600 hover:underline capitalize"
+                      >
+                        {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
+                      </Link>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm max-w-xs truncate">
+                    {entry.description}
+                  </TableCell>
+                  <TableCell className="text-stone-500 text-sm capitalize">
+                    {entry.payment_method?.replace(/_/g, ' ') ?? '—'}
+                  </TableCell>
+                  <TableCell
+                    className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-700'}`}
+                  >
+                    {entry.is_refund ? '−' : '+'}
+                    {formatCurrency(Math.abs(entry.amount_cents))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
     </div>
   )

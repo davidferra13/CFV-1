@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, ArrowRight } from '@/components/ui/icons'
+import { AlertTriangle, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { ScopeDriftResult } from '@/lib/events/scope-drift'
@@ -42,7 +42,7 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
 
           <ul className="space-y-1">
             {driftResult.changes.map((change) => (
-              <li key={change.field} className="text-sm text-amber-200">
+              <li key={change.field} className="text-sm text-amber-800">
                 <span className="font-medium">{change.field}:</span>{' '}
                 <span className="line-through text-amber-600">{change.original}</span>
                 {' → '}

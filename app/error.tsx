@@ -65,7 +65,7 @@ export default function Error({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-red-950 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-200 font-mono break-all">
+            <p className="text-sm text-red-800 font-mono break-all">
               {error.message || 'An unexpected error occurred'}
             </p>
             {error.digest && <p className="text-xs text-red-600 mt-2">Error ID: {error.digest}</p>}

@@ -294,7 +294,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-3">
-          <p className="text-sm text-red-200">{error}</p>
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
@@ -420,20 +420,20 @@ function ContactShareItem({
 function StatusBadge({ status }: { status: 'open' | 'accepted' | 'passed' }) {
   if (status === 'accepted') {
     return (
-      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-200">
+      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-700">
         Accepted
       </span>
     )
   }
   if (status === 'passed') {
     return (
-      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-950 text-amber-200">
+      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-950 text-amber-700">
         Passed
       </span>
     )
   }
   return (
-    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-950 text-blue-200">
+    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-950 text-blue-700">
       Open
     </span>
   )

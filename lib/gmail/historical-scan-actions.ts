@@ -1,47 +1,26 @@
 'use server'
 
+// Historical Email Scan — Server Actions
+// Opt-in toggle, status retrieval, findings management, and import flow.
+// All actions require requireChef() and are tenant-scoped.
+
 import { revalidatePath } from 'next/cache'
+import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
-import {
-  isPersistedGoogleMailboxId,
-  listGoogleMailboxesForChef,
-  syncLegacyGoogleConnectionFromPrimary,
-} from '@/lib/google/mailboxes'
-import { createServerClient } from '@/lib/supabase/server'
 import type { Json } from '@/types/database'
 
-export interface HistoricalScanMailboxStatus {
-  id: string
-  email: string
-  enabled: boolean
-  status: 'idle' | 'in_progress' | 'completed' | 'paused'
-  percentComplete: number | null
-  totalProcessed: number
-  totalSeen: number
-  estimatedTotal: number | null
-  startedAt: string | null
-  completedAt: string | null
-  includeSpamTrash: boolean
-  lastRunAt: string | null
-  lookbackDays: number
-  isPrimary: boolean
-}
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface HistoricalScanStatus {
   enabled: boolean
   status: 'idle' | 'in_progress' | 'completed' | 'paused'
-  percentComplete: number | null
   totalProcessed: number
-  totalSeen: number
-  estimatedTotal: number | null
   startedAt: string | null
   completedAt: string | null
-  includeSpamTrash: boolean
   lastRunAt: string | null
   lookbackDays: number
-  mailboxes: HistoricalScanMailboxStatus[]
 }
 
 export interface HistoricalFinding {
@@ -57,187 +36,77 @@ export interface HistoricalFinding {
   aiReasoning: string | null
   status: 'pending' | 'imported' | 'dismissed'
   importedInquiryId: string | null
-  mailboxId: string | null
-  mailboxEmail: string | null
   reviewedAt: string | null
   createdAt: string
 }
 
-function getStoredMailboxId(mailboxId: string) {
-  return isPersistedGoogleMailboxId(mailboxId) ? mailboxId : null
-}
-
-function mapMailboxStatus(mailbox: any): HistoricalScanMailboxStatus {
-  const totalSeen = mailbox.historicalScanTotalSeen ?? mailbox.historicalScanTotalProcessed ?? 0
-  const estimatedTotal =
-    mailbox.historicalScanResultSizeEstimate != null
-      ? Math.max(mailbox.historicalScanResultSizeEstimate, totalSeen)
-      : null
-  const percentComplete =
-    estimatedTotal && estimatedTotal > 0
-      ? Math.min(100, Math.round((totalSeen / estimatedTotal) * 100))
-      : null
-
-  return {
-    id: mailbox.id,
-    email: mailbox.email,
-    enabled: mailbox.historicalScanEnabled ?? false,
-    status: mailbox.historicalScanStatus ?? 'idle',
-    percentComplete,
-    totalProcessed: mailbox.historicalScanTotalProcessed ?? 0,
-    totalSeen,
-    estimatedTotal,
-    startedAt: mailbox.historicalScanStartedAt ?? null,
-    completedAt: mailbox.historicalScanCompletedAt ?? null,
-    includeSpamTrash: mailbox.historicalScanIncludeSpamTrash ?? true,
-    lastRunAt: mailbox.historicalScanLastRunAt ?? null,
-    lookbackDays: mailbox.historicalScanLookbackDays ?? 0,
-    isPrimary: mailbox.isPrimary ?? false,
-  }
-}
-
-function deriveAggregateStatus(
-  mailboxes: HistoricalScanMailboxStatus[]
-): HistoricalScanStatus['status'] {
-  if (mailboxes.some((mailbox) => mailbox.enabled && mailbox.status === 'in_progress')) {
-    return 'in_progress'
-  }
-  if (mailboxes.some((mailbox) => mailbox.enabled && mailbox.status === 'idle')) {
-    return 'idle'
-  }
-  if (mailboxes.length > 0 && mailboxes.every((mailbox) => mailbox.status === 'completed')) {
-    return 'completed'
-  }
-  return 'paused'
-}
+// ─── Enable Historical Scan ───────────────────────────────────────────────────
 
 export async function enableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
-  const mailboxes = (await listGoogleMailboxesForChef(user.entityId)).filter(
-    (mailbox) => mailbox.gmailConnected && mailbox.isActive
-  )
+  const supabase: any = createServerClient()
 
-  if (mailboxes.length === 0) {
-    await supabase
-      .from('google_connections')
-      .update({
-        historical_scan_enabled: true,
-        historical_scan_include_spam_trash: true,
-        historical_scan_status: 'idle',
-        historical_scan_lookback_days: 0,
-      })
-      .eq('chef_id', user.entityId)
-  } else {
-    const persistedIds = mailboxes.map((mailbox) => getStoredMailboxId(mailbox.id)).filter(Boolean)
-    if (persistedIds.length > 0) {
-      await supabase
-        .from('google_mailboxes')
-        .update({
-          historical_scan_enabled: true,
-          historical_scan_include_spam_trash: true,
-          historical_scan_status: 'idle',
-          historical_scan_lookback_days: 0,
-        })
-        .in('id', persistedIds)
-    } else {
-      await supabase
-        .from('google_connections')
-        .update({
-          historical_scan_enabled: true,
-          historical_scan_include_spam_trash: true,
-          historical_scan_status: 'idle',
-          historical_scan_lookback_days: 0,
-        })
-        .eq('chef_id', user.entityId)
-    }
-  }
+  await supabase
+    .from('google_connections')
+    .update({
+      historical_scan_enabled: true,
+      historical_scan_status: 'idle',
+      historical_scan_lookback_days: 0, // 0 = full scan (no date limit)
+    })
+    .eq('chef_id', user.entityId)
 
-  await syncLegacyGoogleConnectionFromPrimary(user.entityId, user.tenantId || user.entityId)
   revalidatePath('/settings')
-  revalidatePath('/inbox/history-scan')
 }
+
+// ─── Disable Historical Scan ──────────────────────────────────────────────────
 
 export async function disableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
-  const mailboxes = (await listGoogleMailboxesForChef(user.entityId)).filter(
-    (mailbox) => mailbox.gmailConnected && mailbox.isActive
-  )
-  const persistedIds = mailboxes.map((mailbox) => getStoredMailboxId(mailbox.id)).filter(Boolean)
+  const supabase: any = createServerClient()
 
-  if (persistedIds.length > 0) {
-    await supabase
-      .from('google_mailboxes')
-      .update({
-        historical_scan_enabled: false,
-        historical_scan_status: 'paused',
-      })
-      .in('id', persistedIds)
-  } else {
-    await supabase
-      .from('google_connections')
-      .update({
-        historical_scan_enabled: false,
-        historical_scan_status: 'paused',
-      })
-      .eq('chef_id', user.entityId)
-  }
+  // Pause (not reset) — preserves progress and existing findings
+  await supabase
+    .from('google_connections')
+    .update({
+      historical_scan_enabled: false,
+      historical_scan_status: 'paused',
+    })
+    .eq('chef_id', user.entityId)
 
-  await syncLegacyGoogleConnectionFromPrimary(user.entityId, user.tenantId || user.entityId)
   revalidatePath('/settings')
-  revalidatePath('/inbox/history-scan')
 }
+
+// ─── Get Scan Status ──────────────────────────────────────────────────────────
 
 export async function getHistoricalScanStatus(): Promise<HistoricalScanStatus | null> {
   const user = await requireChef()
-  const mailboxes = await listGoogleMailboxesForChef(user.entityId)
-  const connectedMailboxes = mailboxes
-    .filter((mailbox) => mailbox.gmailConnected && mailbox.isActive)
-    .map(mapMailboxStatus)
+  const supabase: any = createServerClient()
 
-  if (connectedMailboxes.length === 0) {
-    return null
-  }
+  const { data, error } = await supabase
+    .from('google_connections')
+    .select(
+      'gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_total_processed, historical_scan_lookback_days, historical_scan_started_at, historical_scan_completed_at, historical_scan_last_run_at'
+    )
+    .eq('chef_id', user.entityId)
+    .maybeSingle()
 
-  const estimatedTotals = connectedMailboxes
-    .map((mailbox) => mailbox.estimatedTotal)
-    .filter((value): value is number => typeof value === 'number')
-  const estimatedTotal =
-    estimatedTotals.length > 0 ? estimatedTotals.reduce((sum, value) => sum + value, 0) : null
-  const totalSeen = connectedMailboxes.reduce((sum, mailbox) => sum + mailbox.totalSeen, 0)
-  const completedAtCandidates = connectedMailboxes
-    .map((mailbox) => mailbox.completedAt)
-    .filter(Boolean)
-    .sort()
-  const lastRunCandidates = connectedMailboxes
-    .map((mailbox) => mailbox.lastRunAt)
-    .filter(Boolean)
-    .sort()
-  const percentComplete =
-    estimatedTotal && estimatedTotal > 0
-      ? Math.min(100, Math.round((totalSeen / estimatedTotal) * 100))
-      : null
+  if (error || !data) return null
+
+  // If Gmail is not connected, scan can't run
+  if (!data.gmail_connected) return null
 
   return {
-    enabled: connectedMailboxes.some((mailbox) => mailbox.enabled),
-    status: deriveAggregateStatus(connectedMailboxes),
-    percentComplete,
-    totalProcessed: connectedMailboxes.reduce((sum, mailbox) => sum + mailbox.totalProcessed, 0),
-    totalSeen,
-    estimatedTotal,
-    startedAt:
-      connectedMailboxes
-        .map((mailbox) => mailbox.startedAt)
-        .filter(Boolean)
-        .sort()[0] ?? null,
-    completedAt: completedAtCandidates[completedAtCandidates.length - 1] ?? null,
-    includeSpamTrash: connectedMailboxes.every((mailbox) => mailbox.includeSpamTrash),
-    lastRunAt: lastRunCandidates[lastRunCandidates.length - 1] ?? null,
-    lookbackDays: Math.max(...connectedMailboxes.map((mailbox) => mailbox.lookbackDays)),
-    mailboxes: connectedMailboxes,
+    enabled: data.historical_scan_enabled ?? false,
+    status: (data.historical_scan_status as HistoricalScanStatus['status']) ?? 'idle',
+    totalProcessed: data.historical_scan_total_processed ?? 0,
+    startedAt: data.historical_scan_started_at ?? null,
+    completedAt: data.historical_scan_completed_at ?? null,
+    lastRunAt: data.historical_scan_last_run_at ?? null,
+    lookbackDays: data.historical_scan_lookback_days ?? 730,
   }
 }
+
+// ─── Get Findings ─────────────────────────────────────────────────────────────
 
 export async function getHistoricalFindings(
   filter: 'pending' | 'imported' | 'dismissed' | 'all' = 'pending',
@@ -248,7 +117,7 @@ export async function getHistoricalFindings(
 
   let query = supabase
     .from('gmail_historical_findings')
-    .select('*, mailbox:google_mailboxes(email)')
+    .select('*')
     .eq('tenant_id', user.tenantId!)
     .order('received_at', { ascending: false })
     .limit(limit)
@@ -274,17 +143,18 @@ export async function getHistoricalFindings(
     aiReasoning: row.ai_reasoning,
     status: row.status as 'pending' | 'imported' | 'dismissed',
     importedInquiryId: row.imported_inquiry_id,
-    mailboxId: row.mailbox_id ?? null,
-    mailboxEmail: row.mailbox?.email ?? null,
     reviewedAt: row.reviewed_at,
     createdAt: row.created_at,
   }))
 }
 
+// ─── Import a Finding as an Inquiry ──────────────────────────────────────────
+
 export async function importHistoricalFinding(findingId: string): Promise<{ inquiryId: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
+  // Load the finding (tenant-scoped)
   const { data: finding, error: findErr } = await supabase
     .from('gmail_historical_findings')
     .select('*')
@@ -295,9 +165,12 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
   if (findErr || !finding) throw new Error('Finding not found')
   if (finding.status !== 'pending') throw new Error('Finding already reviewed')
 
+  // Parse email body into structured inquiry data
   const bodyText = finding.body_preview ?? ''
   const parseResult = await parseInquiryFromText(bodyText)
 
+  // Parse sender name and email from from_address field
+  // Format stored: "Name <email>" or just "<email>"
   const fromAddressRaw = finding.from_address as string
   const emailMatch = fromAddressRaw.match(/<([^>]+)>/)
   const leadEmail = emailMatch ? emailMatch[1] : fromAddressRaw.trim()
@@ -305,6 +178,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
   const leadName =
     parseResult.parsed.client_name || (nameMatch ? nameMatch[1].trim() : null) || 'Unknown'
 
+  // Find or create client
   let clientId: string | null = null
   try {
     const clientResult = await createClientFromLead(user.tenantId!, {
@@ -316,9 +190,10 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
     })
     clientId = clientResult.id
   } catch {
-    clientId = null
+    // Non-fatal — create inquiry without client link
   }
 
+  // Build audit trail
   const unknownFields: Record<string, string> = {
     imported_from: 'historical_email_scan',
     original_sender: fromAddressRaw,
@@ -326,6 +201,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
   }
   if (finding.subject) unknownFields.subject = finding.subject
 
+  // Create the inquiry
   const receivedAt = finding.received_at
     ? new Date(finding.received_at).toISOString()
     : new Date().toISOString()
@@ -358,11 +234,11 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
 
   if (inquiryErr) throw new Error(inquiryErr.message)
 
+  // Log original email as a message on the inquiry
   await supabase.from('messages').insert({
     tenant_id: user.tenantId!,
     inquiry_id: inquiry.id,
     client_id: clientId,
-    mailbox_id: finding.mailbox_id ?? null,
     channel: 'email' as const,
     direction: 'inbound' as const,
     status: 'logged' as const,
@@ -373,6 +249,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
     gmail_thread_id: finding.gmail_thread_id ?? null,
   })
 
+  // Mark finding as imported
   await supabase
     .from('gmail_historical_findings')
     .update({
@@ -389,6 +266,8 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
   return { inquiryId: inquiry.id }
 }
 
+// ─── Dismiss a Single Finding ─────────────────────────────────────────────────
+
 export async function dismissHistoricalFinding(findingId: string): Promise<void> {
   const user = await requireChef()
   const supabase: any = createServerClient()
@@ -404,6 +283,8 @@ export async function dismissHistoricalFinding(findingId: string): Promise<void>
 
   revalidatePath('/inbox/history-scan')
 }
+
+// ─── Dismiss Many Findings ────────────────────────────────────────────────────
 
 export async function dismissAllFindings(filter: {
   confidence?: 'high' | 'medium' | 'low'
@@ -425,6 +306,7 @@ export async function dismissAllFindings(filter: {
   if (filter.classification) query = query.eq('classification', filter.classification)
 
   const { data, error } = await query.select('id')
+
   if (error) throw new Error(error.message)
 
   revalidatePath('/inbox/history-scan')

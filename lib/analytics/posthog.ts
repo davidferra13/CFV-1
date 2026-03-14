@@ -17,13 +17,6 @@
 
 // PostHog event names — keep them consistent across the app
 export const ANALYTICS_EVENTS = {
-  // Marketing & funnel
-  CTA_CLICKED: 'cta_clicked',
-  SIGNUP_STARTED: 'signup_started',
-  BETA_SIGNUP_SUBMITTED: 'beta_signup_submitted',
-  CONTACT_FORM_SUBMITTED: 'contact_form_submitted',
-  NEWSLETTER_SUBSCRIBED: 'newsletter_subscribed',
-
   // Inquiries
   INQUIRY_SUBMITTED: 'inquiry_submitted',
   INQUIRY_VIEWED: 'inquiry_viewed',
@@ -53,22 +46,9 @@ export const ANALYTICS_EVENTS = {
   PAGE_VIEWED: 'page_viewed',
   FEATURE_USED: 'feature_used',
   SEARCH_PERFORMED: 'search_performed',
-
-  // Onboarding
-  ONBOARDING_WIZARD_STARTED: 'onboarding_wizard_started',
-  ONBOARDING_WIZARD_STEP_COMPLETED: 'onboarding_wizard_step_completed',
-  ONBOARDING_WIZARD_STEP_SKIPPED: 'onboarding_wizard_step_skipped',
-  ONBOARDING_WIZARD_FINISHED: 'onboarding_wizard_finished',
-  ONBOARDING_HUB_PHASE_STARTED: 'onboarding_hub_phase_started',
-  ONBOARDING_HUB_PHASE_COMPLETED: 'onboarding_hub_phase_completed',
-  ONBOARDING_ARCHETYPE_SELECTED: 'onboarding_archetype_selected',
-
-  // Performance telemetry
-  PERF_WEB_VITAL: 'perf_web_vital',
-  PERF_ROUTE_TRANSITION: 'perf_route_transition',
 } as const
 
-export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]
+type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]
 
 /**
  * Track a product analytics event.

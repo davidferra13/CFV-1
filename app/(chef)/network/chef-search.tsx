@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { Search } from '@/components/ui/icons'
+import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChefCard } from '@/components/network/chef-card'
@@ -137,7 +137,7 @@ export function ChefSearch() {
 
       {actionError && (
         <div className="bg-red-950 border border-red-200 rounded-lg p-3">
-          <p className="text-sm text-red-200">{actionError}</p>
+          <p className="text-sm text-red-700">{actionError}</p>
         </div>
       )}
 

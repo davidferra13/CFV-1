@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
 import { z } from 'zod'
 
@@ -91,13 +91,11 @@ Recipe Portfolio (${recipes.length} recipes):
   Dietary expertise: ${dietaryTags.join(', ') || 'Not specified'}`
 
   try {
-    const parsed = (
-      await dispatchPrivate(systemPrompt, userContent, ChefBioDraftSchema, {
-        modelTier: 'complex',
-        timeoutMs: 60_000,
-        maxTokens: 1024,
-      })
-    ).result
+    const parsed = await parseWithOllama(systemPrompt, userContent, ChefBioDraftSchema, {
+      modelTier: 'complex',
+      timeoutMs: 60_000,
+      maxTokens: 1024,
+    })
 
     return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {

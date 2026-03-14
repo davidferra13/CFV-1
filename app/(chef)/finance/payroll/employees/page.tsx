@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
@@ -10,7 +9,7 @@ import { EmployeeForm } from '@/components/finance/payroll/employee-form'
 import { listEmployees, terminateEmployee } from '@/lib/finance/payroll-actions'
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { EMPLOYEE_STATUS_LABELS, PAY_TYPE_LABELS } from '@/lib/finance/payroll-constants'
-import { Plus, Pencil } from '@/components/ui/icons'
+import { Plus, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
@@ -19,18 +18,13 @@ function formatCurrency(cents: number): string {
 
 export default function PayrollEmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
-  const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [editing, setEditing] = useState<Employee | null>(null)
   const [showTerminated, setShowTerminated] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   function reload() {
-    setLoading(true)
-    listEmployees(showTerminated).then((data) => {
-      setEmployees(data)
-      setLoading(false)
-    })
+    listEmployees(showTerminated).then(setEmployees)
   }
 
   useEffect(() => {
@@ -185,14 +179,7 @@ export default function PayrollEmployeesPage() {
                   </td>
                 </tr>
               ))}
-              {loading && (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-stone-400">
-                    Loading employees...
-                  </td>
-                </tr>
-              )}
-              {!loading && employees.length === 0 && (
+              {employees.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-stone-400">
                     No employees found.

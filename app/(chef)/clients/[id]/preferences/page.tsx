@@ -34,8 +34,7 @@ export default async function ClientPreferencesPage({ params }: ClientPreference
           Preferences for {client.full_name}
         </h1>
         <p className="mt-1 text-stone-400">
-          Manage dietary needs, communication defaults, budget ranges, recurring pricing, and
-          service expectations.
+          Manage dietary needs, communication defaults, budget ranges, and service expectations.
         </p>
       </div>
 
@@ -50,9 +49,6 @@ export default async function ClientPreferencesPage({ params }: ClientPreference
           preferred_service_style: (client as any).preferred_service_style || null,
           budget_range_min_cents: (client as any).budget_range_min_cents || null,
           budget_range_max_cents: (client as any).budget_range_max_cents || null,
-          recurring_pricing_model: (client as any).recurring_pricing_model || null,
-          recurring_price_cents: (client as any).recurring_price_cents || null,
-          recurring_pricing_notes: (client as any).recurring_pricing_notes || null,
           cleanup_expectations: (client as any).cleanup_expectations || null,
           leftovers_preference: (client as any).leftovers_preference || null,
         }}

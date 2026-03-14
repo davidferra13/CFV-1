@@ -114,7 +114,7 @@ export function InlineEditCell({
           </span>
         )}
         {error && (
-          <div className="absolute left-0 top-full mt-1 z-10 bg-red-950 border border-red-200 text-red-200 text-xs px-2 py-1 rounded shadow-sm whitespace-nowrap">
+          <div className="absolute left-0 top-full mt-1 z-10 bg-red-950 border border-red-200 text-red-700 text-xs px-2 py-1 rounded shadow-sm whitespace-nowrap">
             {error}
           </div>
         )}

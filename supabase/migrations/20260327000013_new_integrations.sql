@@ -2,12 +2,7 @@
 -- Additive only — no drops, no deletes.
 
 -- pgcrypto needed for gen_random_bytes() in webhook secret generation
-DO $$
-BEGIN
-  CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
-EXCEPTION
-  WHEN insufficient_privilege THEN NULL;
-END $$;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 -- ============================================================
 -- 1. Extend integration_provider enum with new providers
 -- ============================================================

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { buildDailyQueue } from '@/lib/prospecting/queue-actions'
 import { getScriptForCategory } from '@/lib/prospecting/script-actions'
 import { QueueCard } from '@/components/prospecting/queue-card'
-import { Loader2, Phone } from '@/components/ui/icons'
+import { Loader2, Phone } from 'lucide-react'
 import type { Prospect, CallScript } from '@/lib/prospecting/types'
 
 export function CallQueueClient() {

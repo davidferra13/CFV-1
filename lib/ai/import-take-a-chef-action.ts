@@ -12,14 +12,12 @@ import { createClientFromLead } from '@/lib/clients/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
-import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
-import { syncMarketplaceInquiryProjection } from '@/lib/marketplace/platform-records'
 
 // ─── Input Schema ──────────────────────────────────────────────────────────
 
 const TakeAChefImportSchema = z.object({
   rawText: z.string().min(10, 'Paste the booking notification text — at least a few lines'),
-  commissionPercent: z.number().min(0).max(50).default(getDefaultTakeAChefCommissionPercent()),
+  commissionPercent: z.number().min(0).max(50).default(25),
   logCommission: z.boolean().default(true),
 })
 
@@ -91,7 +89,6 @@ export async function importTakeAChefBooking(
       .insert({
         tenant_id: tenantId,
         channel: 'take_a_chef' as const,
-        external_platform: 'take_a_chef',
         client_id: clientId,
         first_contact_at: new Date().toISOString(),
         confirmed_date: parsed.confirmed_date || null,
@@ -105,13 +102,8 @@ export async function importTakeAChefBooking(
         confirmed_service_expectations: parsed.confirmed_service_expectations || null,
         confirmed_cannabis_preference: parsed.confirmed_cannabis_preference || null,
         source_message: validated.rawText,
-        unknown_fields: {
-          ...unknownFields,
-          take_a_chef_finance: {
-            gross_booking_cents: parsed.confirmed_budget_cents ?? null,
-            commission_percent: validated.commissionPercent,
-          },
-        } as unknown as Database['public']['Tables']['inquiries']['Insert']['unknown_fields'],
+        unknown_fields:
+          unknownFields as unknown as Database['public']['Tables']['inquiries']['Insert']['unknown_fields'],
         status: 'new',
         next_action_required: 'Review Take a Chef booking import',
         next_action_by: 'chef',
@@ -151,32 +143,6 @@ export async function importTakeAChefBooking(
         '[importTakeAChefBooking] Event creation failed (non-fatal):',
         eventError?.message
       )
-      try {
-        await syncMarketplaceInquiryProjection({
-          supabase,
-          tenantId,
-          inquiryId: inquiry.id,
-          platform: 'take_a_chef',
-          clientId,
-          summary: validated.rawText.slice(0, 4000),
-          statusOnPlatform: 'booking_confirmed',
-          nextActionRequired: 'Review Take a Chef booking import',
-          nextActionBy: 'chef',
-          payout: {
-            grossBookingCents: parsed.confirmed_budget_cents ?? null,
-            commissionPercent: validated.commissionPercent,
-          },
-          payload: {
-            submission_source: 'take_a_chef_email_import',
-            ai_confidence: parseResult.confidence,
-          },
-          actedBy: user.id,
-          actionType: 'ai_import_created',
-          actionLabel: 'Imported Take a Chef booking email',
-        })
-      } catch (canonicalError) {
-        console.error('[importTakeAChefBooking] Canonical marketplace sync skipped:', canonicalError)
-      }
       revalidatePath('/inquiries')
       return {
         success: true,
@@ -202,34 +168,6 @@ export async function importTakeAChefBooking(
       .from('inquiries')
       .update({ converted_to_event_id: event.id })
       .eq('id', inquiry.id)
-
-    try {
-      await syncMarketplaceInquiryProjection({
-        supabase,
-        tenantId,
-        inquiryId: inquiry.id,
-        platform: 'take_a_chef',
-        clientId,
-        eventId: event.id,
-        summary: validated.rawText.slice(0, 4000),
-        statusOnPlatform: 'booking_confirmed',
-        nextActionRequired: 'Review Take a Chef booking import',
-        nextActionBy: 'chef',
-        payout: {
-          grossBookingCents: parsed.confirmed_budget_cents ?? null,
-          commissionPercent: validated.commissionPercent,
-        },
-        payload: {
-          submission_source: 'take_a_chef_email_import',
-          ai_confidence: parseResult.confidence,
-        },
-        actedBy: user.id,
-        actionType: 'ai_import_created',
-        actionLabel: 'Imported Take a Chef booking email',
-      })
-    } catch (canonicalError) {
-      console.error('[importTakeAChefBooking] Canonical marketplace sync skipped:', canonicalError)
-    }
 
     // 8. Log commission as expense (if requested and price is known)
     let commissionExpenseId: string | undefined

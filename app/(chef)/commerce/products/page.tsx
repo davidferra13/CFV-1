@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus } from '@/components/ui/icons'
+import { Plus } from 'lucide-react'
 import { ProductCatalog } from '@/components/commerce/product-catalog'
 
 export const metadata: Metadata = { title: 'Products — ChefFlow' }

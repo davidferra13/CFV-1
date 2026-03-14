@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { Info, DollarSign, ClipboardList, CheckSquare } from '@/components/ui/icons'
+import { Info, DollarSign, ClipboardList, CheckSquare } from 'lucide-react'
 
 export type EventDetailTab = 'overview' | 'money' | 'ops' | 'wrap'
 

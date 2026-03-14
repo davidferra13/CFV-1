@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { getRecurringSchedules } from '@/lib/finance/recurring-invoice-actions'
+import { getRecurringInvoices } from '@/lib/finance/recurring-invoice-actions'
 import { RecurringInvoiceForm } from '@/components/finance/recurring-invoice-form'
 
 export const metadata: Metadata = { title: 'Recurring Invoices - ChefFlow' }
@@ -12,7 +12,7 @@ export default async function RecurringInvoicesPage() {
   const supabase: any = createServerClient()
 
   const [invoices, clientsResult] = await Promise.all([
-    getRecurringSchedules('all').catch(() => []),
+    getRecurringInvoices().catch(() => null),
     supabase
       .from('clients')
       .select('id, full_name')
@@ -30,11 +30,11 @@ export default async function RecurringInvoicesPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Recurring Invoices</h1>
         <p className="text-stone-500 mt-1">
-          Manage automated billing schedules for retainer clients and recurring services
+          Manage automated invoices for retainer clients and recurring services
         </p>
       </div>
 
-      <RecurringInvoiceForm initialInvoices={invoices} clients={clients} />
+      <RecurringInvoiceForm initialInvoices={invoices ?? []} clients={clients} />
     </div>
   )
 }

@@ -8,8 +8,6 @@ import {
 } from '@/lib/documents/snapshot-actions'
 import { SNAPSHOT_DOCUMENT_LABELS } from '@/lib/documents/snapshot-constants'
 
-export const dynamic = 'force-dynamic'
-
 const MAX_EXPORT_ROWS = 5000
 const PAGE_SIZE = 250
 

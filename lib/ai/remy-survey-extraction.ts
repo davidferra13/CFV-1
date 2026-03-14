@@ -5,7 +5,7 @@
 // Called non-blocking after each mascot chat response during survey mode.
 
 import { z } from 'zod'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { saveSurveyAnswer } from '@/lib/ai/remy-survey-actions'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
@@ -44,23 +44,21 @@ export async function extractSurveyAnswer(
   }
 
   try {
-    const result: SurveyExtraction = (
-      await dispatchPrivate(
-        `You extract factual answers from conversational survey responses.
+    const result: SurveyExtraction = await parseWithOllama(
+      `You extract factual answers from conversational survey responses.
 Given a survey question and the chef's conversational reply, extract the factual content.
 Strip filler words, tangents, and pleasantries — keep only the meaningful information.
 If the response doesn't actually answer the question, return an empty answers array.
 Keep each extracted answer under 200 characters.`,
-        `QUESTION: "${questionPrompt}"
+      `QUESTION: "${questionPrompt}"
 CHEF'S RESPONSE: "${chefMessage}"
 QUESTION KEY: "${questionKey}"
 
 Return JSON with the extracted answer(s). If the chef answered the question, include it.
 If the chef also answered other questions from context, include those too with their best-guess key.`,
-        SurveyExtractionSchema,
-        { modelTier: 'fast', maxTokens: 256 }
-      )
-    ).result
+      SurveyExtractionSchema,
+      { modelTier: 'fast', maxTokens: 256 }
+    )
 
     // Save each extracted answer
     for (const answer of result.answers) {

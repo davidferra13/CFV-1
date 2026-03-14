@@ -1,8 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
-'use client'
+﻿'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Minus, Plus, CreditCard, Banknote, Wallet, X } from '@/components/ui/icons'
+import { Search, Minus, Plus, CreditCard, Banknote, Wallet, X } from 'lucide-react'
 import type { StaffPinSession } from '@/lib/devices/types'
 import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { PRODUCT_CATEGORY_LABELS } from '@/lib/commerce/constants'

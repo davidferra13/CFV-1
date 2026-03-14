@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { generateAICallScript } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, PhoneCall } from '@/components/ui/icons'
+import { Loader2, PhoneCall } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface AICallScriptButtonProps {

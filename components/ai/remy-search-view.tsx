@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { searchConversations } from '@/lib/ai/remy-local-storage'
 import type { SearchResult } from '@/lib/ai/remy-types'
-import { Search, X } from '@/components/ui/icons'
+import { Search, X } from 'lucide-react'
 
 interface RemySearchViewProps {
   onSelectConversation: (id: string) => void

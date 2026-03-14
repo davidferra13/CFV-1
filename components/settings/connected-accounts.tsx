@@ -255,11 +255,11 @@ export function ConnectedAccounts({
 
 function ClassificationBadge({ classification }: { classification: string }) {
   const colors: Record<string, string> = {
-    inquiry: 'bg-emerald-900 text-emerald-200',
-    existing_thread: 'bg-blue-900 text-blue-200',
+    inquiry: 'bg-emerald-900 text-emerald-700',
+    existing_thread: 'bg-blue-900 text-blue-700',
     personal: 'bg-stone-800 text-stone-400',
     spam: 'bg-red-900 text-red-600',
-    marketing: 'bg-amber-900 text-amber-200',
+    marketing: 'bg-amber-900 text-amber-700',
   }
   return (
     <span

@@ -1,10 +1,11 @@
 // Shift Report — displays register session summary after closing
 'use client'
 
+import { useState, useEffect, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Download } from '@/components/ui/icons'
+import { getCashDrawerSummary } from '@/lib/commerce/cash-drawer-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 
 type Session = {
@@ -122,25 +123,6 @@ export function ShiftReport({ sessions }: Props) {
                     {formatCurrency(session.closing_cash_cents ?? 0)}
                   </p>
                 </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  href={`/api/documents/commerce-shift-report/${session.id}?format=csv`}
-                >
-                  <Download className="w-4 h-4 mr-2" />Z CSV
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  href={`/api/documents/commerce-shift-report/${session.id}?format=pdf`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Download className="w-4 h-4 mr-2" />Z PDF
-                </Button>
               </div>
 
               {session.close_notes && (

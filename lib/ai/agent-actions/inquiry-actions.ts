@@ -11,7 +11,7 @@ import {
   getInquiries,
 } from '@/lib/inquiries/actions'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 const ParsedInquirySchema = z.object({
@@ -46,10 +46,7 @@ async function parseInquiryFromNL(description: string) {
 Extract: client_name, client_email, client_phone, event_date (YYYY-MM-DD), guest_count, occasion, channel (text/email/instagram/take_a_chef/phone/website/referral/walk_in/other), budget_range_min_cents and budget_range_max_cents (dollars→cents), service_style, dietary_restrictions (array), notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedInquirySchema, {
-    modelTier: 'standard',
-  })
-  return result
+  return parseWithOllama(systemPrompt, description, ParsedInquirySchema, { modelTier: 'standard' })
 }
 
 export const inquiryAgentActions: AgentActionDefinition[] = [
@@ -277,12 +274,9 @@ export const inquiryAgentActions: AgentActionDefinition[] = [
       if ('error' in result)
         return { success: false, message: `Conversion failed: ${result.error}` }
       const eventId = (result as { event: { id: string } }).event?.id
-      const wasSeries = Boolean((result as { series?: { id: string } }).series?.id)
       return {
         success: true,
-        message: wasSeries
-          ? 'Inquiry converted to draft multi-day series!'
-          : 'Inquiry converted to draft event!',
+        message: 'Inquiry converted to draft event!',
         redirectUrl: eventId ? `/events/${eventId}` : '/events',
       }
     },

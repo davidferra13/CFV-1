@@ -4,14 +4,13 @@
 
 import { Button, Heading, Section, Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type NotificationGenericEmailProps = {
   title: string
   body?: string | null
   actionUrl?: string | null
   actionLabel?: string
-  brand?: ChefBrandProps
 }
 
 export function NotificationGenericEmail({
@@ -19,10 +18,9 @@ export function NotificationGenericEmail({
   body,
   actionUrl,
   actionLabel = 'View in ChefFlow',
-  brand,
 }: NotificationGenericEmailProps) {
   return (
-    <BaseLayout brand={brand} preview={title}>
+    <BaseLayout preview={title}>
       <Heading style={h1}>{title}</Heading>
       {body && <Text style={bodyText}>{body}</Text>}
       {actionUrl && (

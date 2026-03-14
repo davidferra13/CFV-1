@@ -13,16 +13,13 @@ import {
   captureTakeAChefBooking,
   type TakeAChefCaptureInput,
 } from '@/lib/inquiries/take-a-chef-capture-actions'
-import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
 // ─── Component ────────────────────────────────────────────────────────────
 
 export function TakeAChefCaptureForm({
   onSuccess,
-  defaultCommissionPercent = getDefaultTakeAChefCommissionPercent(),
 }: {
   onSuccess?: (result: { inquiryId?: string; eventId?: string }) => void
-  defaultCommissionPercent?: number
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -31,7 +28,7 @@ export function TakeAChefCaptureForm({
   const [result, setResult] = useState<{ inquiryId?: string; eventId?: string } | null>(null)
 
   const [form, setForm] = useState<Partial<TakeAChefCaptureInput>>({
-    commission_percent: defaultCommissionPercent,
+    commission_percent: 25,
     log_commission: true,
     guest_count: 4,
     serve_time: '19:00',
@@ -84,7 +81,7 @@ export function TakeAChefCaptureForm({
         location: form.location!.trim(),
         occasion: form.occasion!.trim(),
         total_price_cents: form.total_price_cents ?? null,
-        commission_percent: form.commission_percent ?? defaultCommissionPercent,
+        commission_percent: form.commission_percent ?? 25,
         log_commission: form.log_commission ?? true,
         dietary_restrictions: form.dietary_restrictions || '',
         additional_notes: form.additional_notes || '',
@@ -112,7 +109,7 @@ export function TakeAChefCaptureForm({
           <span className="text-xl">✓</span>
           <div>
             <p className="font-semibold text-green-900">Booking Captured</p>
-            <p className="text-sm text-green-200 mt-0.5">
+            <p className="text-sm text-green-700 mt-0.5">
               Client, inquiry, and draft event created — all tagged as Take a Chef
             </p>
           </div>
@@ -138,7 +135,7 @@ export function TakeAChefCaptureForm({
             onClick={() => {
               setDone(false)
               setForm({
-                commission_percent: defaultCommissionPercent,
+                commission_percent: 25,
                 log_commission: true,
                 guest_count: 4,
                 serve_time: '19:00',
@@ -302,7 +299,7 @@ export function TakeAChefCaptureForm({
               min={0}
               max={50}
               step={1}
-              value={form.commission_percent ?? defaultCommissionPercent}
+              value={form.commission_percent ?? 25}
               onChange={(e) => set('commission_percent', Number(e.target.value))}
               className="w-full px-3 py-2 border border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
@@ -313,14 +310,12 @@ export function TakeAChefCaptureForm({
               form.commission_percent != null &&
               form.commission_percent > 0 && (
                 <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2 text-sm">
-                  <span className="text-amber-200 font-medium">Commission: </span>
+                  <span className="text-amber-700 font-medium">Commission: </span>
                   <span className="text-amber-900 font-semibold">
                     $
-                    {(
-                      (form.total_price_cents *
-                        (form.commission_percent ?? defaultCommissionPercent)) /
-                      10000
-                    ).toFixed(2)}
+                    {((form.total_price_cents * (form.commission_percent ?? 25)) / 10000).toFixed(
+                      2
+                    )}
                   </span>
                 </div>
               )}

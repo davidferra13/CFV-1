@@ -11,7 +11,6 @@ import { revalidatePath } from 'next/cache'
 import { canRefund } from './sale-fsm'
 import { appendPosAuditLog } from './pos-audit-log'
 import { assertPosManagerAccess } from './pos-authorization'
-import { normalizeManualReason } from './mutation-reason'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -36,10 +35,7 @@ export async function createRefund(input: CreateRefundInput) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
-  const normalizedReason = normalizeManualReason({
-    reason: input.reason,
-    actionLabel: 'Refund',
-  })
+  const normalizedReason = input.reason.trim()
 
   await assertPosManagerAccess({
     supabase,
@@ -50,6 +46,10 @@ export async function createRefund(input: CreateRefundInput) {
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
     throw new Error('Refund amount must be a positive integer (cents)')
   }
+  if (!normalizedReason) {
+    throw new Error('Refund reason is required')
+  }
+
   // Fetch the original payment
   const { data: payment, error: paymentErr } = await supabase
     .from('commerce_payments')

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type {
   HubGroup,
@@ -16,11 +16,8 @@ import { HubMemberList } from '@/components/hub/hub-member-list'
 import { HubNotesBoard } from '@/components/hub/hub-notes-board'
 import { HubPhotoGallery } from '@/components/hub/hub-photo-gallery'
 import { HubAvailabilityGrid } from '@/components/hub/hub-availability-grid'
-import { HubMessageSearch } from '@/components/hub/hub-message-search'
-import { HubGroupSettings } from '@/components/hub/hub-group-settings'
-import { toggleMuteCircle } from '@/lib/hub/group-actions'
 
-type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'schedule' | 'members' | 'search' | 'settings'
+type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'schedule' | 'members'
 
 interface HubGroupViewProps {
   group: HubGroup
@@ -42,12 +39,9 @@ export function HubGroupView({
   profileToken: profileTokenProp,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
-  const [localGroup, setLocalGroup] = useState<HubGroup>(group)
   const [profileToken, setProfileToken] = useState<string | null>(profileTokenProp ?? null)
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null)
   const [currentMember, setCurrentMember] = useState<HubGroupMember | null>(null)
-  const [isMuted, setIsMuted] = useState(false)
-  const [mutePending, startMuteTransition] = useTransition()
 
   // Read profile token from prop or cookie, and sync cookie for child components
   useEffect(() => {
@@ -71,102 +65,34 @@ export function HubGroupView({
       if (member) {
         setCurrentProfileId(member.profile_id)
         setCurrentMember(member)
-        setIsMuted(member.notifications_muted)
       }
     }
   }, [members, profileTokenProp])
 
-  const isOwnerOrAdmin = currentMember
-    ? ['owner', 'admin', 'chef'].includes(currentMember.role)
-    : false
-
-  const baseTabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
+  const tabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     { id: 'chat', label: 'Chat', emoji: '💬' },
     { id: 'events', label: 'Events', emoji: '🍽️', count: groupEvents.length },
     { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
     { id: 'schedule', label: 'Schedule', emoji: '📅', count: availability.length },
     { id: 'notes', label: 'Notes', emoji: '📝', count: notes.length },
     { id: 'members', label: 'Members', emoji: '👥', count: members.length },
-    { id: 'search', label: 'Search', emoji: '🔍' },
   ]
-
-  const tabs = isOwnerOrAdmin
-    ? [...baseTabs, { id: 'settings' as Tab, label: 'Settings', emoji: '⚙️' }]
-    : baseTabs
 
   const memberAvatars = members.slice(0, 5)
 
   return (
-    <ThemedWrapper theme={localGroup.theme} className="flex min-h-screen flex-col bg-stone-950">
+    <ThemedWrapper theme={group.theme} className="flex min-h-screen flex-col bg-stone-950">
       {/* Header */}
       <header className="border-b border-stone-800 bg-stone-900/90 px-4 py-3 backdrop-blur">
         <div className="mx-auto max-w-2xl">
           <div className="flex items-center gap-3">
-            {localGroup.emoji && <span className="text-2xl">{localGroup.emoji}</span>}
+            {group.emoji && <span className="text-2xl">{group.emoji}</span>}
             <div className="flex-1 min-w-0">
-              <h1 className="truncate text-lg font-bold text-stone-100">{localGroup.name}</h1>
-              {localGroup.description && (
-                <p className="truncate text-xs text-stone-500">{localGroup.description}</p>
+              <h1 className="truncate text-lg font-bold text-stone-100">{group.name}</h1>
+              {group.description && (
+                <p className="truncate text-xs text-stone-500">{group.description}</p>
               )}
             </div>
-
-            {/* Mute toggle */}
-            {profileToken && currentMember && (
-              <button
-                type="button"
-                onClick={() => {
-                  startMuteTransition(async () => {
-                    try {
-                      const newMuted = await toggleMuteCircle({
-                        groupId: group.id,
-                        profileToken: profileToken!,
-                      })
-                      setIsMuted(newMuted)
-                    } catch {
-                      // Ignore
-                    }
-                  })
-                }}
-                disabled={mutePending}
-                className="rounded-full bg-stone-800 p-1.5 text-stone-400 hover:bg-stone-700 hover:text-stone-200 disabled:opacity-50"
-                title={isMuted ? 'Unmute notifications' : 'Mute notifications'}
-              >
-                {isMuted ? (
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                    />
-                  </svg>
-                )}
-              </button>
-            )}
 
             {/* My Hub link */}
             {profileToken && currentMember?.profile?.profile_token && (
@@ -232,7 +158,6 @@ export function HubGroupView({
             groupId={group.id}
             profileToken={profileToken}
             currentProfileId={currentProfileId}
-            isOwnerOrAdmin={isOwnerOrAdmin}
           />
         )}
 
@@ -288,26 +213,7 @@ export function HubGroupView({
         )}
 
         {activeTab === 'members' && (
-          <HubMemberList
-            members={members}
-            groupId={group.id}
-            currentProfileId={currentProfileId}
-            profileToken={profileToken}
-            isOwnerOrAdmin={isOwnerOrAdmin}
-            shareLink={typeof window !== 'undefined' ? window.location.href : undefined}
-          />
-        )}
-
-        {activeTab === 'search' && <HubMessageSearch groupId={group.id} />}
-
-        {activeTab === 'settings' && isOwnerOrAdmin && profileToken && (
-          <div className="p-4">
-            <HubGroupSettings
-              group={localGroup}
-              profileToken={profileToken}
-              onUpdated={(updated) => setLocalGroup(updated)}
-            />
-          </div>
+          <HubMemberList members={members} currentProfileId={currentProfileId} />
         )}
       </main>
 

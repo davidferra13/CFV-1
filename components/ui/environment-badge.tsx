@@ -1,7 +1,4 @@
-﻿'use client'
-
-import { getAppEnvironment } from '@/lib/environment/runtime'
-import { useIsDemoMode } from '@/lib/demo-mode'
+﻿import { getAppEnvironment } from '@/lib/environment/runtime'
 
 const ENV_LABEL: Record<string, string> = {
   production: 'PRODUCTION',
@@ -16,8 +13,6 @@ const ENV_CLASS: Record<string, string> = {
 }
 
 export function EnvironmentBadge() {
-  const isDemo = useIsDemoMode()
-  if (isDemo) return null
   const environment = getAppEnvironment()
   return (
     <div className="fixed right-3 top-3 z-[100] pointer-events-none" aria-live="polite">

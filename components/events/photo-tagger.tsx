@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
 'use client'
 
 // PhotoTagger — Photo grid with AI-suggested tag chips.
@@ -11,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { suggestPhotoTags, confirmPhotoTag } from '@/lib/events/photo-tagging-actions'
-import { Image, Bot, Check, X, Tag } from '@/components/ui/icons'
+import { Image, Sparkles, Check, X, Tag } from 'lucide-react'
 
 type Photo = {
   id: string
@@ -195,7 +194,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                       {state.confirmedTags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-200 ring-1 ring-inset ring-emerald-800"
+                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800"
                         >
                           {tag}
                           <button
@@ -219,13 +218,13 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                         {state.suggestedTags.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-200 ring-1 ring-inset ring-amber-800"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800"
                           >
                             {tag}
                             <button
                               type="button"
                               onClick={() => handleAcceptTag(photo.id, tag)}
-                              className="text-emerald-500 hover:text-emerald-200"
+                              className="text-emerald-500 hover:text-emerald-700"
                               aria-label={`Accept tag ${tag}`}
                             >
                               <Check className="h-3 w-3" />
@@ -255,7 +254,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                       disabled={state.loading}
                       loading={state.loading}
                     >
-                      <Bot className="h-3.5 w-3.5" />
+                      <Sparkles className="h-3.5 w-3.5" />
                       {state.loading ? 'Analyzing...' : 'Suggest Tags'}
                     </Button>
                     {hasUnsavedChanges && state.confirmedTags.length > 0 && (

@@ -5,7 +5,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, Package, ShoppingCart, Store } from '@/components/ui/icons'
+import { AlertTriangle, Package, ShoppingCart, Store } from 'lucide-react'
 
 type ParAlert = {
   ingredientName: string

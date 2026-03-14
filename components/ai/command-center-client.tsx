@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Broadcast, Send, Loader2, Zap } from '@/components/ui/icons'
+import { Bot, Send, Loader2, Zap } from 'lucide-react'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { CommandResultCard } from '@/components/ai/command-result-card'
 import type { CommandRun, TaskResult } from '@/lib/ai/command-types'
@@ -111,13 +111,13 @@ export function CommandCenterClient() {
       {/* Input form */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
-          <Broadcast className="absolute top-4 left-4 w-5 h-5 text-stone-300 pointer-events-none" />
+          <Bot className="absolute top-4 left-4 w-5 h-5 text-stone-300 pointer-events-none" />
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Describe what you need… Find Sarah Johnson, check if March 15th is free, and draft her a follow-up."
+            placeholder="Tell me what you need… Find Sarah Johnson, check if March 15th is free, and draft her a follow-up."
             rows={4}
             disabled={loading}
             className="w-full rounded-xl border border-stone-600 bg-stone-900 pl-12 pr-14 py-4 text-sm text-stone-100 placeholder-stone-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 disabled:opacity-60 transition-colors"
@@ -163,16 +163,15 @@ export function CommandCenterClient() {
       {loading && (
         <div className="flex items-center gap-3 text-sm text-stone-500 py-4">
           <Loader2 className="w-4 h-4 animate-spin text-brand-500" />
-          Parsing your request and running tasks in parallel…
+          Parsing your command and running agents in parallel…
         </div>
       )}
 
       {/* Ollama offline */}
       {currentRun?.ollamaOffline && (
-        <div className="rounded-lg border border-red-200 bg-red-950 p-4 text-sm text-red-200">
-          <span className="font-medium">The processing service is offline.</span> Start the local
-          service to use the Command Center. Your conversations are processed privately and never
-          stored on our servers.
+        <div className="rounded-lg border border-red-200 bg-red-950 p-4 text-sm text-red-700">
+          <span className="font-medium">Ollama is offline.</span> Start Ollama to use the Command
+          Center. Your conversations are processed privately and never stored on our servers.
         </div>
       )}
 

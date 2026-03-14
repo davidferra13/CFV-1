@@ -26,7 +26,7 @@ import {
   Lock,
   Eye,
   HardDrive,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { DataFlowAnimated } from './data-flow-animated'
 import { completeOnboarding } from '@/lib/ai/privacy-actions'
 
@@ -114,7 +114,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   i === step
                     ? 'bg-brand-500 text-white scale-110'
                     : i < step
-                      ? 'bg-emerald-900 text-emerald-200'
+                      ? 'bg-emerald-900 text-emerald-700'
                       : 'bg-stone-800 text-stone-300'
                 }`}
               >
@@ -238,7 +238,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     <div className="mx-auto h-12 w-12 rounded-full bg-emerald-900 flex items-center justify-center">
                       <Check className="h-6 w-6 text-emerald-600" />
                     </div>
-                    <p className="text-sm font-medium text-emerald-200">All deleted. Truly gone.</p>
+                    <p className="text-sm font-medium text-emerald-700">All deleted. Truly gone.</p>
                     <p className="text-xs text-stone-500">
                       That&apos;s how it works with real data too.
                     </p>
@@ -343,7 +343,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span className="text-sm text-emerald-200">{item}</span>
+                    <span className="text-sm text-emerald-800">{item}</span>
                   </div>
                 ))}
               </div>

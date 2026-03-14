@@ -5,7 +5,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { ProductForm } from '@/components/commerce/product-form'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'New Product — ChefFlow' }
 

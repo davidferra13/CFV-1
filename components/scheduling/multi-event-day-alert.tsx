@@ -2,7 +2,7 @@
 // Shown on dashboard to help chef plan capacity and logistics.
 
 import Link from 'next/link'
-import { AlertTriangle } from '@/components/ui/icons'
+import { AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 import type { MultiEventDay } from '@/lib/scheduling/multi-event-days'
 
@@ -34,7 +34,7 @@ export function MultiEventDayAlert({ days }: Props) {
                 <li key={ev.id} className="flex items-center justify-between gap-2">
                   <Link
                     href={`/events/${ev.id}`}
-                    className="text-xs text-amber-200 hover:text-amber-900 hover:underline truncate"
+                    className="text-xs text-amber-800 hover:text-amber-900 hover:underline truncate"
                   >
                     {ev.occasion || 'Untitled Event'}
                     {ev.guest_count ? ` · ${ev.guest_count} guests` : ''}

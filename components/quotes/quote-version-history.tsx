@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 import { reviseQuote } from '@/lib/quotes/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
-import { History, Plus } from '@/components/ui/icons'
+import { History, Plus } from 'lucide-react'
 import type { QuoteVersionSummary } from '@/lib/quotes/actions'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 

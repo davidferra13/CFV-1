@@ -4,9 +4,6 @@ import { useState, useTransition } from 'react'
 import type { HubPinnedNote, HubNoteColor } from '@/lib/hub/types'
 import { createPinnedNote, deletePinnedNote } from '@/lib/hub/message-actions'
 
-const NOTE_INPUT_ID = 'hub-note-title'
-const NOTE_BODY_ID = 'hub-note-body'
-
 const NOTE_COLORS: Record<HubNoteColor, string> = {
   default: 'bg-stone-800 border-stone-700',
   yellow: 'bg-amber-900/30 border-amber-700/50',
@@ -36,11 +33,9 @@ export function HubNotesBoard({
   const [body, setBody] = useState('')
   const [color, setColor] = useState<HubNoteColor>('yellow')
   const [isPending, startTransition] = useTransition()
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleCreate = () => {
     if (!profileToken || !body.trim()) return
-    setErrorMsg(null)
 
     startTransition(async () => {
       try {
@@ -56,23 +51,20 @@ export function HubNotesBoard({
         setBody('')
         setShowForm(false)
       } catch {
-        setErrorMsg('Failed to create note. Please try again.')
+        // Error handled by toast in production
       }
     })
   }
 
   const handleDelete = (noteId: string) => {
     if (!profileToken) return
-    setErrorMsg(null)
-    const prev = notes
 
-    setNotes((n) => n.filter((x) => x.id !== noteId))
     startTransition(async () => {
       try {
         await deletePinnedNote({ noteId, profileToken })
+        setNotes((prev) => prev.filter((n) => n.id !== noteId))
       } catch {
-        setNotes(prev)
-        setErrorMsg('Failed to delete note. Please try again.')
+        // Ignore
       }
     })
   }
@@ -83,7 +75,6 @@ export function HubNotesBoard({
         <h3 className="text-sm font-semibold text-stone-300">📝 Notes Board</h3>
         {canPost && profileToken && (
           <button
-            type="button"
             onClick={() => setShowForm(!showForm)}
             className="rounded-full bg-stone-800 px-3 py-1 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200"
           >
@@ -95,21 +86,13 @@ export function HubNotesBoard({
       {/* Create form */}
       {showForm && (
         <div className="mb-4 rounded-xl border border-stone-700 bg-stone-800 p-4">
-          <label htmlFor={NOTE_INPUT_ID} className="sr-only">
-            Note title
-          </label>
           <input
-            id={NOTE_INPUT_ID}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title (optional)"
             className="mb-2 w-full rounded bg-stone-900 px-3 py-1.5 text-sm text-stone-200 outline-none placeholder:text-stone-600"
           />
-          <label htmlFor={NOTE_BODY_ID} className="sr-only">
-            Note body
-          </label>
           <textarea
-            id={NOTE_BODY_ID}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Write your note..."
@@ -120,19 +103,16 @@ export function HubNotesBoard({
             <div className="flex gap-1">
               {(Object.keys(NOTE_COLORS) as HubNoteColor[]).map((c) => (
                 <button
-                  type="button"
                   key={c}
                   onClick={() => setColor(c)}
                   className={`h-5 w-5 rounded-full border-2 ${
                     c === color ? 'border-white' : 'border-transparent'
                   } ${NOTE_COLORS[c]}`}
                   title={c}
-                  aria-label={`${c} color`}
                 />
               ))}
             </div>
             <button
-              type="button"
               onClick={handleCreate}
               disabled={!body.trim() || isPending}
               className="rounded-lg bg-[var(--hub-primary,#e88f47)] px-3 py-1 text-xs font-medium text-white disabled:opacity-30"
@@ -140,19 +120,6 @@ export function HubNotesBoard({
               Post Note
             </button>
           </div>
-        </div>
-      )}
-
-      {errorMsg && (
-        <div className="mb-3 flex items-center justify-between rounded-lg bg-red-900/20 px-3 py-2">
-          <span className="text-xs text-red-300">{errorMsg}</span>
-          <button
-            type="button"
-            onClick={() => setErrorMsg(null)}
-            className="text-xs text-red-400 hover:text-red-200"
-          >
-            Dismiss
-          </button>
         </div>
       )}
 
@@ -180,11 +147,9 @@ export function HubNotesBoard({
               {/* Delete button (on hover) */}
               {profileToken && (
                 <button
-                  type="button"
                   onClick={() => handleDelete(note.id)}
                   className="absolute right-2 top-2 rounded p-1 text-xs text-stone-600 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
                   title="Delete note"
-                  aria-label="Delete note"
                 >
                   ✕
                 </button>

@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { DollarSign, Crown, Users } from '@/components/ui/icons'
+import { DollarSign, Crown, Users } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,30 +27,25 @@ interface ClientLTVChartProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ClientLTVChart({ clients }: ClientLTVChartProps) {
-  const safeClients = Array.isArray(clients) ? clients.filter(Boolean) : []
-
   // Sort by LTV descending and take top 15
-  const sortedClients = [...safeClients]
-    .sort((a, b) => (b?.ltvCents ?? 0) - (a?.ltvCents ?? 0))
-    .slice(0, 15)
+  const sortedClients = [...clients].sort((a, b) => b.ltvCents - a.ltvCents).slice(0, 15)
 
   // Summary calculations
-  const totalLtvCents = safeClients.reduce((sum, c) => sum + (c?.ltvCents ?? 0), 0)
-  const avgLtvCents = safeClients.length > 0 ? Math.round(totalLtvCents / safeClients.length) : 0
+  const totalLtvCents = clients.reduce((sum, c) => sum + c.ltvCents, 0)
+  const avgLtvCents = clients.length > 0 ? Math.round(totalLtvCents / clients.length) : 0
   const topClient = sortedClients[0] || null
 
   // Chart data
   const chartData = sortedClients.map((c) => ({
-    name:
-      (c?.name ?? '').length > 15 ? (c?.name ?? '').slice(0, 13) + '...' : (c?.name ?? 'Client'),
-    LTV: (c?.ltvCents ?? 0) / 100,
-    Events: c?.eventCount ?? 0,
+    name: c.name.length > 15 ? c.name.slice(0, 13) + '...' : c.name,
+    LTV: c.ltvCents / 100,
+    Events: c.eventCount,
   }))
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
             <div className="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center flex-shrink-0">

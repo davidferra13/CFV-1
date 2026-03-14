@@ -14,14 +14,6 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
-import { getAllowedInquiryTransitions } from '@/lib/inquiries/fsm'
-import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
-import { ScheduleRequestSchema } from '@/lib/booking/schedule-schema'
-import { checkSeriesSessionConflicts } from '@/lib/availability/actions'
-import {
-  buildSeriesSchedulePlan,
-  getDefaultServeTimeForMealSlot,
-} from '@/lib/booking/series-planning'
 import {
   resolveInquiryDateForEvent,
   inferEventTimesFromConversation,
@@ -31,35 +23,11 @@ import {
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status']
 type InquiryChannel = Database['public']['Enums']['inquiry_channel']
-type EventSeriesRow = {
-  id: string
-  service_mode: Database['public']['Enums']['booking_service_mode']
-}
-type EventSessionRow = {
-  id: string
-  session_date: string
-  meal_slot: Database['public']['Enums']['event_session_meal_slot']
-  start_time: string | null
-  end_time: string | null
-  guest_count: number | null
-  notes: string | null
-  sort_order: number
-  location_address?: string | null
-  location_city?: string | null
-  location_state?: string | null
-  location_zip?: string | null
-}
-type EventRow = {
-  id: string
-  event_date: string
-  created_at: string
-  source_session_id?: string | null
-}
 
 // Valid transitions map (matches DB trigger)
 const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
-  new: ['awaiting_client', 'quoted', 'declined'],
-  awaiting_client: ['awaiting_chef', 'quoted', 'declined', 'expired'],
+  new: ['awaiting_client', 'declined'],
+  awaiting_client: ['awaiting_chef', 'declined', 'expired'],
   awaiting_chef: ['quoted', 'declined'],
   quoted: ['confirmed', 'declined', 'expired'],
   confirmed: [], // terminal — converts to event
@@ -146,256 +114,6 @@ function inferComponentCategoryFromDishName(
   if (/\b(condiment|mustard|ketchup|relish)\b/.test(value)) return 'condiment'
   if (/\b(drink|cocktail|wine|beverage)\b/.test(value)) return 'beverage'
   return 'other'
-}
-
-function mapCannabisPreferenceToBoolean(value?: string | null): boolean | null {
-  if (!value) return null
-  return ['yes', 'true', 'open'].some((option) => value.toLowerCase().includes(option))
-}
-
-function buildSessionIdentityKey(session: {
-  session_date?: string | null
-  meal_slot?: Database['public']['Enums']['event_session_meal_slot'] | null
-  start_time?: string | null
-}): string {
-  return `${session.session_date || ''}|${session.meal_slot || 'other'}|${
-    session.start_time || '00:00:00'
-  }`
-}
-
-function buildSessionOccasionLabel(params: {
-  baseOccasion: string | null
-  sessionDate: string
-  mealSlot: Database['public']['Enums']['event_session_meal_slot']
-  totalSessions: number
-}) {
-  const { baseOccasion, sessionDate, mealSlot, totalSessions } = params
-  const occasion = baseOccasion || 'Private Chef Service'
-  if (totalSessions <= 1) return occasion
-  return `${occasion} - ${mealSlot.replace('_', ' ')} (${sessionDate})`
-}
-
-function mergeSpecialRequestNotes(...notes: Array<string | null | undefined>): string | null {
-  const chunks = notes.map((note) => note?.trim()).filter(Boolean)
-  if (chunks.length === 0) return null
-  return chunks.join('\n\n')
-}
-
-async function materializeSeriesSessions(params: {
-  supabase: any
-  tenantId: string
-  actorId: string
-  series: EventSeriesRow
-  inquiry: Record<string, any>
-  plannedSessions: Array<{
-    session_date: string
-    meal_slot: Database['public']['Enums']['event_session_meal_slot']
-    execution_type: Database['public']['Enums']['event_session_execution_type']
-    start_time: string | null
-    end_time: string | null
-    guest_count: number | null
-    notes: string | null
-    sort_order: number
-  }>
-  parsedLocation: { city: string | null; state: string | null }
-}): Promise<EventSessionRow[]> {
-  const { supabase, tenantId, actorId, series, inquiry, plannedSessions, parsedLocation } = params
-
-  const { data: existingSessions } = await supabase
-    .from('event_service_sessions')
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .eq('series_id', series.id)
-    .order('session_date', { ascending: true })
-    .order('sort_order', { ascending: true })
-
-  const existingByKey = new Map<string, EventSessionRow>()
-  for (const existing of (existingSessions || []) as EventSessionRow[]) {
-    existingByKey.set(buildSessionIdentityKey(existing), existing)
-  }
-
-  const toInsert = plannedSessions
-    .filter((session) => !existingByKey.has(buildSessionIdentityKey(session)))
-    .map((session) => ({
-      series_id: series.id,
-      tenant_id: tenantId,
-      client_id: inquiry.client_id,
-      inquiry_id: inquiry.id,
-      session_date: session.session_date,
-      meal_slot: session.meal_slot,
-      execution_type: session.execution_type,
-      start_time: session.start_time,
-      end_time: session.end_time,
-      guest_count: session.guest_count,
-      service_style: 'plated',
-      location_address: inquiry.confirmed_location || null,
-      location_city: parsedLocation.city || 'TBD',
-      location_state: parsedLocation.state || 'MA',
-      location_zip: 'TBD',
-      status: 'draft',
-      sort_order: session.sort_order,
-      notes: session.notes,
-      created_by: actorId,
-      updated_by: actorId,
-    }))
-
-  let insertedSessions: EventSessionRow[] = []
-  if (toInsert.length > 0) {
-    const { data, error } = await supabase
-      .from('event_service_sessions')
-      .insert(toInsert)
-      .select('*')
-
-    if (error) {
-      console.error('[materializeSeriesSessions] Insert error:', error)
-      throw new UnknownAppError(`Failed to create series sessions: ${error.message}`)
-    }
-
-    insertedSessions = (data || []) as EventSessionRow[]
-  }
-
-  return [...((existingSessions || []) as EventSessionRow[]), ...insertedSessions].sort((a, b) => {
-    const dateCompare = a.session_date.localeCompare(b.session_date)
-    if (dateCompare !== 0) return dateCompare
-    return a.sort_order - b.sort_order
-  })
-}
-
-async function materializeSeriesEvents(params: {
-  supabase: any
-  tenantId: string
-  actorId: string
-  inquiry: Record<string, any>
-  series: EventSeriesRow
-  sessions: EventSessionRow[]
-  parsedLocation: { city: string | null; state: string | null }
-  serveTimeFallback: string | null
-  arrivalTimeFallback: string | null
-  quotedPriceCents: number | null
-  depositAmountCents: number | null
-  pricingModel: Database['public']['Enums']['pricing_model'] | null
-}): Promise<EventRow[]> {
-  const {
-    supabase,
-    tenantId,
-    actorId,
-    inquiry,
-    series,
-    sessions,
-    parsedLocation,
-    serveTimeFallback,
-    arrivalTimeFallback,
-    quotedPriceCents,
-    depositAmountCents,
-    pricingModel,
-  } = params
-
-  const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
-
-  const { data: existingEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .eq('event_series_id', series.id)
-    .order('event_date', { ascending: true })
-    .order('created_at', { ascending: true })
-
-  const existingBySession = new Map<string, EventRow>()
-  for (const existing of (existingEvents || []) as EventRow[]) {
-    if (existing.source_session_id) {
-      existingBySession.set(existing.source_session_id, existing)
-    }
-  }
-
-  const payload = sessions
-    .filter((session) => !existingBySession.has(session.id))
-    .map((session) => {
-      const sessionIndex = sessions.findIndex((candidate) => candidate.id === session.id)
-      const serveTime =
-        session.start_time || serveTimeFallback || getDefaultServeTimeForMealSlot(session.meal_slot)
-      const arrivalTime = arrivalTimeFallback || session.start_time || null
-
-      return {
-        tenant_id: tenantId,
-        client_id: inquiry.client_id,
-        inquiry_id: inquiry.id,
-        referral_partner_id: inquiry.referral_partner_id || null,
-        partner_location_id: inquiry.partner_location_id || null,
-        event_series_id: series.id,
-        source_session_id: session.id,
-        service_mode: series.service_mode,
-        booking_source: 'series',
-        event_date: session.session_date,
-        serve_time: serveTime,
-        arrival_time: arrivalTime,
-        guest_count: session.guest_count || inquiry.confirmed_guest_count || 1,
-        location_address: session.location_address || inquiry.confirmed_location || 'TBD',
-        location_city: session.location_city || parsedLocation.city || 'TBD',
-        location_state: session.location_state || parsedLocation.state || 'MA',
-        location_zip: session.location_zip || 'TBD',
-        occasion: buildSessionOccasionLabel({
-          baseOccasion: inquiry.confirmed_occasion,
-          sessionDate: session.session_date,
-          mealSlot: session.meal_slot,
-          totalSessions: sessions.length,
-        }),
-        quoted_price_cents: sessionIndex === 0 ? quotedPriceCents : null,
-        deposit_amount_cents: sessionIndex === 0 ? depositAmountCents : null,
-        pricing_model: pricingModel,
-        dietary_restrictions: inquiry.confirmed_dietary_restrictions || [],
-        special_requests: mergeSpecialRequestNotes(
-          inquiry.confirmed_service_expectations,
-          session.notes
-        ),
-        cannabis_preference: cannabisBoolean,
-        created_by: actorId,
-        updated_by: actorId,
-      }
-    })
-
-  let insertedEvents: EventRow[] = []
-  if (payload.length > 0) {
-    const { data, error } = await supabase.from('events').insert(payload).select('*')
-
-    if (error) {
-      console.error('[materializeSeriesEvents] Event creation error:', error)
-      throw new UnknownAppError(`Failed to create events for series: ${error.message}`)
-    }
-    insertedEvents = (data || []) as EventRow[]
-  }
-
-  if (insertedEvents.length > 0) {
-    await supabase.from('event_state_transitions').insert(
-      insertedEvents.map((event) => ({
-        tenant_id: tenantId,
-        event_id: event.id,
-        from_status: null,
-        to_status: 'draft',
-        transitioned_by: actorId,
-        metadata: {
-          action: 'created_from_series',
-          inquiry_id: inquiry.id,
-          series_id: series.id,
-          source_session_id: event.source_session_id,
-        },
-      }))
-    )
-
-    for (const event of insertedEvents) {
-      if (!event.source_session_id) continue
-      await supabase
-        .from('event_service_sessions')
-        .update({ event_id: event.id, updated_by: actorId })
-        .eq('id', event.source_session_id)
-        .eq('tenant_id', tenantId)
-    }
-  }
-
-  return [...((existingEvents || []) as EventRow[]), ...insertedEvents].sort((a, b) => {
-    const dateCompare = a.event_date.localeCompare(b.event_date)
-    if (dateCompare !== 0) return dateCompare
-    return a.created_at.localeCompare(b.created_at)
-  })
 }
 
 // ============================================
@@ -492,24 +210,6 @@ export async function createInquiry(input: CreateInquiryInput) {
         throw new UnknownAppError('Failed to create inquiry')
       }
 
-      try {
-        await recordInquiryStateTransition({
-          supabase,
-          tenantId: user.tenantId!,
-          inquiryId: inquiry.id,
-          fromStatus: null,
-          toStatus: 'new',
-          transitionedBy: user.id,
-          reason: 'chef_created_inquiry',
-          metadata: { source: 'chef_portal' },
-        })
-      } catch (transitionErr) {
-        console.error(
-          '[createInquiry] Initial inquiry transition insert failed (non-blocking):',
-          transitionErr
-        )
-      }
-
       revalidatePath('/inquiries')
       return { success: true, inquiry }
     },
@@ -543,8 +243,6 @@ export async function createInquiry(input: CreateInquiryInput) {
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')
     const clientName = validated.client_name || 'Unknown'
-    const budgetMode = validated.confirmed_budget_cents != null ? 'exact' : 'unset'
-    const budgetKnown = budgetMode === 'exact'
     await evaluateAutomations(user.tenantId!, 'inquiry_created', {
       entityId: inquiry.id,
       entityType: 'inquiry',
@@ -553,31 +251,10 @@ export async function createInquiry(input: CreateInquiryInput) {
         client_name: clientName,
         occasion: validated.confirmed_occasion || null,
         guest_count: validated.confirmed_guest_count ?? null,
-        budget_mode: budgetMode,
-        budget_known: budgetKnown,
-        budget_range: null,
-        budget_cents: validated.confirmed_budget_cents ?? null,
       },
     })
   } catch (err) {
     console.error('[createInquiry] Automation evaluation failed (non-blocking):', err)
-  }
-
-  // Fire workflow automations for inquiry_created (non-blocking)
-  try {
-    const { processEventTrigger } = await import('@/lib/automations/workflow-actions')
-    await processEventTrigger(user.tenantId!, 'inquiry_created', {
-      entityId: inquiry.id,
-      entityType: 'inquiry',
-      fields: {
-        channel: validated.channel,
-        client_name: validated.client_name || 'Unknown',
-        occasion: validated.confirmed_occasion || null,
-        guest_count: validated.confirmed_guest_count ?? null,
-      },
-    })
-  } catch (err) {
-    console.error('[createInquiry] Workflow trigger failed (non-blocking):', err)
   }
 
   // Enqueue Remy reactive AI task — auto-score lead (non-blocking)
@@ -588,7 +265,6 @@ export async function createInquiry(input: CreateInquiryInput) {
       clientName: validated.client_name,
       occasion: validated.confirmed_occasion ?? undefined,
       budgetCents: validated.confirmed_budget_cents ?? undefined,
-      budgetMode: validated.confirmed_budget_cents != null ? 'exact' : 'unset',
       guestCount: validated.confirmed_guest_count ?? undefined,
     })
   } catch (err) {
@@ -617,27 +293,6 @@ export async function createInquiry(input: CreateInquiryInput) {
     })
   } catch (err) {
     console.error('[createInquiry] Zapier dispatch failed (non-blocking):', err)
-  }
-
-  // Auto-create Dinner Circle (non-blocking)
-  try {
-    const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
-    const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
-    const circle = await createInquiryCircle({
-      inquiryId: inquiry.id,
-      tenantId: user.tenantId!,
-      clientName: validated.client_name,
-      clientEmail: validated.client_email || null,
-      occasion: validated.confirmed_occasion || null,
-    })
-    // Post chef's first response in the circle
-    await postFirstCircleMessage({
-      groupId: circle.groupId,
-      inquiryId: inquiry.id,
-      tenantId: user.tenantId!,
-    })
-  } catch (err) {
-    console.error('[createInquiry] Circle creation failed (non-blocking):', err)
   }
 
   return { success: true, inquiry }
@@ -928,8 +583,8 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
 
 /**
  * Transition inquiry status
- * Validates in app code for better error messages.
- * Transition rows are recorded explicitly after successful writes.
+ * Validates in app code for better error messages
+ * DB trigger also enforces and auto-inserts into inquiry_state_transitions
  */
 export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   const user = await requireChef()
@@ -948,7 +603,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   }
 
   const currentStatus = inquiry.status as InquiryStatus
-  const allowed = getAllowedInquiryTransitions(currentStatus)
+  const allowed = VALID_TRANSITIONS[currentStatus]
 
   if (!allowed || !allowed.includes(newStatus)) {
     throw new ValidationError(
@@ -978,21 +633,6 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   if (error) {
     console.error('[transitionInquiry] Error:', error)
     throw new UnknownAppError('Failed to transition inquiry')
-  }
-
-  try {
-    await recordInquiryStateTransition({
-      supabase,
-      tenantId: user.tenantId!,
-      inquiryId: id,
-      fromStatus: currentStatus,
-      toStatus: newStatus,
-      transitionedBy: user.id,
-      reason: null,
-      metadata: { source: 'chef_portal' },
-    })
-  } catch (transitionErr) {
-    console.error('[transitionInquiry] Transition log insert failed (non-blocking):', transitionErr)
   }
 
   revalidatePath('/inquiries')
@@ -1086,356 +726,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
 }
 
 // ============================================
-// 6. CONVERT INQUIRY TO SERIES
-// ============================================
-
-/**
- * Convert a confirmed multi-day inquiry into:
- * 1) event_series master record
- * 2) event_service_sessions child records
- * 3) draft events linked to each session
- */
-export async function createSeriesFromBookingRequest(inquiryId: string) {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
-
-  const { data: inquiry } = await supabase
-    .from('inquiries')
-    .select('*')
-    .eq('id', inquiryId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-    .single()
-
-  if (!inquiry) {
-    throw new ValidationError('Inquiry not found')
-  }
-
-  if (inquiry.status !== 'confirmed') {
-    throw new ValidationError('Only confirmed inquiries can be converted to a series')
-  }
-
-  if (!inquiry.client_id) {
-    throw new ValidationError('Inquiry must be linked to a client before converting to a series')
-  }
-
-  if (!inquiry.confirmed_date) {
-    throw new ValidationError('Confirmed date is required before converting to a series')
-  }
-
-  if (inquiry.service_mode !== 'multi_day') {
-    throw new ValidationError('Only multi-day inquiries can be converted to a series')
-  }
-
-  const { data: existingSeries } = await supabase
-    .from('event_series')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
-    .eq('inquiry_id', inquiry.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
-  const { data: inquiryMessages } = await supabase
-    .from('messages')
-    .select('body, sent_at')
-    .eq('tenant_id', user.tenantId!)
-    .eq('inquiry_id', inquiry.id)
-    .order('sent_at', { ascending: true })
-    .limit(100)
-
-  const conversationText = [
-    inquiry.source_message,
-    ...(inquiryMessages || []).map((m: { body?: string | null }) => m.body ?? ''),
-  ]
-    .filter((chunk: string | null | undefined) => Boolean(chunk && chunk.trim().length > 0))
-    .join('\n\n')
-
-  const resolvedEventDate = resolveInquiryDateForEvent(
-    inquiry.confirmed_date,
-    inquiry.first_contact_at
-  )
-  if (!resolvedEventDate) {
-    throw new ValidationError('Confirmed date could not be resolved to a calendar day')
-  }
-
-  const { serveTime, arrivalTime } = inferEventTimesFromConversation(conversationText)
-  const parsedLocation = parseCityStateFromConversation(
-    inquiry.confirmed_location,
-    conversationText
-  )
-
-  const { data: acceptedQuote } = await supabase
-    .from('quotes')
-    .select('id, event_id, total_quoted_cents, deposit_amount_cents, pricing_model')
-    .eq('inquiry_id', inquiryId)
-    .eq('tenant_id', user.tenantId!)
-    .eq('status', 'accepted')
-    .order('accepted_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  const quotedPriceCents =
-    acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents ?? null
-  const depositAmountCents = acceptedQuote?.deposit_amount_cents ?? null
-  const pricingModel = acceptedQuote?.pricing_model ?? null
-
-  const parsedScheduleRequest = ScheduleRequestSchema.safeParse(
-    inquiry.schedule_request_jsonb ?? undefined
-  )
-
-  const schedulePlan = buildSeriesSchedulePlan({
-    scheduleRequest: parsedScheduleRequest.success ? parsedScheduleRequest.data : null,
-    fallbackDate: resolvedEventDate,
-    fallbackGuestCount: inquiry.confirmed_guest_count ?? null,
-  })
-
-  if (existingSeries) {
-    const [sessionsResponse, eventsResponse] = await Promise.all([
-      supabase
-        .from('event_service_sessions')
-        .select('*')
-        .eq('tenant_id', user.tenantId!)
-        .eq('series_id', existingSeries.id)
-        .order('session_date', { ascending: true })
-        .order('sort_order', { ascending: true }),
-      supabase
-        .from('events')
-        .select('*')
-        .eq('tenant_id', user.tenantId!)
-        .eq('event_series_id', existingSeries.id)
-        .order('event_date', { ascending: true })
-        .order('created_at', { ascending: true }),
-    ])
-
-    const existingSessions = (sessionsResponse.data || []) as EventSessionRow[]
-    const sessions =
-      existingSessions.length > 0
-        ? existingSessions
-        : await materializeSeriesSessions({
-            supabase,
-            tenantId: user.tenantId!,
-            actorId: user.id,
-            series: existingSeries as EventSeriesRow,
-            inquiry,
-            plannedSessions: schedulePlan.sessions,
-            parsedLocation,
-          })
-
-    const existingEvents = (eventsResponse.data || []) as EventRow[]
-    if (existingEvents.length === 0) {
-      const conflictCheck = await checkSeriesSessionConflicts(
-        sessions.map((session) => ({
-          session_date: session.session_date,
-          meal_slot: session.meal_slot,
-          start_time: session.start_time,
-          end_time: session.end_time,
-        }))
-      )
-      if (conflictCheck.hasConflicts) {
-        const preview = conflictCheck.conflicts
-          .slice(0, 6)
-          .map((conflict) => `${conflict.session_date} (${conflict.meal_slot}): ${conflict.reason}`)
-          .join('; ')
-        const suffix =
-          conflictCheck.conflicts.length > 6
-            ? `; +${conflictCheck.conflicts.length - 6} more conflict(s)`
-            : ''
-        throw new ValidationError(`Schedule conflicts detected: ${preview}${suffix}`)
-      }
-    }
-
-    const events =
-      existingEvents.length > 0
-        ? existingEvents
-        : await materializeSeriesEvents({
-            supabase,
-            tenantId: user.tenantId!,
-            actorId: user.id,
-            inquiry,
-            series: existingSeries as EventSeriesRow,
-            sessions,
-            parsedLocation,
-            serveTimeFallback: serveTime,
-            arrivalTimeFallback: arrivalTime,
-            quotedPriceCents,
-            depositAmountCents,
-            pricingModel,
-          })
-
-    const primaryEvent = events[0] || null
-    if (!primaryEvent) {
-      throw new UnknownAppError(
-        'Series already exists for this inquiry, but no event could be created'
-      )
-    }
-
-    if (!inquiry.converted_to_event_id) {
-      await supabase
-        .from('inquiries')
-        .update({ converted_to_event_id: primaryEvent.id })
-        .eq('id', inquiry.id)
-        .eq('tenant_id', user.tenantId!)
-        .is('deleted_at' as any, null)
-    }
-
-    if (acceptedQuote?.id && acceptedQuote.event_id !== primaryEvent.id) {
-      await supabase
-        .from('quotes')
-        .update({ event_id: primaryEvent.id })
-        .eq('id', acceptedQuote.id)
-        .eq('tenant_id', user.tenantId!)
-    }
-
-    return {
-      success: true,
-      series: existingSeries as EventSeriesRow,
-      sessions,
-      events,
-      event: primaryEvent as EventRow,
-    }
-  }
-
-  const conflictCheck = await checkSeriesSessionConflicts(
-    schedulePlan.sessions.map((session) => ({
-      session_date: session.session_date,
-      meal_slot: session.meal_slot,
-      start_time: session.start_time,
-      end_time: session.end_time,
-    }))
-  )
-
-  if (conflictCheck.hasConflicts) {
-    const preview = conflictCheck.conflicts
-      .slice(0, 6)
-      .map((conflict) => `${conflict.session_date} (${conflict.meal_slot}): ${conflict.reason}`)
-      .join('; ')
-    const suffix =
-      conflictCheck.conflicts.length > 6
-        ? `; +${conflictCheck.conflicts.length - 6} more conflict(s)`
-        : ''
-    throw new ValidationError(`Schedule conflicts detected: ${preview}${suffix}`)
-  }
-
-  const { data: series, error: seriesError } = await supabase
-    .from('event_series')
-    .insert({
-      tenant_id: user.tenantId!,
-      client_id: inquiry.client_id,
-      inquiry_id: inquiry.id,
-      service_mode: inquiry.service_mode || 'multi_day',
-      status: 'draft',
-      title: inquiry.confirmed_occasion || 'Multi-day service',
-      start_date: schedulePlan.start_date,
-      end_date: schedulePlan.end_date,
-      base_guest_count: inquiry.confirmed_guest_count ?? null,
-      location_address: inquiry.confirmed_location || null,
-      location_city: parsedLocation.city || 'TBD',
-      location_state: parsedLocation.state || 'MA',
-      location_zip: 'TBD',
-      pricing_model: pricingModel,
-      quoted_total_cents: quotedPriceCents,
-      deposit_total_cents: depositAmountCents,
-      notes: mergeSpecialRequestNotes(
-        inquiry.confirmed_service_expectations,
-        parsedScheduleRequest.success ? parsedScheduleRequest.data.outline : null
-      ),
-      created_by: user.id,
-      updated_by: user.id,
-    })
-    .select('*')
-    .single()
-
-  if (seriesError || !series) {
-    console.error('[createSeriesFromBookingRequest] Series creation error:', seriesError)
-    throw new UnknownAppError(`Failed to create event series: ${seriesError?.message}`)
-  }
-
-  const sessions = await materializeSeriesSessions({
-    supabase,
-    tenantId: user.tenantId!,
-    actorId: user.id,
-    series,
-    inquiry,
-    plannedSessions: schedulePlan.sessions,
-    parsedLocation,
-  })
-
-  const events = await materializeSeriesEvents({
-    supabase,
-    tenantId: user.tenantId!,
-    actorId: user.id,
-    inquiry,
-    series,
-    sessions,
-    parsedLocation,
-    serveTimeFallback: serveTime,
-    arrivalTimeFallback: arrivalTime,
-    quotedPriceCents,
-    depositAmountCents,
-    pricingModel,
-  })
-
-  const primaryEvent = events[0] || null
-  if (!primaryEvent) {
-    throw new UnknownAppError('Failed to create a primary event for the series')
-  }
-
-  await supabase
-    .from('inquiries')
-    .update({ converted_to_event_id: primaryEvent.id })
-    .eq('id', inquiry.id)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-
-  if (acceptedQuote?.id) {
-    await supabase
-      .from('quotes')
-      .update({ event_id: primaryEvent.id })
-      .eq('id', acceptedQuote.id)
-      .eq('tenant_id', user.tenantId!)
-  }
-
-  revalidatePath('/inquiries')
-  revalidatePath(`/inquiries/${inquiryId}`)
-  revalidatePath('/events')
-  revalidatePath('/my-inquiries')
-  revalidatePath(`/my-inquiries/${inquiryId}`)
-  revalidatePath('/my-events')
-
-  try {
-    if (inquiry.client_id) {
-      const { createClientNotification } = await import('@/lib/notifications/client-actions')
-      await createClientNotification({
-        tenantId: user.tenantId!,
-        clientId: inquiry.client_id,
-        category: 'event',
-        action: 'inquiry_converted_to_client',
-        title: 'Your service schedule is being set up',
-        body: `Your multi-day request for "${inquiry.confirmed_occasion || 'your service'}" is now scheduled`,
-        actionUrl: `/my-events/${primaryEvent.id}`,
-        eventId: primaryEvent.id,
-        inquiryId,
-      })
-    }
-  } catch (err) {
-    console.error(
-      '[createSeriesFromBookingRequest] Client notification failed (non-blocking):',
-      err
-    )
-  }
-
-  return {
-    success: true,
-    series: series as EventSeriesRow,
-    sessions,
-    events,
-    event: primaryEvent as EventRow,
-  }
-}
-
-// ============================================
-// 7. CONVERT INQUIRY TO EVENT
+// 6. CONVERT INQUIRY TO EVENT
 // ============================================
 
 /**
@@ -1469,10 +760,6 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   if (!inquiry.confirmed_date) {
     throw new ValidationError('Confirmed date is required before converting to an event')
-  }
-
-  if (inquiry.service_mode === 'multi_day') {
-    return createSeriesFromBookingRequest(inquiryId)
   }
 
   const { data: inquiryMessages } = await supabase
@@ -1522,7 +809,10 @@ export async function convertInquiryToEvent(inquiryId: string) {
   const pricingModel = acceptedQuote?.pricing_model ?? null
 
   // Map cannabis_preference string → boolean
-  const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
+  const cannabisPref = inquiry.confirmed_cannabis_preference
+  const cannabisBoolean = cannabisPref
+    ? ['yes', 'true', 'open'].some((v) => cannabisPref.toLowerCase().includes(v))
+    : null
 
   // Create draft event from confirmed inquiry facts + accepted quote pricing
   const { data: event, error: eventError } = await supabase
@@ -1721,23 +1011,11 @@ export async function convertInquiryToEvent(inquiryId: string) {
     console.error('[convertInquiryToEvent] Client notification failed (non-blocking):', err)
   }
 
-  // Link inquiry's Dinner Circle to the new event (non-blocking)
-  try {
-    const { linkInquiryCircleToEvent } = await import('@/lib/hub/inquiry-circle-actions')
-    await linkInquiryCircleToEvent({
-      inquiryId: inquiry.id,
-      eventId: event.id,
-      tenantId: user.tenantId!,
-    })
-  } catch (err) {
-    console.error('[convertInquiryToEvent] Circle-event link failed (non-blocking):', err)
-  }
-
   return { success: true, event }
 }
 
 // ============================================
-// 8. GET INQUIRY STATS
+// 7. GET INQUIRY STATS
 // ============================================
 
 /**
@@ -1748,10 +1026,7 @@ export async function getInquiryStats() {
   const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
-      .from('inquiries')
-      .select('status, client_id')
-      .eq('tenant_id', user.tenantId!)
+    let query = supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -1779,29 +1054,18 @@ export async function getInquiryStats() {
     expired: 0,
   }
 
-  let linkedCount = 0
   for (const inquiry of inquiries || []) {
     const status = inquiry.status as InquiryStatus
     if (status in stats) {
       stats[status]++
     }
-    if (inquiry.client_id) {
-      linkedCount++
-    }
   }
 
-  const total = inquiries?.length ?? 0
-
-  return {
-    ...stats,
-    total,
-    linked: linkedCount,
-    conversionRate: total > 0 ? Math.round((linkedCount / total) * 100) : 0,
-  }
+  return stats
 }
 
 // ============================================
-// 9. DELETE INQUIRY
+// 8. DELETE INQUIRY
 // ============================================
 
 /**
@@ -1870,7 +1134,7 @@ export async function restoreInquiry(id: string) {
 }
 
 // ============================================
-// 10. DECLINE WITH REASON
+// 9. DECLINE WITH REASON
 // ============================================
 
 // COMMON_DECLINE_REASONS moved to lib/inquiries/constants.ts
@@ -1894,7 +1158,7 @@ export async function declineInquiry(id: string, reason?: string) {
   if (!inquiry || inquiry.deleted_at) throw new ValidationError('Inquiry not found')
 
   const currentStatus = inquiry.status as InquiryStatus
-  const allowed = getAllowedInquiryTransitions(currentStatus)
+  const allowed = VALID_TRANSITIONS[currentStatus]
   if (!allowed || !allowed.includes('declined')) {
     throw new ValidationError(`Cannot decline from status "${currentStatus}"`)
   }
@@ -1912,21 +1176,6 @@ export async function declineInquiry(id: string, reason?: string) {
   if (error) {
     console.error('[declineInquiry] Error:', error)
     throw new UnknownAppError('Failed to decline inquiry')
-  }
-
-  try {
-    await recordInquiryStateTransition({
-      supabase,
-      tenantId: user.tenantId!,
-      inquiryId: id,
-      fromStatus: currentStatus,
-      toStatus: 'declined',
-      transitionedBy: user.id,
-      reason: reason ?? null,
-      metadata: { source: 'chef_portal' },
-    })
-  } catch (transitionErr) {
-    console.error('[declineInquiry] Transition log insert failed (non-blocking):', transitionErr)
   }
 
   revalidatePath('/inquiries')
@@ -1974,86 +1223,8 @@ export async function declineInquiry(id: string, reason?: string) {
   return { success: true }
 }
 
-/**
- * Quick dismiss an inquiry from the list (sets to declined with "dismissed" reason).
- * Returns { success, error } instead of throwing, for use in client components.
- */
-export async function quickDismissInquiry(
-  id: string
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    await declineInquiry(id, 'Dismissed from inbox')
-    return { success: true }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to dismiss' }
-  }
-}
-
-/**
- * Bulk convert inquiries to clients.
- * For each inquiry, uses its contact_email to create or link a client.
- * Skips inquiries that already have a linked client or have no email.
- */
-export async function bulkConvertToClients(
-  inquiryIds: string[]
-): Promise<{ converted: number; skipped: number; errors: string[] }> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
-
-  let converted = 0
-  let skipped = 0
-  const errors: string[] = []
-
-  for (const id of inquiryIds) {
-    try {
-      const { data: inquiry } = await supabase
-        .from('inquiries')
-        .select('id, client_id, contact_name, contact_email, contact_phone')
-        .eq('id', id)
-        .eq('tenant_id', user.tenantId!)
-        .single()
-
-      if (!inquiry) {
-        errors.push(`Inquiry ${id} not found`)
-        continue
-      }
-
-      if (inquiry.client_id) {
-        skipped++
-        continue
-      }
-
-      if (!inquiry.contact_email) {
-        skipped++
-        continue
-      }
-
-      const { addClientFromInquiry } = await import('@/lib/clients/actions')
-      const result = await addClientFromInquiry({
-        full_name: inquiry.contact_name || 'Unknown',
-        email: inquiry.contact_email,
-        phone: inquiry.contact_phone || undefined,
-        inquiryId: id,
-      })
-
-      if (result.success) {
-        converted++
-      } else {
-        errors.push(`${inquiry.contact_name || id}: ${result.error}`)
-      }
-    } catch (err: any) {
-      errors.push(`${id}: ${err?.message || 'Unknown error'}`)
-    }
-  }
-
-  revalidatePath('/inquiries')
-  revalidatePath('/clients')
-
-  return { converted, skipped, errors }
-}
-
 // ============================================
-// 11. LOST REASON ANALYTICS
+// 10. LOST REASON ANALYTICS
 // ============================================
 
 export type LostReasonStat = { reason: string; count: number }

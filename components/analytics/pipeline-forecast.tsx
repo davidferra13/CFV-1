@@ -12,7 +12,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-import { TrendingUp } from '@/components/ui/icons'
+import { TrendingUp } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,7 +31,7 @@ interface PipelineForecastProps {
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
-  proposed: 'Sent to Client',
+  proposed: 'Proposed',
   accepted: 'Accepted',
   paid: 'Paid',
   confirmed: 'Confirmed',

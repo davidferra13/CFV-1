@@ -22,7 +22,7 @@ import {
   ChevronRight,
   Utensils,
   MessageSquare,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -51,7 +51,6 @@ export type InquirySummaryData = {
   confirmed_guest_count: number | null
   confirmed_location: string | null
   confirmed_budget_cents: number | null // pass null to suppress (client variant)
-  submitted_budget_label?: string | null
   confirmed_dietary_restrictions: string[] | null
   confirmed_service_expectations: string | null
   source_message: string | null
@@ -73,16 +72,16 @@ type Props = {
 const CHEF_STEPS: { status: InquiryStatus; label: string }[] = [
   { status: 'new', label: 'Received' },
   { status: 'awaiting_client', label: 'Responded' },
-  { status: 'awaiting_chef', label: 'They Replied' },
-  { status: 'quoted', label: 'Quote Sent' },
-  { status: 'confirmed', label: 'Ready to Book' },
+  { status: 'awaiting_chef', label: 'Awaiting Reply' },
+  { status: 'quoted', label: 'Quoted' },
+  { status: 'confirmed', label: 'Confirmed' },
 ]
 
 const CLIENT_STEPS: { status: InquiryStatus; label: string }[] = [
   { status: 'new', label: 'Received' },
   { status: 'awaiting_client', label: 'In Review' },
-  { status: 'quoted', label: 'Quote Sent' },
-  { status: 'confirmed', label: 'Ready to Book' },
+  { status: 'quoted', label: 'Quoted' },
+  { status: 'confirmed', label: 'Confirmed' },
 ]
 
 // Status order for computing pipeline progress
@@ -173,7 +172,7 @@ export function InquirySummary({ data, variant }: Props) {
                   <InquiryChannelBadge channel={data.channel} />
                 )}
                 {data.converted_to_event_id && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-200 border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-700 border border-emerald-200">
                     Booked
                   </span>
                 )}
@@ -232,17 +231,6 @@ export function InquirySummary({ data, variant }: Props) {
               }
               icon={<DollarSign className="w-3.5 h-3.5" />}
               empty={!data.confirmed_budget_cents}
-            />
-          )}
-          {variant === 'client' && (
-            <FactItem
-              label="Budget"
-              value={
-                data.submitted_budget_label ||
-                (data.confirmed_budget_cents ? formatCurrency(data.confirmed_budget_cents) : 'TBD')
-              }
-              icon={<DollarSign className="w-3.5 h-3.5" />}
-              empty={!data.submitted_budget_label && !data.confirmed_budget_cents}
             />
           )}
         </div>
@@ -358,7 +346,7 @@ export function InquirySummary({ data, variant }: Props) {
                     {data.confirmed_dietary_restrictions.map((r) => (
                       <span
                         key={r}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-200 border border-amber-200"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-800 border border-amber-200"
                       >
                         {r}
                       </span>

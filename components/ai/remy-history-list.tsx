@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  History,
+  Bot,
   Pin,
   PinOff,
   Trash2,
@@ -13,7 +13,7 @@ import {
   FileText,
   Search,
   Filter,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -74,7 +74,7 @@ export function RemyHistoryList() {
       setArtifacts(result.artifacts)
       setTotal(result.total)
     } catch {
-      toast.error('Failed to load history')
+      toast.error('Failed to load Remy history')
     } finally {
       setLoading(false)
     }
@@ -182,10 +182,10 @@ export function RemyHistoryList() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
-          <History className="h-12 w-12 text-stone-300 dark:text-stone-400 mx-auto mb-3" />
+          <Bot className="h-12 w-12 text-stone-300 dark:text-stone-400 mx-auto mb-3" />
           <p className="text-sm text-stone-500 dark:text-stone-400">
             {total === 0
-              ? 'Nothing here yet. Saved conversations, task results, and drafts will appear here automatically.'
+              ? 'Nothing here yet. Everything Remy creates is auto-saved — just start chatting!'
               : 'No matches found.'}
           </p>
         </div>

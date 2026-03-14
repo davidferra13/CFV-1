@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useMemo, useTransition } from 'react'
-import { Search, UserMinus } from '@/components/ui/icons'
+import { Search, UserMinus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ChefCard } from '@/components/network/chef-card'
 import { removeConnection } from '@/lib/network/actions'
@@ -61,7 +61,7 @@ export function FriendsList({ friends: initialFriends }: FriendsListProps) {
     <div className="space-y-4">
       {error && (
         <div className="bg-red-950 border border-red-200 rounded-lg p-3">
-          <p className="text-sm text-red-200">{error}</p>
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChefBioPanel } from '@/components/ai/chef-bio-panel'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefFullProfile } from '@/lib/chef/profile-actions'
 import { ChefProfileForm } from './chef-profile-form'

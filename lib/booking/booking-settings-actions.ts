@@ -30,10 +30,6 @@ const BookingSettingsSchema = z.object({
   booking_deposit_type: z.enum(['percent', 'fixed']).default('percent'),
   booking_deposit_percent: z.number().min(0).max(100).optional().nullable(),
   booking_deposit_fixed_cents: z.number().int().min(0).optional().nullable(),
-  featured_booking_menu_id: z.string().uuid().nullable().optional().or(z.literal('')),
-  featured_booking_badge: z.string().trim().max(40).nullable().optional().or(z.literal('')),
-  featured_booking_title: z.string().trim().max(120).nullable().optional().or(z.literal('')),
-  featured_booking_pitch: z.string().trim().max(280).nullable().optional().or(z.literal('')),
 })
 
 export type BookingSettings = {
@@ -48,10 +44,6 @@ export type BookingSettings = {
   booking_deposit_type: 'percent' | 'fixed'
   booking_deposit_percent: number | null
   booking_deposit_fixed_cents: number | null
-  featured_booking_menu_id: string | null
-  featured_booking_badge: string | null
-  featured_booking_title: string | null
-  featured_booking_pitch: string | null
 }
 
 export async function getBookingSettings(): Promise<BookingSettings> {
@@ -64,8 +56,7 @@ export async function getBookingSettings(): Promise<BookingSettings> {
       `
       booking_enabled, booking_slug, booking_headline, booking_bio_short, booking_min_notice_days,
       booking_model, booking_base_price_cents, booking_pricing_type,
-      booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents,
-      featured_booking_menu_id, featured_booking_badge, featured_booking_title, featured_booking_pitch
+      booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents
     `
     )
     .eq('id', user.entityId)
@@ -83,10 +74,6 @@ export async function getBookingSettings(): Promise<BookingSettings> {
     booking_deposit_type: data?.booking_deposit_type ?? 'percent',
     booking_deposit_percent: data?.booking_deposit_percent ?? null,
     booking_deposit_fixed_cents: data?.booking_deposit_fixed_cents ?? null,
-    featured_booking_menu_id: data?.featured_booking_menu_id ?? null,
-    featured_booking_badge: data?.featured_booking_badge ?? null,
-    featured_booking_title: data?.featured_booking_title ?? null,
-    featured_booking_pitch: data?.featured_booking_pitch ?? null,
   }
 }
 
@@ -96,16 +83,6 @@ export async function upsertBookingSettings(
   const user = await requireChef()
   const validated = BookingSettingsSchema.parse(input)
   const supabase: any = createServerClient()
-  const shouldUpdateFeaturedMenuSelection = Object.prototype.hasOwnProperty.call(
-    input,
-    'featured_booking_menu_id'
-  )
-  const featuredMenuId = shouldUpdateFeaturedMenuSelection
-    ? typeof validated.featured_booking_menu_id === 'string' &&
-      validated.featured_booking_menu_id.trim()
-      ? validated.featured_booking_menu_id.trim()
-      : null
-    : null
 
   // Validation: instant-book requires base price and Stripe Connect
   if (validated.booking_model === 'instant_book') {
@@ -125,23 +102,6 @@ export async function upsertBookingSettings(
     }
   }
 
-  if (shouldUpdateFeaturedMenuSelection && featuredMenuId) {
-    const { data: featuredMenu } = await supabase
-      .from('menus')
-      .select('id, status')
-      .eq('id', featuredMenuId)
-      .eq('tenant_id', user.tenantId!)
-      .is('deleted_at' as any, null)
-      .maybeSingle()
-
-    if (!featuredMenu || featuredMenu.status === 'archived') {
-      return {
-        success: false,
-        error: 'Choose an active menu from your library to feature on the booking page.',
-      }
-    }
-  }
-
   const update: Record<string, unknown> = {
     booking_enabled: validated.booking_enabled,
     booking_min_notice_days: validated.booking_min_notice_days,
@@ -153,13 +113,6 @@ export async function upsertBookingSettings(
     booking_deposit_type: validated.booking_deposit_type,
     booking_deposit_percent: validated.booking_deposit_percent ?? null,
     booking_deposit_fixed_cents: validated.booking_deposit_fixed_cents ?? null,
-    featured_booking_badge: validated.featured_booking_badge || null,
-    featured_booking_title: validated.featured_booking_title || null,
-    featured_booking_pitch: validated.featured_booking_pitch || null,
-  }
-
-  if (shouldUpdateFeaturedMenuSelection) {
-    update.featured_booking_menu_id = featuredMenuId
   }
 
   if (validated.booking_slug) {
@@ -172,72 +125,6 @@ export async function upsertBookingSettings(
 
   revalidatePath('/settings')
   revalidateTag('chef-booking-profile') // Bust public booking page cache
-  revalidateTag(`chef-layout-${user.entityId}`)
-  return { success: true }
-}
-
-export async function setFeaturedBookingMenuSelection(
-  menuId: string | null
-): Promise<{ success: boolean; error?: string }> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
-  const normalizedMenuId = typeof menuId === 'string' && menuId.trim() ? menuId.trim() : null
-
-  const { data: chef, error: chefError } = await supabase
-    .from('chefs')
-    .select('slug, booking_slug, featured_booking_menu_id')
-    .eq('id', user.entityId)
-    .single()
-
-  if (chefError || !chef) {
-    return { success: false, error: 'Failed to load booking showcase settings.' }
-  }
-
-  if (normalizedMenuId) {
-    const { data: featuredMenu } = await supabase
-      .from('menus')
-      .select('id, status')
-      .eq('id', normalizedMenuId)
-      .eq('tenant_id', user.tenantId!)
-      .is('deleted_at' as any, null)
-      .maybeSingle()
-
-    if (!featuredMenu || featuredMenu.status === 'archived') {
-      return {
-        success: false,
-        error: 'Choose an active menu from your library to feature on your booking page.',
-      }
-    }
-  }
-
-  const { error } = await supabase
-    .from('chefs')
-    .update({ featured_booking_menu_id: normalizedMenuId })
-    .eq('id', user.entityId)
-
-  if (error) {
-    return { success: false, error: error.message }
-  }
-
-  const affectedMenuIds = new Set<string>()
-  if (normalizedMenuId) affectedMenuIds.add(normalizedMenuId)
-  if (chef.featured_booking_menu_id) affectedMenuIds.add(chef.featured_booking_menu_id)
-
-  revalidatePath('/menus')
-  revalidatePath('/settings')
-  for (const affectedMenuId of affectedMenuIds) {
-    revalidatePath(`/menus/${affectedMenuId}`)
-  }
-  if (chef.slug) {
-    revalidatePath(`/chef/${chef.slug}`)
-    revalidatePath(`/chef/${chef.slug}/inquire`)
-  }
-  if (chef.booking_slug) {
-    revalidatePath(`/book/${chef.booking_slug}`)
-  }
-  revalidateTag('chef-booking-profile')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
   return { success: true }
 }
 

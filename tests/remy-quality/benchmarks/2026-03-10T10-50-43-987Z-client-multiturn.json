@@ -1,0 +1,330 @@
+{
+  "meta": {
+    "timestamp": "2026-03-10T10:50:43.987Z",
+    "suite": "client-multiturn",
+    "totalScenarios": 10,
+    "totalTurns": 35
+  },
+  "summary": {
+    "scenariosPassed": 0,
+    "turnsPassed": 0,
+    "totalTurns": 35
+  },
+  "scenarios": [
+    {
+      "id": "mt-01",
+      "name": "Booking flow with dietary follow-up",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "I want to book a dinner for 8 people next Saturday",
+          "pass": false,
+          "score": 33,
+          "ms": 7,
+          "response": null
+        },
+        {
+          "message": "Two of them are vegan and one has a nut allergy",
+          "pass": false,
+          "score": 25,
+          "ms": 4,
+          "response": null
+        },
+        {
+          "message": "Great, what would something like that cost?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-02",
+      "name": "Guest count change chain",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "We have 12 people coming to our dinner party",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Actually, my sister and her husband can't make it, so just 10",
+          "pass": false,
+          "score": 25,
+          "ms": 3,
+          "response": null
+        },
+        {
+          "message": "Wait, they changed their mind — back to 12 please",
+          "pass": false,
+          "score": 25,
+          "ms": 3,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-03",
+      "name": "Menu discussion with specifics",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "I want an Italian-themed dinner",
+          "pass": false,
+          "score": 33,
+          "ms": 3,
+          "response": null
+        },
+        {
+          "message": "What would you suggest for the appetizer course?",
+          "pass": false,
+          "score": 25,
+          "ms": 3,
+          "response": null
+        },
+        {
+          "message": "That sounds good. And for dessert?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Can we do tiramisu instead of whatever you just suggested?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-04",
+      "name": "Logistics chain",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "What time will the chef arrive for our dinner?",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "And how long will the whole thing take?",
+          "pass": false,
+          "score": 25,
+          "ms": 3,
+          "response": null
+        },
+        {
+          "message": "Do I need to clear my kitchen counter or will the chef work around it?",
+          "pass": false,
+          "score": 25,
+          "ms": 3,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-05",
+      "name": "Payment conversation",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "How much is my event going to cost?",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Do I need to pay a deposit?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Once I pay, will I get a receipt automatically?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-06",
+      "name": "Allergy complexity escalation",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "I should mention I'm gluten-free",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Also dairy-free — I'm vegan actually",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "And one of my guests has a severe shellfish allergy, like EpiPen-level",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "So to recap, can you handle all of that at one dinner?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-07",
+      "name": "Rebooking from past event",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "I had a great dinner with you guys a few weeks ago",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "I want to do the exact same thing again",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "But with 4 more guests this time",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-08",
+      "name": "Concern and resolution",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "I'm worried the chef won't know about my daughter's peanut allergy",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "How can I make sure they see the allergy notes before cooking?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "OK good. And what if there's a reaction — does the chef carry an EpiPen?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-09",
+      "name": "Venue discussion",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "We're doing the event at a rented beach house",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "The kitchen there is pretty small — will that be an issue?",
+          "pass": false,
+          "score": 25,
+          "ms": 1,
+          "response": null
+        },
+        {
+          "message": "There's also an outdoor grill area if that helps",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Perfect. One more thing — is there parking for the chef's vehicle?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    },
+    {
+      "id": "mt-10",
+      "name": "Context retention stress test",
+      "allPassed": false,
+      "turns": [
+        {
+          "message": "I'm planning a birthday dinner for my wife",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "She loves French food, especially duck",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "There will be 6 of us total",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Her birthday is March 22nd",
+          "pass": false,
+          "score": 33,
+          "ms": 2,
+          "response": null
+        },
+        {
+          "message": "Can you summarize everything we've discussed so far?",
+          "pass": false,
+          "score": 25,
+          "ms": 2,
+          "response": null
+        }
+      ]
+    }
+  ]
+}

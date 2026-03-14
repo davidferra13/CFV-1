@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { addMileageEntry, deleteMileageEntry } from '@/lib/finance/mileage-actions'
 import type { MileageEntry } from '@/lib/finance/mileage-actions'
-import { Trash2, Plus, Car } from '@/components/ui/icons'
+import { Trash2, Plus, Car } from 'lucide-react'
 
 interface Props {
   eventId?: string
@@ -45,7 +45,7 @@ export function MileageLogPanel({ eventId, initialEntries }: Props) {
         <Car className="h-4 w-4 text-stone-400 shrink-0" />
         <span className="text-sm text-stone-400">
           {totalMiles.toFixed(1)} miles ·&nbsp;
-          <span className="text-emerald-200 font-medium">
+          <span className="text-emerald-700 font-medium">
             ${(totalDeduction / 100).toFixed(2)} deduction
           </span>
           <span className="text-stone-400 ml-1 text-xs">({IRS_RATE_DISPLAY})</span>
@@ -70,7 +70,7 @@ export function MileageLogPanel({ eventId, initialEntries }: Props) {
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-3">
               <span className="text-xs text-stone-400">{entry.miles} mi</span>
-              <span className="text-xs text-emerald-200 font-medium">
+              <span className="text-xs text-emerald-700 font-medium">
                 ${(entry.deductionCents / 100).toFixed(2)}
               </span>
               <button

@@ -49,12 +49,6 @@ const tiles = [
     description: 'Your go-to suppliers, farms, and specialty purveyors',
     icon: '🏪',
   },
-  {
-    href: '/culinary/plating-guides',
-    label: 'Plating Guides',
-    description: 'Visual presentation instructions for consistent plating by staff',
-    icon: '🎨',
-  },
 ]
 
 export default async function CulinaryHubPage() {

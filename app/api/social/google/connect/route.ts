@@ -6,8 +6,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const chef = await requireChef()

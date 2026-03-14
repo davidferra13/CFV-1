@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import type { ChefActivityDomain, ChefActivityEntry, ResumeItem } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import type { ActivityActorFilter, ActivityEvent } from '@/lib/activity/types'
@@ -96,51 +95,11 @@ export function ActivityPageClient({
   initialBreadcrumbSessions = [],
   initialBreadcrumbCursor = null,
 }: ActivityPageClientProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  // Read filter state from URL params (bookmarkable, survives refresh)
-  const viewMode = (searchParams?.get('view') as ViewMode) || 'summary'
-  const activeTab = (searchParams?.get('tab') as ActivityTab) || 'my'
-  const activeDomain = (searchParams?.get('domain') as ChefActivityDomain) || null
-  const actorFilter = (searchParams?.get('actor') as ActivityActorFilter) || 'all'
-  const timeRange = (searchParams?.get('range') as TimeRange) || '7'
-
-  // Update URL params without full page reload
-  const setFilter = useCallback(
-    (key: string, value: string | null) => {
-      const params = new URLSearchParams(searchParams?.toString() ?? '')
-      if (value === null || value === '') {
-        params.delete(key)
-      } else {
-        params.set(key, value)
-      }
-      const qs = params.toString()
-      router.replace(`/activity${qs ? `?${qs}` : ''}`, { scroll: false })
-    },
-    [router, searchParams]
-  )
-
-  const setViewMode = useCallback(
-    (v: ViewMode) => setFilter('view', v === 'summary' ? null : v),
-    [setFilter]
-  )
-  const setActiveTab = useCallback(
-    (t: ActivityTab) => setFilter('tab', t === 'my' ? null : t),
-    [setFilter]
-  )
-  const setActiveDomain = useCallback(
-    (d: ChefActivityDomain | null) => setFilter('domain', d),
-    [setFilter]
-  )
-  const setActorFilter = useCallback(
-    (a: ActivityActorFilter) => setFilter('actor', a === 'all' ? null : a),
-    [setFilter]
-  )
-  const setTimeRange = useCallback(
-    (r: TimeRange) => setFilter('range', r === '7' ? null : r),
-    [setFilter]
-  )
+  const [viewMode, setViewMode] = useState<ViewMode>('summary')
+  const [activeTab, setActiveTab] = useState<ActivityTab>('my')
+  const [activeDomain, setActiveDomain] = useState<ChefActivityDomain | null>(null)
+  const [actorFilter, setActorFilter] = useState<ActivityActorFilter>('all')
+  const [timeRange, setTimeRange] = useState<TimeRange>('7')
   const [chefActivity, setChefActivity] = useState<ChefActivityEntry[]>(initialChefActivity)
   const [clientActivity, setClientActivity] = useState<ActivityEvent[]>(initialClientActivity)
   const [chefCursor, setChefCursor] = useState<string | null>(initialChefCursor)
@@ -630,7 +589,7 @@ function AllTimelineRow({
     if (event.event_type === 'session_heartbeat') return null
     return (
       <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
-        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-900 text-blue-200">
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-900 text-blue-700">
           Client
         </span>
         <div className="min-w-0 flex-1">

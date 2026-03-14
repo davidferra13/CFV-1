@@ -22,9 +22,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  new: 'bg-amber-900 text-amber-200',
-  awaiting_client: 'bg-sky-900 text-sky-200',
-  awaiting_chef: 'bg-green-900 text-green-200',
+  new: 'bg-amber-900 text-amber-700',
+  awaiting_client: 'bg-sky-900 text-sky-700',
+  awaiting_chef: 'bg-green-900 text-green-700',
 }
 
 export default async function ContactedLeadsPage() {
@@ -78,11 +78,9 @@ export default async function ContactedLeadsPage() {
               {inquiries.map((inquiry: any) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
-                    <p>{inquiry.contact_name || inquiry.client?.full_name || '—'}</p>
-                    {(inquiry.contact_email || inquiry.client?.email) && (
-                      <p className="text-xs text-stone-400 mt-0.5">
-                        {inquiry.contact_email || inquiry.client?.email}
-                      </p>
+                    <p>{inquiry.client?.full_name ?? '—'}</p>
+                    {inquiry.client?.email && (
+                      <p className="text-xs text-stone-400 mt-0.5">{inquiry.client.email}</p>
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">

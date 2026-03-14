@@ -71,15 +71,12 @@ import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
 import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
-import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
-import { RebookButton } from '@/components/clients/rebook-button'
-import { clientHasCompletedEvents } from '@/lib/clients/rebook-actions'
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: 'bg-amber-900 text-amber-200',
+  bronze: 'bg-amber-900 text-amber-800',
   silver: 'bg-stone-700 text-stone-200',
-  gold: 'bg-yellow-900 text-yellow-200',
-  platinum: 'bg-purple-900 text-purple-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-purple-900 text-purple-800',
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -124,7 +121,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientNBA,
     portalTokenData,
     clientPhotos,
-    hasCompletedEvents,
   ] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
@@ -151,7 +147,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientNextBestAction(params.id).catch(() => null),
     getClientPortalToken(params.id).catch(() => ({ token: null, createdAt: null })),
     getClientPhotos(params.id).catch(() => []),
-    clientHasCompletedEvents(params.id).catch(() => false),
   ])
 
   const clientReviews = allReviews.filter((r: any) => r.client?.id === params.id)
@@ -223,21 +218,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {hasCompletedEvents && (
-            <RebookButton
-              clientId={client.id}
-              clientName={client.full_name}
-              variant="secondary"
-            />
-          )}
-          <Link href={`/clients/${client.id}/recurring`}>
-            <Button variant="secondary">Recurring Planning</Button>
-          </Link>
-          <Link href={`/events/new?client_id=${client.id}`}>
-            <Button>Create Event for Client</Button>
-          </Link>
-        </div>
+        <Link href={`/events/new?client_id=${client.id}`}>
+          <Button>Create Event for Client</Button>
+        </Link>
       </div>
 
       {/* Dormancy Warning */}
@@ -248,7 +231,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <p className="text-sm font-semibold text-amber-900">
               No events in {dormancyInfo.daysSinceLastEvent ?? 180}+ days
             </p>
-            <p className="text-xs text-amber-200 mt-0.5">
+            <p className="text-xs text-amber-700 mt-0.5">
               Last event:{' '}
               {dormancyInfo.lastEventDate
                 ? format(new Date(dormancyInfo.lastEventDate), 'MMMM d, yyyy')
@@ -256,32 +239,17 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               . Consider reaching out to re-engage.
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {hasCompletedEvents && (
-              <RebookButton
-                clientId={client.id}
-                clientName={client.full_name}
-                variant="secondary"
-                size="sm"
-              />
-            )}
-            <Link
-              href={`/clients/${client.id}#outreach`}
-              className="text-xs font-medium text-amber-200 underline shrink-0"
-            >
-              Send Message
-            </Link>
-          </div>
+          <Link
+            href={`/clients/${client.id}#outreach`}
+            className="text-xs font-medium text-amber-800 underline shrink-0"
+          >
+            Send Message
+          </Link>
         </div>
       )}
 
       {/* Next Best Action */}
       {clientNBA && clientNBA.actionType !== 'none' && <NextBestActionCard action={clientNBA} />}
-
-      {/* Relationship Intelligence */}
-      <Suspense fallback={null}>
-        <ClientIntelligencePanel clientId={client.id} />
-      </Suspense>
 
       {/* Profile Completeness Meter */}
       {(() => {
@@ -442,9 +410,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 <span
                   className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     profitabilityHistory.trend === 'improving'
-                      ? 'bg-emerald-900 text-emerald-200'
+                      ? 'bg-emerald-900 text-emerald-700'
                       : profitabilityHistory.trend === 'declining'
-                        ? 'bg-red-900 text-red-200'
+                        ? 'bg-red-900 text-red-700'
                         : profitabilityHistory.trend === 'stable'
                           ? 'bg-stone-800 text-stone-300'
                           : 'bg-stone-800 text-stone-300'
@@ -661,7 +629,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   >
                     <div>
                       <p className="text-sm font-medium text-green-900">{reward.name}</p>
-                      <p className="text-xs text-green-200">{reward.points_required} points</p>
+                      <p className="text-xs text-green-700">{reward.points_required} points</p>
                     </div>
                     <RedeemRewardButton clientId={client.id} reward={reward} />
                   </div>
@@ -762,9 +730,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         preferredEventDays={(client as any).preferred_event_days ?? null}
         budgetRangeMinCents={(client as any).budget_range_min_cents ?? null}
         budgetRangeMaxCents={(client as any).budget_range_max_cents ?? null}
-        recurringPricingModel={(client as any).recurring_pricing_model ?? null}
-        recurringPriceCents={(client as any).recurring_price_cents ?? null}
-        recurringPricingNotes={(client as any).recurring_pricing_notes ?? null}
         cleanupExpectations={(client as any).cleanup_expectations ?? null}
         leftoversPref={(client as any).leftovers_preference ?? null}
       />
@@ -917,7 +882,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   </div>
                   {review.what_they_loved && (
                     <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-emerald-200">Loved: </span>
+                      <span className="font-medium text-emerald-700">Loved: </span>
                       {review.what_they_loved}
                     </p>
                   )}
@@ -926,7 +891,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   )}
                   {review.what_could_improve && (
                     <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-amber-200">Improve: </span>
+                      <span className="font-medium text-amber-700">Improve: </span>
                       {review.what_could_improve}
                     </p>
                   )}

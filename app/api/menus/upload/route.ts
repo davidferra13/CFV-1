@@ -8,10 +8,6 @@ import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import { createServerClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
-  MENU_UPLOAD_EXTENSION_LIST,
-  MENU_UPLOAD_EXTENSION_SET,
-} from '@/lib/menus/upload-file-types'
-import {
   createUploadJob,
   processUploadJob,
   processFromPastedText,
@@ -22,6 +18,22 @@ const MENU_UPLOADS_BUCKET = 'menu-uploads'
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB (reduced from 50 MB to limit DoS via large file processing)
 
 // Allowed file extensions for menu uploads — reject everything else
+const ALLOWED_EXTENSIONS = new Set([
+  'pdf',
+  'doc',
+  'docx',
+  'txt',
+  'rtf', // documents
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'heic', // images (for OCR)
+  'csv',
+  'xls',
+  'xlsx', // spreadsheets
+])
+
 export async function POST(request: NextRequest) {
   const csrfError = verifyCsrfOrigin(request)
   if (csrfError) return csrfError
@@ -73,10 +85,10 @@ export async function POST(request: NextRequest) {
 
     // Validate file extension — reject executable, script, and unknown file types
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
-    if (!MENU_UPLOAD_EXTENSION_SET.has(ext)) {
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
       return NextResponse.json(
         {
-          error: `File type ".${ext}" is not allowed. Accepted: ${MENU_UPLOAD_EXTENSION_LIST}`,
+          error: `File type ".${ext}" is not allowed. Accepted: ${[...ALLOWED_EXTENSIONS].join(', ')}`,
         },
         { status: 400 }
       )

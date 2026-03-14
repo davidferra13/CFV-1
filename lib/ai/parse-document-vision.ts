@@ -5,17 +5,13 @@
 
 import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
-import {
-  buildDeterministicEnhancedDocumentImage,
-  canDeterministicallyEnhanceDocumentImage,
-} from '@/lib/documents/image-enhancement'
 
 const MODEL = 'gemini-2.5-flash'
 
 // --- Schemas ---
 
 const VisionDetectionSchema = z.object({
-  detectedType: z.enum(['client_info', 'recipe', 'receipt', 'document', 'menu']),
+  detectedType: z.enum(['client_info', 'recipe', 'receipt', 'document']),
   confidence: z.enum(['high', 'medium', 'low']),
   warnings: z.array(z.string()),
   extractedData: z.record(z.string(), z.unknown()),
@@ -77,16 +73,6 @@ Store receipt or invoice. Extract:
   "itemCount": 0
 }
 
-### menu
-Private dining menu, tasting menu, catering menu, or dish list. Extract:
-{
-  "menu_title": "string or null",
-  "service_style": "string or null",
-  "dish_count_estimate": 0,
-  "menu_text": "full visible menu text",
-  "summary": "1-2 sentence summary"
-}
-
 ### document
 Contracts, policies, templates, or general documents. Extract:
 {
@@ -108,7 +94,7 @@ RULES:
 
 RESPOND WITH ONLY valid JSON:
 {
-  "detectedType": "client_info|recipe|receipt|document|menu",
+  "detectedType": "client_info|recipe|receipt|document",
   "confidence": "high|medium|low",
   "warnings": [],
   "extractedData": { ... }
@@ -128,27 +114,16 @@ export async function parseDocumentWithVision(
     throw new Error('GEMINI_API_KEY is not configured. File import requires a Gemini API key.')
   }
 
-  let normalizedBase64Data = base64Data
-  let normalizedMediaType = mediaType
-
-  if (canDeterministicallyEnhanceDocumentImage(mediaType)) {
-    const enhanced = await buildDeterministicEnhancedDocumentImage(
-      Buffer.from(base64Data, 'base64')
-    )
-    normalizedBase64Data = enhanced.buffer.toString('base64')
-    normalizedMediaType = enhanced.contentType
-  }
-
   const ai = new GoogleGenAI({ apiKey })
-  const isPdf = normalizedMediaType === 'application/pdf'
+  const isPdf = mediaType === 'application/pdf'
 
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: [
       {
         inlineData: {
-          mimeType: normalizedMediaType,
-          data: normalizedBase64Data,
+          mimeType: mediaType,
+          data: base64Data,
         },
       },
       {

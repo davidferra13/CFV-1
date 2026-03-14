@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, TrendingUp } from '@/components/ui/icons'
+import { Calendar, TrendingUp } from 'lucide-react'
 import type { SeasonalHeatmap } from '@/lib/analytics/demand-forecast-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

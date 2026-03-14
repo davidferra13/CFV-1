@@ -10,7 +10,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { REMY_PERSONALITY } from '@/lib/ai/remy-personality'
 
@@ -233,14 +233,12 @@ async function generateFollowUpDrafts(supabase: any, tenantId: string): Promise<
   for (const event of events ?? []) {
     const clientName = (event.client as any)?.full_name ?? 'the client'
     try {
-      const result = (
-        await dispatchPrivate(
-          FOLLOW_UP_SYSTEM,
-          `Draft a follow-up for ${clientName} after their ${event.occasion ?? 'dinner'} on ${event.event_date} for ${event.guest_count ?? 'a few'} guests.`,
-          DraftOutputSchema,
-          { modelTier: 'standard' }
-        )
-      ).result
+      const result = await parseWithOllama(
+        FOLLOW_UP_SYSTEM,
+        `Draft a follow-up for ${clientName} after their ${event.occasion ?? 'dinner'} on ${event.event_date} for ${event.guest_count ?? 'a few'} guests.`,
+        DraftOutputSchema,
+        { modelTier: 'standard' }
+      )
 
       drafts.push({
         id: `follow_up:${event.id}`,
@@ -283,14 +281,12 @@ async function generateConfirmationDrafts(
   for (const event of events ?? []) {
     const clientName = (event.client as any)?.full_name ?? 'the client'
     try {
-      const result = (
-        await dispatchPrivate(
-          CONFIRMATION_SYSTEM,
-          `Draft a confirmation for ${clientName}'s ${event.occasion ?? 'dinner'} on ${event.event_date} at ${event.serve_time ?? 'the scheduled time'} for ${event.guest_count ?? 'their'} guests.`,
-          DraftOutputSchema,
-          { modelTier: 'standard' }
-        )
-      ).result
+      const result = await parseWithOllama(
+        CONFIRMATION_SYSTEM,
+        `Draft a confirmation for ${clientName}'s ${event.occasion ?? 'dinner'} on ${event.event_date} at ${event.serve_time ?? 'the scheduled time'} for ${event.guest_count ?? 'their'} guests.`,
+        DraftOutputSchema,
+        { modelTier: 'standard' }
+      )
 
       drafts.push({
         id: `confirmation:${event.id}`,

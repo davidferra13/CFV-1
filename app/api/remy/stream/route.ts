@@ -1,23 +1,36 @@
-﻿// Remy - Streaming Chat API Route
-// PRIVACY: Processes chef messages with full business context - must stay local via Ollama.
+// Remy — Streaming Chat API Route
+// PRIVACY: Processes chef messages with full business context — must stay local via Ollama.
 // Uses Server-Sent Events (SSE) to stream token-by-token responses.
 
 import { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { Ollama } from 'ollama'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
-import { classifyIntent, getIntentClarificationMessage } from '@/lib/ai/remy-classifier'
+import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
+import { getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
 import { routeForRemy } from '@/lib/ai/llm-router'
 import { getEndpointSnapshot } from '@/lib/ai/cross-monitor'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import {
+  REMY_PERSONALITY,
+  REMY_FEW_SHOT_EXAMPLES,
+  REMY_DRAFT_INSTRUCTIONS,
+  REMY_PRIVACY_NOTE,
+  REMY_TOPIC_GUARDRAILS,
+  REMY_ANTI_INJECTION,
+} from '@/lib/ai/remy-personality'
+import { getArchetype } from '@/lib/ai/remy-archetypes'
 import { getRemyArchetype } from '@/lib/ai/privacy-actions'
 import { getSurveyState } from '@/lib/ai/remy-survey-actions'
 import { buildSurveyPromptSection } from '@/lib/ai/remy-survey-prompt'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
-import { validateRemyInput } from '@/lib/ai/remy-guardrails'
+import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
 import {
   validateRemyRequestBody,
   validateHistory,
@@ -28,71 +41,1195 @@ import {
 } from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
-import { checkRateLimit } from '@/lib/rateLimit'
 import {
   loadRelevantMemories,
   listRemyMemories,
   addRemyMemoryManual,
 } from '@/lib/ai/remy-memory-actions'
-import { getFirstMentionedClientName } from '@/lib/ai/remy-entity-utils'
 import { recordRemyMetric } from '@/lib/ai/remy-metrics'
-import { recordRemyStageBatch, timeRemyStage } from '@/lib/ai/remy-stage-metrics'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
-import type { MemoryCategory } from '@/lib/ai/remy-memory-types'
-import {
-  OLLAMA_STREAM_MAX_TOKENS,
-  OLLAMA_STREAM_TIMEOUT_MS,
-  detectMemoryIntent,
-  encodeSSE,
-  extractNavSuggestions,
-  formatCategoryLabel,
-  sseErrorResponse,
-  sseHeaders,
-  summarizeTaskResults,
-  buildExecutionContextForPrompt,
-  ThinkingBlockFilter,
-} from './route-runtime-utils'
-import {
-  buildRemySystemPrompt,
-  formatConversationHistory,
-  determineContextScope,
-} from './route-prompt-utils'
-import { tryInstantAnswer } from './route-instant-answers'
-import { parseTaskChain, looksLikeChain } from '@/lib/ai/remy-chain-parser'
-import {
-  scanReceipt,
-  formatReceiptForConfirmation,
-  analyzeDishPhoto,
-  formatDishPhotoResponse,
-} from '@/lib/ai/remy-vision-actions'
+import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 
-//  POST Handler
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface StreamEvent {
+  type: 'token' | 'tasks' | 'nav' | 'memories' | 'done' | 'error' | 'intent'
+  data: unknown
+}
+
+// ─── Navigation Route Map ─────────────────────────────────────────────────────
+
+const NAV_ROUTE_MAP = `
+AVAILABLE PAGES (suggest these when relevant):
+/dashboard - Dashboard overview
+/events - All events list
+/events/new - Create a new event
+/events/upcoming - Upcoming events
+/events/board - Event kanban board
+/clients - Client directory
+/clients/new - Add a new client
+/inquiries - Inquiry pipeline
+/quotes - Quotes
+/schedule - Calendar / availability
+/calendar - Calendar views
+/recipes - Recipe library
+/recipes/new - Create a new recipe
+/menus - Menu library
+/menus/new - Create a new menu
+/financials - Financial hub
+/expenses - Expense tracker
+/expenses/new - Add an expense
+/chat - Client messaging
+/staff - Staff management
+/settings - Account settings
+/settings/my-profile - Edit profile
+/settings/integrations - Integrations
+/settings/automations - Automation settings
+/settings/culinary-profile - Culinary profile (food identity for Remy)
+/settings/favorite-chefs - Favorite chefs (culinary heroes)
+/settings/ai-privacy - Remy settings, personality archetype, privacy & data controls
+/aar - After-action reviews
+/reviews - Client reviews
+/analytics - Analytics & reports
+/proposals - Proposal templates
+/loyalty - Loyalty program
+/goals - Business goals
+/remy - Remy history (everything Remy has saved)
+`.trim()
+
+// ─── System Prompt Builder ────────────────────────────────────────────────────
+
+function formatMemoriesForPrompt(memories: RemyMemory[]): string {
+  if (memories.length === 0) return ''
+
+  const grouped = new Map<string, string[]>()
+  for (const mem of memories) {
+    const cat = mem.category.replace(/_/g, ' ')
+    if (!grouped.has(cat)) grouped.set(cat, [])
+    grouped.get(cat)!.push(mem.content)
+  }
+
+  const sections: string[] = ['\nWHAT YOU REMEMBER ABOUT THIS CHEF:']
+  for (const [category, items] of grouped) {
+    sections.push(`${category}:`)
+    for (const item of items) {
+      sections.push(`- ${item}`)
+    }
+  }
+
+  sections.push(
+    "\nUse these memories naturally — reference them when relevant, but don't recite them mechanically."
+  )
+
+  return sections.join('\n')
+}
+
+function buildRemySystemPrompt(
+  context: Awaited<ReturnType<typeof loadRemyContext>>,
+  memories: RemyMemory[] = [],
+  culinaryProfile?: string,
+  favoriteChefs?: string,
+  archetypeId?: string | null,
+  recentPages?: Array<{ path: string; label: string; at: string }>,
+  recentActions?: Array<{ action: string; entity: string; at: string }>,
+  recentErrors?: Array<{ message: string; context: string; at: string }>,
+  sessionMinutes?: number,
+  activeForm?: string,
+  surveyPromptSection?: string | null,
+  otherChannelDigest?: string | null
+): string {
+  const parts: string[] = []
+
+  parts.push(REMY_PERSONALITY)
+
+  // Inject personality archetype modifier (chef-selected or default)
+  const archetype = getArchetype(archetypeId)
+  parts.push(`\n${archetype.promptModifier}`)
+
+  // Few-shot examples — show Remy how to respond, not just what to be
+  parts.push(REMY_FEW_SHOT_EXAMPLES)
+
+  parts.push(REMY_DRAFT_INSTRUCTIONS)
+  parts.push(REMY_PRIVACY_NOTE)
+  parts.push(REMY_TOPIC_GUARDRAILS)
+  parts.push(REMY_ANTI_INJECTION)
+
+  // Inject culinary profile if available
+  if (culinaryProfile) {
+    parts.push(
+      `\nCHEF'S CULINARY IDENTITY:\n${culinaryProfile}\nUse this to personalize responses — reference their style, cuisines, and philosophy when relevant.`
+    )
+  }
+
+  // Inject favorite chefs if available
+  if (favoriteChefs) {
+    parts.push(
+      `\nCHEF'S CULINARY HEROES:\n${favoriteChefs}\nReference these when discussing inspiration, technique, or style — the chef admires these people.`
+    )
+  }
+
+  // Current timestamp — so Remy knows the time, day, and date
+  const now = new Date()
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const timeStr = now.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+  const dateStr = now.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}`)
+
+  parts.push(`\nBUSINESS CONTEXT:
+- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` — "${context.tagline}"` : ''}
+- Clients: ${context.clientCount} total
+- Upcoming events: ${context.upcomingEventCount}
+- Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
+
+  if (context.upcomingEvents && context.upcomingEvents.length > 0) {
+    parts.push(`\nUPCOMING EVENTS:
+${context.upcomingEvents
+  .map((e) => {
+    const loyaltySuffix =
+      e.clientLoyaltyTier || typeof e.clientLoyaltyPoints === 'number'
+        ? `, loyalty ${e.clientLoyaltyTier ?? 'tier unknown'}${typeof e.clientLoyaltyPoints === 'number' ? ` (${e.clientLoyaltyPoints} pts)` : ''}`
+        : ''
+    return `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status}${loyaltySuffix})`
+  })
+  .join('\n')}`)
+  }
+
+  if (context.recentClients && context.recentClients.length > 0) {
+    parts.push(
+      `\nRECENT CLIENTS: ${context.recentClients
+        .map((c) =>
+          c.tier || typeof c.pointsBalance === 'number'
+            ? `${c.name} [${c.tier ?? 'tier unknown'}${typeof c.pointsBalance === 'number' ? `, ${c.pointsBalance} pts` : ''}]`
+            : c.name
+        )
+        .join(', ')}`
+    )
+  }
+
+  // Daily plan — what's on the chef's plate today
+  if (context.dailyPlan && context.dailyPlan.totalItems > 0) {
+    const dp = context.dailyPlan
+    parts.push(`\nTODAY'S DAILY PLAN (${dp.totalItems} items, ~${dp.estimatedMinutes} min):
+- Quick Admin: ${dp.adminItems} items
+- Event Prep: ${dp.prepItems} items
+- Creative Time: ${dp.creativeItems} items
+- Relationship: ${dp.relationshipItems} items
+The chef can see the full structured view at /daily.`)
+  }
+
+  // Email digest — proactive communication awareness
+  if (context.emailDigest && context.emailDigest.totalSinceYesterday > 0) {
+    const d = context.emailDigest
+    const emailLines: string[] = [
+      `\nEMAIL INBOX (last 24 hours):`,
+      `- ${d.totalSinceYesterday} emails received${d.inquiryCount > 0 ? `, ${d.inquiryCount} new inquir${d.inquiryCount === 1 ? 'y' : 'ies'}` : ''}${d.threadReplyCount > 0 ? `, ${d.threadReplyCount} client repl${d.threadReplyCount === 1 ? 'y' : 'ies'}` : ''}`,
+    ]
+    if (d.recentEmails.length > 0) {
+      emailLines.push('Recent:')
+      for (const e of d.recentEmails) {
+        const cls =
+          e.classification === 'inquiry'
+            ? ' [NEW INQUIRY]'
+            : e.classification === 'existing_thread'
+              ? ' [CLIENT REPLY]'
+              : ''
+        emailLines.push(`- From: ${e.from} — "${e.subject}"${cls}`)
+      }
+    }
+    emailLines.push(
+      'You can search, read, or summarize emails. Draft replies are always drafts — never auto-sent.'
+    )
+    parts.push(emailLines.join('\n'))
+  }
+
+  // Calendar & Availability
+  if (context.calendarSummary) {
+    const cal = context.calendarSummary
+    const sections: string[] = []
+    if (cal.blockedDates.length > 0) {
+      sections.push(
+        `Blocked dates (next 30 days): ${cal.blockedDates.map((b) => `${b.date} (${b.reason})`).join(', ')}`
+      )
+    }
+    if (cal.calendarEntries.length > 0) {
+      sections.push(
+        `Calendar entries: ${cal.calendarEntries.map((c) => `${c.title} ${c.startDate}–${c.endDate} [${c.type.replace(/_/g, ' ')}]${c.blocksBookings ? ' BLOCKS BOOKINGS' : ''}`).join('; ')}`
+      )
+    }
+    if (cal.waitlistEntries.length > 0) {
+      sections.push(
+        `Waitlist: ${cal.waitlistEntries.map((w) => `${w.clientName} wants ${w.date}${w.occasion ? ` for ${w.occasion}` : ''} [${w.status}]`).join('; ')}`
+      )
+    }
+    if (sections.length > 0) {
+      parts.push(`\nCALENDAR & AVAILABILITY:\n${sections.join('\n')}`)
+    }
+  }
+
+  // Yearly stats
+  if (context.yearlyStats) {
+    const y = context.yearlyStats
+    parts.push(`\nYEAR-TO-DATE STATS:
+- Revenue: $${(y.yearRevenueCents / 100).toFixed(2)}
+- Expenses: $${(y.yearExpenseCents / 100).toFixed(2)}
+- Net: $${((y.yearRevenueCents - y.yearExpenseCents) / 100).toFixed(2)}
+- Events: ${y.totalEventsThisYear} total, ${y.completedEventsThisYear} completed
+- Avg revenue/event: $${(y.avgEventRevenueCents / 100).toFixed(2)}${y.topClients.length > 0 ? `\n- Top clients: ${y.topClients.map((c) => `${c.name} ($${(c.revenueCents / 100).toFixed(2)}, ${c.eventCount} events)`).join('; ')}` : ''}`)
+  }
+
+  // Staff roster
+  if (context.staffRoster && context.staffRoster.length > 0) {
+    parts.push(`\nSTAFF ROSTER (${context.staffRoster.length}):
+${context.staffRoster.map((s) => `- ${s.name} (${s.role.replace(/_/g, ' ')})${s.phone ? ` ${s.phone}` : ''}`).join('\n')}`)
+  }
+
+  // Equipment
+  if (context.equipmentSummary && context.equipmentSummary.totalItems > 0) {
+    parts.push(
+      `\nEQUIPMENT: ${context.equipmentSummary.totalItems} items across ${context.equipmentSummary.categories.join(', ')}`
+    )
+  }
+
+  // Goals
+  if (context.activeGoals && context.activeGoals.length > 0) {
+    parts.push(`\nACTIVE GOALS (${context.activeGoals.length}):
+${context.activeGoals.map((g) => `- ${g.title}${g.targetDate ? ` (due ${g.targetDate})` : ''}${g.progress !== null ? ` ${g.progress}%` : ''} [${g.status}]`).join('\n')}`)
+  }
+
+  // Todos
+  if (context.activeTodos && context.activeTodos.length > 0) {
+    parts.push(`\nTODO LIST (${context.activeTodos.length}):
+${context.activeTodos.map((t) => `- ${t.title}${t.dueDate ? ` (due ${t.dueDate})` : ''} [${t.priority}] ${t.status}`).join('\n')}`)
+  }
+
+  // Scheduled calls
+  if (context.upcomingCalls && context.upcomingCalls.length > 0) {
+    parts.push(`\nUPCOMING CALLS (${context.upcomingCalls.length}):
+${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` — ${c.purpose}` : ''}`).join('\n')}`)
+  }
+
+  // Documents
+  if (
+    context.documentSummary &&
+    (context.documentSummary.totalDocuments > 0 || context.documentSummary.totalFolders > 0)
+  ) {
+    parts.push(
+      `\nDOCUMENTS: ${context.documentSummary.totalDocuments} documents in ${context.documentSummary.totalFolders} folders`
+    )
+  }
+
+  // Recent Remy artifacts
+  if (context.recentArtifacts && context.recentArtifacts.length > 0) {
+    parts.push(`\nRECENT REMY WORK (what you recently created):
+${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title} (${new Date(a.createdAt).toLocaleDateString()})`).join('\n')}`)
+  }
+
+  // ─── Context enrichment sections (2026-02-28) ───────────────────────────
+
+  // Recipe library stats
+  if (context.recipeStats && context.recipeStats.totalRecipes > 0) {
+    parts.push(
+      `\nRECIPE LIBRARY: ${context.recipeStats.totalRecipes} recipes across ${context.recipeStats.categories.join(', ')}`
+    )
+  }
+
+  // Client vibe notes + dietary/allergy data (safety-critical info first)
+  if (context.clientVibeNotes && context.clientVibeNotes.length > 0) {
+    // Separate clients with allergies for prominent display
+    const clientsWithAllergies = context.clientVibeNotes.filter(
+      (c) => c.allergies.length > 0 || c.dietaryRestrictions.length > 0
+    )
+    if (clientsWithAllergies.length > 0) {
+      parts.push(`\n⚠️ CLIENT DIETARY & ALLERGY DATA (SAFETY-CRITICAL — always flag prominently):
+${clientsWithAllergies
+  .map((c) => {
+    const lines: string[] = [`- ${c.name}:`]
+    if (c.allergies.length > 0) lines.push(`  ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
+    if (c.dietaryRestrictions.length > 0)
+      lines.push(`  Dietary: ${c.dietaryRestrictions.join(', ')}`)
+    // Extract safety notes from vibe_notes
+    const vibeUpper = c.vibeNotes.toUpperCase()
+    if (
+      vibeUpper.includes('ALLERGY') ||
+      vibeUpper.includes('EPIPEN') ||
+      vibeUpper.includes('SEVERE')
+    ) {
+      const sentences = c.vibeNotes.split(/[.!]\s+/)
+      const safetySentences = sentences.filter((s: string) => {
+        const su = s.toUpperCase()
+        return (
+          su.includes('ALLERGY') ||
+          su.includes('EPIPEN') ||
+          su.includes('SEVERE') ||
+          su.includes('CROSS-CONTAM')
+        )
+      })
+      if (safetySentences.length > 0) lines.push(`  ⚠️ ${safetySentences.join('. ')}`)
+    }
+    return lines.join('\n')
+  })
+  .join('\n')}
+When asked about these clients' dietary needs, ALWAYS prominently flag allergies. This is safety-critical.`)
+    }
+
+    parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
+${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}
+Use these to personalize communication — draft emails and messages that match each client's vibe.`)
+  }
+
+  // Recent after-action review insights
+  if (context.recentAARInsights && context.recentAARInsights.length > 0) {
+    const aars = context.recentAARInsights.filter(
+      (a) => a.lessonsLearned || a.wentWell || a.toImprove
+    )
+    if (aars.length > 0) {
+      parts.push(`\nRECENT LESSONS LEARNED (from after-action reviews):
+${aars
+  .map((a) => {
+    const parts: string[] = []
+    if (a.wentWell) parts.push(`✅ ${a.wentWell}`)
+    if (a.toImprove) parts.push(`⚠️ ${a.toImprove}`)
+    if (a.lessonsLearned) parts.push(`💡 ${a.lessonsLearned}`)
+    return parts.join(' | ')
+  })
+  .join('\n')}
+Reference these when relevant — help the chef avoid past mistakes and repeat successes.`)
+    }
+  }
+
+  // Pending menu approvals
+  if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
+    parts.push(
+      `\n📋 PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')} — waiting for client response`
+    )
+  }
+
+  // Unread inquiry messages
+  if (context.unreadInquiryMessages && context.unreadInquiryMessages.length > 0) {
+    const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
+    parts.push(
+      `\n📬 UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')} — need a response`
+    )
+  }
+
+  // Navigation trail — what pages the chef visited this session
+  if (recentPages && recentPages.length > 0) {
+    const trail = recentPages.map((p) => {
+      const time = new Date(p.at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      return `- ${time}: ${p.label} (${p.path})`
+    })
+    parts.push(`\nSESSION NAVIGATION (where the chef has been this session, oldest→newest):
+${trail.join('\n')}
+This shows the chef's workflow — what they've been looking at and in what order. Use it to understand their current focus.`)
+  }
+
+  // Recent mutations — what the chef just did in the app
+  if (recentActions && recentActions.length > 0) {
+    const actions = recentActions.map((a) => {
+      const time = new Date(a.at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      return `- ${time}: ${a.action} — ${a.entity}`
+    })
+    parts.push(`\nRECENT ACTIONS (what the chef just did in the app):
+${actions.join('\n')}
+These are real actions the chef just took. Reference them when relevant — e.g. "I see you just created that event, want me to draft a confirmation?"`)
+  }
+
+  // Recent errors — help the chef if they hit problems
+  if (recentErrors && recentErrors.length > 0) {
+    const errs = recentErrors.map((e) => {
+      const time = new Date(e.at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      return `- ${time}: "${e.message}" (while: ${e.context})`
+    })
+    parts.push(`\nRECENT ERRORS (the chef hit these problems):
+${errs.join('\n')}
+If the chef seems frustrated or asks about something failing, these errors are context. Proactively acknowledge if relevant — "I saw that didn't work earlier — let's figure it out."`)
+  }
+
+  // Session duration — how long the chef has been working
+  if (sessionMinutes && sessionMinutes > 0) {
+    const hours = Math.floor(sessionMinutes / 60)
+    const mins = sessionMinutes % 60
+    const duration = hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`
+    parts.push(`\nSESSION DURATION: The chef has been active for ${duration} this session.`)
+    if (sessionMinutes > 120) {
+      parts.push(
+        `That's a long session — they're grinding. Be efficient and sharp, don't waste their time.`
+      )
+    }
+  }
+
+  // Cross-chat awareness — what was discussed in the other chat channel
+  if (otherChannelDigest) {
+    parts.push(`\nCONTEXT FROM OTHER CHAT CHANNEL:
+${otherChannelDigest}
+You can reference this context naturally if relevant — don't force it or repeat what was already said.`)
+  }
+
+  // Survey mode — conversational survey takes over prompt context
+  if (activeForm === 'remy-survey' && surveyPromptSection) {
+    parts.push(`\n${surveyPromptSection}`)
+  } else if (activeForm) {
+    // Active form — what the chef is currently working on
+    parts.push(
+      `\nCURRENTLY WORKING ON: The chef is in the middle of "${activeForm}". If they ask a question, it's probably related to this. Keep answers contextual.`
+    )
+  }
+
+  if (context.currentPage) {
+    parts.push(
+      `\nThe chef is currently on the ${context.currentPage} page. Consider this when making suggestions.`
+    )
+  }
+
+  if (context.pageEntity) {
+    parts.push(`\nCURRENTLY VIEWING (${context.pageEntity.type.toUpperCase()} DETAIL PAGE):
+${context.pageEntity.summary}
+Use this data to give specific, informed answers about what the chef is looking at. You know exactly what's on their screen.`)
+  }
+
+  if (context.mentionedEntities && context.mentionedEntities.length > 0) {
+    parts.push(`\nMENTIONED IN MESSAGE (auto-resolved from chef's message):
+${context.mentionedEntities.map((e) => `--- ${e.type.toUpperCase()} ---\n${e.summary}`).join('\n\n')}
+The chef mentioned these by name. Use this data to answer their question accurately.`)
+  }
+
+  const memoryBlock = formatMemoriesForPrompt(memories)
+  if (memoryBlock) {
+    parts.push(memoryBlock)
+  }
+
+  parts.push(`\n${NAV_ROUTE_MAP}`)
+
+  parts.push(`\nGROUNDING RULE (CRITICAL):
+You may ONLY reference data that appears in the sections above. You have access to:
+ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan (admin/prep/creative/relationship items), email inbox digest (last 24h), session navigation trail (pages visited this session), recent actions (mutations the chef just performed), calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, and memories.
+ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
+ON CLIENT PAGES: Full event history, client notes, and client reviews.
+ON INQUIRY PAGES: Full message thread.
+Use all available data when answering questions — never say "I don't have that info" if it's in one of these sections.
+If a section says "0" or is empty, that means there are NONE — do not invent any.
+NEVER fabricate names, dates, amounts, or details to sound helpful.`)
+
+  // Streaming mode: plain text with nav suggestions as JSON at the end
+  parts.push(`\nRESPONSE FORMAT:
+Write your reply in natural language with markdown formatting (bold, bullets, etc.).
+If you want to suggest page navigation links, end your response with a line containing only:
+NAV_SUGGESTIONS: [{"label":"Page Name","href":"/route"}]
+Only include nav suggestions when genuinely helpful.
+Present all suggestions as drafts. Never claim to have taken autonomous actions.`)
+
+  return parts.join('\n')
+}
+
+// ─── Conversation History Formatter ───────────────────────────────────────────
+
+function formatConversationHistory(history: RemyMessage[]): string {
+  if (history.length === 0) return ''
+  const recent = history.slice(-10)
+  const formatted = recent
+    .map((m) => `${m.role === 'user' ? 'Chef' : 'Remy'}: ${m.content}`)
+    .join('\n')
+  return `Previous conversation:\n${formatted}\n\n`
+}
+
+// ─── Memory Intent Detection ──────────────────────────────────────────────────
+
+const MEMORY_LIST_PATTERNS = [
+  /\b(what|show|list|see|view|display)\b.*(you\s+)?remember/i,
+  /\b(your|my)\s+memor(y|ies)/i,
+  /\bmemory\s+(list|log|bank|store)/i,
+  /\bshow\s+.*memor(y|ies)/i,
+  /\blist\s+.*memor(y|ies)/i,
+  /\bwhat\s+(have\s+you|do\s+you)\s+(learned|know|remember)/i,
+  /\bmemories\b/i,
+]
+
+const MEMORY_ADD_PATTERNS = [
+  /\bremember\s+that\b/i,
+  /\bremember\s*:/i,
+  /\bkeep\s+in\s+mind\b/i,
+  /\bdon'?t\s+forget\b/i,
+  /\bnote\s+that\b/i,
+  /\badd\s+(a\s+)?memory\b/i,
+  /\bsave\s+that\b/i,
+]
+
+type MemoryIntent = 'list' | 'add' | null
+
+function detectMemoryIntent(message: string): MemoryIntent {
+  for (const p of MEMORY_ADD_PATTERNS) {
+    if (p.test(message)) return 'add'
+  }
+  for (const p of MEMORY_LIST_PATTERNS) {
+    if (p.test(message)) return 'list'
+  }
+  return null
+}
+
+function formatCategoryLabel(cat: string): string {
+  return cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// ─── Pi Test Detection (Admin Only) ──────────────────────────────────────────
+
+const PI_TEST_PATTERNS = [
+  /\brun\s+(a\s+)?test\b/i,
+  /\btest\s+the\s+pi\b/i,
+  /\bping\s+(the\s+)?pi\b/i,
+  /\bpi\s+test\b/i,
+  /\btest\s+raspberry\b/i,
+]
+
+function detectPiTestIntent(message: string): boolean {
+  return PI_TEST_PATTERNS.some((p) => p.test(message))
+}
+
+async function handlePiTest(): Promise<Response> {
+  const encoder = new TextEncoder()
+  const piUrl = getOllamaPiUrl()
+
+  if (!piUrl) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'pi-test' })))
+        controller.enqueue(
+          encoder.encode(
+            encodeSSE({
+              type: 'token',
+              data: '**Pi Test — FAILED**\n\nNo `OLLAMA_PI_URL` configured in environment. Set it in `.env.local` and restart the dev server.',
+            })
+          )
+        )
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+        controller.close()
+      },
+    })
+    return new Response(stream, { headers: sseHeaders() })
+  }
+
+  const piModel = getModelForEndpoint('pi', 'standard')
+  const startTime = Date.now()
+
+  // Step 1: Ping the Pi
+  let pingOk = false
+  try {
+    const res = await fetch(`${piUrl}/api/tags`, {
+      signal: AbortSignal.timeout(5000),
+      cache: 'no-store',
+    })
+    pingOk = res.ok
+  } catch {
+    // unreachable
+  }
+
+  if (!pingOk) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'pi-test' })))
+        controller.enqueue(
+          encoder.encode(
+            encodeSSE({
+              type: 'token',
+              data: `**Pi Test — UNREACHABLE**\n\nCould not reach the Pi endpoint. Check that Ollama is running on the Pi and the network is connected.`,
+            })
+          )
+        )
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+        controller.close()
+      },
+    })
+    return new Response(stream, { headers: sseHeaders() })
+  }
+
+  const pingMs = Date.now() - startTime
+
+  // Step 2: Send a simple chat to verify the model responds
+  let modelResponse = ''
+  let chatMs = 0
+  try {
+    const chatStart = Date.now()
+    const ollama = new Ollama({ host: piUrl })
+    const res = await (ollama.chat({
+      model: piModel,
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant. Respond in one sentence.' },
+        { role: 'user', content: 'Say hello and confirm you are running.' },
+      ],
+      options: { num_predict: 64 },
+      keep_alive: '30m',
+      think: false,
+    } as any) as any)
+    modelResponse = res.message?.content ?? '(no response)'
+    chatMs = Date.now() - chatStart
+  } catch (err) {
+    modelResponse = `Error: ${err instanceof Error ? err.message : String(err)}`
+  }
+
+  const totalMs = Date.now() - startTime
+
+  const report = [
+    '**Pi Test — SUCCESS**\n',
+    `| Detail | Value |`,
+    `|--------|-------|`,
+    `| Endpoint | Pi (configured) |`,
+    `| Model | \`${piModel}\` |`,
+    `| Ping | ${pingMs}ms |`,
+    `| Chat response | ${chatMs}ms |`,
+    `| Total | ${totalMs}ms |`,
+    '',
+    `**Pi says:** ${modelResponse}`,
+  ].join('\n')
+
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'pi-test' })))
+      controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: report })))
+      controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+      controller.close()
+    },
+  })
+  return new Response(stream, { headers: sseHeaders() })
+}
+
+// ─── Task Result Summarizer ───────────────────────────────────────────────────
+
+function summarizeTaskResults(results: RemyTaskResult[]): string {
+  if (results.length === 0)
+    return "I tried to process your request but couldn't match it to any available actions."
+
+  const summaries: string[] = []
+
+  for (const task of results) {
+    const name = task.name || task.taskType
+
+    if (task.status === 'error') {
+      summaries.push(`I ran into an issue with "${name}": ${task.error ?? 'unknown error'}`)
+      continue
+    }
+    if (task.status === 'held') {
+      summaries.push(`"${name}" needs your input: ${task.holdReason ?? 'Could you clarify?'}`)
+      continue
+    }
+    if (task.status === 'pending') {
+      // Inline draft content so the text stream includes the actual draft
+      const pendingData = task.data as
+        | { draftText?: string; subject?: string; clientName?: string }
+        | undefined
+      if (pendingData?.draftText) {
+        const label = pendingData.clientName ? ` for ${pendingData.clientName}` : ''
+        summaries.push(
+          `I've drafted "${name}"${label} for your review — edit before sending:\n\n${pendingData.draftText}`
+        )
+      } else {
+        summaries.push(`I've drafted "${name}" for your review — check the card below.`)
+      }
+      continue
+    }
+
+    if (task.taskType === 'client.search' && task.data) {
+      const d = task.data as {
+        clients: Array<{
+          name: string
+          allergies?: string[]
+          dietaryRestrictions?: string[]
+          loyaltyTier?: string | null
+        }>
+      }
+      if (d.clients.length === 0) summaries.push('No matching clients found.')
+      else {
+        const clientLines = d.clients.map((c) => {
+          const parts = [c.name]
+          if (c.loyaltyTier) parts.push(`(${c.loyaltyTier} tier)`)
+          if (c.allergies && c.allergies.length > 0)
+            parts.push(`\n  ⚠️ ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
+          if (c.dietaryRestrictions && c.dietaryRestrictions.length > 0)
+            parts.push(`\n  Dietary: ${c.dietaryRestrictions.join(', ')}`)
+          return parts.join(' ')
+        })
+        summaries.push(
+          `Found ${d.clients.length} client${d.clients.length > 1 ? 's' : ''}:\n${clientLines.map((l) => `• ${l}`).join('\n')}`
+        )
+      }
+    } else if (task.taskType === 'calendar.availability' && task.data) {
+      const d = task.data as {
+        date: string
+        available: boolean
+        conflicts?: Array<{ occasion: string }>
+      }
+      if (d.available) summaries.push(`${d.date} is available — no events booked.`)
+      else
+        summaries.push(
+          `${d.date} is not available. You have: ${d.conflicts?.map((c) => c.occasion).join(', ') ?? 'a conflict'}`
+        )
+    } else if (task.taskType === 'event.list_upcoming' && task.data) {
+      const d = task.data as {
+        events: Array<{
+          occasion: string | null
+          date: string | null
+          clientName: string
+          status: string
+        }>
+      }
+      if (d.events.length === 0) summaries.push('No upcoming events.')
+      else
+        summaries.push(
+          `Here are your upcoming events:\n${d.events.map((e) => `• ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.status})`).join('\n')}`
+        )
+    } else if (task.taskType === 'finance.summary' && task.data) {
+      const d = task.data as {
+        totalRevenueCents: number
+        eventCount: number
+        completedCount: number
+      }
+      summaries.push(
+        `Revenue: $${(d.totalRevenueCents / 100).toFixed(2)} across ${d.eventCount} event${d.eventCount !== 1 ? 's' : ''} (${d.completedCount} completed)`
+      )
+    } else if (task.taskType === 'web.search' && task.data) {
+      const d = task.data as {
+        query: string
+        results: Array<{ title: string; snippet: string; url: string }>
+      }
+      if (d.results.length === 0) summaries.push(`No web results found for "${d.query}".`)
+      else
+        summaries.push(
+          `Here's what I found online for "${d.query}":\n${d.results.map((r) => `• **${r.title}**\n  ${r.snippet}\n  [${r.url}](${r.url})`).join('\n')}`
+        )
+    } else if (task.taskType === 'web.read' && task.data) {
+      const d = task.data as { url: string; title: string; summary: string }
+      summaries.push(`**${d.title}**\n${d.summary}`)
+    } else if (task.taskType === 'dietary.check' && task.data) {
+      const d = task.data as {
+        clientName: string
+        restrictions: string[]
+        flags: Array<{ severity: string; item: string; restriction: string; message: string }>
+        safeItems: string[]
+        summary: string
+      }
+      const lines = [d.summary]
+      if (d.flags.length > 0) {
+        lines.push('')
+        for (const f of d.flags) {
+          const icon = f.severity === 'danger' ? 'DANGER' : 'Warning'
+          lines.push(`- **${icon}**: ${f.message}`)
+        }
+      }
+      if (d.safeItems.length > 0 && d.flags.length > 0) {
+        lines.push(`\nSafe items: ${d.safeItems.join(', ')}`)
+      }
+      summaries.push(lines.join('\n'))
+    } else if (task.taskType === 'chef.favorite_chefs' && task.data) {
+      const d = task.data as {
+        chefs: Array<{ name: string; reason: string | null; websiteUrl: string | null }>
+        count: number
+      }
+      if (d.count === 0) {
+        summaries.push(
+          'No favorite chefs saved yet. Head to Settings > Favorite Chefs to add your culinary heroes!'
+        )
+      } else {
+        const lines = [`Your ${d.count} culinary heroes:`]
+        for (const c of d.chefs) {
+          lines.push(`- **${c.name}**${c.reason ? ` — ${c.reason}` : ''}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'chef.culinary_profile' && task.data) {
+      const d = task.data as {
+        answers: Array<{ question: string; answer: string }>
+        answeredCount: number
+        totalCount: number
+      }
+      if (d.answeredCount === 0) {
+        summaries.push(
+          'Your culinary profile is empty. Head to Settings > Culinary Profile to tell me about your food identity!'
+        )
+      } else {
+        const lines = [`Your culinary profile (${d.answeredCount}/${d.totalCount} answered):`]
+        for (const a of d.answers) {
+          lines.push(`- **${a.question}**: ${a.answer}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'prep.timeline' && task.data) {
+      const d = task.data as {
+        eventName: string
+        steps: Array<{
+          time: string
+          task: string
+          duration: string
+          category: string
+          notes?: string
+        }>
+        totalPrepHours: number
+        summary: string
+      }
+      if (d.steps.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**Prep Timeline for ${d.eventName}** (~${d.totalPrepHours}h total)\n`]
+        for (const step of d.steps) {
+          lines.push(
+            `- **${step.time}** ${step.task} _(${step.duration})_${step.notes ? ` — ${step.notes}` : ''}`
+          )
+        }
+        lines.push(`\n${d.summary}`)
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'nudge.list' && task.data) {
+      const d = task.data as {
+        nudges: Array<{
+          type: string
+          title: string
+          message: string
+          priority: string
+          actionLabel?: string
+          actionHref?: string
+        }>
+        count: number
+      }
+      if (d.count === 0) {
+        summaries.push("Nothing urgent right now — you're all caught up!")
+      } else {
+        const lines = [`Here's what needs your attention (${d.count} items):\n`]
+        for (const n of d.nudges) {
+          const icon = n.priority === 'high' ? '**!!**' : n.priority === 'medium' ? '**!**' : ''
+          lines.push(`- ${icon} **${n.title}**: ${n.message}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'grocery.quick_add' && task.data) {
+      const d = task.data as {
+        items: Array<{ name: string; quantity: string; unit: string; category: string }>
+        summary: string
+      }
+      if (d.items.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`${d.summary}\n`]
+        for (const item of d.items) {
+          lines.push(`- ${item.quantity} ${item.unit} ${item.name} _(${item.category})_`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'document.search' && task.data) {
+      const d = task.data as {
+        documents: Array<{ title: string; type: string | null }>
+        count: number
+      }
+      if (d.count === 0) summaries.push('No documents found.')
+      else
+        summaries.push(
+          `Found ${d.count} document${d.count !== 1 ? 's' : ''}:\n${d.documents.map((doc) => `- ${doc.title}${doc.type ? ` (${doc.type})` : ''}`).join('\n')}`
+        )
+    } else if (task.taskType === 'document.list_folders' && task.data) {
+      const d = task.data as { folders: Array<{ name: string }>; count: number }
+      if (d.count === 0) summaries.push('No folders yet. Want me to create one?')
+      else
+        summaries.push(
+          `Your ${d.count} folder${d.count !== 1 ? 's' : ''}:\n${d.folders.map((f) => `- ${f.name}`).join('\n')}`
+        )
+    } else if (task.taskType === 'ops.portion_calc' && task.data) {
+      const d = task.data as {
+        recipeName: string
+        originalYield: number
+        targetGuests: number
+        scaleFactor: number
+        ingredients: Array<{ name: string; originalQty: string; scaledQty: string; unit: string }>
+        summary: string
+      }
+      if (d.ingredients.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [
+          `**${d.recipeName}** — scaled from ${d.originalYield} to ${d.targetGuests} servings (${d.scaleFactor}x)\n`,
+        ]
+        for (const ing of d.ingredients) {
+          lines.push(`- ${ing.scaledQty} ${ing.unit} ${ing.name} _(was ${ing.originalQty})_`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'ops.packing_list' && task.data) {
+      const d = task.data as {
+        eventName: string
+        guestCount: number
+        categories: Array<{
+          name: string
+          items: Array<{ item: string; quantity: string; notes?: string }>
+        }>
+        summary: string
+      }
+      if (d.categories.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**Packing List: ${d.eventName}** (${d.guestCount} guests)\n`]
+        for (const cat of d.categories) {
+          lines.push(`**${cat.name}:**`)
+          for (const item of cat.items) {
+            lines.push(`- ${item.quantity} × ${item.item}${item.notes ? ` _(${item.notes})_` : ''}`)
+          }
+          lines.push('')
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'ops.cross_contamination' && task.data) {
+      const d = task.data as {
+        eventName: string
+        clientName: string
+        risks: Array<{ severity: string; allergen: string; menuItem: string; message: string }>
+        safePractices: string[]
+        summary: string
+      }
+      const lines = [d.summary]
+      if (d.risks.length > 0) {
+        lines.push('')
+        for (const r of d.risks) {
+          const icon = r.severity === 'critical' ? 'CRITICAL' : 'Warning'
+          lines.push(`- **${icon}**: ${r.message}`)
+        }
+      }
+      if (d.safePractices.length > 0) {
+        lines.push('\n**Safe Practices:**')
+        for (const p of d.safePractices) lines.push(`- ${p}`)
+      }
+      summaries.push(lines.join('\n'))
+    } else if (task.taskType === 'analytics.break_even' && task.data) {
+      const d = task.data as {
+        eventName: string
+        revenueCents: number
+        profitCents: number
+        marginPct: number
+        breakEvenGuests: number
+        guestCount: number
+        summary: string
+      }
+      summaries.push(d.summary)
+    } else if (task.taskType === 'analytics.client_ltv' && task.data) {
+      const d = task.data as {
+        clientName: string
+        totalRevenueCents: number
+        eventCount: number
+        avgEventRevenueCents: number
+        tier: string
+        tenureDays: number
+        summary: string
+      }
+      summaries.push(d.summary)
+    } else if (task.taskType === 'analytics.recipe_cost' && task.data) {
+      const d = task.data as {
+        recipeName: string
+        currentCostCents: number
+        suggestions: Array<{
+          ingredient: string
+          currentCost: string
+          suggestion: string
+          estimatedSaving: string
+        }>
+        summary: string
+      }
+      if (d.suggestions.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**${d.recipeName}** — $${(d.currentCostCents / 100).toFixed(2)} total\n`]
+        for (const s of d.suggestions) {
+          lines.push(
+            `- **${s.ingredient}** (${s.currentCost}): ${s.suggestion} — save ~${s.estimatedSaving}`
+          )
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'client.event_recap' && task.data) {
+      const d = task.data as {
+        eventName: string
+        clientName: string
+        date: string | null
+        guestCount: number
+        status: string
+        menuItems: string[]
+        financials: { quotedCents: number; paidCents: number; outstandingCents: number }
+        summary: string
+      }
+      summaries.push(d.summary)
+    } else if (task.taskType === 'client.menu_explanation' && task.data) {
+      const d = task.data as {
+        menuName: string
+        eventName: string | null
+        courses: Array<{ name: string; description: string | null; dietaryTags: string[] }>
+        summary: string
+      }
+      if (d.courses.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**${d.menuName}**${d.eventName ? ` _(${d.eventName})_` : ''}\n`]
+        for (const c of d.courses) {
+          lines.push(
+            `- **${c.name}**${c.description ? `: ${c.description}` : ''}${c.dietaryTags.length > 0 ? ` [${c.dietaryTags.join(', ')}]` : ''}`
+          )
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'email.generic' && task.data) {
+      const d = task.data as { subject?: string; draftText: string }
+      summaries.push(`Here's a draft for your review:\n\n${d.draftText}`)
+    } else if (task.taskType.startsWith('draft.') && task.data) {
+      const d = task.data as { subject?: string; draftText: string; clientName?: string }
+      const label = d.clientName ? ` for ${d.clientName}` : ''
+      summaries.push(
+        `Here's your ${name.toLowerCase()}${label} — review and edit before sending:\n\n${d.draftText}`
+      )
+    } else if (task.taskType === 'inquiry.list_open' && task.data) {
+      const d = task.data as {
+        inquiries: Array<{
+          id: string
+          status: string
+          eventType: string | null
+          eventDate: string | null
+          guestCount: number | null
+          clientName: string
+          channel?: string | null
+          sourceMessage?: string | null
+        }>
+      }
+      if (!d.inquiries || d.inquiries.length === 0) {
+        summaries.push('No open inquiries right now — your pipeline is clear!')
+      } else {
+        const lines = [
+          `You have ${d.inquiries.length} open inquir${d.inquiries.length === 1 ? 'y' : 'ies'}:\n`,
+        ]
+        for (const inq of d.inquiries) {
+          // Build display: occasion/event type first (most useful identifier), then contact/channel, then metadata
+          const label = inq.eventType ?? inq.clientName ?? 'New inquiry'
+          const details = [label]
+          if (inq.channel) details.push(`via ${inq.channel}`)
+          if (inq.eventDate) details.push(inq.eventDate)
+          if (inq.guestCount) details.push(`${inq.guestCount} guests`)
+          details.push(`(${inq.status.replace(/_/g, ' ')})`)
+          lines.push(`• ${details.join(' — ')}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'recipe.search' && task.data) {
+      const d = task.data as {
+        recipes: Array<{
+          id: string
+          name: string
+          category: string
+          prepTime: number
+          cookTime: number
+          timesCooked: number
+        }>
+      }
+      if (!d.recipes || d.recipes.length === 0) {
+        summaries.push(
+          'No recipes found matching that search. Try a different keyword or check your recipe library.'
+        )
+      } else {
+        const lines = [`Found ${d.recipes.length} recipe${d.recipes.length === 1 ? '' : 's'}:\n`]
+        for (const r of d.recipes) {
+          const totalTime = (r.prepTime || 0) + (r.cookTime || 0)
+          const timeStr = totalTime > 0 ? ` (${totalTime} min)` : ''
+          const cookedStr = r.timesCooked > 0 ? ` — cooked ${r.timesCooked}×` : ''
+          lines.push(`• **${r.name}**${r.category ? ` [${r.category}]` : ''}${timeStr}${cookedStr}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'nav.go' && task.data) {
+      const d = task.data as { route: string; navigated: boolean }
+      summaries.push(`Navigating you to **${d.route}** now.`)
+    } else {
+      summaries.push(`"${name}" completed successfully.`)
+    }
+  }
+
+  return summaries.join('\n\n')
+}
+
+// ─── SSE Encoder ──────────────────────────────────────────────────────────────
+
+function encodeSSE(event: StreamEvent): string {
+  return `data: ${JSON.stringify(event)}\n\n`
+}
+
+// ─── POST Handler ─────────────────────────────────────────────────────────────
 
 async function getRemyRuntimeState(
-  _tenantId: string
+  tenantId: string
 ): Promise<{ allowed: boolean; message?: string }> {
-  // Runtime is forced-on for this portal experience.
+  const supabase: any = createServerClient()
+  const { data, error } = await supabase
+    .from('ai_preferences')
+    .select('remy_enabled, onboarding_completed')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (error) {
+    const errObj = error as Record<string, unknown>
+    const code = typeof errObj.code === 'string' ? errObj.code : ''
+    const message = typeof errObj.message === 'string' ? errObj.message.toLowerCase() : ''
+    if (code === 'PGRST116' || message.includes('0 rows')) {
+      return {
+        allowed: false,
+        message:
+          'Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.',
+      }
+    }
+    return {
+      allowed: false,
+      message: 'Unable to verify Remy runtime settings. Try again in a moment.',
+    }
+  }
+
+  const allowed = Boolean(data?.remy_enabled) && Boolean(data?.onboarding_completed)
+  if (!allowed) {
+    return {
+      allowed: false,
+      message:
+        'Remy is currently disabled. Enable Remy in Settings > Remy Control Center and complete AI onboarding.',
+    }
+  }
+
   return { allowed: true }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const requestStartedAt = Date.now()
-    const stageLatencies: Record<string, number> = {}
     const user = await requireChef()
     const runtimeState = await getRemyRuntimeState(user.tenantId!)
     if (!runtimeState.allowed) {
-      return sseErrorResponse(runtimeState.message ?? 'Remy is disabled for this account.', 403)
+      return new Response(
+        encodeSSE({
+          type: 'error',
+          data: runtimeState.message ?? 'Remy is disabled for this account.',
+        }),
+        { headers: sseHeaders() }
+      )
     }
-    let rawBody: unknown
-    try {
-      rawBody = await req.json()
-    } catch {
-      return sseErrorResponse('Request body must be valid JSON.', 400)
-    }
+    const rawBody = await req.json()
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {
-      return sseErrorResponse('Invalid request - please try again.', 400)
+      return new Response(
+        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        { headers: sseHeaders() }
+      )
     }
     const {
       message,
@@ -103,52 +1240,33 @@ export async function POST(req: NextRequest) {
       sessionMinutes,
       activeForm,
     } = validated
-    const rawRecord =
-      rawBody && typeof rawBody === 'object' ? (rawBody as Record<string, unknown>) : {}
-    // Cross-chat digest is optional - passed through without validation (plain string)
+    // Cross-chat digest is optional — passed through without validation (plain string)
     const otherChannelDigest =
-      typeof rawRecord.otherChannelDigest === 'string'
-        ? rawRecord.otherChannelDigest.slice(0, 600)
+      typeof rawBody.otherChannelDigest === 'string'
+        ? rawBody.otherChannelDigest.slice(0, 600)
         : null
-    // Previous session topics — client-side summary of last conversation for continuity
-    const previousSessionTopics =
-      rawRecord.previousSessionTopics &&
-      typeof rawRecord.previousSessionTopics === 'object' &&
-      'title' in (rawRecord.previousSessionTopics as Record<string, unknown>) &&
-      'topics' in (rawRecord.previousSessionTopics as Record<string, unknown>)
-        ? (rawRecord.previousSessionTopics as {
-            title: string
-            topics: string[]
-            lastActiveAt: string
-          })
-        : null
-    // Recent conversation summaries — cross-conversation memory (Phase 3C)
-    const recentConversationSummaries = Array.isArray(rawRecord.recentConversationSummaries)
-      ? (
-          rawRecord.recentConversationSummaries as Array<{ summary: string; generatedAt: string }>
-        ).slice(0, 5)
-      : null
-    const history = validateHistory(rawRecord.history, 10) as RemyMessage[]
+    const history = validateHistory(rawBody.history, 10) as RemyMessage[]
 
-    //  GUARDRAILS
+    // ─── GUARDRAILS ──────────────────────────────────────────────
     const admin = await isRemyAdmin()
 
     if (!admin) {
       const blockStatus = await isRemyBlocked()
       if (blockStatus.blocked) {
-        return sseErrorResponse(
-          'Your access to Remy has been temporarily suspended due to repeated policy violations.',
-          403
+        return new Response(
+          encodeSSE({
+            type: 'error',
+            data: 'Your access to Remy has been temporarily suspended due to repeated policy violations.',
+          }),
+          { headers: sseHeaders() }
         )
       }
 
-      try {
-        await checkRateLimit(`remy-stream:${user.tenantId!}`, 12, 60_000)
-      } catch {
-        return sseErrorResponse(
-          'Whoa, slow down chef - I can only handle 12 messages a minute. Give me about a minute and try again.',
-          429
-        )
+      const rateCheck = checkRemyRateLimit(user.tenantId!)
+      if (!rateCheck.allowed) {
+        return new Response(encodeSSE({ type: 'error', data: rateCheck.refusal }), {
+          headers: sseHeaders(),
+        })
       }
 
       const inputCheck = validateRemyInput(message)
@@ -161,11 +1279,13 @@ export async function POST(req: NextRequest) {
             guardrailMatched: inputCheck.matchedPattern,
           }).catch((err) => console.error('[non-blocking] Abuse logging failed', err))
         }
-        return sseErrorResponse(inputCheck.refusal ?? 'That request is not allowed.', 400)
+        return new Response(encodeSSE({ type: 'error', data: inputCheck.refusal }), {
+          headers: sseHeaders(),
+        })
       }
     }
 
-    //  RECIPE GENERATION BLOCK (hard rule - AI never generates recipes)
+    // ─── RECIPE GENERATION BLOCK (hard rule — AI never generates recipes) ───
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
       // Return as a friendly Remy chat response, not an error
@@ -174,7 +1294,7 @@ export async function POST(req: NextRequest) {
       return new Response(body, { headers: sseHeaders() })
     }
 
-    //  OUT-OF-SCOPE BLOCK (non-business requests)
+    // ─── OUT-OF-SCOPE BLOCK (non-business requests) ───
     const outOfScopeBlock = checkOutOfScopeBlock(message)
     if (outOfScopeBlock) {
       // Return as a friendly Remy chat response, not an error
@@ -184,7 +1304,7 @@ export async function POST(req: NextRequest) {
       return new Response(body, { headers: sseHeaders() })
     }
 
-    //  DANGEROUS ACTION BLOCK (delete, developer mode, system introspection)
+    // ─── DANGEROUS ACTION BLOCK (delete, developer mode, system introspection) ───
     const dangerousActionBlock = checkDangerousActionBlock(message)
     if (dangerousActionBlock) {
       // Return as a friendly Remy refusal, not an error
@@ -194,65 +1314,12 @@ export async function POST(req: NextRequest) {
       return new Response(body, { headers: sseHeaders() })
     }
 
-    //  VISION PATH (4A: receipt scanning, 4B: dish photos)
-    const imageBase64 =
-      typeof rawRecord.imageBase64 === 'string' && rawRecord.imageBase64.length > 100
-        ? (rawRecord.imageBase64 as string)
-        : null
-    const imageIntent =
-      typeof rawRecord.imageIntent === 'string'
-        ? (rawRecord.imageIntent as 'receipt' | 'dish' | 'auto')
-        : 'auto'
-
-    if (imageBase64) {
-      try {
-        // Determine intent: explicit from client, or auto-detect from message text
-        let resolvedIntent = imageIntent
-        if (resolvedIntent === 'auto') {
-          const lower = message.toLowerCase()
-          const receiptSignals =
-            /receipt|expense|grocery|shopping|store|purchase|bought|cost|total|scan/i
-          resolvedIntent = receiptSignals.test(lower) ? 'receipt' : 'dish'
-        }
-
-        let responseText: string
-        if (resolvedIntent === 'receipt') {
-          const receiptData = await scanReceipt(imageBase64)
-          // Try to match to an upcoming event for context
-          const eventHint = message
-            .match(/for\s+(.+?)(?:\s*event|\s*dinner|\s*party|$)/i)?.[1]
-            ?.trim()
-          responseText = await formatReceiptForConfirmation(receiptData, eventHint || undefined)
-        } else {
-          const dishData = await analyzeDishPhoto(imageBase64)
-          responseText = await formatDishPhotoResponse(dishData)
-        }
-
-        const body =
-          encodeSSE({ type: 'intent', data: 'vision' }) +
-          encodeSSE({ type: 'token', data: responseText }) +
-          encodeSSE({ type: 'done', data: null })
-        return new Response(body, { headers: sseHeaders() })
-      } catch (err) {
-        const isOllama =
-          err instanceof Error &&
-          (err.message.includes('Ollama') || err.message.includes('ECONNREFUSED'))
-        const isTimeout = err instanceof Error && err.message.toLowerCase().includes('timed out')
-        return new Response(
-          encodeSSE({
-            type: 'error',
-            data: isOllama
-              ? 'Vision analysis requires Ollama with the LLaVA model. Make sure Ollama is running with `ollama pull llava:7b`.'
-              : isTimeout
-                ? 'Image analysis took too long and I stopped waiting. Try a smaller image or describe what you need.'
-                : 'Failed to analyze the image. Try again or describe what you see instead.',
-          }),
-          { headers: sseHeaders() }
-        )
-      }
+    // ─── PI TEST (admin only) ──────────────────────────────────────
+    if (admin && detectPiTestIntent(message)) {
+      return handlePiTest()
     }
 
-    //  MEMORY PATH (no streaming needed)
+    // ─── MEMORY PATH (no streaming needed) ───────────────────────
     const memoryIntent = detectMemoryIntent(message)
     if (memoryIntent === 'list') {
       const memories = await listRemyMemories({ limit: 200 })
@@ -269,7 +1336,7 @@ export async function POST(req: NextRequest) {
       let text: string
       if (memories.length === 0) {
         text =
-          'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules - or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.'
+          'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules — or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.'
       } else {
         const grouped = new Map<string, typeof memories>()
         for (const mem of memories) {
@@ -277,12 +1344,12 @@ export async function POST(req: NextRequest) {
           grouped.get(mem.category)!.push(mem)
         }
         const lines: string[] = [
-          `Here's everything I remember (${memories.length} memories). You can delete any of these - just tap the X next to it.\n`,
+          `Here's everything I remember (${memories.length} memories). You can delete any of these — just tap the X next to it.\n`,
         ]
         for (const [category, items] of grouped) {
           lines.push(`**${formatCategoryLabel(category)}**`)
           for (const item of items) {
-            lines.push(`- ${item.content}${item.importance >= 8 ? ' [ALERT]' : ''}`)
+            lines.push(`• ${item.content}${item.importance >= 8 ? ' ⚠️' : ''}`)
           }
           lines.push('')
         }
@@ -339,59 +1406,31 @@ export async function POST(req: NextRequest) {
 
       let category: MemoryCategory = 'chef_preference'
       const lower = fact.toLowerCase()
-      // Client-related: names, pronouns, dietary info, relationship details
       if (
-        /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten|lactose|nut|shellfish|celiac|kosher|halal|family|couple|husband|wife|daughter|son|likes|prefers|hates|loves|favorite|anniversary|birthday)\b/i.test(
+        /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten)\b/i.test(
           lower
         )
       )
         category = 'client_insight'
-      // Pricing: rates, costs, margins, financial patterns
-      else if (
-        /\b(price|charge|cost|rate|per\s+person|per\s+head|margin|quote|minimum|deposit|flat\s+fee|hourly|tip|gratuity|markup|food\s+cost|overhead)\b/i.test(
-          lower
-        )
-      )
+      else if (/\b(price|charge|cost|rate|per\s+person|margin|quote)\b/i.test(lower))
         category = 'pricing_pattern'
-      // Scheduling: days, times, availability, booking patterns
       else if (
-        /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|afternoon|night|day\s+before|day\s+of|lead\s+time|advance|last\s+minute|buffer|travel\s+time|off\s+day|vacation|blackout)\b/i.test(
+        /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|day\s+before)\b/i.test(
           lower
         )
       )
         category = 'scheduling_pattern'
-      // Communication: how they write, email style, preferences
-      else if (
-        /\b(email|draft|message|write|tone|formal|casual|text|call|phone|respond|reply|follow\s+up|signature|sign\s+off|greeting|close)\b/i.test(
-          lower
-        )
-      )
+      else if (/\b(email|draft|message|write|tone|formal|casual)\b/i.test(lower))
         category = 'communication_style'
-      // Business rules: hard constraints, policies, never/always rules
-      else if (
-        /\b(never|always|rule|policy|require|must|won'?t|don'?t|refuse|only|no\s+exceptions|non-?negotiable|standard|guarantee|insurance|liability|contract)\b/i.test(
-          lower
-        )
-      )
-        category = 'business_rule'
-      // Culinary: food preferences, techniques, ingredients, kitchen
-      else if (
-        /\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu|plating|garnish|seasoning|spice|herb|wine|pairing|ferment|smoke|cure|sous\s+vide|grill|bake|roast|fry|local|farm|seasonal|forage|butcher|fishmonger|purveyor|vendor|supplier)\b/i.test(
-          lower
-        )
-      )
+      else if (/\b(never|always|rule|policy|require)\b/i.test(lower)) category = 'business_rule'
+      else if (/\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu)\b/i.test(lower))
         category = 'culinary_note'
-      // Workflow: operational patterns, processes, routines
-      else if (
-        /\b(workflow|prep|shop|process|order|system|routine|checklist|setup|breakdown|cleanup|station|equipment|kit|cooler|transport|pack|label|store|freeze|thaw|batch|mise\s+en\s+place)\b/i.test(
-          lower
-        )
-      )
+      else if (/\b(workflow|prep|shop|process|order|system)\b/i.test(lower))
         category = 'workflow_preference'
 
       await addRemyMemoryManual({ content: fact, category, importance: 5 })
 
-      const text = `Got it - I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\n- ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`
+      const text = `Got it — I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\n• ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         start(controller) {
@@ -404,146 +1443,18 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    //  WEATHER PATH (6A: on-demand event weather forecasts — no Ollama needed)
-    const weatherRegex =
-      /(?:weather|forecast)\s+(?:for|at|look\s+like\s+for)\s+(?:my|the|this|next|upcoming)\s+event/i
-    if (weatherRegex.test(message)) {
-      try {
-        const { getWeatherAlerts, formatWeatherAlerts } = await import('@/lib/ai/remy-weather')
-        const alerts = await getWeatherAlerts(user.tenantId!)
-        const text = await formatWeatherAlerts(alerts)
-        const body =
-          encodeSSE({ type: 'intent', data: 'question' }) +
-          encodeSSE({ type: 'token', data: text }) +
-          encodeSSE({ type: 'done', data: null })
-        return new Response(body, { headers: sseHeaders() })
-      } catch (err) {
-        console.error('[remy] Weather fetch failed:', err)
-        const body =
-          encodeSSE({ type: 'intent', data: 'question' }) +
-          encodeSSE({
-            type: 'token',
-            data: "Couldn't fetch weather data right now. The Open-Meteo API might be down — try again in a few minutes.",
-          }) +
-          encodeSSE({ type: 'done', data: null })
-        return new Response(body, { headers: sseHeaders() })
-      }
-    }
-
-    //  TRAVEL TIME PATH (6B: on-demand travel estimates — no Ollama needed)
-    const travelRegex =
-      /(?:travel\s+time|driving\s+time|back.to.back|how\s+(?:long|far)\s+(?:between|to\s+get)|commute|drive\s+between)\s*(?:my\s+)?event/i
-    if (travelRegex.test(message)) {
-      try {
-        const { getTravelEstimates, formatTravelEstimates } =
-          await import('@/lib/ai/remy-travel-time')
-        const estimates = await getTravelEstimates(user.tenantId!)
-        const text = await formatTravelEstimates(estimates)
-        const body =
-          encodeSSE({ type: 'intent', data: 'question' }) +
-          encodeSSE({ type: 'token', data: text }) +
-          encodeSSE({ type: 'done', data: null })
-        return new Response(body, { headers: sseHeaders() })
-      } catch (err) {
-        console.error('[remy] Travel time fetch failed:', err)
-        const body =
-          encodeSSE({ type: 'intent', data: 'question' }) +
-          encodeSSE({
-            type: 'token',
-            data: "Couldn't calculate travel times right now. The routing API might be down — try again in a few minutes.",
-          }) +
-          encodeSSE({ type: 'done', data: null })
-        return new Response(body, { headers: sseHeaders() })
-      }
-    }
-
-    //  GREETING FAST-PATH: skip Ollama entirely for simple greetings
-    // "hi", "hey", "hello", etc. don't need classification, memories, archetype,
-    // culinary profile, or any LLM call. Only needs lightweight context for the
-    // proactive snapshot (events, payments, inquiries). Context is cached (5 min TTL).
-    const GREETING_REGEX =
-      /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i
-    if (GREETING_REGEX.test(message.trim())) {
-      const ctx = await loadRemyContext(currentPage, 'greeting')
-      const hour = new Date().getHours()
-      const greetWord = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
-      const lines: string[] = [`${greetWord}, chef! 👨‍🍳`]
-
-      const nuggets: string[] = []
-      if (ctx.upcomingEvents && ctx.upcomingEvents.length > 0) {
-        const today = ctx.upcomingEvents.filter((e) => {
-          if (!e.date) return false
-          return new Date(e.date).toDateString() === new Date().toDateString()
-        })
-        if (today.length > 0) {
-          nuggets.push(
-            `You've got **${today.length} event${today.length !== 1 ? 's' : ''} today** - game time 🔥`
-          )
-        } else {
-          const next = ctx.upcomingEvents[0]
-          if (next.date) {
-            const daysUntil = Math.ceil(
-              (new Date(next.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            )
-            if (daysUntil <= 3) {
-              nuggets.push(
-                `Next event in **${daysUntil} day${daysUntil !== 1 ? 's' : ''}**: ${next.occasion ?? 'Event'} for ${next.clientName}`
-              )
-            }
-          }
-        }
-      }
-      if (ctx.overduePayments && ctx.overduePayments.length > 0) {
-        nuggets.push(
-          `${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} need attention`
-        )
-      }
-      if (ctx.staleInquiries && ctx.staleInquiries.length > 0) {
-        nuggets.push(
-          `${ctx.staleInquiries.length} inquir${ctx.staleInquiries.length !== 1 ? 'ies' : 'y'} waiting for a response`
-        )
-      }
-      if (ctx.contextWarnings && ctx.contextWarnings.length > 0) {
-        lines.push('')
-        lines.push(
-          `Heads up: I could not load ${ctx.contextWarnings.join(', ')}. Some recommendations may be missing context until you refresh.`
-        )
-      }
-
-      if (nuggets.length > 0) {
-        lines.push('')
-        lines.push('Quick snapshot:')
-        for (const n of nuggets) lines.push(`- ${n}`)
-        lines.push('')
-        lines.push("What's on your mind?")
-      } else {
-        lines.push("What's cooking today?")
-      }
-
-      const greetingText = lines.join('\n')
-      const body =
-        encodeSSE({ type: 'intent', data: 'question' }) +
-        encodeSSE({ type: 'token', data: greetingText }) +
-        encodeSSE({ type: 'done', data: null })
-      return new Response(body, { headers: sseHeaders() })
-    }
-
-    //  INTERACTIVE LOCK: pause background worker while Remy is streaming
+    // ─── INTERACTIVE LOCK: pause background worker while Remy is streaming ──
     // This prevents the AI queue worker from competing for Ollama while
     // we're streaming a response. Released in the finally block.
     acquireInteractiveLock()
 
-    //  MAIN PATH: classify + load context
+    // ─── MAIN PATH: classify + load context ─────────────────────
     // Hard timeout: if the entire pre-stream setup takes >120s, bail out.
     // Classifier + context + memories usually takes 5-15s. Cold model load
     // on 6GB VRAM can add 30-60s. 120s accommodates worst-case cold start.
     const setupTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('Pre-stream setup timed out after 120s')), 120_000)
     )
-
-    // Determine context scope BEFORE parallel load (deterministic, instant)
-    const contextScope = determineContextScope(message, 'unknown')
-    const setupStartedAt = Date.now()
 
     let context: Awaited<ReturnType<typeof loadRemyContext>>
     let classification: Awaited<ReturnType<typeof classifyIntent>>
@@ -554,37 +1465,29 @@ export async function POST(req: NextRequest) {
     let surveyState: SurveyState | null = null
 
     try {
-      const [ctx, cls, profile, favChefs, mentioned, archetype, survey] = (await Promise.race([
-        Promise.all([
-          timeRemyStage(stageLatencies, 'setup.context', () =>
-            loadRemyContext(currentPage, contextScope)
-          ),
-          timeRemyStage(stageLatencies, 'setup.classification', () => classifyIntent(message)),
-          timeRemyStage(stageLatencies, 'setup.profile', () =>
-            getCulinaryProfileForPrompt(user.tenantId!).catch(() => '')
-          ),
-          timeRemyStage(stageLatencies, 'setup.favorite_chefs', () =>
-            getFavoriteChefs().catch(() => [])
-          ),
-          timeRemyStage(stageLatencies, 'setup.entities', () =>
+      const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey] = (await Promise.race(
+        [
+          Promise.all([
+            loadRemyContext(currentPage),
+            classifyIntent(message),
+            loadRelevantMemories(message, undefined, undefined),
+            getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
+            getFavoriteChefs().catch(() => []),
             resolveMessageEntities(message).catch((err) => {
               console.error('[non-blocking] Entity resolution failed:', err)
               return []
-            })
-          ),
-          timeRemyStage(stageLatencies, 'setup.archetype', () =>
-            getRemyArchetype().catch(() => null)
-          ),
-          timeRemyStage(stageLatencies, 'setup.survey', () =>
+            }),
+            getRemyArchetype().catch(() => null),
             activeForm === 'remy-survey'
               ? getSurveyState().catch(() => null)
-              : Promise.resolve(null)
-          ),
-        ]),
-        setupTimeout,
-      ])) as [
+              : Promise.resolve(null),
+          ]),
+          setupTimeout,
+        ]
+      )) as [
         Awaited<ReturnType<typeof loadRemyContext>>,
         Awaited<ReturnType<typeof classifyIntent>>,
+        Awaited<ReturnType<typeof loadRelevantMemories>>,
         string,
         Awaited<ReturnType<typeof getFavoriteChefs>>,
         Awaited<ReturnType<typeof resolveMessageEntities>>,
@@ -594,10 +1497,7 @@ export async function POST(req: NextRequest) {
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
-      memories = await timeRemyStage(stageLatencies, 'setup.memories', () =>
-        loadRelevantMemories(message, classification.intent, getFirstMentionedClientName(mentioned))
-      )
-      stageLatencies['setup.total'] = Date.now() - setupStartedAt
+      memories = mems
       culinaryProfile = profile || undefined
       archetypeId = archetype
       surveyState = survey
@@ -608,8 +1508,6 @@ export async function POST(req: NextRequest) {
       }
     } catch (setupErr) {
       releaseInteractiveLock()
-      stageLatencies['request.total'] = Date.now() - requestStartedAt
-      recordRemyStageBatch(stageLatencies)
       const msg = setupErr instanceof Error ? setupErr.message : String(setupErr)
       const isOllama =
         msg.includes('Ollama') || msg.includes('timeout') || msg.includes('timed out')
@@ -618,8 +1516,8 @@ export async function POST(req: NextRequest) {
         encodeSSE({
           type: 'error',
           data: isOllama
-            ? 'Ollama is loading the AI model - this can take a minute on the first request. Hit retry and I should be ready!'
-            : sanitizeErrorForClient(setupErr, 'Setup failed - please try again in a moment.'),
+            ? 'Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!'
+            : sanitizeErrorForClient(setupErr, 'Setup failed — please try again in a moment.'),
         }),
         { headers: sseHeaders() }
       )
@@ -629,7 +1527,7 @@ export async function POST(req: NextRequest) {
     const surveyPromptSection =
       activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
 
-    //  Safety-critical fast-path: dietary/allergy queries -> command
+    // ─── Safety-critical fast-path: dietary/allergy queries → command ────
     // Allergy queries are safety-critical and MUST route through dietary.check
     // to return structured data. The LLM classifier sometimes misroutes these
     // as "question" intent, causing the LLM to answer without querying the DB.
@@ -638,124 +1536,26 @@ export async function POST(req: NextRequest) {
       classification = { ...classification, intent: 'command' }
     }
 
-    //  Financial context queries -> question path
+    // ─── Financial context queries → question path ─────────────
     // Payment/outstanding/invoice questions about clients are best answered by the
     // LLM from its full financial context, not by client.search which only returns
-    // name/tier/allergies. Override command -> question for these.
+    // name/tier/allergies. Override command → question for these.
     const financialQueryRegex =
       /(?:outstanding|payment|invoice|owe|balance|paid|unpaid|overdue|past due)/i
     if (classification.intent === 'command' && financialQueryRegex.test(message)) {
       classification = { ...classification, intent: 'question' }
     }
 
-    const clarification = getIntentClarificationMessage(message, classification)
-    if (clarification) {
-      releaseInteractiveLock()
-      const body =
-        encodeSSE({ type: 'intent', data: 'question' }) +
-        encodeSSE({ type: 'token', data: clarification }) +
-        encodeSSE({ type: 'done', data: null })
-      return new Response(body, { headers: sseHeaders() })
-    }
-
-    //  INSTANT ANSWER PATH (Formula > AI — skip Ollama entirely for simple facts)
-    // For simple factual questions where the answer is already in the loaded context,
-    // return an instant response without waiting 30-90s for Ollama.
-    if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context)
-      if (instant) {
-        releaseInteractiveLock()
-        stageLatencies['question.instant'] = 0
-        stageLatencies['request.total'] = Date.now() - requestStartedAt
-        recordRemyStageBatch(stageLatencies)
-        const encoder = new TextEncoder()
-        const stream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: instant.text })))
-            if (instant.navSuggestions && instant.navSuggestions.length > 0) {
-              controller.enqueue(
-                encoder.encode(encodeSSE({ type: 'nav', data: instant.navSuggestions }))
-              )
-            }
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
-            controller.close()
-          },
-        })
-        return new Response(stream, { headers: sseHeaders() })
-      }
-    }
-
-    //  COMMAND path
+    // ─── COMMAND path ────────────────────────────────────────────
     if (classification.intent === 'command') {
-      // Multi-step chain detection: split compound commands
-      const chainSteps = looksLikeChain(message) ? parseTaskChain(message) : null
-
-      if (chainSteps && chainSteps.length > 1) {
-        const chainStartedAt = Date.now()
-        // Execute each step sequentially, combining results
-        const allTasks: RemyTaskResult[] = []
-        const stepSummaries: string[] = []
-
-        for (let i = 0; i < chainSteps.length; i++) {
-          const stepRun = await runCommand(chainSteps[i])
-          if (stepRun.ollamaOffline) {
-            releaseInteractiveLock()
-            return new Response(
-              encodeSSE({
-                type: 'error',
-                data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
-              }),
-              { headers: sseHeaders() }
-            )
-          }
-          const stepTasks: RemyTaskResult[] = stepRun.results.map((r) => ({
-            taskId: r.taskId,
-            taskType: r.taskType,
-            tier: r.tier,
-            name: r.name ?? getTaskName(r.taskType),
-            status: r.status === 'running' ? 'done' : (r.status as RemyTaskResult['status']),
-            data: r.data,
-            error: r.error,
-            holdReason: r.holdReason,
-            preview: r.preview,
-          }))
-          allTasks.push(...stepTasks)
-          stepSummaries.push(`**Step ${i + 1}/${chainSteps.length}:** ${chainSteps[i]}`)
-        }
-
-        const chainHeader = `Handled **${chainSteps.length} steps**:\n\n${stepSummaries.join('\n')}\n\n`
-        const text = chainHeader + summarizeTaskResults(allTasks)
-
-        const encoder = new TextEncoder()
-        const stream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'command' })))
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: text })))
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: allTasks })))
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
-            controller.close()
-          },
-        })
-        releaseInteractiveLock()
-        stageLatencies['command.run'] = Date.now() - chainStartedAt
-        stageLatencies['request.total'] = Date.now() - requestStartedAt
-        recordRemyStageBatch(stageLatencies)
-        recordRemyMetric({ category: 'general' } as any).catch(() => {})
-        return new Response(stream, { headers: sseHeaders() })
-      }
-
-      // Single command (no chain)
-      const commandRun = await timeRemyStage(stageLatencies, 'command.run', () =>
-        runCommand(message)
-      )
+      const commandRun = await runCommand(message)
 
       if (commandRun.ollamaOffline) {
         releaseInteractiveLock()
         return new Response(
           encodeSSE({
             type: 'error',
-            data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
+            data: "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!",
           }),
           { headers: sseHeaders() }
         )
@@ -786,8 +1586,6 @@ export async function POST(req: NextRequest) {
         },
       })
       releaseInteractiveLock()
-      stageLatencies['request.total'] = Date.now() - requestStartedAt
-      recordRemyStageBatch(stageLatencies)
 
       // Record anonymous command metric (non-blocking)
       recordRemyMetric({
@@ -797,25 +1595,12 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    //  MIXED path
+    // ─── MIXED path ──────────────────────────────────────────────
     if (classification.intent === 'mixed') {
       const commandInput = classification.commandPart ?? message
       const questionInput = classification.questionPart ?? message
 
-      const [commandRun] = await Promise.all([
-        timeRemyStage(stageLatencies, 'mixed.command', () => runCommand(commandInput)),
-      ])
-
-      if (commandRun.ollamaOffline) {
-        releaseInteractiveLock()
-        return new Response(
-          encodeSSE({
-            type: 'error',
-            data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
-          }),
-          { headers: sseHeaders() }
-        )
-      }
+      const [commandRun] = await Promise.all([runCommand(commandInput)])
 
       const tasks: RemyTaskResult[] = (commandRun.results ?? []).map((r) => ({
         taskId: r.taskId,
@@ -830,9 +1615,8 @@ export async function POST(req: NextRequest) {
       }))
 
       const taskSummary = summarizeTaskResults(tasks)
-      const executionContext = buildExecutionContextForPrompt(commandInput, tasks)
 
-      // Stream the conversational part - same load-aware routing as question path
+      // Stream the conversational part — same load-aware routing as question path
       let mixedPrefer: 'auto' | 'pc' | 'pi' = 'auto'
       const mixedPcBusy = isSlotBusy('pc')
       const mixedPcSnap = getEndpointSnapshot('pc')
@@ -845,17 +1629,13 @@ export async function POST(req: NextRequest) {
         mixedPrefer = 'pi'
       }
 
-      const mixedEndpoint = await timeRemyStage(stageLatencies, 'mixed.route', () =>
-        routeForRemy({ preferEndpoint: mixedPrefer })
-      )
+      const mixedEndpoint = await routeForRemy({ preferEndpoint: mixedPrefer })
       if (!mixedEndpoint) {
         releaseInteractiveLock()
-        stageLatencies['request.total'] = Date.now() - requestStartedAt
-        recordRemyStageBatch(stageLatencies)
         return new Response(
           encodeSSE({
             type: 'error',
-            data: "I'm offline right now - no Ollama endpoints are reachable.",
+            data: "I'm offline right now — no Ollama endpoints are reachable.",
           }),
           { headers: sseHeaders() }
         )
@@ -873,31 +1653,24 @@ export async function POST(req: NextRequest) {
         sessionMinutes,
         activeForm,
         surveyPromptSection,
-        otherChannelDigest,
-        previousSessionTopics,
-        questionInput,
-        executionContext,
-        'mixed'
+        otherChannelDigest
       )
 
       // Warn if system prompt is large enough to risk silent truncation.
       // Without explicit num_ctx the model defaults to its native context
-      // window (~32k for qwen3-coder:30b). 16k chars ~ 4k tokens - safe,
+      // window (~32k for qwen3-coder:30b). 16k chars ≈ 4k tokens — safe,
       // but log a warning above 24k chars (~6k tokens) so we notice growth.
       if (systemPrompt.length > 24_000) {
         console.warn(
-          `[remy/stream] [ALERT] System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) - may be truncated by model context window`
+          `[remy/stream] ⚠️ System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) — may be truncated by model context window`
         )
       }
 
       const historyStr = formatConversationHistory(history)
-      const mixedUserMessage = `${historyStr}Chef: ${questionInput}
-
-Use the turn execution context above when answering. If it already answers the chef's question, lead with that answer naturally.`
+      const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         async start(controller) {
-          const mixedLlmStartedAt = Date.now()
           // Hard timeout: kill the Ollama call if it hangs
           const abortCtrl = new AbortController()
           const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
@@ -910,7 +1683,6 @@ Use the turn execution context above when answering. If it already answers the c
 
             let fullResponse = ''
             let usedMixedEndpoint = mixedEndpoint
-            const mixedThinkFilter = new ThinkingBlockFilter()
 
             // Try primary endpoint, failover if connection fails before any tokens
             try {
@@ -933,17 +1705,9 @@ Use the turn execution context above when answering. If it already answers the c
                 if (abortCtrl.signal.aborted) break
                 const token = chunk.message?.content ?? ''
                 if (token) {
-                  const filtered = mixedThinkFilter.process(token)
-                  if (filtered) {
-                    fullResponse += filtered
-                    controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                  }
+                  fullResponse += token
+                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
                 }
-              }
-              const flushed = mixedThinkFilter.flush()
-              if (flushed) {
-                fullResponse += flushed
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
               }
             } catch (primaryErr) {
               if (fullResponse.length > 0) throw primaryErr
@@ -954,10 +1718,9 @@ Use the turn execution context above when answering. If it already answers the c
                 throw primaryErr
 
               console.log(
-                `[remy] mixed: ${mixedEndpoint.endpointName} failed - falling back to ${fallback.endpointName}`
+                `[remy] mixed: ${mixedEndpoint.endpointName} failed — falling back to ${fallback.endpointName}`
               )
               usedMixedEndpoint = fallback
-              const mixedFallbackFilter = new ThinkingBlockFilter()
               const fallbackOllama = new Ollama({ host: fallback.host })
               const response: any = await fallbackOllama.chat({
                 model: fallback.model,
@@ -977,25 +1740,17 @@ Use the turn execution context above when answering. If it already answers the c
                 if (abortCtrl.signal.aborted) break
                 const token = chunk.message?.content ?? ''
                 if (token) {
-                  const filtered = mixedFallbackFilter.process(token)
-                  if (filtered) {
-                    fullResponse += filtered
-                    controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                  }
+                  fullResponse += token
+                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
                 }
-              }
-              const flushed = mixedFallbackFilter.flush()
-              if (flushed) {
-                fullResponse += flushed
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
               }
             }
 
             // Parse nav suggestions from the end of the response
             const navSuggestions = extractNavSuggestions(fullResponse)
 
-            // Safety net: if the conversational stream returned nothing, fall back to the task summary.
-            if (!fullResponse.trim() && taskSummary) {
+            // Append task summary
+            if (taskSummary) {
               controller.enqueue(
                 encoder.encode(encodeSSE({ type: 'token', data: `\n\n${taskSummary}` }))
               )
@@ -1017,9 +1772,6 @@ Use the turn execution context above when answering. If it already answers the c
               encoder.encode(encodeSSE({ type: 'error', data: sanitizeErrorForClient(err) }))
             )
           } finally {
-            stageLatencies['mixed.llm'] = Date.now() - mixedLlmStartedAt
-            stageLatencies['request.total'] = Date.now() - requestStartedAt
-            recordRemyStageBatch(stageLatencies)
             clearTimeout(timeout)
             req.signal.removeEventListener('abort', onDisconnect)
             releaseInteractiveLock()
@@ -1031,8 +1783,8 @@ Use the turn execution context above when answering. If it already answers the c
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    //  QUESTION path (default) - STREAMED with load-aware routing + failover
-    //  Smart endpoint selection (load-aware)
+    // ─── QUESTION path (default) — STREAMED with load-aware routing + failover ──
+    // ─── Smart endpoint selection (load-aware) ──────────────────
     // If the PC is mid-background-task or actively generating, prefer the Pi
     // to avoid GPU contention. Falls back gracefully if Pi is unavailable.
     let preferEndpoint: 'auto' | 'pc' | 'pi' = 'auto'
@@ -1047,24 +1799,17 @@ Use the turn execution context above when answering. If it already answers the c
       preferEndpoint = 'pi'
     }
 
-    const endpoint = await timeRemyStage(stageLatencies, 'question.route', () =>
-      routeForRemy({ preferEndpoint })
-    )
+    const endpoint = await routeForRemy({ preferEndpoint })
     if (!endpoint) {
       releaseInteractiveLock()
-      stageLatencies['request.total'] = Date.now() - requestStartedAt
-      recordRemyStageBatch(stageLatencies)
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm offline right now - no Ollama endpoints are reachable. Start Ollama and try again!",
+          data: "I'm offline right now — no Ollama endpoints are reachable. Start Ollama and try again!",
         }),
         { headers: sseHeaders() }
       )
     }
-
-    // Phase 5B: Context scope already determined before parallel load (line ~531)
-    // contextScope is reused here for prompt building
 
     const systemPrompt = buildRemySystemPrompt(
       context,
@@ -1078,11 +1823,7 @@ Use the turn execution context above when answering. If it already answers the c
       sessionMinutes,
       activeForm,
       surveyPromptSection,
-      otherChannelDigest,
-      previousSessionTopics,
-      message,
-      null,
-      'question'
+      otherChannelDigest
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`
@@ -1090,7 +1831,6 @@ Use the turn execution context above when answering. If it already answers the c
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
-        const questionLlmStartedAt = Date.now()
         // Hard timeout: kill the Ollama call if it hangs
         const abortCtrl = new AbortController()
         const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
@@ -1103,7 +1843,6 @@ Use the turn execution context above when answering. If it already answers the c
 
           let fullResponse = ''
           let usedEndpoint = endpoint
-          const thinkFilter = new ThinkingBlockFilter()
 
           // Try primary endpoint, failover to secondary if connection fails
           try {
@@ -1126,18 +1865,9 @@ Use the turn execution context above when answering. If it already answers the c
               if (abortCtrl.signal.aborted) break
               const token = chunk.message?.content ?? ''
               if (token) {
-                const filtered = thinkFilter.process(token)
-                if (filtered) {
-                  fullResponse += filtered
-                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                }
+                fullResponse += token
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
               }
-            }
-            // Flush any remaining buffered content
-            const flushed = thinkFilter.flush()
-            if (flushed) {
-              fullResponse += flushed
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
             }
           } catch (primaryErr) {
             // Only failover if no tokens were sent (connection failure, not mid-stream)
@@ -1148,10 +1878,9 @@ Use the turn execution context above when answering. If it already answers the c
             if (!fallback || fallback.endpointName === endpoint.endpointName) throw primaryErr
 
             console.log(
-              `[remy] ${endpoint.endpointName} failed - falling back to ${fallback.endpointName}`
+              `[remy] ${endpoint.endpointName} failed — falling back to ${fallback.endpointName}`
             )
             usedEndpoint = fallback
-            const fallbackFilter = new ThinkingBlockFilter()
             const fallbackOllama = new Ollama({ host: fallback.host })
             const response: any = await fallbackOllama.chat({
               model: fallback.model,
@@ -1171,17 +1900,9 @@ Use the turn execution context above when answering. If it already answers the c
               if (abortCtrl.signal.aborted) break
               const token = chunk.message?.content ?? ''
               if (token) {
-                const filtered = fallbackFilter.process(token)
-                if (filtered) {
-                  fullResponse += filtered
-                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                }
+                fullResponse += token
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
               }
-            }
-            const flushed = fallbackFilter.flush()
-            if (flushed) {
-              fullResponse += flushed
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
             }
           }
 
@@ -1212,7 +1933,7 @@ Use the turn execution context above when answering. If it already answers the c
               encodeSSE({
                 type: 'error',
                 data: isOllamaDown
-                  ? "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!"
+                  ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
                   : sanitizeErrorForClient(err),
               })
             )
@@ -1225,9 +1946,6 @@ Use the turn execution context above when answering. If it already answers the c
             modelVersion: endpoint.model,
           }).catch(() => {})
         } finally {
-          stageLatencies['question.llm'] = Date.now() - questionLlmStartedAt
-          stageLatencies['request.total'] = Date.now() - requestStartedAt
-          recordRemyStageBatch(stageLatencies)
           clearTimeout(timeout)
           req.signal.removeEventListener('abort', onDisconnect)
           releaseInteractiveLock()
@@ -1240,23 +1958,47 @@ Use the turn execution context above when answering. If it already answers the c
   } catch (err) {
     // Release lock on any error that prevents streaming from starting
     releaseInteractiveLock()
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[remy] Outer route error:', msg)
+    console.error('[remy] Outer route error:', err instanceof Error ? err.message : err)
+    return new Response(encodeSSE({ type: 'error', data: sanitizeErrorForClient(err) }), {
+      headers: sseHeaders(),
+    })
+  }
+}
 
-    if (msg.includes('Unauthorized')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-    if (msg.includes('Account suspended')) {
-      return new Response(JSON.stringify({ error: 'Account suspended' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+function sseHeaders(): HeadersInit {
+  return {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  }
+}
 
-    return sseErrorResponse(sanitizeErrorForClient(err), 500)
+/**
+ * Hard timeout for Ollama streaming calls.
+ * 3 minutes — the 30b MoE model with partial GPU offload (9/49 layers)
+ * regularly takes 40-74s per response. Under load or with long context,
+ * it can exceed 90s. This only fires if Ollama is truly stuck.
+ */
+const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min — 30b MoE model on 6GB VRAM can take 40-90s per response
+
+/**
+ * Max tokens for streaming conversational responses.
+ * Prevents Ollama from generating megabytes of output and ballooning memory.
+ * 2048 tokens ≈ ~1500 words — more than enough for a chat reply.
+ */
+const OLLAMA_STREAM_MAX_TOKENS = 2048
+
+function extractNavSuggestions(
+  text: string
+): Array<{ label: string; href: string; description?: string }> {
+  const navMatch = text.match(/NAV_SUGGESTIONS:\s*(\[[\s\S]*\])/)
+  if (!navMatch) return []
+  try {
+    return JSON.parse(navMatch[1])
+  } catch {
+    return []
   }
 }

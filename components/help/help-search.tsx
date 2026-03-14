@@ -4,7 +4,7 @@
 // Shows dropdown results as user types. No external API calls.
 
 import { useState } from 'react'
-import { Search } from '@/components/ui/icons'
+import { Search } from 'lucide-react'
 
 const HELP_ARTICLES = [
   {

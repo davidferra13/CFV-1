@@ -90,7 +90,7 @@ const PRO_CATEGORY_ORDER: ProFeature['category'][] = [
 ]
 
 const PRO_CATEGORY_LABELS: Record<ProFeature['category'], string> = {
-  ai: 'Drafting and workflow tools',
+  ai: 'AI and assistant workflows',
   analytics: 'Analytics and reporting',
   finance: 'Advanced finance workflows',
   marketing: 'Marketing and outreach',
@@ -118,35 +118,35 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'free',
     name: 'Free',
-    tag: 'Steady foundation',
+    tag: 'Start here',
     price: '$0',
     cadence: 'forever',
-    summary: 'Core workflow for inquiries, events, menus, invoices, and payments.',
-    ctaLabel: 'Get started',
+    summary: 'Core operating system for solo chefs getting organized.',
+    ctaLabel: 'Start Free',
     ctaHref: '/auth/signup',
     points: [
-      'Track inquiries, events, clients, recipes, and payments',
-      'Unlimited records, no usage caps',
+      'Core modules: Dashboard, Pipeline, Events, Culinary, Clients, Finance',
+      'Unlimited inquiries, quotes, events, and client records',
       'Client portal, booking pages, invoices, and payment collection',
-      'No payment details needed',
+      'No credit card required to start',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    tag: 'For busy calendars',
+    tag: 'Most popular',
     price: `$${PRO_PRICE_MONTHLY}`,
     cadence: 'per month',
-    badge: `Try Pro for ${PRO_TRIAL_DAYS} days`,
-    summary: 'Extra drafting, reporting, and outreach tools when the volume picks up.',
-    ctaLabel: 'Try Pro',
+    badge: `${PRO_TRIAL_DAYS}-day free trial`,
+    summary: 'Automation and growth functions for chefs who need leverage.',
+    ctaLabel: 'Start Pro Trial',
     ctaHref: '/auth/signup',
     highlighted: true,
     points: [
-      'Everything in Free, plus Remy support for drafts and quick lookups',
-      'Marketing campaigns, custom reports, and client insights',
-      'Connect to tools you already use (Zapier, external systems)',
-      'Best for chefs running frequent events or growing their client base',
+      'Everything in Free plus AI assistant access and advanced automations',
+      'Commerce engine, marketing tools, and custom reporting',
+      'Integrations layer for workflows like Zapier and external systems',
+      'Best fit for operators running frequent volume or complex service models',
     ],
   },
   {
@@ -154,56 +154,56 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: 'Scale',
     tag: 'Pilot',
     price: 'Custom',
-    cadence: "let's talk",
-    summary: 'For teams or multi-chef operations that need hands-on setup help.',
-    ctaLabel: 'Talk to David',
+    cadence: 'contact sales',
+    summary: 'For teams and multi-location operators that need implementation support.',
+    ctaLabel: 'Talk to Sales',
     ctaHref: '/contact',
     points: [
       'Everything in Pro',
-      'Help migrating from spreadsheets, other tools, or paper',
-      'Hands-on setup and workflow planning',
-      'Reserved for pilot customers right now',
+      'Migration and rollout planning across chefs or locations',
+      'Hands-on implementation support for workflows and change management',
+      'Reserved for pilot customers today',
     ],
-    finePrint: 'Scale is a guided onboarding package with direct support, not a self-serve tier.',
+    finePrint: 'Scale is a guided onboarding package, not a third self-serve checkout flow yet.',
   },
 ]
 
 export const FUNCTION_BUCKETS: FunctionBucket[] = [
   {
     id: 'foundation',
-    label: 'Free: the essentials',
-    rule: 'If you need it to run your business week to week, it is free.',
+    label: 'Foundation functions (Free)',
+    rule: 'If a solo chef needs it weekly to run the business, it belongs in Free.',
     items: [
       ...FREE_MODULE_LABELS,
-      'Full event workflow from inquiry to payment',
-      'Client records, recipes, menus, invoices, and expense tracking',
+      'Core event lifecycle and quote workflow',
+      'Client records, menu/recipe management, and baseline finance controls',
     ],
   },
   {
     id: 'acceleration',
-    label: 'Pro: save time and grow',
-    rule: 'If it saves you hours of admin or helps you get more clients, it is Pro.',
+    label: 'Acceleration functions (Pro)',
+    rule: 'If the function saves major time or unlocks growth beyond baseline operations, it belongs in Pro.',
     items: [...PRO_MODULE_LABELS, ...ENFORCED_PRO_FEATURES.map((feature) => feature.label)],
   },
   {
     id: 'scale',
-    label: 'Scale: hands-on help',
-    rule: 'If you need someone to help you set up and migrate, that is Scale.',
+    label: 'Scale functions (Scale pilot)',
+    rule: 'If success depends on multi-seat rollout, migration, or process coaching, bundle it in Scale.',
     items: [
-      'Help moving from spreadsheets or other tools',
-      'Setup and training for teams',
-      'Ongoing support during the transition',
+      'Multi-chef onboarding and workflow migration',
+      'Implementation planning for larger operating teams',
+      'Governance and rollout support while new processes are adopted',
     ],
   },
 ]
 
 export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
   {
-    label: 'What every plan includes',
+    label: 'Core business operations',
     rows: [
       {
-        capability: 'Inquiries, quotes, events, clients, recipes, invoices, payments',
-        detail: 'The full workflow from first contact to getting paid. No usage caps.',
+        capability: 'Inquiries, quotes, and event lifecycle',
+        detail: 'Run the full lead-to-booking workflow with no hard usage caps.',
         values: {
           free: { state: 'included', note: 'Included' },
           pro: { state: 'included', note: 'Included' },
@@ -212,63 +212,89 @@ export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
       },
       {
         capability: 'Client portal and booking pages',
-        detail: 'Your clients can view proposals, approve quotes, and pay online.',
+        detail: 'Share proposals, collect approvals, and centralize client communication.',
         values: {
           free: { state: 'included', note: 'Included' },
           pro: { state: 'included', note: 'Included' },
           scale: { state: 'included', note: 'Included' },
         },
       },
-    ],
-  },
-  {
-    label: 'What Pro adds',
-    rows: [
       {
-        capability: 'Remy support',
-        detail:
-          'Email drafts, profit breakdowns, client lookups. You review everything before it sends.',
+        capability: 'Culinary and finance core',
+        detail: 'Menus, recipes, food costing, invoices, payment tracking, and ledger tools.',
         values: {
-          free: { state: 'not_included', note: 'Pro only' },
+          free: { state: 'included', note: 'Included' },
           pro: { state: 'included', note: 'Included' },
           scale: { state: 'included', note: 'Included' },
         },
       },
       {
-        capability: 'Marketing and outreach',
-        detail: 'Campaigns, follow-up sequences, and referral tools.',
+        capability: 'Module personalization',
+        detail: 'Turn product areas on/off in settings to match your workflow.',
         values: {
-          free: { state: 'not_included', note: 'Pro only' },
-          pro: { state: 'included', note: 'Included' },
-          scale: { state: 'included', note: 'Included' },
-        },
-      },
-      {
-        capability: 'Custom reports',
-        detail: 'See trends, top clients, revenue by month, and margins over time.',
-        values: {
-          free: { state: 'not_included', note: 'Pro only' },
-          pro: { state: 'included', note: 'Included' },
-          scale: { state: 'included', note: 'Included' },
-        },
-      },
-      {
-        capability: 'Integrations (Zapier, external tools)',
-        detail: 'Connect ChefFlow to the other tools you already use.',
-        values: {
-          free: { state: 'not_included', note: 'Pro only' },
-          pro: { state: 'included', note: 'Included' },
-          scale: { state: 'included', note: 'Included' },
+          free: { state: 'limited', note: 'Core module set' },
+          pro: { state: 'included', note: 'All modules' },
+          scale: { state: 'included', note: 'All modules + rollout help' },
         },
       },
     ],
   },
   {
-    label: 'What Scale adds',
+    label: 'Automation and growth',
     rows: [
       {
-        capability: 'Hands-on setup and migration help',
-        detail: 'We help you move from spreadsheets, other tools, or paper to ChefFlow.',
+        capability: 'Remy AI assistant',
+        detail: 'AI drafting and assistant workflows for faster execution.',
+        values: {
+          free: { state: 'not_included', note: 'Pro only' },
+          pro: { state: 'included', note: 'Included' },
+          scale: { state: 'included', note: 'Included' },
+        },
+      },
+      {
+        capability: 'Marketing and custom reports',
+        detail: 'Campaign tooling and custom reporting used for growth loops.',
+        values: {
+          free: { state: 'not_included', note: 'Pro only' },
+          pro: { state: 'included', note: 'Included' },
+          scale: { state: 'included', note: 'Included' },
+        },
+      },
+      {
+        capability: 'Integrations and automations',
+        detail: 'Connect external systems and automate data movement.',
+        values: {
+          free: { state: 'not_included', note: 'Pro only' },
+          pro: { state: 'included', note: 'Included' },
+          scale: { state: 'included', note: 'Included' },
+        },
+      },
+      {
+        capability: 'Commerce engine',
+        detail: 'Register, products, reconciliation, and commerce reporting.',
+        values: {
+          free: { state: 'not_included', note: 'Pro only' },
+          pro: { state: 'included', note: 'Included' },
+          scale: { state: 'included', note: 'Included' },
+        },
+      },
+      {
+        capability: 'Protection and professional workflows',
+        detail: 'Compliance, continuity, and career development toolsets.',
+        values: {
+          free: { state: 'not_included', note: 'Pro only' },
+          pro: { state: 'included', note: 'Included' },
+          scale: { state: 'included', note: 'Included' },
+        },
+      },
+    ],
+  },
+  {
+    label: 'Scale services',
+    rows: [
+      {
+        capability: 'Multi-chef rollout planning',
+        detail: 'Implementation design for teams adopting ChefFlow together.',
         values: {
           free: { state: 'not_included', note: 'Not included' },
           pro: { state: 'not_included', note: 'Not included' },
@@ -276,8 +302,8 @@ export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
         },
       },
       {
-        capability: 'Multi-chef team onboarding',
-        detail: 'Setup and training for teams adopting ChefFlow together.',
+        capability: 'Migration and process coaching',
+        detail: 'High-touch onboarding for replacing fragmented tools and legacy workflows.',
         values: {
           free: { state: 'not_included', note: 'Not included' },
           pro: { state: 'not_included', note: 'Not included' },
@@ -290,31 +316,26 @@ export const PRICING_COMPARISON_SECTIONS: PricingComparisonSection[] = [
 
 export const PRICING_FAQS = [
   {
-    question: 'Do I need payment details to start?',
-    answer: 'No. You can start on Free without entering a card.',
+    question: 'Do I need a credit card to start?',
+    answer: 'No. You can start on Free without entering card details.',
   },
   {
     question: 'What happens after the Pro trial ends?',
-    answer: `After ${PRO_TRIAL_DAYS} days, Pro continues at $${PRO_PRICE_MONTHLY}/month. You can cancel anytime before that and move back to Free.`,
+    answer: `After ${PRO_TRIAL_DAYS} days, Pro continues at $${PRO_PRICE_MONTHLY}/month unless you cancel before renewal.`,
   },
   {
-    question: 'Can I switch between Free and Pro?',
+    question: 'Can I switch between Free and Pro later?',
     answer:
-      'Yes. Upgrade when you need the extra tools, downgrade whenever you want. Your data stays either way.',
+      'Yes. Upgrade when you need Pro functions and downgrade when you need only core workflows.',
   },
   {
-    question: 'Does ChefFlow charge transaction fees?',
+    question: 'Do you charge extra transaction fees?',
     answer:
-      'No. ChefFlow does not take a cut of your payments. Stripe charges its standard processing fee, which goes to Stripe, not us.',
+      'ChefFlow does not add its own transaction surcharge. Your payment processor may still apply standard processing fees.',
   },
   {
-    question: 'What is Scale?',
+    question: 'What is the Scale plan?',
     answer:
-      'Scale is for chefs or teams who want hands-on help setting up. We help you migrate from whatever you use now and get everything configured. Right now it is a pilot program.',
-  },
-  {
-    question: 'Who built this?',
-    answer:
-      'ChefFlow is built by a working private chef. Not a software company that researched chefs. Someone who lives this.',
+      'Scale is a pilot package for teams that need rollout help, migration planning, and implementation support.',
   },
 ]

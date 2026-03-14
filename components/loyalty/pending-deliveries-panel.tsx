@@ -211,7 +211,7 @@ export function PendingDeliveriesPanel({
           <CardTitle className="text-amber-900">Pending Reward Deliveries</CardTitle>
           <Badge variant="warning">{deliveries.length}</Badge>
         </div>
-        <p className="text-sm text-amber-200 mt-1">
+        <p className="text-sm text-amber-700 mt-1">
           These rewards have been redeemed and are waiting to be honoured at a client&apos;s next
           event.
         </p>

@@ -22,7 +22,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { searchWeb, readWebPage } from '@/lib/ai/remy-web-actions'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import {
   SCRUB_SYSTEM_PROMPT,
   buildScrubUserPrompt,
@@ -510,11 +510,12 @@ export async function scrubProspects(query: string) {
 
     let parsedResult: z.infer<typeof ProspectArrayFromAI>
     try {
-      parsedResult = (
-        await dispatchPrivate(wrappedPrompt, buildScrubUserPrompt(query), ProspectArrayFromAI, {
-          timeoutMs: PHASE_1_TIMEOUT_MS,
-        })
-      ).result
+      parsedResult = await parseWithOllama(
+        wrappedPrompt,
+        buildScrubUserPrompt(query),
+        ProspectArrayFromAI,
+        { timeoutMs: PHASE_1_TIMEOUT_MS }
+      )
     } catch (err) {
       // Phase 1 failure = real failure, no prospects to show
       await supabase
@@ -830,27 +831,25 @@ export async function scrubProspects(query: string) {
         }
         if (fullProspect.verified) enrichedLines.push('Verified: confirmed to exist via web search')
 
-        const approachResult = (
-          await dispatchPrivate(
-            APPROACH_SYSTEM_PROMPT,
-            buildApproachUserPrompt({
-              name: fullProspect.name,
-              category: fullProspect.category,
-              description: fullProspect.description,
-              city: fullProspect.city,
-              state: fullProspect.state,
-              annualEventsEstimate: fullProspect.annual_events_estimate,
-              avgEventBudget: fullProspect.avg_event_budget,
-              eventTypesHosted: fullProspect.event_types_hosted,
-              competitorsPresent: fullProspect.competitors_present,
-              luxuryIndicators: fullProspect.luxury_indicators,
-              enrichedDetails: enrichedLines.length > 0 ? enrichedLines.join('\n') : null,
-              newsIntel: fullProspect.news_intel,
-            }),
-            ApproachFromAI,
-            { modelTier: 'fast', timeoutMs: 45_000 }
-          )
-        ).result
+        const approachResult = await parseWithOllama(
+          APPROACH_SYSTEM_PROMPT,
+          buildApproachUserPrompt({
+            name: fullProspect.name,
+            category: fullProspect.category,
+            description: fullProspect.description,
+            city: fullProspect.city,
+            state: fullProspect.state,
+            annualEventsEstimate: fullProspect.annual_events_estimate,
+            avgEventBudget: fullProspect.avg_event_budget,
+            eventTypesHosted: fullProspect.event_types_hosted,
+            competitorsPresent: fullProspect.competitors_present,
+            luxuryIndicators: fullProspect.luxury_indicators,
+            enrichedDetails: enrichedLines.length > 0 ? enrichedLines.join('\n') : null,
+            newsIntel: fullProspect.news_intel,
+          }),
+          ApproachFromAI,
+          { modelTier: 'fast', timeoutMs: 45_000 }
+        )
 
         await supabase
           .from('prospects')
@@ -912,29 +911,27 @@ export async function scrubProspects(query: string) {
         if (fullProspect.phone) enrichedLines.push(`Phone: ${fullProspect.phone}`)
         if (fullProspect.email) enrichedLines.push(`Email: ${fullProspect.email}`)
 
-        const emailResult = (
-          await dispatchPrivate(
-            COLD_EMAIL_SYSTEM_PROMPT,
-            buildColdEmailPrompt({
-              name: fullProspect.name,
-              category: fullProspect.category,
-              prospectType: fullProspect.prospect_type,
-              description: fullProspect.description,
-              city: fullProspect.city,
-              state: fullProspect.state,
-              contactPerson: fullProspect.contact_person,
-              contactTitle: fullProspect.contact_title,
-              eventTypesHosted: fullProspect.event_types_hosted,
-              luxuryIndicators: fullProspect.luxury_indicators,
-              talkingPoints: fullProspect.talking_points,
-              approachStrategy: fullProspect.approach_strategy,
-              newsIntel: fullProspect.news_intel,
-              enrichedDetails: enrichedLines.length > 0 ? enrichedLines.join('\n') : null,
-            }),
-            ColdEmailFromAI,
-            { modelTier: 'fast', timeoutMs: 45_000 }
-          )
-        ).result
+        const emailResult = await parseWithOllama(
+          COLD_EMAIL_SYSTEM_PROMPT,
+          buildColdEmailPrompt({
+            name: fullProspect.name,
+            category: fullProspect.category,
+            prospectType: fullProspect.prospect_type,
+            description: fullProspect.description,
+            city: fullProspect.city,
+            state: fullProspect.state,
+            contactPerson: fullProspect.contact_person,
+            contactTitle: fullProspect.contact_title,
+            eventTypesHosted: fullProspect.event_types_hosted,
+            luxuryIndicators: fullProspect.luxury_indicators,
+            talkingPoints: fullProspect.talking_points,
+            approachStrategy: fullProspect.approach_strategy,
+            newsIntel: fullProspect.news_intel,
+            enrichedDetails: enrichedLines.length > 0 ? enrichedLines.join('\n') : null,
+          }),
+          ColdEmailFromAI,
+          { modelTier: 'fast', timeoutMs: 45_000 }
+        )
 
         const draftEmail = `Subject: ${emailResult.subject}\n\n${emailResult.body}`
         await supabase.from('prospects').update({ draft_email: draftEmail }).eq('id', prospect.id)
@@ -1104,27 +1101,25 @@ export async function reEnrichProspect(prospectId: string) {
 
   // Step 4: Approach strategy (with news intel)
   try {
-    const approachResult = (
-      await dispatchPrivate(
-        APPROACH_SYSTEM_PROMPT,
-        buildApproachUserPrompt({
-          name: prospect.name,
-          category: prospect.category,
-          description: prospect.description,
-          city: prospect.city,
-          state: prospect.state,
-          annualEventsEstimate: prospect.annual_events_estimate,
-          avgEventBudget: prospect.avg_event_budget,
-          eventTypesHosted: prospect.event_types_hosted,
-          competitorsPresent: prospect.competitors_present,
-          luxuryIndicators: prospect.luxury_indicators,
-          enrichedDetails: enrichedDetailsStr,
-          newsIntel: currentNewsIntel,
-        }),
-        ApproachFromAI,
-        { modelTier: 'fast', timeoutMs: 45_000 }
-      )
-    ).result
+    const approachResult = await parseWithOllama(
+      APPROACH_SYSTEM_PROMPT,
+      buildApproachUserPrompt({
+        name: prospect.name,
+        category: prospect.category,
+        description: prospect.description,
+        city: prospect.city,
+        state: prospect.state,
+        annualEventsEstimate: prospect.annual_events_estimate,
+        avgEventBudget: prospect.avg_event_budget,
+        eventTypesHosted: prospect.event_types_hosted,
+        competitorsPresent: prospect.competitors_present,
+        luxuryIndicators: prospect.luxury_indicators,
+        enrichedDetails: enrichedDetailsStr,
+        newsIntel: currentNewsIntel,
+      }),
+      ApproachFromAI,
+      { modelTier: 'fast', timeoutMs: 45_000 }
+    )
 
     enrichUpdates.talking_points = approachResult.talkingPoints
     enrichUpdates.approach_strategy = approachResult.approachStrategy
@@ -1135,30 +1130,27 @@ export async function reEnrichProspect(prospectId: string) {
   // Step 5: Cold email draft
   try {
     await sleep(APPROACH_COOLDOWN_MS)
-    const emailResult = (
-      await dispatchPrivate(
-        COLD_EMAIL_SYSTEM_PROMPT,
-        buildColdEmailPrompt({
-          name: prospect.name,
-          category: prospect.category,
-          prospectType: prospect.prospect_type,
-          description: prospect.description,
-          city: prospect.city,
-          state: prospect.state,
-          contactPerson: prospect.contact_person,
-          contactTitle: prospect.contact_title,
-          eventTypesHosted: prospect.event_types_hosted,
-          luxuryIndicators: prospect.luxury_indicators,
-          talkingPoints: (enrichUpdates.talking_points as string) ?? prospect.talking_points,
-          approachStrategy:
-            (enrichUpdates.approach_strategy as string) ?? prospect.approach_strategy,
-          newsIntel: currentNewsIntel,
-          enrichedDetails: enrichedDetailsStr,
-        }),
-        ColdEmailFromAI,
-        { modelTier: 'fast', timeoutMs: 45_000 }
-      )
-    ).result
+    const emailResult = await parseWithOllama(
+      COLD_EMAIL_SYSTEM_PROMPT,
+      buildColdEmailPrompt({
+        name: prospect.name,
+        category: prospect.category,
+        prospectType: prospect.prospect_type,
+        description: prospect.description,
+        city: prospect.city,
+        state: prospect.state,
+        contactPerson: prospect.contact_person,
+        contactTitle: prospect.contact_title,
+        eventTypesHosted: prospect.event_types_hosted,
+        luxuryIndicators: prospect.luxury_indicators,
+        talkingPoints: (enrichUpdates.talking_points as string) ?? prospect.talking_points,
+        approachStrategy: (enrichUpdates.approach_strategy as string) ?? prospect.approach_strategy,
+        newsIntel: currentNewsIntel,
+        enrichedDetails: enrichedDetailsStr,
+      }),
+      ColdEmailFromAI,
+      { modelTier: 'fast', timeoutMs: 45_000 }
+    )
     enrichUpdates.draft_email = `Subject: ${emailResult.subject}\n\n${emailResult.body}`
   } catch (err) {
     console.warn(`[re-enrich] Email draft failed for ${prospect.name}:`, err)
@@ -1351,18 +1343,16 @@ export async function competitorIntelScrub(region: string) {
           COMPETITOR_INTEL_SYSTEM_PROMPT +
           '\n\nIMPORTANT: Wrap your output in a JSON object with key "prospects" containing the array.'
 
-        const result = (
-          await dispatchPrivate(
-            wrappedPrompt,
-            buildCompetitorIntelPrompt({
-              competitorName: competitor.name,
-              websiteContent: competitor.content,
-              region,
-            }),
-            ProspectArrayFromAI,
-            { timeoutMs: 60_000 }
-          )
-        ).result
+        const result = await parseWithOllama(
+          wrappedPrompt,
+          buildCompetitorIntelPrompt({
+            competitorName: competitor.name,
+            websiteContent: competitor.content,
+            region,
+          }),
+          ProspectArrayFromAI,
+          { timeoutMs: 60_000 }
+        )
 
         for (const p of result.prospects) {
           allExtractedProspects.push(p)
@@ -1576,25 +1566,23 @@ export async function lookalikeProspect(sourceProspectId: string) {
 
     let parsedResult: z.infer<typeof ProspectArrayFromAI>
     try {
-      parsedResult = (
-        await dispatchPrivate(
-          wrappedPrompt,
-          buildLookalikePrompt({
-            name: source.name,
-            category: source.category,
-            prospectType: source.prospect_type,
-            city: source.city,
-            state: source.state,
-            region: source.region,
-            avgEventBudget: source.avg_event_budget,
-            eventTypesHosted: source.event_types_hosted,
-            luxuryIndicators: source.luxury_indicators,
-            description: source.description,
-          }),
-          ProspectArrayFromAI,
-          { timeoutMs: PHASE_1_TIMEOUT_MS }
-        )
-      ).result
+      parsedResult = await parseWithOllama(
+        wrappedPrompt,
+        buildLookalikePrompt({
+          name: source.name,
+          category: source.category,
+          prospectType: source.prospect_type,
+          city: source.city,
+          state: source.state,
+          region: source.region,
+          avgEventBudget: source.avg_event_budget,
+          eventTypesHosted: source.event_types_hosted,
+          luxuryIndicators: source.luxury_indicators,
+          description: source.description,
+        }),
+        ProspectArrayFromAI,
+        { timeoutMs: PHASE_1_TIMEOUT_MS }
+      )
     } catch {
       await supabase
         .from('prospect_scrub_sessions')

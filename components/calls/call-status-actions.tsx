@@ -30,7 +30,7 @@ export function CallStatusActions({ call }: { call: ScheduledCall }) {
           variant="secondary"
           disabled={isPending}
           onClick={() => transition('confirmed')}
-          className="border-green-300 text-green-200 hover:bg-green-950"
+          className="border-green-300 text-green-700 hover:bg-green-950"
         >
           Mark confirmed
         </Button>

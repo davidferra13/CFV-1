@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Bot,
+  Sparkles,
   ChevronRight,
   ChevronLeft,
   Loader2,
@@ -23,7 +23,7 @@ import {
   DollarSign,
   Utensils,
   AlertCircle,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DraftReviewCard } from './draft-review-card'
@@ -405,7 +405,7 @@ export function PushDinnerBuilder() {
                   step === s.num
                     ? 'bg-brand-600 text-white'
                     : s.num < step
-                      ? 'bg-green-900 text-green-200 hover:bg-green-200 cursor-pointer'
+                      ? 'bg-green-900 text-green-700 hover:bg-green-200 cursor-pointer'
                       : 'bg-stone-800 text-stone-400 cursor-not-allowed'
                 }`}
             >
@@ -531,7 +531,7 @@ export function PushDinnerBuilder() {
           <div className="border border-stone-700 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-brand-600" />
+                <Sparkles className="w-4 h-4 text-brand-600" />
                 <span className="text-sm font-medium text-stone-300">Dinner Pitch</span>
                 <Badge variant={conceptDraft ? 'warning' : 'info'}>
                   {conceptDraft ? 'Draft' : 'Auto'}
@@ -547,7 +547,7 @@ export function PushDinnerBuilder() {
                   {conceptLoading ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
-                    <Bot className="w-3 h-3" />
+                    <Sparkles className="w-3 h-3" />
                   )}
                   {conceptLoading ? 'Drafting...' : 'Auto Draft'}
                 </Button>
@@ -820,8 +820,8 @@ export function PushDinnerBuilder() {
             <div className="bg-amber-950 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-200">Ollama is not running</p>
-                <p className="text-xs text-amber-200 mt-0.5">
+                <p className="text-sm font-medium text-amber-800">Ollama is not running</p>
+                <p className="text-xs text-amber-700 mt-0.5">
                   Start Ollama to generate personalised drafts. Or write each message manually below
                   — click Edit on any card.
                 </p>
@@ -843,7 +843,7 @@ export function PushDinnerBuilder() {
               {draftsLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Bot className="w-3.5 h-3.5" />
+                <Sparkles className="w-3.5 h-3.5" />
               )}
               {draftsLoading ? 'Generating...' : 'Generate All Drafts'}
             </Button>

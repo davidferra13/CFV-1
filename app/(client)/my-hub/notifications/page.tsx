@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { getHubUnreadCounts } from '@/lib/hub/notification-actions'

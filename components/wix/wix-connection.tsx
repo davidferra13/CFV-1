@@ -228,7 +228,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
                           <button
                             onClick={() => handleRetry(sub.id)}
                             disabled={retrying === sub.id}
-                            className="text-blue-600 hover:text-blue-200 underline"
+                            className="text-blue-600 hover:text-blue-800 underline"
                           >
                             {retrying === sub.id ? '...' : 'Retry'}
                           </button>
@@ -270,9 +270,9 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    pending: 'bg-amber-900 text-amber-200',
-    processing: 'bg-blue-900 text-blue-200',
-    completed: 'bg-emerald-900 text-emerald-200',
+    pending: 'bg-amber-900 text-amber-700',
+    processing: 'bg-blue-900 text-blue-700',
+    completed: 'bg-emerald-900 text-emerald-700',
     failed: 'bg-red-900 text-red-600',
     duplicate: 'bg-stone-800 text-stone-400',
   }

@@ -24,7 +24,7 @@ import {
   type PieLabelRenderProps,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Play, BarChart2 } from '@/components/ui/icons'
+import { Play, BarChart2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const COLORS = ['#d47530', '#3b82f6', '#10b981', '#f59e0b', '#6366f1', '#ec4899']

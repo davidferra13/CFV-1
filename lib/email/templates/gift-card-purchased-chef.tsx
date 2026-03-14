@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   chefName: string
@@ -24,7 +24,7 @@ export function GiftCardPurchasedChefEmail({
   const recipient = recipientName || 'a recipient'
 
   return (
-    <BaseLayout brand={brand} preview={`${amountFormatted} gift card sold`}>
+    <BaseLayout preview={`${amountFormatted} gift card sold`}>
       <Text style={heading}>Gift card sold</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

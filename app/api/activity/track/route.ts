@@ -10,31 +10,6 @@ import { checkAndFireIntentNotifications } from '@/lib/activity/intent-notificat
 import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
 
-function inferDeviceLabel(userAgent: string | null): string | null {
-  if (!userAgent) return null
-
-  const ua = userAgent.toLowerCase()
-  if (ua.includes('iphone')) return 'iPhone'
-  if (ua.includes('ipad')) return 'iPad'
-  if (ua.includes('android') && ua.includes('mobile')) return 'Android phone'
-  if (ua.includes('android')) return 'Android tablet'
-  if (ua.includes('macintosh') || ua.includes('mac os x')) return 'Mac'
-  if (ua.includes('windows')) return 'Windows PC'
-  if (ua.includes('linux')) return 'Linux'
-
-  return 'Unknown device'
-}
-
-function extractPathFromReferer(referer: string | null): string | null {
-  if (!referer) return null
-
-  try {
-    return new URL(referer).pathname
-  } catch {
-    return null
-  }
-}
-
 export async function POST(request: NextRequest) {
   const csrfError = verifyCsrfOrigin(request)
   if (csrfError) return csrfError
@@ -59,29 +34,6 @@ export async function POST(request: NextRequest) {
     }
 
     const { event_type, entity_type, entity_id, metadata } = parsed.data
-    const referer = request.headers.get('referer')
-    const userAgent = request.headers.get('user-agent')
-    const enrichedMetadata = {
-      page_path:
-        (metadata as Record<string, unknown> | undefined)?.page_path ??
-        extractPathFromReferer(referer),
-      referrer: (metadata as Record<string, unknown> | undefined)?.referrer ?? referer,
-      device_label:
-        (metadata as Record<string, unknown> | undefined)?.device_label ??
-        inferDeviceLabel(userAgent),
-      user_agent: (metadata as Record<string, unknown> | undefined)?.user_agent ?? userAgent,
-      location_city:
-        (metadata as Record<string, unknown> | undefined)?.location_city ??
-        request.headers.get('x-vercel-ip-city'),
-      location_region:
-        (metadata as Record<string, unknown> | undefined)?.location_region ??
-        request.headers.get('x-vercel-ip-country-region'),
-      location_country:
-        (metadata as Record<string, unknown> | undefined)?.location_country ??
-        request.headers.get('x-vercel-ip-country') ??
-        request.headers.get('cf-ipcountry'),
-      ...(metadata ?? {}),
-    }
 
     const supabase: any = createServerClient()
     const {
@@ -122,7 +74,7 @@ export async function POST(request: NextRequest) {
         eventType: event_type,
         entityType: entity_type,
         entityId: entity_id,
-        metadata: enrichedMetadata,
+        metadata,
       })
 
       // Fire intent notifications as a non-blocking side effect
@@ -132,7 +84,7 @@ export async function POST(request: NextRequest) {
         eventType: event_type,
         entityType: entity_type,
         entityId: entity_id,
-        metadata: enrichedMetadata,
+        metadata,
       })
     } else if (role.role === 'chef') {
       await trackActivity({

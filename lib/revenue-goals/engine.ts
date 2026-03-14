@@ -1,11 +1,8 @@
 import type {
-  PaceStatus,
   RevenueGoalCustomProgress,
   RevenueGoalNudgeLevel,
   RevenueGoalRangeProgress,
   RevenueGoalRecommendation,
-  RevenueGoalTrend,
-  YoYComparison,
 } from './types'
 
 export type BuildRevenueGoalRangeProgressInput = {
@@ -140,108 +137,4 @@ export function buildRevenueGoalRecommendations(input: {
   }
 
   return recs
-}
-
-// ── Pace tracking ─────────────────────────────────────────────────────────────
-
-export function computePaceRatio(
-  realizedCents: number,
-  targetCents: number,
-  periodStart: string,
-  periodEnd: string,
-  now: Date
-): number {
-  if (targetCents <= 0) return 1
-  const start = new Date(`${periodStart}T00:00:00Z`).getTime()
-  const end = new Date(`${periodEnd}T23:59:59Z`).getTime()
-  const current = now.getTime()
-  const totalDays = Math.max(1, (end - start) / (86400 * 1000))
-  const elapsedDays = Math.max(0, Math.min(totalDays, (current - start) / (86400 * 1000)))
-  const expectedProgress = elapsedDays / totalDays
-  if (expectedProgress <= 0) return 1
-  const actualProgress = realizedCents / targetCents
-  return Math.round((actualProgress / expectedProgress) * 100) / 100
-}
-
-export function paceRatioToStatus(ratio: number): PaceStatus {
-  if (ratio >= 1.1) return 'ahead'
-  if (ratio >= 0.85) return 'on_track'
-  if (ratio >= 0.5) return 'behind'
-  return 'critical'
-}
-
-// ── Annual run-rate ───────────────────────────────────────────────────────────
-
-export function computeAnnualRunRate(
-  yearToDateRealizedCents: number,
-  yearStart: string,
-  now: Date
-): number {
-  const start = new Date(`${yearStart}T00:00:00Z`).getTime()
-  const current = now.getTime()
-  const elapsedDays = Math.max(1, (current - start) / (86400 * 1000))
-  return Math.round((yearToDateRealizedCents / elapsedDays) * 365)
-}
-
-// ── Trend (month-over-month) ──────────────────────────────────────────────────
-
-export function computeTrend(
-  currentMonthRealizedCents: number,
-  previousMonthRealizedCents: number
-): RevenueGoalTrend {
-  const delta =
-    previousMonthRealizedCents > 0
-      ? Math.round(
-          ((currentMonthRealizedCents - previousMonthRealizedCents) / previousMonthRealizedCents) *
-            100
-        )
-      : currentMonthRealizedCents > 0
-        ? 100
-        : 0
-  const direction = delta > 5 ? 'up' : delta < -5 ? 'down' : 'flat'
-  return { previousMonthRealizedCents, deltaPercent: delta, direction }
-}
-
-// ── Year-over-year comparison ─────────────────────────────────────────────────
-
-export function computeYoY(
-  currentPeriodCents: number,
-  lastYearSamePeriodCents: number
-): YoYComparison {
-  const delta =
-    lastYearSamePeriodCents > 0
-      ? Math.round(((currentPeriodCents - lastYearSamePeriodCents) / lastYearSamePeriodCents) * 100)
-      : currentPeriodCents > 0
-        ? 100
-        : 0
-  const direction = delta > 5 ? 'up' : delta < -5 ? 'down' : 'flat'
-  return { lastYearSamePeriodCents, currentPeriodCents, deltaPercent: delta, direction }
-}
-
-// ── Smart open dates ──────────────────────────────────────────────────────────
-
-export function getTypicalBookingDays(eventDates: string[]): number[] {
-  if (eventDates.length < 5) return [0, 1, 2, 3, 4, 5, 6] // not enough history, all days
-  const dayCounts = new Map<number, number>()
-  for (const dateStr of eventDates) {
-    const day = new Date(`${dateStr}T12:00:00Z`).getUTCDay()
-    dayCounts.set(day, (dayCounts.get(day) ?? 0) + 1)
-  }
-  const total = eventDates.length
-  // A day is "typical" if the chef books on it at least 10% of the time
-  const threshold = total * 0.1
-  const typical: number[] = []
-  for (const [day, count] of dayCounts) {
-    if (count >= threshold) typical.push(day)
-  }
-  return typical.length > 0 ? typical.sort((a, b) => a - b) : [0, 1, 2, 3, 4, 5, 6]
-}
-
-export function filterSmartOpenDates(openDates: string[], typicalDays: number[]): string[] {
-  if (typicalDays.length === 7) return openDates // no filtering needed
-  const typicalSet = new Set(typicalDays)
-  return openDates.filter((dateStr) => {
-    const day = new Date(`${dateStr}T12:00:00Z`).getUTCDay()
-    return typicalSet.has(day)
-  })
 }

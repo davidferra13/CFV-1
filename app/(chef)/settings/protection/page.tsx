@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from '@/components/ui/icons'
+import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Protection Hub — ChefFlow' }
 
@@ -65,7 +65,7 @@ export default async function ProtectionHubPage() {
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Protection Hub</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Your business protection posture at a glance: insurance, certifications, continuity, and
+          Your business protection posture at a glance — insurance, certifications, continuity, and
           crisis preparedness.
         </p>
       </div>
@@ -94,7 +94,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/business-health"
-              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -121,7 +121,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/insurance"
-              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -148,7 +148,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/certifications"
-              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -173,7 +173,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/nda"
-              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -198,7 +198,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/continuity"
-              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
             >
               Manage →
             </Link>
@@ -222,7 +222,7 @@ export default async function ProtectionHubPage() {
             </p>
             <Link
               href="/settings/protection/crisis"
-              className="inline-flex items-center text-sm font-medium text-amber-200 hover:text-amber-900"
+              className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-900"
             >
               Manage →
             </Link>

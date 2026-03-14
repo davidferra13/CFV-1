@@ -205,7 +205,7 @@ export function GuideRankList({ items }: { items: GuideRankItem[] }) {
           </span>
           <div>
             <span className="text-sm font-medium text-stone-200">{item.label}</span>
-            <span className="text-sm text-stone-400">: {item.description}</span>
+            <span className="text-sm text-stone-400"> — {item.description}</span>
           </div>
         </div>
       ))}

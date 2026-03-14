@@ -26,26 +26,25 @@ export type ProFeature = {
     | 'calendar'
     | 'loyalty'
     | 'commerce'
-    | 'branding'
 }
 
 export const PRO_FEATURES: ProFeature[] = [
-  // Drafting & insights
+  // AI
   {
     slug: 'remy',
-    label: 'Command Center',
-    description: 'Built-in drafting, planning, and workflow support',
+    label: 'Remy AI Assistant',
+    description: 'Your AI sous chef for business operations',
     category: 'ai',
   },
   {
     slug: 'ai-parsing',
-    label: 'Smart Document Parsing',
-    description: 'Structured parsing of inquiries, receipts, and recipes',
+    label: 'AI Document Parsing',
+    description: 'Smart parsing of inquiries, receipts, and recipes',
     category: 'ai',
   },
   {
     slug: 'ai-insights',
-    label: 'Business Insights',
+    label: 'AI Business Insights',
     description: 'Automated business intelligence and recommendations',
     category: 'ai',
   },
@@ -173,49 +172,12 @@ export const PRO_FEATURES: ProFeature[] = [
     description: 'POS register, counter sales, product catalog, order-ahead, payment processing',
     category: 'commerce',
   },
-  // Intelligence
-  {
-    slug: 'intelligence-hub',
-    label: 'Intelligence Hub',
-    description:
-      'Seasonal forecasting, rebooking predictions, cash flow projections, smart scheduling, inquiry triage, post-event triggers, price anomaly detection, dietary trends, ingredient consolidation, network intelligence',
-    category: 'analytics',
-  },
   {
     slug: 'social-hub',
     label: 'Social Event Hub',
     description:
       'Group chat, visual themes, collaborative event planning, guest profiles, polls, pinned notes',
     category: 'clients',
-  },
-  {
-    slug: 'social-dining',
-    label: 'Open Tables',
-    description:
-      'Social dining discovery. Clients make their dinner circles discoverable to other foodies in your network.',
-    category: 'community',
-  },
-  {
-    slug: 'nutrition-analysis',
-    label: 'Nutritional Analysis',
-    description:
-      'Per-dish macro and calorie breakdown via Spoonacular, allergen tracking, chef overrides',
-    category: 'operations',
-  },
-  {
-    slug: 'meal-prep',
-    label: 'Meal Prep Operations',
-    description:
-      'Rotating menus, container tracking, delivery scheduling for weekly meal prep clients',
-    category: 'operations',
-  },
-  // Branding
-  {
-    slug: 'remove-platform-branding',
-    label: 'White-Label Branding',
-    description:
-      'Remove "Powered by ChefFlow" from all client-facing surfaces: emails, PDFs, portals, and widgets',
-    category: 'branding',
   },
 ]
 

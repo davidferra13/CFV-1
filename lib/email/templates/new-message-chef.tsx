@@ -4,7 +4,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   chefName: string
@@ -20,7 +20,7 @@ export function NewMessageChefEmail({
   conversationUrl,
 }: Props) {
   return (
-    <BaseLayout brand={brand} preview={`New message from ${clientName}`}>
+    <BaseLayout preview={`New message from ${clientName}`}>
       <Text style={heading}>New message from {clientName}</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

@@ -5,28 +5,21 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { listAchievements, listLearningGoals } from '@/lib/professional/actions'
-import {
-  isDue,
-  getCheckinHistory,
-  getLatestSatisfactionScore,
-} from '@/lib/professional/growth-checkin-actions'
-import { getCurrentMomentum, computeAndStoreMomentum } from '@/lib/professional/momentum-actions'
+import { ACHIEVE_TYPE_LABELS, GOAL_CATEGORY_LABELS } from '@/lib/professional/constants'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { format } from 'date-fns'
 import { ProfessionalDevelopmentClient } from './professional-development-client'
 
-export const metadata: Metadata = { title: 'Professional Development - ChefFlow' }
+export const metadata: Metadata = { title: 'Professional Development — ChefFlow' }
 
 export default async function ProfessionalDevelopmentPage() {
   await requireChef()
 
-  const [achievements, goals, checkinDue, checkinHistory, satisfaction, momentum] =
-    await Promise.all([
-      listAchievements(),
-      listLearningGoals(),
-      isDue(),
-      getCheckinHistory(),
-      getLatestSatisfactionScore(),
-      getCurrentMomentum(),
-    ])
+  const [achievements, goals] = await Promise.all([listAchievements(), listLearningGoals()])
+
+  const activeGoals = goals.filter((g: any) => g.status === 'active')
+  const completedGoals = goals.filter((g: any) => g.status === 'completed')
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
@@ -37,14 +30,7 @@ export default async function ProfessionalDevelopmentPage() {
         </p>
       </div>
 
-      <ProfessionalDevelopmentClient
-        initialAchievements={achievements}
-        initialGoals={goals}
-        checkinDue={checkinDue}
-        checkinHistory={checkinHistory}
-        satisfaction={satisfaction}
-        momentum={momentum}
-      />
+      <ProfessionalDevelopmentClient initialAchievements={achievements} initialGoals={goals} />
     </div>
   )
 }

@@ -6,10 +6,6 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import {
-  DEFAULT_PRIMARY_SHORTCUT_HREFS,
-  upgradeLegacyPrimaryNavHrefs,
-} from '@/lib/navigation/primary-shortcuts'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
@@ -85,9 +81,6 @@ const UpdatePreferencesSchema = z.object({
 
   shop_day_before: z.boolean().optional(),
   dashboard_widgets: z.array(DashboardWidgetPreferenceSchema).optional(),
-  my_dashboard_widgets: z.array(z.string()).max(120).optional(),
-  my_dashboard_notes: z.string().max(5000).optional(),
-  my_dashboard_pinned_menu_id: z.string().uuid().nullable().optional(),
   primary_nav_hrefs: PrimaryNavHrefArraySchema.optional(),
 })
 
@@ -303,17 +296,7 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
     revenue_goal_custom: getRevenueGoalCustomFromUnknown(row.revenue_goal_custom),
     shop_day_before: (row.shop_day_before as boolean) ?? true,
     dashboard_widgets: getDashboardWidgetsFromUnknown(row.dashboard_widgets),
-    my_dashboard_widgets: Array.isArray(row.my_dashboard_widgets)
-      ? (row.my_dashboard_widgets as string[]).filter((id) =>
-          DASHBOARD_WIDGET_IDS.includes(id as any)
-        )
-      : [],
-    my_dashboard_notes: typeof row.my_dashboard_notes === 'string' ? row.my_dashboard_notes : '',
-    my_dashboard_pinned_menu_id:
-      typeof row.my_dashboard_pinned_menu_id === 'string' ? row.my_dashboard_pinned_menu_id : null,
-    primary_nav_hrefs: upgradeLegacyPrimaryNavHrefs(
-      getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs)
-    ),
+    primary_nav_hrefs: getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs),
   }
 }
 
@@ -329,7 +312,7 @@ export async function getChefPrimaryNavHrefs(): Promise<string[]> {
   if (error || !data) return []
 
   const row = data as Record<string, unknown>
-  return upgradeLegacyPrimaryNavHrefs(getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs))
+  return getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs)
 }
 
 // ============================================
@@ -361,17 +344,6 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 
   if (validated.dashboard_widgets) {
     payload.dashboard_widgets = sanitizeDashboardWidgets(validated.dashboard_widgets)
-  }
-
-  if (validated.my_dashboard_widgets) {
-    // Dedupe widget IDs (My Dashboard uses its own widget ID set,
-    // separate from the legacy DASHBOARD_WIDGET_IDS)
-    const seen = new Set<string>()
-    payload.my_dashboard_widgets = validated.my_dashboard_widgets.filter((id) => {
-      if (seen.has(id)) return false
-      seen.add(id)
-      return true
-    })
   }
 
   if (validated.primary_nav_hrefs) {
@@ -414,76 +386,6 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   revalidatePath('/settings/navigation')
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
-  return { success: true }
-}
-
-export async function applyRecommendedPrimaryNav() {
-  await updateChefPreferences({ primary_nav_hrefs: [] })
-  return { success: true, primaryNavHrefs: [...DEFAULT_PRIMARY_SHORTCUT_HREFS] }
-}
-
-// ============================================
-// EVENT LOCK-IN
-// ============================================
-
-/**
- * Lock in to a specific event. Filters the nav to event-relevant sections only.
- */
-export async function lockInToEvent(eventId: string) {
-  const user = await requireChef()
-  const parsed = z.string().uuid().safeParse(eventId)
-  if (!parsed.success) throw new Error('Invalid event ID')
-
-  const supabase: any = createServerClient()
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', parsed.data)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!event) throw new Error('Event not found')
-
-  const { data: existing } = await fromChefPreferences(supabase)
-    .select('id')
-    .eq('chef_id', user.entityId)
-    .single()
-
-  if (existing) {
-    const { error } = await fromChefPreferences(supabase)
-      .update({ locked_event_id: parsed.data })
-      .eq('chef_id', user.entityId)
-    if (error) throw new Error('Failed to lock in to event')
-  } else {
-    const { error } = await fromChefPreferences(supabase).insert({
-      chef_id: user.entityId,
-      tenant_id: user.tenantId!,
-      locked_event_id: parsed.data,
-    })
-    if (error) throw new Error('Failed to lock in to event')
-  }
-
-  revalidateTag(`chef-layout-${user.entityId}`)
-  revalidatePath('/events')
-  return { success: true }
-}
-
-/**
- * Exit event lock-in. Restores the full navigation.
- */
-export async function unlockEvent() {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
-
-  const { error } = await fromChefPreferences(supabase)
-    .update({ locked_event_id: null })
-    .eq('chef_id', user.entityId)
-
-  if (error) throw new Error('Failed to unlock event')
-
-  revalidateTag(`chef-layout-${user.entityId}`)
-  revalidatePath('/events')
   return { success: true }
 }
 

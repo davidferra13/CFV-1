@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getAllChefFlags } from '@/lib/admin/platform-stats'
 import { FlagTogglePanel } from '@/components/admin/flag-toggle-panel'
 import { redirect } from 'next/navigation'
-import { ToggleLeft } from '@/components/ui/icons'
+import { ToggleLeft } from 'lucide-react'
 
 // All known feature flags — add new flags here as features are built
 const KNOWN_FLAGS = [
@@ -68,7 +68,7 @@ export default async function AdminFlagsPage() {
       </div>
 
       {note && (
-        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-200">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           {note}
         </div>
       )}

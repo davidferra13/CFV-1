@@ -57,8 +57,8 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
   }
 
   const POTENTIAL_COLORS: Record<string, string> = {
-    high: 'bg-green-900 text-green-200',
-    medium: 'bg-amber-900 text-amber-200',
+    high: 'bg-green-900 text-green-700',
+    medium: 'bg-amber-900 text-amber-700',
     low: 'bg-stone-800 text-stone-400',
   }
 
@@ -104,8 +104,8 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
             )}
             {redFlags && (
               <div className="bg-red-950 border border-red-200 rounded-lg p-3">
-                <span className="text-xs font-medium text-red-200 uppercase">Red Flags</span>
-                <p className="text-sm text-red-200 mt-1">{redFlags}</p>
+                <span className="text-xs font-medium text-red-700 uppercase">Red Flags</span>
+                <p className="text-sm text-red-800 mt-1">{redFlags}</p>
               </div>
             )}
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">

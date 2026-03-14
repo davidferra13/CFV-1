@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Printer, Copy, Loader2, Bot } from '@/components/ui/icons'
+import { Users, Printer, Copy, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAIStaffBriefing, type AIStaffBriefing } from '@/lib/ai/staff-briefing-ai'
@@ -52,7 +52,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Briefing
               </>
             )}
@@ -122,7 +122,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
               className={`rounded p-2 ${s.label === 'ALLERGENS' ? 'bg-red-950 border border-red-200' : 'bg-stone-800'}`}
             >
               <div
-                className={`text-[11px] font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-200' : 'text-stone-500'}`}
+                className={`text-[11px] font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-700' : 'text-stone-500'}`}
               >
                 {s.label}
               </div>

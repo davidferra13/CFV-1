@@ -3,7 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAllPlatformEvents, type PlatformEventRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { CalendarRange } from '@/components/ui/icons'
+import { CalendarRange } from 'lucide-react'
 
 function formatCents(cents: number | null): string {
   if (!cents) return '—'
@@ -12,13 +12,13 @@ function formatCents(cents: number | null): string {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  proposed: 'bg-yellow-900 text-yellow-200',
-  accepted: 'bg-blue-900 text-blue-200',
-  paid: 'bg-indigo-900 text-indigo-200',
-  confirmed: 'bg-purple-900 text-purple-200',
-  in_progress: 'bg-orange-900 text-orange-200',
-  completed: 'bg-green-900 text-green-200',
-  cancelled: 'bg-red-900 text-red-200',
+  proposed: 'bg-yellow-900 text-yellow-700',
+  accepted: 'bg-blue-900 text-blue-700',
+  paid: 'bg-indigo-900 text-indigo-700',
+  confirmed: 'bg-purple-900 text-purple-700',
+  in_progress: 'bg-orange-900 text-orange-700',
+  completed: 'bg-green-900 text-green-700',
+  cancelled: 'bg-red-900 text-red-700',
 }
 
 export default async function AdminEventsPage() {

@@ -6,7 +6,7 @@
 'use server'
 
 import { z } from 'zod'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 // ── Schema ───────────────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ export async function parseEventFromText(
   }
 
   try {
-    const draft = (await dispatchPrivate(SYSTEM_PROMPT, rawText, ParsedEventDraftSchema)).result
+    const draft = await parseWithOllama(SYSTEM_PROMPT, rawText, ParsedEventDraftSchema)
     return { draft }
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

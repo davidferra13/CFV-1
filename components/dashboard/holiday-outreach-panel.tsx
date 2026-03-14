@@ -14,7 +14,7 @@ import {
   Send,
   Tag,
   X,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { type HolidayOutreachSuggestion } from '@/lib/holidays/outreach-types'
 import {
   sendHolidayOutreachToClient,
@@ -42,11 +42,11 @@ export function HolidayOutreachPanel({ suggestions }: HolidayOutreachPanelProps)
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-amber-900">Holiday Outreach</h3>
-          <p className="text-xs text-amber-200 mt-0.5">
+          <p className="text-xs text-amber-700 mt-0.5">
             {suggestions.length} holiday{suggestions.length !== 1 ? 's' : ''} in outreach window
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-amber-200 px-2.5 py-0.5 text-xs font-semibold text-amber-200">
+        <span className="inline-flex items-center rounded-full bg-amber-200 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
           {suggestions.length} active
         </span>
       </div>
@@ -141,13 +141,13 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-amber-900">{holiday.name}</span>
             {premiumPricing && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-900 border border-yellow-300 px-2 py-0.5 text-xs font-medium text-yellow-200">
+              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-900 border border-yellow-300 px-2 py-0.5 text-xs font-medium text-yellow-800">
                 <Star className="h-3 w-3" />
                 Premium date
               </span>
             )}
             {isUrgent && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-900 border border-red-300 px-2 py-0.5 text-xs font-medium text-red-200">
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-900 border border-red-300 px-2 py-0.5 text-xs font-medium text-red-700">
                 <AlertCircle className="h-3 w-3" />
                 Urgent
               </span>
@@ -155,7 +155,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           </div>
 
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-xs text-amber-200">{dateLabel}</span>
+            <span className="text-xs text-amber-700">{dateLabel}</span>
             {pastClients.length > 0 && (
               <span className="inline-flex items-center gap-1 text-xs text-amber-600">
                 <Users className="h-3 w-3" />
@@ -179,7 +179,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
 
           {/* Menu idea */}
           <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
-            <p className="text-xs font-semibold text-amber-200 uppercase tracking-wide mb-1">
+            <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
               Menu Direction
             </p>
             <p className="text-sm text-stone-300">{menuNotes}</p>
@@ -188,14 +188,14 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           {/* Promo code section */}
           <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-amber-200 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
                 Promo Code
               </p>
               {!showPromoForm && !promoResult && (
                 <button
                   type="button"
                   onClick={() => setShowPromoForm(true)}
-                  className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-200 transition-colors"
+                  className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 transition-colors"
                 >
                   <Tag className="h-3.5 w-3.5" />
                   Create promo code
@@ -218,7 +218,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
                 <span className="text-sm font-mono font-bold text-amber-900 bg-amber-950 border border-amber-200 px-2 py-1 rounded">
                   {promoResult}
                 </span>
-                <span className="text-xs text-green-200">Created! Share with clients.</span>
+                <span className="text-xs text-green-700">Created! Share with clients.</span>
               </div>
             )}
             {promoResult?.startsWith('Error:') && (
@@ -300,7 +300,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           {/* Past client list */}
           {pastClients.length > 0 ? (
             <div>
-              <p className="text-xs font-semibold text-amber-200 uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-2">
                 Clients to reach out to
               </p>
               <ul className="space-y-1.5">
@@ -384,13 +384,13 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
             <span className="text-xs text-amber-600 font-medium">{client.totalEvents}× client</span>
           )}
           {status === 'sent' ? (
-            <span className="flex items-center gap-1 text-xs text-green-200 font-medium">
+            <span className="flex items-center gap-1 text-xs text-green-700 font-medium">
               <Check className="h-3 w-3" /> Sent
             </span>
           ) : (
             <button
               onClick={() => setShowSendForm(!showSendForm)}
-              className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-200 font-medium transition-colors"
+              className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 font-medium transition-colors"
             >
               <Send className="h-3 w-3" />
               Send
@@ -405,14 +405,14 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
             <button
               type="button"
               onClick={() => setChannel('email')}
-              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'email' ? 'bg-amber-900 border-amber-300 text-amber-200 font-semibold' : 'border-stone-700 text-stone-500 hover:border-stone-600'}`}
+              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'email' ? 'bg-amber-900 border-amber-300 text-amber-800 font-semibold' : 'border-stone-700 text-stone-500 hover:border-stone-600'}`}
             >
               Email
             </button>
             <button
               type="button"
               onClick={() => setChannel('sms')}
-              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'sms' ? 'bg-amber-900 border-amber-300 text-amber-200 font-semibold' : 'border-stone-700 text-stone-500 hover:border-stone-600'}`}
+              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'sms' ? 'bg-amber-900 border-amber-300 text-amber-800 font-semibold' : 'border-stone-700 text-stone-500 hover:border-stone-600'}`}
             >
               SMS
             </button>
@@ -472,12 +472,12 @@ function OutreachHookBlock({ hook, holidayName }: OutreachHookBlockProps) {
   return (
     <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold text-amber-200 uppercase tracking-wide mb-1.5">
+        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1.5">
           Outreach Message — {holidayName}
         </p>
         <button
           onClick={handleCopy}
-          className="flex-shrink-0 flex items-center gap-1 text-xs text-amber-600 hover:text-amber-200 transition-colors"
+          className="flex-shrink-0 flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 transition-colors"
           title="Copy to clipboard"
         >
           {copied ? (

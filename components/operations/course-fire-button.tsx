@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { Flame, ChefHat, CheckCircle2 } from '@/components/ui/icons'
+import { Flame, ChefHat, CheckCircle2 } from 'lucide-react'
 import { fireCourse, markCoursePlated, markCourseServed } from '@/lib/operations/kds-actions'
 import { toast } from 'sonner'
 

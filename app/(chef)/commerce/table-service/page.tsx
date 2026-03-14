@@ -16,7 +16,6 @@ import {
 } from '@/lib/commerce/table-service-actions'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import type { DiningTableStatus } from '@/lib/commerce/table-service-types'
-import ServerTablePanel from '@/components/commerce/server-table-panel'
 
 export const metadata: Metadata = { title: 'Table Service - ChefFlow' }
 
@@ -187,24 +186,6 @@ export default async function TableServicePage() {
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
-
-      {/* Server Workflow (FOH-BOH Integration) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Server Workflow (FOH-BOH)</span>
-            <a
-              href="/commerce/kds"
-              className="text-sm font-normal text-blue-500 hover:text-blue-400"
-            >
-              Open Kitchen Display &rarr;
-            </a>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ServerTablePanel />
         </CardContent>
       </Card>
 

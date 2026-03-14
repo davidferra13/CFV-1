@@ -8,7 +8,7 @@ import { getMyFriends } from '@/lib/hub/friend-actions'
 import { ShareChefForm } from '@/components/hub/share-chef-form'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, ChefHat } from '@/components/ui/icons'
+import { ArrowLeft, ChefHat } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Share a Chef - ChefFlow' }
 

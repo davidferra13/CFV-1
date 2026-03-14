@@ -4,7 +4,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -16,7 +16,6 @@ type BetaSignupAdminProps = {
   yearsInBusiness: string | null
   referralSource: string | null
   totalSignups: number
-  brand?: ChefBrandProps
 }
 
 export function BetaSignupAdminEmail({
@@ -27,10 +26,9 @@ export function BetaSignupAdminEmail({
   yearsInBusiness,
   referralSource,
   totalSignups,
-  brand,
 }: BetaSignupAdminProps) {
   return (
-    <BaseLayout brand={brand} preview={`New beta signup: ${name} (${email})`}>
+    <BaseLayout preview={`New beta signup: ${name} (${email})`}>
       <Text style={heading}>New beta signup</Text>
       <Text style={paragraph}>
         Someone just signed up for the closed beta. Total signups: <strong>{totalSignups}</strong>.

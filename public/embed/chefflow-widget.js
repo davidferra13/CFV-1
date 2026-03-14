@@ -42,8 +42,7 @@
   }
 
   var chefId = currentScript.getAttribute('data-chef-id')
-  var explicitAccent = currentScript.getAttribute('data-accent')
-  var accent = explicitAccent || '#e88f47'
+  var accent = currentScript.getAttribute('data-accent') || '#e88f47'
   var theme = currentScript.getAttribute('data-theme') || 'light'
   var mode = currentScript.getAttribute('data-mode') || 'inline'
   var buttonText = currentScript.getAttribute('data-button-text') || 'Book a Private Chef'
@@ -64,25 +63,6 @@
     origin = url.origin
   } catch (e) {
     // Fall back to default
-  }
-
-  // Auto-fetch chef brand colors when no explicit data-accent is set
-  if (!explicitAccent) {
-    try {
-      var xhr = new XMLHttpRequest()
-      xhr.open('GET', origin + '/api/embed/brand/' + encodeURIComponent(chefId), false)
-      xhr.timeout = 3000
-      xhr.send()
-      if (xhr.status === 200) {
-        var brand = JSON.parse(xhr.responseText)
-        if (brand.primaryColor) accent = brand.primaryColor
-        if (brand.businessName)
-          buttonText =
-            currentScript.getAttribute('data-button-text') || 'Book with ' + brand.businessName
-      }
-    } catch (e) {
-      // Silently fall back to default accent
-    }
   }
 
   var iframeSrc =

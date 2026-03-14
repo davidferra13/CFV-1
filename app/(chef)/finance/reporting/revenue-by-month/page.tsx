@@ -67,7 +67,7 @@ export default async function RevenueByMonthPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">12-month gross revenue</p>
         </Card>
         <Card className="p-4">
@@ -99,7 +99,7 @@ export default async function RevenueByMonthPage() {
             {[...months].reverse().map((month) => (
               <TableRow key={month.key}>
                 <TableCell className="font-medium text-stone-100">{month.label}</TableCell>
-                <TableCell className="text-green-200 font-semibold text-sm">
+                <TableCell className="text-green-700 font-semibold text-sm">
                   {formatCurrency(month.revenue)}
                 </TableCell>
                 <TableCell className="text-red-600 text-sm">

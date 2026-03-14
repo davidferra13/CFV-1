@@ -5,16 +5,12 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
-import { getChefBrand, type ChefBrand } from '@/lib/chef/brand'
-import { fetchLogoAsBase64 } from '@/lib/documents/logo-utils'
 import { format } from 'date-fns'
-import { generateQrDataUrl, getContractPageUrl } from '@/lib/qr/qr-code'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ContractDocumentData = {
   contractRef: string
-  eventId: string | null
   bodySnapshot: string
   status: string
   signedAt: string | null
@@ -48,7 +44,7 @@ export async function fetchContractData(
     .from('event_contracts')
     .select(
       `
-      id, event_id, body_snapshot, status, signed_at, created_at, signer_ip_address, chef_id, client_id,
+      id, body_snapshot, status, signed_at, created_at, signer_ip_address, chef_id, client_id,
       events (event_date, occasion, guest_count),
       clients (full_name, email)
     `
@@ -94,7 +90,6 @@ export async function fetchContractData(
 
   return {
     contractRef,
-    eventId: contract.event_id ?? null,
     bodySnapshot: contract.body_snapshot ?? '',
     status: contract.status ?? 'draft',
     signedAt: contract.signed_at ?? null,
@@ -212,23 +207,12 @@ function stripInlineMarkdown(text: string): string {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderContract(
-  pdf: PDFLayout,
-  data: ContractDocumentData,
-  brand?: ChefBrand | null,
-  logoBase64?: string | null,
-  qrDataUrl?: string | null
-) {
+export function renderContract(pdf: PDFLayout, data: ContractDocumentData) {
   const { contractRef, bodySnapshot, status, signedAt, signerIpPartial, chef, client, event } = data
 
   // ── HEADER ────────────────────────────────────────────────────────────────
-  if (brand) {
-    pdf.brandedHeader(brand, logoBase64 ?? null)
-    pdf.title('SERVICE AGREEMENT', 11)
-  } else {
-    pdf.title(chef.businessName, 13)
-    pdf.title('SERVICE AGREEMENT', 11)
-  }
+  pdf.title(chef.businessName, 13)
+  pdf.title('SERVICE AGREEMENT', 11)
   pdf.space(1)
 
   // Contract metadata bar
@@ -303,17 +287,8 @@ export function renderContract(
     pdf.text('Awaiting electronic signature via ChefFlow.', 8, 'italic')
   }
 
-  // QR code — scan to view contract online
-  if (qrDataUrl) {
-    pdf.space(3)
-    pdf.qrCode(qrDataUrl, 20, 'Scan to view online', 'right')
-  }
-
   // Footer
   pdf.footer(`${contractRef}  ·  ${chef.businessName}  ·  ${chef.email}`)
-  if (brand?.showPoweredBy) {
-    pdf.poweredByFooter()
-  }
 }
 
 // ─── Generate ─────────────────────────────────────────────────────────────────
@@ -325,30 +300,7 @@ export async function generateContract(
   const data = await fetchContractData(contractId, owner)
   if (!data) throw new Error('Contract not found or access denied')
 
-  // Fetch chef brand for PDF header
-  const chefId = owner.chefId
-  let brand = null
-  let logoBase64 = null
-  if (chefId) {
-    try {
-      brand = await getChefBrand(chefId)
-      logoBase64 = await fetchLogoAsBase64(brand.logoUrl)
-    } catch {
-      // Non-blocking: generate PDF without branding if brand fetch fails
-    }
-  }
-
-  // Generate QR code for the contract's online view
-  let qrDataUrl: string | null = null
-  if (data.eventId) {
-    try {
-      qrDataUrl = await generateQrDataUrl(getContractPageUrl(data.eventId))
-    } catch {
-      // Non-blocking: contract generates fine without QR
-    }
-  }
-
   const pdf = new PDFLayout()
-  renderContract(pdf, data, brand, logoBase64, qrDataUrl)
+  renderContract(pdf, data)
   return pdf.toBuffer()
 }

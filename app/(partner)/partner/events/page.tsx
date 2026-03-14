@@ -4,7 +4,7 @@
 
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
-import { CalendarDays } from '@/components/ui/icons'
+import { CalendarDays } from 'lucide-react'
 
 const STATUS_LABELS: Record<string, string> = {
   confirmed: 'Confirmed',
@@ -13,9 +13,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  confirmed: 'bg-blue-950 text-blue-200',
-  in_progress: 'bg-amber-950 text-amber-200',
-  completed: 'bg-green-950 text-green-200',
+  confirmed: 'bg-blue-950 text-blue-700',
+  in_progress: 'bg-amber-950 text-amber-700',
+  completed: 'bg-green-950 text-green-700',
 }
 
 export default async function PartnerEventsPage() {

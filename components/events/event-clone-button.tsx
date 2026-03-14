@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { cloneEvent } from '@/lib/events/clone-actions'
 import { getClients } from '@/lib/clients/actions'
-import { Copy, X, Calendar } from '@/components/ui/icons'
+import { Copy, X, Calendar } from 'lucide-react'
 
 type Props = {
   sourceEventId: string

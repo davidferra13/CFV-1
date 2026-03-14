@@ -5,7 +5,7 @@
 // Returns a badge with the suggested category — chef clicks to accept.
 
 import { useState, useEffect, useRef } from 'react'
-import { Bot, Loader2 } from '@/components/ui/icons'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { categorizeExpense, type CategorizationResult } from '@/lib/ai/expense-categorizer'
 import {
   EXPENSE_CATEGORY_LABELS,
@@ -61,14 +61,14 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
   const label = EXPENSE_CATEGORY_LABELS[result.category]
   const confidenceColor =
     result.confidence === 'high'
-      ? 'text-green-200 bg-green-950 border-green-200'
+      ? 'text-green-700 bg-green-950 border-green-200'
       : result.confidence === 'medium'
-        ? 'text-amber-200 bg-amber-950 border-amber-200'
+        ? 'text-amber-700 bg-amber-950 border-amber-200'
         : 'text-stone-500 bg-stone-800 border-stone-700'
 
   return (
     <div className="flex items-center gap-2">
-      <Bot className="w-3 h-3 text-brand-500" />
+      <Sparkles className="w-3 h-3 text-brand-500" />
       <span className="text-[11px] text-stone-500">Suggested:</span>
       <button
         onClick={() => onAccept(result.category)}

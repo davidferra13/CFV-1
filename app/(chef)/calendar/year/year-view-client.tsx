@@ -155,7 +155,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           <div className="text-xs text-stone-400">Events</div>
         </div>
         <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2">
-          <div className="text-lg font-bold text-amber-200">
+          <div className="text-lg font-bold text-amber-800">
             {fullyScheduledWeeks} / {eventWeeks}
           </div>
           <div className="text-xs text-amber-600">Fully Scheduled</div>
@@ -164,7 +164,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           className={`border rounded-lg px-3 py-2 ${summary.total_gaps > 0 ? 'bg-red-950 border-red-200' : 'bg-green-950 border-green-200'}`}
         >
           <div
-            className={`text-lg font-bold ${summary.total_gaps > 0 ? 'text-red-200' : 'text-green-200'}`}
+            className={`text-lg font-bold ${summary.total_gaps > 0 ? 'text-red-700' : 'text-green-700'}`}
           >
             {summary.total_gaps}
           </div>

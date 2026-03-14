@@ -33,26 +33,17 @@ const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   // Hourly crons — alert if stale > 2 hours
   'integrations-retry': 120,
   campaigns: 120,
-  'remy-alerts': 120,
   // 6-hour crons — alert if stale > 12 hours
   'revenue-goals': 720,
   'follow-ups': 720,
   'reviews-sync': 720,
-  'wellbeing-signals': 720,
   // Daily crons — alert if stale > 48 hours (some may be skipped on weekends or holidays)
   lifecycle: 2880,
   sequences: 2880,
   'activity-cleanup': 2880,
-  'ai-retention': 2880,
   'loyalty-expiry': 2880,
   'waitlist-sweep': 2880,
   'push-cleanup': 2880,
-  'renewal-reminders': 2880,
-  'cooling-alert': 2880,
-  'quarterly-checkin': 2880,
-  'brand-monitor': 2880,
-  'operations-check': 2880,
-  'financial-alerts': 2880,
 }
 
 type CronStatus = {

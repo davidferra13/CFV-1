@@ -57,7 +57,7 @@ export default async function FavoriteDishesPage() {
             {popularDishes.map(([dish, count]) => (
               <span
                 key={dish}
-                className="bg-green-900 text-green-200 text-sm px-3 py-1 rounded-full"
+                className="bg-green-900 text-green-800 text-sm px-3 py-1 rounded-full"
               >
                 {dish}{' '}
                 {count > 1 && <span className="text-emerald-600 font-semibold">×{count}</span>}
@@ -100,7 +100,7 @@ export default async function FavoriteDishesPage() {
                       {(client.favorite_dishes as string[]).map((d) => (
                         <span
                           key={d}
-                          className="bg-green-900 text-green-200 text-xs px-2 py-0.5 rounded-full"
+                          className="bg-green-900 text-green-800 text-xs px-2 py-0.5 rounded-full"
                         >
                           {d}
                         </span>

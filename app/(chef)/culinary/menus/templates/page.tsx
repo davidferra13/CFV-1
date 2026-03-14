@@ -30,7 +30,7 @@ export default async function MenuTemplatesPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Menu Templates</h1>
-          <span className="bg-amber-900 text-amber-200 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-amber-900 text-amber-700 text-sm px-2 py-0.5 rounded-full">
             {templates.length}
           </span>
         </div>
@@ -57,7 +57,7 @@ export default async function MenuTemplatesPage() {
               <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="font-semibold text-stone-100">{menu.name}</h2>
-                  <span className="bg-amber-900 text-amber-200 text-xs px-2 py-0.5 rounded-full ml-2 shrink-0">
+                  <span className="bg-amber-900 text-amber-700 text-xs px-2 py-0.5 rounded-full ml-2 shrink-0">
                     Template
                   </span>
                 </div>

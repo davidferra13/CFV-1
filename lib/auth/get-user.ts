@@ -5,9 +5,6 @@
 import { cache } from 'react'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getAdminEmails } from '@/lib/platform/owner-account'
-import { getImpersonatedChefId } from '@/lib/auth/admin-impersonation'
-import { getImpersonatedClientId } from '@/lib/auth/client-impersonation'
 
 export type AuthUser = {
   id: string
@@ -98,10 +95,6 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
 /**
  * Require chef role - throws if not chef or if account is suspended.
  * Use in chef portal pages and server actions.
- *
- * Admin impersonation: when an admin has the impersonation cookie set,
- * this returns the TARGET chef's context instead of the admin's own.
- * The admin's real auth is still validated first (must be a chef + admin).
  */
 export async function requireChef(): Promise<AuthUser> {
   const user = await getCurrentUser()
@@ -125,78 +118,21 @@ export async function requireChef(): Promise<AuthUser> {
     }
   }
 
-  // Admin impersonation: if the admin has selected a chef to view as,
-  // return a modified AuthUser with the target chef's tenant context.
-  // The admin's real identity (user.id) is preserved for auth,
-  // but entityId and tenantId point to the target chef.
-  const impersonatedChefId = getImpersonatedChefId()
-  if (impersonatedChefId && impersonatedChefId !== user.entityId) {
-    // Verify caller is actually an admin
-    const adminEmails = getAdminEmails()
-    if (adminEmails.includes(user.email.toLowerCase())) {
-      // Verify target chef exists
-      const adminClient = createAdminClient()
-      const { data: targetChef } = await adminClient
-        .from('chefs')
-        .select('id')
-        .eq('id', impersonatedChefId)
-        .single()
-
-      if (targetChef) {
-        return {
-          ...user,
-          entityId: impersonatedChefId,
-          tenantId: impersonatedChefId,
-        }
-      }
-    }
-  }
-
   return user
 }
 
 /**
  * Require client role - throws if not client
  * Use in client portal pages and server actions
- *
- * Admin impersonation: when an admin has the client impersonation cookie set,
- * this returns the TARGET client's context. The admin's real auth identity
- * (user.id) is preserved. Admin must be a chef-role user with admin email.
  */
 export async function requireClient(): Promise<AuthUser> {
   const user = await getCurrentUser()
 
-  // Normal client auth
-  if (user && user.role === 'client') {
-    return user
+  if (!user || user.role !== 'client') {
+    throw new Error('Unauthorized: Client access required')
   }
 
-  // Admin client impersonation: admin (chef role) can view as a specific client
-  if (user && user.role === 'chef') {
-    const impersonatedClientId = getImpersonatedClientId()
-    if (impersonatedClientId) {
-      const adminEmails = getAdminEmails()
-      if (adminEmails.includes(user.email.toLowerCase())) {
-        const adminClient = createAdminClient()
-        const { data: targetClient } = await adminClient
-          .from('clients')
-          .select('id, tenant_id')
-          .eq('id', impersonatedClientId)
-          .single()
-
-        if (targetClient) {
-          return {
-            ...user,
-            role: 'client',
-            entityId: impersonatedClientId,
-            tenantId: targetClient.tenant_id,
-          }
-        }
-      }
-    }
-  }
-
-  throw new Error('Unauthorized: Client access required')
+  return user
 }
 
 /**
@@ -314,177 +250,18 @@ export async function requireStaff(): Promise<StaffAuthUser> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Marketplace auth (overlay — does NOT modify existing flows)
-// ---------------------------------------------------------------------------
-
-export type MarketplaceUser = {
-  id: string // auth.users.id
-  email: string
-  marketplaceProfileId: string
-  linkedTenants: Array<{
-    tenantId: string
-    clientId: string
-    isFavorite: boolean
-  }>
-}
-
-type MarketplaceProfileLookup = {
-  id: string
-}
-
-type MarketplaceClientLinkLookup = {
-  client_id: string
-}
-
-type MarketplaceClientLinkRecord = {
-  tenant_id: string
-  client_id: string
-  is_favorite: boolean
-}
-
-// Keep these query result shapes narrow so TS does not expand the full generated
-// Supabase builder types on a hot auth path.
-async function findMarketplaceProfile(adminClient: any, authUserId: string) {
-  const { data } = (await adminClient
-    .from('marketplace_profiles')
-    .select('id')
-    .eq('auth_user_id', authUserId)
-    .single()) as { data: MarketplaceProfileLookup | null }
-
-  return data
-}
-
-async function createMarketplaceProfile(adminClient: any, user: AuthUser) {
-  const { data, error } = (await adminClient
-    .from('marketplace_profiles')
-    .insert({
-      auth_user_id: user.id,
-      email: user.email,
-      primary_client_id: user.entityId,
-    })
-    .select('id')
-    .single()) as { data: MarketplaceProfileLookup | null; error: Error | null }
-
-  return { data, error }
-}
-
-async function listMarketplaceClientLinks(adminClient: any, marketplaceProfileId: string) {
-  const { data } = (await adminClient
-    .from('marketplace_client_links')
-    .select('tenant_id, client_id, is_favorite')
-    .eq('marketplace_profile_id', marketplaceProfileId)) as {
-    data: MarketplaceClientLinkRecord[] | null
-  }
-
-  return data ?? []
-}
-
-async function findMarketplaceClientLink(
-  adminClient: any,
-  marketplaceProfileId: string,
-  tenantId: string
-) {
-  const { data } = (await adminClient
-    .from('marketplace_client_links')
-    .select('client_id')
-    .eq('tenant_id', tenantId)
-    .eq('marketplace_profile_id', marketplaceProfileId)
-    .single()) as { data: MarketplaceClientLinkLookup | null }
-
-  return data
-}
-
 /**
- * Require a marketplace-enabled client.
- * Returns the user's marketplace profile and all linked chef tenants.
- * Creates a marketplace_profile on the fly if the client doesn't have one yet.
- * Throws if the user is not authenticated or has no client role.
- */
-export async function requireMarketplaceClient(): Promise<MarketplaceUser> {
-  const user = await getCurrentUser()
-
-  if (!user || user.role !== 'client') {
-    throw new Error('Unauthorized: Client access required')
-  }
-
-  const adminClient = createAdminClient()
-
-  // Find or create marketplace profile
-  let profile = await findMarketplaceProfile(adminClient, user.id)
-
-  if (!profile) {
-    const { data: newProfile, error: createErr } = await createMarketplaceProfile(adminClient, user)
-
-    if (createErr || !newProfile) {
-      throw new Error('Failed to create marketplace profile')
-    }
-    profile = newProfile
-  }
-
-  // Fetch all linked tenants
-  const links = await listMarketplaceClientLinks(adminClient, profile.id)
-
-  return {
-    id: user.id,
-    email: user.email,
-    marketplaceProfileId: profile.id,
-    linkedTenants: (links ?? []).map((l) => ({
-      tenantId: l.tenant_id,
-      clientId: l.client_id,
-      isFavorite: l.is_favorite,
-    })),
-  }
-}
-
-/**
- * Require client auth scoped to a specific chef tenant.
- * Validates the client has a relationship with that chef via marketplace_client_links.
- * Returns a standard AuthUser with tenantId set to the requested tenant.
- * Throws if the user has no link to that tenant.
- */
-export async function requireClientForTenant(tenantId: string): Promise<AuthUser> {
-  const user = await getCurrentUser()
-
-  if (!user || user.role !== 'client') {
-    throw new Error('Unauthorized: Client access required')
-  }
-
-  // If the user's existing tenantId matches, use the fast path (legacy single-tenant)
-  if (user.tenantId === tenantId) {
-    return user
-  }
-
-  // Check marketplace_client_links for a cross-tenant relationship
-  const adminClient = createAdminClient()
-  const profile = await findMarketplaceProfile(adminClient, user.id)
-
-  if (!profile) {
-    throw new Error('Unauthorized: No relationship with this chef')
-  }
-
-  const link = await findMarketplaceClientLink(adminClient, profile.id, tenantId)
-
-  if (!link) {
-    throw new Error('Unauthorized: No relationship with this chef')
-  }
-
-  return {
-    ...user,
-    entityId: link.client_id,
-    tenantId,
-  }
-}
-
-/**
- * Require platform admin with chef context - email must be in ADMIN_EMAILS env var.
+ * Require platform admin with chef context — email must be in ADMIN_EMAILS env var.
  * Returns full AuthUser (with tenantId) for server actions that need both admin + chef data.
  * For page-level admin gating (redirect on failure), use requireAdmin() from lib/auth/admin.ts.
  */
 export async function requireChefAdmin(): Promise<AuthUser> {
   const user = await requireChef()
 
-  const adminEmails = getAdminEmails()
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
 
   if (!adminEmails.includes(user.email.toLowerCase())) {
     throw new Error('Unauthorized: Admin access required')

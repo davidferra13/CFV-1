@@ -1,23 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Check,
-  Copy,
-  Code2,
-  Globe,
-  Palette,
-  Monitor,
-  Smartphone,
-  ExternalLink,
-  QrCode,
-  Download,
-} from '@/components/ui/icons'
-import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
+import { Check, Copy, Code2, Globe, Palette, Monitor, Smartphone, ExternalLink } from 'lucide-react'
 
 interface Props {
   chefId: string
-  publicProfileSlug?: string | null
 }
 
 type EmbedMode = 'inline' | 'popup'
@@ -45,7 +32,7 @@ function getWidgetOrigin() {
   return 'https://app.cheflowhq.com'
 }
 
-export function EmbedCodePanel({ chefId, publicProfileSlug }: Props) {
+export function EmbedCodePanel({ chefId }: Props) {
   const [mode, setMode] = useState<EmbedMode>('inline')
   const [theme, setTheme] = useState<ThemeMode>('light')
   const [accent, setAccent] = useState('#e88f47')
@@ -62,7 +49,6 @@ export function EmbedCodePanel({ chefId, publicProfileSlug }: Props) {
       : `<script\n  src="${origin}/embed/chefflow-widget.js"\n  data-chef-id="${chefId}"\n  data-accent="${accent}"\n  data-theme="${theme}"\n  data-mode="popup"\n  data-button-text="${buttonText}"\n></script>`
 
   const iframeDirectCode = `<iframe\n  src="${origin}/embed/inquiry/${chefId}?accent=${encodeURIComponent(accent)}&theme=${theme}"\n  style="width:100%;min-height:900px;border:none;border-radius:16px;"\n  title="Book a Private Chef"\n  loading="lazy"\n></iframe>`
-  const publicProfileUrl = publicProfileSlug ? `${origin}/chef/${publicProfileSlug}` : null
 
   const handleCopy = async (text: string) => {
     try {
@@ -300,80 +286,7 @@ export function EmbedCodePanel({ chefId, publicProfileSlug }: Props) {
         </details>
       </div>
 
-      {/* ── QR Code for Print ── */}
-      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
-          <QrCode className="h-5 w-5 text-stone-300" />
-          Your Booking QR Code
-        </h2>
-        <p className="text-sm text-stone-500">
-          Print this on business cards, table tents, menus, or leave-behind cards. Anyone who scans
-          it goes straight to your booking form.
-        </p>
-        <div className="flex items-center gap-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=M&data=${encodeURIComponent(`${origin}/embed/inquiry/${chefId}`)}`}
-            alt="Booking form QR code"
-            width={160}
-            height={160}
-            className="rounded-lg border border-stone-700 bg-white p-2"
-          />
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm font-medium text-stone-200">Scan to book</p>
-              <p className="text-xs text-stone-500 break-all mt-0.5">
-                {origin}/embed/inquiry/{chefId}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <a
-                href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=M&format=png&data=${encodeURIComponent(`${origin}/embed/inquiry/${chefId}`)}`}
-                download={`chefflow-booking-qr.png`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors w-fit"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Download PNG (high-res)
-              </a>
-              <a
-                href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=M&format=svg&data=${encodeURIComponent(`${origin}/embed/inquiry/${chefId}`)}`}
-                download={`chefflow-booking-qr.svg`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-600 text-stone-300 text-sm font-medium hover:bg-stone-800 transition-colors w-fit"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Download SVG (for print)
-              </a>
-            </div>
-            <p className="text-xs text-stone-600">
-              SVG scales perfectly for any print size. Use PNG for digital.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* ── Preview ── */}
-      {publicProfileUrl && (
-        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
-            <QrCode className="h-5 w-5 text-stone-300" />
-            Your Public Profile QR
-          </h2>
-          <p className="text-sm text-stone-500">
-            Use this when you want people to browse your public profile before they hit the booking
-            form.
-          </p>
-          <DownloadableQrCard
-            url={publicProfileUrl}
-            title="Public chef profile"
-            description="Great for business cards, pop-ups, partner venues, and networking events."
-            downloadBaseName={`chef-profile-${publicProfileSlug}`}
-            printTitle="Book this chef"
-            printSubtitle="Public ChefFlow profile"
-            openLabel="Open profile"
-          />
-        </div>
-      )}
-
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
           <Globe className="h-5 w-5 text-stone-300" />
@@ -578,7 +491,7 @@ export function EmbedCodePanel({ chefId, publicProfileSlug }: Props) {
         <h2 className="text-lg font-semibold text-emerald-900">
           What Happens When Someone Submits
         </h2>
-        <ol className="text-sm text-emerald-200 space-y-2 list-decimal list-inside">
+        <ol className="text-sm text-emerald-800 space-y-2 list-decimal list-inside">
           <li>
             The visitor fills out the form on <strong>your website</strong> — they never leave your
             site.

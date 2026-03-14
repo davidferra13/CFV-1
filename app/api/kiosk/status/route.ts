@@ -7,8 +7,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { extractBearerToken, hashToken } from '@/lib/devices/token'
 import type { KioskConfig } from '@/lib/devices/types'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(request: Request) {
   try {
     const token = extractBearerToken(request)
@@ -26,8 +24,7 @@ export async function GET(request: Request) {
       .single()
 
     if (error || !device) {
-      // Standardized error: don't leak whether device was revoked vs never existed
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Device not found', status: 'revoked' }, { status: 401 })
     }
 
     if (device.status === 'disabled' || device.status === 'revoked') {

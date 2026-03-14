@@ -6,7 +6,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/get-user'
-import { syncLegacyGoogleConnectionFromPrimary } from '@/lib/google/mailboxes'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
@@ -123,158 +122,35 @@ export async function GET(request: NextRequest) {
       s.includes('gmail.readonly') || s.includes('gmail.send') || s.includes('gmail.modify')
   )
   const calendarConnected = grantedScopes.some((s: string) => s.includes('calendar'))
-  const normalizedEmail = connectedEmail.toLowerCase().trim()
 
   // Merge with existing connection so we don't overwrite the other service's flag.
   // E.g. if Gmail is already connected and we're adding Calendar, keep gmail_connected = true.
-  const supabase: any = createServerClient({ admin: true })
+  const supabase = createServerClient({ admin: true })
 
   const { data: existing } = await supabase
     .from('google_connections')
-    .select(
-      'connected_email, access_token, refresh_token, token_expires_at, gmail_connected, gmail_sync_errors, calendar_connected, scopes'
-    )
+    .select('gmail_connected, calendar_connected, scopes, refresh_token')
     .eq('chef_id', state.chefId)
-    .maybeSingle()
+    .single()
 
-  const existingNormalizedEmail =
-    typeof existing?.connected_email === 'string'
-      ? existing.connected_email.toLowerCase().trim()
-      : null
-
-  let activeDuplicateMailbox: { chef_id: string } | null = null
-  try {
-    const { data: duplicateMailboxes, error: duplicateMailboxError } = await supabase
-      .from('google_mailboxes')
-      .select('chef_id')
-      .eq('normalized_email', normalizedEmail)
-      .eq('is_active', true)
-      .eq('gmail_connected', true)
-      .neq('chef_id', state.chefId)
-      .limit(1)
-
-    if (duplicateMailboxError) throw duplicateMailboxError
-    activeDuplicateMailbox = duplicateMailboxes?.[0] ?? null
-  } catch {
-    const { data: duplicateConnections, error: duplicateError } = await supabase
-      .from('google_connections')
-      .select('chef_id, gmail_connected, calendar_connected')
-      .ilike('connected_email', connectedEmail)
-      .neq('chef_id', state.chefId)
-      .limit(5)
-
-    if (duplicateError) {
-      console.error(
-        '[Google OAuth] Failed to check for duplicate Google connections:',
-        duplicateError
-      )
-      return NextResponse.redirect(
-        `${origin}/settings?error=${encodeURIComponent(
-          'Failed to verify Google connection ownership'
-        )}`
-      )
-    }
-
-    activeDuplicateMailbox =
-      (duplicateConnections ?? []).find(
-        (row: { gmail_connected: boolean; calendar_connected: boolean }) =>
-          row.gmail_connected || row.calendar_connected
-      ) ?? null
-  }
-
-  if (activeDuplicateMailbox) {
-    return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent(
-        `${connectedEmail} is already connected to another ChefFlow account. Disconnect it there first to avoid split inbox data.`
-      )}`
-    )
-  }
-
+  const mergedGmail = gmailConnected
   const mergedCalendar = calendarConnected || (existing?.calendar_connected ?? false)
   const mergedScopes = Array.from(new Set([...(existing?.scopes ?? []), ...grantedScopes]))
   // Google only returns refresh_token on first consent; preserve the existing one
   const refreshToken = tokens.refresh_token || existing?.refresh_token || null
-  const tenantId = currentUser.tenantId || state.chefId
-
-  if (gmailConnected) {
-    const { data: existingMailbox } = await supabase
-      .from('google_mailboxes')
-      .select('id, is_primary')
-      .eq('chef_id', state.chefId)
-      .eq('normalized_email', normalizedEmail)
-      .maybeSingle()
-
-    const { data: activeMailboxes } = await supabase
-      .from('google_mailboxes')
-      .select('id')
-      .eq('chef_id', state.chefId)
-      .eq('is_active', true)
-      .eq('gmail_connected', true)
-      .limit(5)
-
-    const shouldBePrimary = Boolean(existingMailbox?.is_primary) || !(activeMailboxes?.length ?? 0)
-
-    const mailboxPayload = {
-      chef_id: state.chefId,
-      tenant_id: tenantId,
-      email: connectedEmail,
-      normalized_email: normalizedEmail,
-      access_token: tokens.access_token,
-      refresh_token: refreshToken,
-      token_expires_at: expiresAt,
-      scopes: grantedScopes,
-      gmail_connected: true,
-      gmail_sync_errors: 0,
-      is_primary: shouldBePrimary,
-      is_active: true,
-    }
-
-    if (existingMailbox?.id) {
-      const { error: mailboxError } = await supabase
-        .from('google_mailboxes')
-        .update(mailboxPayload)
-        .eq('id', existingMailbox.id)
-        .eq('chef_id', state.chefId)
-
-      if (mailboxError) {
-        console.error('[Google OAuth] Failed to save Google mailbox:', mailboxError)
-        return NextResponse.redirect(
-          `${origin}/settings?error=${encodeURIComponent('Failed to save Google mailbox')}`
-        )
-      }
-    } else {
-      const { error: mailboxError } = await supabase.from('google_mailboxes').insert(mailboxPayload)
-
-      if (mailboxError) {
-        console.error('[Google OAuth] Failed to create Google mailbox:', mailboxError)
-        return NextResponse.redirect(
-          `${origin}/settings?error=${encodeURIComponent('Failed to save Google mailbox')}`
-        )
-      }
-    }
-  }
 
   const { error: upsertError } = await supabase.from('google_connections').upsert(
     {
       chef_id: state.chefId,
-      tenant_id: tenantId,
-      access_token: calendarConnected ? tokens.access_token : (existing?.access_token ?? null),
-      refresh_token: calendarConnected ? refreshToken : (existing?.refresh_token ?? refreshToken),
-      token_expires_at: calendarConnected ? expiresAt : (existing?.token_expires_at ?? null),
-      connected_email: calendarConnected
-        ? connectedEmail
-        : (existing?.connected_email ?? (gmailConnected ? connectedEmail : null)),
-      gmail_connected: existing?.gmail_connected ?? false,
+      tenant_id: currentUser.tenantId || state.chefId,
+      access_token: tokens.access_token,
+      refresh_token: refreshToken,
+      token_expires_at: expiresAt,
+      connected_email: connectedEmail,
+      gmail_connected: mergedGmail,
       calendar_connected: mergedCalendar,
-      scopes: calendarConnected
-        ? Array.from(
-            new Set([
-              ...(existingNormalizedEmail === normalizedEmail ? (existing?.scopes ?? []) : []),
-              ...grantedScopes,
-            ])
-          )
-        : mergedScopes,
-      gmail_sync_errors: existing?.gmail_sync_errors ?? 0,
+      scopes: mergedScopes,
+      gmail_sync_errors: 0,
     },
     { onConflict: 'chef_id' }
   )
@@ -284,10 +160,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${origin}/settings?error=${encodeURIComponent('Failed to save Google connection')}`
     )
-  }
-
-  if (gmailConnected) {
-    await syncLegacyGoogleConnectionFromPrimary(state.chefId, tenantId)
   }
 
   const service = gmailConnected ? 'gmail' : calendarConnected ? 'calendar' : 'google'

@@ -110,7 +110,7 @@ export async function listDocuments(folderId?: string | null): Promise<ChefDocum
 
   let query = supabase
     .from('chef_documents')
-    .select('id, title, document_type, folder_id, created_at, updated_at')
+    .select('id, title, type, folder_id, created_at, updated_at')
     .eq('tenant_id', user.tenantId!)
     .order('updated_at', { ascending: false })
     .limit(50)
@@ -128,7 +128,7 @@ export async function listDocuments(folderId?: string | null): Promise<ChefDocum
   return ((data ?? []) as any[]).map((d) => ({
     id: d.id,
     title: d.title,
-    type: d.document_type,
+    type: d.type,
     folderId: d.folder_id,
     folderName: null,
     createdAt: d.created_at,
@@ -145,7 +145,7 @@ export async function searchDocuments(query: string): Promise<ChefDocument[]> {
 
   const { data } = await supabase
     .from('chef_documents')
-    .select('id, title, document_type, folder_id, created_at, updated_at')
+    .select('id, title, type, folder_id, created_at, updated_at')
     .eq('tenant_id', user.tenantId!)
     .ilike('title', `%${query}%`)
     .order('updated_at', { ascending: false })
@@ -154,7 +154,7 @@ export async function searchDocuments(query: string): Promise<ChefDocument[]> {
   return ((data ?? []) as any[]).map((d) => ({
     id: d.id,
     title: d.title,
-    type: d.document_type,
+    type: d.type,
     folderId: d.folder_id,
     folderName: null,
     createdAt: d.created_at,

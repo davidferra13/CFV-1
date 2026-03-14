@@ -4,14 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listEmployees, getPayrollRecords } from '@/lib/finance/payroll-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Users,
-  DollarSign,
-  FileText,
-  FileCheck,
-  Calculator,
-  HandCoins,
-} from '@/components/ui/icons'
+import { Users, DollarSign, FileText, FileCheck } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Payroll — ChefFlow' }
 
@@ -51,18 +44,6 @@ export default async function PayrollPage() {
       icon: DollarSign,
     },
     {
-      href: '/finance/payroll/calculator',
-      label: 'Payroll Calculator',
-      description: 'Compute gross pay from clock entries, OT, and tips',
-      icon: Calculator,
-    },
-    {
-      href: '/finance/tips',
-      label: 'Tip Management',
-      description: 'Record tips, configure pools, distribute',
-      icon: HandCoins,
-    },
-    {
       href: '/finance/payroll/941',
       label: 'Form 941',
       description: 'Quarterly payroll tax summaries',
@@ -88,7 +69,7 @@ export default async function PayrollPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
         <strong>Reference tool only.</strong> File payroll taxes and W-2s using IRS-approved payroll
         software. Consult a payroll professional for filing deadlines (Form 941 due 30 days after
         each quarter; W-2s due January 31).
@@ -106,7 +87,7 @@ export default async function PayrollPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">YTD Net Pay</p>
-            <p className="text-2xl font-bold text-emerald-200 mt-1">{formatCurrency(ytdNetPay)}</p>
+            <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency(ytdNetPay)}</p>
           </CardContent>
         </Card>
         <Card>

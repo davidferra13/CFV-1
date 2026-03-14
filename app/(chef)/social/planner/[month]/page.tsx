@@ -4,7 +4,7 @@ import { getSocialPlannerData } from '@/lib/social/actions'
 import { SocialMonthGrid } from '@/components/social/social-month-grid'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from '@/components/ui/icons'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const MONTH_NAMES = [
   'January',

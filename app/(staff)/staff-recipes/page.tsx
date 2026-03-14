@@ -27,10 +27,7 @@ export default async function StaffRecipesPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div
-        data-tour="staff-recipes"
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-      >
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-stone-100">Recipes</h1>
 
         {/* Station filter */}

@@ -5,7 +5,7 @@ import { CharityHourForm } from './charity-hour-form'
 import { NonprofitSearch } from './nonprofit-search'
 import { CharityHoursList } from './charity-hours-list'
 import type { CharityHourEntry, CharityOrganization } from '@/lib/charity/hours-types'
-import { ChevronDown } from '@/components/ui/icons'
+import { ChevronDown } from 'lucide-react'
 
 export function CharityHoursClient({
   entries,

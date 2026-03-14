@@ -22,14 +22,7 @@ export default function PaymentSection({ eventId, amount }: { eventId: string; a
         setLoading(true)
         setError(null)
         const result = await createPaymentIntent(eventId)
-        if ('error' in result) {
-          throw new Error(result.error || 'Failed to initialize payment')
-        }
-        const secret = result.clientSecret
-        if (!secret) {
-          throw new Error('Stripe did not return a payment session')
-        }
-        setClientSecret(secret)
+        setClientSecret(result.clientSecret!)
         setLoading(false)
       } catch (err: any) {
         setError(err.message || 'Failed to initialize payment')

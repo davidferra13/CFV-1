@@ -3,7 +3,7 @@ import { listDevices, listStaffWithPinStatus } from '@/lib/devices/actions'
 import { DeviceList } from '@/components/devices/device-list'
 import { StaffPinManager } from '@/components/devices/staff-pin-manager'
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 
 export default async function DevicesSettingsPage() {
   await requireChef()

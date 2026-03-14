@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { Trash2, Plus } from '@/components/ui/icons'
+import { Trash2, Plus } from 'lucide-react'
 import { logWaste } from '@/lib/inventory/waste-actions'
 import { toast } from 'sonner'
 

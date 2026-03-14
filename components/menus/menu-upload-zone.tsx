@@ -3,11 +3,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  MENU_UPLOAD_ACCEPT_ATTRIBUTE,
-  MENU_UPLOAD_EXTENSION_SET,
-  MENU_UPLOAD_FORMATS_LABEL,
-} from '@/lib/menus/upload-file-types'
 
 interface UploadFile {
   file: File
@@ -22,6 +17,29 @@ interface MenuUploadZoneProps {
   onPastedText: (text: string) => void
 }
 
+const ACCEPTED_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/heic',
+  'image/webp',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'text/rtf',
+]
+
+const ACCEPTED_EXTENSIONS = [
+  '.pdf',
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.heic',
+  '.webp',
+  '.docx',
+  '.txt',
+  '.rtf',
+]
+
 export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZoneProps) {
   const [files, setFiles] = useState<UploadFile[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
@@ -32,8 +50,8 @@ export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZon
   const handleFiles = useCallback((fileList: FileList) => {
     const newFiles: UploadFile[] = Array.from(fileList)
       .filter((f) => {
-        const ext = f.name.split('.').pop()?.toLowerCase() || ''
-        return MENU_UPLOAD_EXTENSION_SET.has(ext)
+        const ext = '.' + f.name.split('.').pop()?.toLowerCase()
+        return ACCEPTED_EXTENSIONS.includes(ext)
       })
       .map((f) => ({
         file: f,
@@ -217,7 +235,7 @@ export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZon
               {isDragOver ? 'Drop files here' : 'Drop menu files here or click to browse'}
             </p>
             <p className="text-stone-500 text-sm">
-              {MENU_UPLOAD_FORMATS_LABEL}
+              PDF, images (JPG, PNG, HEIC), Word (.docx), or plain text
             </p>
             <p className="text-stone-600 text-xs mt-2">
               Upload 100+ files at once — they&apos;ll be processed in queue
@@ -226,8 +244,7 @@ export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZon
               ref={fileInputRef}
               type="file"
               multiple
-              accept={MENU_UPLOAD_ACCEPT_ATTRIBUTE.join(',')}
-              capture="environment"
+              accept={ACCEPTED_EXTENSIONS.join(',')}
               onChange={(e) => e.target.files && handleFiles(e.target.files)}
               className="hidden"
             />

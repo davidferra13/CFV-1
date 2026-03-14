@@ -8,7 +8,7 @@ import type { CalendarEvent } from '@/lib/scheduling/actions'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
-  proposed: 'Sent to Client',
+  proposed: 'Proposed',
   accepted: 'Accepted',
   paid: 'Paid',
   confirmed: 'Confirmed',
@@ -18,12 +18,12 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-300',
-  proposed: 'bg-blue-900 text-blue-200',
-  accepted: 'bg-yellow-900 text-yellow-200',
-  paid: 'bg-emerald-900 text-emerald-200',
+  proposed: 'bg-blue-900 text-blue-700',
+  accepted: 'bg-yellow-900 text-yellow-700',
+  paid: 'bg-emerald-900 text-emerald-700',
   confirmed: 'bg-brand-900 text-brand-400',
   in_progress: 'bg-brand-950 text-brand-300',
-  completed: 'bg-green-900 text-green-200',
+  completed: 'bg-green-900 text-green-700',
 }
 
 const PREP_DOT: Record<string, string> = {

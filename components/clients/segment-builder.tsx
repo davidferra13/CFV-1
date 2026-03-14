@@ -2,7 +2,7 @@
 import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, X } from '@/components/ui/icons'
+import { Plus, X } from 'lucide-react'
 import { createSegment } from '@/lib/clients/segments'
 import { toast } from 'sonner'
 

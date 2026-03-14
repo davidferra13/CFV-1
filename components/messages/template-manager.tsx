@@ -256,7 +256,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(t.id)}
-                          className="text-red-600 hover:text-red-200 hover:bg-red-950"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-950"
                         >
                           Delete
                         </Button>

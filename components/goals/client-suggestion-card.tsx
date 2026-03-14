@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { PhoneCall, X, CheckCircle, Clock } from '@/components/ui/icons'
+import { PhoneCall, X, CheckCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ClientSuggestion } from '@/lib/goals/types'
 import { updateSuggestionStatus } from '@/lib/goals/actions'

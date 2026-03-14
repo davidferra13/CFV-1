@@ -15,8 +15,7 @@ import {
 import { getInquiries } from '@/lib/inquiries/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Clock, TrendingUp, Ghost, XCircle } from '@/components/ui/icons'
-import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
+import { ArrowLeft, Clock, TrendingUp, Ghost, XCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Conversion Funnel - ChefFlow',
@@ -107,50 +106,22 @@ export default async function FunnelPage() {
     other: 'Other',
     unknown: 'Unknown',
   }
-  const exportRows: Array<Array<string | number>> = [
-    ...funnelData.map((entry) => ['funnel_stage', entry.stage, entry.count]),
-    ['kpi', 'avg_response_hours', responseTime.avgHoursToFirstResponse],
-    ['kpi', 'overall_conversion_rate', funnel.overallConversionRate],
-    ['kpi', 'ghost_rate', ghostRate.ghostRate],
-    ['kpi', 'avg_lead_time_days', leadTime.avgLeadTimeDays],
-    ['kpi', 'avg_sales_cycle_days', leadTime.avgSalesCycleDays],
-    ...channelBreakdown.map((channel) => [
-      'channel',
-      CHANNEL_LABELS[channel.channel] || channel.channel,
-      channel.total,
-      channel.converted,
-      channel.rate,
-    ]),
-    ...declineReasons.reasons.map((reason) => [
-      'decline_reason',
-      reason.reason,
-      reason.count,
-      reason.percent,
-    ]),
-  ]
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/analytics"
-            className="text-stone-400 hover:text-stone-100 transition-colors"
-            aria-label="Back to Analytics"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-stone-100">Conversion Funnel</h1>
-            <p className="mt-1 text-stone-400">Track how inquiries move through your pipeline</p>
-          </div>
+      <div className="flex items-center gap-4">
+        <Link
+          href="/analytics"
+          className="text-stone-400 hover:text-stone-100 transition-colors"
+          aria-label="Back to Analytics"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">Conversion Funnel</h1>
+          <p className="text-stone-400 mt-1">Track how inquiries move through your pipeline</p>
         </div>
-        <StaticCSVDownloadButton
-          headers={['section', 'label', 'value_1', 'value_2', 'value_3']}
-          rows={exportRows}
-          filename="conversion-funnel.csv"
-        />
       </div>
 
       {/* Funnel Visualization */}

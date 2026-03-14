@@ -1,12 +1,12 @@
 'use client'
 
 // Standalone Receipt Upload
-// Allows chefs to upload a receipt from anywhere - no event required.
+// Allows chefs to upload a receipt from anywhere — no event required.
 // Event is optional (defaulted to provided eventId if given), client is optional.
 // Mirrors the quick-receipt-capture widget but without event-state restrictions
 // and with selectors to associate the receipt with any event or client.
 
-import { useRef, useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { uploadStandaloneReceipt } from '@/lib/receipts/library-actions'
 import type { EventOption, ClientOption } from '@/lib/receipts/library-actions'
@@ -14,7 +14,9 @@ import type { EventOption, ClientOption } from '@/lib/receipts/library-actions'
 type Props = {
   events: EventOption[]
   clients: ClientOption[]
+  /** Pre-select an event (e.g., when uploading from an event page). */
   defaultEventId?: string
+  /** Called after a successful upload so the parent can refresh or redirect. */
   onSuccess?: (receiptPhotoId: string) => void
 }
 
@@ -26,24 +28,25 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [receiptPhotoId, setReceiptPhotoId] = useState<string | null>(null)
+
+  // Association selectors — event defaults to provided id (usually the current event)
   const [selectedEventId, setSelectedEventId] = useState<string>(defaultEventId ?? '')
   const [selectedClientId, setSelectedClientId] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextFile = event.target.files?.[0]
-    if (!nextFile) return
-    setFile(nextFile)
-    setPreview(URL.createObjectURL(nextFile))
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setFile(f)
+    setPreview(URL.createObjectURL(f))
     setState('previewing')
     setError(null)
   }
 
   const handleUpload = async () => {
     if (!file) return
-
     setState('uploading')
     setError(null)
 
@@ -60,11 +63,10 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
       setState('success')
       setReceiptPhotoId(result.receiptPhotoId)
       onSuccess?.(result.receiptPhotoId)
-      return
+    } else {
+      setState('error')
+      setError(result.error)
     }
-
-    setState('error')
-    setError(result.error)
   }
 
   const handleReset = () => {
@@ -78,37 +80,38 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
 
   if (state === 'success') {
     return (
-      <div className="space-y-2 rounded-lg border border-green-200 bg-green-950 p-4">
-        <p className="text-sm font-medium text-green-200">
+      <div className="border border-green-200 bg-green-950 rounded-lg p-4 space-y-2">
+        <p className="text-sm font-medium text-green-800">
           Receipt uploaded and queued for extraction.
         </p>
         <p className="text-xs text-green-600">
-          After extraction, review the parsed line items and approve them before anything is added
-          to expenses.
+          Check back in a moment to review the extracted line items.
         </p>
         <div className="flex gap-2 pt-1">
           <Button size="sm" variant="ghost" onClick={handleReset}>
             Upload Another
           </Button>
-          <Button size="sm" variant="secondary" href="/receipts">
-            View Receipt Library
-          </Button>
+          <a href="/receipts">
+            <Button size="sm" variant="secondary">
+              View Receipt Library
+            </Button>
+          </a>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-stone-700 bg-stone-900 p-4">
+    <div className="border border-stone-700 rounded-lg p-4 space-y-4 bg-stone-900">
       <p className="text-sm font-semibold text-stone-200">Upload a Receipt</p>
-      <p className="text-xs text-stone-500">
-        Receipts auto-extract in the background, then stay pending review until you approve them.
-      </p>
 
+      {/* File picker */}
       {state === 'idle' && (
         <div>
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-600 p-6 transition-colors hover:border-stone-400">
-            <span className="mb-1 text-sm text-stone-400">Tap to choose a photo or take one now</span>
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-600 rounded-lg p-6 cursor-pointer hover:border-stone-400 transition-colors">
+            <span className="text-stone-400 text-sm mb-1">
+              Tap to choose a photo or take one now
+            </span>
             <span className="text-xs text-stone-400">JPEG, PNG, HEIC, WebP · max 10 MB</span>
             <input
               ref={inputRef}
@@ -122,75 +125,81 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
         </div>
       )}
 
+      {/* Preview */}
       {state === 'previewing' && preview && (
         <div className="space-y-3">
           <div className="w-full max-h-48 overflow-hidden rounded border border-stone-700">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="Receipt preview" className="max-h-48 w-full object-contain" />
+            <img src={preview} alt="Receipt preview" className="object-contain w-full max-h-48" />
           </div>
           <p className="text-xs text-stone-500">{file?.name}</p>
         </div>
       )}
 
+      {/* Uploading spinner */}
       {state === 'uploading' && (
-        <div className="animate-pulse text-sm text-stone-500">
-          Uploading now. Nothing is added to expenses until review and approval.
-        </div>
+        <div className="text-sm text-stone-500 animate-pulse">Uploading…</div>
       )}
 
+      {/* Error */}
       {state === 'error' && error && <p className="text-sm text-red-600">{error}</p>}
 
+      {/* Association selectors — shown while previewing or after error */}
       {(state === 'previewing' || state === 'error') && (
         <div className="space-y-3">
+          {/* Event selector */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-400">
+            <label className="block text-xs font-medium text-stone-400 mb-1">
               Link to Event <span className="font-normal text-stone-400">(optional)</span>
             </label>
             <select
               value={selectedEventId}
-              onChange={(event) => setSelectedEventId(event.target.value)}
-              className="w-full rounded border border-stone-700 bg-stone-900 px-2 py-1.5 text-sm text-stone-200"
+              onChange={(e) => setSelectedEventId(e.target.value)}
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200"
             >
-              <option value="">- No event (standalone receipt) -</option>
-              {events.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
+              <option value="">— No event (standalone receipt) —</option>
+              {events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.label}
                 </option>
               ))}
             </select>
           </div>
 
+          {/* Client selector */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-400">
+            <label className="block text-xs font-medium text-stone-400 mb-1">
               Link to Client <span className="font-normal text-stone-400">(optional)</span>
             </label>
             <select
               value={selectedClientId}
-              onChange={(event) => setSelectedClientId(event.target.value)}
-              className="w-full rounded border border-stone-700 bg-stone-900 px-2 py-1.5 text-sm text-stone-200"
+              onChange={(e) => setSelectedClientId(e.target.value)}
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200"
             >
-              <option value="">- No client -</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
+              <option value="">— No client —</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
           </div>
 
+          {/* Notes */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-400">
+            <label className="block text-xs font-medium text-stone-400 mb-1">
               Note <span className="font-normal text-stone-400">(optional)</span>
             </label>
             <input
               type="text"
               value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="e.g. Annual equipment purchase, farmers market run..."
-              className="w-full rounded border border-stone-700 bg-stone-900 px-2 py-1.5 text-sm text-stone-200 placeholder:text-stone-400"
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Annual equipment purchase, farmers market run…"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200 placeholder:text-stone-300"
             />
           </div>
 
+          {/* Actions */}
           <div className="flex gap-2 pt-1">
             <Button size="sm" variant="ghost" onClick={handleReset}>
               Cancel

@@ -67,11 +67,9 @@ export default async function QualifiedLeadsPage() {
               {inquiries.map((inquiry: any) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
-                    <p>{inquiry.contact_name || inquiry.client?.full_name || '—'}</p>
-                    {(inquiry.contact_email || inquiry.client?.email) && (
-                      <p className="text-xs text-stone-400 mt-0.5">
-                        {inquiry.contact_email || inquiry.client?.email}
-                      </p>
+                    <p>{inquiry.client?.full_name ?? '—'}</p>
+                    {inquiry.client?.email && (
+                      <p className="text-xs text-stone-400 mt-0.5">{inquiry.client.email}</p>
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">

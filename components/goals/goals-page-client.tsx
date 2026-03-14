@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { Plus, Settings } from '@/components/ui/icons'
+import { Plus, Settings } from 'lucide-react'
 import type { GoalsDashboard, GoalView, GoalCategory } from '@/lib/goals/types'
 import { GOAL_TYPE_TO_CATEGORY, GOAL_CATEGORY_META } from '@/lib/goals/types'
 import { LifeBalanceWheel } from '@/components/goals/life-balance-wheel'

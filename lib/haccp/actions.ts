@@ -5,7 +5,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { generateHACCPPlan } from './templates'
 import type { HACCPPlanData } from './types'
-import { ARCHETYPE_IDS, type ArchetypeId } from '@/lib/archetypes/registry'
+import type { ArchetypeId } from '@/lib/archetypes/presets'
+import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 
 // haccp_plans may not be in generated types yet — cast as needed
 function fromHACCP(supabase: any): any {

@@ -59,7 +59,7 @@ export function convertWorkItemsToQueueItems(workItems: WorkItem[]): QueueItem[]
       score,
       title: wi.title,
       description: wi.description,
-      href: wi.actionUrl,
+      href: `/events/${wi.eventId}`,
       icon: STAGE_ICONS[wi.stage] ?? 'CircleDot',
       context: {
         primaryLabel: wi.clientName,

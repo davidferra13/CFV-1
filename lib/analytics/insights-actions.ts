@@ -8,7 +8,6 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { format, subMonths, startOfMonth } from 'date-fns'
-import { extractTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-defaults'
 
 // ============================================
 // TYPES
@@ -839,9 +838,8 @@ export type TakeAChefROI = {
   directBookingsCount: number // repeat events from TAC clients, non-platform channel
   conversionRate: number // % of TAC clients who booked direct again
   estimatedCommissionPaidCents: number // expenses tagged as platform commission
-  estimatedCommissionSavedCents: number // direct booking revenue × saved TAC default commission
+  estimatedCommissionSavedCents: number // direct bookings × avg event value × 25%
   avgEventValueCents: number
-  defaultCommissionPercent: number
   topTacClients: { clientId: string; name: string; totalEvents: number; directEvents: number }[]
 }
 
@@ -859,23 +857,10 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     estimatedCommissionPaidCents: 0,
     estimatedCommissionSavedCents: 0,
     avgEventValueCents: 0,
-    defaultCommissionPercent: 18,
     topTacClients: [],
   }
 
   try {
-    const { data: tenantSettings } = await supabase
-      .from('tenant_settings')
-      .select('integration_connection_settings')
-      .eq('tenant_id', tenantId)
-      .maybeSingle()
-
-    const defaultCommissionPercent = extractTakeAChefIntegrationSettings(
-      tenantSettings?.integration_connection_settings ?? null
-    ).defaultCommissionPercent
-
-    empty.defaultCommissionPercent = defaultCommissionPercent
-
     // 1. Get all TakeaChef-sourced clients
     const { data: tacClients, error: clientErr } = await supabase
       .from('clients')
@@ -916,7 +901,6 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     let platformBookings = 0
     let directBookings = 0
     let totalRevenueCents = 0
-    let directRevenueCents = 0
     const clientEventCounts: Record<string, { name: string; total: number; direct: number }> = {}
 
     for (const event of allEvents) {
@@ -925,7 +909,6 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
         platformBookings++
       } else {
         directBookings++
-        directRevenueCents += event.quoted_price_cents ?? 0
       }
 
       totalRevenueCents += event.quoted_price_cents ?? 0
@@ -958,12 +941,10 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
       0
     )
 
-    // 6. Estimate commission saved on direct bookings using the chef's TAC default
+    // 6. Estimate commission saved on direct bookings
     const avgEventValueCents =
       allEvents.length > 0 ? Math.round(totalRevenueCents / allEvents.length) : 0
-    const estimatedCommissionSavedCents = Math.round(
-      (directRevenueCents * defaultCommissionPercent) / 100
-    )
+    const estimatedCommissionSavedCents = Math.round(directBookings * avgEventValueCents * 0.25)
 
     // 7. Conversion rate: TAC clients with at least one direct booking
     const clientsWithDirectBookings = Object.values(clientEventCounts).filter(
@@ -992,7 +973,6 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
       estimatedCommissionPaidCents: commissionPaidCents,
       estimatedCommissionSavedCents,
       avgEventValueCents,
-      defaultCommissionPercent,
       topTacClients,
     }
   } catch (err) {

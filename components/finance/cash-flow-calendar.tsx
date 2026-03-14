@@ -66,7 +66,7 @@ export function CashFlowCalendar({ data }: Props) {
           </Link>
         </div>
         <div className="flex gap-4 text-xs">
-          <span className="text-emerald-200 font-medium">
+          <span className="text-emerald-700 font-medium">
             +{formatCurrency(data.totalIncomeCents)}
           </span>
           <span className="text-red-500 font-medium">
@@ -111,7 +111,7 @@ export function CashFlowCalendar({ data }: Props) {
               {day && (
                 <div className="space-y-0.5 mt-0.5 min-h-0 overflow-hidden">
                   {day.incomeCents > 0 && (
-                    <div className="text-[9px] font-medium text-emerald-200 leading-tight truncate">
+                    <div className="text-[9px] font-medium text-emerald-700 leading-tight truncate">
                       +{formatCurrency(day.incomeCents)}
                     </div>
                   )}

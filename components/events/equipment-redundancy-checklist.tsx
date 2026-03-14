@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Save, Wrench } from '@/components/ui/icons'
+import { Plus, Save, Wrench } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -120,8 +120,8 @@ export function EquipmentRedundancyChecklist({ eventId, items: initialItems }: P
                       disabled={isPending}
                       className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                         item.hasBackup
-                          ? 'bg-green-900 text-green-200 hover:bg-green-200'
-                          : 'bg-red-900 text-red-200 hover:bg-red-200'
+                          ? 'bg-green-900 text-green-800 hover:bg-green-200'
+                          : 'bg-red-900 text-red-800 hover:bg-red-200'
                       }`}
                     >
                       {item.hasBackup ? 'Yes' : 'No'}

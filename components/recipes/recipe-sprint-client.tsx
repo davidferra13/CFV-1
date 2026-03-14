@@ -17,7 +17,7 @@ import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedIngredient } from '@/lib/ai/parse-recipe'
 import type { UnrecordedComponentForSprint } from '@/lib/recipes/actions'
 import { format } from 'date-fns'
-import { BookOpen, ChevronRight, SkipForward, CheckCircle } from '@/components/ui/icons'
+import { BookOpen, ChevronRight, SkipForward, CheckCircle } from 'lucide-react'
 
 type Props = {
   initialItems: UnrecordedComponentForSprint[]

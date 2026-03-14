@@ -50,7 +50,7 @@ export function AvailableLeftovers({ eventId, items: initialItems }: Props) {
         <CardTitle className="text-base text-green-900">
           Available Carry-Forward ({items.length})
         </CardTitle>
-        <p className="text-xs text-green-200 -mt-1">
+        <p className="text-xs text-green-700 -mt-1">
           Reusable leftovers from previous events — click to apply to this one
         </p>
       </CardHeader>
@@ -93,7 +93,7 @@ export function AvailableLeftovers({ eventId, items: initialItems }: Props) {
                     )
                   </span>
                   {item.estimatedCostCents && (
-                    <span className="text-xs text-green-200 font-medium">
+                    <span className="text-xs text-green-700 font-medium">
                       ~{formatCurrency(item.estimatedCostCents)} saved
                     </span>
                   )}

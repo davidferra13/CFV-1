@@ -3,16 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Menu, X } from '@/components/ui/icons'
-import { TrackedLink } from '@/components/analytics/tracked-link'
+import { Menu, X } from 'lucide-react'
 import { AppLogo } from '@/components/branding/app-logo'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { Button } from '@/components/ui/button'
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Why ChefFlow' },
-  { href: '/about', label: 'About' },
-  { href: '/faq', label: 'FAQ' },
+  { href: '/', label: 'Home' },
+  { href: '/chefs', label: 'Find a Chef' },
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ]
 
@@ -20,8 +19,6 @@ export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const isBeta = LAUNCH_MODE === 'beta'
-  const primaryActionLabel = isBeta ? 'Request access' : 'Get started'
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12)
@@ -34,7 +31,7 @@ export function PublicHeader() {
     <header
       className={`sticky top-0 z-50 border-b transition-all ${
         isScrolled
-          ? 'border-stone-200 bg-white/90 shadow-sm backdrop-blur-xl dark:border-stone-700 dark:bg-stone-900/90'
+          ? 'border-stone-700 bg-stone-900/90 shadow-sm backdrop-blur-xl'
           : 'border-transparent bg-transparent'
       }`}
     >
@@ -42,57 +39,46 @@ export function PublicHeader() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
-            <span className="text-base font-display tracking-tight text-stone-900 dark:text-stone-100">
-              ChefFlow
-            </span>
+            <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
 
           <div className="hidden items-center gap-1 md:flex">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
               return (
-                <TrackedLink
+                <Link
                   key={item.href}
                   href={item.href}
-                  analyticsName={`header_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
-                  analyticsProps={{ section: 'public_header' }}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-400'
-                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-[var(--text-muted-soft)] dark:hover:bg-stone-700 dark:hover:text-stone-100'
+                      ? 'bg-brand-950 text-brand-400'
+                      : 'text-stone-400 hover:bg-stone-700 hover:text-stone-100'
                   }`}
                 >
                   {item.label}
-                </TrackedLink>
+                </Link>
               )
             })}
           </div>
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle />
-          <TrackedLink
-            href="/auth/signin"
-            analyticsName="header_signin"
-            analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-          >
-            Sign In
-          </TrackedLink>
-          <TrackedLink
-            href={PRIMARY_SIGNUP_HREF}
-            analyticsName="header_signup"
-            analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            {primaryActionLabel}
-          </TrackedLink>
+          <Link href="/auth/signin">
+            <Button variant="ghost" size="sm">
+              Sign In
+            </Button>
+          </Link>
+          <Link href="/auth/signup">
+            <Button variant="primary" size="sm">
+              Sign up
+            </Button>
+          </Link>
         </div>
 
         <button
           type="button"
           onClick={() => setMobileMenuOpen((open) => !open)}
-          className="rounded-lg p-2 text-stone-500 hover:bg-stone-100 dark:text-[var(--text-muted-soft)] dark:hover:bg-stone-700 md:hidden"
+          className="rounded-lg p-2 text-stone-400 hover:bg-stone-700 md:hidden"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -100,48 +86,35 @@ export function PublicHeader() {
       </nav>
 
       {mobileMenuOpen && (
-        <div className="border-t border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900 md:hidden">
+        <div className="border-t border-stone-700 bg-stone-900 md:hidden">
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6 lg:px-8">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
               return (
-                <TrackedLink
+                <Link
                   key={item.href}
                   href={item.href}
-                  analyticsName={`header_mobile_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
-                  analyticsProps={{ section: 'public_header_mobile' }}
-                  className={`block rounded-lg px-3 py-3 text-sm font-medium ${
-                    isActive
-                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-400'
-                      : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700'
+                  className={`block rounded-lg px-3 py-2 text-sm font-medium ${
+                    isActive ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-stone-700'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
-                </TrackedLink>
+                </Link>
               )
             })}
           </div>
-          <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 pb-4 sm:px-6 lg:px-8">
-            <ThemeToggle />
-            <TrackedLink
-              href="/auth/signin"
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-3 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100"
-              analyticsName="header_mobile_signin"
-              analyticsProps={{ section: 'public_header_mobile' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Sign In
-            </TrackedLink>
-            <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-              analyticsName="header_mobile_signup"
-              analyticsProps={{ section: 'public_header_mobile' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {primaryActionLabel}
-            </TrackedLink>
+          <div className="mx-auto flex max-w-6xl gap-2 px-4 pb-4 sm:px-6 lg:px-8">
+            <Link href="/auth/signin" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="secondary" size="sm" className="w-full">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/auth/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="primary" size="sm" className="w-full">
+                Sign up
+              </Button>
+            </Link>
           </div>
         </div>
       )}

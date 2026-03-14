@@ -341,14 +341,13 @@ export default async function EventDocumentsPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="primary"
+          <a
             href={`/api/documents/${event.id}?type=all&archive=1`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Print All (8 Sheets)
-          </Button>
+            <Button variant="primary">Print All (8 Sheets)</Button>
+          </a>
           <Link href={`/events/${event.id}`}>
             <Button variant="secondary">Back to Event</Button>
           </Link>
@@ -407,19 +406,21 @@ export default async function EventDocumentsPage({
             </p>
             <div className="flex flex-wrap gap-2">
               {packetLatestSnapshot ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <a
                   href={`/api/documents/snapshots/${packetLatestSnapshot.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Open Latest Packet
-                </Button>
+                  <Button variant="ghost" size="sm">
+                    Open Latest Packet
+                  </Button>
+                </a>
               ) : null}
-              <Button variant="ghost" size="sm" href={eventArchiveExportHref}>
-                Export Archive CSV
-              </Button>
+              <a href={eventArchiveExportHref}>
+                <Button variant="ghost" size="sm">
+                  Export Archive CSV
+                </Button>
+              </a>
             </div>
           </div>
         </div>
@@ -439,15 +440,15 @@ export default async function EventDocumentsPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="primary"
-                size="sm"
+              <a
                 href={`/api/documents/${event.id}?type=pack&types=${encodeURIComponent(packTypesParam)}&archive=1`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Print Recommended Pack
-              </Button>
+                <Button variant="primary" size="sm">
+                  Print Recommended Pack
+                </Button>
+              </a>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -580,36 +581,36 @@ export default async function EventDocumentsPage({
                       </Button>
                     </Link>
                   ) : !row.archived ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
+                    <a
                       href={`/api/documents/${event.id}?type=${row.type}&archive=1`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Archive Now
-                    </Button>
+                      <Button variant="secondary" size="sm">
+                        Archive Now
+                      </Button>
+                    </a>
                   ) : (
-                    <Button
-                      variant="secondary"
-                      size="sm"
+                    <a
                       href={`/api/documents/${event.id}?type=${row.type}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Preview
-                    </Button>
+                      <Button variant="secondary" size="sm">
+                        Preview
+                      </Button>
+                    </a>
                   )}
                   {row.latestSnapshotId && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <a
                       href={`/api/documents/snapshots/${row.latestSnapshotId}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Latest Snapshot
-                    </Button>
+                      <Button variant="ghost" size="sm">
+                        Latest Snapshot
+                      </Button>
+                    </a>
                   )}
                 </div>
               </div>
@@ -636,15 +637,15 @@ export default async function EventDocumentsPage({
                   Financial Hub
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
+              <a
                 href={`/api/documents/financial-summary/${event.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Financial PDF
-              </Button>
+                <Button variant="ghost" size="sm">
+                  Financial PDF
+                </Button>
+              </a>
             </div>
           </div>
 
@@ -928,9 +929,11 @@ export default async function EventDocumentsPage({
                     Oldest
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" href={eventArchiveExportHref}>
-                  Export CSV
-                </Button>
+                <a href={eventArchiveExportHref}>
+                  <Button variant="ghost" size="sm">
+                    Export CSV
+                  </Button>
+                </a>
               </div>
             </div>
 
@@ -1004,15 +1007,15 @@ export default async function EventDocumentsPage({
                             Drill In
                           </Button>
                         </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <a
                           href={`/api/documents/snapshots/${entry.latest.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          Open Latest
-                        </Button>
+                          <Button variant="ghost" size="sm">
+                            Open Latest
+                          </Button>
+                        </a>
                       </div>
                     </div>
                   )
@@ -1063,15 +1066,15 @@ export default async function EventDocumentsPage({
                           </Button>
                         </Link>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <a
                         href={`/api/documents/snapshots/${snapshot.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Open
-                      </Button>
+                        <Button variant="ghost" size="sm">
+                          Open
+                        </Button>
+                      </a>
                     </div>
                   </div>
                 ))}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import type { HubMessage } from '@/lib/hub/types'
 
 const EMOJI_PICKS = ['🔥', '❤️', '😂', '🍽️', '👏', '🎉', '😍', '🤤', '🥂', '👨‍🍳']
@@ -11,9 +11,6 @@ interface HubInputProps {
   onCancelReply?: () => void
   disabled?: boolean
   placeholder?: string
-  initialValue?: string
-  onTyping?: () => void
-  fileShareSlot?: React.ReactNode
 }
 
 export function HubInput({
@@ -22,11 +19,8 @@ export function HubInput({
   onCancelReply,
   disabled,
   placeholder = 'Type a message...',
-  initialValue,
-  onTyping,
-  fileShareSlot,
 }: HubInputProps) {
-  const [text, setText] = useState(initialValue ?? '')
+  const [text, setText] = useState('')
   const [showEmoji, setShowEmoji] = useState(false)
   const [sending, setSending] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -48,25 +42,11 @@ export function HubInput({
     }
   }, [text, sending, onSend])
 
-  // Reset text when initialValue changes (edit mode toggle)
-  useEffect(() => {
-    if (initialValue !== undefined) setText(initialValue)
-  }, [initialValue])
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
     }
-    // Escape cancels reply/edit
-    if (e.key === 'Escape' && onCancelReply) {
-      onCancelReply()
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(e.target.value)
-    onTyping?.()
   }
 
   return (
@@ -92,14 +72,11 @@ export function HubInput({
           😊
         </button>
 
-        {/* File share slot */}
-        {fileShareSlot}
-
         {/* Text area */}
         <textarea
           ref={inputRef}
           value={text}
-          onChange={handleChange}
+          onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled || sending}

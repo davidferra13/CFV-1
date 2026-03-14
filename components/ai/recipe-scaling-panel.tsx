@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChefHat, Loader2, Bot, AlertCircle } from '@/components/ui/icons'
+import { ChefHat, Loader2, Sparkles, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { scaleRecipeWithAI, type ScaledRecipe } from '@/lib/ai/recipe-scaling'
@@ -59,7 +59,7 @@ export function RecipeScalingPanel({
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Auto Scale
               </>
             )}
@@ -91,12 +91,12 @@ export function RecipeScalingPanel({
 
       {result.techniqueAdjustments.length > 0 && (
         <div className="bg-amber-950 border border-amber-200 rounded p-2">
-          <div className="text-xs font-medium text-amber-200 mb-1 flex items-center gap-1">
+          <div className="text-xs font-medium text-amber-800 mb-1 flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
             Technique Changes
           </div>
           {result.techniqueAdjustments.map((t, i) => (
-            <div key={i} className="text-xs text-amber-200">
+            <div key={i} className="text-xs text-amber-700">
               • {t}
             </div>
           ))}

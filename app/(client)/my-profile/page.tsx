@@ -1,25 +1,13 @@
 // Client Profile - Self-service profile editing
 
 import { requireClient } from '@/lib/auth/get-user'
-import {
-  getMyProfile,
-  getMyFunQA,
-  getMyMealCollaborationData,
-} from '@/lib/clients/client-profile-actions'
-import {
-  getMyDeletionStatus,
-  getMyNotificationPreferences,
-  getMyRecentSessionHistory,
-} from '@/lib/clients/self-service-actions'
+import { getMyProfile, getMyFunQA } from '@/lib/clients/client-profile-actions'
+import { getClientSignalNotificationPref } from '@/lib/calendar/signal-settings-actions'
 import { ClientProfileForm } from './client-profile-form'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
-import { ClientNotificationPreferences } from '@/components/clients/client-notification-preferences'
-import { ClientAccountControls } from '@/components/clients/client-account-controls'
-import { ClientSessionHistory } from '@/components/clients/client-session-history'
+import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
-import { OpenTableToggleWrapper } from './open-table-toggle-wrapper'
 import type { Metadata } from 'next'
-import { MealCollaborationPanel } from './meal-collaboration-panel'
 
 export const metadata: Metadata = {
   title: 'My Profile - ChefFlow',
@@ -27,25 +15,15 @@ export const metadata: Metadata = {
 
 export default async function MyProfilePage() {
   await requireClient()
-  const [
-    profile,
-    funQAAnswers,
-    notificationPreferences,
-    deletionStatus,
-    recentSessions,
-    mealCollab,
-  ] = await Promise.all([
+  const [profile, funQAAnswers, signalNotifEnabled] = await Promise.all([
     getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
     getMyFunQA(),
-    getMyNotificationPreferences(),
-    getMyDeletionStatus(),
-    getMyRecentSessionHistory(),
-    getMyMealCollaborationData(),
+    getClientSignalNotificationPref(),
   ])
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <div data-tour="client-profile">
+      <div>
         <h1 className="text-3xl font-bold text-stone-100">My Profile</h1>
         <p className="text-stone-400 mt-1">
           Keep your info up to date so your chef can deliver the best experience.
@@ -54,22 +32,13 @@ export default async function MyProfilePage() {
 
       <ClientProfileForm profile={profile} />
 
-      <MealCollaborationPanel
-        history={mealCollab.history}
-        requests={mealCollab.requests}
-        recommendations={mealCollab.recommendations}
-      />
-
       <FunQAForm initialAnswers={funQAAnswers} />
 
-      <ClientNotificationPreferences initialPreferences={notificationPreferences} />
-
-      <ClientSessionHistory sessions={recentSessions} />
-
-      {/* Open Tables Discovery Toggle */}
-      <OpenTableToggleWrapper />
-
-      <ClientAccountControls deletionStatus={deletionStatus} />
+      {/* Notification Preferences */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-stone-100">Notification Preferences</h2>
+        <ClientSignalNotificationToggle initialEnabled={signalNotifEnabled} />
+      </div>
 
       {/* Feedback */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">

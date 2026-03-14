@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 // Partner Portal — Location Detail
 // Shows full detail for a single location: photos, description, event history.
 // No client PII is shown — events display only occasion, date, guest count, status.
@@ -6,7 +5,7 @@
 import { getPartnerPortalData, getPartnerLocationEvents } from '@/lib/partners/portal-actions'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
-import { MapPin, Users, Calendar } from '@/components/ui/icons'
+import { MapPin, Users, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function PartnerLocationDetailPage({ params }: { params: { id: string } }) {

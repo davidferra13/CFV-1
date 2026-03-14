@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { UserCircle, Copy, Loader2, Bot } from '@/components/ui/icons'
+import { UserCircle, Copy, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateChefBioDraft, type ChefBioDraft } from '@/lib/ai/chef-bio'
@@ -46,7 +46,7 @@ export function ChefBioPanel() {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Bio
               </>
             )}

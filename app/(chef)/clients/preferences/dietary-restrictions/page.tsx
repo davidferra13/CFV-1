@@ -57,7 +57,7 @@ export default async function DietaryRestrictionsPage() {
             {topRestrictions.map(([restriction, count]) => (
               <span
                 key={restriction}
-                className="bg-amber-900 text-amber-200 text-sm px-3 py-1 rounded-full"
+                className="bg-amber-900 text-amber-800 text-sm px-3 py-1 rounded-full"
               >
                 {restriction} <span className="text-amber-600 font-semibold">×{count}</span>
               </span>
@@ -102,7 +102,7 @@ export default async function DietaryRestrictionsPage() {
                       {(client.dietary_restrictions as string[]).map((r) => (
                         <span
                           key={r}
-                          className="bg-amber-900 text-amber-200 text-xs px-2 py-0.5 rounded-full"
+                          className="bg-amber-900 text-amber-800 text-xs px-2 py-0.5 rounded-full"
                         >
                           {r}
                         </span>

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, ChevronDown, ChevronUp } from '@/components/ui/icons'
+import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   createCustomFieldDefinition,
@@ -295,7 +295,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                         size="sm"
                         onClick={() => handleDelete(def)}
                         disabled={isPending}
-                        className="text-red-500 hover:text-red-200 hover:bg-red-950 shrink-0"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-950 shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

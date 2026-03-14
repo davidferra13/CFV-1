@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import { format, formatDistanceToNow, isPast } from 'date-fns'
-import { Phone, Clock, User, ChevronRight, AlertCircle } from '@/components/ui/icons'
+import { Phone, Clock, User, ChevronRight, AlertCircle } from 'lucide-react'
 import type { ScheduledCall } from '@/lib/calls/actions'
 import { CallTypeBadge } from './call-type-badge'
 

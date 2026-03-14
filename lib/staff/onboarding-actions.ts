@@ -102,7 +102,6 @@ export async function updateOnboardingItem(
   if (error) throw new Error(error.message)
 
   revalidatePath('/staff')
-  revalidatePath(`/staff/${staffMemberId}`)
 }
 
 /**

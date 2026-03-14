@@ -11,7 +11,7 @@ import {
   resolveDispute,
   type PaymentDispute,
 } from '@/lib/finance/dispute-actions'
-import { ShieldAlert, Plus } from '@/components/ui/icons'
+import { ShieldAlert, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, X } from '@/components/ui/icons'
+import { AlertTriangle, X } from 'lucide-react'
 import { mark86 } from '@/lib/operations/kds-actions'
 import { toast } from 'sonner'
 
@@ -46,7 +46,6 @@ export function EightySixModal({ courseId, courseName, onClose, onConfirm }: Eig
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-400"
-          aria-label="Close 86 modal"
         >
           <X className="h-5 w-5" />
         </button>
@@ -64,7 +63,7 @@ export function EightySixModal({ courseId, courseName, onClose, onConfirm }: Eig
 
         {/* Course name */}
         <div className="rounded-lg bg-red-950 border border-red-200 p-3 mb-4">
-          <p className="text-sm font-medium text-red-200">
+          <p className="text-sm font-medium text-red-800">
             Are you sure you want to 86{' '}
             <span className="font-bold">&ldquo;{courseName}&rdquo;</span>?
           </p>

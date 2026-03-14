@@ -11,17 +11,17 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: 'rgb(var(--brand-50) / <alpha-value>)',
-          100: 'rgb(var(--brand-100) / <alpha-value>)',
-          200: 'rgb(var(--brand-200) / <alpha-value>)',
-          300: 'rgb(var(--brand-300) / <alpha-value>)',
-          400: 'rgb(var(--brand-400) / <alpha-value>)',
-          500: 'rgb(var(--brand-500) / <alpha-value>)',
-          600: 'rgb(var(--brand-600) / <alpha-value>)',
-          700: 'rgb(var(--brand-700) / <alpha-value>)',
-          800: 'rgb(var(--brand-800) / <alpha-value>)',
-          900: 'rgb(var(--brand-900) / <alpha-value>)',
-          950: 'rgb(var(--brand-950) / <alpha-value>)',
+          50: '#fef9f3',
+          100: '#fcf0e0',
+          200: '#f8ddc0',
+          300: '#f3c596',
+          400: '#eda86b',
+          500: '#e88f47',
+          600: '#d47530',
+          700: '#b15c26',
+          800: '#8e4a24',
+          900: '#744021',
+          950: '#3e200f',
         },
       },
       fontFamily: {
@@ -93,18 +93,6 @@ const config: Config = {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
-        'tour-cursor-pulse': {
-          '0%, 100%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(0.9)' },
-        },
-        'tour-click-ripple': {
-          '0%': { transform: 'scale(0.5)', opacity: '1' },
-          '100%': { transform: 'scale(2.5)', opacity: '0' },
-        },
-        'tour-target-pulse': {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(232, 143, 71, 0.4)' },
-          '50%': { boxShadow: '0 0 0 8px rgba(232, 143, 71, 0)' },
-        },
       },
       animation: {
         'fade-slide-up': 'fade-slide-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -119,9 +107,6 @@ const config: Config = {
         'remy-hat-wobble': 'remy-hat-wobble 4.5s ease-in-out infinite',
         'slide-down-fade': 'slide-down-fade 250ms cubic-bezier(0.16, 1, 0.3, 1) both',
         'scale-fade': 'scale-fade 200ms cubic-bezier(0.16, 1, 0.3, 1) both',
-        'tour-cursor-pulse': 'tour-cursor-pulse 1.2s ease-in-out infinite',
-        'tour-click-ripple': 'tour-click-ripple 1.2s ease-out infinite',
-        'tour-target-pulse': 'tour-target-pulse 2s ease-in-out infinite',
       },
     },
   },

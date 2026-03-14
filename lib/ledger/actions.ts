@@ -47,7 +47,7 @@ export async function getLedgerEntries(filters: LedgerEntryFilters = {}) {
     query = query.eq('event_id', filters.eventId)
   }
 
-  const { data: entries, error } = await query.order('created_at', { ascending: false }).limit(1000)
+  const { data: entries, error } = await query.order('created_at', { ascending: false })
 
   if (error) {
     console.error('[getLedgerEntries] Error:', error)

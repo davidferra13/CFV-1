@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { generateW2Summaries } from '@/lib/finance/payroll-actions'
 import type { PayrollW2Summary } from '@/lib/finance/payroll-actions'
-import { Download } from '@/components/ui/icons'
+import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
@@ -62,7 +62,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
         <strong>Reference only.</strong> W-2s must be filed with the Social Security Administration
         via IRS-approved software by January 31. Provide a copy to each employee by the same date.
         This tool computes the box values for your records.

@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, CheckCircle, Circle, ShieldAlert } from '@/components/ui/icons'
+import { AlertTriangle, CheckCircle, Circle, ShieldAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { toggleCrossContaminationItem } from '@/lib/events/cross-contamination-actions'
 
@@ -75,7 +75,7 @@ export function CrossContaminationChecklist({ eventId, allergens, checklist }: P
       {!allComplete && items.length > 0 && (
         <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-950 px-3 py-2">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-          <p className="text-xs font-medium text-red-200">
+          <p className="text-xs font-medium text-red-800">
             Cannot skip cross-contamination protocol when allergens are flagged.
           </p>
         </div>
@@ -118,7 +118,7 @@ export function CrossContaminationChecklist({ eventId, allergens, checklist }: P
       )}
 
       {allComplete && (
-        <div className="flex items-center gap-2 text-sm text-green-200">
+        <div className="flex items-center gap-2 text-sm text-green-700">
           <CheckCircle className="h-4 w-4" />
           <span className="font-medium">All cross-contamination protocols complete.</span>
         </div>

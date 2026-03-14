@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Users, MessageCircle } from '@/components/ui/icons'
+import { Users, MessageCircle } from 'lucide-react'
 import type { ClientHubGroup } from '@/lib/hub/client-hub-actions'
 
 function timeAgo(dateStr: string | null): string {

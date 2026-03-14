@@ -4,9 +4,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getUnifiedChefReviewFeed } from '@/lib/reviews/actions'
 import { getExternalReviewSources } from '@/lib/reviews/external-actions'
-import { getFeedbackAnalytics } from '@/lib/reviews/feedback-analytics'
 import { ChefReviewsList } from '@/components/reviews/chef-reviews-list'
-import { FeedbackAnalyticsPanel } from '@/components/reviews/feedback-analytics-panel'
 import { LogFeedbackButton } from '@/components/reviews/log-feedback-button'
 import { ImportPlatformReview } from '@/components/reviews/import-platform-review'
 import { ExternalReviewSources } from '@/components/reviews/external-review-sources'
@@ -17,10 +15,9 @@ export const metadata: Metadata = { title: 'Reviews - ChefFlow' }
 export default async function ReviewsPage() {
   await requireChef()
 
-  const [reviews, externalSources, analytics] = await Promise.all([
+  const [reviews, externalSources] = await Promise.all([
     getUnifiedChefReviewFeed(),
     getExternalReviewSources(),
-    getFeedbackAnalytics(),
   ])
 
   return (
@@ -41,7 +38,6 @@ export default async function ReviewsPage() {
         </div>
       </div>
 
-      <FeedbackAnalyticsPanel data={analytics} />
       <ExternalReviewSources sources={externalSources} />
       <ChefReviewsList reviews={reviews} />
     </div>

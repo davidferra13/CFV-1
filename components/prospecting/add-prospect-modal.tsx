@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { addProspectManually } from '@/lib/prospecting/actions'
 import { PROSPECT_CATEGORIES, PROSPECT_CATEGORY_LABELS } from '@/lib/prospecting/constants'
 import type { ProspectCategory } from '@/lib/prospecting/constants'
-import { Loader2, Plus, UserPlus, X } from '@/components/ui/icons'
+import { Loader2, Plus, UserPlus, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export function AddProspectButton() {

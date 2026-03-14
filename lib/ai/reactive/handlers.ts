@@ -7,7 +7,7 @@
 // They load context from the DB, call Ollama if needed, and return structured results.
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
 
@@ -127,19 +127,17 @@ export async function handleEventConfirmed(
   })
 
   try {
-    const result = (
-      await dispatchPrivate(
-        `You are ${chefName}'s AI kitchen assistant. Generate a concise staff briefing for an upcoming confirmed event. Include key details staff need to know, dietary alerts, and prep notes. Return JSON: { "overview": "...", "keyDetails": ["..."], "dietaryAlerts": ["..."], "prepNotes": ["..."] }`,
-        `Event: ${(event as any).occasion ?? 'Event'} on ${(event as any).event_date ?? 'TBD'}
+    const result = await parseWithOllama(
+      `You are ${chefName}'s AI kitchen assistant. Generate a concise staff briefing for an upcoming confirmed event. Include key details staff need to know, dietary alerts, and prep notes. Return JSON: { "overview": "...", "keyDetails": ["..."], "dietaryAlerts": ["..."], "prepNotes": ["..."] }`,
+      `Event: ${(event as any).occasion ?? 'Event'} on ${(event as any).event_date ?? 'TBD'}
 Client: ${clientName}
 Guests: ${(event as any).guest_count ?? 'Unknown'}
 Location: ${(event as any).location ?? 'TBD'}
 Client dietary: ${(event as any).client?.dietary_restrictions?.join(', ') ?? 'None'}
 Client allergies: ${(event as any).client?.allergies?.join(', ') ?? 'None'}`,
-        BriefingSchema,
-        { modelTier: 'standard', maxTokens: 800 }
-      )
-    ).result
+      BriefingSchema,
+      { modelTier: 'standard', maxTokens: 800 }
+    )
 
     return {
       eventId,
@@ -180,21 +178,19 @@ export async function handleEventCompleted(
   })
 
   try {
-    const result = (
-      await dispatchPrivate(
-        `You are ${chefName}, a private chef. An event just completed. Generate:
+    const result = await parseWithOllama(
+      `You are ${chefName}, a private chef. An event just completed. Generate:
 1. A warm thank-you email (subject + body)
 2. A friendly review/testimonial request email (subject + body)
 3. After-action review notes (3-5 bullet points about what to improve for next time)
 
 Write all emails in first person "I". Be warm and genuine. Return JSON: { "thankYouSubject": "...", "thankYouBody": "...", "reviewRequestSubject": "...", "reviewRequestBody": "...", "aarNotes": ["..."] }`,
-        `Event: ${(event as any).occasion ?? 'Event'} on ${(event as any).event_date}
+      `Event: ${(event as any).occasion ?? 'Event'} on ${(event as any).event_date}
 Client: ${clientName}
 Guests: ${(event as any).guest_count ?? 'Unknown'}`,
-        PostEventSchema,
-        { modelTier: 'standard', maxTokens: 1024 }
-      )
-    ).result
+      PostEventSchema,
+      { modelTier: 'standard', maxTokens: 1024 }
+    )
 
     return {
       eventId,
@@ -234,16 +230,14 @@ export async function handleEventCancelled(
   })
 
   try {
-    const result = (
-      await dispatchPrivate(
-        `You are ${chefName}, a private chef. A client's event was just cancelled. Draft a warm, empathetic response. Express understanding (never guilt-trip), handle any logistics references professionally, and warmly invite them to rebook when ready. First person "I", 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Client: ${clientName}
+    const result = await parseWithOllama(
+      `You are ${chefName}, a private chef. A client's event was just cancelled. Draft a warm, empathetic response. Express understanding (never guilt-trip), handle any logistics references professionally, and warmly invite them to rebook when ready. First person "I", 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+      `Client: ${clientName}
 Event: ${(event as any).occasion ?? 'event'} was on ${(event as any).event_date ?? 'N/A'}
 Guests: ${(event as any).guest_count ?? 'Unknown'}`,
-        CancelSchema,
-        { modelTier: 'standard', maxTokens: 800 }
-      )
-    ).result
+      CancelSchema,
+      { modelTier: 'standard', maxTokens: 800 }
+    )
 
     return {
       eventId,
@@ -470,15 +464,13 @@ export async function handleClientBirthday(
   const BirthdaySchema = z.object({ subject: z.string(), body: z.string() })
 
   try {
-    const result = (
-      await dispatchPrivate(
-        `You are ${chefName}, a private chef sending a birthday message to a client. Be warm and personal. Reference your culinary relationship if possible. Keep it short (2-3 paragraphs). First person "I". Return JSON: { "subject": "...", "body": "..." }`,
-        `Client: ${client.full_name}
+    const result = await parseWithOllama(
+      `You are ${chefName}, a private chef sending a birthday message to a client. Be warm and personal. Reference your culinary relationship if possible. Keep it short (2-3 paragraphs). First person "I". Return JSON: { "subject": "...", "body": "..." }`,
+      `Client: ${client.full_name}
 Notes: ${client.vibe_notes ?? 'none'}`,
-        BirthdaySchema,
-        { modelTier: 'fast', maxTokens: 400 }
-      )
-    ).result
+      BirthdaySchema,
+      { modelTier: 'fast', maxTokens: 400 }
+    )
 
     return {
       clientId,
@@ -604,16 +596,14 @@ export async function handlePaymentOverdue(
   const ReminderSchema = z.object({ subject: z.string(), body: z.string() })
 
   try {
-    const result = (
-      await dispatchPrivate(
-        `You are ${chefName}, a private chef sending a friendly payment reminder. Be warm and professional — never aggressive. Reference the event and outstanding amount. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Client: ${clientName}
+    const result = await parseWithOllama(
+      `You are ${chefName}, a private chef sending a friendly payment reminder. Be warm and professional — never aggressive. Reference the event and outstanding amount. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+      `Client: ${clientName}
 Event: ${(event as any).occasion ?? 'event'} on ${(event as any).event_date ?? 'N/A'}
 Outstanding balance: $${(balanceDueCents / 100).toFixed(2)}`,
-        ReminderSchema,
-        { modelTier: 'standard', maxTokens: 600 }
-      )
-    ).result
+      ReminderSchema,
+      { modelTier: 'standard', maxTokens: 600 }
+    )
 
     return {
       eventId,
@@ -661,15 +651,13 @@ export async function handleInquiryStale(
       (Date.now() - new Date(inquiry.created_at).getTime()) / (1000 * 60 * 60)
     )
 
-    const result = (
-      await dispatchPrivate(
-        `You are ${chefName}, a private chef following up on a stale inquiry. The client reached out but hasn't heard back yet. Be apologetic for the delay, warm, and professional. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Client: ${clientName}
+    const result = await parseWithOllama(
+      `You are ${chefName}, a private chef following up on a stale inquiry. The client reached out but hasn't heard back yet. Be apologetic for the delay, warm, and professional. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+      `Client: ${clientName}
 Inquiry: ${(inquiry as any).confirmed_occasion ?? 'event inquiry'} — received ${hoursStale}h ago`,
-        FollowUpSchema,
-        { modelTier: 'standard', maxTokens: 600 }
-      )
-    ).result
+      FollowUpSchema,
+      { modelTier: 'standard', maxTokens: 600 }
+    )
 
     return {
       inquiryId,

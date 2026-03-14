@@ -1,21 +1,10 @@
 'use server'
 
-import { headers } from 'next/headers'
-import { requireAdmin } from '@/lib/auth/admin'
-import { createNotification } from '@/lib/notifications/actions'
-import { sendEmail } from '@/lib/email/send'
-import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
-import { getAdminNotificationRecipients, resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendBetaLifecycleEmail } from './lifecycle-email'
-import {
-  getBetaOnboardingProgressForChef,
-  type BetaOnboardingProgressSnapshot,
-  type BetaSignupLifecycleEmailType,
-  type BetaSignupRecord,
-  type BetaSignupTrackerRow,
-  upsertBetaSignupTracker,
-} from './signup-tracker'
+import { headers } from 'next/headers'
+import { sendEmail } from '@/lib/email/send'
+import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
+import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
 
 export interface BetaSignupInput {
   name: string
@@ -25,54 +14,22 @@ export interface BetaSignupInput {
   cuisineType?: string
   yearsInBusiness?: string
   referralSource?: string
-  website?: string
+  website?: string // honeypot
 }
 
 type BetaOnboardingLinkInput = {
   email: string
   name?: string
   source?: string
-  chefId?: string
-  authUserId?: string
 }
 
-export type BetaSignupStatus = 'pending' | 'invited' | 'onboarded' | 'declined'
+// Admin email for signup notifications
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com'
 
-type UpdateBetaSignupStatusOptions = {
-  sendStatusEmail?: boolean
-  refreshStatusTimestamp?: boolean
-}
-
-export type UpdateBetaSignupStatusResult = {
-  success: boolean
-  error?: string
-  message?: string
-  updated?: {
-    status: BetaSignupStatus
-    notes: string | null
-    invitedAt: string | null
-    onboardedAt: string | null
-    tracker: BetaSignupTrackerRow | null
-  }
-}
-
-export type BetaOnboardingSyncResult = {
-  matched: boolean
-  signup: BetaSignupRecord | null
-  tracker: BetaSignupTrackerRow | null
-  onboardingProgress: BetaOnboardingProgressSnapshot | null
-}
-
-export type BetaSignupAdminRow = BetaSignupRecord & {
-  tracker: BetaSignupTrackerRow | null
-}
-
-const ADMIN_NOTIFICATION_RECIPIENTS = getAdminNotificationRecipients()
-const ADMIN_SIGNUP_SELECT = '*, beta_signup_trackers(*)'
-
+// ── In-memory IP rate limiting (same pattern as embed inquiry) ──
 const ipBuckets = new Map<string, { count: number; windowStart: number }>()
-const RATE_LIMIT_MAX = 5
-const RATE_LIMIT_WINDOW_MS = 60_000 * 5
+const RATE_LIMIT_MAX = 5 // 5 submissions per window
+const RATE_LIMIT_WINDOW_MS = 60_000 * 5 // 5 minutes
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now()
@@ -81,324 +38,128 @@ function checkRateLimit(ip: string): boolean {
     ipBuckets.set(ip, { count: 1, windowStart: now })
     return true
   }
-
-  bucket.count += 1
+  bucket.count++
   if (bucket.count % 50 === 0) {
-    for (const [key, value] of ipBuckets) {
-      if (now - value.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
-        ipBuckets.delete(key)
-      }
+    for (const [key, b] of ipBuckets) {
+      if (now - b.windowStart > RATE_LIMIT_WINDOW_MS * 2) ipBuckets.delete(key)
     }
   }
-
   return bucket.count <= RATE_LIMIT_MAX
 }
 
-function normalizeSignupTracker(row: any): BetaSignupTrackerRow | null {
-  if (!row) return null
-  if (Array.isArray(row)) return (row[0] as BetaSignupTrackerRow) ?? null
-  return row as BetaSignupTrackerRow
-}
-
-function normalizeBetaSignupAdminRow(row: any): BetaSignupAdminRow {
-  return {
-    ...(row as BetaSignupRecord),
-    tracker: normalizeSignupTracker(row?.beta_signup_trackers),
-  }
-}
-
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
-
-function buildLifecycleEmailMessage(emailType: BetaSignupLifecycleEmailType): string {
-  switch (emailType) {
-    case 'pending_review':
-      return 'Pending review email sent.'
-    case 'invited':
-      return 'Invite email sent.'
-    case 'declined':
-      return 'Decline email sent.'
-    case 'account_ready':
-      return 'Account ready email sent.'
-    case 'onboarding_reminder':
-      return 'Onboarding reminder sent.'
-    case 'onboarding_complete':
-      return 'Completion email sent.'
-    default:
-      return 'Lifecycle email sent.'
-  }
-}
-
-function mapStatusToEmailType(status: BetaSignupStatus): BetaSignupLifecycleEmailType | null {
-  switch (status) {
-    case 'pending':
-      return 'pending_review'
-    case 'invited':
-      return 'invited'
-    case 'declined':
-      return 'declined'
-    default:
-      return null
-  }
-}
-
-function buildSignupPayload(input: BetaSignupInput) {
-  return {
-    name: input.name.trim(),
-    email: input.email.trim().toLowerCase(),
-    phone: input.phone?.trim() || null,
-    business_name: input.businessName?.trim() || null,
-    cuisine_type: input.cuisineType?.trim() || null,
-    years_in_business: input.yearsInBusiness?.trim() || null,
-    referral_source: input.referralSource?.trim() || null,
-  }
-}
-
-async function fetchAdminSignupRowById(
-  supabase: any,
-  id: string
-): Promise<BetaSignupAdminRow | null> {
-  const { data, error } = await supabase
-    .from('beta_signups')
-    .select(ADMIN_SIGNUP_SELECT)
-    .eq('id', id)
-    .maybeSingle()
-
-  if (error || !data) return null
-  return normalizeBetaSignupAdminRow(data)
-}
-
-async function fetchAdminSignupRowByEmail(
-  supabase: any,
-  email: string
-): Promise<BetaSignupAdminRow | null> {
-  const { data, error } = await supabase
-    .from('beta_signups')
-    .select(ADMIN_SIGNUP_SELECT)
-    .eq('email', email)
-    .maybeSingle()
-
-  if (error || !data) return null
-  return normalizeBetaSignupAdminRow(data)
-}
-
-async function updateTrackerForSignup({
-  supabase,
-  signup,
-  existingTracker,
-  emailType = null,
-  sentAt,
-  chefId,
-  authUserId,
-  accountCreatedAt,
-  forceCompleted = false,
-}: {
-  supabase: any
-  signup: BetaSignupRecord
-  existingTracker?: BetaSignupTrackerRow | null
-  emailType?: BetaSignupLifecycleEmailType | null
-  sentAt?: string
-  chefId?: string | null
-  authUserId?: string | null
-  accountCreatedAt?: string | null
-  forceCompleted?: boolean
-}): Promise<{
-  tracker: BetaSignupTrackerRow | null
-  onboardingProgress: BetaOnboardingProgressSnapshot | null
-}> {
-  const resolvedChefId = chefId ?? existingTracker?.chef_id ?? null
-  const resolvedAuthUserId = authUserId ?? existingTracker?.auth_user_id ?? null
-  const onboardingProgress = resolvedChefId
-    ? await getBetaOnboardingProgressForChef(resolvedChefId, supabase)
-    : null
-
-  const tracker = await upsertBetaSignupTracker({
-    signup,
-    supabase,
-    emailType,
-    sentAt,
-    chefId: resolvedChefId,
-    authUserId: resolvedAuthUserId,
-    accountCreatedAt: accountCreatedAt ?? signup.onboarded_at,
-    forceCompleted,
-    onboardingProgress,
-  })
-
-  return { tracker, onboardingProgress }
-}
-
-async function sendStatusEmailIfRequested(
-  signup: BetaSignupRecord,
-  tracker: BetaSignupTrackerRow | null,
-  emailType: BetaSignupLifecycleEmailType | null,
-  onboardingProgress: BetaOnboardingProgressSnapshot | null
-) {
-  if (!emailType) {
-    return {
-      success: true,
-      result: null as Awaited<ReturnType<typeof sendBetaLifecycleEmail>> | null,
-    }
-  }
-
-  const result = await sendBetaLifecycleEmail({
-    emailType,
-    signup,
-    tracker,
-    onboardingProgress,
-  })
-
-  return { success: result.success, result }
-}
-
+/**
+ * Submit a beta signup from the public /beta form.
+ * Idempotent by email — re-submitting updates the existing record.
+ * Sends welcome email to user + notification to admin (non-blocking).
+ */
 export async function submitBetaSignup(
   input: BetaSignupInput
 ): Promise<{ success: boolean; error?: string }> {
+  // Honeypot check — bots fill hidden fields, real users never see them
   if (input.website) {
-    return { success: true }
+    return { success: true } // fake success so bots don't retry
   }
 
+  // Rate limit by IP
   const hdrs = await headers()
   const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   if (!checkRateLimit(ip)) {
     return { success: false, error: 'Too many submissions. Please try again in a few minutes.' }
   }
 
-  const payload = buildSignupPayload(input)
+  const name = input.name?.trim()
+  const email = input.email?.trim().toLowerCase()
 
-  if (!payload.name || payload.name.length < 2) {
+  if (!name || name.length < 2) {
     return { success: false, error: 'Please enter your name.' }
   }
 
-  if (!payload.email || !isValidEmail(payload.email)) {
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { success: false, error: 'Please enter a valid email address.' }
   }
 
   try {
     const supabase: any = createAdminClient()
-    const existingSignup = await fetchAdminSignupRowByEmail(supabase, payload.email)
 
-    let signup: BetaSignupRecord | null = null
-    if (existingSignup) {
-      const { data, error } = await supabase
-        .from('beta_signups')
-        .update({
-          name: payload.name,
-          phone: payload.phone,
-          business_name: payload.business_name,
-          cuisine_type: payload.cuisine_type,
-          years_in_business: payload.years_in_business,
-          referral_source: payload.referral_source,
-        })
-        .eq('id', existingSignup.id)
-        .select('*')
-        .single()
-
-      if (error || !data) {
-        console.error('[beta-signup] Update failed:', error)
-        return { success: false, error: 'Something went wrong. Please try again.' }
-      }
-
-      signup = data as BetaSignupRecord
-      await updateTrackerForSignup({
-        supabase,
-        signup,
-        existingTracker: existingSignup.tracker,
-      })
-
-      return { success: true }
-    }
-
-    const { data, error } = await supabase
+    // Check if this email already exists (for deciding whether to send emails)
+    const { data: existing } = await supabase
       .from('beta_signups')
-      .insert({
-        ...payload,
-        status: 'pending',
-      })
-      .select('*')
-      .single()
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
 
-    if (error || !data) {
+    const isNewSignup = !existing
+
+    const { error } = await supabase.from('beta_signups').upsert(
+      {
+        name,
+        email,
+        phone: input.phone?.trim() || null,
+        business_name: input.businessName?.trim() || null,
+        cuisine_type: input.cuisineType?.trim() || null,
+        years_in_business: input.yearsInBusiness?.trim() || null,
+        referral_source: input.referralSource?.trim() || null,
+        created_at: new Date().toISOString(),
+      },
+      { onConflict: 'email' }
+    )
+
+    if (error) {
       console.error('[beta-signup] Insert failed:', error)
       return { success: false, error: 'Something went wrong. Please try again.' }
     }
 
-    signup = data as BetaSignupRecord
-
-    const pendingEmail = await sendBetaLifecycleEmail({
-      emailType: 'pending_review',
-      signup,
-    })
-
-    await updateTrackerForSignup({
-      supabase,
-      signup,
-      emailType: pendingEmail.success ? 'pending_review' : null,
-    })
-
-    if (!pendingEmail.success) {
-      console.error('[beta-signup] Pending review email failed:', pendingEmail.error)
-    }
-
-    try {
-      const totalSignups = await getBetaSignupCount()
-      await sendEmail({
-        to: ADMIN_NOTIFICATION_RECIPIENTS,
-        subject: `New beta signup: ${signup.name}`,
-        react: BetaSignupAdminEmail({
-          name: signup.name,
-          email: signup.email,
-          businessName: signup.business_name,
-          cuisineType: signup.cuisine_type,
-          yearsInBusiness: signup.years_in_business,
-          referralSource: signup.referral_source,
-          totalSignups,
-        }),
-      })
-    } catch (notificationError) {
-      console.error('[beta-signup] Admin notification failed:', notificationError)
-    }
-
-    try {
-      const owner = await resolveOwnerIdentity(supabase)
-      if (owner.ownerChefId && owner.ownerAuthUserId) {
-        await createNotification({
-          tenantId: owner.ownerChefId,
-          recipientId: owner.ownerAuthUserId,
-          category: 'system',
-          action: 'system_alert',
-          title: `New beta signup: ${signup.name}`,
-          body: `${signup.email} joined the beta waitlist.`,
-          actionUrl: '/admin/beta',
-          metadata: {
-            kind: 'beta_signup_received',
-            signup_name: signup.name,
-            signup_email: signup.email,
-          },
+    // Non-blocking side effects — only for new signups (not re-submissions)
+    if (isNewSignup) {
+      // 1. Welcome email to the person who signed up
+      try {
+        await sendEmail({
+          to: email,
+          subject: "You're on the list — ChefFlow Beta",
+          react: BetaWelcomeEmail({ name }),
         })
+      } catch (err) {
+        console.error('[beta-signup] Welcome email failed:', err)
       }
-    } catch (alertError) {
-      console.error('[beta-signup] Founder in-app alert failed:', alertError)
+
+      // 2. Notification to admin
+      try {
+        const totalSignups = await getBetaSignupCount()
+        await sendEmail({
+          to: ADMIN_EMAIL,
+          subject: `New beta signup: ${name}`,
+          react: BetaSignupAdminEmail({
+            name,
+            email,
+            businessName: input.businessName?.trim() || null,
+            cuisineType: input.cuisineType?.trim() || null,
+            yearsInBusiness: input.yearsInBusiness?.trim() || null,
+            referralSource: input.referralSource?.trim() || null,
+            totalSignups,
+          }),
+        })
+      } catch (err) {
+        console.error('[beta-signup] Admin notification failed:', err)
+      }
     }
 
     return { success: true }
-  } catch (error) {
-    console.error('[beta-signup] Unexpected error:', error)
+  } catch (err) {
+    console.error('[beta-signup] Unexpected error:', err)
     return { success: false, error: 'Something went wrong. Please try again.' }
   }
 }
 
+/**
+ * Mark a beta signup as onboarded when the person actually creates an account.
+ * Returns true when the email is tied to beta (existing row or source-tagged ref).
+ */
 export async function markBetaSignupOnboardedByEmail(
   input: BetaOnboardingLinkInput
-): Promise<BetaOnboardingSyncResult> {
+): Promise<boolean> {
   const email = input.email?.trim().toLowerCase()
-  if (!email || !isValidEmail(email)) {
-    return {
-      matched: false,
-      signup: null,
-      tracker: null,
-      onboardingProgress: null,
-    }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return false
   }
 
   const source = input.source?.trim() || null
@@ -406,111 +167,80 @@ export async function markBetaSignupOnboardedByEmail(
   const supabase: any = createAdminClient()
 
   try {
-    const existingSignup = await fetchAdminSignupRowByEmail(supabase, email)
-    let signup: BetaSignupRecord | null = null
-    let existingTracker: BetaSignupTrackerRow | null = existingSignup?.tracker ?? null
+    const { data: existing, error: existingError } = await supabase
+      .from('beta_signups')
+      .select('id, referral_source, onboarded_at')
+      .eq('email', email)
+      .maybeSingle()
 
-    if (existingSignup) {
-      const updates: Record<string, unknown> = {
+    if (existingError) {
+      console.error('[beta-signup] Onboarded lookup failed:', existingError)
+      return false
+    }
+
+    if (existing) {
+      const updates: {
+        status: 'onboarded'
+        onboarded_at?: string
+        referral_source?: string
+      } = {
         status: 'onboarded',
       }
 
-      if (!existingSignup.onboarded_at) {
+      if (!existing.onboarded_at) {
         updates.onboarded_at = nowIso
       }
-
-      if (!existingSignup.referral_source && source) {
+      if (!existing.referral_source && source) {
         updates.referral_source = source
       }
 
-      const { data, error } = await supabase
+      const { error: updateError } = await supabase
         .from('beta_signups')
         .update(updates)
-        .eq('id', existingSignup.id)
-        .select('*')
-        .single()
+        .eq('id', existing.id)
 
-      if (error || !data) {
-        console.error('[beta-signup] Onboarded update failed:', error)
-        return {
-          matched: false,
-          signup: null,
-          tracker: null,
-          onboardingProgress: null,
-        }
+      if (updateError) {
+        console.error('[beta-signup] Onboarded update failed:', updateError)
+        return false
       }
 
-      signup = data as BetaSignupRecord
-    } else {
-      if (!source) {
-        return {
-          matched: false,
-          signup: null,
-          tracker: null,
-          onboardingProgress: null,
-        }
-      }
-
-      const inferredName = input.name?.trim() || email.split('@')[0] || 'Beta Chef'
-      const { data, error } = await supabase
-        .from('beta_signups')
-        .insert({
-          name: inferredName,
-          email,
-          referral_source: source,
-          status: 'onboarded',
-          onboarded_at: nowIso,
-        })
-        .select('*')
-        .single()
-
-      if (error || !data) {
-        console.error('[beta-signup] Onboarded insert failed:', error)
-        return {
-          matched: false,
-          signup: null,
-          tracker: null,
-          onboardingProgress: null,
-        }
-      }
-
-      signup = data as BetaSignupRecord
-      existingTracker = null
+      return true
     }
 
-    const { tracker, onboardingProgress } = await updateTrackerForSignup({
-      supabase,
-      signup,
-      existingTracker,
-      chefId: input.chefId ?? null,
-      authUserId: input.authUserId ?? null,
-      accountCreatedAt: signup.onboarded_at || nowIso,
+    // If no prior beta record exists, only create one when explicit beta ref is present.
+    if (!source) return false
+
+    const inferredName = input.name?.trim() || email.split('@')[0] || 'Beta Chef'
+    const { error: insertError } = await supabase.from('beta_signups').insert({
+      name: inferredName,
+      email,
+      referral_source: source,
+      status: 'onboarded',
+      created_at: nowIso,
+      onboarded_at: nowIso,
     })
 
-    return {
-      matched: true,
-      signup,
-      tracker,
-      onboardingProgress,
+    if (insertError) {
+      console.error('[beta-signup] Onboarded insert failed:', insertError)
+      return false
     }
-  } catch (error) {
-    console.error('[beta-signup] Onboarded sync failed:', error)
-    return {
-      matched: false,
-      signup: null,
-      tracker: null,
-      onboardingProgress: null,
-    }
+
+    return true
+  } catch (err) {
+    console.error('[beta-signup] Onboarded sync failed:', err)
+    return false
   }
 }
 
-export async function getBetaSignups(): Promise<BetaSignupAdminRow[]> {
-  await requireAdmin()
+/**
+ * Get all beta signups for the admin view.
+ */
+export async function getBetaSignups() {
   const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_signups')
-    .select(ADMIN_SIGNUP_SELECT)
+    .select('*')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -518,108 +248,45 @@ export async function getBetaSignups(): Promise<BetaSignupAdminRow[]> {
     return []
   }
 
-  return (data ?? []).map(normalizeBetaSignupAdminRow)
+  return data ?? []
 }
 
+/**
+ * Update a beta signup's status (admin action).
+ */
 export async function updateBetaSignupStatus(
   id: string,
-  status: BetaSignupStatus,
-  notes?: string,
-  options?: UpdateBetaSignupStatusOptions
-): Promise<UpdateBetaSignupStatusResult> {
-  await requireAdmin()
+  status: 'pending' | 'invited' | 'onboarded' | 'declined',
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
   const supabase: any = createAdminClient()
 
-  const existingSignup = await fetchAdminSignupRowById(supabase, id)
-  if (!existingSignup) {
-    return { success: false, error: 'Failed to load signup.' }
-  }
-
-  const normalizedNotes = notes !== undefined ? notes.trim() || null : undefined
-  const nowIso = new Date().toISOString()
-  const statusChanged = existingSignup.status !== status
-  const lifecycleEmailType = options?.sendStatusEmail ? mapStatusToEmailType(status) : null
-
-  const nextSignup: BetaSignupRecord = {
-    ...existingSignup,
-    status,
-    notes: normalizedNotes !== undefined ? normalizedNotes : existingSignup.notes,
-    invited_at:
-      status === 'invited' && (statusChanged || options?.refreshStatusTimestamp)
-        ? nowIso
-        : existingSignup.invited_at,
-    onboarded_at:
-      status === 'onboarded' && (statusChanged || options?.refreshStatusTimestamp)
-        ? nowIso
-        : existingSignup.onboarded_at,
-  }
-
-  const preflight = await sendStatusEmailIfRequested(
-    nextSignup,
-    existingSignup.tracker,
-    lifecycleEmailType,
-    null
-  )
-
-  if (!preflight.success) {
-    const errorMessage = preflight.result?.skipped
-      ? 'Email delivery is not configured for this environment.'
-      : preflight.result?.error || 'Failed to send lifecycle email.'
-    return { success: false, error: errorMessage }
-  }
-
   const updates: Record<string, unknown> = { status }
-  if (normalizedNotes !== undefined) {
-    updates.notes = normalizedNotes
-  }
-  if (status === 'invited' && (statusChanged || options?.refreshStatusTimestamp)) {
-    updates.invited_at = nextSignup.invited_at
-  }
-  if (status === 'onboarded' && (statusChanged || options?.refreshStatusTimestamp)) {
-    updates.onboarded_at = nextSignup.onboarded_at
+
+  if (status === 'invited') {
+    updates.invited_at = new Date().toISOString()
+  } else if (status === 'onboarded') {
+    updates.onboarded_at = new Date().toISOString()
   }
 
-  const { data, error } = await supabase
-    .from('beta_signups')
-    .update(updates)
-    .eq('id', id)
-    .select('*')
-    .single()
+  if (notes !== undefined) {
+    updates.notes = notes
+  }
 
-  if (error || !data) {
+  const { error } = await supabase.from('beta_signups').update(updates).eq('id', id)
+
+  if (error) {
     console.error('[beta-signup] Status update failed:', error)
-    return {
-      success: false,
-      error: lifecycleEmailType
-        ? 'Email sent, but the row failed to update. Refresh before retrying.'
-        : 'Failed to update status.',
-    }
+    return { success: false, error: 'Failed to update status.' }
   }
 
-  const updatedSignup = data as BetaSignupRecord
-  const { tracker } = await updateTrackerForSignup({
-    supabase,
-    signup: updatedSignup,
-    existingTracker: existingSignup.tracker,
-    emailType: lifecycleEmailType,
-    sentAt: lifecycleEmailType ? nowIso : undefined,
-  })
-
-  return {
-    success: true,
-    message: lifecycleEmailType ? buildLifecycleEmailMessage(lifecycleEmailType) : undefined,
-    updated: {
-      status: updatedSignup.status,
-      notes: updatedSignup.notes,
-      invitedAt: updatedSignup.invited_at,
-      onboardedAt: updatedSignup.onboarded_at,
-      tracker,
-    },
-  }
+  return { success: true }
 }
 
+/**
+ * Delete a beta signup (admin action).
+ */
 export async function deleteBetaSignup(id: string): Promise<{ success: boolean; error?: string }> {
-  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { error } = await supabase.from('beta_signups').delete().eq('id', id)
@@ -632,6 +299,9 @@ export async function deleteBetaSignup(id: string): Promise<{ success: boolean; 
   return { success: true }
 }
 
+/**
+ * Get the total count of beta signups (for social proof on public page).
+ */
 export async function getBetaSignupCount(): Promise<number> {
   const supabase: any = createAdminClient()
 
@@ -647,29 +317,19 @@ export async function getBetaSignupCount(): Promise<number> {
   return count ?? 0
 }
 
-function escapeCsvValue(value: string | null | undefined) {
-  if (!value) return ''
-  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`
-  }
-  return value
-}
-
+/**
+ * Export beta signups as CSV string (admin action).
+ */
 export async function exportBetaSignupsCsv(): Promise<string> {
-  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_signups')
-    .select(ADMIN_SIGNUP_SELECT)
+    .select('*')
     .order('created_at', { ascending: false })
 
-  if (error || !data) {
-    console.error('[beta-signup] CSV export failed:', error)
-    return ''
-  }
+  if (error || !data) return ''
 
-  const rows = data.map(normalizeBetaSignupAdminRow)
   const csvHeaders = [
     'Name',
     'Email',
@@ -683,36 +343,32 @@ export async function exportBetaSignupsCsv(): Promise<string> {
     'Signed Up',
     'Invited',
     'Onboarded',
-    'Tracker Status',
-    'Tracker Stage',
-    'Tracker Progress',
-    'Last Lifecycle Email',
-    'Last Lifecycle Email At',
-    'Next Action',
   ]
 
-  const csvRows = rows.map((row) =>
+  const escape = (val: string | null) => {
+    if (!val) return ''
+    if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+      return `"${val.replace(/"/g, '""')}"`
+    }
+    return val
+  }
+
+  const rows = data.map((r: any) =>
     [
-      escapeCsvValue(row.name),
-      escapeCsvValue(row.email),
-      escapeCsvValue(row.phone),
-      escapeCsvValue(row.business_name),
-      escapeCsvValue(row.cuisine_type),
-      escapeCsvValue(row.years_in_business),
-      escapeCsvValue(row.referral_source),
-      escapeCsvValue(row.status),
-      escapeCsvValue(row.notes),
-      row.created_at ? new Date(row.created_at).toISOString() : '',
-      row.invited_at ? new Date(row.invited_at).toISOString() : '',
-      row.onboarded_at ? new Date(row.onboarded_at).toISOString() : '',
-      escapeCsvValue(row.tracker?.current_status || ''),
-      escapeCsvValue(row.tracker?.current_stage || ''),
-      row.tracker?.progress_percent != null ? String(row.tracker.progress_percent) : '',
-      escapeCsvValue(row.tracker?.last_email_type || ''),
-      row.tracker?.last_email_sent_at ? new Date(row.tracker.last_email_sent_at).toISOString() : '',
-      escapeCsvValue(row.tracker?.next_action || ''),
+      escape(r.name),
+      escape(r.email),
+      escape(r.phone),
+      escape(r.business_name),
+      escape(r.cuisine_type),
+      escape(r.years_in_business),
+      escape(r.referral_source),
+      escape(r.status),
+      escape(r.notes),
+      r.created_at ? new Date(r.created_at).toISOString() : '',
+      r.invited_at ? new Date(r.invited_at).toISOString() : '',
+      r.onboarded_at ? new Date(r.onboarded_at).toISOString() : '',
     ].join(',')
   )
 
-  return [csvHeaders.join(','), ...csvRows].join('\n')
+  return [csvHeaders.join(','), ...rows].join('\n')
 }

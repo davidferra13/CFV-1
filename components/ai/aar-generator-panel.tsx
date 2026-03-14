@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, Loader2, Bot, CheckCircle, AlertCircle } from '@/components/ui/icons'
+import { ClipboardList, Loader2, Sparkles, CheckCircle, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAARDraft, type AARDraft } from '@/lib/ai/aar-generator'
@@ -41,7 +41,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate AAR Draft
               </>
             )}
@@ -88,7 +88,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-green-200 mb-1">
+              <div className="flex items-center gap-1 text-xs font-medium text-green-700 mb-1">
                 <CheckCircle className="w-3 h-3" />
                 What Went Well
               </div>
@@ -101,7 +101,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
               </ul>
             </div>
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-amber-200 mb-1">
+              <div className="flex items-center gap-1 text-xs font-medium text-amber-700 mb-1">
                 <AlertCircle className="w-3 h-3" />
                 Areas to Improve
               </div>

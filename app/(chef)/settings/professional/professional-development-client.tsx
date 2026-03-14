@@ -14,10 +14,7 @@ import {
   deleteLearningGoal,
   type AchievementInput,
 } from '@/lib/professional/actions'
-import { toast } from 'sonner'
 import { ACHIEVE_TYPE_LABELS, GOAL_CATEGORY_LABELS } from '@/lib/professional/constants'
-import { GrowthCheckinModal } from '@/components/professional/growth-checkin-modal'
-import { MomentumDashboard } from '@/components/professional/momentum-dashboard'
 import { format } from 'date-fns'
 
 type Achievement = {
@@ -37,23 +34,6 @@ type Goal = {
   status: string
   description: string | null
 }
-type CheckinRecord = {
-  id: string
-  checkin_date: string
-  satisfaction_score: number
-  learned_this_quarter: string | null
-  draining_this_quarter: string | null
-  goal_next_quarter: string | null
-  track_request: string | null
-  created_at: string
-}
-type MomentumSnapshot = {
-  new_clients_90d: number
-  education_entries_12m: number
-  creative_projects_90d: number
-  avg_satisfaction_90d: number | null
-  momentum_direction: string
-}
 
 const ACHIEVE_TYPES = Object.entries(ACHIEVE_TYPE_LABELS)
 const GOAL_CATEGORIES = Object.entries(GOAL_CATEGORY_LABELS)
@@ -61,21 +41,12 @@ const GOAL_CATEGORIES = Object.entries(GOAL_CATEGORY_LABELS)
 export function ProfessionalDevelopmentClient({
   initialAchievements,
   initialGoals,
-  checkinDue,
-  checkinHistory,
-  satisfaction,
-  momentum,
 }: {
   initialAchievements: Achievement[]
   initialGoals: Goal[]
-  checkinDue: boolean
-  checkinHistory: CheckinRecord[]
-  satisfaction: number | null
-  momentum: MomentumSnapshot | null
 }) {
   const router = useRouter()
-  const [tab, setTab] = useState<'achievements' | 'goals' | 'momentum' | 'checkins'>('achievements')
-  const [showCheckinModal, setShowCheckinModal] = useState(false)
+  const [tab, setTab] = useState<'achievements' | 'goals'>('achievements')
 
   // Achievement form
   const [showAchForm, setShowAchForm] = useState(false)
@@ -178,59 +149,26 @@ export function ProfessionalDevelopmentClient({
     try {
       await completeLearningGoal(id)
       router.refresh()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to complete goal')
+    } catch {
+      /* silent */
     }
   }
 
   return (
     <div className="space-y-6">
-      {/* Check-in due banner */}
-      {checkinDue && (
-        <Card>
-          <CardContent className="py-4 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-stone-200">Quarterly check-in due</p>
-              <p className="text-xs text-stone-500">
-                Take 2 minutes to reflect on your career satisfaction and goals.
-              </p>
-            </div>
-            <Button variant="primary" size="sm" onClick={() => setShowCheckinModal(true)}>
-              Start Check-In
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {showCheckinModal && (
-        <GrowthCheckinModal
-          onClose={() => {
-            setShowCheckinModal(false)
-            router.refresh()
-          }}
-        />
-      )}
-
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-stone-700 overflow-x-auto">
-        {(
-          [
-            ['achievements', 'Achievements'],
-            ['goals', 'Learning Goals'],
-            ['momentum', 'Momentum'],
-            ['checkins', 'Check-Ins'],
-          ] as const
-        ).map(([key, label]) => (
+      <div className="flex gap-2 border-b border-stone-700">
+        {(['achievements', 'goals'] as const).map((t) => (
           <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              tab === key
-                ? 'border-amber-500 text-amber-500'
+            key={t}
+            onClick={() => setTab(t)}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              tab === t
+                ? 'border-amber-500 text-amber-700'
                 : 'border-transparent text-stone-500 hover:text-stone-300'
             }`}
           >
-            {label}
+            {t === 'achievements' ? 'Achievements' : 'Learning Goals'}
           </button>
         ))}
       </div>
@@ -521,85 +459,6 @@ export function ProfessionalDevelopmentClient({
                 </form>
               </CardContent>
             </Card>
-          )}
-        </div>
-      )}
-
-      {tab === 'momentum' && (
-        <div className="space-y-4">
-          <MomentumDashboard snapshot={momentum} />
-          {!checkinDue && (
-            <Button variant="secondary" size="sm" onClick={() => setShowCheckinModal(true)}>
-              Start New Check-In
-            </Button>
-          )}
-        </div>
-      )}
-
-      {tab === 'checkins' && (
-        <div className="space-y-4">
-          {satisfaction !== null && (
-            <Card>
-              <CardContent className="py-4">
-                <p className="text-sm text-stone-500">Latest satisfaction score</p>
-                <p className="text-3xl font-bold text-stone-100 mt-1">{satisfaction}/10</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {checkinHistory.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-stone-500">No check-ins recorded yet.</p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-3"
-                onClick={() => setShowCheckinModal(true)}
-              >
-                Start Your First Check-In
-              </Button>
-            </div>
-          ) : (
-            checkinHistory.map((c) => (
-              <Card key={c.id}>
-                <CardContent className="py-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-stone-200">
-                      {format(new Date(c.checkin_date + 'T00:00:00'), 'MMM d, yyyy')}
-                    </span>
-                    <Badge
-                      variant={
-                        c.satisfaction_score >= 7
-                          ? 'success'
-                          : c.satisfaction_score >= 4
-                            ? 'warning'
-                            : 'error'
-                      }
-                    >
-                      {c.satisfaction_score}/10
-                    </Badge>
-                  </div>
-                  {c.learned_this_quarter && (
-                    <div>
-                      <p className="text-xs text-stone-500">Learned</p>
-                      <p className="text-sm text-stone-300">{c.learned_this_quarter}</p>
-                    </div>
-                  )}
-                  {c.goal_next_quarter && (
-                    <div>
-                      <p className="text-xs text-stone-500">Goal</p>
-                      <p className="text-sm text-stone-300">{c.goal_next_quarter}</p>
-                    </div>
-                  )}
-                  {c.draining_this_quarter && (
-                    <div>
-                      <p className="text-xs text-stone-500">Draining</p>
-                      <p className="text-sm text-stone-400">{c.draining_this_quarter}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
           )}
         </div>
       )}

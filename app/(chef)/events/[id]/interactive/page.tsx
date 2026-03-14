@@ -126,16 +126,11 @@ export default async function InteractivePage({
           {spec.subtitle && <p className="text-stone-500 text-sm mt-0.5">{spec.subtitle}</p>}
         </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          href={pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 mt-6"
-        >
-          Open PDF ↗
-        </Button>
+        <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 mt-6">
+          <Button variant="secondary" size="sm">
+            Open PDF ↗
+          </Button>
+        </a>
       </div>
 
       {/* Header pills — event, client, date, guests, etc. */}

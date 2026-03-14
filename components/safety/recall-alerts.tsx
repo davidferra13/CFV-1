@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { AlertTriangle, CheckCircle, X } from '@/components/ui/icons'
+import { AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { dismissRecall } from '@/lib/safety/recall-actions'
@@ -37,7 +37,7 @@ export function RecallAlerts({ alerts }: Props) {
 
   if (visible.length === 0) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-950 px-4 py-3 text-green-200">
+      <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-950 px-4 py-3 text-green-800">
         <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
         <span className="text-sm font-medium">No active recalls match your ingredients.</span>
       </div>
@@ -48,7 +48,7 @@ export function RecallAlerts({ alerts }: Props) {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <AlertTriangle className="h-5 w-5 text-amber-500" />
-        <span className="text-sm font-semibold text-amber-200">
+        <span className="text-sm font-semibold text-amber-800">
           {visible.length} active FDA recall{visible.length !== 1 ? 's' : ''} match your ingredients
         </span>
       </div>
@@ -75,11 +75,11 @@ export function RecallAlerts({ alerts }: Props) {
                 {alert.product_description}
               </p>
             </div>
-            <p className="text-xs text-amber-200">
+            <p className="text-xs text-amber-800">
               <span className="font-medium">Reason:</span> {alert.reason_for_recall}
             </p>
             {alert.recall_initiation_date && (
-              <p className="text-xs text-amber-200">Initiated: {alert.recall_initiation_date}</p>
+              <p className="text-xs text-amber-700">Initiated: {alert.recall_initiation_date}</p>
             )}
           </div>
         </div>

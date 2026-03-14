@@ -33,8 +33,8 @@ export default async function MenuScalingPage() {
       </div>
 
       <Card className="p-4 bg-sky-950 border-sky-200">
-        <p className="text-sm font-medium text-sky-200">About scaling</p>
-        <p className="text-sm text-sky-200 mt-1">
+        <p className="text-sm font-medium text-sky-800">About scaling</p>
+        <p className="text-sm text-sky-700 mt-1">
           Scaling in ChefFlow is done per-recipe using the recipe yield and ingredient quantities.
           Set a target guest count on a menu to track the baseline, then adjust recipe quantities
           proportionally when cooking for more or fewer guests.

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, X, ChevronLeft, ChevronRight } from '@/components/ui/icons'
+import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { StoryGroup, SocialStory } from '@/lib/social/chef-social-actions'
 import {
   markStoryViewed,
@@ -38,7 +38,7 @@ function StoryAvatar({ group, onClick }: { group: StoryGroup; onClick: () => voi
             {group.chef.profile_image_url && (
               <AvatarImage src={group.chef.profile_image_url} alt={authorName} />
             )}
-            <AvatarFallback className="bg-amber-900 text-amber-200 text-xs font-semibold">
+            <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -201,7 +201,7 @@ function StoryViewer({
               {group.chef.profile_image_url && (
                 <AvatarImage src={group.chef.profile_image_url} alt={authorName} />
               )}
-              <AvatarFallback className="bg-amber-200 text-amber-200 text-xs">
+              <AvatarFallback className="bg-amber-200 text-amber-800 text-xs">
                 {authorName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>

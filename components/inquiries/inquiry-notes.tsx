@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote, ExternalLink } from '@/components/ui/icons'
+import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote, ExternalLink } from 'lucide-react'
 import {
   addInquiryNote,
   updateInquiryNote,
@@ -18,12 +18,12 @@ import { toast } from 'sonner'
 
 const CATEGORY_META: Record<InquiryNoteCategory, { bg: string; text: string; label: string }> = {
   general: { bg: 'bg-stone-800', text: 'text-stone-300', label: 'General' },
-  inspiration: { bg: 'bg-pink-900', text: 'text-pink-200', label: 'Inspiration' },
-  menu_planning: { bg: 'bg-amber-900', text: 'text-amber-200', label: 'Menu Planning' },
-  sourcing: { bg: 'bg-green-900', text: 'text-green-200', label: 'Sourcing' },
-  logistics: { bg: 'bg-blue-900', text: 'text-blue-200', label: 'Logistics' },
-  staffing: { bg: 'bg-purple-900', text: 'text-purple-200', label: 'Staffing' },
-  post_event: { bg: 'bg-teal-900', text: 'text-teal-200', label: 'Post-Event' },
+  inspiration: { bg: 'bg-pink-900', text: 'text-pink-700', label: 'Inspiration' },
+  menu_planning: { bg: 'bg-amber-900', text: 'text-amber-700', label: 'Menu Planning' },
+  sourcing: { bg: 'bg-green-900', text: 'text-green-700', label: 'Sourcing' },
+  logistics: { bg: 'bg-blue-900', text: 'text-blue-700', label: 'Logistics' },
+  staffing: { bg: 'bg-purple-900', text: 'text-purple-700', label: 'Staffing' },
+  post_event: { bg: 'bg-teal-900', text: 'text-teal-700', label: 'Post-Event' },
 }
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_META) as InquiryNoteCategory[]

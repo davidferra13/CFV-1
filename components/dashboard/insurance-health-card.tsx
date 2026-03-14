@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShieldAlert } from '@/components/ui/icons'
+import { ShieldAlert } from 'lucide-react'
 
 type Policy = { policy_type: string; expiry_date: string | null }
 
@@ -24,10 +24,10 @@ export function InsuranceHealthCard({ policies }: { policies: Policy[] }) {
 
   const textColor =
     policies.length === 0 || expired.length > 0
-      ? 'text-red-200'
+      ? 'text-red-800'
       : expiringSoon.length > 0
-        ? 'text-amber-200'
-        : 'text-emerald-200'
+        ? 'text-amber-800'
+        : 'text-emerald-800'
 
   return (
     <Link href="/settings/protection/insurance">

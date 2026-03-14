@@ -1,4 +1,4 @@
-import { Users } from '@/components/ui/icons'
+import { Users } from 'lucide-react'
 import type { ClientSuggestion } from '@/lib/goals/types'
 import { ClientSuggestionCard } from './client-suggestion-card'
 

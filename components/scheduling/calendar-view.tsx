@@ -667,7 +667,7 @@ export function CalendarView({
               border: `1px solid ${STATUS_COLORS.proposed.border}`,
             }}
           />{' '}
-          Sent to Client
+          Proposed
         </span>
         <span className="flex items-center gap-1.5">
           <span

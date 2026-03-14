@@ -152,16 +152,12 @@ async function getOrCreateThread(input: {
     .maybeSingle()
 
   if (existing?.id) {
-    const threadUpdate: Record<string, unknown> = {
-      last_activity_at: input.timestamp,
-    }
-    if (input.resolvedClientId) {
-      threadUpdate.client_id = input.resolvedClientId
-    }
-
     await supabase
       .from('conversation_threads' as any)
-      .update(threadUpdate)
+      .update({
+        last_activity_at: input.timestamp,
+        client_id: input.resolvedClientId,
+      })
       .eq('id', existing.id)
 
     return existing.id as string
@@ -423,8 +419,7 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
   const supabase: any = createServerClient({ admin: true })
   const timestamp = input.timestamp || new Date().toISOString()
   const normalizedContent = normalizeContent(input.rawContent)
-  const resolvedClientId =
-    input.resolvedClientId ?? (await resolveClientId(input.tenantId, input.senderIdentity))
+  const resolvedClientId = await resolveClientId(input.tenantId, input.senderIdentity)
 
   const threadId = await getOrCreateThread({
     tenantId: input.tenantId,

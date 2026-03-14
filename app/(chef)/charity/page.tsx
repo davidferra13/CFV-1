@@ -18,7 +18,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CharitySection } from '@/components/charity/charity-section'
-import { Clock } from '@/components/ui/icons'
+import { Clock } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Charity Hub - ChefFlow' }
 

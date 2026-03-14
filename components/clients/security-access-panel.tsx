@@ -19,7 +19,6 @@ type Props = {
 export function SecurityAccessPanel({ clientId, ...initial }: Props) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
   const [showSensitive, setShowSensitive] = useState(false)
   const [gateCode, setGateCode] = useState(initial.gateCode || '')
   const [wifiPassword, setWifiPassword] = useState(initial.wifiPassword || '')
@@ -30,7 +29,6 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
 
   async function handleSave() {
     setSaving(true)
-    setSaveError(null)
     try {
       await updateClient(clientId, {
         gate_code: gateCode || undefined,
@@ -43,7 +41,6 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
       setEditing(false)
     } catch (err) {
       console.error('Failed to update security/access:', err)
-      setSaveError('Could not save security & access details. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -71,7 +68,7 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
               />
             </svg>
             <h3 className="font-medium text-stone-200">Security & Access</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-900 text-amber-200 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-900 text-amber-700 font-medium">
               Sensitive
             </span>
           </div>
@@ -148,14 +145,6 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
         <h3 className="font-medium text-stone-200">Security & Access</h3>
       </div>
       <div className="p-4 space-y-4">
-        {saveError && (
-          <div
-            className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
-            role="alert"
-          >
-            {saveError}
-          </div>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Gate Code"
@@ -198,13 +187,7 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
           <Button onClick={handleSave} loading={saving}>
             Save
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setSaveError(null)
-              setEditing(false)
-            }}
-          >
+          <Button variant="ghost" onClick={() => setEditing(false)}>
             Cancel
           </Button>
         </div>

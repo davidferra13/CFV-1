@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Star, Plus, Trash2, GripVertical } from '@/components/ui/icons'
+import { Star, Plus, Trash2, GripVertical } from 'lucide-react'
 import { addPortfolioItem, removePortfolioItem, reorderPortfolio } from '@/lib/portfolio/actions'
 import { toast } from 'sonner'
 

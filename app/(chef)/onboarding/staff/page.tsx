@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 import { listStaffMembers } from '@/lib/staff/actions'
 import { StaffEntryForm } from '@/components/onboarding/staff-entry-form'
 

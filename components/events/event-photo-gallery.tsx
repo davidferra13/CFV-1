@@ -9,13 +9,11 @@ import { toast } from 'sonner'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { MOBILE_CAPTURE_IMAGE_ACCEPT } from '@/lib/uploads/mobile-capture-types'
 import {
   uploadEventPhoto,
   deleteEventPhoto,
   updatePhotoCaption,
   reorderEventPhotos,
-  sharePhotosWithClient,
 } from '@/lib/events/photo-actions'
 import type { EventPhoto } from '@/lib/events/photo-actions'
 
@@ -159,7 +157,7 @@ function PhotoCard({
               <button
                 type="button"
                 onClick={onDelete}
-                className="text-xs text-red-600 hover:text-red-200 font-medium px-1.5 py-0.5"
+                className="text-xs text-red-600 hover:text-red-800 font-medium px-1.5 py-0.5"
               >
                 Delete
               </button>
@@ -203,8 +201,6 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
-  const [sharing, setSharing] = useState(false)
-  const [shareStatus, setShareStatus] = useState<'idle' | 'sent'>('idle')
   const [, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -332,41 +328,14 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-stone-100">Dinner Photos</h2>
-          <div className="flex items-center gap-3">
-            {photos.length > 0 && (
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={sharing}
-                onClick={async () => {
-                  setSharing(true)
-                  try {
-                    const result = await sharePhotosWithClient(eventId)
-                    if (result.success) {
-                      setShareStatus('sent')
-                      toast.success('Photos shared with client')
-                    } else {
-                      toast.error(result.error ?? 'Failed to share photos')
-                    }
-                  } catch {
-                    toast.error('Failed to share photos')
-                  } finally {
-                    setSharing(false)
-                  }
-                }}
-              >
-                {sharing ? 'Sending...' : shareStatus === 'sent' ? 'Shared' : 'Share with Client'}
-              </Button>
-            )}
-            <span className="text-sm text-stone-500 tabular-nums">
-              {photos.length} / {MAX_PHOTOS}
-            </span>
-          </div>
+          <span className="text-sm text-stone-500 tabular-nums">
+            {photos.length} / {MAX_PHOTOS}
+          </span>
         </div>
 
         {/* Error banner */}
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950 border border-red-200 text-sm text-red-200 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-lg bg-red-950 border border-red-200 text-sm text-red-700 flex items-start gap-2">
             <svg
               className="w-4 h-4 mt-0.5 flex-shrink-0"
               fill="none"
@@ -415,8 +384,7 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
             <input
               ref={fileInputRef}
               type="file"
-              accept={MOBILE_CAPTURE_IMAGE_ACCEPT}
-              capture="environment"
+              accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
               multiple
               aria-label="Upload dinner photos"
               className="sr-only"

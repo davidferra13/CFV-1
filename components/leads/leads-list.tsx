@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { claimContactSubmission, dismissContactSubmission } from '@/lib/contact/claim'
 import { formatDistanceToNow } from 'date-fns'
-import { Globe, Mail, ArrowRight, X } from '@/components/ui/icons'
+import { Globe, Mail, ArrowRight, X } from 'lucide-react'
 
 type Submission = {
   id: string

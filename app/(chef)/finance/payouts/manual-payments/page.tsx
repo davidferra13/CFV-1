@@ -45,7 +45,7 @@ export default async function ManualPaymentsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Manual Payments</h1>
-          <span className="bg-green-900 text-green-200 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
             {allEntries.length}
           </span>
         </div>
@@ -55,8 +55,8 @@ export default async function ManualPaymentsPage() {
       </div>
 
       <Card className="p-4 bg-sky-950 border-sky-200">
-        <p className="text-sm text-sky-200 font-medium">About this view</p>
-        <p className="text-sm text-sky-200 mt-1">
+        <p className="text-sm text-sky-800 font-medium">About this view</p>
+        <p className="text-sm text-sky-700 mt-1">
           This shows all inbound payment ledger entries. Offline payments (cash, Venmo, Zelle)
           recorded via the &quot;Record Payment&quot; button on event pages appear here alongside
           Stripe-processed payments.
@@ -65,7 +65,7 @@ export default async function ManualPaymentsPage() {
 
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalReceived)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalReceived)}</p>
           <p className="text-sm text-stone-500 mt-1">Total received</p>
         </Card>
         <Card className="p-4">
@@ -100,7 +100,7 @@ export default async function ManualPaymentsPage() {
                     {format(new Date(entry.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-900 text-green-200 capitalize">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-900 text-green-700 capitalize">
                       {entry.entry_type.replace(/_/g, ' ')}
                     </span>
                   </TableCell>
@@ -117,7 +117,7 @@ export default async function ManualPaymentsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-green-200 font-semibold text-sm">
+                  <TableCell className="text-green-700 font-semibold text-sm">
                     +{formatCurrency(entry.amount_cents)}
                   </TableCell>
                 </TableRow>

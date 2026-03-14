@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Search, X, Loader2 } from '@/components/ui/icons'
+import { Search, X, Loader2 } from 'lucide-react'
 import { searchChatMessages } from '@/lib/chat/actions'
 import { format } from 'date-fns'
 import type { ChatMessage } from '@/lib/chat/types'

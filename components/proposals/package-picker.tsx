@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, Image } from '@/components/ui/icons'
+import { Check, Image } from 'lucide-react'
 
 type Template = {
   id: string

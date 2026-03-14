@@ -6,12 +6,6 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getDailyOpsData } from '@/lib/stations/daily-ops-actions'
 import type { StationSnapshot, AlertItem } from '@/lib/stations/daily-ops-actions'
 import { DailyOpsActionsBar } from '@/components/stations/daily-ops-actions-bar'
-import { ShiftNotesSection } from '@/components/briefing/shift-notes-section'
-import { PrepTimerForm } from '@/components/briefing/prep-timer-form'
-import { DailyChecklist } from '@/components/commerce/daily-checklist'
-import { getShiftNotes } from '@/lib/shifts/actions'
-import { getActivePrepTimers } from '@/lib/prep/actions'
-import { getOpeningChecklist, getClosingChecklist } from '@/lib/commerce/daily-checklist-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -142,14 +136,7 @@ function StationCard({ station }: { station: StationSnapshot }) {
 
 export default async function DailyOpsPage() {
   await requireChef()
-  const today = new Date().toISOString().split('T')[0]
-  const [data, shiftNotes, activePrepTimers, openingItems, closingItems] = await Promise.all([
-    getDailyOpsData(),
-    getShiftNotes(today),
-    getActivePrepTimers(),
-    getOpeningChecklist(today).catch(() => []),
-    getClosingChecklist(today).catch(() => []),
-  ])
+  const data = await getDailyOpsData()
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
@@ -185,11 +172,6 @@ export default async function DailyOpsPage() {
           <DailyOpsActionsBar openingTemplateId={data.openingTemplateId} />
         </CardContent>
       </Card>
-
-      {/* ============================================ */}
-      {/* DAILY OPENING / CLOSING CHECKLIST */}
-      {/* ============================================ */}
-      <DailyChecklist openingItems={openingItems} closingItems={closingItems} date={today} />
 
       {/* ============================================ */}
       {/* ALL STATIONS AT A GLANCE */}
@@ -373,83 +355,6 @@ export default async function DailyOpsPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* ============================================ */}
-      {/* SHIFT HANDOFF NOTES (Phase 2) */}
-      {/* ============================================ */}
-      <ShiftNotesSection
-        todayNotes={shiftNotes.todayNotes}
-        pinnedNotes={shiftNotes.pinnedNotes}
-        yesterdayClosingNotes={shiftNotes.yesterdayClosingNotes}
-        compact
-      />
-
-      {/* ============================================ */}
-      {/* ACTIVE PREP TIMERS (Phase 5) */}
-      {/* ============================================ */}
-      {activePrepTimers.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-stone-100 mb-4">
-            Active Prep Timers{' '}
-            <Badge variant="info" className="ml-1">
-              {activePrepTimers.length}
-            </Badge>
-          </h2>
-          <Card>
-            <CardContent className="pt-4 pb-4 space-y-2">
-              {activePrepTimers.map((timer) => {
-                const endTime = new Date(timer.end_at)
-                const now = new Date()
-                const diffMs = endTime.getTime() - now.getTime()
-                const isReady = diffMs <= 0
-                const isApproaching = diffMs > 0 && diffMs <= 30 * 60 * 1000
-                const hours = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60)))
-                const minutes = Math.max(0, Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)))
-
-                return (
-                  <div
-                    key={timer.id}
-                    className={`flex items-center justify-between rounded-lg px-3 py-2 ${
-                      isReady
-                        ? 'bg-emerald-950/30 border border-emerald-900/40'
-                        : isApproaching
-                          ? 'bg-amber-950/30 border border-amber-900/40'
-                          : 'bg-stone-800/50 border border-stone-700'
-                    }`}
-                  >
-                    <div>
-                      <p className="text-sm text-stone-200">{timer.title}</p>
-                      <p className="text-xs text-stone-500">
-                        {timer.station?.name ?? ''}
-                        {timer.station?.name && timer.event?.title ? ' / ' : ''}
-                        {timer.event?.title ?? ''}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={`text-sm font-medium ${isReady ? 'text-emerald-400' : isApproaching ? 'text-amber-400' : 'text-stone-300'}`}
-                      >
-                        {isReady ? 'Ready now' : `${hours}h ${minutes}m`}
-                      </p>
-                      {isReady && (
-                        <Badge variant="success" className="text-[10px]">
-                          Done
-                        </Badge>
-                      )}
-                      {isApproaching && !isReady && (
-                        <Badge variant="warning" className="text-[10px]">
-                          Soon
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </CardContent>
-          </Card>
-        </section>
-      )}
-      <PrepTimerForm />
 
       {/* ============================================ */}
       {/* ALERTS */}

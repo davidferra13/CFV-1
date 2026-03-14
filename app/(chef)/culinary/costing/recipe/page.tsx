@@ -120,11 +120,11 @@ export default async function RecipeCostPage() {
                   <TableCell>{costBar(recipe.total_cost_cents ?? 0, maxCostCents)}</TableCell>
                   <TableCell>
                     {recipe.has_all_prices ? (
-                      <span className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full">
                         Full
                       </span>
                     ) : (
-                      <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
                         Partial
                       </span>
                     )}

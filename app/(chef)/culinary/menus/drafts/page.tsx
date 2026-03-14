@@ -98,7 +98,7 @@ export default async function DraftMenusPage() {
                   </TableCell>
                   <TableCell>
                     {menu.is_template ? (
-                      <span className="text-xs bg-amber-900 text-amber-200 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
                         Template
                       </span>
                     ) : (

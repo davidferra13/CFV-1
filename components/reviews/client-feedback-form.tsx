@@ -10,19 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { TipAfterReviewCard } from '@/components/reviews/tip-after-review-card'
 
 interface ClientFeedbackFormProps {
   eventId: string
   googleReviewUrl: string | null
-  tipAmountCents?: number
-}
-
-type RatingFieldProps = {
-  label: string
-  description: string
-  value: number
-  onChange: (value: number) => void
 }
 
 function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -56,66 +47,22 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
   )
 }
 
-function RatingField({ label, description, value, onChange }: RatingFieldProps) {
-  return (
-    <div className="rounded-xl border border-stone-700 bg-stone-900/70 p-4">
-      <div className="mb-3">
-        <p className="font-medium text-stone-100">{label}</p>
-        <p className="text-sm text-stone-400">{description}</p>
-      </div>
-      <StarRating value={value} onChange={onChange} />
-    </div>
-  )
-}
-
-export function ClientFeedbackForm({
-  eventId,
-  googleReviewUrl,
-  tipAmountCents = 0,
-}: ClientFeedbackFormProps) {
+export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackFormProps) {
   const [isPending, startTransition] = useTransition()
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Form fields
   const [rating, setRating] = useState(0)
-  const [foodQualityRating, setFoodQualityRating] = useState(0)
-  const [presentationRating, setPresentationRating] = useState(0)
-  const [communicationRating, setCommunicationRating] = useState(0)
-  const [punctualityRating, setPunctualityRating] = useState(0)
-  const [cleanupRating, setCleanupRating] = useState(0)
-  const [wouldBookAgain, setWouldBookAgain] = useState<boolean | null>(null)
   const [feedbackText, setFeedbackText] = useState('')
   const [whatTheyLoved, setWhatTheyLoved] = useState('')
   const [whatCouldImprove, setWhatCouldImprove] = useState('')
   const [displayConsent, setDisplayConsent] = useState(false)
-  const isFormComplete =
-    rating > 0 &&
-    foodQualityRating > 0 &&
-    presentationRating > 0 &&
-    communicationRating > 0 &&
-    punctualityRating > 0 &&
-    cleanupRating > 0 &&
-    wouldBookAgain !== null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (rating === 0) {
       setError('Please select a star rating')
-      return
-    }
-    if (
-      foodQualityRating === 0 ||
-      presentationRating === 0 ||
-      communicationRating === 0 ||
-      punctualityRating === 0 ||
-      cleanupRating === 0
-    ) {
-      setError('Please rate each part of the experience')
-      return
-    }
-    if (wouldBookAgain === null) {
-      setError('Please tell us whether you would book again')
       return
     }
     setError(null)
@@ -125,12 +72,6 @@ export function ClientFeedbackForm({
         await submitClientReview({
           event_id: eventId,
           rating,
-          food_quality_rating: foodQualityRating,
-          presentation_rating: presentationRating,
-          communication_rating: communicationRating,
-          punctuality_rating: punctualityRating,
-          cleanup_rating: cleanupRating,
-          would_book_again: wouldBookAgain,
           feedback_text: feedbackText || null,
           what_they_loved: whatTheyLoved || null,
           what_could_improve: whatCouldImprove || null,
@@ -223,12 +164,6 @@ export function ClientFeedbackForm({
                 </a>
               </div>
             )}
-
-            {rating >= 4 && tipAmountCents <= 0 && (
-              <div className="pt-4 border-t border-emerald-200">
-                <TipAfterReviewCard eventId={eventId} />
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -246,50 +181,6 @@ export function ClientFeedbackForm({
           <div>
             <label className="block text-sm font-medium text-stone-300 mb-2">Overall Rating</label>
             <StarRating value={rating} onChange={setRating} />
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <h3 className="text-sm font-medium text-stone-300">Rate the details</h3>
-              <p className="mt-1 text-sm text-stone-400">
-                Help your chef understand exactly where the experience stood out.
-              </p>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <RatingField
-                label="Food quality"
-                description="Taste, execution, and overall quality of the meal."
-                value={foodQualityRating}
-                onChange={setFoodQualityRating}
-              />
-              <RatingField
-                label="Presentation"
-                description="How polished and appealing the dishes looked."
-                value={presentationRating}
-                onChange={setPresentationRating}
-              />
-              <RatingField
-                label="Communication"
-                description="Clarity, responsiveness, and overall coordination."
-                value={communicationRating}
-                onChange={setCommunicationRating}
-              />
-              <RatingField
-                label="Punctuality"
-                description="Arrival timing and how smoothly the service stayed on track."
-                value={punctualityRating}
-                onChange={setPunctualityRating}
-              />
-              <div className="md:col-span-2">
-                <RatingField
-                  label="Cleanup"
-                  description="How well the kitchen and service area were left at the end."
-                  value={cleanupRating}
-                  onChange={setCleanupRating}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Written Feedback */}
@@ -332,36 +223,6 @@ export function ClientFeedbackForm({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-2">
-              Would you book this chef again?
-            </label>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setWouldBookAgain(true)}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                  wouldBookAgain === true
-                    ? 'border-emerald-700 bg-emerald-950 text-emerald-300'
-                    : 'border-stone-700 bg-stone-900 text-stone-300 hover:bg-stone-800'
-                }`}
-              >
-                Yes, absolutely
-              </button>
-              <button
-                type="button"
-                onClick={() => setWouldBookAgain(false)}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                  wouldBookAgain === false
-                    ? 'border-amber-700 bg-amber-950 text-amber-300'
-                    : 'border-stone-700 bg-stone-900 text-stone-300 hover:bg-stone-800'
-                }`}
-              >
-                Not right now
-              </button>
-            </div>
-          </div>
-
           {/* Display Consent */}
           <div className="flex items-start gap-3 p-3 bg-stone-800 rounded-lg">
             <input
@@ -379,7 +240,7 @@ export function ClientFeedbackForm({
 
           {error && <Alert variant="error">{error}</Alert>}
 
-          <Button type="submit" variant="primary" disabled={isPending || !isFormComplete}>
+          <Button type="submit" variant="primary" disabled={isPending || rating === 0}>
             {isPending ? 'Submitting...' : 'Submit Feedback'}
           </Button>
         </form>

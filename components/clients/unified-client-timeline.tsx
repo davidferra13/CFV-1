@@ -73,8 +73,8 @@ function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: bool
             <span
               className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${
                 item.actor === 'client'
-                  ? 'bg-blue-900 text-blue-200'
-                  : 'bg-emerald-900 text-emerald-200'
+                  ? 'bg-blue-900 text-blue-700'
+                  : 'bg-emerald-900 text-emerald-700'
               }`}
             >
               {item.actor === 'client' ? 'Client' : 'You'}

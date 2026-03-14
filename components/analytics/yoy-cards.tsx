@@ -1,7 +1,7 @@
 // Year-Over-Year Cards — three metric cards comparing current vs prior year.
 // Used on the dashboard Business Snapshot section.
 
-import { TrendingUp, TrendingDown, Minus } from '@/components/ui/icons'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import type { YoYData, YoYMetric } from '@/lib/analytics/year-over-year'

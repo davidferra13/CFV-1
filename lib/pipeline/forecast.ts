@@ -78,7 +78,7 @@ export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForec
 
   const EVENT_LABELS: Record<string, string> = {
     draft: 'Draft Event',
-    proposed: 'Sent to Client',
+    proposed: 'Proposed',
     accepted: 'Accepted',
     paid: 'Deposit Paid',
     confirmed: 'Confirmed',

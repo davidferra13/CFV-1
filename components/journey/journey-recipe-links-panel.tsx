@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState, useTransition } from 'react'
-import { CheckCircle2, Pencil, Plus, Repeat, Star, Trash2 } from '@/components/ui/icons'
+import { CheckCircle2, Pencil, Plus, Repeat, Star, Trash2 } from 'lucide-react'
 import {
   createChefJourneyRecipeLink,
   deleteChefJourneyRecipeLink,
@@ -343,7 +343,7 @@ export function JourneyRecipeLinksPanel({
           </label>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -406,7 +406,7 @@ export function JourneyRecipeLinksPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-200 hover:bg-red-950"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
                     onClick={() => handleDelete(link)}
                   >
                     <Trash2 className="w-4 h-4" />

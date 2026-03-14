@@ -31,7 +31,7 @@ export default async function GarnishesPage() {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Garnishes</h1>
-            <span className="bg-lime-900 text-lime-200 text-sm px-2 py-0.5 rounded-full">
+            <span className="bg-lime-900 text-lime-700 text-sm px-2 py-0.5 rounded-full">
               {garnishes.length}
             </span>
           </div>
@@ -47,7 +47,7 @@ export default async function GarnishesPage() {
             <p className="text-sm text-stone-500 mt-1">Garnish components</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-200">{linkedCount}</p>
+            <p className="text-2xl font-bold text-green-700">{linkedCount}</p>
             <p className="text-sm text-stone-500 mt-1">Linked to recipes</p>
           </Card>
         </div>
@@ -92,7 +92,7 @@ export default async function GarnishesPage() {
                     {comp.recipe_id ? (
                       <Link
                         href={`/culinary/recipes/${comp.recipe_id}`}
-                        className="text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded-full hover:bg-green-200"
+                        className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
                       >
                         Linked
                       </Link>

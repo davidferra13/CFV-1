@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { Shield, ArrowRight, Bot } from '@/components/ui/icons'
+import { Shield, ArrowRight, Bot } from 'lucide-react'
 import Link from 'next/link'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 

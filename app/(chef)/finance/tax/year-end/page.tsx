@@ -79,7 +79,7 @@ export default async function YearEndTaxPage({
             </div>
             <div>
               <p className="text-sm text-stone-500">Net Income (Est.)</p>
-              <p className="text-2xl font-bold text-green-200">{formatCurrency(netIncome)}</p>
+              <p className="text-2xl font-bold text-green-700">{formatCurrency(netIncome)}</p>
             </div>
           </div>
         </CardContent>
@@ -129,7 +129,7 @@ export default async function YearEndTaxPage({
               )}
               <div className="flex justify-between items-center pt-2 font-bold">
                 <span>Total Deductible Expenses</span>
-                <span className="text-red-200">
+                <span className="text-red-700">
                   {formatCurrency(taxData.totalDeductibleExpensesCents)}
                 </span>
               </div>
@@ -167,7 +167,7 @@ export default async function YearEndTaxPage({
               </div>
               <div>
                 <p className="text-sm text-stone-500">Total Mileage Deduction</p>
-                <p className="text-2xl font-bold text-green-200">
+                <p className="text-2xl font-bold text-green-700">
                   {formatCurrency(taxData.mileage.totalDeductionCents)}
                 </p>
               </div>
@@ -189,7 +189,7 @@ export default async function YearEndTaxPage({
             {taxData.quarterlyEstimates.map((q) => (
               <div key={q.quarter} className="bg-amber-950 rounded-lg p-3">
                 <p className="text-sm text-stone-400 font-medium">{q.quarter}</p>
-                <p className="text-lg font-bold text-amber-200">
+                <p className="text-lg font-bold text-amber-800">
                   {formatCurrency(q.estimatedTaxCents)}
                 </p>
                 <p className="text-xs text-stone-500">Due: {q.dueDate}</p>

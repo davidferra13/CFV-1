@@ -97,13 +97,6 @@ export type NotificationAction =
   | 'guest_comp'
   // Menu preferences
   | 'menu_preferences_submitted'
-  | 'meal_request_scheduled_to_client'
-  | 'meal_request_declined_to_client'
-  | 'meal_request_fulfilled_to_client'
-  | 'meal_recommendation_sent_to_client'
-  | 'meal_recommendation_approved'
-  | 'meal_recommendation_revision_requested'
-  | 'client_meal_feedback_submitted'
   // Cross-boundary gap closure
   | 'menu_approved'
   | 'menu_revision_requested'
@@ -131,16 +124,6 @@ export type NotificationAction =
   | 'raffle_winner'
   | 'raffle_new_round'
   | 'raffle_drawn_chef'
-  // Deposit automation
-  | 'deposit_request_sent'
-  // Operations proactive alerts
-  | 'equipment_maintenance_due'
-  | 'dietary_accommodation_check'
-  | 'stale_data_digest'
-  // Financial alerts
-  | 'expense_anomaly'
-  | 'budget_variance_warning'
-  | 'daily_settlement_summary'
 
 export type Notification = {
   id: string
@@ -265,41 +248,6 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Cross-boundary gap closure
   menu_preferences_submitted: { category: 'event', icon: 'ClipboardCheck', toastByDefault: true },
-  meal_request_scheduled_to_client: {
-    category: 'event',
-    icon: 'CalendarCheck',
-    toastByDefault: true,
-  },
-  meal_request_declined_to_client: {
-    category: 'event',
-    icon: 'XCircle',
-    toastByDefault: true,
-  },
-  meal_request_fulfilled_to_client: {
-    category: 'event',
-    icon: 'ChefHat',
-    toastByDefault: true,
-  },
-  meal_recommendation_sent_to_client: {
-    category: 'event',
-    icon: 'FileText',
-    toastByDefault: true,
-  },
-  meal_recommendation_approved: {
-    category: 'event',
-    icon: 'CheckCircle',
-    toastByDefault: true,
-  },
-  meal_recommendation_revision_requested: {
-    category: 'event',
-    icon: 'Edit',
-    toastByDefault: true,
-  },
-  client_meal_feedback_submitted: {
-    category: 'client',
-    icon: 'MessageSquare',
-    toastByDefault: true,
-  },
   menu_approved: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
   menu_revision_requested: { category: 'event', icon: 'Edit', toastByDefault: true },
   contract_signed: { category: 'event', icon: 'FileCheck', toastByDefault: true },
@@ -327,19 +275,6 @@ export const NOTIFICATION_CONFIG: Record<
   raffle_winner: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
   raffle_new_round: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
   raffle_drawn_chef: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
-
-  // Deposit automation
-  deposit_request_sent: { category: 'payment', icon: 'CreditCard', toastByDefault: true },
-
-  // Operations proactive alerts
-  equipment_maintenance_due: { category: 'ops', icon: 'Wrench', toastByDefault: true },
-  dietary_accommodation_check: { category: 'event', icon: 'AlertTriangle', toastByDefault: true },
-  stale_data_digest: { category: 'system', icon: 'Database', toastByDefault: false },
-
-  // Financial alerts
-  expense_anomaly: { category: 'payment', icon: 'AlertTriangle', toastByDefault: true },
-  budget_variance_warning: { category: 'payment', icon: 'AlertCircle', toastByDefault: true },
-  daily_settlement_summary: { category: 'payment', icon: 'DollarSign', toastByDefault: false },
 }
 
 // Category display names for preferences UI

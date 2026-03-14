@@ -31,7 +31,6 @@ import {
   fetchContentShotListData,
   renderContentShotList,
 } from '@/lib/documents/generate-content-shot-list'
-import { fetchDietaryCardData, renderDietaryCards } from '@/lib/documents/generate-dietary-cards'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import {
   CORE_PACKET_DOCUMENT_TYPES,
@@ -162,13 +161,6 @@ function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, D
       docTypeLabel: shots.docTypeLabel,
       fallbackTitle: shots.fallbackTitle,
       filenameBase: shots.filenameBase,
-    },
-    dietary: {
-      fetch: () => fetchDietaryCardData(eventId),
-      render: renderDietaryCards,
-      docTypeLabel: getDocumentDefinition('dietary').docTypeLabel,
-      fallbackTitle: getDocumentDefinition('dietary').fallbackTitle,
-      filenameBase: getDocumentDefinition('dietary').filenameBase,
     },
   }
 }

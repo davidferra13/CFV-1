@@ -11,7 +11,7 @@ import { DeleteScrubSessionButton } from '@/components/prospecting/delete-scrub-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'AI Scrub - Prospecting - ChefFlow' }
 

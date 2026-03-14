@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { z } from 'zod'
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ Return JSON with these exact fields:
 }`
 
   try {
-    return (await dispatchPrivate(systemPrompt, userContent, ClientPreferenceProfileSchema)).result
+    return await parseWithOllama(systemPrompt, userContent, ClientPreferenceProfileSchema)
   } catch (err) {
     console.error('[client-preference-profile] Failed:', err)
     throw new Error('Could not generate preference profile. Please try again.')

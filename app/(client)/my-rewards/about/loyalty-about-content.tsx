@@ -1,12 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { LoyaltyProgramSimulator } from '@/components/loyalty/loyalty-program-simulator'
-import type {
-  LoyaltyProgramConfig,
-  LoyaltyProgramReward,
-  LoyaltySimulationStartingProgress,
-} from '@/lib/loyalty/simulator'
 import {
   GuideSection,
   GuideParagraph,
@@ -22,13 +16,7 @@ import {
   GuideRankList,
 } from '@/components/loyalty/guide-sections'
 
-type Props = {
-  simulatorConfig: LoyaltyProgramConfig
-  simulatorRewards: LoyaltyProgramReward[]
-  initialProgress?: LoyaltySimulationStartingProgress
-}
-
-export function LoyaltyAboutContent({ simulatorConfig, simulatorRewards, initialProgress }: Props) {
+export function LoyaltyAboutContent() {
   return (
     <div className="space-y-4">
       {/* ─── Hero ─── */}
@@ -46,7 +34,7 @@ export function LoyaltyAboutContent({ simulatorConfig, simulatorRewards, initial
 
       {/* ─── Quick Feature Cards ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <GuideBrandCard icon="🪙" title="Earn Automatically">
+        <GuideBrandCard icon="✨" title="Earn Automatically">
           Points are awarded every time your chef completes an event. No cards to scan, no codes to
           remember — it just happens.
         </GuideBrandCard>
@@ -155,22 +143,6 @@ export function LoyaltyAboutContent({ simulatorConfig, simulatorRewards, initial
       </GuideSection>
 
       {/* ─── Rewards ─── */}
-      <GuideSection
-        title="Try Your Own Scenario"
-        icon="Plan"
-        summary="Plug in party size and repeat dinners to see how this real loyalty program behaves from your current starting point."
-      >
-        <LoyaltyProgramSimulator
-          title="Model your next run of dinners"
-          subtitle="This planner uses your chef's live rules, tier thresholds, and reward catalog. Move the sliders to see what unlocks and when."
-          config={simulatorConfig}
-          rewards={simulatorRewards}
-          initialProgress={initialProgress}
-          initialGuestsPerEvent={2}
-          initialPlannedEvents={5}
-        />
-      </GuideSection>
-
       <GuideSection
         title="What You Can Earn"
         icon="🎁"

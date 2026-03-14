@@ -25,7 +25,7 @@ import {
   Printer,
   ChevronDown,
   type LucideIcon,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 
 const iconMap: Record<string, LucideIcon> = {
   Building2,

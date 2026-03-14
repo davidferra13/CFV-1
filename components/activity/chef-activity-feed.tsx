@@ -52,7 +52,7 @@ function ActivityRow({ entry, compact }: { entry: ChefActivityEntry; compact: bo
         {config.label}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-stone-200 leading-snug">
+        <p className="text-sm text-stone-700 leading-snug">
           {entry.summary}
         </p>
         {!compact && entry.context && Object.keys(entry.context).length > 0 && (

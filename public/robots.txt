@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /embed/
+Disallow: /admin/
+Disallow: /dev/
+
+Sitemap: https://cheflowhq.com/sitemap.xml

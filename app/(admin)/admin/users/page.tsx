@@ -4,9 +4,8 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformChefList, type PlatformChefRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Users, TrendingUp, AlertCircle } from '@/components/ui/icons'
+import { Users, TrendingUp, AlertCircle } from 'lucide-react'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
-import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
 
 function formatCents(cents: number): string {
   if (cents === 0) return '$0'
@@ -23,7 +22,7 @@ function ChefBadge({
   )
   if (daysSinceSignup < 30) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-200">
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-700">
         New
       </span>
     )
@@ -72,7 +71,7 @@ export default async function AdminChefListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200 flex items-center gap-2">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
           <AlertCircle size={14} />
           {error}
         </div>
@@ -147,14 +146,13 @@ export default async function AdminChefListPage() {
                         showScore
                       />
                     </td>
-                    <td className="px-4 py-3 flex items-center gap-3">
+                    <td className="px-4 py-3">
                       <Link
                         href={`/admin/users/${chef.id}`}
-                        className="text-xs text-blue-600 hover:text-blue-200 font-medium"
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
                         View →
                       </Link>
-                      <ViewAsChefButton chefId={chef.id} />
                     </td>
                   </tr>
                 ))}

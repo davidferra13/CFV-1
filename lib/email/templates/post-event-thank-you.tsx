@@ -4,7 +4,7 @@
 
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type PostEventThankYouProps = {
   clientName: string
@@ -15,7 +15,6 @@ type PostEventThankYouProps = {
   loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
   loyaltyPointsEarned?: number | null
   loyaltyPointsBalance?: number | null
-  brand?: ChefBrandProps
 }
 
 export function PostEventThankYouEmail({
@@ -27,10 +26,9 @@ export function PostEventThankYouEmail({
   loyaltyTier,
   loyaltyPointsEarned,
   loyaltyPointsBalance,
-  brand,
 }: PostEventThankYouProps) {
   return (
-    <BaseLayout brand={brand} preview={`${chefName} wanted to say thank you`}>
+    <BaseLayout preview={`${chefName} wanted to say thank you`}>
       <Text style={heading}>A personal thank you</Text>
 
       <Text style={paragraph}>Hi {clientName},</Text>

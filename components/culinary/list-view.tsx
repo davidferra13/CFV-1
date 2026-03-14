@@ -15,10 +15,10 @@ type ListViewProps = {
 }
 
 const TIER_BADGE_COLORS: Record<WordTier, string> = {
-  1: 'bg-amber-900 text-amber-200 border-amber-300',
-  2: 'bg-blue-900 text-blue-200 border-blue-300',
+  1: 'bg-amber-900 text-amber-800 border-amber-300',
+  2: 'bg-blue-900 text-blue-800 border-blue-300',
   3: 'bg-stone-800 text-stone-300 border-stone-600',
-  4: 'bg-purple-900 text-purple-200 border-purple-300',
+  4: 'bg-purple-900 text-purple-800 border-purple-300',
 }
 
 export function ListView({ words }: ListViewProps) {

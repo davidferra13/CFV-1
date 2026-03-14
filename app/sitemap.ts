@@ -3,7 +3,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { BLOG_POSTS } from '@/lib/blog/posts'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
-const SITEMAP_QUERY_TIMEOUT_MS = Number(process.env.SITEMAP_QUERY_TIMEOUT_MS ?? 5000)
 
 // Static public routes that are always indexable
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
@@ -24,18 +23,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
-  },
-  {
-    url: `${BASE_URL}/faq`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.7,
-  },
-  {
-    url: `${BASE_URL}/trust`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.7,
   },
   {
     url: `${BASE_URL}/contact`,
@@ -68,18 +55,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase: any = createAdminClient()
 
     // Fetch all chefs who have public profiles enabled and a slug
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('sitemap chef query timeout')), SITEMAP_QUERY_TIMEOUT_MS)
-    })
-
-    const { data: chefs } = (await Promise.race([
-      supabase
-        .from('chefs')
-        .select('slug, updated_at')
-        .not('slug', 'is', null)
-        .eq('profile_public', true),
-      timeoutPromise,
-    ])) as { data: Array<{ slug: string; updated_at: string | null }> | null }
+    const { data: chefs } = await supabase
+      .from('chefs')
+      .select('slug, updated_at')
+      .not('slug', 'is', null)
+      .eq('profile_public', true)
 
     const chefRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}`,

@@ -128,7 +128,7 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                           disabled={isLoading}
                           onClick={() => handleConvert(lead.id)}
                         >
-                          {isLoading ? 'Converting...' : 'Convert to Client'}
+                          Convert to Client
                         </Button>
                         <Button
                           variant="secondary"
@@ -136,7 +136,7 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                           disabled={isLoading}
                           onClick={() => handleStatusChange(lead.id, 'contacted')}
                         >
-                          {isLoading ? 'Updating...' : 'Mark Contacted'}
+                          Mark Contacted
                         </Button>
                         <Button
                           variant="ghost"
@@ -144,7 +144,7 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                           disabled={isLoading}
                           onClick={() => handleStatusChange(lead.id, 'archived')}
                         >
-                          {isLoading ? 'Archiving...' : 'Archive'}
+                          Archive
                         </Button>
                       </>
                     )}
@@ -156,7 +156,7 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                           disabled={isLoading}
                           onClick={() => handleConvert(lead.id)}
                         >
-                          {isLoading ? 'Converting...' : 'Convert to Client'}
+                          Convert to Client
                         </Button>
                         <Button
                           variant="ghost"
@@ -164,18 +164,16 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                           disabled={isLoading}
                           onClick={() => handleStatusChange(lead.id, 'archived')}
                         >
-                          {isLoading ? 'Archiving...' : 'Archive'}
+                          Archive
                         </Button>
                       </>
                     )}
                     {lead.status === 'converted' && lead.converted_client_id && (
-                      <Button
-                        variant="secondary"
-                        className="text-xs"
-                        href={`/clients/${lead.converted_client_id}`}
-                      >
-                        View Client
-                      </Button>
+                      <a href={`/clients/${lead.converted_client_id}`}>
+                        <Button variant="secondary" className="text-xs">
+                          View Client
+                        </Button>
+                      </a>
                     )}
                     {lead.status === 'archived' && (
                       <Button
@@ -184,7 +182,7 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                         disabled={isLoading}
                         onClick={() => handleStatusChange(lead.id, 'new')}
                       >
-                        {isLoading ? 'Restoring...' : 'Restore'}
+                        Restore
                       </Button>
                     )}
                   </div>

@@ -6,43 +6,6 @@
 //
 // Sentry: wrapped with withSentryConfig at the bottom for source maps + error tracking.
 // Requires NEXT_PUBLIC_SENTRY_DSN (and optionally SENTRY_ORG / SENTRY_PROJECT) in env.
-const path = require('path')
-const createNextIntlPlugin = require('next-intl/plugin')
-const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
-
-function parseOrigin(candidate) {
-  if (!candidate) return null
-
-  try {
-    return new URL(candidate).origin
-  } catch {
-    return null
-  }
-}
-
-function buildSupabaseConnectSrc() {
-  const sources = ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co']
-  const supabaseOrigin = parseOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL)
-
-  if (!supabaseOrigin) return sources
-
-  const { hostname, protocol } = new URL(supabaseOrigin)
-  if (hostname !== '127.0.0.1' && hostname !== 'localhost') {
-    return sources
-  }
-
-  sources.push(supabaseOrigin)
-  sources.push(
-    protocol === 'https:'
-      ? supabaseOrigin.replace(/^https:/, 'wss:')
-      : supabaseOrigin.replace(/^http:/, 'ws:')
-  )
-
-  return [...new Set(sources)]
-}
-
-const supabaseConnectSrc = buildSupabaseConnectSrc()
-
 let withPWA
 if (process.env.ENABLE_PWA_BUILD === '1') {
   try {
@@ -61,19 +24,15 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
 }
 
 const nextConfig = {
-  env: {
-    NEXT_PUBLIC_ENABLE_PWA: process.env.ENABLE_PWA_BUILD === '1' ? '1' : '0',
-  },
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
     process.env.NEXT_DIST_DIR || (process.env.NODE_ENV === 'development' ? '.next-dev' : '.next'),
-  // Allow LAN access in development so internal /_next assets are not
-  // rejected as cross-origin. Add hosts via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
+  // Allow LAN access in development (e.g. http://10.0.0.177:3100) so
+  // internal /_next assets are not rejected as cross-origin.
+  // Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
   allowedDevOrigins: [
-    'localhost',
-    '127.0.0.1',
-    '0.0.0.0',
+    '10.0.0.177',
     ...String(process.env.NEXT_ALLOWED_DEV_ORIGINS || '')
       .split(',')
       .map((value) => value.trim())
@@ -86,21 +45,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Production builds compile through existing repo-wide TS debt.
-    // `npm run typecheck` / `npm run build:strict` remain the explicit strict gates.
-    ignoreBuildErrors: true,
-  },
-  webpack: (config) => {
-    // npm can leave an empty nested @react-email namespace folder under
-    // @react-email/components on Windows. Force webpack to resolve the render
-    // package from the top-level install so App Router builds do not chase a
-    // non-existent nested dist/node entrypoint.
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      '@react-email/render': path.resolve(__dirname, 'node_modules/@react-email/render'),
-    }
-
-    return config
+    // Enforce TypeScript correctness during production builds.
+    ignoreBuildErrors: false,
   },
   // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
   // When PWA dual-pass build is active, pin to a static ID to prevent
@@ -108,7 +54,7 @@ const nextConfig = {
   generateBuildId: async () => {
     if (process.env.ENABLE_PWA_BUILD === '1') return 'chefflow-build'
     // VERCEL_GIT_COMMIT_SHA is only available on Vercel.
-    // On local builds, fall back to git rev-parse or a timestamp.
+    // On Pi/local, fall back to git rev-parse or a timestamp.
     if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
     try {
       return require('child_process').execSync('git rev-parse --short HEAD').toString().trim()
@@ -139,25 +85,7 @@ const nextConfig = {
     ],
   },
   async headers() {
-    const isStaging =
-      process.env.APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging'
-    const stagingNoStoreHeaders = isStaging
-      ? [
-          {
-            // Prevent beta HTML from caching stale hashed CSS/JS references across deploys.
-            source:
-              '/((?!api/|_next/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|json|webmanifest|css|js|map|woff|woff2)$).*)',
-            headers: [
-              {
-                key: 'Cache-Control',
-                value: 'no-store, max-age=0, must-revalidate',
-              },
-            ],
-          },
-        ]
-      : []
     return [
-      ...stagingNoStoreHeaders,
       // Embed pages — allow framing from any origin (the whole point is external embeds)
       {
         source: '/embed/:path*',
@@ -191,7 +119,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              `connect-src ${supabaseConnectSrc.join(' ')} https://challenges.cloudflare.com`,
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
               "worker-src 'self'",
               'frame-src https://challenges.cloudflare.com',
               'frame-ancestors *',
@@ -238,7 +166,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://api.qrserver.com https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              `connect-src ${supabaseConnectSrc.join(' ')}`,
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
               "worker-src 'self'",
               "frame-ancestors 'none'",
               "object-src 'none'",
@@ -289,7 +217,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              `connect-src ${supabaseConnectSrc.join(' ')} https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com`,
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com",
               "worker-src 'self'",
               'frame-src https://js.stripe.com',
               "frame-ancestors 'none'",
@@ -306,7 +234,7 @@ const nextConfig = {
 
 // Sentry source-map upload and performance instrumentation.
 // withSentryConfig is a no-op if SENTRY_DSN is not set.
-// Gracefully skip if @sentry/nextjs is not installed.
+// Gracefully skip if @sentry/nextjs is not installed (e.g., Pi beta builds).
 let withSentryConfig
 try {
   withSentryConfig = require('@sentry/nextjs').withSentryConfig
@@ -330,5 +258,5 @@ const sentryConfig = {
 }
 
 module.exports = withSentryConfig
-  ? withSentryConfig(withNextIntl(withPWA(nextConfig)), sentryConfig)
-  : withNextIntl(withPWA(nextConfig))
+  ? withSentryConfig(withPWA(nextConfig), sentryConfig)
+  : withPWA(nextConfig)

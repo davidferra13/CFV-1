@@ -1,16 +1,8 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { sendBetaLifecycleEmail } from '@/lib/beta/lifecycle-email'
-import {
-  getBetaOnboardingProgressForChef,
-  getBetaSignupByEmail,
-  getBetaSignupTrackerBySignupId,
-  upsertBetaSignupTracker,
-} from '@/lib/beta/signup-tracker'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
-import { chefBrandTag } from '@/lib/chef/brand'
 import { z } from 'zod'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
@@ -83,7 +75,6 @@ export type ChefFullProfile = {
   website_url: string | null
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
-  slug: string | null
 }
 
 export async function getChefFullProfile(): Promise<ChefFullProfile> {
@@ -102,7 +93,6 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
       google_review_url,
       profile_image_url,
       logo_url,
-      slug,
       website_url,
       show_website_on_public_profile,
       preferred_inquiry_destination
@@ -116,7 +106,7 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     const fallback = await supabase
       .from('chefs')
       .select(
-        'business_name, display_name, bio, phone, tagline, google_review_url, profile_image_url, slug'
+        'business_name, display_name, bio, phone, tagline, google_review_url, profile_image_url'
       )
       .eq('id', user.entityId)
       .single()
@@ -141,7 +131,6 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     website_url: data.website_url ?? null,
     show_website_on_public_profile: data.show_website_on_public_profile ?? true,
     preferred_inquiry_destination: data.preferred_inquiry_destination ?? 'both',
-    slug: data.slug ?? null,
   }
 }
 
@@ -196,7 +185,6 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings/profile')
   revalidateTag(`chef-layout-${user.entityId}`)
-  revalidateTag(chefBrandTag(user.entityId))
 
   return { success: true as const }
 }
@@ -276,94 +264,19 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
   revalidatePath('/settings')
   revalidatePath('/settings/my-profile')
-  revalidateTag(`chef-layout-${user.entityId}`)
-  revalidateTag(chefBrandTag(user.entityId))
 
   return { success: true, url: publicUrl }
 }
 
 export async function markOnboardingComplete() {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
-  const completedAt = new Date().toISOString()
+  const supabase: any = createServerClient()
 
-  const { data: chef, error } = await supabase
+  await supabase
     .from('chefs')
-    .update({ onboarding_completed_at: completedAt })
+    .update({ onboarding_completed_at: new Date().toISOString() })
     .eq('id', user.entityId)
-    .select('email, business_name')
-    .single()
 
-  if (error) {
-    console.error('[markOnboardingComplete] Error:', error)
-    throw new Error('Failed to complete onboarding')
-  }
-
-  if (chef?.email) {
-    try {
-      const signup = await getBetaSignupByEmail(chef.email, supabase)
-
-      if (signup) {
-        let syncedSignup = signup
-
-        if (signup.status !== 'onboarded' || !signup.onboarded_at) {
-          const { data: syncedRow } = await supabase
-            .from('beta_signups')
-            .update({
-              status: 'onboarded',
-              onboarded_at: signup.onboarded_at || completedAt,
-            })
-            .eq('id', signup.id)
-            .select('*')
-            .single()
-
-          if (syncedRow) {
-            syncedSignup = syncedRow
-          }
-        }
-
-        const existingTracker = await getBetaSignupTrackerBySignupId(syncedSignup.id, supabase)
-        const onboardingProgress = await getBetaOnboardingProgressForChef(user.entityId, supabase)
-        const tracker = await upsertBetaSignupTracker({
-          signup: syncedSignup,
-          supabase,
-          chefId: user.entityId,
-          authUserId: user.id,
-          accountCreatedAt: syncedSignup.onboarded_at,
-          forceCompleted: true,
-          onboardingProgress,
-        })
-
-        if (!existingTracker?.completed_sent_at) {
-          const emailResult = await sendBetaLifecycleEmail({
-            emailType: 'onboarding_complete',
-            signup: syncedSignup,
-            tracker,
-            onboardingProgress,
-          })
-
-          if (emailResult.success) {
-            await upsertBetaSignupTracker({
-              signup: syncedSignup,
-              supabase,
-              emailType: 'onboarding_complete',
-              chefId: user.entityId,
-              authUserId: user.id,
-              accountCreatedAt: syncedSignup.onboarded_at,
-              forceCompleted: true,
-              onboardingProgress,
-            })
-          } else {
-            console.error('[markOnboardingComplete] Completion email failed:', emailResult.error)
-          }
-        }
-      }
-    } catch (trackerError) {
-      console.error('[markOnboardingComplete] Beta completion sync failed:', trackerError)
-    }
-  }
-
-  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 

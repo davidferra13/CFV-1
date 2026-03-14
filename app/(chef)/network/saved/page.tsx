@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSavedPosts } from '@/lib/social/chef-social-actions'
 import { SocialPostCard } from '@/components/social/social-post-card'
-import { ArrowLeft, Bookmark } from '@/components/ui/icons'
+import { ArrowLeft, Bookmark } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Saved Posts — Chef Community' }
 
@@ -35,7 +35,7 @@ export default async function SavedPostsPage() {
           </p>
           <Link
             href="/network"
-            className="text-amber-200 text-sm font-medium hover:underline mt-3 block"
+            className="text-amber-700 text-sm font-medium hover:underline mt-3 block"
           >
             Browse the feed →
           </Link>

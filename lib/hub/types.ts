@@ -68,8 +68,6 @@ export interface HubGroup {
 
 export type HubMemberRole = 'owner' | 'admin' | 'chef' | 'member' | 'viewer'
 
-export type HubDigestMode = 'instant' | 'hourly' | 'daily'
-
 export interface HubGroupMember {
   id: string
   group_id: string
@@ -80,11 +78,6 @@ export interface HubGroupMember {
   can_pin: boolean
   last_read_at: string | null
   notifications_muted: boolean
-  notify_email: boolean
-  notify_push: boolean
-  quiet_hours_start: string | null
-  quiet_hours_end: string | null
-  digest_mode: HubDigestMode
   joined_at: string
   // Joined data
   profile?: HubGuestProfile
@@ -108,24 +101,6 @@ export type HubMessageType =
   | 'menu_update'
   | 'note'
   | 'photo_share'
-  | 'notification'
-
-export type HubNotificationType =
-  | 'quote_sent'
-  | 'quote_accepted'
-  | 'payment_received'
-  | 'event_confirmed'
-  | 'event_completed'
-  | 'menu_shared'
-  | 'photos_ready'
-  | 'contract_ready'
-  | 'invoice_sent'
-  | 'guest_count_updated'
-  | 'dietary_updated'
-  | 'running_late'
-  | 'repeat_booking_request'
-
-export type HubMessageSource = 'circle' | 'email' | 'remy' | 'system'
 
 export interface HubMessage {
   id: string
@@ -140,10 +115,6 @@ export interface HubMessage {
   pinned_at: string | null
   system_event_type: string | null
   system_metadata: Record<string, unknown> | null
-  notification_type: HubNotificationType | null
-  action_url: string | null
-  action_label: string | null
-  source: HubMessageSource
   reply_to_message_id: string | null
   reaction_counts: Record<string, number>
   is_anonymous: boolean

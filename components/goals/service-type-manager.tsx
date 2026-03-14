@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Pencil, Trash2, ArrowRight } from '@/components/ui/icons'
+import { Plus, Pencil, Trash2, ArrowRight } from 'lucide-react'
 import type {
   ServiceType,
   CreateServiceTypeInput,

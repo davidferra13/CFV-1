@@ -12,7 +12,7 @@ import { PipelineBoard } from '@/components/prospecting/pipeline-board'
 import { AutoPipelineRulesButton } from '@/components/prospecting/auto-pipeline-rules-button'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Pipeline - ChefFlow' }
 

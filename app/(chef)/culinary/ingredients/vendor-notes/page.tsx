@@ -69,7 +69,7 @@ export default async function VendorNotesPage() {
                         <div className="flex-1">
                           <span className="font-medium text-stone-100">{ing.name}</span>
                           {ing.is_staple && (
-                            <span className="ml-2 text-xs bg-amber-900 text-amber-200 px-1.5 py-0.5 rounded">
+                            <span className="ml-2 text-xs bg-amber-900 text-amber-700 px-1.5 py-0.5 rounded">
                               Staple
                             </span>
                           )}

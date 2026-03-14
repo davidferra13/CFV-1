@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { X, Upload, Loader2, FileText, FileSpreadsheet, File } from '@/components/ui/icons'
+import { X, Upload, Loader2, FileText, FileSpreadsheet, File } from 'lucide-react'
 
 const ACCEPTED_TYPES = [
   'image/jpeg',

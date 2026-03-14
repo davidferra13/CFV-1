@@ -8,7 +8,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Crown, Lock, Focus, Eye } from '@/components/ui/icons'
+import { Sparkles, Lock, Focus, Eye, EyeOff } from 'lucide-react'
 import { MODULES } from '@/lib/billing/modules'
 import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
@@ -28,6 +28,7 @@ export function ModulesClient({
   tier,
   isGrandfathered,
   focusMode: initialFocusMode,
+  isAdmin,
 }: Props) {
   const router = useRouter()
   const [enabled, setEnabled] = useState<Set<string>>(new Set(initial))
@@ -47,7 +48,6 @@ export function ModulesClient({
         } else {
           setEnabled(new Set([...CORE_MODULES, ...EXTENDED_MODULES]))
         }
-        toast.success(next ? 'Focus Mode enabled' : 'Focus Mode disabled')
         router.refresh()
       } catch (err) {
         setFocusMode(previous)
@@ -68,7 +68,6 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await updateEnabledModules(Array.from(next))
-        toast.success('Module preference updated')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to update module')
@@ -83,7 +82,6 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await enableAllModules()
-        toast.success('All modules enabled')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to enable all modules')
@@ -98,7 +96,6 @@ export function ModulesClient({
     startTransition(async () => {
       try {
         await updateEnabledModules(Array.from(defaults))
-        toast.success('Modules reset to defaults')
       } catch (err) {
         setEnabled(previous)
         toast.error('Failed to reset modules')
@@ -121,22 +118,22 @@ export function ModulesClient({
               <h3 className="text-base font-semibold text-stone-100">Focus Mode</h3>
               <p className="text-sm text-stone-400 mt-0.5">
                 {focusMode
-                  ? 'Focus Mode is active: core workflows stay prioritized in defaults and recommendations, but the full portal remains visible.'
-                  : 'The full portal is visible. Turn on Focus Mode to bias defaults toward the core workflow without hiding navigation.'}
+                  ? 'Showing essentials only — inquiries, events, clients, menus, recipes, and finances.'
+                  : 'All modules visible. Turn on to simplify your sidebar.'}
               </p>
             </div>
           </div>
           <button
             onClick={handleToggleFocusMode}
             disabled={isPending}
-            className={`relative shrink-0 h-11 w-14 rounded-full transition-colors disabled:opacity-50 ${
+            className={`relative shrink-0 w-12 h-7 rounded-full transition-colors disabled:opacity-50 ${
               focusMode ? 'bg-brand-500' : 'bg-stone-600'
             }`}
             aria-label="Toggle Focus Mode"
           >
             <span
-              className={`absolute left-1 top-1 h-9 w-9 rounded-full bg-stone-900 shadow transition-transform ${
-                focusMode ? 'translate-x-3' : 'translate-x-0'
+              className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-stone-900 shadow transition-transform ${
+                focusMode ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </button>
@@ -146,30 +143,45 @@ export function ModulesClient({
         {focusMode && (
           <div className="mt-4 pt-4 border-t border-stone-700/50">
             <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">
-              Prioritized in Focus Mode
+              Active in Focus Mode
             </p>
             <div className="grid gap-1.5 sm:grid-cols-2">
               {[
-                { label: 'Dashboard', desc: 'Primary shortcut' },
-                { label: 'Inbox', desc: 'Primary shortcut' },
-                { label: 'Inquiries', desc: 'Primary shortcut' },
-                { label: 'Events', desc: 'Primary shortcut' },
-                { label: 'Clients', desc: 'Primary shortcut' },
-                { label: 'Sales workflow', desc: 'Prioritized in defaults' },
-                { label: 'Events workflow', desc: 'Prioritized in defaults' },
-                { label: 'Clients workflow', desc: 'Prioritized in defaults' },
-                { label: 'Culinary workflow', desc: 'Core module remains emphasized' },
+                { label: 'Dashboard', desc: 'Your home base' },
+                { label: 'Sales Pipeline', desc: 'Inquiries, quotes, leads' },
+                { label: 'Events', desc: 'Calendar, event management' },
+                { label: 'Culinary', desc: 'Menus, recipes, prep' },
+                { label: 'Clients', desc: 'Client profiles, communication' },
+                { label: 'Finance', desc: 'Revenue, expenses, payments' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm text-stone-300">
                   <Eye size={12} className="text-brand-400 shrink-0" />
                   <span>{item.label}</span>
-                  <span className="text-stone-500">- {item.desc}</span>
+                  <span className="text-stone-500">— {item.desc}</span>
                 </div>
               ))}
             </div>
             <p className="text-xs text-stone-500 mt-3">
-              Other areas stay visible in the sidebar and remain available throughout the portal.
+              All other features are preserved — just hidden from the sidebar. Turn off Focus Mode
+              anytime.
             </p>
+          </div>
+        )}
+
+        {/* Admin: show visibility registry */}
+        {isAdmin && focusMode && (
+          <div className="mt-3 pt-3 border-t border-stone-700/50">
+            <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">
+              Hidden in Focus Mode (admin view)
+            </p>
+            <div className="grid gap-1.5 sm:grid-cols-2">
+              {MODULES.filter((m) => !CORE_MODULES.includes(m.slug as any)).map((mod) => (
+                <div key={mod.slug} className="flex items-center gap-2 text-sm text-stone-500">
+                  <EyeOff size={12} className="shrink-0" />
+                  <span>{mod.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -182,14 +194,14 @@ export function ModulesClient({
             <button
               onClick={selectAll}
               disabled={isPending}
-              className="min-h-[44px] rounded-lg border border-stone-700 px-3 py-2 text-sm transition-colors hover:bg-stone-800 disabled:opacity-50 dark:border-stone-700 dark:hover:bg-stone-800"
+              className="text-sm px-3 py-1.5 rounded-lg border border-stone-700 dark:border-stone-700 hover:bg-stone-800 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
             >
               Select All
             </button>
             <button
               onClick={selectDefaults}
               disabled={isPending}
-              className="min-h-[44px] rounded-lg border border-stone-700 px-3 py-2 text-sm transition-colors hover:bg-stone-800 disabled:opacity-50 dark:border-stone-700 dark:hover:bg-stone-800"
+              className="text-sm px-3 py-1.5 rounded-lg border border-stone-700 dark:border-stone-700 hover:bg-stone-800 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
             >
               Reset to Defaults
             </button>
@@ -219,7 +231,7 @@ export function ModulesClient({
                         </h3>
                         {isProModule && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-900 text-brand-400 dark:bg-brand-900 dark:text-brand-300">
-                            <Crown size={10} />
+                            <Sparkles size={10} />
                             Pro
                           </span>
                         )}
@@ -241,14 +253,14 @@ export function ModulesClient({
                       <button
                         onClick={() => toggle(mod.slug)}
                         disabled={isPending}
-                        className={`relative shrink-0 h-11 w-14 rounded-full transition-colors disabled:opacity-50 ${
+                        className={`relative shrink-0 w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${
                           isOn ? 'bg-brand-500' : 'bg-stone-300 dark:bg-stone-600'
                         }`}
                         aria-label={`Toggle ${mod.label}`}
                       >
                         <span
-                          className={`absolute left-1 top-1 h-9 w-9 rounded-full bg-stone-900 shadow transition-transform ${
-                            isOn ? 'translate-x-3' : 'translate-x-0'
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-stone-900 shadow transition-transform ${
+                            isOn ? 'translate-x-4' : 'translate-x-0'
                           }`}
                         />
                       </button>

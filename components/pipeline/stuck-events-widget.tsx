@@ -1,12 +1,12 @@
 // Stuck Events Widget — shows events that haven't progressed past their expected threshold.
 import Link from 'next/link'
-import { AlertTriangle } from '@/components/ui/icons'
+import { AlertTriangle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import type { StuckEvent } from '@/lib/pipeline/stuck-events'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
-  proposed: 'Sent to Client',
+  proposed: 'Proposed',
   accepted: 'Accepted',
   paid: 'Paid',
   confirmed: 'Confirmed',

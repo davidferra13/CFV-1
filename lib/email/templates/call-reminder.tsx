@@ -4,7 +4,7 @@
 
 import { Text, Button as EmailButton, Section } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 import type { CallType } from '@/lib/calls/actions'
 
 const CALL_TYPE_LABELS: Record<CallType, string> = {
@@ -27,7 +27,6 @@ type CallReminderEmailProps = {
   title: string | null
   isChefReminder: boolean
   hoursUntil?: number // e.g. 24 or 1 (for subject line)
-  brand?: ChefBrandProps
 }
 
 export function CallReminderEmail({
@@ -39,7 +38,6 @@ export function CallReminderEmail({
   title,
   isChefReminder,
   hoursUntil,
-  brand,
 }: CallReminderEmailProps) {
   const typeLabel = CALL_TYPE_LABELS[callType] ?? 'call'
   const date = new Date(scheduledAt)
@@ -63,7 +61,7 @@ export function CallReminderEmail({
     : `Your call with ${chefName} is confirmed`
 
   return (
-    <BaseLayout brand={brand} preview={preview}>
+    <BaseLayout preview={preview}>
       {isChefReminder ? (
         <>
           <Text style={heading}>

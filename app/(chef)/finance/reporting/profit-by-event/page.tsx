@@ -61,7 +61,7 @@ export default async function ProfitByEventPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">Total revenue</p>
         </Card>
         <Card className="p-4">
@@ -124,7 +124,7 @@ export default async function ProfitByEventPage() {
                     <TableCell className="text-stone-400 text-sm capitalize">
                       {row.occasion?.replace(/_/g, ' ') ?? '—'}
                     </TableCell>
-                    <TableCell className="text-green-200 font-semibold text-sm">
+                    <TableCell className="text-green-700 font-semibold text-sm">
                       <Link href={`/events/${row.id}`} className="hover:underline">
                         {formatCurrency(row.revenue)}
                       </Link>

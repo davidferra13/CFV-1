@@ -5,8 +5,6 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
-import { evaluateProductionSafetyEnv } from '@/lib/environment/production-safety'
-import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 
 export type PlatformOverviewStats = {
   totalChefs: number
@@ -70,7 +68,6 @@ export type SystemHealthStats = {
   oldestUnreadMessage: string | null
   zombieEventCount: number
   orphanedClientCount: number
-  warnings: string[]
 }
 
 export type QolMetricsSummary = {
@@ -84,54 +81,11 @@ export type QolMetricsSummary = {
   duplicateCreatePreventedCount: number
 }
 
-export type PaymentHealthStats = {
-  timeframeHours: number
-  stripeSecretKeyMode: 'live' | 'test' | 'missing' | 'unknown'
-  stripePublishableKeyMode: 'live' | 'test' | 'missing' | 'unknown'
-  stripeModeMismatch: boolean
-  webhookStatusCounts: {
-    received: number
-    processed: number
-    failed: number
-    skipped: number
-  }
-  webhookEventCount: number
-  lastWebhookReceivedAt: string | null
-  lastWebhookProcessedAt: string | null
-  lastWebhookFailedAt: string | null
-  recentWebhookFailures: Array<{
-    eventType: string
-    providerEventId: string | null
-    receivedAt: string
-    errorText: string | null
-  }>
-  stripeLedgerEntries24h: number
-  platformChefConnect: {
-    id: string
-    businessName: string | null
-    hasStripeAccount: boolean
-    onboardingComplete: boolean
-  } | null
-  blockers: string[]
-  warnings: string[]
-}
-
 function startOfCurrentMonth(): string {
   const d = new Date()
   d.setDate(1)
   d.setHours(0, 0, 0, 0)
   return d.toISOString()
-}
-
-function detectStripeKeyMode(
-  value: string | undefined,
-  livePrefix: string,
-  testPrefix: string
-): 'live' | 'test' | 'missing' | 'unknown' {
-  if (!value) return 'missing'
-  if (value.startsWith(livePrefix)) return 'live'
-  if (value.startsWith(testPrefix)) return 'test'
-  return 'unknown'
 }
 
 export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats> {
@@ -504,8 +458,6 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     .order('created_at', { ascending: true })
     .limit(1)
 
-  const ownerIdentity = await resolveOwnerIdentity(supabase)
-
   return {
     tableRowCounts: {
       chefs: chefCount.count ?? 0,
@@ -518,7 +470,6 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     oldestUnreadMessage: oldestMsg?.[0]?.created_at ?? null,
     zombieEventCount: zombieEvents.count ?? 0,
     orphanedClientCount: orphanedClients.count ?? 0,
-    warnings: Array.from(new Set(ownerIdentity.warnings)),
   }
 }
 
@@ -553,140 +504,6 @@ export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary
     offlineReplayFailureCount: offlineFailure,
     offlineReplaySuccessRate: offlineTotal > 0 ? offlineSuccess / offlineTotal : 0,
     duplicateCreatePreventedCount: counts.duplicate_create_prevented ?? 0,
-  }
-}
-
-export async function getPaymentHealthStats(timeframeHours = 24): Promise<PaymentHealthStats> {
-  await requireAdmin()
-  const supabase: any = createAdminClient()
-  const windowHours = Math.max(1, timeframeHours)
-  const sinceDate = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString()
-
-  const stripeSecretMode = detectStripeKeyMode(
-    process.env.STRIPE_SECRET_KEY,
-    'sk_live_',
-    'sk_test_'
-  )
-  const stripePublishableMode = detectStripeKeyMode(
-    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    'pk_live_',
-    'pk_test_'
-  )
-  const stripeModeMismatch =
-    stripeSecretMode !== 'missing' &&
-    stripePublishableMode !== 'missing' &&
-    stripeSecretMode !== 'unknown' &&
-    stripePublishableMode !== 'unknown' &&
-    stripeSecretMode !== stripePublishableMode
-
-  const [{ data: hooks }, { count: stripeLedgerCount }, { data: recentFailures }] =
-    await Promise.all([
-      supabase
-        .from('webhook_events')
-        .select('status, received_at, event_type, provider_event_id, error_text')
-        .eq('provider', 'stripe')
-        .gte('received_at', sinceDate)
-        .order('received_at', { ascending: false })
-        .limit(2000),
-      supabase
-        .from('ledger_entries')
-        .select('id', { count: 'exact', head: true })
-        .like('transaction_reference', 'evt_%')
-        .gte('created_at', sinceDate),
-      supabase
-        .from('webhook_events')
-        .select('event_type, provider_event_id, received_at, error_text')
-        .eq('provider', 'stripe')
-        .eq('status', 'failed')
-        .gte('received_at', sinceDate)
-        .order('received_at', { ascending: false })
-        .limit(20),
-    ])
-
-  const counts = { received: 0, processed: 0, failed: 0, skipped: 0 }
-  let lastWebhookReceivedAt: string | null = null
-  let lastWebhookProcessedAt: string | null = null
-  let lastWebhookFailedAt: string | null = null
-
-  for (const row of (hooks ?? []) as Array<{ status: string; received_at: string }>) {
-    const status = row.status as keyof typeof counts
-    if (status in counts) counts[status] = (counts[status] ?? 0) + 1
-    if (!lastWebhookReceivedAt) lastWebhookReceivedAt = row.received_at
-    if (!lastWebhookProcessedAt && row.status === 'processed')
-      lastWebhookProcessedAt = row.received_at
-    if (!lastWebhookFailedAt && row.status === 'failed') lastWebhookFailedAt = row.received_at
-  }
-
-  const ownerIdentity = await resolveOwnerIdentity(supabase)
-  const platformChefId = ownerIdentity.ownerChefId
-  let platformChefConnect: PaymentHealthStats['platformChefConnect'] = null
-  if (platformChefId) {
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('id, business_name, stripe_account_id, stripe_onboarding_complete')
-      .eq('id', platformChefId)
-      .single()
-
-    if (chef) {
-      platformChefConnect = {
-        id: chef.id,
-        businessName: chef.business_name ?? null,
-        hasStripeAccount: !!chef.stripe_account_id,
-        onboardingComplete: chef.stripe_onboarding_complete === true,
-      }
-    }
-  }
-
-  const blockers: string[] = []
-  const warnings: string[] = []
-
-  if (counts.failed > 0) {
-    blockers.push(`Stripe webhook failures in the last ${windowHours}h: ${counts.failed}`)
-  }
-  if (stripeModeMismatch) {
-    blockers.push('Stripe secret/publishable key mode mismatch')
-  }
-
-  const envReport = evaluateProductionSafetyEnv()
-  blockers.push(...envReport.errors)
-  warnings.push(...envReport.warnings)
-  warnings.push(...ownerIdentity.warnings)
-
-  if (!platformChefConnect) {
-    warnings.push('Resolved platform owner chef is missing or does not resolve')
-  } else {
-    if (!platformChefConnect.hasStripeAccount) {
-      blockers.push('Platform owner chef has no Stripe connected account')
-    }
-    if (!platformChefConnect.onboardingComplete) {
-      blockers.push('Platform owner chef Stripe onboarding is incomplete')
-    }
-  }
-
-  if ((hooks ?? []).length === 0) {
-    warnings.push(`No Stripe webhook events recorded in the last ${windowHours}h`)
-  }
-
-  return {
-    timeframeHours: windowHours,
-    stripeSecretKeyMode: stripeSecretMode,
-    stripePublishableKeyMode: stripePublishableMode,
-    stripeModeMismatch,
-    webhookStatusCounts: counts,
-    webhookEventCount: (hooks ?? []).length,
-    lastWebhookReceivedAt,
-    lastWebhookProcessedAt,
-    lastWebhookFailedAt,
-    recentWebhookFailures: (recentFailures ?? []).map((row: any) => ({
-      eventType: row.event_type,
-      providerEventId: row.provider_event_id ?? null,
-      receivedAt: row.received_at,
-      errorText: row.error_text ?? null,
-    })),
-    stripeLedgerEntries24h: stripeLedgerCount ?? 0,
-    platformChefConnect,
-    blockers: Array.from(new Set(blockers)),
-    warnings: Array.from(new Set(warnings)),
   }
 }
 

@@ -1,0 +1,5879 @@
+{
+  "runId": "b23b24b1-bc91-4233-a922-4036f921d59d",
+  "timestamp": "2026-03-10T10:42:18.664Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 100,
+  "passed": 7,
+  "warned": 14,
+  "failed": 79,
+  "passRate": 7,
+  "durationMinutes": 33,
+  "averages": {
+    "classificationMs": 16791,
+    "firstTokenMs": 18203,
+    "totalMs": 19965,
+    "tokensPerSec": 28
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 10,
+      "passed": 3,
+      "warned": 4,
+      "failed": 3,
+      "totalMs": 254448,
+      "avgMs": 25445
+    },
+    "client_management": {
+      "total": 10,
+      "passed": 3,
+      "warned": 4,
+      "failed": 3,
+      "totalMs": 107354,
+      "avgMs": 10735
+    },
+    "event_management": {
+      "total": 10,
+      "passed": 0,
+      "warned": 4,
+      "failed": 6,
+      "totalMs": 250093,
+      "avgMs": 25009
+    },
+    "financial": {
+      "total": 10,
+      "passed": 1,
+      "warned": 2,
+      "failed": 7,
+      "totalMs": 497128,
+      "avgMs": 49713
+    },
+    "calendar_scheduling": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 887379,
+      "avgMs": 88738
+    },
+    "email_drafts": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 18,
+      "avgMs": 2
+    },
+    "menu_recipes": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 11,
+      "avgMs": 1
+    },
+    "operations": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 14,
+      "avgMs": 1
+    },
+    "memory": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 10,
+      "avgMs": 2
+    },
+    "context_aware": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 8,
+      "avgMs": 2
+    },
+    "analytics": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 9,
+      "avgMs": 2
+    },
+    "conversational": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 7,
+      "avgMs": 1
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 29000,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 29000,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 962,
+          "tokenChars": 213,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 29000,
+        "intentEventMs": 29000,
+        "firstTokenMs": 29000,
+        "totalMs": 29000,
+        "tokenCount": 1,
+        "approxTokens": 53,
+        "tokensPerSec": 53
+      },
+      "responseLength": 213,
+      "tasks": 5
+    },
+    {
+      "promptId": "chef-002",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 10965,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 10965,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 197,
+          "tokenChars": 46,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 10965,
+        "intentEventMs": 10965,
+        "firstTokenMs": 10965,
+        "totalMs": 10965,
+        "tokenCount": 1,
+        "approxTokens": 12,
+        "tokensPerSec": 12
+      },
+      "responseLength": 46,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-003",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6458,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 6458,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 155,
+          "tokenChars": 38,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6458,
+        "intentEventMs": 6458,
+        "firstTokenMs": 6458,
+        "totalMs": 6458,
+        "tokenCount": 1,
+        "approxTokens": 10,
+        "tokensPerSec": 10
+      },
+      "responseLength": 38,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-004",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 21911,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 21911,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 379,
+          "tokenChars": 83,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 21911,
+        "intentEventMs": 21911,
+        "firstTokenMs": 21911,
+        "totalMs": 21911,
+        "tokenCount": 1,
+        "approxTokens": 21,
+        "tokensPerSec": 21
+      },
+      "responseLength": 83,
+      "tasks": 2
+    },
+    {
+      "promptId": "chef-005",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4528,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 60775,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8913,
+          "tokenChars": 8913,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4528,
+        "intentEventMs": 4528,
+        "firstTokenMs": 7496,
+        "totalMs": 60775,
+        "tokenCount": 2008,
+        "approxTokens": 2228,
+        "tokensPerSec": 41.8
+      },
+      "responseLength": 8913,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 12415,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 32520,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2392,
+          "tokenChars": 2392,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 12415,
+        "intentEventMs": 12415,
+        "firstTokenMs": 15241,
+        "totalMs": 32520,
+        "tokenCount": 500,
+        "approxTokens": 598,
+        "tokensPerSec": 34.6
+      },
+      "responseLength": 2392,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6751,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 15859,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 933,
+          "tokenChars": 933,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6751,
+        "intentEventMs": 6751,
+        "firstTokenMs": 9801,
+        "totalMs": 15859,
+        "tokenCount": 201,
+        "approxTokens": 233,
+        "tokensPerSec": 38.5
+      },
+      "responseLength": 933,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4603,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 24887,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2637,
+          "tokenChars": 2637,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4603,
+        "intentEventMs": 4603,
+        "firstTokenMs": 7475,
+        "totalMs": 24887,
+        "tokenCount": 514,
+        "approxTokens": 659,
+        "tokensPerSec": 37.8
+      },
+      "responseLength": 2637,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 2323,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 46222,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 5398,
+          "tokenChars": 5398,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 2323,
+        "intentEventMs": 2323,
+        "firstTokenMs": 5365,
+        "totalMs": 46222,
+        "tokenCount": 1445,
+        "approxTokens": 1350,
+        "tokensPerSec": 33
+      },
+      "responseLength": 5398,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5851,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 5851,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 260,
+          "tokenChars": 260,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5851,
+        "intentEventMs": 5851,
+        "firstTokenMs": 5851,
+        "totalMs": 5851,
+        "tokenCount": 1,
+        "approxTokens": 65,
+        "tokensPerSec": 65
+      },
+      "responseLength": 260,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-011",
+      "category": "client_management",
+      "prompt": "Find my client Sarah",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [
+            "client.search"
+          ],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4383,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 4383,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 409,
+          "tokenChars": 69,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4383,
+        "intentEventMs": 4383,
+        "firstTokenMs": 4383,
+        "totalMs": 4383,
+        "tokenCount": 1,
+        "approxTokens": 17,
+        "tokensPerSec": 17
+      },
+      "responseLength": 69,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-012",
+      "category": "client_management",
+      "prompt": "Show me all my recent clients",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.list_recent"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [],
+          "missed": [
+            "client.list_recent"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5793,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 5793,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5793,
+        "intentEventMs": 5793,
+        "firstTokenMs": 5793,
+        "totalMs": 5793,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-013",
+      "category": "client_management",
+      "prompt": "Pull up the details for the Johnson family",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [
+            "client.search"
+          ],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 8769,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8769,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 8769,
+        "intentEventMs": 8769,
+        "firstTokenMs": 8769,
+        "totalMs": 8769,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-014",
+      "category": "client_management",
+      "prompt": "Do I have a client named Martinez?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "client.search"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 2546,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 30584,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 3529,
+          "tokenChars": 3529,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 2546,
+        "intentEventMs": 2546,
+        "firstTokenMs": 5584,
+        "totalMs": 30584,
+        "tokenCount": 888,
+        "approxTokens": 882,
+        "tokensPerSec": 35.3
+      },
+      "responseLength": 3529,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-015",
+      "category": "client_management",
+      "prompt": "Who was my last client?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.list_recent"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "client.list_recent"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 1915,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 18456,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2183,
+          "tokenChars": 2183,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 1915,
+        "intentEventMs": 1915,
+        "firstTokenMs": 4916,
+        "totalMs": 18456,
+        "tokenCount": 463,
+        "approxTokens": 546,
+        "tokensPerSec": 40.3
+      },
+      "responseLength": 2183,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-016",
+      "category": "client_management",
+      "prompt": "Search for clients with the last name Williams",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [
+            "client.search"
+          ],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6771,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 6771,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6771,
+        "intentEventMs": 6771,
+        "firstTokenMs": 6771,
+        "totalMs": 6771,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-017",
+      "category": "client_management",
+      "prompt": "How many events has the Henderson family booked with me?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [
+            "client.search",
+            "client.events"
+          ],
+          "matched": [
+            "client.search"
+          ],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 12636,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 12636,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 419,
+          "tokenChars": 130,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 12636,
+        "intentEventMs": 12636,
+        "firstTokenMs": 12636,
+        "totalMs": 12636,
+        "tokenCount": 1,
+        "approxTokens": 33,
+        "tokensPerSec": 33
+      },
+      "responseLength": 130,
+      "tasks": 2
+    },
+    {
+      "promptId": "chef-018",
+      "category": "client_management",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "dietary.check"
+          ],
+          "actual": [
+            "client.search",
+            "client.dietary_restrictions"
+          ],
+          "matched": [],
+          "missed": [
+            "dietary.check"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 12784,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 12784,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 827,
+          "tokenChars": 124,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 12784,
+        "intentEventMs": 12784,
+        "firstTokenMs": 12784,
+        "totalMs": 12784,
+        "tokenCount": 1,
+        "approxTokens": 31,
+        "tokensPerSec": 31
+      },
+      "responseLength": 124,
+      "tasks": 2
+    },
+    {
+      "promptId": "chef-019",
+      "category": "client_management",
+      "prompt": "Check if any of my clients have nut allergies",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "dietary.check"
+          ],
+          "actual": [
+            "calendar.check"
+          ],
+          "matched": [],
+          "missed": [
+            "dietary.check"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3537,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3537,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 285,
+          "tokenChars": 104,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3537,
+        "intentEventMs": 3537,
+        "firstTokenMs": 3537,
+        "totalMs": 3537,
+        "tokenCount": 1,
+        "approxTokens": 26,
+        "tokensPerSec": 26
+      },
+      "responseLength": 104,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-020",
+      "category": "client_management",
+      "prompt": "What's the lifetime value of my client Thompson?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": [
+            "analytics.client_ltv"
+          ],
+          "actual": [
+            "analytics.client_ltv"
+          ],
+          "matched": [
+            "analytics.client_ltv"
+          ],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3641,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3641,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 520,
+          "tokenChars": 102,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3641,
+        "intentEventMs": 3641,
+        "firstTokenMs": 3641,
+        "totalMs": 3641,
+        "tokenCount": 1,
+        "approxTokens": 26,
+        "tokensPerSec": 26
+      },
+      "responseLength": 102,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-021",
+      "category": "event_management",
+      "prompt": "Show me my upcoming events",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6107,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 6107,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6107,
+        "intentEventMs": 6107,
+        "firstTokenMs": 6107,
+        "totalMs": 6107,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-022",
+      "category": "event_management",
+      "prompt": "What events do I have this weekend?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5380,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 64229,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8498,
+          "tokenChars": 8498,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5380,
+        "intentEventMs": 5380,
+        "firstTokenMs": 8406,
+        "totalMs": 64229,
+        "tokenCount": 2048,
+        "approxTokens": 2125,
+        "tokensPerSec": 38.1
+      },
+      "responseLength": 8498,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-023",
+      "category": "event_management",
+      "prompt": "List all my events in March",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [
+            "daily.plan"
+          ],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 13820,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13820,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 70587,
+          "tokenChars": 36,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 13820,
+        "intentEventMs": 13820,
+        "firstTokenMs": 13820,
+        "totalMs": 13820,
+        "tokenCount": 1,
+        "approxTokens": 9,
+        "tokensPerSec": 9
+      },
+      "responseLength": 36,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-024",
+      "category": "event_management",
+      "prompt": "Show me events that are still in draft status",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_by_status"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [],
+          "missed": [
+            "event.list_by_status"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3127,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3127,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3127,
+        "intentEventMs": 3127,
+        "firstTokenMs": 3127,
+        "totalMs": 3127,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-025",
+      "category": "event_management",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_by_status"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_by_status"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5508,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 30577,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 3521,
+          "tokenChars": 3521,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5508,
+        "intentEventMs": 5508,
+        "firstTokenMs": 8626,
+        "totalMs": 30577,
+        "tokenCount": 735,
+        "approxTokens": 880,
+        "tokensPerSec": 40.1
+      },
+      "responseLength": 3521,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-026",
+      "category": "event_management",
+      "prompt": "Create a new event for a birthday dinner on March 20th, 12 guests",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": true,
+          "expected": [
+            "event.create_draft"
+          ],
+          "actual": [
+            "event.search",
+            "event.create_draft"
+          ],
+          "matched": [
+            "event.create_draft"
+          ],
+          "missed": []
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 13154,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13154,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 519,
+          "tokenChars": 175,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 13154,
+        "intentEventMs": 13154,
+        "firstTokenMs": 13154,
+        "totalMs": 13154,
+        "tokenCount": 1,
+        "approxTokens": 44,
+        "tokensPerSec": 44
+      },
+      "responseLength": 175,
+      "tasks": 2
+    },
+    {
+      "promptId": "chef-027",
+      "category": "event_management",
+      "prompt": "What are the details on my next event?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6113,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 64964,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8398,
+          "tokenChars": 8398,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6113,
+        "intentEventMs": 6113,
+        "firstTokenMs": 9108,
+        "totalMs": 64964,
+        "tokenCount": 2048,
+        "approxTokens": 2100,
+        "tokensPerSec": 37.6
+      },
+      "responseLength": 8398,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-028",
+      "category": "event_management",
+      "prompt": "Show me completed events from last month",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_by_status"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [],
+          "missed": [
+            "event.list_by_status"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6205,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 6205,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6205,
+        "intentEventMs": 6205,
+        "firstTokenMs": 6205,
+        "totalMs": 6205,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-029",
+      "category": "event_management",
+      "prompt": "Do I have any cancelled events?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_by_status"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_by_status"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4069,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 33023,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 4147,
+          "tokenChars": 4147,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4069,
+        "intentEventMs": 4069,
+        "firstTokenMs": 7123,
+        "totalMs": 33023,
+        "tokenCount": 890,
+        "approxTokens": 1037,
+        "tokensPerSec": 40
+      },
+      "responseLength": 4147,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-030",
+      "category": "event_management",
+      "prompt": "How many events have I done this year?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 14887,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 14887,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 402,
+          "tokenChars": 83,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 14887,
+        "intentEventMs": 14887,
+        "firstTokenMs": 14887,
+        "totalMs": 14887,
+        "tokenCount": 1,
+        "approxTokens": 21,
+        "tokensPerSec": 21
+      },
+      "responseLength": 83,
+      "tasks": 2
+    },
+    {
+      "promptId": "chef-031",
+      "category": "financial",
+      "prompt": "What's my financial summary?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "finance.summary"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "finance.summary"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 2272,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 20296,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2213,
+          "tokenChars": 2213,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 2272,
+        "intentEventMs": 2272,
+        "firstTokenMs": 5358,
+        "totalMs": 20296,
+        "tokenCount": 458,
+        "approxTokens": 553,
+        "tokensPerSec": 37
+      },
+      "responseLength": 2213,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-032",
+      "category": "financial",
+      "prompt": "Show me my monthly revenue breakdown",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "finance.monthly_snapshot"
+          ],
+          "actual": [
+            "client.search"
+          ],
+          "matched": [],
+          "missed": [
+            "finance.monthly_snapshot"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4771,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 4771,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 138,
+          "tokenChars": 26,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4771,
+        "intentEventMs": 4771,
+        "firstTokenMs": 4771,
+        "totalMs": 4771,
+        "tokenCount": 1,
+        "approxTokens": 7,
+        "tokensPerSec": 7
+      },
+      "responseLength": 26,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-033",
+      "category": "financial",
+      "prompt": "What are my total expenses?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5440,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 14242,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 899,
+          "tokenChars": 899,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5440,
+        "intentEventMs": 5440,
+        "firstTokenMs": 8510,
+        "totalMs": 14242,
+        "tokenCount": 182,
+        "approxTokens": 225,
+        "tokensPerSec": 39.3
+      },
+      "responseLength": 899,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-034",
+      "category": "financial",
+      "prompt": "What's my profit margin?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 13911,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13911,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 660,
+          "tokenChars": 133,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 13911,
+        "intentEventMs": 13911,
+        "firstTokenMs": 13911,
+        "totalMs": 13911,
+        "tokenCount": 1,
+        "approxTokens": 33,
+        "tokensPerSec": 33
+      },
+      "responseLength": 133,
+      "tasks": 3
+    },
+    {
+      "promptId": "chef-035",
+      "category": "financial",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "client.search"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 20465,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 20465,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 60,
+          "tokenChars": 60,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 20465,
+        "intentEventMs": 20465,
+        "firstTokenMs": 20465,
+        "totalMs": 20465,
+        "tokenCount": 1,
+        "approxTokens": 15,
+        "tokensPerSec": 15
+      },
+      "responseLength": 60,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-036",
+      "category": "financial",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "analytics.break_even"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "analytics.break_even"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 14676,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 74644,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 7222,
+          "tokenChars": 7222,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 14676,
+        "intentEventMs": 14676,
+        "firstTokenMs": 17670,
+        "totalMs": 74644,
+        "tokenCount": 2048,
+        "approxTokens": 1806,
+        "tokensPerSec": 31.7
+      },
+      "responseLength": 7222,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-037",
+      "category": "financial",
+      "prompt": "What's the food cost on my signature risotto?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "analytics.recipe_cost"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "analytics.recipe_cost"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3941,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 46097,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 6025,
+          "tokenChars": 6025,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3941,
+        "intentEventMs": 3941,
+        "firstTokenMs": 7025,
+        "totalMs": 46097,
+        "tokenCount": 1338,
+        "approxTokens": 1506,
+        "tokensPerSec": 38.5
+      },
+      "responseLength": 6025,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-038",
+      "category": "financial",
+      "prompt": "Am I hitting my revenue target?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 10741,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 31597,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2558,
+          "tokenChars": 2558,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 10741,
+        "intentEventMs": 10741,
+        "firstTokenMs": 13908,
+        "totalMs": 31597,
+        "tokenCount": 496,
+        "approxTokens": 640,
+        "tokensPerSec": 36.2
+      },
+      "responseLength": 2558,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-039",
+      "category": "financial",
+      "prompt": "What's my net income for this quarter?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 31287,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 91098,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8005,
+          "tokenChars": 8005,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 31287,
+        "intentEventMs": 31287,
+        "firstTokenMs": 34278,
+        "totalMs": 91098,
+        "tokenCount": 2048,
+        "approxTokens": 2001,
+        "tokensPerSec": 35.2
+      },
+      "responseLength": 8005,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-040",
+      "category": "financial",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "Error: Prompt timeout after 180000ms"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 180007,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-041",
+      "category": "calendar_scheduling",
+      "prompt": "Am I free on March 15th?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "calendar.availability"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "calendar.availability"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 42622,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 105736,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8226,
+          "tokenChars": 8226,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 42622,
+        "intentEventMs": 42622,
+        "firstTokenMs": 45677,
+        "totalMs": 105736,
+        "tokenCount": 2048,
+        "approxTokens": 2057,
+        "tokensPerSec": 34.2
+      },
+      "responseLength": 8226,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-042",
+      "category": "calendar_scheduling",
+      "prompt": "What does my schedule look like next week?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 106948,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 171110,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 7704,
+          "tokenChars": 7704,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 106948,
+        "intentEventMs": 106948,
+        "firstTokenMs": 110028,
+        "totalMs": 171110,
+        "tokenCount": 2048,
+        "approxTokens": 1926,
+        "tokensPerSec": 31.5
+      },
+      "responseLength": 7704,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-043",
+      "category": "calendar_scheduling",
+      "prompt": "When is my next available Saturday?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "scheduling.next_available"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "scheduling.next_available"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 111288,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 175320,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 7179,
+          "tokenChars": 7179,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 111288,
+        "intentEventMs": 111288,
+        "firstTokenMs": 114504,
+        "totalMs": 175320,
+        "tokenCount": 2048,
+        "approxTokens": 1795,
+        "tokensPerSec": 29.5
+      },
+      "responseLength": 7179,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-044",
+      "category": "calendar_scheduling",
+      "prompt": "Is April open for a big event?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "calendar.availability"
+          ],
+          "actual": [
+            "calendar.check"
+          ],
+          "matched": [],
+          "missed": [
+            "calendar.availability"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 107689,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 107689,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 285,
+          "tokenChars": 104,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 107689,
+        "intentEventMs": 107689,
+        "firstTokenMs": 107689,
+        "totalMs": 107689,
+        "tokenCount": 1,
+        "approxTokens": 26,
+        "tokensPerSec": 26
+      },
+      "responseLength": 104,
+      "tasks": 1
+    },
+    {
+      "promptId": "chef-045",
+      "category": "calendar_scheduling",
+      "prompt": "What days am I blocked this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": 401,
+          "error": null
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 12959,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-046",
+      "category": "calendar_scheduling",
+      "prompt": "Check availability for the first two weekends in April",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "Error: Prompt timeout after 180000ms"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 180008,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-047",
+      "category": "calendar_scheduling",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: Error: read ECONNRESET)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 134550,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-048",
+      "category": "calendar_scheduling",
+      "prompt": "How busy am I in March?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 3,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-049",
+      "category": "calendar_scheduling",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-050",
+      "category": "calendar_scheduling",
+      "prompt": "What's on my waitlist?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-051",
+      "category": "email_drafts",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-052",
+      "category": "email_drafts",
+      "prompt": "Write a thank-you note for my last event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-053",
+      "category": "email_drafts",
+      "prompt": "Send a referral request to the Hendersons",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-054",
+      "category": "email_drafts",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-055",
+      "category": "email_drafts",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-056",
+      "category": "email_drafts",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-057",
+      "category": "email_drafts",
+      "prompt": "Check my recent emails",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-058",
+      "category": "email_drafts",
+      "prompt": "Summarize my inbox",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-059",
+      "category": "email_drafts",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-060",
+      "category": "email_drafts",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-061",
+      "category": "menu_recipes",
+      "prompt": "Search my recipes for risotto",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-062",
+      "category": "menu_recipes",
+      "prompt": "Show me all my menus",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-063",
+      "category": "menu_recipes",
+      "prompt": "What recipes do I have that use salmon?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-064",
+      "category": "menu_recipes",
+      "prompt": "Do I have any dessert recipes?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-065",
+      "category": "menu_recipes",
+      "prompt": "What's on the menu I created for corporate events?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-066",
+      "category": "menu_recipes",
+      "prompt": "Explain my spring tasting menu to a client",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-067",
+      "category": "menu_recipes",
+      "prompt": "What's the food cost on my lamb dish?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-068",
+      "category": "menu_recipes",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-069",
+      "category": "menu_recipes",
+      "prompt": "How to cook a perfect steak",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-070",
+      "category": "menu_recipes",
+      "prompt": "Suggest a meal for a date night",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-071",
+      "category": "operations",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-072",
+      "category": "operations",
+      "prompt": "Create a packing list for my next event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-073",
+      "category": "operations",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-074",
+      "category": "operations",
+      "prompt": "Calculate portions for 25 guests",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-075",
+      "category": "operations",
+      "prompt": "What do I need to buy for Saturday?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-076",
+      "category": "operations",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-077",
+      "category": "operations",
+      "prompt": "What's on my to-do list?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-078",
+      "category": "operations",
+      "prompt": "Show me my nudges and reminders",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-079",
+      "category": "operations",
+      "prompt": "Draft a food safety incident report",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-080",
+      "category": "operations",
+      "prompt": "List my staff",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-081",
+      "category": "memory",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-082",
+      "category": "memory",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 3,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-083",
+      "category": "memory",
+      "prompt": "What do you remember about me?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-084",
+      "category": "memory",
+      "prompt": "Remember that I don't work on Sundays",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-085",
+      "category": "memory",
+      "prompt": "Do you remember what pricing model I use?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-086",
+      "category": "context_aware",
+      "prompt": "What am I looking at right now?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-087",
+      "category": "context_aware",
+      "prompt": "Help me with what I'm doing right now",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-088",
+      "category": "context_aware",
+      "prompt": "I just created a new event, what should I do next?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-089",
+      "category": "context_aware",
+      "prompt": "I keep getting an error on this page",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-090",
+      "category": "context_aware",
+      "prompt": "Take me to the recipes page",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-091",
+      "category": "analytics",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 4,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-092",
+      "category": "analytics",
+      "prompt": "Calculate the lifetime value of my top client",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-093",
+      "category": "analytics",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-094",
+      "category": "analytics",
+      "prompt": "What's my most profitable type of event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-095",
+      "category": "analytics",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-096",
+      "category": "conversational",
+      "prompt": "Hey Remy, what can you help me with?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-097",
+      "category": "conversational",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-098",
+      "category": "conversational",
+      "prompt": "Good morning Remy!",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-099",
+      "category": "conversational",
+      "prompt": "How's my week looking?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-100",
+      "category": "conversational",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 29000,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 29000,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 962,
+          "tokenChars": 213,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-002",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 10965,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 10965,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 197,
+          "tokenChars": 46,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-004",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 21911,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 21911,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 379,
+          "tokenChars": 83,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-014",
+      "prompt": "Do I have a client named Martinez?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "client.search"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 2546,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 30584,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 3529,
+          "tokenChars": 3529,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-015",
+      "prompt": "Who was my last client?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.list_recent"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "client.list_recent"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 1915,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 18456,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2183,
+          "tokenChars": 2183,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-018",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "dietary.check"
+          ],
+          "actual": [
+            "client.search",
+            "client.dietary_restrictions"
+          ],
+          "matched": [],
+          "missed": [
+            "dietary.check"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 12784,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 12784,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 827,
+          "tokenChars": 124,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-022",
+      "prompt": "What events do I have this weekend?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5380,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 64229,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8498,
+          "tokenChars": 8498,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-023",
+      "prompt": "List all my events in March",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [
+            "daily.plan"
+          ],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 13820,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13820,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 70587,
+          "tokenChars": 36,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-025",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_by_status"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_by_status"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5508,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 30577,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 3521,
+          "tokenChars": 3521,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-027",
+      "prompt": "What are the details on my next event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_upcoming"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_upcoming"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6113,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 64964,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8398,
+          "tokenChars": 8398,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-029",
+      "prompt": "Do I have any cancelled events?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "event.list_by_status"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "event.list_by_status"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4069,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 33023,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 4147,
+          "tokenChars": 4147,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-030",
+      "prompt": "How many events have I done this year?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 14887,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 14887,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 402,
+          "tokenChars": 83,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-031",
+      "prompt": "What's my financial summary?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "finance.summary"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "finance.summary"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 2272,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 20296,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2213,
+          "tokenChars": 2213,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-034",
+      "prompt": "What's my profit margin?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "command"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 13911,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13911,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 660,
+          "tokenChars": 133,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-035",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "client.search"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "client.search"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 20465,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 20465,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 60,
+          "tokenChars": 60,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-036",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "analytics.break_even"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "analytics.break_even"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 14676,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 74644,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 7222,
+          "tokenChars": 7222,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-037",
+      "prompt": "What's the food cost on my signature risotto?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "analytics.recipe_cost"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "analytics.recipe_cost"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3941,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 46097,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 6025,
+          "tokenChars": 6025,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-039",
+      "prompt": "What's my net income for this quarter?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 31287,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 91098,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8005,
+          "tokenChars": 8005,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-040",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "Error: Prompt timeout after 180000ms"
+        }
+      }
+    },
+    {
+      "promptId": "chef-041",
+      "prompt": "Am I free on March 15th?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "calendar.availability"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "calendar.availability"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 42622,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 105736,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 8226,
+          "tokenChars": 8226,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-042",
+      "prompt": "What does my schedule look like next week?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 106948,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 171110,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 7704,
+          "tokenChars": 7704,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-043",
+      "prompt": "When is my next available Saturday?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "question"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "scheduling.next_available"
+          ],
+          "actual": [],
+          "matched": [],
+          "missed": [
+            "scheduling.next_available"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 111288,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 175320,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 7179,
+          "tokenChars": 7179,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-044",
+      "prompt": "Is April open for a big event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "command",
+          "actual": "command"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": [
+            "calendar.availability"
+          ],
+          "actual": [
+            "calendar.check"
+          ],
+          "matched": [],
+          "missed": [
+            "calendar.availability"
+          ]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 107689,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 107689,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 285,
+          "tokenChars": 104,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-045",
+      "prompt": "What days am I blocked this month?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": 401,
+          "error": null
+        }
+      }
+    },
+    {
+      "promptId": "chef-046",
+      "prompt": "Check availability for the first two weekends in April",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "Error: Prompt timeout after 180000ms"
+        }
+      }
+    },
+    {
+      "promptId": "chef-047",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: Error: read ECONNRESET)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-048",
+      "prompt": "How busy am I in March?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-049",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-050",
+      "prompt": "What's on my waitlist?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-051",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-052",
+      "prompt": "Write a thank-you note for my last event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-053",
+      "prompt": "Send a referral request to the Hendersons",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-054",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-055",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-056",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-057",
+      "prompt": "Check my recent emails",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-058",
+      "prompt": "Summarize my inbox",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-059",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-060",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-061",
+      "prompt": "Search my recipes for risotto",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-062",
+      "prompt": "Show me all my menus",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-063",
+      "prompt": "What recipes do I have that use salmon?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-064",
+      "prompt": "Do I have any dessert recipes?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-065",
+      "prompt": "What's on the menu I created for corporate events?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-066",
+      "prompt": "Explain my spring tasting menu to a client",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-067",
+      "prompt": "What's the food cost on my lamb dish?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-068",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-069",
+      "prompt": "How to cook a perfect steak",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-070",
+      "prompt": "Suggest a meal for a date night",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-071",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-072",
+      "prompt": "Create a packing list for my next event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-073",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-074",
+      "prompt": "Calculate portions for 25 guests",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-075",
+      "prompt": "What do I need to buy for Saturday?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-076",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-077",
+      "prompt": "What's on my to-do list?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-078",
+      "prompt": "Show me my nudges and reminders",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-079",
+      "prompt": "Draft a food safety incident report",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-080",
+      "prompt": "List my staff",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-081",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-082",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-083",
+      "prompt": "What do you remember about me?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-084",
+      "prompt": "Remember that I don't work on Sundays",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-085",
+      "prompt": "Do you remember what pricing model I use?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-086",
+      "prompt": "What am I looking at right now?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-087",
+      "prompt": "Help me with what I'm doing right now",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-088",
+      "prompt": "I just created a new event, what should I do next?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-089",
+      "prompt": "I keep getting an error on this page",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-090",
+      "prompt": "Take me to the recipes page",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-091",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-092",
+      "prompt": "Calculate the lifetime value of my top client",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-093",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-094",
+      "prompt": "What's my most profitable type of event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-095",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-096",
+      "prompt": "Hey Remy, what can you help me with?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-097",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-098",
+      "prompt": "Good morning Remy!",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-099",
+      "prompt": "How's my week looking?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    },
+    {
+      "promptId": "chef-100",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: fetch failed (cause: AggregateError: )"
+        }
+      }
+    }
+  ]
+}

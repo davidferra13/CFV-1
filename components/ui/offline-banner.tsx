@@ -5,7 +5,7 @@
 // Renders nothing when online and not in the reconnected window.
 
 import { useState, useEffect } from 'react'
-import { WifiOff, Wifi } from '@/components/ui/icons'
+import { WifiOff, Wifi } from 'lucide-react'
 
 export function OfflineBanner() {
   const [isOnline, setIsOnline] = useState(true)

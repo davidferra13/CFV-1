@@ -15,15 +15,15 @@ import {
 export const metadata: Metadata = { title: 'Dietary Flags - ChefFlow' }
 
 const DIETARY_COLORS: Record<string, string> = {
-  vegan: 'bg-green-900 text-green-200',
-  vegetarian: 'bg-lime-900 text-lime-200',
-  'gluten-free': 'bg-yellow-900 text-yellow-200',
-  'dairy-free': 'bg-blue-900 text-blue-200',
-  'nut-free': 'bg-orange-900 text-orange-200',
-  paleo: 'bg-amber-900 text-amber-200',
-  keto: 'bg-purple-900 text-purple-200',
-  halal: 'bg-teal-900 text-teal-200',
-  kosher: 'bg-sky-900 text-sky-200',
+  vegan: 'bg-green-900 text-green-700',
+  vegetarian: 'bg-lime-900 text-lime-700',
+  'gluten-free': 'bg-yellow-900 text-yellow-700',
+  'dairy-free': 'bg-blue-900 text-blue-700',
+  'nut-free': 'bg-orange-900 text-orange-700',
+  paleo: 'bg-amber-900 text-amber-700',
+  keto: 'bg-purple-900 text-purple-700',
+  halal: 'bg-teal-900 text-teal-700',
+  kosher: 'bg-sky-900 text-sky-700',
 }
 
 export default async function DietaryFlagsPage() {

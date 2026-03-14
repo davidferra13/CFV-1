@@ -16,11 +16,11 @@ import { format, differenceInDays } from 'date-fns'
 export const metadata: Metadata = { title: 'Upcoming Touchpoints - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  confirmed: 'bg-teal-900 text-teal-200',
-  paid: 'bg-emerald-900 text-emerald-200',
-  in_progress: 'bg-blue-900 text-blue-200',
-  accepted: 'bg-sky-900 text-sky-200',
-  proposed: 'bg-amber-900 text-amber-200',
+  confirmed: 'bg-teal-900 text-teal-700',
+  paid: 'bg-emerald-900 text-emerald-700',
+  in_progress: 'bg-blue-900 text-blue-700',
+  accepted: 'bg-sky-900 text-sky-700',
+  proposed: 'bg-amber-900 text-amber-700',
   draft: 'bg-stone-800 text-stone-400',
 }
 
@@ -73,7 +73,7 @@ export default async function UpcomingTouchpointsPage() {
             <p className="text-sm text-stone-500 mt-1">This week</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-amber-200">{thisMonth.length}</p>
+            <p className="text-2xl font-bold text-amber-700">{thisMonth.length}</p>
             <p className="text-sm text-stone-500 mt-1">This month</p>
           </Card>
           <Card className="p-4">
@@ -117,7 +117,7 @@ export default async function UpcomingTouchpointsPage() {
                   daysAway <= 7
                     ? 'text-red-600 font-semibold'
                     : daysAway <= 14
-                      ? 'text-amber-200'
+                      ? 'text-amber-700'
                       : 'text-stone-400'
                 return (
                   <TableRow key={event.id}>

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, XCircle } from '@/components/ui/icons'
+import { CheckCircle, XCircle } from 'lucide-react'
 
 type SEOItem = {
   key: string

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ChevronLeft } from '@/components/ui/icons'
+import { ChevronLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getActiveGoals } from '@/lib/goals/actions'
 import { getServiceTypes, getRevenuePath } from '@/lib/goals/service-mix-actions'

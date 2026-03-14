@@ -8,15 +8,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  UserPlus,
-  X,
-  Users,
-  Check,
-} from '@/components/ui/icons'
+import { Calendar, ChevronLeft, ChevronRight, UserPlus, X, Users, Check } from 'lucide-react'
 import { assignStaffToEvent } from '@/lib/staff/actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

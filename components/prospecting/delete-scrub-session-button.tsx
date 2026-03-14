@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
-import { Trash2 } from '@/components/ui/icons'
+import { Trash2 } from 'lucide-react'
 import { deleteScrubSession } from '@/lib/prospecting/actions'
 
 export function DeleteScrubSessionButton({

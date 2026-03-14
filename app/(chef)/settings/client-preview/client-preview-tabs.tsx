@@ -5,7 +5,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Monitor, Smartphone, ExternalLink, Eye } from '@/components/ui/icons'
+import { Monitor, Smartphone, ExternalLink, Eye } from 'lucide-react'
 import { PublicProfilePreview } from './public-profile-preview'
 import { ClientPortalPreview } from './client-portal-preview'
 import {
@@ -189,12 +189,12 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       )}
 
       {/* Preview mode banner */}
-      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-950 px-4 py-2.5 text-sm text-amber-200">
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-950 px-4 py-2.5 text-sm text-amber-800">
         <Eye className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <span>
-          <strong>Preview Mode</strong> - This is exactly what your clients see.
+          <strong>Preview Mode</strong> — This is exactly what your clients see.
           {activeTab === 'portal' &&
-            ' Buttons are shown but disabled. No actions can be taken from here.'}
+            ' Buttons are shown but disabled — no actions can be taken from here.'}
         </span>
       </div>
 

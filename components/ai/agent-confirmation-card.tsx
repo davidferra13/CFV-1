@@ -1,14 +1,6 @@
 'use client'
 
-import {
-  Check,
-  X,
-  Pencil,
-  AlertTriangle,
-  ShieldX,
-  ChevronDown,
-  ChevronUp,
-} from '@/components/ui/icons'
+import { Check, X, Pencil, AlertTriangle, ShieldX, ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
@@ -162,7 +154,7 @@ export function AgentConfirmationCard({
           {preview.warnings.map((w, i) => (
             <div
               key={i}
-              className="flex items-start gap-1.5 text-xs text-amber-200 dark:text-amber-400"
+              className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400"
             >
               <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
               <span>{w}</span>

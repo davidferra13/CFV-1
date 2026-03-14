@@ -18,7 +18,7 @@ export default async function BetaSignupPage() {
   const signupCount = await getBetaSignupCount()
 
   return (
-    <section className="dark-surface relative mx-auto w-full max-w-2xl rounded-[28px] bg-stone-950 px-4 py-16 sm:px-6 md:py-24 lg:px-8">
+    <section className="relative mx-auto w-full max-w-2xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
       <div className="text-center mb-10">
         <p className="rounded-full inline-block border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300 mb-4">
           Closed Beta
@@ -58,9 +58,9 @@ export default async function BetaSignupPage() {
 
       <div className="mt-8 text-center space-y-2">
         <p className="text-sm text-stone-500">
-          No payment details needed. We will email you when your spot is ready.
+          No credit card required. We will email you when your spot is ready.
         </p>
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-stone-600">
           Your information is never shared. Read our{' '}
           <a href="/privacy" className="text-brand-500 hover:underline">
             Privacy Policy

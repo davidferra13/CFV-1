@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, CheckCircle2, AlertCircle, RefreshCw, Unlink } from '@/components/ui/icons'
+import { ExternalLink, CheckCircle2, AlertCircle, RefreshCw, Unlink } from 'lucide-react'
 import type { SocialConnectionStatus } from '@/lib/social/oauth-actions'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
@@ -25,7 +25,7 @@ const PLATFORMS: PlatformMeta[] = [
     label: 'Instagram',
     description: 'Feed posts, Reels, and carousels via Meta Content Publishing API.',
     bgClass: 'bg-pink-500',
-    textClass: 'text-pink-200',
+    textClass: 'text-pink-700',
     docsUrl: 'https://developers.facebook.com/docs/instagram-api/content-publishing',
     requirement: 'Requires a Business or Creator Instagram account linked to a Facebook Page.',
   },
@@ -34,7 +34,7 @@ const PLATFORMS: PlatformMeta[] = [
     label: 'Facebook',
     description: 'Page posts, photos, and videos. Shares the same OAuth flow as Instagram.',
     bgClass: 'bg-blue-600',
-    textClass: 'text-blue-200',
+    textClass: 'text-blue-700',
     docsUrl: 'https://developers.facebook.com/docs/pages/publishing',
     requirement: 'Requires a Facebook Business Page (not personal profile).',
   },
@@ -52,7 +52,7 @@ const PLATFORMS: PlatformMeta[] = [
     label: 'LinkedIn',
     description: 'Posts to your personal profile or a company page.',
     bgClass: 'bg-sky-700',
-    textClass: 'text-sky-200',
+    textClass: 'text-sky-700',
     docsUrl:
       'https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/ugc-post-api',
     requirement: 'Requires LinkedIn Marketing Developer Platform access.',
@@ -71,7 +71,7 @@ const PLATFORMS: PlatformMeta[] = [
     label: 'Pinterest',
     description: 'Pins to your boards via Pinterest API v5.',
     bgClass: 'bg-red-600',
-    textClass: 'text-red-200',
+    textClass: 'text-red-700',
     docsUrl: 'https://developers.pinterest.com/docs/api/v5/',
     requirement: 'Requires a Pinterest Business account.',
   },
@@ -80,7 +80,7 @@ const PLATFORMS: PlatformMeta[] = [
     label: 'YouTube Shorts',
     description: 'Vertical videos under 60 seconds via YouTube Data API.',
     bgClass: 'bg-red-500',
-    textClass: 'text-red-200',
+    textClass: 'text-red-700',
     docsUrl: 'https://developers.google.com/youtube/v3/guides/uploading_a_video',
     requirement: 'Requires a Google account with a YouTube channel. Vertical video ≤ 60s.',
   },
@@ -139,7 +139,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 
       {/* Just-connected flash */}
       {justConnected && (
-        <div className="flex items-center gap-2 bg-emerald-950 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-200">
+        <div className="flex items-center gap-2 bg-emerald-950 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
           <span>
             <strong className="capitalize">{justConnected.replace('_', ' ')}</strong> connected
@@ -196,7 +196,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
               {isConnected && conn?.lastError && conn.errorCount > 0 && (
                 <div className="flex items-start gap-2 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2">
                   <AlertCircle className="w-3.5 h-3.5 mt-0.5 text-amber-600 flex-shrink-0" />
-                  <p className="text-xs text-amber-200 leading-snug">
+                  <p className="text-xs text-amber-800 leading-snug">
                     {conn.lastError} ({conn.errorCount} error{conn.errorCount !== 1 ? 's' : ''}).
                     Reconnect to reset.
                   </p>
@@ -207,7 +207,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
               {isConnected && conn?.tokenExpiresAt && isExpiringSoon(conn.tokenExpiresAt) && (
                 <div className="flex items-center gap-2 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2">
                   <RefreshCw className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                  <p className="text-xs text-amber-200">
+                  <p className="text-xs text-amber-800">
                     Access token expires {formatRelativeDate(conn.tokenExpiresAt)}. Reconnect to
                     refresh.
                   </p>
@@ -216,7 +216,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 
               {/* Requirements note (shown only when not connected) */}
               {!isConnected && (
-                <p className="text-xs text-amber-200 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2 leading-snug">
+                <p className="text-xs text-amber-700 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2 leading-snug">
                   {platform.requirement}
                 </p>
               )}
@@ -298,14 +298,14 @@ function ConnectionBadge({ conn }: { conn: SocialConnectionStatus | null }) {
 
   if (hasErrors || expiringSoon) {
     return (
-      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-amber-950 text-amber-200 ring-1 ring-inset ring-amber-800">
+      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800">
         Needs attention
       </span>
     )
   }
 
   return (
-    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-950 text-emerald-200 ring-1 ring-inset ring-emerald-800">
+    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800">
       Connected
     </span>
   )

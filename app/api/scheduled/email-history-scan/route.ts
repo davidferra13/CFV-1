@@ -10,78 +10,32 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { runHistoricalScanBatch } from '@/lib/gmail/historical-scan'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
-import { recordCronError, recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
 const MAX_CHEFS_PER_RUN = 5
 
 async function handleEmailHistoryScan(request: NextRequest): Promise<NextResponse> {
-  const startedAt = Date.now()
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
 
-  let connections: Array<{
-    chef_id: string
-    tenant_id: string
-    historical_scan_status: string
-  }> = []
-  let error: { message: string } | null = null
-
-  try {
-    const { data, error: mailboxError } = await (supabase as any)
-      .from('google_mailboxes')
-      .select('chef_id, tenant_id, historical_scan_status')
-      .eq('historical_scan_enabled', true)
-      .eq('gmail_connected', true)
-      .eq('is_active', true)
-      .not('historical_scan_status', 'in', '(completed,paused)')
-
-    if (mailboxError) throw mailboxError
-
-    const seenChefIds = new Set<string>()
-    connections = (data ?? [])
-      .flatMap((row: any) => {
-        if (seenChefIds.has(row.chef_id)) return []
-        seenChefIds.add(row.chef_id)
-        return [
-          {
-            chef_id: row.chef_id,
-            tenant_id: row.tenant_id,
-            historical_scan_status: row.historical_scan_status,
-          },
-        ]
-      })
-      .slice(0, MAX_CHEFS_PER_RUN)
-  } catch {
-    const legacyResult = await (supabase as any)
-      .from('google_connections')
-      .select('chef_id, tenant_id, historical_scan_status')
-      .eq('historical_scan_enabled', true)
-      .eq('gmail_connected', true)
-      .not('historical_scan_status', 'in', '(completed,paused)')
-      .limit(MAX_CHEFS_PER_RUN)
-    connections = legacyResult.data ?? []
-    error = legacyResult.error
-  }
+  // Find chefs with active historical scans
+  // Status must NOT be completed or paused — idle and in_progress are eligible
+  const { data: connections, error } = await supabase
+    .from('google_connections')
+    .select('chef_id, tenant_id, historical_scan_status')
+    .eq('historical_scan_enabled', true)
+    .eq('gmail_connected', true)
+    .not('historical_scan_status', 'in', '["completed","paused"]')
+    .limit(MAX_CHEFS_PER_RUN)
 
   if (error) {
     console.error('[email-history-scan] DB query failed:', error.message)
-    await recordCronError('email-history-scan', error.message, Date.now() - startedAt)
     return NextResponse.json({ error: 'Failed to query scan connections' }, { status: 500 })
   }
 
   if (!connections || connections.length === 0) {
-    const result = {
-      message: 'No active scans',
-      chefsProcessed: 0,
-      totalEmailsProcessed: 0,
-      totalEmailsSeen: 0,
-      estimatedTotalAcrossScans: 0,
-      scansWithEstimate: 0,
-    }
-    await recordCronHeartbeat('email-history-scan', result, Date.now() - startedAt)
-    return NextResponse.json(result)
+    return NextResponse.json({ message: 'No active scans', chefsProcessed: 0 })
   }
 
   const results = []
@@ -112,27 +66,17 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
     (sum, r) => sum + (('findingsAdded' in r ? r.findingsAdded : 0) as number),
     0
   )
-  const totalSeen = results.reduce((sum, r) => sum + (('seen' in r ? r.seen : 0) as number), 0)
-  const estimates = results
-    .map((r) => ('resultSizeEstimate' in r ? r.resultSizeEstimate : null))
-    .filter((value): value is number => typeof value === 'number')
   const completed = results.filter((r) => r.status === 'completed').length
   const errors = results.filter((r) => r.status === 'error').length
 
-  const payload = {
+  return NextResponse.json({
     chefsProcessed: connections.length,
     totalEmailsProcessed: totalProcessed,
-    totalEmailsSeen: totalSeen,
     totalFindingsAdded: totalFindings,
-    estimatedTotalAcrossScans: estimates.reduce((sum, value) => sum + value, 0),
-    scansWithEstimate: estimates.length,
     scansCompleted: completed,
     errors,
     details: results,
-  }
-
-  await recordCronHeartbeat('email-history-scan', payload, Date.now() - startedAt)
-  return NextResponse.json(payload)
+  })
 }
 
 export { handleEmailHistoryScan as GET, handleEmailHistoryScan as POST }

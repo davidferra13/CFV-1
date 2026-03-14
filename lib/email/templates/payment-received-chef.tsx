@@ -4,7 +4,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   chefName: string
@@ -30,10 +30,7 @@ export function PaymentReceivedChefEmail({
   const paymentLabel = paymentType === 'deposit' ? 'deposit' : 'payment'
 
   return (
-    <BaseLayout
-      brand={brand}
-      preview={`${amountFormatted} ${paymentLabel} received from ${clientName}`}
-    >
+    <BaseLayout preview={`${amountFormatted} ${paymentLabel} received from ${clientName}`}>
       <Text style={heading}>Payment received</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

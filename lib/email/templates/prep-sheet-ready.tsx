@@ -1,13 +1,12 @@
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type PrepSheetReadyEmailProps = {
   clientName: string
   chefName: string
   occasion: string
   eventDate: string
-  brand?: ChefBrandProps
 }
 
 export function PrepSheetReadyEmail({
@@ -15,10 +14,9 @@ export function PrepSheetReadyEmail({
   chefName,
   occasion,
   eventDate,
-  brand,
 }: PrepSheetReadyEmailProps) {
   return (
-    <BaseLayout brand={brand} preview={`Prep sheet attached for ${occasion}`}>
+    <BaseLayout preview={`Prep sheet attached for ${occasion}`}>
       <Text style={heading}>Your prep sheet is attached</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

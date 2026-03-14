@@ -4,18 +4,17 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 type BetaWelcomeProps = {
   name: string
-  brand?: ChefBrandProps
 }
 
 export function BetaWelcomeEmail({ name }: BetaWelcomeProps) {
   return (
-    <BaseLayout brand={brand} preview="You're on the list — welcome to the ChefFlow beta.">
+    <BaseLayout preview="You're on the list — welcome to the ChefFlow beta.">
       <Text style={heading}>You&apos;re on the list.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>

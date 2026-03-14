@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { PreDeletionChecklist } from './pre-deletion-checklist'
-import { Download } from '@/components/ui/icons'
+import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 const DELETION_REASONS = [

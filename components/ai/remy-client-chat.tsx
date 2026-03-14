@@ -5,7 +5,7 @@
 // no commands, no tasks, no memory management. Just conversational Q&A.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, Loader2, ChevronDown, Minus } from '@/components/ui/icons'
+import { X, Send, Loader2, ChevronDown, Minus } from 'lucide-react'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'
@@ -293,7 +293,7 @@ export function RemyClientChat() {
         )}
 
         {error && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-xs text-red-200">
+          <div className="mb-3 rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-xs text-red-700">
             {error}
           </div>
         )}

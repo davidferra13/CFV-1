@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type EventCancelledProps = {
   recipientName: string
@@ -11,7 +11,6 @@ type EventCancelledProps = {
   eventDate: string
   cancelledBy: string
   reason: string | null
-  brand?: ChefBrandProps
 }
 
 export function EventCancelledEmail({
@@ -20,10 +19,9 @@ export function EventCancelledEmail({
   eventDate,
   cancelledBy,
   reason,
-  brand,
 }: EventCancelledProps) {
   return (
-    <BaseLayout brand={brand} preview={`${occasion} event has been cancelled`}>
+    <BaseLayout preview={`${occasion} event has been cancelled`}>
       <Text style={heading}>Event cancelled</Text>
       <Text style={paragraph}>Hi {recipientName},</Text>
       <Text style={paragraph}>

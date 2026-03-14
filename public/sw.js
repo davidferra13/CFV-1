@@ -1,30 +1,1711 @@
-// Service worker cleanup placeholder.
-// PWA registration is disabled unless ENABLE_PWA_BUILD=1 during build time.
-// This worker removes any previously cached offline assets/pages so old beta
-// clients stop serving stale HTML, JS, and CSS after deploys.
-
-self.addEventListener('install', () => {
-  self.skipWaiting()
-})
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      const cacheNames = await caches.keys()
-      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
-
-      await self.registration.unregister()
-
-      const windowClients = await self.clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true,
+if (!self.define) {
+  let e,
+    c = {}
+  const i = (i, s) => (
+    (i = new URL(i + '.js', s).href),
+    c[i] ||
+      new Promise((c) => {
+        if ('document' in self) {
+          const e = document.createElement('script')
+          ;((e.src = i), (e.onload = c), document.head.appendChild(e))
+        } else ((e = i), importScripts(i), c())
+      }).then(() => {
+        let e = c[i]
+        if (!e) throw new Error(`Module ${i} didn’t register its module`)
+        return e
       })
-
-      await Promise.all(
-        windowClients.map((client) =>
-          typeof client.navigate === 'function' ? client.navigate(client.url).catch(() => undefined) : undefined
-        )
-      )
-    })()
   )
+  self.define = (s, a) => {
+    const n = e || ('document' in self ? document.currentScript.src : '') || location.href
+    if (c[n]) return
+    let t = {}
+    const f = (e) => i(e, n),
+      l = { module: { uri: n }, exports: t, require: f }
+    c[n] = Promise.all(s.map((e) => l[e] || f(e))).then((e) => (a(...e), t))
+  }
+}
+define(['./workbox-f1770938'], function (e) {
+  'use strict'
+  ;(importScripts('/fallback-ce627215c0e4a9af.js', '/worker-58486f2764f95ddd.js'),
+    self.skipWaiting(),
+    e.clientsClaim(),
+    e.precacheAndRoute(
+      [
+        {
+          url: '/_next/static/chefflow-build/_buildManifest.js',
+          revision: '6310079bf1ae7bebeb6a2135896e4564',
+        },
+        {
+          url: '/_next/static/chefflow-build/_ssgManifest.js',
+          revision: 'b6652df95db52feb4daf4eca35380933',
+        },
+        { url: '/_next/static/chunks/1259-813d9abe103ba96e.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/1610-4bc23d303a1433dc.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/1677.686e671117f777cd.js', revision: '686e671117f777cd' },
+        { url: '/_next/static/chunks/1716-fcb4db97883b9989.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/1781-4663036e853ecc76.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/1785-4a14a3eb261d8411.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/2481-5031155447d1a7e7.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/2499.8d3eeb9f3571f236.js', revision: '8d3eeb9f3571f236' },
+        { url: '/_next/static/chunks/2509-323d9e58bc4ef809.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/2712-b418959afe0f2cd2.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/2740-10f9f24ec59d2ae0.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/2809-e67f72d06201ad5b.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/2972-bc8d247a7fd8d682.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3145-98324ba3554d2729.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3333-d73f064bb03f213c.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3435-5d284910e4811ad0.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3462-eed59d8310d0d34b.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3472-cf5b69f7697275bf.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3603-5aaa133bb12c5f43.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3893-d558693216bf6cae.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/3913-2dfcdd41d05bf189.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4033-401ebdc481011441.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4046-480f72ec04717251.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4132-051c8921aebfd5f4.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4317-88ad138a9cd5b039.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4591-475b976dac33409e.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4609-33aa487dff03a9fd.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/4e6af11a-903f175bd71fb9a8.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/5063-45c1cbe3207e4f72.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/5255.0037e5047c4bef85.js', revision: '0037e5047c4bef85' },
+        { url: '/_next/static/chunks/6243-d2aef0d39db8f2c4.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/6320-1812ccfed9917444.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/649-2e8edca743013297.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/6540-1c21b53032c19c35.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/6857-1a63cc8d225be186.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/6997-478db6332b632df9.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/7011-0008df5fe23e2e13.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/7034-c9b1ed8b364dab98.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/7348-54e415a9afe62981.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/7426.f12704e053636e55.js', revision: 'f12704e053636e55' },
+        { url: '/_next/static/chunks/7491-899622d1762e1ae0.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/7493-3c83bad3970cb95c.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/819.c4ac5f5a15f836cd.js', revision: 'c4ac5f5a15f836cd' },
+        { url: '/_next/static/chunks/8193-e37c8ceece0e5c68.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/8879-c810ca31e2fa603b.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9580-f6465afe6162d1d3.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9698-2630776c42a615d9.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9722-5cb85f62c7c98d90.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9748-f50c53244ffa9a60.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9788-e92e014c57985726.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9832-34940015f96ed9af.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9915-e8a596b7464c4265.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/9996-91b566a1709c3ca1.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/a6eb9415-342c89c7db55d16b.js', revision: 'chefflow-build' },
+        {
+          url: '/_next/static/chunks/app/(chef)/aar/page-aeae1059cbd180a4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/activity/loading-02f92cd30b191999.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/activity/page-1c29ed5b9f420995.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/analytics/page-53fd0155dd942428.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calendar/day/page-bdae7013a4d67ee4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calendar/loading-724db7ef0a83975b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calendar/page-fed8dc5fe24f4034.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calendar/week/page-1707297dfb545053.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calendar/year/page-246eb3243bc37aca.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calls/%5Bid%5D/edit/page-5334ca571ea74607.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calls/%5Bid%5D/page-68c2d38d5e03d537.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calls/loading-17798ca148de2481.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calls/new/page-1a07e6aefcc41e3c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/calls/page-23f473e15e1a4240.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/chat/%5Bid%5D/page-0b2bd28eb82cf72f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/chat/page-35600619259ed08f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/%5Bid%5D/loading-b065fcce73efcac1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/%5Bid%5D/page-6aa8cb6a7779951a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/%5Bid%5D/recurring/page-2fa8c033ff8f9a53.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/active/page-c58bba7b2afa28c3.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/communication/follow-ups/page-be6444e7a4b4f298.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/communication/notes/page-345f7f6321c4a32a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/communication/page-bb546edfdefa177d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/communication/upcoming-touchpoints/page-a097288a313c7d2f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/gift-cards/page-452769c5f308a0a5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/history/event-history/page-3092b0c2fcc670c1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/history/page-7abeb0c8b5c29d33.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/history/past-menus/page-1cb964cbb1db503a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/history/spending-history/page-185a458869ac317b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/inactive/page-35cf1763ebe11a55.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/insights/at-risk/page-61ef23a81e1ea48f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/insights/most-frequent/page-0ede36500c6f7102.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/insights/page-295accaffa510542.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/insights/top-clients/page-86da53f15dc589e0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/loading-b61aa4403af60c53.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/loyalty/page-16001b3486a4ec60.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/loyalty/points/page-2b86d57754f91786.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/loyalty/referrals/page-e6405cf2690f5447.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/loyalty/rewards/page-3eb20065579ba72f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/new/page-80899c6da2270367.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/page-445ad47f2c956430.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/preferences/allergies/page-3f1db713f17d17cf.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/preferences/dietary-restrictions/page-afe893e08e1e3141.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/preferences/dislikes/page-b67cc48aa35e0069.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/preferences/favorite-dishes/page-a67efac13498bdc3.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/preferences/page-317923f87366c173.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/presence/page-272a7ac60fe6874a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/clients/vip/page-d6e802ddaee2ca69.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/components/ferments/page-3a139be46a621dab.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/components/garnishes/page-5a1cebb218f8b7a3.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/components/page-531c070141f44f7c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/components/sauces/page-535e6298df0799c7.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/components/shared-elements/page-4505080dc54f2b50.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/components/stocks/page-e1b38dd466ada2dd.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/costing/food-cost/page-a92f981bf4ed792d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/costing/menu/page-a2fed54d693d1c15.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/costing/page-f25619f755d3cbd5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/costing/recipe/page-152ba4957031c2d4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/ingredients/page-57ec60bc777712f2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/ingredients/seasonal-availability/page-3f3e388ebc1ac9be.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/ingredients/vendor-notes/page-885efeca1872265b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/loading-57ff38af7d91435a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/%5Bid%5D/page-c3145073e8e35d00.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/approved/page-0a5cc0c1e93608c5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/drafts/page-779d69c0cf115311.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/page-b81db13bd17557c3.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/scaling/page-5e778b7f629cec1c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/substitutions/page-dd8f3f51ec15b7e6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/menus/templates/page-a0a2e620690337a0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/page-3dc2fbe6991ccc48.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/prep/page-fc19a78eecaa83df.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/prep/shopping/page-06b1ec82b745a0a9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/prep/timeline/page-daf1e0f59ff50415.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/recipes/%5Bid%5D/page-313409707ce35374.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/recipes/dietary-flags/page-5c35d645aebcc1aa.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/recipes/drafts/page-e123d984bd16a412.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/recipes/page-3a09badc5fc5c144.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/recipes/seasonal-notes/page-a6fc753de625ea17.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/recipes/tags/page-835436b9f681d472.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/culinary/vendors/page-8cf7530adea5e43e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/dashboard/loading-cdd5a6f27a3b466f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/dashboard/page-e0bef6474359f30f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/error-8843c8f05fccf380.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/aar/page-d25e7c989545a5c0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/close-out/page-33bbd60f68d523b0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/debrief/page-0f183d9167346ca3.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/edit/page-111dcc691fbd25bf.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/financial/page-67c83d5b1eac6e4d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/interactive/page-ac0249f0fc776d4f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/invoice/page-1e7e923b2f26caaa.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/loading-dc9149ae67e6e541.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/pack/page-8b408ec4c9fb8e4a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/page-adce10883f0dca20.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/receipts/page-eccd8aa3142de4e5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/schedule/page-fdcd6f359eea4a99.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/%5Bid%5D/travel/page-735cd831ca38e2f3.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/awaiting-deposit/page-3ce97cc44d64b7a2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/cancelled/page-9c16164140058e77.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/completed/page-50a3a31abb3ea583.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/confirmed/page-f1faf3ce50b9bcc4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/loading-fa85c2788828204b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/new/page-d491295a645bc1fb.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/page-781972cce986dc69.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/events/upcoming/page-205fb259ceddd059.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/expenses/%5Bid%5D/page-a9935521fb73759f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/expenses/new/page-c2a51a0d1a7b8877.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/expenses/page-6f168b693e6424da.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/food-ingredients/page-d0e1d5a65871a09c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/labor/page-0e23705490a44488.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/marketing/page-39e247ad2f995581.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/miscellaneous/page-101077d76866d773.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/page-5cffba59a270391a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/rentals-equipment/page-3ebee28f9ff0ee7e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/software/page-ab88e50e5651a406.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/expenses/travel/page-91b5dfd15e6940f1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/cancelled/page-c8c6a43088d9003a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/draft/page-40d66f22dd8b27cf.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/overdue/page-5a24e609e8308b57.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/page-496ccd3b3aede92d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/paid/page-039609263a33f294.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/refunded/page-d56376a3e548c8bb.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/invoices/sent/page-64624e9a43360939.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/ledger/adjustments/page-924a989f81a83f8a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/ledger/page-be8b5717150014a9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/ledger/transaction-log/page-63ca1234cc2eda4d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/overview/cash-flow/page-d2a2364cd2c7d0c7.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/overview/outstanding-payments/page-221e335cc5b8f5d6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/overview/page-16f19c5e9686d383.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/overview/revenue-summary/page-fbc4ab651c9ecf2e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/page-31c896cdb0374fe2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payments/deposits/page-2404ff5f18603fe4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payments/failed/page-e46e6a84b3ef0c36.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payments/installments/page-38840aa6f4c0cd1a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payments/page-2e5933bd077e7d45.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payments/refunds/page-64e93341661c3ee4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payouts/manual-payments/page-63020a3800661db0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payouts/page-1035dc18d2a7f3e5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payouts/reconciliation/page-1c5fe07a1ec74466.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/payouts/stripe-payouts/page-325444adf05c82df.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/expense-by-category/page-ec5252a4886b3e30.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/page-1c828a0e99d723a9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/profit-by-event/page-1daaefd2f60c7bf1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/revenue-by-client/page-03bd4bb8ce828622.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/revenue-by-event/page-5028aaf3e837a64f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/revenue-by-month/page-edc060117344baa6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/tax-summary/page-3944dbedc0ffb146.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/reporting/year-to-date-summary/page-eb4c376be380bf1b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/finance/tax/page-08003c7fd9beb7b5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/financials/loading-a364804bdebf20e8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/financials/page-231a95d746350ccd.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/goals/%5Bid%5D/history/page-0cd9df02dfc57f01.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/goals/loading-2e2efdcd3c943363.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/goals/page-cfc541599a576183.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/goals/setup/page-2fdd3e0d426b92fc.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/import/loading-49f3901aca914650.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/import/page-e8ea9887b38cdf32.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inbox/history-scan/page-1f51c7d8b23a0e06.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inbox/loading-579c1790cc7aded9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inbox/page-e5e9fcbee53a762b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inbox/triage/%5BthreadId%5D/page-d3ad834f02d8422b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inbox/triage/page-a7a7ea8ef15e0ce1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/%5Bid%5D/loading-745fbeca2b7bf67b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/%5Bid%5D/page-c807cb97a80a08a2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/awaiting-client-reply/page-a2544d6d206ef32e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/awaiting-response/page-fa5f08d8c7d2fa84.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/declined/page-738711bccd4cd039.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/loading-defbad24c9612a4e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/menu-drafting/page-d2cc842602b72326.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/new/page-339ecac87285657d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/page-4b15a34a22e65d96.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/inquiries/sent-to-client/page-4f0f5130eaa09fdd.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/insights/loading-127f62918eedfc6b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/insights/page-59fd4b6653c7bfbc.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/insights/time-analysis/page-a331838bf07cef6d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/layout-270d989935ee3748.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/archived/page-6e1a7f240be767ee.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/contacted/page-cfeda6a7784a1c16.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/converted/page-6616c7ad0bc1101c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/loading-fb42b8ab9e82ba09.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/new/page-baefe3a6168c9d26.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/page-5ed9a924a7c94cf1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/leads/qualified/page-5bd7e95bb90e919e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/loading-590f5f391f4e0a03.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/loyalty/loading-1f954744e0e5cf09.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/loyalty/page-ee8934c3482b0d09.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/loyalty/rewards/new/page-95e936a9a12d6c50.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/loyalty/settings/page-b561ca9f5877dc51.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/marketing/%5Bid%5D/page-5424833d7610b6af.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/marketing/page-24e6db365ae2e1f4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/marketing/sequences/page-0989ce9920cad977.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/marketing/templates/page-76c0fcdbccde136b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/menus/%5Bid%5D/editor/page-0d96fa04acfc30e4.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/menus/%5Bid%5D/page-fad8bb015140333d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/menus/new/page-cdd8bf89cbca6dc9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/menus/page-93bbdf57e1c2939e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/network/%5BchefId%5D/page-107991a1aa784ec9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/network/channels/%5Bslug%5D/page-ac4b8c7b91bd1a39.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/network/loading-6d123d4ba055ac8c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/network/notifications/page-8328058e64b6fe70.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/network/page-304649c7525af1b8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/network/saved/page-d8fcbf60dde54411.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/operations/equipment/page-0f04f8f5d53b72a8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/operations/kitchen-rentals/page-3c6500207ef7f4b1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/operations/loading-a51433527513ac03.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/operations/page-8e3ec31bca22c651.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/%5Bid%5D/edit/page-54fe02a556fcdb9e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/%5Bid%5D/page-3459b3ec10d390aa.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/%5Bid%5D/report/page-55c3bfad96af68c6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/active/page-12d2b0ca61f91c2f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/events-generated/page-2d5d295ca8ce0a53.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/inactive/page-3b7b98cabcb1b02b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/loading-362d6be8e94cd2f2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/new/page-6b75e2daa5f4b850.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/page-a6d15c35d400137e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/partners/referral-performance/page-a2f9c0456ed43ee8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/queue/page-5fb0a2963678ed87.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/%5Bid%5D/edit/page-3604508f0edd2df9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/%5Bid%5D/loading-a48474b848ed7ad8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/%5Bid%5D/page-55c26c0c35b8bcc8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/accepted/page-3ba0aef047ab7509.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/draft/page-60eb280f869847e9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/expired/page-33862c37656a6ff2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/loading-68a98ef98386ca06.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/new/page-b0b79ad6e7c96ae8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/page-9a5e0cc924222735.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/rejected/page-8a9549c75f36e261.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/sent/page-209d1593de116c9a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/quotes/viewed/page-dd437b7ed9521167.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/%5Bid%5D/edit/page-f53b6c496672098f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/%5Bid%5D/page-91fec1fed824616a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/ingredients/page-2acebc7cea12c958.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/loading-a9fc3a41915a9117.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/new/page-d54c7c06d9b5225a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/page-4481eafba9c6f51a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/recipes/sprint/page-223b346f7f5f9d2f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/reviews/loading-24fa91b60139aeba.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/reviews/page-0e421dc4178e4651.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/schedule/page-79a9dfc3b75bda68.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/automations/page-ce9f97746b6defa6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/change-password/page-3442aa62d41208bf.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/client-preview/page-b465f511f33aea0a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/compliance/page-88f93f64763d2f63.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/contracts/page-4160936ab067efe9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/dashboard/page-593b77b56077cd39.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/delete-account/page-c4d38e4a6f3204f0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/emergency/page-2d2b2d29217f7c4f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/integrations/page-bb0779fc4e91edeb.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/journal/%5Bid%5D/page-0ef69a5538d964d1.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/journal/page-e25563318ba49414.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/journey/%5Bid%5D/page-de24b84794bef930.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/journey/page-bb6b1df785605f18.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/loading-b9f495aa9cde7ade.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/my-profile/page-9dd10e7214d6ea17.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/navigation/page-9119851e9b98de21.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/notifications/page-1f8870c227ed56c9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/page-f97ac18fb9a85b66.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/professional/page-4678de2988ce3615.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/profile/page-9749f92941f1bd64.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/public-profile/page-eb0cc88806e06bff.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/repertoire/%5Bid%5D/page-8be5b10f5ed89c36.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/repertoire/page-3d2cdbcdc9683634.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/settings/templates/page-6fcadfbad1fdf768.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/connections/page-60464e478407f900.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/layout-08505e1961378ac8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/page-8d3d8e41c61724e6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/planner/%5Bmonth%5D/page-be9affc27cf9e9ae.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/planner/page-be519fe90bb8dcfd.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/posts/%5Bid%5D/page-0280ca8d3b646ed6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/settings/page-5a6ef92f6a343d62.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/social/vault/page-f24ade81a1650b1b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/staff/loading-be09dee38012c250.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/staff/page-c511918754662715.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/travel/page-7fb0fc51ad605bc8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/waitlist/page-1d271112a27e2af5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(chef)/wix-submissions/%5Bid%5D/page-6cdab781b8ef1ae8.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/book-now/page-aafe49b566dbae9d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/error-ad03807052dc0eb6.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/layout-c1409634a68d8a43.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/loading-14df2b8641f532af.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-chat/%5Bid%5D/page-8e2f531aa43acd7f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-chat/page-dcc532af1fe1eea5.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-events/%5Bid%5D/approve-menu/page-903ff46f74872fa2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-events/%5Bid%5D/contract/page-2279f1a4991604af.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-events/%5Bid%5D/invoice/page-57344e784eb77e19.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-events/%5Bid%5D/page-4d8bc80d42832bc9.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-events/%5Bid%5D/pay/page-e1aa3cc9e6bb7fd2.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-events/page-c6b08e315c61545c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-inquiries/%5Bid%5D/page-906dfbca72724059.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-inquiries/page-86d5dea1dbc2c19e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-profile/page-abf3e3e880997ccd.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-quotes/%5Bid%5D/page-de725cd467b6672d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-quotes/page-7449150e6307d2fb.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(client)/my-rewards/page-3e5ed107933e2d82.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/chef/%5Bslug%5D/gift-cards/page-06c9748015c1a9f0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/chef/%5Bslug%5D/gift-cards/success/page-e15038351bc6c407.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/chef/%5Bslug%5D/inquire/page-323ad95c3c093b6f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/chef/%5Bslug%5D/page-0ef0a5b1450abf06.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/chef/%5Bslug%5D/partner-signup/page-f52a48273cf58f82.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/contact/page-9916d55f43cf1911.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/error-6f44c1a66236fa0f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/layout-eb28127b649f8df0.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/loading-1bd374dcf6343853.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/page-6f719a47cb83a489.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/partner-report/%5Btoken%5D/page-cfea71d794b5d04f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/partner-signup/page-6cb688b6736ba330.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/pricing/page-e767f96d16d7a246.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/privacy/page-9b96a189fae1718b.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/share/%5Btoken%5D/page-13c5f25755a1ed9e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/terms/page-36ddc6361002350d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/(public)/unsubscribe/page-3c7175cb5b93fa13.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/_not-found/page-6bcc2cba4327369c.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/client-signup/page-760ca2a777ea012e.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/forgot-password/page-765f3b11b1d72424.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/layout-b03416c42c68327d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/reset-password/page-4f8748d42337751d.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/signin/page-68e333097123531a.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/signup/page-2c6e1e9fb9268526.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/auth/verify-email/page-cd7f2c5f9772eb44.js',
+          revision: 'chefflow-build',
+        },
+        { url: '/_next/static/chunks/app/error-773e1d1fc94b7d5f.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/app/layout-f4adda2237dedb2f.js', revision: 'chefflow-build' },
+        {
+          url: '/_next/static/chunks/app/not-found-dc42ea554aed4589.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/app/unauthorized/page-af92bf365e211684.js',
+          revision: 'chefflow-build',
+        },
+        { url: '/_next/static/chunks/fd9d1056-560c604015ca5b00.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/framework-8e0e0f4a6b83a956.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/main-1f9d89d63f1c13fa.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/main-app-1c8444c87c0ac24d.js', revision: 'chefflow-build' },
+        { url: '/_next/static/chunks/pages/_app-3c9ca398d360b709.js', revision: 'chefflow-build' },
+        {
+          url: '/_next/static/chunks/pages/_error-cf5ca766ac8f493f.js',
+          revision: 'chefflow-build',
+        },
+        {
+          url: '/_next/static/chunks/polyfills-42372ed130431b0a.js',
+          revision: '846118c33b2c0e922d7b3a7676f81f6f',
+        },
+        { url: '/_next/static/chunks/webpack-04b3f0eeda9fab7c.js', revision: 'chefflow-build' },
+        { url: '/_next/static/css/3add334ee59f67ac.css', revision: '3add334ee59f67ac' },
+        {
+          url: '/_next/static/media/19cfc7226ec3afaa-s.woff2',
+          revision: '9dda5cfc9a46f256d0e131bb535e46f8',
+        },
+        {
+          url: '/_next/static/media/21350d82a1f187e9-s.woff2',
+          revision: '4e2553027f1d60eff32898367dd4d541',
+        },
+        {
+          url: '/_next/static/media/8e9860b6e62d6359-s.woff2',
+          revision: '01ba6c2a184b8cba08b0d57167664d75',
+        },
+        {
+          url: '/_next/static/media/ba9851c3c22cd980-s.woff2',
+          revision: '9e494903d6b0ffec1a1e14d34427d44d',
+        },
+        {
+          url: '/_next/static/media/c5fe6dc8356a8c31-s.woff2',
+          revision: '027a89e9ab733a145db70f09b8a18b42',
+        },
+        {
+          url: '/_next/static/media/df0a9ae256c0569c-s.woff2',
+          revision: 'd54db44de5ccb18886ece2fda72bdfe0',
+        },
+        {
+          url: '/_next/static/media/e4af272ccee01ff0-s.p.woff2',
+          revision: '65850a373e258f1c897a2b3d75eb74de',
+        },
+        { url: '/apple-touch-icon.png', revision: 'e88184dc928d1c45417bd81dbfa496dd' },
+        { url: '/fallback-ce627215c0e4a9af.js', revision: '9f5a66b251db249cb63b6c52c3120f9e' },
+        { url: '/favicon.ico', revision: '72e0489004b37c3a68d9d1e68da778a3' },
+        { url: '/favicon.svg', revision: 'd5fee1b6167792d8033d0dd1d0c1d73a' },
+        { url: '/icon-192.png', revision: 'c63357ef28ce8f7bd66ec58d1204d7cb' },
+        { url: '/icon-192.svg', revision: '9cee88fe2a308baafcb268c5386c6c03' },
+        { url: '/icon-512.png', revision: 'e57d9c71ba87b4c434c34fdea60da7c3' },
+        { url: '/icon-512.svg', revision: 'ff1f8e0dc0be50fc24c5c0ca8cbe5296' },
+        { url: '/icon-maskable-192.png', revision: 'c63357ef28ce8f7bd66ec58d1204d7cb' },
+        { url: '/icon-maskable-192.svg', revision: '9c2a43ff2707834f7fc640175623cc45' },
+        { url: '/icon-maskable-512.png', revision: 'e57d9c71ba87b4c434c34fdea60da7c3' },
+        { url: '/icon-maskable-512.svg', revision: 'fb15248abaa4b0cbbe65bd16d4b36f33' },
+        { url: '/logo.jpg', revision: '9c08facae2b06d0f7a47af064f828311' },
+        { url: '/logo.png', revision: '9c08facae2b06d0f7a47af064f828311' },
+        { url: '/logo.svg', revision: '69f4ecad5cd979130f2d77661f983c59' },
+        { url: '/manifest.json', revision: '669a6ceb64095af8f8d1731f60bc0ac2' },
+        { url: '/offline.html', revision: 'c701dcb1ec19de7364373d62ee82a7a8' },
+        { url: '/og-image.svg', revision: '9b5bbf09c5c394f09916004fa4ab3f1b' },
+        { url: '/worker-58486f2764f95ddd.js', revision: '63e1bb89a4cfa9c51cde4e76801dda2d' },
+      ],
+      { ignoreURLParametersMatching: [/^utm_/, /^fbclid$/] }
+    ),
+    e.cleanupOutdatedCaches(),
+    e.registerRoute(
+      '/',
+      new e.NetworkFirst({
+        cacheName: 'start-url',
+        plugins: [
+          {
+            cacheWillUpdate: async ({ response: e }) =>
+              e && 'opaqueredirect' === e.type
+                ? new Response(e.body, { status: 200, statusText: 'OK', headers: e.headers })
+                : e,
+          },
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,
+      new e.CacheFirst({
+        cacheName: 'google-fonts-webfonts',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 4, maxAgeSeconds: 31536e3 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /^https:\/\/fonts\.(?:googleapis)\.com\/.*/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'google-fonts-stylesheets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 4, maxAgeSeconds: 604800 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-font-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 4, maxAgeSeconds: 604800 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-image-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: 2592e3 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\/_next\/static.+\.js$/i,
+      new e.CacheFirst({
+        cacheName: 'next-static-js-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\/_next\/image\?url=.+$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'next-image',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:mp3|wav|ogg)$/i,
+      new e.CacheFirst({
+        cacheName: 'static-audio-assets',
+        plugins: [
+          new e.RangeRequestsPlugin(),
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:mp4|webm)$/i,
+      new e.CacheFirst({
+        cacheName: 'static-video-assets',
+        plugins: [
+          new e.RangeRequestsPlugin(),
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:js)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-js-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 48, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:css|less)$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'static-style-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\/_next\/data\/.+\/.+\.json$/i,
+      new e.StaleWhileRevalidate({
+        cacheName: 'next-data',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      /\.(?:json|xml|csv)$/i,
+      new e.NetworkFirst({
+        cacheName: 'static-data-assets',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ sameOrigin: e, url: { pathname: c } }) =>
+        !(!e || c.startsWith('/api/auth/callback') || !c.startsWith('/api/')),
+      new e.NetworkFirst({
+        cacheName: 'apis',
+        networkTimeoutSeconds: 10,
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 16, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ request: e, url: { pathname: c }, sameOrigin: i }) =>
+        '1' === e.headers.get('RSC') &&
+        '1' === e.headers.get('Next-Router-Prefetch') &&
+        i &&
+        !c.startsWith('/api/'),
+      new e.NetworkFirst({
+        cacheName: 'pages-rsc-prefetch',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ request: e, url: { pathname: c }, sameOrigin: i }) =>
+        '1' === e.headers.get('RSC') && i && !c.startsWith('/api/'),
+      new e.NetworkFirst({
+        cacheName: 'pages-rsc',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ url: { pathname: e }, sameOrigin: c }) => c && !e.startsWith('/api/'),
+      new e.NetworkFirst({
+        cacheName: 'pages',
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 86400 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ),
+    e.registerRoute(
+      ({ sameOrigin: e }) => !e,
+      new e.NetworkFirst({
+        cacheName: 'cross-origin',
+        networkTimeoutSeconds: 10,
+        plugins: [
+          new e.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 3600 }),
+          {
+            handlerDidError: async ({ request: e }) =>
+              'undefined' != typeof self ? self.fallback(e) : Response.error(),
+          },
+        ],
+      }),
+      'GET'
+    ))
 })

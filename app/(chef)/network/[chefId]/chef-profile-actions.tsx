@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { followChef, unfollowChef } from '@/lib/social/chef-social-actions'
 import { sendConnectionRequest } from '@/lib/network/actions'
 import { Button } from '@/components/ui/button'
-import { UserPlus, UserCheck, Handshake } from '@/components/ui/icons'
+import { UserPlus, UserCheck, Handshake } from 'lucide-react'
 
 export function ChefProfileActions({
   chefId,

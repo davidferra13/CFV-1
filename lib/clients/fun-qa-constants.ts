@@ -47,7 +47,7 @@ export const FUN_QA_QUESTIONS = [
   },
   {
     key: 'dinner_vibe',
-    emoji: '🕯️',
+    emoji: '✨',
     question:
       "Pick one: cozy dinner party, chaotic feast, or quiet two-person meal — what's your vibe?",
     placeholder: 'Or describe your own...',

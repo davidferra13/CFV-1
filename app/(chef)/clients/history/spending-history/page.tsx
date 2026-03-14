@@ -49,7 +49,7 @@ export default async function SpendingHistoryPage() {
             <p className="text-sm text-stone-500 mt-1">Total lifetime revenue</p>
           </Card>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-200">{formatCurrency(avgSpend)}</p>
+            <p className="text-2xl font-bold text-green-700">{formatCurrency(avgSpend)}</p>
             <p className="text-sm text-stone-500 mt-1">Average per client</p>
           </Card>
           <Card className="p-4">
@@ -58,7 +58,7 @@ export default async function SpendingHistoryPage() {
                 <p className="text-sm font-semibold text-stone-100 truncate">
                   {topSpender.full_name}
                 </p>
-                <p className="text-lg font-bold text-amber-200">
+                <p className="text-lg font-bold text-amber-700">
                   {formatCurrency(topSpender.totalSpentCents ?? 0)}
                 </p>
               </>

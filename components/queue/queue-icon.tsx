@@ -30,7 +30,7 @@ import {
   Gift,
   Leaf,
   CircleDot,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,

@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   chefName: string
@@ -25,7 +25,7 @@ export function ReviewSubmittedChefEmail({
   const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating)
 
   return (
-    <BaseLayout brand={brand} preview={`${clientName} left you a review`}>
+    <BaseLayout preview={`${clientName} left you a review`}>
       <Text style={heading}>New review received</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>

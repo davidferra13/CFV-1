@@ -1,6 +1,5 @@
 // Chef Portal Loading Page
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { RemyLoader } from '@/components/ui/remy-loader'
 
 export default function ChefLoading() {
   return (
@@ -42,7 +41,8 @@ export default function ChefLoading() {
         </CardContent>
       </Card>
 
-      <RemyLoader />
+      {/* Loading Text */}
+      <div className="text-center text-stone-500 text-sm">Loading...</div>
     </div>
   )
 }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/rateLimit'
 
-// Public iCal feed endpoint - no auth required.
+// Public iCal feed endpoint — no auth required.
 // URL: /api/feeds/calendar/{ical_feed_token}
 // Returns: .ics file with all upcoming events for the chef.
 // Compatible with Apple Calendar, Outlook, Google Calendar (subscribe by URL).
@@ -14,19 +13,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     return NextResponse.json({ error: 'Invalid feed token' }, { status: 400 })
   }
 
-  // Rate limit: 30 lookups per minute per token to prevent enumeration
-  try {
-    await checkRateLimit(`ical-feed:${token}`, 30, 60_000)
-  } catch {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
-  }
-
   const supabase = createServerClient({ admin: true })
 
-  // Look up chef by feed token, enforce expiration
+  // Look up chef by feed token
   const { data: chef } = await (supabase
     .from('chefs')
-    .select('id, business_name, ical_feed_expires_at')
+    .select('id, business_name')
     .eq('ical_feed_token' as any, token)
     .eq('ical_feed_enabled' as any, true)
     .single() as any)
@@ -34,22 +26,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   if (!chef) {
     return NextResponse.json({ error: 'Feed not found or disabled' }, { status: 404 })
   }
-
-  // SECURITY: Reject expired feed tokens (finding #7, security audit 2026-03-11)
-  if (chef.ical_feed_expires_at && new Date(chef.ical_feed_expires_at) < new Date()) {
-    return NextResponse.json(
-      { error: 'Feed token expired. Regenerate in settings.' },
-      { status: 410 }
-    )
-  }
-
-  // Track last access (non-blocking, best-effort)
-  supabase
-    .from('chefs')
-    .update({ ical_feed_last_accessed_at: new Date().toISOString() } as any)
-    .eq('id', chef.id)
-    .then(() => {})
-    .catch(() => {})
 
   // Fetch events — include upcoming and recent past (30 days back)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()

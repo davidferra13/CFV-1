@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "socket": {},
+  "defaults": {
+    "security": "deny",
+    "ask": "on-miss",
+    "askFallback": "deny",
+    "autoAllowSkills": false
+  },
+  "agents": {
+    "main": {
+      "security": "allowlist",
+      "ask": "on-miss",
+      "askFallback": "deny",
+      "autoAllowSkills": false,
+      "allowlist": [
+        { "id": "00000000-0000-4000-8000-000000000001", "pattern": "/usr/bin/git" },
+        { "id": "00000000-0000-4000-8000-000000000002", "pattern": "/usr/bin/node" },
+        { "id": "00000000-0000-4000-8000-000000000003", "pattern": "/usr/bin/npm" },
+        { "id": "00000000-0000-4000-8000-000000000004", "pattern": "/usr/bin/find" },
+        { "id": "00000000-0000-4000-8000-000000000005", "pattern": "/usr/bin/sed" },
+        { "id": "00000000-0000-4000-8000-000000000006", "pattern": "/usr/bin/grep" },
+        { "id": "00000000-0000-4000-8000-000000000007", "pattern": "/usr/bin/cat" },
+        { "id": "00000000-0000-4000-8000-000000000008", "pattern": "/usr/bin/ls" },
+        { "id": "00000000-0000-4000-8000-000000000009", "pattern": "/usr/bin/head" },
+        { "id": "00000000-0000-4000-8000-000000000010", "pattern": "/usr/bin/tail" },
+        { "id": "00000000-0000-4000-8000-000000000011", "pattern": "/usr/bin/wc" },
+        { "id": "00000000-0000-4000-8000-000000000012", "pattern": "/usr/bin/sort" }
+      ]
+    },
+    "build": {
+      "security": "allowlist",
+      "ask": "on-miss",
+      "askFallback": "deny",
+      "autoAllowSkills": false,
+      "allowlist": [
+        { "id": "00000000-0000-4000-8000-000000000101", "pattern": "/usr/bin/git" },
+        { "id": "00000000-0000-4000-8000-000000000102", "pattern": "/usr/bin/node" },
+        { "id": "00000000-0000-4000-8000-000000000103", "pattern": "/usr/bin/npm" },
+        { "id": "00000000-0000-4000-8000-000000000104", "pattern": "/usr/bin/find" },
+        { "id": "00000000-0000-4000-8000-000000000105", "pattern": "/usr/bin/sed" },
+        { "id": "00000000-0000-4000-8000-000000000106", "pattern": "/usr/bin/grep" },
+        { "id": "00000000-0000-4000-8000-000000000107", "pattern": "/usr/bin/cat" },
+        { "id": "00000000-0000-4000-8000-000000000108", "pattern": "/usr/bin/ls" },
+        { "id": "00000000-0000-4000-8000-000000000109", "pattern": "/usr/bin/head" },
+        { "id": "00000000-0000-4000-8000-000000000110", "pattern": "/usr/bin/tail" },
+        { "id": "00000000-0000-4000-8000-000000000111", "pattern": "/usr/bin/wc" },
+        { "id": "00000000-0000-4000-8000-000000000112", "pattern": "/usr/bin/sort" }
+      ]
+    },
+    "qa": {
+      "security": "allowlist",
+      "ask": "on-miss",
+      "askFallback": "deny",
+      "autoAllowSkills": false,
+      "allowlist": [
+        { "id": "00000000-0000-4000-8000-000000000201", "pattern": "/usr/bin/git" },
+        { "id": "00000000-0000-4000-8000-000000000202", "pattern": "/usr/bin/node" },
+        { "id": "00000000-0000-4000-8000-000000000203", "pattern": "/usr/bin/npm" },
+        { "id": "00000000-0000-4000-8000-000000000204", "pattern": "/usr/bin/find" },
+        { "id": "00000000-0000-4000-8000-000000000205", "pattern": "/usr/bin/sed" },
+        { "id": "00000000-0000-4000-8000-000000000206", "pattern": "/usr/bin/grep" },
+        { "id": "00000000-0000-4000-8000-000000000207", "pattern": "/usr/bin/cat" },
+        { "id": "00000000-0000-4000-8000-000000000208", "pattern": "/usr/bin/ls" },
+        { "id": "00000000-0000-4000-8000-000000000209", "pattern": "/usr/bin/head" },
+        { "id": "00000000-0000-4000-8000-000000000210", "pattern": "/usr/bin/tail" },
+        { "id": "00000000-0000-4000-8000-000000000211", "pattern": "/usr/bin/wc" },
+        { "id": "00000000-0000-4000-8000-000000000212", "pattern": "/usr/bin/sort" }
+      ]
+    }
+  }
+}

@@ -163,9 +163,13 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     [dispatchBody]
   )
 
-  // Keyboard control: Escape closes whichever Remy surface is open.
+  // Keyboard shortcut: Ctrl+K / Cmd+K to toggle drawer
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        toggleDrawer()
+      }
       if (e.key === 'Escape') {
         if (isDrawerOpen) closeDrawer()
         else if (isMascotChatOpen) closeMascotChat()
@@ -173,7 +177,7 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isDrawerOpen, isMascotChatOpen, closeDrawer, closeMascotChat])
+  }, [isDrawerOpen, isMascotChatOpen, toggleDrawer, closeDrawer, closeMascotChat])
 
   // Listen for custom 'open-remy' event so nav buttons can open the drawer
   useEffect(() => {

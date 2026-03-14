@@ -142,7 +142,7 @@ export function ClipboardPrint({ stationName, date, entries }: Props) {
                       {entry.location}
                     </td>
                     <td className="py-1.5 px-2 text-center">
-                      {entry.is_86d ? <span className="font-bold text-red-200">86</span> : '--'}
+                      {entry.is_86d ? <span className="font-bold text-red-700">86</span> : '--'}
                     </td>
                     <td className="py-1.5 pl-2 text-xs max-w-[150px] truncate">
                       {entry.notes ?? ''}

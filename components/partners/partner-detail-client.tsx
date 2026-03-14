@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { LocationForm } from '@/components/partners/location-form'
 import { deletePartnerLocation } from '@/lib/partners/actions'
-import { MapPin, ExternalLink, Users, Inbox, CalendarCheck } from '@/components/ui/icons'
+import { MapPin, ExternalLink, Users, Inbox, CalendarCheck } from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 type Location = {

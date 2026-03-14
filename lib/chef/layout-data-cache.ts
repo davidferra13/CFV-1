@@ -9,18 +9,19 @@ import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
-import { getAdminEmails } from '@/lib/platform/owner-account'
 
-const ADMIN_EMAILS = getAdminEmails()
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((e) => e.trim())
+  .filter(Boolean)
 
 // ─── Cannabis Access (cached 60s) ────────────────────────────────────────────
 
 export function getCachedCannabisAccess(authUserId: string, userEmail: string): Promise<boolean> {
-  const normalizedEmail = userEmail.trim().toLowerCase()
   return unstable_cache(
     async (): Promise<boolean> => {
       // Admins always have cannabis access
-      if (ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(normalizedEmail)) return true
+      if (ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(userEmail)) return true
 
       const supabase: any = createAdminClient()
       const { data, error } = await supabase
@@ -113,12 +114,11 @@ export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionS
 // ─── Admin Check (cached 60s) ────────────────────────────────────────────────
 
 export function getCachedIsAdmin(userEmail: string): Promise<boolean> {
-  const normalizedEmail = userEmail.trim().toLowerCase()
   return unstable_cache(
     async (): Promise<boolean> => {
-      return ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(normalizedEmail)
+      return ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(userEmail)
     },
-    [`is-admin-${normalizedEmail}`],
-    { revalidate: 60, tags: [`is-admin-${normalizedEmail}`] }
+    [`is-admin-${userEmail}`],
+    { revalidate: 60, tags: [`is-admin-${userEmail}`] }
   )()
 }

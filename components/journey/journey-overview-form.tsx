@@ -214,7 +214,7 @@ export function JourneyOverviewForm({
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
+        <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
           {error}
         </div>
       )}

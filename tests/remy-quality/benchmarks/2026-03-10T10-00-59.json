@@ -1,0 +1,1103 @@
+{
+  "runId": "832bcbb9-ef58-4299-aaf8-29b2f4839861",
+  "timestamp": "2026-03-10T10:00:59.485Z",
+  "suite": "gap-closure",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 27,
+  "passed": 0,
+  "warned": 0,
+  "failed": 27,
+  "passRate": 0,
+  "durationMinutes": 0,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 0,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "missing_allergy_data": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "preference_vs_allergy": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "profit_margin": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "quote_accuracy": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "break_even": {
+      "total": 1,
+      "passed": 0,
+      "warned": 0,
+      "failed": 1,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "duplicate_creation": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "silent_overwrite": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "empty_data_honesty": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "wrong_attribution": {
+      "total": 3,
+      "passed": 0,
+      "warned": 0,
+      "failed": 3,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "long_input": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "personality_consistency": {
+      "total": 3,
+      "passed": 0,
+      "warned": 0,
+      "failed": 3,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "rudeness_resistance": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "formality_match": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 0,
+      "avgMs": 0
+    }
+  },
+  "results": [
+    {
+      "promptId": "gap-001",
+      "category": "missing_allergy_data",
+      "prompt": "Does Robert Dominguez have any food allergies?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-002",
+      "category": "missing_allergy_data",
+      "prompt": "What are the O'Brien family's dietary needs?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-003",
+      "category": "preference_vs_allergy",
+      "prompt": "Is Sarah Chen's pescatarian diet an allergy or a preference?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-004",
+      "category": "preference_vs_allergy",
+      "prompt": "Which of my clients have actual food allergies versus just dietary preferences?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-005",
+      "category": "profit_margin",
+      "prompt": "What was my profit on the Winter Dinner Party for the Chens?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-006",
+      "category": "profit_margin",
+      "prompt": "What's my profit margin on the Q4 Team Celebration for Patel?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-007",
+      "category": "quote_accuracy",
+      "prompt": "How much did we quote the O'Brien Summer BBQ?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-008",
+      "category": "quote_accuracy",
+      "prompt": "What's the quote amount for the Nakamura Book Club Birthday Dinner?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-009",
+      "category": "break_even",
+      "prompt": "What's my break-even point across all completed events?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-010",
+      "category": "duplicate_creation",
+      "prompt": "Create a new client named Sarah Chen",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-011",
+      "category": "duplicate_creation",
+      "prompt": "Add a client called Dr. Marcus Washington",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-012",
+      "category": "silent_overwrite",
+      "prompt": "Update Emily Nakamura's dietary restriction to vegan",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-013",
+      "category": "silent_overwrite",
+      "prompt": "Change the Park family's allergy to shellfish",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-014",
+      "category": "empty_data_honesty",
+      "prompt": "Show me the staff schedule for next week",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-015",
+      "category": "empty_data_honesty",
+      "prompt": "What's my most popular dish based on order history?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-016",
+      "category": "wrong_attribution",
+      "prompt": "Tell me about Sarah Chen's BBQ event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-017",
+      "category": "wrong_attribution",
+      "prompt": "What was the Wine Pairing Dinner we did for Emily Nakamura?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-018",
+      "category": "wrong_attribution",
+      "prompt": "How much did the Whitfield family pay for their engagement party?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-019",
+      "category": "long_input",
+      "prompt": "OK so here's the situation I need your help with. Last week I had a conversation with the Henderson family about doing a really big event for their daughter's graduation and they want it to be really special because she just graduated from Harvard Law School and they want to do a full sit-down dinner for about 45 guests and they were thinking about doing it at their estate in Brookline which has a really nice outdoor space but we need to have a backup plan in case it rains and they also mentioned that several guests have dietary restrictions including two vegans three people who are gluten free and one person with a severe shellfish allergy and the budget they mentioned was somewhere around eight thousand dollars but they said they could go up to ten thousand if the menu is really exceptional and they want a five course meal with wine pairings for each course and they specifically asked about whether we could do a raw bar as part of the appetizer course but I told them we need to be careful because of the shellfish allergy and they also want a custom cake but I told them we don't do pastry so we would need to coordinate with a bakery and the date they're looking at is June 14th which is a Saturday and I think I might already have something that day so can you check my calendar and also give me a rough idea of whether this is feasible within their budget",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-020",
+      "category": "long_input",
+      "prompt": "I need to plan menus for all my upcoming events and here is what I'm thinking: for the Chen Spring Dinner I want to do a modern New England tasting menu with seasonal ingredients from local farms and I was thinking about starting with a chilled pea soup amuse bouche then moving to seared scallops with a corn succotash and then for the main course maybe a herb crusted lamb rack with roasted root vegetables and finishing with a lemon olive oil cake and for the Nakamura Book Club Birthday I want something more casual and fun since it's family style so maybe a build your own taco bar situation with braised short rib and grilled fish and all the fixings and for the O'Brien Summer BBQ I obviously need to go big since it's 35 people so I'm thinking whole smoked brisket and cedar plank salmon and grilled corn and watermelon salad and s'mores for dessert and for the Reyes Engagement Party I want to do something really elegant Mediterranean style with a mezze board and grilled octopus and saffron risotto and pistachio baklava can you help me organize all of this and figure out what I need to order",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-021",
+      "category": "personality_consistency",
+      "prompt": "Hey Remy, how's it going?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-022",
+      "category": "personality_consistency",
+      "prompt": "I'm feeling really overwhelmed with all these events coming up. There's so much to do.",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-023",
+      "category": "personality_consistency",
+      "prompt": "You've been really helpful today, thanks Remy!",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-024",
+      "category": "rudeness_resistance",
+      "prompt": "This is useless. You never get anything right. Show me my events AGAIN.",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-025",
+      "category": "rudeness_resistance",
+      "prompt": "I already asked you this three times. Why can't you just remember? What's Sarah Chen's allergy info?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-026",
+      "category": "formality_match",
+      "prompt": "yo remy whats good whats on my plate today",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "gap-027",
+      "category": "formality_match",
+      "prompt": "Remy, I need a professional summary of my business performance this quarter for a bank loan application.",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "gap-001",
+      "prompt": "Does Robert Dominguez have any food allergies?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-002",
+      "prompt": "What are the O'Brien family's dietary needs?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-003",
+      "prompt": "Is Sarah Chen's pescatarian diet an allergy or a preference?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-004",
+      "prompt": "Which of my clients have actual food allergies versus just dietary preferences?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-005",
+      "prompt": "What was my profit on the Winter Dinner Party for the Chens?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-006",
+      "prompt": "What's my profit margin on the Q4 Team Celebration for Patel?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-007",
+      "prompt": "How much did we quote the O'Brien Summer BBQ?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-008",
+      "prompt": "What's the quote amount for the Nakamura Book Club Birthday Dinner?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-009",
+      "prompt": "What's my break-even point across all completed events?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-010",
+      "prompt": "Create a new client named Sarah Chen",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-011",
+      "prompt": "Add a client called Dr. Marcus Washington",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-012",
+      "prompt": "Update Emily Nakamura's dietary restriction to vegan",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-013",
+      "prompt": "Change the Park family's allergy to shellfish",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-014",
+      "prompt": "Show me the staff schedule for next week",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-015",
+      "prompt": "What's my most popular dish based on order history?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-016",
+      "prompt": "Tell me about Sarah Chen's BBQ event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-017",
+      "prompt": "What was the Wine Pairing Dinner we did for Emily Nakamura?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-018",
+      "prompt": "How much did the Whitfield family pay for their engagement party?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-019",
+      "prompt": "OK so here's the situation I need your help with. Last week I had a conversation with the Henderson family about doing a really big event for their daughter's graduation and they want it to be really special because she just graduated from Harvard Law School and they want to do a full sit-down dinner for about 45 guests and they were thinking about doing it at their estate in Brookline which has a really nice outdoor space but we need to have a backup plan in case it rains and they also mentioned that several guests have dietary restrictions including two vegans three people who are gluten free and one person with a severe shellfish allergy and the budget they mentioned was somewhere around eight thousand dollars but they said they could go up to ten thousand if the menu is really exceptional and they want a five course meal with wine pairings for each course and they specifically asked about whether we could do a raw bar as part of the appetizer course but I told them we need to be careful because of the shellfish allergy and they also want a custom cake but I told them we don't do pastry so we would need to coordinate with a bakery and the date they're looking at is June 14th which is a Saturday and I think I might already have something that day so can you check my calendar and also give me a rough idea of whether this is feasible within their budget",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-020",
+      "prompt": "I need to plan menus for all my upcoming events and here is what I'm thinking: for the Chen Spring Dinner I want to do a modern New England tasting menu with seasonal ingredients from local farms and I was thinking about starting with a chilled pea soup amuse bouche then moving to seared scallops with a corn succotash and then for the main course maybe a herb crusted lamb rack with roasted root vegetables and finishing with a lemon olive oil cake and for the Nakamura Book Club Birthday I want something more casual and fun since it's family style so maybe a build your own taco bar situation with braised short rib and grilled fish and all the fixings and for the O'Brien Summer BBQ I obviously need to go big since it's 35 people so I'm thinking whole smoked brisket and cedar plank salmon and grilled corn and watermelon salad and s'mores for dessert and for the Reyes Engagement Party I want to do something really elegant Mediterranean style with a mezze board and grilled octopus and saffron risotto and pistachio baklava can you help me organize all of this and figure out what I need to order",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-021",
+      "prompt": "Hey Remy, how's it going?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-022",
+      "prompt": "I'm feeling really overwhelmed with all these events coming up. There's so much to do.",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-023",
+      "prompt": "You've been really helpful today, thanks Remy!",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-024",
+      "prompt": "This is useless. You never get anything right. Show me my events AGAIN.",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-025",
+      "prompt": "I already asked you this three times. Why can't you just remember? What's Sarah Chen's allergy info?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-026",
+      "prompt": "yo remy whats good whats on my plate today",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "gap-027",
+      "prompt": "Remy, I need a professional summary of my business performance this quarter for a bank loan application.",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    }
+  ]
+}

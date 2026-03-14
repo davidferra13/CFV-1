@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Brain, Loader2, Bot, User } from '@/components/ui/icons'
+import { Brain, Loader2, Sparkles, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -43,7 +43,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Build Profile
               </>
             )}
@@ -124,7 +124,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
           </div>
           <div className="flex flex-wrap gap-1">
             {result.avoidances.map((p, i) => (
-              <span key={i} className="bg-red-950 text-red-200 rounded px-1.5 py-0.5">
+              <span key={i} className="bg-red-950 text-red-700 rounded px-1.5 py-0.5">
                 {p}
               </span>
             ))}

@@ -16,10 +16,10 @@ type Severity = 'info' | 'warning' | 'error' | 'critical'
 // ============================================
 
 const SEVERITY_COLORS: Record<Severity, string> = {
-  critical: 'bg-red-900 text-red-200 border-red-200',
-  error: 'bg-orange-900 text-orange-200 border-orange-200',
-  warning: 'bg-yellow-900 text-yellow-200 border-yellow-200',
-  info: 'bg-blue-900 text-blue-200 border-blue-200',
+  critical: 'bg-red-900 text-red-800 border-red-200',
+  error: 'bg-orange-900 text-orange-800 border-orange-200',
+  warning: 'bg-yellow-900 text-yellow-800 border-yellow-200',
+  info: 'bg-blue-900 text-blue-800 border-blue-200',
 }
 
 const SEVERITY_DOT: Record<Severity, string> = {
@@ -289,7 +289,7 @@ function StatCard({
         onClick ? 'cursor-pointer hover:shadow-sm' : ''
       } ${active ? 'ring-2 ring-stone-900 ring-offset-1' : ''}`}
     >
-      <div className={`text-2xl font-bold ${highlight ? 'text-red-200' : 'text-stone-100'}`}>
+      <div className={`text-2xl font-bold ${highlight ? 'text-red-700' : 'text-stone-100'}`}>
         {value}
       </div>
       <div className="text-xs text-stone-500 mt-0.5">{label}</div>

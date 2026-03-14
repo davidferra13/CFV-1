@@ -114,7 +114,7 @@ export function ClientInvitationForm() {
             <Button variant="secondary" size="sm" onClick={() => copyToClipboard(success.url)}>
               Copy Link
             </Button>
-            <p className="text-xs text-green-200 mt-2">
+            <p className="text-xs text-green-700 mt-2">
               Send this link to your client. It expires in 7 days.
             </p>
           </div>

@@ -20,29 +20,8 @@ export interface GoogleServiceStatus {
   lastSync: string | null
 }
 
-export interface GoogleMailboxSummary {
-  id: string
-  email: string
-  connected: boolean
-  isPrimary: boolean
-  isActive: boolean
-  lastSync: string | null
-  errorCount: number
-  scanEnabled: boolean
-  scanStatus: 'idle' | 'in_progress' | 'completed' | 'paused'
-  totalProcessed: number
-  totalSeen: number
-  estimatedTotal: number | null
-  includeSpamTrash: boolean
-}
-
 export interface GoogleConnectionStatus {
-  gmail: GoogleServiceStatus & {
-    errorCount: number
-    connectedCount: number
-    primaryMailboxId: string | null
-    mailboxes: GoogleMailboxSummary[]
-  }
+  gmail: GoogleServiceStatus & { errorCount: number }
   calendar: GoogleServiceStatus
 }
 
@@ -56,11 +35,10 @@ export interface ParsedEmail {
   body: string
   date: string
   snippet: string
-  labelIds: string[]
-  listUnsubscribe: string
-  precedence: string
-  mailboxId?: string | null
-  mailboxEmail?: string | null
+  // Gmail metadata for deterministic classification (no AI needed)
+  labelIds: string[] // Gmail's own labels: SPAM, CATEGORY_PROMOTIONS, etc.
+  listUnsubscribe: string // RFC 2369 List-Unsubscribe header (mailing list signal)
+  precedence: string // "bulk", "list", "junk" — mass email indicator
 }
 
 export type EmailCategory = 'inquiry' | 'existing_thread' | 'personal' | 'spam' | 'marketing'
@@ -83,8 +61,6 @@ export interface SyncResult {
 export interface GmailSyncLogEntry {
   id: string
   gmail_message_id: string
-  mailbox_id?: string | null
-  mailbox_email?: string | null
   from_address: string | null
   subject: string | null
   classification: string

@@ -8,8 +8,7 @@ import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 import { computeChefHealthScore, CHEF_TIER_LABELS } from '@/lib/chefs/health-score'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from '@/components/ui/icons'
-import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
+import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from 'lucide-react'
 
 function formatCents(cents: number): string {
   return (
@@ -20,13 +19,13 @@ function formatCents(cents: number): string {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-stone-800 text-stone-400',
-  proposed: 'bg-yellow-900 text-yellow-200',
-  accepted: 'bg-blue-900 text-blue-200',
-  paid: 'bg-indigo-900 text-indigo-200',
-  confirmed: 'bg-purple-900 text-purple-200',
-  in_progress: 'bg-orange-900 text-orange-200',
-  completed: 'bg-green-900 text-green-200',
-  cancelled: 'bg-red-900 text-red-200',
+  proposed: 'bg-yellow-900 text-yellow-700',
+  accepted: 'bg-blue-900 text-blue-700',
+  paid: 'bg-indigo-900 text-indigo-700',
+  confirmed: 'bg-purple-900 text-purple-700',
+  in_progress: 'bg-orange-900 text-orange-700',
+  completed: 'bg-green-900 text-green-700',
+  cancelled: 'bg-red-900 text-red-700',
 }
 
 export default async function AdminChefDetailPage({ params }: { params: { chefId: string } }) {
@@ -127,7 +126,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 showScore
               />
               {accountStatus === 'suspended' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-200 border border-red-200">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-700 border border-red-200">
                   Suspended
                 </span>
               )}
@@ -141,12 +140,6 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 year: 'numeric',
               })}
             </p>
-            <div className="mt-2">
-              <ViewAsChefButton
-                chefId={params.chefId}
-                className="text-sm bg-amber-600 hover:bg-amber-500 text-white px-4 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50"
-              />
-            </div>
           </div>
         </div>
       </div>

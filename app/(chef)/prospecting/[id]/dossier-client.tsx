@@ -57,7 +57,7 @@ import {
   MailPlus,
   TrendingUp,
   TrendingDown,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ReEnrichButton } from '@/components/prospecting/re-enrich-button'
@@ -344,7 +344,7 @@ export function ProspectDossierClient({
                     <Phone className="h-3.5 w-3.5 text-green-500" />
                     <a
                       href={`tel:${prospect.contact_direct_phone}`}
-                      className="text-green-200 hover:underline text-xs"
+                      className="text-green-700 hover:underline text-xs"
                     >
                       Direct: {prospect.contact_direct_phone}
                     </a>
@@ -364,7 +364,7 @@ export function ProspectDossierClient({
                     <Mail className="h-3.5 w-3.5 text-green-500" />
                     <a
                       href={`mailto:${prospect.contact_direct_email}`}
-                      className="text-green-200 hover:underline text-xs"
+                      className="text-green-700 hover:underline text-xs"
                     >
                       Direct: {prospect.contact_direct_email}
                     </a>
@@ -912,7 +912,7 @@ export function ProspectDossierClient({
                     {prospect.luxury_indicators.map((ind) => (
                       <span
                         key={ind}
-                        className="rounded-full bg-amber-950 border border-amber-200 px-2 py-0.5 text-xs text-amber-200"
+                        className="rounded-full bg-amber-950 border border-amber-200 px-2 py-0.5 text-xs text-amber-700"
                       >
                         {ind}
                       </span>

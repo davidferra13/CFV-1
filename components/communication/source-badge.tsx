@@ -30,7 +30,7 @@ import {
   Users,
   UtensilsCrossed,
   type LucideIcon,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { getChannelMeta } from '@/lib/communication/channel-meta'
 
 const ICON_MAP: Record<string, LucideIcon> = {

@@ -41,7 +41,7 @@ export function PrepBlockNudgeBanner({ eventId }: Props) {
     <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3 flex items-center gap-3">
       <div className="flex-1">
         <p className="text-sm font-medium text-amber-900">No prep blocks scheduled</p>
-        <p className="text-xs text-amber-200 mt-0.5">
+        <p className="text-xs text-amber-700 mt-0.5">
           Auto-schedule will add shopping, prep, and setup blocks based on event timing.
         </p>
         {error && <p className="text-xs text-red-600 mt-1">{error}</p>}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CheckCircle2 } from '@/components/ui/icons'
+import { CheckCircle2 } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Welcome to the Beta | ChefFlow',
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function BetaThankYouPage() {
   return (
-    <section className="dark-surface relative mx-auto w-full max-w-2xl rounded-[28px] bg-stone-950 px-4 py-16 sm:px-6 md:py-24 lg:px-8">
+    <section className="relative mx-auto w-full max-w-2xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-950 mb-6">

@@ -24,9 +24,6 @@ export default async function NavigationSettingsPage() {
           <p className="mt-1 text-stone-400">
             Customize your always-visible bar without changing the underlying feature set.
           </p>
-          <p className="mt-2 text-sm text-stone-500">
-            Older platform-default layouts can be upgraded with the recommended bar in one click.
-          </p>
         </div>
         <Link
           href="/settings"

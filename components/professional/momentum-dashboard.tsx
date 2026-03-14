@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, Minus } from '@/components/ui/icons'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
 type Snapshot = {
   new_clients_90d: number
@@ -44,13 +44,13 @@ export function MomentumDashboard({ snapshot }: { snapshot: Snapshot | null }) {
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">New Clients (90d)</p>
-            <p className="text-2xl font-bold text-stone-100 mt-1">{snapshot.new_clients_90d}</p>
+            <p className="text-2xl font-bold text-stone-900 mt-1">{snapshot.new_clients_90d}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Education (12m)</p>
-            <p className="text-2xl font-bold text-stone-100 mt-1">
+            <p className="text-2xl font-bold text-stone-900 mt-1">
               {snapshot.education_entries_12m}
             </p>
           </CardContent>
@@ -58,7 +58,7 @@ export function MomentumDashboard({ snapshot }: { snapshot: Snapshot | null }) {
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Creative Projects (90d)</p>
-            <p className="text-2xl font-bold text-stone-100 mt-1">
+            <p className="text-2xl font-bold text-stone-900 mt-1">
               {snapshot.creative_projects_90d}
             </p>
           </CardContent>
@@ -66,7 +66,7 @@ export function MomentumDashboard({ snapshot }: { snapshot: Snapshot | null }) {
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Satisfaction</p>
-            <p className="text-2xl font-bold text-stone-100 mt-1">
+            <p className="text-2xl font-bold text-stone-900 mt-1">
               {snapshot.avg_satisfaction_90d !== null
                 ? `${Number(snapshot.avg_satisfaction_90d).toFixed(1)}/10`
                 : '—'}
@@ -74,32 +74,6 @@ export function MomentumDashboard({ snapshot }: { snapshot: Snapshot | null }) {
           </CardContent>
         </Card>
       </div>
-
-      {snapshot.momentum_direction === 'stagnating' && (
-        <Card>
-          <CardContent className="py-4 space-y-2">
-            <p className="text-sm font-medium text-stone-200">
-              Things have been steady for a while. Here are some ways to push forward:
-            </p>
-            <ul className="text-sm text-stone-400 space-y-1.5 list-disc list-inside">
-              {snapshot.creative_projects_90d === 0 && (
-                <li>Cook something just for yourself this week (no client, no deadline)</li>
-              )}
-              {snapshot.education_entries_12m < 2 && (
-                <li>Log a continuing education activity (class, book, technique practice)</li>
-              )}
-              <li>Add a new dish to your recipe library outside your usual range</li>
-              <li>Try a cuisine you have not worked with before</li>
-              {snapshot.avg_satisfaction_90d !== null && snapshot.avg_satisfaction_90d < 5 && (
-                <li>
-                  Your satisfaction is low. Consider what needs to change, and talk to someone you
-                  trust about it.
-                </li>
-              )}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

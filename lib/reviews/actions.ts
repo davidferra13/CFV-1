@@ -16,12 +16,6 @@ import { z } from 'zod'
 const SubmitReviewSchema = z.object({
   event_id: z.string().uuid(),
   rating: z.number().int().min(1).max(5),
-  food_quality_rating: z.number().int().min(1).max(5),
-  presentation_rating: z.number().int().min(1).max(5),
-  communication_rating: z.number().int().min(1).max(5),
-  punctuality_rating: z.number().int().min(1).max(5),
-  cleanup_rating: z.number().int().min(1).max(5),
-  would_book_again: z.boolean(),
   feedback_text: z.string().max(2000).optional().nullable(),
   what_they_loved: z.string().max(1000).optional().nullable(),
   what_could_improve: z.string().max(1000).optional().nullable(),
@@ -78,12 +72,6 @@ export async function submitClientReview(input: SubmitReviewInput) {
       client_id: user.entityId,
       tenant_id: event.tenant_id,
       rating: validated.rating,
-      food_quality_rating: validated.food_quality_rating,
-      presentation_rating: validated.presentation_rating,
-      communication_rating: validated.communication_rating,
-      punctuality_rating: validated.punctuality_rating,
-      cleanup_rating: validated.cleanup_rating,
-      would_book_again: validated.would_book_again,
       feedback_text: validated.feedback_text || null,
       what_they_loved: validated.what_they_loved || null,
       what_could_improve: validated.what_could_improve || null,
@@ -337,7 +325,6 @@ export async function getGoogleReviewUrlForTenant(tenantId: string) {
 
 export type UnifiedChefReviewItem = {
   id: string
-  rawId: string
   kind: 'client_review' | 'logged_feedback' | 'external_review'
   sourceKey: string
   sourceLabel: string
@@ -349,8 +336,6 @@ export type UnifiedChefReviewItem = {
   reviewDate: string
   createdAt: string
   tags: string[]
-  chefResponse: string | null
-  respondedAt: string | null
 }
 
 function isMissingRelationError(error: any): boolean {
@@ -413,8 +398,6 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
         what_could_improve,
         display_consent,
         google_review_clicked,
-        chef_response,
-        responded_at,
         created_at,
         client:clients(id, full_name),
         event:events(id, occasion, event_date)
@@ -534,7 +517,6 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
 
       return {
         id: `client_${review.id}`,
-        rawId: review.id,
         kind: 'client_review',
         sourceKey: 'chef_flow',
         sourceLabel: 'ChefFlow',
@@ -549,8 +531,6 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
           review.display_consent ? 'Public OK' : '',
           review.google_review_clicked ? 'Clicked Google Link' : '',
         ].filter(Boolean),
-        chefResponse: review.chef_response ?? null,
-        respondedAt: review.responded_at ?? null,
       }
     }
   )
@@ -558,7 +538,6 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
   const feedbackItems: UnifiedChefReviewItem[] = ((chefFeedbackResult.data || []) as any[]).map(
     (feedback) => ({
       id: `feedback_${feedback.id}`,
-      rawId: feedback.id,
       kind: 'logged_feedback',
       sourceKey: feedback.source,
       sourceLabel: FEEDBACK_SOURCE_LABELS[feedback.source] || feedback.source,
@@ -574,15 +553,12 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       reviewDate: feedback.feedback_date || feedback.created_at,
       createdAt: feedback.created_at,
       tags: ['Manual Entry', ...(feedback.public_display ? ['Public'] : [])],
-      chefResponse: null,
-      respondedAt: null,
     })
   )
 
   const externalItems: UnifiedChefReviewItem[] = ((externalReviewsResult.data || []) as any[]).map(
     (review) => ({
       id: `external_${review.id}`,
-      rawId: review.id,
       kind: 'external_review',
       sourceKey: review.provider,
       sourceLabel: externalSourceLabelMap[review.source_id] || providerLabel(review.provider),
@@ -597,8 +573,6 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       reviewDate: review.review_date || review.created_at,
       createdAt: review.created_at,
       tags: ['External Sync'],
-      chefResponse: null,
-      respondedAt: null,
     })
   )
 

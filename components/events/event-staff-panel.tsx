@@ -59,7 +59,6 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [scheduledHours, setScheduledHours] = useState('')
   const [loading, setLoading] = useState(false)
-  const [removingId, setRemovingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recordingHoursFor, setRecordingHoursFor] = useState<string | null>(null)
   const [actualHoursInput, setActualHoursInput] = useState('')
@@ -92,7 +91,6 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
   }
 
   async function handleRemove(assignmentId: string) {
-    setRemovingId(assignmentId)
     setLoading(true)
     try {
       await removeStaffFromEvent(assignmentId, eventId)
@@ -101,7 +99,6 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
       setError(err instanceof Error ? err.message : 'Failed to remove staff')
     } finally {
       setLoading(false)
-      setRemovingId(null)
     }
   }
 
@@ -166,7 +163,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
                       onClick={() => handleRemove(a.id)}
                       disabled={loading}
                     >
-                      {removingId === a.id ? 'Removing...' : '×'}
+                      ×
                     </Button>
                   )}
                 </div>
@@ -185,7 +182,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
       {/* Log hours inline */}
       {recordingHoursFor && (
         <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-2">
-          <label className="text-sm font-medium text-amber-200">Actual hours worked</label>
+          <label className="text-sm font-medium text-amber-800">Actual hours worked</label>
           <div className="flex gap-2">
             <input
               type="number"

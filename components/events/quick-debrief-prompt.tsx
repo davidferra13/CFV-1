@@ -53,7 +53,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
         <span className="text-emerald-600 text-lg">✅</span>
         <div>
           <p className="text-sm font-semibold text-emerald-900">Debrief saved!</p>
-          <p className="text-xs text-emerald-200">
+          <p className="text-xs text-emerald-700">
             File a full Event Review when you have a moment.
           </p>
         </div>
@@ -66,7 +66,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <p className="text-sm font-semibold text-amber-900">Quick Debrief — while it's fresh</p>
-          <p className="text-xs text-amber-200 mt-0.5">3 quick questions before you move on.</p>
+          <p className="text-xs text-amber-700 mt-0.5">3 quick questions before you move on.</p>
         </div>
         <button
           onClick={() => setDismissed(true)}
@@ -90,7 +90,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
                 <span className="text-lg peer-checked:scale-125 transition-transform">
                   {['😓', '😐', '🙂', '😊', '🤩'][n - 1]}
                 </span>
-                <span className="text-[10px] text-amber-200">{n}</span>
+                <span className="text-[10px] text-amber-700">{n}</span>
               </label>
             ))}
           </div>

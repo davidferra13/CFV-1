@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, CheckCircle2, Circle } from '@/components/ui/icons'
+import { Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
 import { createTodo, toggleTodo, deleteTodo, type ChefTodo } from '@/lib/todos/actions'
 
 // ============================================

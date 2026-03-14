@@ -3,7 +3,7 @@
 
 import { Button, Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type EventProposedProps = {
   clientName: string
@@ -13,7 +13,6 @@ type EventProposedProps = {
   guestCount: number | null
   location: string | null
   eventUrl: string
-  brand?: ChefBrandProps
 }
 
 export function EventProposedEmail({
@@ -24,10 +23,9 @@ export function EventProposedEmail({
   guestCount,
   location,
   eventUrl,
-  brand,
 }: EventProposedProps) {
   return (
-    <BaseLayout brand={brand} preview={`${chefName} sent you an event proposal`}>
+    <BaseLayout preview={`${chefName} sent you an event proposal`}>
       <Text style={heading}>Event proposal</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

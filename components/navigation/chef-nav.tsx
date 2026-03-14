@@ -2,12 +2,12 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams, useRouter } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react'
-import type { LucideIcon } from '@/components/ui/icons'
+import type { LucideIcon } from 'lucide-react'
 import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
-import type { NavGroup, NavCollapsibleItem, NavSubItem, NavItem } from './nav-config'
+import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
@@ -16,8 +16,6 @@ import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
-import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
-import { unlockEvent } from '@/lib/chef/actions'
 
 import {
   LogOut,
@@ -32,10 +30,8 @@ import {
   Search,
   Plus,
   Lock,
-  XCircle,
-  CalendarCheck,
-  Loader2,
-} from '@/components/ui/icons'
+  Sparkles,
+} from 'lucide-react'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 type SidebarContextType = {
@@ -93,6 +89,8 @@ const QUICK_CREATE_ITEMS: NavQuickItem[] = [
   { href: '/clients/new', label: 'Client', icon: Plus },
 ]
 
+const CORE_GROUP_ORDER = ['remy', 'sales', 'clients', 'events', 'culinary', 'operations', 'finance']
+
 const cannabisSectionItems = [
   { href: '/cannabis', label: 'Cannabis Hub' },
   { href: '/cannabis/events', label: 'Cannabis Events' },
@@ -109,11 +107,9 @@ const communitySectionItems = [
   { href: '/network?tab=feed', label: 'Feed' },
   { href: '/network?tab=channels', label: 'Channels' },
   { href: '/network?tab=discover', label: 'Discover Chefs' },
-  { href: '/network/collabs', label: 'Collaborations' },
   { href: '/network?tab=connections', label: 'Connections' },
   { href: '/network/saved', label: 'Saved Posts' },
   { href: '/network/notifications', label: 'Notifications' },
-  { href: '/community/templates', label: 'Community Templates' },
 ]
 
 function splitHref(href: string) {
@@ -267,15 +263,15 @@ function RailFlyout({
         className={`flex items-center justify-center w-10 h-10 rounded-lg mx-auto transition-colors ${
           active
             ? 'bg-brand-950 text-brand-600 ring-1 ring-brand-800/40'
-            : 'text-stone-600 hover:bg-brand-100/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+            : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
         }`}
       >
         <GroupIcon className="w-[18px] h-[18px]" />
       </button>
 
       {open && (
-        <div className="absolute left-full top-0 z-50 ml-2 min-w-[180px] max-h-[80vh] overflow-y-auto rounded-lg border border-stone-200 bg-white/95 py-1.5 shadow-xl backdrop-blur-sm dark:border-stone-700 dark:bg-stone-900 custom-scrollbar">
-          <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
+        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-stone-900 rounded-lg shadow-lg border border-stone-700 py-1.5">
+          <p className="px-3 py-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider">
             {group.label}
           </p>
           {group.items.map((item) => {
@@ -293,15 +289,15 @@ function RailFlyout({
                     className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm font-medium transition-colors ${
                       itemActive
                         ? 'text-brand-400'
-                        : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                     }`}
                   >
                     <Icon
-                      className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                      className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                     />
                     <span className="flex-1 text-left">{item.label}</span>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+                      className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 ${
                         itemOpen ? 'rotate-0' : '-rotate-90'
                       }`}
                     />
@@ -322,7 +318,7 @@ function RailFlyout({
                             className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                               childActive
                                 ? 'bg-brand-950 text-brand-400'
-                                : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                                : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                             }`}
                           >
                             {child.label}
@@ -331,7 +327,7 @@ function RailFlyout({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200">
+                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -345,7 +341,7 @@ function RailFlyout({
                                   className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                                     childActive
                                       ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                                   }`}
                                 >
                                   {child.label}
@@ -369,11 +365,11 @@ function RailFlyout({
                 className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors ${
                   itemActive
                     ? 'bg-brand-950 text-brand-400'
-                    : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                 }`}
               >
                 <Icon
-                  className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                  className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                 />
                 {item.label}
               </Link>
@@ -419,15 +415,15 @@ function NavGroupSection({
         className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-base font-semibold transition-colors ${
           active && !isOpen
             ? 'text-brand-400'
-            : 'text-stone-700 hover:bg-brand-100/80 hover:text-brand-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-brand-400'
+            : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
         }`}
         style={{ letterSpacing: 0.2 }}
       >
         <GroupIcon
-          className={`w-[20px] h-[20px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+          className={`w-[20px] h-[20px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
         />
         <span
-          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-85'}`}
+          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-50'}`}
         >
           {group.label}
         </span>
@@ -443,7 +439,7 @@ function NavGroupSection({
           </span>
         ) : null}
         <ChevronDown
-          className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+          className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
           }`}
         />
@@ -455,18 +451,18 @@ function NavGroupSection({
         }`}
       >
         {isLocked ? (
-          <div className="ml-3 mt-1 mb-2 border-l-2 border-stone-200 pl-3 dark:border-stone-800">
+          <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-1 mb-2">
             <Link
               href="/settings/billing"
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
             >
-              <Lock className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5" />
               Upgrade to unlock
             </Link>
           </div>
         ) : null}
         {!isLocked ? (
-          <div className="ml-3 mt-0.5 space-y-1 border-l-2 border-stone-200 pl-3 dark:border-stone-800">
+          <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-0.5 space-y-1">
             {group.items.map((item) => {
               const Icon = item.icon
               const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
@@ -483,15 +479,15 @@ function NavGroupSection({
                       className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                         itemActive
                           ? 'text-brand-400'
-                          : 'text-stone-700 hover:bg-brand-100/80 hover:text-brand-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-brand-400'
+                          : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
                       }`}
                     >
                       <Icon
-                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                       />
                       <span className="flex-1 text-left">{item.label}</span>
                       <ChevronDown
-                        className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                           itemOpen ? 'rotate-0' : '-rotate-90'
                         }`}
                       />
@@ -501,7 +497,7 @@ function NavGroupSection({
                         itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                       }`}
                     >
-                      <div className="ml-6 mt-0.5 space-y-0.5 border-l border-stone-200 pl-2 dark:border-stone-800">
+                      <div className="ml-6 pl-2 border-l border-stone-800 mt-0.5 space-y-0.5">
                         {secondary.map((child) => {
                           const childActive = isItemActive(pathname, child.href, searchParams)
                           return (
@@ -511,17 +507,17 @@ function NavGroupSection({
                               className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
                                 childActive
                                   ? 'bg-brand-950 text-brand-400'
-                                  : 'text-stone-700 hover:bg-brand-100/80 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-brand-400'
+                                  : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
                               }`}
                             >
-                              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-300" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
                               {child.label}
                             </Link>
                           )
                         })}
                         {advanced.length > 0 && (
                           <details className="pt-1">
-                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200">
+                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
                               Advanced
                             </summary>
                             <div className="space-y-0.5">
@@ -534,10 +530,10 @@ function NavGroupSection({
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
                                       childActive
                                         ? 'bg-brand-950 text-brand-400'
-                                        : 'text-stone-700 hover:bg-brand-100/80 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-brand-400'
+                                        : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
                                     }`}
                                   >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-300" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
                                     {child.label}
                                   </Link>
                                 )
@@ -558,11 +554,11 @@ function NavGroupSection({
                   className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                     itemActive
                       ? 'bg-brand-950 text-brand-400 border-brand-500'
-                      : 'border-transparent text-stone-700 hover:bg-brand-100/80 hover:text-brand-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-brand-400'
+                      : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                   />
                   {item.label}
                 </Link>
@@ -581,9 +577,6 @@ export function ChefSidebar({
   enabledModules,
   isAdmin,
   focusMode,
-  lockedEventId,
-  lockedEventTitle,
-  lockedEventDate,
   userId,
   tenantId,
 }: {
@@ -591,15 +584,11 @@ export function ChefSidebar({
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
-  lockedEventId?: string | null
-  lockedEventTitle?: string | null
-  lockedEventDate?: string | null
   userId: string
   tenantId: string
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
-  const router = useRouter()
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
@@ -609,55 +598,32 @@ export function ChefSidebar({
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
-  const isLockedIn = Boolean(lockedEventId)
-  const [unlockPending, setUnlockPending] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
+  const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
-  const handleSignOut = useCallback(async () => {
-    setSigningOut(true)
-    try {
-      await signOut()
-    } catch (e) {
-      console.error('[sign-out]', e)
-      setSigningOut(false)
-      return
-    }
-    window.location.href = '/'
-  }, [])
-
-  const handleUnlock = useCallback(async () => {
-    setUnlockPending(true)
-    try {
-      await unlockEvent()
-      router.refresh()
-    } catch {
-      // Non-blocking
-    }
-    setUnlockPending(false)
-  }, [router])
-
-  const primaryItems = useMemo(() => resolveStandaloneTop(primaryNavHrefs), [primaryNavHrefs])
-  const visiblePrimaryItems = useMemo(
-    () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
-    [isAdmin, primaryItems]
+  // Filter nav groups by enabled modules (progressive disclosure)
+  // Admins always see every group — they're the developer, not a gated user
+  // Also strip adminOnly items (e.g. prospecting) for non-admin users
+  const enabledSet = useMemo(
+    () => (enabledModules ? new Set(enabledModules) : null),
+    [enabledModules]
   )
-
-  // Filter nav groups by role only. The full portal stays visible even during lock-in.
-  const accessibleGroups = useMemo(() => {
-    return navGroups
-      .map((group) => ({
-        ...group,
-        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
-      }))
-      .filter((group) => group.items.length > 0)
-  }, [isAdmin])
+  const accessibleGroups = useMemo(
+    () =>
+      isAdmin
+        ? navGroups
+        : navGroups.map((group) => ({
+            ...group,
+            items: group.items.filter((item) => !item.adminOnly),
+          })),
+    [isAdmin]
+  )
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
         group,
-        isLocked: false,
+        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
       })),
-    [accessibleGroups]
+    [accessibleGroups, enabledSet, isAdmin]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -666,15 +632,19 @@ export function ChefSidebar({
           group: filterNavGroup(group, navFilter),
           isLocked,
         }))
-        .filter((entry) => Boolean(entry.group)) as Array<{ group: NavGroup; isLocked: boolean }>,
+        .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
     [groupEntries, navFilter]
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    const items = visiblePrimaryItems
+    let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    // Focus Mode: hide non-core standalone items (admins always see everything)
+    if (focusMode && !isAdmin) {
+      items = items.filter((item) => item.coreFeature)
+    }
     if (!q) return items
     return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, visiblePrimaryItems])
+  }, [navFilter, primaryItems, isAdmin, focusMode])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS
@@ -775,74 +745,40 @@ export function ChefSidebar({
 
   return (
     <aside
-      data-tour="sidebar-nav"
-      className={`surface-panel hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-200/80 transition-all duration-200 z-30 dark:border-stone-800/60 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
-      {/* Logo / Lock-in header + notification bell + collapse toggle */}
+      {/* Logo + notification bell + collapse toggle */}
       <div
-        className={`flex items-center h-16 border-b border-stone-200/80 shadow-[0_1px_8px_rgba(0,0,0,0.2)] dark:border-stone-800/60 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
+        className={`flex items-center h-16 border-b border-stone-800/60 shadow-[0_1px_8px_rgba(0,0,0,0.2)] ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
-        {isLockedIn && !collapsed ? (
-          <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
-            <Link href={`/events/${lockedEventId}`} className="flex items-center gap-2 min-w-0">
-              <CalendarCheck className="w-5 h-5 text-brand-500 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold leading-tight text-stone-900 dark:text-stone-100">
-                  {lockedEventTitle || 'Event'}
-                </p>
-                {lockedEventDate && (
-                  <p className="text-[10px] leading-tight text-stone-600 dark:text-stone-400">
-                    {lockedEventDate}
-                  </p>
-                )}
-              </div>
-            </Link>
-            <button
-              type="button"
-              onClick={handleUnlock}
-              disabled={unlockPending}
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-500 dark:hover:bg-stone-700 dark:hover:text-stone-300"
-              aria-label="Exit lock-in"
-              title="Exit lock-in"
-            >
-              <XCircle className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-            <AppLogo />
-            {!collapsed && (
-              <span className="whitespace-nowrap text-lg font-display text-stone-900 dark:text-stone-100">
-                ChefFlow
-              </span>
-            )}
-          </Link>
-        )}
+        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
+          <AppLogo />
+          {!collapsed && (
+            <span className="text-lg font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
+          )}
+        </Link>
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
             {isAdmin && <OllamaStatusBadge />}
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            {isAdmin && (
-              <button
-                type="button"
-                data-tour="remy-button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-brand-950 dark:hover:text-brand-600"
-                aria-label="Open Remy"
-                title="Open Remy"
-              >
-                <Bot className="w-[18px] h-[18px]" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+              aria-label="Open Remy"
+              title="Open Remy"
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
             <NotificationBell />
             <button
               type="button"
               onClick={() => setCollapsed(true)}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors"
               aria-label="Collapse sidebar"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -852,7 +788,7 @@ export function ChefSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto pt-3 pb-4 custom-scrollbar flex flex-col">
+      <nav className="flex-1 overflow-y-auto pt-3 pb-6 mb-28 custom-scrollbar">
         {/* ── COLLAPSED / RAIL MODE ── */}
         {collapsed ? (
           <div className="flex flex-col items-center gap-1 px-1">
@@ -860,7 +796,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => setCollapsed(false)}
-              className="mb-1 flex h-10 w-10 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors mb-1"
               aria-label="Expand sidebar"
             >
               <ChevronRight className="w-4 h-4" />
@@ -871,22 +807,20 @@ export function ChefSidebar({
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-brand-950 dark:hover:text-brand-600"
-                aria-label="Open Remy"
-                title="Open Remy"
-              >
-                <Bot className="w-[18px] h-[18px]" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+              aria-label="Open Remy"
+              title="Open Remy"
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
             <OfflineNavIndicator />
             <ActivityDot collapsed />
 
             {/* Dashboard */}
-            {visiblePrimaryItems.map((item) => {
+            {primaryItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href, searchParams)
               return (
@@ -897,7 +831,7 @@ export function ChefSidebar({
                   className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                     active
                       ? 'bg-brand-950 text-brand-600'
-                      : 'text-stone-600 hover:bg-brand-100/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
@@ -906,16 +840,11 @@ export function ChefSidebar({
                       <InboxUnreadBadge />
                     </span>
                   )}
-                  {item.href === '/circles' && (
-                    <span className="absolute -top-1 -right-1">
-                      <CirclesUnreadBadge />
-                    </span>
-                  )}
                 </Link>
               )
             })}
 
-            <div className="my-1.5 w-6 border-t border-stone-200 dark:border-stone-800" />
+            <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Groups as flyouts */}
             {groupEntries.map(({ group }) => (
@@ -927,7 +856,7 @@ export function ChefSidebar({
               />
             ))}
 
-            <div className="my-1.5 w-6 border-t border-stone-200 dark:border-stone-800" />
+            <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Community — rail icon */}
             <Link
@@ -937,7 +866,7 @@ export function ChefSidebar({
               className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                 pathname.startsWith('/network')
                   ? 'text-indigo-400'
-                  : 'text-stone-600 hover:bg-brand-100/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
               }`}
               style={
                 pathname.startsWith('/network')
@@ -948,7 +877,7 @@ export function ChefSidebar({
               <Rss className="w-[18px] h-[18px]" />
             </Link>
 
-            <div className="my-1.5 w-6 border-t border-stone-200 dark:border-stone-800" />
+            <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Settings */}
             {standaloneBottom.map((item) => {
@@ -962,13 +891,31 @@ export function ChefSidebar({
                   className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                     active
                       ? 'bg-brand-950 text-brand-600'
-                      : 'text-stone-600 hover:bg-brand-100/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
                 </Link>
               )
             })}
+
+            {/* Sign Out — inside nav so it's above the Remy mascot */}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await signOut()
+                } catch (e) {
+                  console.error('[sign-out]', e)
+                }
+                window.location.href = '/'
+              }}
+              title="Sign Out"
+              aria-label="Sign Out"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
+            >
+              <LogOut className="w-[18px] h-[18px]" />
+            </button>
           </div>
         ) : (
           /* ── EXPANDED MODE ── */
@@ -979,11 +926,11 @@ export function ChefSidebar({
               type="button"
               onClick={() => setShortcutsOpen((prev) => !prev)}
               aria-expanded={shortcutsOpen}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
               <span className="flex-1 text-left">Shortcuts</span>
               <ChevronDown
-                className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                   shortcutsOpen ? 'rotate-0' : '-rotate-90'
                 }`}
               />
@@ -1004,67 +951,64 @@ export function ChefSidebar({
                       className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                         active
                           ? 'bg-brand-950 text-brand-400 border-brand-500'
-                          : 'border-transparent text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                       }`}
                     >
                       <Icon
-                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
                       />
                       {item.label}
                       {item.href === '/inbox' && <InboxUnreadBadge />}
-                      {item.href === '/circles' && <CirclesUnreadBadge />}
                     </Link>
                   )
                 })}
               </div>
             </div>
 
-            <>
-              <button
-                type="button"
-                onClick={() => setQuickCreateOpen((prev) => !prev)}
-                aria-expanded={quickCreateOpen}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-              >
-                <Plus className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                <span className="flex-1 text-left">Quick Create</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
-                    quickCreateOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+            <button
+              type="button"
+              onClick={() => setQuickCreateOpen((prev) => !prev)}
+              aria-expanded={quickCreateOpen}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+            >
+              <Plus className="w-4 h-4 text-stone-400" />
+              <span className="flex-1 text-left">Quick Create</span>
+              <ChevronDown
+                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                  quickCreateOpen ? 'rotate-0' : '-rotate-90'
                 }`}
-              >
-                <div className="space-y-0.5">
-                  {filteredQuickCreateItems.map((item) => {
-                    const Icon = item.icon
-                    const active = isItemActive(pathname, item.href, searchParams)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                          active
-                            ? 'bg-brand-950 text-brand-400'
-                            : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
-                        }`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        New {item.label}
-                      </Link>
-                    )
-                  })}
-                </div>
+              />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="space-y-0.5">
+                {filteredQuickCreateItems.map((item) => {
+                  const Icon = item.icon
+                  const active = isItemActive(pathname, item.href, searchParams)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        active
+                          ? 'bg-brand-950 text-brand-400'
+                          : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      New {item.label}
+                    </Link>
+                  )
+                })}
               </div>
+            </div>
 
-              <RecentPagesSection />
-            </>
+            <RecentPagesSection />
 
-            <div className="my-2 border-t border-stone-200 dark:border-stone-800" />
+            <div className="border-t border-stone-800 my-2" />
 
             {/* Grouped nav */}
             {filteredGroupEntries.map(({ group, isLocked }) => (
@@ -1081,7 +1025,7 @@ export function ChefSidebar({
               />
             ))}
 
-            <div className="my-2 border-t border-stone-200 dark:border-stone-800" />
+            <div className="border-t border-stone-800 my-2" />
 
             {isAdmin && (
               <SectionAccordion
@@ -1092,11 +1036,11 @@ export function ChefSidebar({
                 onToggle={() => setCannabisSectionOpen((prev) => !prev)}
                 pathname={pathname}
                 searchParams={searchParams}
-                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-200'}
-                headerInactiveClass="text-green-200 hover:bg-green-950/20 hover:text-green-600"
+                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
+                headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
                 dividerClass="border-green-800/30"
-                itemActiveClass="text-emerald-200"
-                itemInactiveClass="text-stone-600 hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300"
+                itemActiveClass="text-emerald-700"
+                itemInactiveClass="text-stone-500 hover:text-stone-300"
                 activeBgStyle={{ background: 'rgba(74, 124, 78, 0.08)' }}
                 iconActiveColor="#4a7c4e"
                 iconInactiveColor="rgba(74, 124, 78, 0.5)"
@@ -1115,81 +1059,75 @@ export function ChefSidebar({
               headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
               dividerClass="border-indigo-800/30"
               itemActiveClass="text-indigo-400"
-              itemInactiveClass="text-stone-600 hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300"
+              itemInactiveClass="text-stone-500 hover:text-stone-300"
               activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
               iconActiveColor="#818cf8"
               iconInactiveColor="rgba(99, 102, 241, 0.5)"
             />
 
-            <>
-              <div className="my-2 border-t border-stone-200 dark:border-stone-800" />
+            <div className="border-t border-stone-800 my-2" />
 
-              {/* Settings */}
-              <button
-                type="button"
-                onClick={() => setSettingsOpen((prev) => !prev)}
-                aria-expanded={settingsOpen}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-              >
-                <span className="flex-1 text-left">Settings & Tools</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
-                    settingsOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+            {/* Settings */}
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((prev) => !prev)}
+              aria-expanded={settingsOpen}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+            >
+              <span className="flex-1 text-left">Settings & Tools</span>
+              <ChevronDown
+                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                  settingsOpen ? 'rotate-0' : '-rotate-90'
                 }`}
-              >
-                <div className="space-y-0.5">
-                  {filteredSettingsItems.map((item) => {
-                    const Icon = item.icon
-                    const active = isItemActive(pathname, item.href, searchParams)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                          active
-                            ? 'bg-brand-950 text-brand-400 border-brand-500'
-                            : 'border-transparent text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
-                        }`}
-                      >
-                        <Icon
-                          className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
-                        />
-                        {item.label}
-                      </Link>
-                    )
-                  })}
-                </div>
+              />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="space-y-0.5">
+                {filteredSettingsItems.map((item) => {
+                  const Icon = item.icon
+                  const active = isItemActive(pathname, item.href, searchParams)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                        active
+                          ? 'bg-brand-950 text-brand-400 border-brand-500'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                      />
+                      {item.label}
+                    </Link>
+                  )
+                })}
               </div>
-            </>
+            </div>
+
+            {/* Sign Out — inside nav so it's above the Remy mascot */}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await signOut()
+                } catch (e) {
+                  console.error('[sign-out]', e)
+                }
+                window.location.href = '/'
+              }}
+              className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
+            >
+              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+              Sign Out
+            </button>
           </div>
         )}
-
-        {/* Sign Out - pushed to bottom with spacer */}
-        <div className={`mt-auto ${collapsed ? 'px-1 pt-4' : 'px-3 pt-6'}`}>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={signingOut}
-            title={collapsed ? (signingOut ? 'Signing out...' : 'Sign Out') : undefined}
-            aria-label="Sign Out"
-            className={`flex items-center rounded-lg text-sm font-medium text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-stone-900 disabled:opacity-50 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300 ${
-              collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
-            }`}
-          >
-            {signingOut ? (
-              <Loader2 className="w-[18px] h-[18px] flex-shrink-0 animate-spin" />
-            ) : (
-              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-            )}
-            {!collapsed && (signingOut ? 'Signing out...' : 'Sign Out')}
-          </button>
-        </div>
       </nav>
     </aside>
   )
@@ -1206,12 +1144,12 @@ function NavFilterInput({
 }) {
   return (
     <label className="relative block px-1">
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500 dark:text-stone-500" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500 pointer-events-none" />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-8 w-full rounded-lg border border-stone-300 bg-white pl-8 pr-3 text-xs text-stone-700 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-200 dark:placeholder:text-stone-500"
+        className="w-full h-8 pl-8 pr-3 rounded-lg border border-stone-700 bg-stone-950 text-xs text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
       />
     </label>
   )
@@ -1288,7 +1226,7 @@ function SectionAccordion({
               onClick={onNavigate}
               className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
             >
-              <Lock className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5" />
               Upgrade to unlock
             </Link>
           </div>
@@ -1359,11 +1297,11 @@ function MobileGroupSection({
         className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
           active && !isOpen
             ? 'text-brand-400'
-            : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300'
+            : 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
         }`}
       >
         <GroupIcon
-          className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+          className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
         />
         <span className="flex-1 text-left">{group.label}</span>
         {badgeCount && badgeCount > 0 ? (
@@ -1378,7 +1316,7 @@ function MobileGroupSection({
           </span>
         ) : null}
         <ChevronDown
-          className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+          className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
           }`}
         />
@@ -1390,19 +1328,19 @@ function MobileGroupSection({
         }`}
       >
         {isLocked ? (
-          <div className="ml-3 mt-1 mb-2 border-l border-stone-200 pl-3 dark:border-stone-800">
+          <div className="ml-3 pl-3 border-l border-stone-800 mt-1 mb-2">
             <Link
               href="/settings/billing"
               onClick={onNavigate}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40"
             >
-              <Lock className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5" />
               Upgrade to unlock
             </Link>
           </div>
         ) : null}
         {!isLocked ? (
-          <div className="ml-3 mt-0.5 space-y-0.5 border-l border-stone-200 pl-3 dark:border-stone-800">
+          <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
             {group.items.map((item) => {
               const Icon = item.icon
               const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
@@ -1419,15 +1357,15 @@ function MobileGroupSection({
                       className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         itemActive
                           ? 'text-brand-400'
-                          : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                       }`}
                     >
                       <Icon
-                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                       />
                       <span className="flex-1 text-left">{item.label}</span>
                       <ChevronDown
-                        className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                           itemOpen ? 'rotate-0' : '-rotate-90'
                         }`}
                       />
@@ -1437,7 +1375,7 @@ function MobileGroupSection({
                         itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                       }`}
                     >
-                      <div className="ml-5 mt-0.5 space-y-0.5 border-l border-stone-200 pl-3 dark:border-stone-800">
+                      <div className="ml-5 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
                         {secondary.map((child) => {
                           const childActive = isItemActive(pathname, child.href, searchParams)
                           return (
@@ -1448,17 +1386,17 @@ function MobileGroupSection({
                               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                                 childActive
                                   ? 'bg-brand-950 text-brand-400'
-                                  : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                               }`}
                             >
-                              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-300" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
                               {child.label}
                             </Link>
                           )
                         })}
                         {advanced.length > 0 && (
                           <details className="pt-1">
-                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200">
+                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
                               Advanced
                             </summary>
                             <div className="space-y-0.5">
@@ -1472,10 +1410,10 @@ function MobileGroupSection({
                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                                       childActive
                                         ? 'bg-brand-950 text-brand-400'
-                                        : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                                     }`}
                                   >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-300" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
                                     {child.label}
                                   </Link>
                                 )
@@ -1497,11 +1435,11 @@ function MobileGroupSection({
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     itemActive
                       ? 'bg-brand-950 text-brand-400'
-                      : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                   />
                   {item.label}
                 </Link>
@@ -1523,11 +1461,9 @@ function MobileGroupSection({
 function MobileBottomTabBar({
   pathname,
   onMoreClick,
-  tabItems,
 }: {
   pathname: string
   onMoreClick: () => void
-  tabItems: NavItem[]
 }) {
   // Ref for the "More" button — attaches a native onclick as backup
   const moreRef = useRef<HTMLButtonElement>(null)
@@ -1542,9 +1478,9 @@ function MobileBottomTabBar({
   }, [onMoreClick])
 
   return (
-    <nav className="fixed left-0 right-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-40 border-b border-stone-200 bg-white/95 backdrop-blur-sm dark:border-stone-700 dark:bg-stone-900 lg:hidden">
+    <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
       <div className="flex items-center justify-around h-11">
-        {tabItems.map((item) => {
+        {mobileTabItems.map((item) => {
           const active = isItemActive(pathname, item.href)
           const Icon = item.icon
           return (
@@ -1558,7 +1494,7 @@ function MobileBottomTabBar({
                 window.location.href = item.href
               }}
               className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors no-underline ${
-                active ? 'text-brand-600' : 'text-stone-600 dark:text-stone-400'
+                active ? 'text-brand-600' : 'text-stone-400'
               }`}
             >
               <Icon className="w-4 h-4 group-active:scale-110 transition-transform duration-100" />
@@ -1570,7 +1506,7 @@ function MobileBottomTabBar({
           ref={moreRef}
           type="button"
           onClick={() => onMoreClick()}
-          className="group flex h-full flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-stone-600 dark:text-stone-400"
+          className="group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium text-stone-400"
         >
           <Menu className="w-4 h-4 group-active:scale-110 transition-transform duration-100" />
           More
@@ -1586,9 +1522,6 @@ export function ChefMobileNav({
   enabledModules,
   isAdmin,
   focusMode,
-  lockedEventId,
-  lockedEventTitle,
-  lockedEventDate,
   userId,
   tenantId,
 }: {
@@ -1596,15 +1529,11 @@ export function ChefMobileNav({
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
-  lockedEventId?: string | null
-  lockedEventTitle?: string | null
-  lockedEventDate?: string | null
   userId: string
   tenantId: string
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
-  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
@@ -1614,56 +1543,32 @@ export function ChefMobileNav({
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
-  const isLockedIn = Boolean(lockedEventId)
-  const [unlockPending, setUnlockPending] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
+  const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
-  const handleSignOut = useCallback(async () => {
-    setSigningOut(true)
-    try {
-      await signOut()
-    } catch (e) {
-      console.error('[sign-out]', e)
-      setSigningOut(false)
-      return
-    }
-    window.location.href = '/'
-  }, [])
-
-  const handleUnlock = useCallback(async () => {
-    setUnlockPending(true)
-    try {
-      await unlockEvent()
-      router.refresh()
-    } catch {
-      // Non-blocking
-    }
-    setUnlockPending(false)
-  }, [router])
-
-  const primaryItems = useMemo(() => resolveStandaloneTop(primaryNavHrefs), [primaryNavHrefs])
-  const visiblePrimaryItems = useMemo(
-    () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
-    [isAdmin, primaryItems]
+  // Filter nav groups by enabled modules (progressive disclosure)
+  // Admins always see every group — they're the developer, not a gated user
+  // Also strip adminOnly items (e.g. prospecting) for non-admin users
+  const enabledSet = useMemo(
+    () => (enabledModules ? new Set(enabledModules) : null),
+    [enabledModules]
   )
-  const tabItems = useMemo(() => mobileTabItems, [])
-
-  // Filter nav groups by role only. The full portal stays visible even during lock-in.
-  const accessibleGroups = useMemo(() => {
-    return navGroups
-      .map((group) => ({
-        ...group,
-        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
-      }))
-      .filter((group) => group.items.length > 0)
-  }, [isAdmin])
+  const accessibleGroups = useMemo(
+    () =>
+      isAdmin
+        ? navGroups
+        : navGroups.map((group) => ({
+            ...group,
+            items: group.items.filter((item) => !item.adminOnly),
+          })),
+    [isAdmin]
+  )
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
         group,
-        isLocked: false,
+        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
       })),
-    [accessibleGroups]
+    [accessibleGroups, enabledSet, isAdmin]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -1672,15 +1577,19 @@ export function ChefMobileNav({
           group: filterNavGroup(group, navFilter),
           isLocked,
         }))
-        .filter((entry) => Boolean(entry.group)) as Array<{ group: NavGroup; isLocked: boolean }>,
+        .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
     [groupEntries, navFilter]
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    const items = visiblePrimaryItems
+    let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    // Focus Mode: hide non-core standalone items (admins always see everything)
+    if (focusMode && !isAdmin) {
+      items = items.filter((item) => item.coreFeature)
+    }
     if (!q) return items
     return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, visiblePrimaryItems])
+  }, [navFilter, primaryItems, isAdmin, focusMode])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS
@@ -1785,36 +1694,31 @@ export function ChefMobileNav({
   return (
     <>
       {/* Mobile top bar */}
-      <header className="fixed left-0 right-0 top-0 z-40 border-b border-stone-200 bg-white/95 pt-safe backdrop-blur-sm dark:border-stone-700 dark:bg-stone-900 lg:hidden">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-stone-900 border-b border-stone-700 pt-safe">
         <div className="flex items-center justify-between h-14 px-3">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <AppLogo size={28} className="rounded-md flex-shrink-0" />
-            <span className="whitespace-nowrap font-display text-stone-900 dark:text-stone-100">
-              ChefFlow
-            </span>
+            <span className="font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
           </Link>
           <div className="flex items-center flex-shrink-0 gap-0.5">
             {isAdmin && <OllamaStatusBadge />}
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-brand-950 dark:hover:text-brand-600"
-                aria-label="Open Remy"
-                title="Open Remy"
-              >
-                <Bot className="w-[18px] h-[18px]" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+              aria-label="Open Remy"
+              title="Open Remy"
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
             <NotificationBell />
             <button
-              data-tour="chef-mobile-menu-toggle"
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-stone-600 hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-500 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-700"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -1827,90 +1731,68 @@ export function ChefMobileNav({
       {menuOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div
-            data-tour="chef-mobile-menu-panel"
-            className="fixed bottom-0 left-0 top-0 z-50 w-72 border-r border-stone-200 bg-white/95 shadow-xl backdrop-blur-sm dark:border-stone-700 dark:bg-stone-900 lg:hidden"
-          >
-            <div className="flex h-14 items-center justify-between border-b border-stone-200 px-4 dark:border-stone-800">
-              {isLockedIn ? (
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <CalendarCheck className="w-4 h-4 text-brand-500 flex-shrink-0" />
-                  <span className="truncate text-sm font-semibold text-stone-900 dark:text-stone-100">
-                    {lockedEventTitle || 'Event'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleUnlock}
-                    disabled={unlockPending}
-                    className="flex-shrink-0 rounded bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-600 hover:bg-brand-100 hover:text-stone-900 dark:bg-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
-                  >
-                    Exit
-                  </button>
-                </div>
-              ) : (
-                <span className="font-semibold text-stone-900 dark:text-stone-100">Menu</span>
-              )}
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
+              <span className="font-semibold text-stone-100">Menu</span>
               <button
                 type="button"
                 aria-label="Close menu"
                 onClick={closeMenu}
-                className="rounded-lg p-1.5 text-stone-600 hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-stone-100"
+                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
-              <div className="sticky top-0 z-10 space-y-2 bg-white/95 pb-2 backdrop-blur-sm dark:bg-stone-900/95">
+              <div className="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-sm pb-2 space-y-2">
                 <NavFilterInput value={navFilter} onChange={setNavFilter} />
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
-                    aria-expanded={mobileQuickCreateOpen}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-                  >
-                    <Plus className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                    <span className="flex-1 text-left">Quick Create</span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
-                        mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
-                      }`}
-                    />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ${
-                      mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                <button
+                  type="button"
+                  onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
+                  aria-expanded={mobileQuickCreateOpen}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                >
+                  <Plus className="w-4 h-4 text-stone-400" />
+                  <span className="flex-1 text-left">Quick Create</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                      mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
                     }`}
-                  >
-                    <div className="grid grid-cols-2 gap-1">
-                      {filteredQuickCreateItems.map((item) => {
-                        const Icon = item.icon
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={closeMenu}
-                            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
-                          >
-                            <Icon className="w-3.5 h-3.5" />
-                            {item.label}
-                          </Link>
-                        )
-                      })}
-                    </div>
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="grid grid-cols-2 gap-1">
+                    {filteredQuickCreateItems.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={closeMenu}
+                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          {item.label}
+                        </Link>
+                      )
+                    })}
                   </div>
-                </>
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setMobileShortcutsOpen((prev) => !prev)}
                 aria-expanded={mobileShortcutsOpen}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
               >
                 <span className="flex-1 text-left">Shortcuts</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                     mobileShortcutsOpen ? 'rotate-0' : '-rotate-90'
                   }`}
                 />
@@ -1932,11 +1814,11 @@ export function ChefMobileNav({
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                           active
                             ? 'bg-brand-950 text-brand-400'
-                            : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
+                            : 'text-stone-400 hover:bg-stone-800'
                         }`}
                       >
                         <Icon
-                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
+                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
                         />
                         {item.label}
                       </Link>
@@ -1945,7 +1827,7 @@ export function ChefMobileNav({
                 </div>
               </div>
 
-              <div className="my-2 border-t border-stone-200 dark:border-stone-800" />
+              <div className="border-t border-stone-800 my-2" />
 
               {/* Grouped nav */}
               <div className="space-y-0.5">
@@ -1965,7 +1847,7 @@ export function ChefMobileNav({
                 ))}
               </div>
 
-              <div className="my-2 border-t border-stone-200 dark:border-stone-800" />
+              <div className="border-t border-stone-800 my-2" />
 
               {isAdmin && (
                 <SectionAccordion
@@ -1976,16 +1858,17 @@ export function ChefMobileNav({
                   onToggle={() => setCannabisSectionOpen((prev) => !prev)}
                   pathname={pathname}
                   searchParams={searchParams}
-                  headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-200'}
-                  headerInactiveClass="text-green-200 hover:bg-green-950/20 hover:text-green-600"
+                  headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
+                  headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
                   dividerClass="border-green-800/30"
-                  itemActiveClass="text-green-200 bg-green-950/50"
-                  itemInactiveClass="text-stone-600 hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300"
+                  itemActiveClass="text-green-700 bg-green-950/50"
+                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
                   iconActiveColor="#16a34a"
                   iconInactiveColor="rgba(21, 128, 61, 0.45)"
                   onNavigate={closeMenu}
                 />
               )}
+
               <SectionAccordion
                 title="Community"
                 items={filteredCommunityItems}
@@ -1998,73 +1881,73 @@ export function ChefMobileNav({
                 headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
                 dividerClass="border-indigo-800/30"
                 itemActiveClass="text-indigo-400 bg-indigo-950/50"
-                itemInactiveClass="text-stone-600 hover:bg-brand-100/70 hover:text-stone-900 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300"
+                itemInactiveClass="text-stone-500 hover:bg-stone-800"
                 iconActiveColor="#818cf8"
                 iconInactiveColor="rgba(99, 102, 241, 0.5)"
                 onNavigate={closeMenu}
               />
-              <>
-                <div className="my-2 border-t border-stone-200 dark:border-stone-800" />
+              <div className="border-t border-stone-800 my-2" />
 
-                {/* Settings */}
-                <button
-                  type="button"
-                  onClick={() => setMobileSettingsOpen((prev) => !prev)}
-                  aria-expanded={mobileSettingsOpen}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-brand-100/70 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-                >
-                  <span className="flex-1 text-left">Settings & Tools</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-stone-500 transition-transform duration-200 dark:text-stone-400 ${
-                      mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+              {/* Settings */}
+              <button
+                type="button"
+                onClick={() => setMobileSettingsOpen((prev) => !prev)}
+                aria-expanded={mobileSettingsOpen}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+              >
+                <span className="flex-1 text-left">Settings & Tools</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                    mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
                   }`}
-                >
-                  <div className="space-y-0.5">
-                    {filteredSettingsItems.map((item) => {
-                      const Icon = item.icon
-                      const active = isItemActive(pathname, item.href, searchParams)
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={closeMenu}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                            active
-                              ? 'bg-brand-950 text-brand-400'
-                              : 'text-stone-700 hover:bg-brand-100/80 hover:text-stone-950 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
-                          }`}
-                        >
-                          <Icon
-                            className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-500 dark:text-stone-400'}`}
-                          />
-                          {item.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  {filteredSettingsItems.map((item) => {
+                    const Icon = item.icon
+                    const active = isItemActive(pathname, item.href, searchParams)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeMenu}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          active
+                            ? 'bg-brand-950 text-brand-400'
+                            : 'text-stone-400 hover:bg-stone-800'
+                        }`}
+                      >
+                        <Icon
+                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                        />
+                        {item.label}
+                      </Link>
+                    )
+                  })}
                 </div>
-              </>
+              </div>
 
               {/* Sign Out */}
-              <div className="mt-4 border-t border-stone-200 pt-4 dark:border-stone-800">
+              <div className="pt-4 mt-4 border-t border-stone-800">
                 <button
                   type="button"
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-stone-600 transition-colors hover:bg-brand-100/70 hover:text-stone-900 disabled:opacity-50 dark:text-stone-500 dark:hover:bg-stone-800 dark:hover:text-stone-300"
+                  onClick={async () => {
+                    try {
+                      await signOut()
+                    } catch (e) {
+                      console.error('[sign-out]', e)
+                    }
+                    window.location.href = '/'
+                  }}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
                 >
-                  {signingOut ? (
-                    <Loader2 className="w-[18px] h-[18px] animate-spin" />
-                  ) : (
-                    <LogOut className="w-[18px] h-[18px]" />
-                  )}
-                  {signingOut ? 'Signing out...' : 'Sign Out'}
+                  <LogOut className="w-[18px] h-[18px]" />
+                  Sign Out
                 </button>
               </div>
             </nav>
@@ -2075,11 +1958,7 @@ export function ChefMobileNav({
       {/* Mobile bottom tab bar — uses native <a> tags so navigation works
           even when React hydration fails. This is the MOST CRITICAL nav on mobile;
           it must never depend on React's event system being functional. */}
-      <MobileBottomTabBar
-        pathname={pathname}
-        onMoreClick={() => setMenuOpen(true)}
-        tabItems={tabItems}
-      />
+      <MobileBottomTabBar pathname={pathname} onMoreClick={() => setMenuOpen(true)} />
     </>
   )
 }

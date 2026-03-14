@@ -6,7 +6,7 @@
 // Name, email, guest count — that's it. Everything else follows.
 
 import { useState } from 'react'
-import { Minus, Plus, Check, Loader2 } from '@/components/ui/icons'
+import { Minus, Plus, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { submitCampaignBooking } from '@/lib/campaigns/public-booking-actions'
 import type { PublicDinnerInfo } from '@/lib/campaigns/public-booking-actions'

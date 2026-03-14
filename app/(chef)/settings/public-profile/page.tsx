@@ -30,7 +30,6 @@ export default async function PublicProfileSettingsPage() {
       </div>
 
       <PublicProfileSettings
-        currentSlug={profile.slug}
         currentTagline={profile.tagline}
         currentPrimaryColor={profile.portal_primary_color}
         currentBackgroundColor={profile.portal_background_color}

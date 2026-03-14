@@ -7,13 +7,12 @@ import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
 import { requireClient } from '@/lib/auth/get-user'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
-import { validateRemyInput } from '@/lib/ai/remy-guardrails'
+import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
 import {
   validateRemyRequestBody,
   validateHistory,
   checkRecipeGenerationBlock,
 } from '@/lib/ai/remy-input-validation'
-import { checkRateLimit } from '@/lib/rateLimit'
 import {
   REMY_CLIENT_PERSONALITY,
   REMY_CLIENT_TOPIC_GUARDRAILS,
@@ -111,7 +110,6 @@ export async function POST(req: NextRequest) {
           ? "I'm here to help with your events and dining — let's keep it on topic!"
           : inputCheck.refusal
       return new Response(encodeSSE({ type: 'error', data: clientRefusal }), {
-        status: 400,
         headers: sseHeaders(),
       })
     }
@@ -120,25 +118,16 @@ export async function POST(req: NextRequest) {
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
       return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
-        status: 400,
         headers: sseHeaders(),
       })
     }
 
-    // Rate limiting (shared limiter with in-memory fallback)
-    try {
-      await checkRateLimit(`remy-client:${user.tenantId!}`, 12, 60_000)
-    } catch {
-      return new Response(
-        encodeSSE({
-          type: 'error',
-          data: 'Whoa, slow down — I can only handle 12 messages a minute. Try again shortly.',
-        }),
-        {
-          status: 429,
-          headers: sseHeaders(),
-        }
-      )
+    // Rate limiting (reuse tenant-based rate limiter)
+    const rateCheck = checkRemyRateLimit(user.tenantId!)
+    if (!rateCheck.allowed) {
+      return new Response(encodeSSE({ type: 'error', data: rateCheck.refusal }), {
+        headers: sseHeaders(),
+      })
     }
 
     // Check Ollama availability — client data = PII, must use Ollama

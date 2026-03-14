@@ -12,7 +12,6 @@ import { getBreadcrumbSessions } from '@/lib/activity/breadcrumb-actions'
 import { ActivityPageClient } from './activity-page-client'
 
 export const metadata: Metadata = { title: 'Activity - ChefFlow' }
-export const dynamic = 'force-dynamic'
 
 export default async function ActivityPage() {
   // Fetch initial state for default filters:

@@ -44,12 +44,7 @@ CREATE POLICY "chef_momentum_own_tenant" ON chef_momentum_snapshots
     )
   );
 -- Enable pgcrypto for gen_random_bytes if not already enabled
-DO $$
-BEGIN
-  CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
-EXCEPTION
-  WHEN insufficient_privilege THEN NULL;
-END $$;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 -- Availability share tokens for shareable schedule view
 CREATE TABLE IF NOT EXISTS chef_availability_share_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

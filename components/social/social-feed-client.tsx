@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useCallback } from 'react'
-import { RefreshCw } from '@/components/ui/icons'
+import { RefreshCw } from 'lucide-react'
 import type {
   SocialPost,
   SocialChannel,
@@ -143,7 +143,7 @@ export function SocialFeedClient({
                   onClick={() => switchMode(tab.value)}
                   className={`flex-1 py-3 text-sm font-medium transition-colors ${
                     mode === tab.value
-                      ? 'text-amber-200 border-b-2 border-amber-500 bg-amber-950/50'
+                      ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-950/50'
                       : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
                   }`}
                 >
@@ -187,7 +187,7 @@ export function SocialFeedClient({
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="w-full text-sm text-amber-200 font-medium hover:text-amber-200 py-2 rounded-xl hover:bg-amber-950 transition-colors"
+                className="w-full text-sm text-amber-700 font-medium hover:text-amber-800 py-2 rounded-xl hover:bg-amber-950 transition-colors"
               >
                 {loadingMore ? 'Loading...' : 'Load more posts'}
               </button>

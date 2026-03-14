@@ -55,7 +55,7 @@ const CATEGORY_TEXT_COLORS: Record<string, string> = {
   calls: 'text-blue-900',
   personal: 'text-purple-900',
   business: 'text-teal-900',
-  intentions: 'text-green-200',
+  intentions: 'text-green-700',
   leads: 'text-orange-900',
   blocked: 'text-red-900',
 }

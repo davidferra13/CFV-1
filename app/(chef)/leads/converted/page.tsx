@@ -30,7 +30,7 @@ export default async function ConvertedLeadsPage() {
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Converted</h1>
-          <span className="bg-green-900 text-green-200 text-sm px-2 py-0.5 rounded-full">
+          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
             {inquiries.length}
           </span>
         </div>
@@ -49,7 +49,7 @@ export default async function ConvertedLeadsPage() {
       ) : (
         <>
           <Card className="p-4">
-            <p className="text-2xl font-bold text-green-200">{inquiries.length}</p>
+            <p className="text-2xl font-bold text-green-700">{inquiries.length}</p>
             <p className="text-sm text-stone-500 mt-1">Website leads converted to events</p>
           </Card>
           <Card>
@@ -68,11 +68,9 @@ export default async function ConvertedLeadsPage() {
                 {inquiries.map((inquiry: any) => (
                   <TableRow key={inquiry.id}>
                     <TableCell className="font-medium">
-                      <p>{inquiry.contact_name || inquiry.client?.full_name || '—'}</p>
-                      {(inquiry.contact_email || inquiry.client?.email) && (
-                        <p className="text-xs text-stone-400 mt-0.5">
-                          {inquiry.contact_email || inquiry.client?.email}
-                        </p>
+                      <p>{inquiry.client?.full_name ?? '—'}</p>
+                      {inquiry.client?.email && (
+                        <p className="text-xs text-stone-400 mt-0.5">{inquiry.client.email}</p>
                       )}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">

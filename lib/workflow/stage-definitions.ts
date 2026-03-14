@@ -1,14 +1,14 @@
-// 17-stage definitions with unlock conditions.
+// 17-Stage Definitions with Unlock Conditions
 // Each stage defines what work items it surfaces and under what conditions.
 // Pure functions. No database calls. No side effects.
 
 import type {
   ConfirmedFacts,
-  EventContext,
-  WorkCategory,
   WorkItem,
   WorkStage,
+  WorkCategory,
   WorkUrgency,
+  EventContext,
 } from './types'
 
 // ============================================
@@ -35,92 +35,6 @@ export const STAGE_META: Record<WorkStage, { number: number; label: string }> = 
   inquiry_closure: { number: 17, label: 'Inquiry Closure' },
 }
 
-function resolveAction(
-  ctx: EventContext,
-  stage: WorkStage
-): Pick<WorkItem, 'actionUrl' | 'actionLabel'> {
-  const eventUrl = `/events/${ctx.event.id}`
-  const firstMenu = ctx.menus[0]
-
-  switch (stage) {
-    case 'inquiry_intake':
-    case 'qualification':
-    case 'quote':
-      if (ctx.event.status === 'draft' || ctx.event.status === 'proposed') {
-        return {
-          actionUrl: `${eventUrl}/edit`,
-          actionLabel: 'Open event editor',
-        }
-      }
-      return { actionUrl: eventUrl, actionLabel: 'Open event' }
-
-    case 'menu_development':
-      if (firstMenu) {
-        return {
-          actionUrl: `/menus/${firstMenu.id}`,
-          actionLabel: 'Open menu',
-        }
-      }
-      return { actionUrl: eventUrl, actionLabel: 'Open event' }
-
-    case 'financial_commitment':
-      return { actionUrl: eventUrl, actionLabel: 'Open event' }
-
-    case 'grocery_list':
-      if (ctx.shopping.activeListId) {
-        return {
-          actionUrl: `/shopping/${ctx.shopping.activeListId}`,
-          actionLabel: 'Open shopping list',
-        }
-      }
-      return {
-        actionUrl: `${eventUrl}/documents`,
-        actionLabel: 'Open event documents',
-      }
-
-    case 'prep_list':
-      return {
-        actionUrl: `${eventUrl}/prep`,
-        actionLabel: 'Open prep checklist',
-      }
-
-    case 'equipment_planning':
-    case 'packing':
-      return {
-        actionUrl: `${eventUrl}/pack`,
-        actionLabel: 'Open packing checklist',
-      }
-
-    case 'timeline':
-      return {
-        actionUrl: `${eventUrl}/schedule`,
-        actionLabel: 'Open event schedule',
-      }
-
-    case 'travel_arrival':
-      return {
-        actionUrl: `${eventUrl}/travel`,
-        actionLabel: 'Open travel plan',
-      }
-
-    case 'execution':
-      return {
-        actionUrl: eventUrl,
-        actionLabel: 'Open event ops',
-      }
-
-    case 'breakdown':
-    case 'post_event_capture':
-    case 'follow_up':
-    case 'financial_closure':
-    case 'inquiry_closure':
-      return { actionUrl: eventUrl, actionLabel: 'Open event' }
-
-    default:
-      return { actionUrl: eventUrl, actionLabel: 'Open event' }
-  }
-}
-
 // ============================================
 // WORK ITEM BUILDER
 // ============================================
@@ -136,15 +50,12 @@ function item(
   blockedBy?: string
 ): WorkItem {
   const meta = STAGE_META[stage]
-  const action = resolveAction(ctx, stage)
   return {
     id: `${ctx.event.id}:${stage}:${key}`,
     eventId: ctx.event.id,
     eventOccasion: ctx.event.occasion ?? '',
     eventDate: ctx.event.event_date,
     clientName: ctx.event.client?.full_name ?? 'Unknown Client',
-    actionUrl: action.actionUrl,
-    actionLabel: action.actionLabel,
     stage,
     stageNumber: meta.number,
     stageLabel: meta.label,
@@ -326,6 +237,7 @@ function stage4_quote(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
     )
   }
 
+  // If event is still draft with complete info, surface the proposal action
   if (
     ctx.event.status === 'draft' &&
     f.hasClient &&
@@ -386,139 +298,80 @@ function stage5_financialCommitment(ctx: EventContext, f: ConfirmedFacts): WorkI
 }
 
 function stage6_groceryList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (!f.hasMenuAttached) return []
+  const items: WorkItem[] = []
+  if (!f.hasMenuAttached) return items
 
-  if (!f.groceryListReady) {
-    if (f.eventConfirmed && f.dateWithin7Days) {
-      const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
-      return [
-        item(
-          ctx,
-          'grocery_list',
-          'grocery_phase_c',
-          'preparable',
-          urgency,
-          'Finalize grocery list',
-          'The event is inside the shopping window. Lock quantities and market timing now.'
-        ),
-      ]
-    }
-
-    if (f.guestCountStable && f.hasMenuWithDishes) {
-      return [
-        item(
-          ctx,
-          'grocery_list',
-          'grocery_phase_b',
-          'preparable',
-          'normal',
-          'Quantify grocery list',
-          'Guest count is locked. Scale quantities to headcount before the shopping run.'
-        ),
-      ]
-    }
-
-    if (f.menuGravityStable) {
-      return [
-        item(
-          ctx,
-          'grocery_list',
-          'grocery_phase_a',
-          'optional_early',
-          'low',
-          'Draft grocery skeleton',
-          'Menu shape is stable. Start the structural list now so the final pass is faster later.'
-        ),
-      ]
-    }
-  }
-
-  if (!f.shoppingComplete && f.eventConfirmed && f.dateWithin7Days) {
-    const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
-    return [
+  // Phase A — Structural (menu gravity stable)
+  if (f.menuGravityStable && !f.guestCountStable) {
+    items.push(
       item(
         ctx,
         'grocery_list',
-        'shopping_run',
-        'preparable',
-        urgency,
-        'Complete shopping run',
-        f.hasActiveShoppingList
-          ? 'A shopping list is already active. Finish the market run so prep is no longer blocked.'
-          : 'The grocery list is ready. Complete the market run so prep can start.'
-      ),
-    ]
+        'grocery_phase_a',
+        'optional_early',
+        'low',
+        'Draft grocery skeleton (Phase A)',
+        'Menu shape is stable. Start a structural grocery list - categories and staples. Quantities come later.'
+      )
+    )
   }
 
-  return []
+  // Phase B — Quantified (guest count stabilized)
+  if (f.guestCountStable && f.hasMenuWithDishes && !f.eventConfirmed) {
+    items.push(
+      item(
+        ctx,
+        'grocery_list',
+        'grocery_phase_b',
+        'preparable',
+        'normal',
+        'Quantify grocery list (Phase B)',
+        'Guest count is locked. Scale quantities to headcount.'
+      )
+    )
+  }
+
+  // Phase C — Finalized (confirmed, within shopping window)
+  if (f.eventConfirmed && f.dateWithin7Days) {
+    const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
+    items.push(
+      item(
+        ctx,
+        'grocery_list',
+        'grocery_phase_c',
+        'preparable',
+        urgency,
+        'Finalize grocery list (Phase C)',
+        'Event confirmed and within shopping window. Finalize for market timing.'
+      )
+    )
+  }
+
+  return items
 }
 
 function stage7_prepList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (!f.hasMenuWithDishes) return []
+  const items: WorkItem[] = []
+  if (!f.hasMenuWithDishes) return items
 
-  if (!f.prepListReady) {
-    if (f.isLegallyActionable) {
-      return [
-        item(
-          ctx,
-          'prep_list',
-          'finalize_prep_plan',
-          'preparable',
-          f.dateWithin24Hours ? 'fragile' : 'normal',
-          'Finalize prep list',
-          'The event is committed. Break the menu into early, holdable, and day-of work now.'
-        ),
-      ]
-    }
-
-    if (f.menuGravityStable) {
-      return [
-        item(
-          ctx,
-          'prep_list',
-          'draft_prep_plan',
-          'optional_early',
-          'low',
-          'Draft prep plan',
-          'Menu gravity is stable. Identify early prep, texture-sensitive work, and day-of tasks.'
-        ),
-      ]
-    }
-  }
-
-  if (!f.shoppingComplete && !f.prepComplete) {
-    return [
+  // Prep modeling unlocks when menu gravity is stable
+  if (f.menuGravityStable && !f.isLegallyActionable) {
+    items.push(
       item(
         ctx,
         'prep_list',
-        'shopping_blocker',
-        'blocked',
-        f.dateWithin24Hours ? 'fragile' : 'normal',
-        'Prep is blocked by shopping',
-        'The prep plan is ready, but the shopping run still needs to be completed first.',
-        'Shopping completion'
-      ),
-    ]
+        'draft_prep_plan',
+        'optional_early',
+        'low',
+        'Draft prep plan',
+        'Menu gravity is stable. Identify early prep vs texture-sensitive vs day-of tasks.'
+      )
+    )
   }
 
-  if (f.prepComplete) return []
-
-  if (f.dateWithin24Hours && !f.dateInPast) {
-    return [
-      item(
-        ctx,
-        'prep_list',
-        'prep_day_of',
-        'preparable',
-        'fragile',
-        'Execute day-of prep',
-        'The event is today or tomorrow. Handle the texture-sensitive and final assembly work now.'
-      ),
-    ]
-  }
-
-  if (f.isLegallyActionable) {
-    return [
+  // Active prep planning when financially committed
+  if (f.isLegallyActionable && !f.dateWithin24Hours) {
+    items.push(
       item(
         ctx,
         'prep_list',
@@ -526,48 +379,35 @@ function stage7_prepList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
         'preparable',
         'normal',
         'Begin early prep items',
-        'Shopping is complete. Start the holdable prep work like stocks, marinades, sauces, and components.'
-      ),
-    ]
+        'Event is financially committed. Start items that hold well - stocks, marinades, sauces.'
+      )
+    )
   }
 
-  return []
+  // Day-of prep becomes fragile
+  if (f.dateWithin24Hours && !f.dateInPast) {
+    items.push(
+      item(
+        ctx,
+        'prep_list',
+        'prep_day_of',
+        'preparable',
+        'fragile',
+        'Execute day-of prep',
+        'Event is tomorrow or today. Handle texture-sensitive items and final preparations.'
+      )
+    )
+  }
+
+  return items
 }
 
 function stage8_equipmentPlanning(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (f.equipmentListReady) return []
+  const items: WorkItem[] = []
 
-  if (f.eventConfirmed && f.dateWithin7Days) {
-    const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
-    return [
-      item(
-        ctx,
-        'equipment_planning',
-        'equipment_level_3',
-        'preparable',
-        urgency,
-        'Confirm site-specific equipment',
-        'Verify power, water, counter space, burners, rentals, and any pickup timing.'
-      ),
-    ]
-  }
-
-  if (f.guestCountStable && f.hasLocation) {
-    return [
-      item(
-        ctx,
-        'equipment_planning',
-        'equipment_level_2',
-        'preparable',
-        'normal',
-        'Plan service equipment',
-        'Guest count and location are confirmed. Size serving equipment and service setup now.'
-      ),
-    ]
-  }
-
-  if (f.hasMenuAttached) {
-    return [
+  // Level 1 — Menu-dependent tools (once menu exists)
+  if (f.hasMenuAttached && !f.isLegallyActionable) {
+    items.push(
       item(
         ctx,
         'equipment_planning',
@@ -575,49 +415,65 @@ function stage8_equipmentPlanning(ctx: EventContext, f: ConfirmedFacts): WorkIte
         'optional_early',
         'low',
         'Identify menu-dependent equipment',
-        'The menu already tells you what tools and vessels the dishes require.'
-      ),
-    ]
+        'Menu is attached. Identify tools and vessels needed for the dishes.'
+      )
+    )
   }
 
-  return []
+  // Level 2 — Service-dependent tools (once guest count and location confirmed)
+  if (f.guestCountStable && f.hasLocation) {
+    items.push(
+      item(
+        ctx,
+        'equipment_planning',
+        'equipment_level_2',
+        'preparable',
+        'normal',
+        'Plan service equipment',
+        'Guest count and location are confirmed. Size serving equipment, seating, and service setup.'
+      )
+    )
+  }
+
+  // Level 3 — Site confirmations (close to event)
+  if (f.eventConfirmed && f.dateWithin7Days) {
+    const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
+    items.push(
+      item(
+        ctx,
+        'equipment_planning',
+        'equipment_level_3',
+        'preparable',
+        urgency,
+        'Confirm site-specific equipment',
+        'Verify power, water, counter space, and any rental pickups.'
+      )
+    )
+  }
+
+  return items
 }
 
 function stage9_packing(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (!f.eventConfirmed || f.carPacked) return []
+  const items: WorkItem[] = []
+  if (!f.eventConfirmed) return items
 
-  if (!f.packingListReady) {
-    if (f.dateIsToday || f.dateWithin24Hours) {
-      return [
-        item(
-          ctx,
-          'packing',
-          'finalize_packing_list',
-          'preparable',
-          'fragile',
-          'Finalize packing list',
-          'The event is imminent. Lock the pack plan before loading the car.'
-        ),
-      ]
-    }
-
-    if (f.dateWithin3Days) {
-      return [
-        item(
-          ctx,
-          'packing',
-          'build_packing_list',
-          'preparable',
-          'normal',
-          'Build packing list',
-          'Group items by category now so loading is fast and nothing critical is missed.'
-        ),
-      ]
-    }
+  if (f.dateWithin3Days && !f.dateIsToday) {
+    items.push(
+      item(
+        ctx,
+        'packing',
+        'build_packing_list',
+        'preparable',
+        'normal',
+        'Build packing list',
+        'Group items by category: cold, dry, tools, fragile, non-negotiables.'
+      )
+    )
   }
 
   if (f.dateIsToday || f.dateWithin24Hours) {
-    return [
+    items.push(
       item(
         ctx,
         'packing',
@@ -625,34 +481,20 @@ function stage9_packing(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
         'preparable',
         'fragile',
         'Pack and load',
-        'The packing list is ready. Load the car and verify the final kit before departure.'
-      ),
-    ]
+        'Event is imminent. Pack everything and verify against packing list.'
+      )
+    )
   }
 
-  return []
+  return items
 }
 
 function stage10_timeline(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (f.timelineReady) return []
+  const items: WorkItem[] = []
 
-  if (f.eventConfirmed && f.dateWithin7Days) {
-    const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
-    return [
-      item(
-        ctx,
-        'timeline',
-        'finalize_timeline',
-        'preparable',
-        urgency,
-        'Finalize event timeline',
-        'The event is locked and close. Finalize sequence, buffers, and handoff timing now.'
-      ),
-    ]
-  }
-
-  if (f.hasServeTimeWindow && f.hasMenuAttached) {
-    return [
+  // Timeline skeleton becomes buildable when serve time exists
+  if (f.hasServeTimeWindow && f.hasMenuAttached && !f.eventConfirmed) {
+    items.push(
       item(
         ctx,
         'timeline',
@@ -660,37 +502,35 @@ function stage10_timeline(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
         'optional_early',
         'low',
         'Draft event timeline',
-        'Serve time and menu are set. Build the skeleton so the final pass is faster later.'
-      ),
-    ]
+        'Serve time and menu are set. Anchor the timeline and sequence courses.'
+      )
+    )
   }
 
-  return []
+  // Finalize timeline when confirmed and close
+  if (f.eventConfirmed && f.dateWithin7Days) {
+    const urgency: WorkUrgency = f.dateWithin3Days ? 'fragile' : 'normal'
+    items.push(
+      item(
+        ctx,
+        'timeline',
+        'finalize_timeline',
+        'preparable',
+        urgency,
+        'Finalize event timeline',
+        'Lock the sequence. Flag any compression. Insert slack where needed.'
+      )
+    )
+  }
+
+  return items
 }
 
 function stage11_travelArrival(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (!f.hasLocation || !f.hasDate) return []
+  const items: WorkItem[] = []
 
-  if (f.eventConfirmed && f.dateWithin3Days) {
-    if (!f.hasTravelRoute || !f.nonNegotiablesChecked) {
-      return [
-        item(
-          ctx,
-          'travel_arrival',
-          'confirm_travel',
-          'preparable',
-          f.dateWithin24Hours ? 'fragile' : 'normal',
-          'Confirm travel and arrival details',
-          'Verify route, parking, access instructions, and final non-negotiables before departure.'
-        ),
-      ]
-    }
-
-    return []
-  }
-
-  if (!f.hasTravelRoute) {
-    return [
+  if (f.hasLocation && f.hasDate && !f.eventConfirmed) {
+    items.push(
       item(
         ctx,
         'travel_arrival',
@@ -698,31 +538,33 @@ function stage11_travelArrival(ctx: EventContext, f: ConfirmedFacts): WorkItem[]
         'optional_early',
         'low',
         'Model travel buffer',
-        'The location is set. Sketch the route and access plan early to avoid last-minute surprises.'
-      ),
-    ]
+        'Location and date are set. Estimate drive time, access points, and weather risks.'
+      )
+    )
   }
 
-  return []
+  if (f.eventConfirmed && f.dateWithin3Days) {
+    items.push(
+      item(
+        ctx,
+        'travel_arrival',
+        'confirm_travel',
+        'preparable',
+        f.dateWithin24Hours ? 'fragile' : 'normal',
+        'Confirm travel plan',
+        'Verify route, arrival time, parking, and access instructions.'
+      )
+    )
+  }
+
+  return items
 }
 
 function stage12_execution(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
-  if (ctx.event.status === 'confirmed' && f.dateWithin24Hours && !f.executionSheetReady) {
-    return [
-      item(
-        ctx,
-        'execution',
-        'finalize_execution_sheet',
-        'preparable',
-        'fragile',
-        'Finalize execution sheet',
-        'Service is imminent. Lock the run-of-show and service notes before you start the event.'
-      ),
-    ]
-  }
+  const items: WorkItem[] = []
 
   if (ctx.event.status === 'confirmed' && f.dateIsToday) {
-    return [
+    items.push(
       item(
         ctx,
         'execution',
@@ -731,12 +573,12 @@ function stage12_execution(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
         'fragile',
         'Mark event as in progress',
         'You are on-site. Start the event to track execution.'
-      ),
-    ]
+      )
+    )
   }
 
   if (ctx.event.status === 'in_progress') {
-    return [
+    items.push(
       item(
         ctx,
         'execution',
@@ -745,11 +587,11 @@ function stage12_execution(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
         'normal',
         'Mark event as completed',
         'Service is finished. Complete the event to trigger post-event workflow.'
-      ),
-    ]
+      )
+    )
   }
 
-  return []
+  return items
 }
 
 function stage13_breakdown(_ctx: EventContext, _f: ConfirmedFacts): WorkItem[] {

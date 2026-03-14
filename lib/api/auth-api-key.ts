@@ -1,6 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { createHash } from 'crypto'
-import { NextResponse } from 'next/server'
 
 export interface ApiKeyContext {
   tenantId: string
@@ -47,17 +46,4 @@ export async function validateApiKey(authHeader: string | null): Promise<ApiKeyC
     .then(() => {})
 
   return { tenantId: data.tenant_id, scopes: data.scopes || [], keyId: data.id }
-}
-
-/**
- * Check that an API key has a required scope.
- * Returns an error Response if the scope is missing, or null if authorized.
- * Usage: const denied = requireScope(ctx, 'clients:read'); if (denied) return denied;
- */
-export function requireScope(ctx: ApiKeyContext, scope: string): NextResponse | null {
-  if (ctx.scopes.includes('*') || ctx.scopes.includes(scope)) return null
-  return NextResponse.json(
-    { error: `Forbidden: missing required scope '${scope}'` },
-    { status: 403 }
-  )
 }

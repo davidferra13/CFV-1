@@ -22,7 +22,7 @@ export default async function SocialConnectionsPage({ searchParams }: Props) {
 
       {/* OAuth error flash (e.g. user denied access) */}
       {searchParams.error && (
-        <div className="bg-red-950 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-200">
+        <div className="bg-red-950 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800">
           {errorMessage(searchParams.error, searchParams.platform)}
         </div>
       )}

@@ -1,6 +1,6 @@
 import { PushDinnerBuilder } from '@/components/campaigns/push-dinner-builder'
 import Link from 'next/link'
-import { ChevronLeft } from '@/components/ui/icons'
+import { ChevronLeft } from 'lucide-react'
 
 export default function NewPushDinnerPage() {
   return (

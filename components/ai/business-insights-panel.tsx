@@ -1,14 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  BarChart3,
-  Loader2,
-  Bot,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-} from '@/components/ui/icons'
+import { BarChart3, Loader2, Sparkles, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -67,7 +60,7 @@ export function BusinessInsightsPanel() {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Get Insights
               </>
             )}

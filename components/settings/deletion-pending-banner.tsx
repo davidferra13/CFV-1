@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle } from '@/components/ui/icons'
+import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 type Props = {

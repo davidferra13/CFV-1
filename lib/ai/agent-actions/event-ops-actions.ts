@@ -21,7 +21,7 @@ import { acknowledgeScopeDrift } from '@/lib/events/scope-drift-actions'
 import { generatePrepTimeline } from '@/lib/ai/prep-timeline-actions'
 import { suggestPhotoTags, confirmPhotoTag } from '@/lib/events/photo-tagging-actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── Event Finder Helper ─────────────────────────────────────────────────────
@@ -59,14 +59,12 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: eventIdentifier (event to clone), newDate (YYYY-MM-DD). Return ONLY JSON.',
-          description,
-          z.object({ eventIdentifier: z.string(), newDate: z.string() }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: eventIdentifier (event to clone), newDate (YYYY-MM-DD). Return ONLY JSON.',
+        description,
+        z.object({ eventIdentifier: z.string(), newDate: z.string() }),
+        { modelTier: 'standard' }
+      )
 
       const event = await findEvent(parsed.eventIdentifier, ctx.tenantId)
       if (!event) {
@@ -125,18 +123,16 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: eventIdentifier (event name or client), chef_outcome_notes (reflections), chef_outcome_rating (1-5 number). Return ONLY JSON.',
-          description,
-          z.object({
-            eventIdentifier: z.string(),
-            chef_outcome_notes: z.string().optional(),
-            chef_outcome_rating: z.number().optional(),
-          }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: eventIdentifier (event name or client), chef_outcome_notes (reflections), chef_outcome_rating (1-5 number). Return ONLY JSON.',
+        description,
+        z.object({
+          eventIdentifier: z.string(),
+          chef_outcome_notes: z.string().optional(),
+          chef_outcome_rating: z.number().optional(),
+        }),
+        { modelTier: 'standard' }
+      )
 
       const event = await findEvent(parsed.eventIdentifier, ctx.tenantId)
       if (!event) {
@@ -253,18 +249,16 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: eventIdentifier, amountCents (dollars→cents), paymentMethod (cash/check/card/venmo/other). Return ONLY JSON.',
-          description,
-          z.object({
-            eventIdentifier: z.string(),
-            amountCents: z.number(),
-            paymentMethod: z.string().optional(),
-          }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: eventIdentifier, amountCents (dollars→cents), paymentMethod (cash/check/card/venmo/other). Return ONLY JSON.',
+        description,
+        z.object({
+          eventIdentifier: z.string(),
+          amountCents: z.number(),
+          paymentMethod: z.string().optional(),
+        }),
+        { modelTier: 'standard' }
+      )
 
       const event = await findEvent(parsed.eventIdentifier, ctx.tenantId)
       if (!event) {
@@ -333,14 +327,12 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: eventIdentifier, miles (number). Return ONLY JSON.',
-          description,
-          z.object({ eventIdentifier: z.string(), miles: z.number() }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: eventIdentifier, miles (number). Return ONLY JSON.',
+        description,
+        z.object({ eventIdentifier: z.string(), miles: z.number() }),
+        { modelTier: 'standard' }
+      )
 
       const event = await findEvent(parsed.eventIdentifier, ctx.tenantId)
       if (!event) {
@@ -394,19 +386,17 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: eventIdentifier, drink_type (e.g. "red wine", "champagne"), guests_served (number), notes. Return ONLY JSON.',
-          description,
-          z.object({
-            eventIdentifier: z.string(),
-            drink_type: z.string(),
-            guests_served: z.number(),
-            notes: z.string().optional(),
-          }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: eventIdentifier, drink_type (e.g. "red wine", "champagne"), guests_served (number), notes. Return ONLY JSON.',
+        description,
+        z.object({
+          eventIdentifier: z.string(),
+          drink_type: z.string(),
+          guests_served: z.number(),
+          notes: z.string().optional(),
+        }),
+        { modelTier: 'standard' }
+      )
 
       const event = await findEvent(parsed.eventIdentifier, ctx.tenantId)
       if (!event) {

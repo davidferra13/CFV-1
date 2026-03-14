@@ -100,7 +100,7 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && <div className="bg-red-950 text-red-200 px-3 py-2 rounded-lg text-sm">{error}</div>}
+      {error && <div className="bg-red-950 text-red-700 px-3 py-2 rounded-lg text-sm">{error}</div>}
 
       {/* Dual star ratings */}
       <div className="space-y-3 bg-stone-800 rounded-xl p-4">
@@ -124,7 +124,7 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
             onClick={() => setWouldRecommend(wouldRecommend === true ? null : true)}
             className={`flex-1 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
               wouldRecommend === true
-                ? 'border-emerald-500 bg-emerald-950 text-emerald-200'
+                ? 'border-emerald-500 bg-emerald-950 text-emerald-700'
                 : 'border-stone-700 text-stone-500 hover:border-stone-600'
             }`}
           >

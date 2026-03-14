@@ -13,7 +13,6 @@ import QuoteResponseButtons from './quote-response-buttons'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
-import { QuoteCostBreakdown } from '@/components/quotes/quote-cost-breakdown'
 
 export default async function ClientQuoteDetailPage({ params }: { params: { id: string } }) {
   await requireClient()
@@ -56,7 +55,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
       {/* Status Banner */}
       {quote.status === 'accepted' && (
         <div className="bg-green-950 border border-green-200 rounded-lg p-4">
-          <p className="text-green-200 font-medium">
+          <p className="text-green-800 font-medium">
             You accepted this quote on{' '}
             {quote.accepted_at && format(new Date(quote.accepted_at), 'MMMM d, yyyy')}.
           </p>
@@ -65,7 +64,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
 
       {quote.status === 'rejected' && (
         <div className="bg-red-950 border border-red-200 rounded-lg p-4">
-          <p className="text-red-200 font-medium">
+          <p className="text-red-800 font-medium">
             You declined this quote on{' '}
             {quote.rejected_at && format(new Date(quote.rejected_at), 'MMMM d, yyyy')}.
           </p>
@@ -167,8 +166,6 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
           <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.pricing_notes}</p>
         </Card>
       )}
-
-      <QuoteCostBreakdown quoteId={quote.id} />
 
       {/* Response Buttons */}
       {isPending && (

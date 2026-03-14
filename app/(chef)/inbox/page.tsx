@@ -58,7 +58,7 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
         </div>
 
         {!gmailConnection.gmail.connected && (
-          <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
+          <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
             <span className="font-medium">Gmail is disconnected.</span> New emails won&apos;t be
             synced into your inbox.{' '}
             <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
@@ -94,7 +94,7 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
       </div>
 
       {!gmailConnection.gmail.connected && (
-        <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-200">
+        <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
           <span className="font-medium">Gmail is disconnected.</span> New emails won&apos;t be
           synced into your inbox.{' '}
           <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">

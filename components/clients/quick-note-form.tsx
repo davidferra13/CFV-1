@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2 } from '@/components/ui/icons'
+import { Loader2 } from 'lucide-react'
 import type { NoteCategory } from '@/lib/notes/actions'
 
 const CATEGORIES: { value: NoteCategory; label: string }[] = [

@@ -29,21 +29,6 @@ export type RevenueGoalCustomProgress = {
   range: RevenueGoalRangeProgress
 }
 
-export type PaceStatus = 'ahead' | 'on_track' | 'behind' | 'critical'
-
-export type RevenueGoalTrend = {
-  previousMonthRealizedCents: number
-  deltaPercent: number
-  direction: 'up' | 'flat' | 'down'
-}
-
-export type YoYComparison = {
-  lastYearSamePeriodCents: number
-  currentPeriodCents: number
-  deltaPercent: number
-  direction: 'up' | 'flat' | 'down'
-}
-
 export type RevenueGoalSnapshot = {
   enabled: boolean
   nudgeLevel: RevenueGoalNudgeLevel
@@ -53,13 +38,6 @@ export type RevenueGoalSnapshot = {
   avgBookingValueCents: number
   dinnersNeededThisMonth: number
   openDatesThisMonth: string[]
-  smartOpenDatesThisMonth: string[]
-  typicalBookingDays: number[]
   recommendations: RevenueGoalRecommendation[]
-  monthlyPaceStatus: PaceStatus
-  monthlyPaceRatio: number
-  annualRunRateCents: number | null
-  trend: RevenueGoalTrend | null
-  yoy: YoYComparison | null
   computedAt: string
 }

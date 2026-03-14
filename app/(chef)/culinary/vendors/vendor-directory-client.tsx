@@ -14,7 +14,6 @@ import {
   type VendorInput,
 } from '@/lib/vendors/actions'
 import { VENDOR_TYPE_LABELS } from '@/lib/vendors/constants'
-import { toast } from 'sonner'
 
 type Vendor = {
   id: string
@@ -82,9 +81,7 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
       setShowForm(false)
       router.refresh()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save'
-      setError(message)
-      toast.error(message)
+      setError(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -101,8 +98,8 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
     try {
       await deleteVendor(deleteTargetId)
       router.refresh()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete vendor')
+    } catch {
+      /* silent */
     }
   }
 
@@ -110,8 +107,8 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
     try {
       await setVendorPreferred(id, !current)
       router.refresh()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update vendor')
+    } catch {
+      /* silent */
     }
   }
 
@@ -301,7 +298,7 @@ function VendorCard({
                   href={vendor.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-200 underline"
+                  className="text-amber-700 underline"
                 >
                   Website
                 </a>

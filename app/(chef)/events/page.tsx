@@ -18,10 +18,6 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 import { getWeatherForEvents } from '@/lib/weather/weather-actions'
-import { EventsFinancialBar } from '@/components/intelligence/events-financial-bar'
-import { GeographicBar } from '@/components/intelligence/geographic-bar'
-import { PrepEfficiencyBar } from '@/components/intelligence/prep-efficiency-bar'
-import { UntappedMarketsBar } from '@/components/intelligence/untapped-markets-bar'
 
 type EventStatus =
   | 'all'
@@ -65,7 +61,7 @@ async function EventsList({ status }: { status: EventStatus }) {
           <EmptyState
             illustration={<NoEventsIllustration />}
             title="No events yet"
-            description="Create your first event to start managing timelines, menus, and financials in one place."
+            description="Create your first event to start managing proposals, timelines, and financials in one place."
             action={{ label: 'Create Event', href: '/events/new' }}
           />
         ) : (
@@ -122,34 +118,14 @@ export default async function EventsPage({
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Events</h1>
-          <p className="text-stone-400 mt-1">All your events, from draft to done</p>
+          <p className="text-stone-400 mt-1">Manage your events and proposals</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link data-info="new-event" data-tour="create-event" href="/events/new">
+          <Link data-info="new-event" href="/events/new">
             <Button>+ New Event</Button>
           </Link>
         </div>
       </div>
-
-      {/* Financial Intelligence Summary */}
-      <Suspense fallback={null}>
-        <EventsFinancialBar />
-      </Suspense>
-
-      {/* Geographic Intelligence */}
-      <Suspense fallback={null}>
-        <GeographicBar />
-      </Suspense>
-
-      {/* Prep Efficiency */}
-      <Suspense fallback={null}>
-        <PrepEfficiencyBar />
-      </Suspense>
-
-      {/* Untapped Markets */}
-      <Suspense fallback={null}>
-        <UntappedMarketsBar />
-      </Suspense>
 
       <Card className="p-4">
         <EventsViewFilterBar initialStatus={status} initialView={view} />

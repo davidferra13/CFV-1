@@ -9,23 +9,19 @@ import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
-import { getQuoteLineItems } from '@/lib/quotes/cost-breakdown-actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
-import { CostBreakdownEditor } from '@/components/quotes/cost-breakdown-editor'
-import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [quote, versionHistory, timelineEntries, quoteBreakdown] = await Promise.all([
+  const [quote, versionHistory, timelineEntries] = await Promise.all([
     getQuoteById(params.id),
     getQuoteVersionHistory(params.id),
     getEntityActivityTimeline('quote', params.id),
-    getQuoteLineItems(params.id).catch(() => ({ lineItems: [] })),
   ])
 
   if (!quote) {
@@ -56,14 +52,11 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       {/* Frozen Snapshot Notice */}
       {quote.snapshot_frozen && (
         <div className="bg-green-950 border border-green-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-green-200">
+          <p className="text-sm font-medium text-green-800">
             Pricing snapshot frozen at acceptance. Original pricing is preserved.
           </p>
         </div>
       )}
-
-      {/* Client Dietary Context */}
-      {quote.client_id && <ClientDietaryBanner clientId={quote.client_id} />}
 
       {/* Version History */}
       <QuoteVersionHistory
@@ -157,7 +150,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             {quote.accepted_at && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Accepted At</dt>
-                <dd className="text-sm text-green-200 mt-1">
+                <dd className="text-sm text-green-700 mt-1">
                   {format(new Date(quote.accepted_at), "MMM d, yyyy 'at' h:mm a")}
                 </dd>
               </div>
@@ -165,7 +158,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             {quote.rejected_at && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Rejected At</dt>
-                <dd className="text-sm text-red-200 mt-1">
+                <dd className="text-sm text-red-700 mt-1">
                   {format(new Date(quote.rejected_at), "MMM d, yyyy 'at' h:mm a")}
                 </dd>
               </div>
@@ -219,17 +212,6 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         </Card>
       )}
 
-      <Card className="p-6">
-        <h2 className="mb-4 text-xl font-semibold text-stone-100">Client Cost Breakdown</h2>
-        <CostBreakdownEditor
-          quoteId={quote.id}
-          totalQuotedCents={quote.total_quoted_cents}
-          initialShowCostBreakdown={quote.show_cost_breakdown ?? false}
-          initialExclusionsNote={quote.exclusions_note ?? null}
-          initialLineItems={quoteBreakdown.lineItems}
-        />
-      </Card>
-
       {quote.internal_notes && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Internal Notes</h2>
@@ -242,7 +224,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       {quote.rejected_reason && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Rejection Reason</h2>
-          <p className="text-sm text-red-200 whitespace-pre-wrap">{quote.rejected_reason}</p>
+          <p className="text-sm text-red-700 whitespace-pre-wrap">{quote.rejected_reason}</p>
         </Card>
       )}
 

@@ -11,7 +11,7 @@ import {
 } from '@/lib/prospecting/script-actions'
 import type { CallScript } from '@/lib/prospecting/types'
 import { PROSPECT_CATEGORIES, PROSPECT_CATEGORY_LABELS } from '@/lib/prospecting/constants'
-import { Loader2, Save, Trash2, Plus } from '@/components/ui/icons'
+import { Loader2, Save, Trash2, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ScriptEditorProps {
@@ -87,7 +87,7 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-950 px-4 py-3 text-sm text-red-200">{error}</div>
+          <div className="rounded-lg bg-red-950 px-4 py-3 text-sm text-red-700">{error}</div>
         )}
 
         <div className="space-y-2">

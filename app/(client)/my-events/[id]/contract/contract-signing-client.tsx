@@ -61,7 +61,7 @@ export function ContractSigningClient({
     return (
       <div className="rounded-xl border border-red-200 bg-red-950 p-6 text-center space-y-2">
         <ContractStatusBadge status="voided" />
-        <p className="text-sm text-red-200">
+        <p className="text-sm text-red-700">
           This contract has been voided. Please contact your chef for an updated agreement.
         </p>
         <Button variant="secondary" onClick={() => router.push(`/my-events/${eventId}`)}>
@@ -76,7 +76,7 @@ export function ContractSigningClient({
       <div className="rounded-xl border border-green-200 bg-green-950 p-6 text-center space-y-3">
         <div className="text-4xl">✓</div>
         <ContractStatusBadge status="signed" />
-        <p className="text-sm text-green-200 font-medium">
+        <p className="text-sm text-green-700 font-medium">
           You signed this agreement{signedAt ? ` on ${signedAt}` : ''}.
         </p>
         <p className="text-xs text-stone-500">

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, Archive, Plus } from '@/components/ui/icons'
+import { ChevronDown, ChevronUp, Archive, Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import type { GoalView } from '@/lib/goals/types'
@@ -181,7 +181,7 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
 
             {/* Events needed narrative */}
             {!onTrack && enrichment.eventsNeeded > 0 && (
-              <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2 text-sm text-amber-200">
+              <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2 text-sm text-amber-800">
                 You need{' '}
                 <strong>
                   {enrichment.eventsNeeded} more event{enrichment.eventsNeeded === 1 ? '' : 's'}

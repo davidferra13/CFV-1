@@ -4,7 +4,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 const HELP_CONTENT: Record<string, { title: string; content: string }> = {

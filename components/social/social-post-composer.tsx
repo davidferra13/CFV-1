@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useTransition } from 'react'
-import { ImagePlus, Globe, Users, Lock, ChevronDown, X, MapPin, Hash } from '@/components/ui/icons'
+import { ImagePlus, Globe, Users, Lock, ChevronDown, X, MapPin, Hash } from 'lucide-react'
 import { createSocialPost, uploadPostMedia } from '@/lib/social/chef-social-actions'
 import type { PostVisibility, SocialChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'
@@ -111,7 +111,7 @@ export function SocialPostComposer({
       <div className="flex gap-3">
         <Avatar className="w-10 h-10 flex-shrink-0">
           {myAvatar && <AvatarImage src={myAvatar} alt={myName} />}
-          <AvatarFallback className="bg-amber-900 text-amber-200 text-xs font-semibold">
+          <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -232,7 +232,7 @@ export function SocialPostComposer({
                       setVisibility(opt.value)
                       setShowVisMenu(false)
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-stone-800 rounded-xl ${visibility === opt.value ? 'font-medium text-amber-200' : 'text-stone-300'}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-stone-800 rounded-xl ${visibility === opt.value ? 'font-medium text-amber-700' : 'text-stone-300'}`}
                   >
                     {opt.icon} {opt.label}
                   </button>

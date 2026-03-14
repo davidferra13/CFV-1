@@ -9,14 +9,7 @@ import {
   applyPipelineWeight,
   buildRangeProgress,
   buildRevenueGoalRecommendations,
-  computeAnnualRunRate,
   computeDinnersNeeded,
-  computePaceRatio,
-  computeTrend,
-  computeYoY,
-  filterSmartOpenDates,
-  getTypicalBookingDays,
-  paceRatioToStatus,
 } from './engine'
 
 const RevenueGoalCustomSchema = z
@@ -306,56 +299,6 @@ async function getDormantClientNames(
   return (clients || []).map((client: { full_name: string }) => client.full_name)
 }
 
-// ── Previous month realized revenue (for trend) ──────────────────────────────
-
-async function getPreviousMonthRealizedCents(
-  supabase: SupabaseClient,
-  tenantId: string,
-  now: Date
-): Promise<number> {
-  const prevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
-  const prevEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0))
-  const signals = await getRangeSignals(supabase, tenantId, isoDate(prevMonth), isoDate(prevEnd))
-  return signals.realizedCents
-}
-
-// ── Same month last year (for YoY) ───────────────────────────────────────────
-
-async function getLastYearSameMonthRealizedCents(
-  supabase: SupabaseClient,
-  tenantId: string,
-  now: Date
-): Promise<number> {
-  const lastYearStart = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth(), 1))
-  const lastYearEnd = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth() + 1, 0))
-  const signals = await getRangeSignals(
-    supabase,
-    tenantId,
-    isoDate(lastYearStart),
-    isoDate(lastYearEnd)
-  )
-  return signals.realizedCents
-}
-
-// ── Historical event dates (for smart open dates) ────────────────────────────
-
-async function getHistoricalEventDates(
-  supabase: SupabaseClient,
-  tenantId: string,
-  now: Date
-): Promise<string[]> {
-  const lookbackStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
-  const { data } = await supabase
-    .from('events')
-    .select('event_date')
-    .eq('tenant_id', tenantId)
-    .gte('event_date', isoDate(lookbackStart))
-    .lte('event_date', isoDate(now))
-    .not('status', 'eq', 'cancelled')
-
-  return ((data || []) as Array<{ event_date: string }>).map((e) => e.event_date)
-}
-
 async function buildRevenueGoalSnapshotForTenant(
   supabase: SupabaseClient,
   tenantId: string,
@@ -372,9 +315,6 @@ async function buildRevenueGoalSnapshotForTenant(
     averageBookingCents,
     openDatesThisMonth,
     dormantClientNames,
-    prevMonthRealized,
-    lastYearSameMonth,
-    historicalDates,
   ] = await Promise.all([
     getRangeSignals(supabase, tenantId, monthStart, monthEnd),
     getRangeSignals(supabase, tenantId, yearStart, yearEnd),
@@ -382,9 +322,6 @@ async function buildRevenueGoalSnapshotForTenant(
     getAverageBookingValueCents(supabase, tenantId, now),
     getOpenDatesThisMonth(supabase, tenantId, isoDate(now), monthEnd),
     getDormantClientNames(supabase, tenantId),
-    getPreviousMonthRealizedCents(supabase, tenantId, now),
-    getLastYearSameMonthRealizedCents(supabase, tenantId, now),
-    getHistoricalEventDates(supabase, tenantId, now),
   ])
 
   const monthlyPipelineWeighted = applyPipelineWeight(
@@ -402,9 +339,6 @@ async function buildRevenueGoalSnapshotForTenant(
     projectedCents: monthlyProjectedCents,
   })
 
-  // Annual run-rate: extrapolate from year-to-date pace
-  const annualRunRateCents = computeAnnualRunRate(annualSignals.realizedCents, yearStart, now)
-
   const annual =
     annualTargetCents == null
       ? null
@@ -413,10 +347,7 @@ async function buildRevenueGoalSnapshotForTenant(
           end: yearEnd,
           targetCents: annualTargetCents,
           realizedCents: annualSignals.realizedCents,
-          projectedCents: Math.max(
-            annualSignals.realizedCents + monthlyPipelineWeighted,
-            annualRunRateCents
-          ),
+          projectedCents: annualSignals.realizedCents + monthlyPipelineWeighted,
         })
 
   const custom = [] as Array<{
@@ -448,26 +379,6 @@ async function buildRevenueGoalSnapshotForTenant(
 
   const dinnersNeededThisMonth = computeDinnersNeeded(monthly.gapCents, averageBookingCents)
 
-  // Pace tracking
-  const monthlyPaceRatio = computePaceRatio(
-    monthlySignals.realizedCents,
-    prefs.target_monthly_revenue_cents,
-    monthStart,
-    monthEnd,
-    now
-  )
-  const monthlyPaceStatus = paceRatioToStatus(monthlyPaceRatio)
-
-  // Trend (month-over-month)
-  const trend = computeTrend(monthlySignals.realizedCents, prevMonthRealized)
-
-  // Year-over-year same month
-  const yoy = computeYoY(monthlySignals.realizedCents, lastYearSameMonth)
-
-  // Smart open dates (filter by chef's typical booking days)
-  const typicalBookingDays = getTypicalBookingDays(historicalDates)
-  const smartOpenDatesThisMonth = filterSmartOpenDates(openDatesThisMonth, typicalBookingDays)
-
   return {
     enabled: prefs.revenue_goal_program_enabled,
     nudgeLevel: prefs.revenue_goal_nudge_level,
@@ -477,22 +388,15 @@ async function buildRevenueGoalSnapshotForTenant(
     avgBookingValueCents: averageBookingCents,
     dinnersNeededThisMonth,
     openDatesThisMonth,
-    smartOpenDatesThisMonth,
-    typicalBookingDays,
     recommendations: buildRevenueGoalRecommendations({
       monthlyGapCents: monthly.gapCents,
       monthlyTargetCents: monthly.targetCents,
       dinnersNeededThisMonth,
       avgBookingValueCents: averageBookingCents,
-      openDatesThisMonth: smartOpenDatesThisMonth,
+      openDatesThisMonth,
       dormantClientNames,
       customGoals: custom,
     }),
-    monthlyPaceStatus,
-    monthlyPaceRatio,
-    annualRunRateCents: annualTargetCents != null ? annualRunRateCents : null,
-    trend,
-    yoy,
     computedAt: new Date().toISOString(),
   }
 }

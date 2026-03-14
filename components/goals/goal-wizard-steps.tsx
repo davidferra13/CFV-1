@@ -32,7 +32,7 @@ import {
   Heart,
   Soup,
   Target,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import type { GoalType, NudgeLevel, CreateGoalInput, GoalCategory } from '@/lib/goals/types'
 import { GOAL_TYPE_META, GOAL_CATEGORY_META, GOAL_TYPE_TO_CATEGORY } from '@/lib/goals/types'

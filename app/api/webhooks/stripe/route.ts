@@ -29,13 +29,6 @@ export async function POST(req: Request) {
 
   if (!signature) {
     console.error('[Stripe Webhook] No signature header')
-    await logWebhookEvent({
-      provider: 'stripe',
-      eventType: 'signature_missing',
-      status: 'failed',
-      errorText: 'Missing stripe-signature header',
-      payloadSizeBytes: body.length,
-    })
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
@@ -50,13 +43,6 @@ export async function POST(req: Request) {
   } catch (err) {
     const error = err as Error
     console.error('[Stripe Webhook] Signature verification failed')
-    await logWebhookEvent({
-      provider: 'stripe',
-      eventType: 'signature_verification_failed',
-      status: 'failed',
-      errorText: error.message,
-      payloadSizeBytes: body.length,
-    })
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -100,14 +86,6 @@ export async function POST(req: Request) {
 
     if (existingEntry) {
       console.log('[Stripe Webhook] Event already processed (idempotent):', event.id)
-      await logWebhookEvent({
-        provider: 'stripe',
-        eventType: event.type,
-        providerEventId: event.id,
-        status: 'skipped',
-        result: { reason: 'duplicate_ledger_entry' },
-        payloadSizeBytes: body.length,
-      })
       return NextResponse.json({ received: true, cached: true })
     }
   }
@@ -187,27 +165,10 @@ export async function POST(req: Request) {
         console.log('[Stripe Webhook] Unhandled event type:', event.type)
     }
 
-    await logWebhookEvent({
-      provider: 'stripe',
-      eventType: event.type,
-      providerEventId: event.id,
-      status: 'processed',
-      result: { ok: true },
-      payloadSizeBytes: body.length,
-    })
-
     return NextResponse.json({ received: true })
   } catch (error) {
     const err = error as Error
     console.error('[Stripe Webhook] Handler error:', err.message)
-    await logWebhookEvent({
-      provider: 'stripe',
-      eventType: event.type,
-      providerEventId: event.id,
-      status: 'failed',
-      errorText: err.message,
-      payloadSizeBytes: body.length,
-    })
     // Return 500 so Stripe retries
     return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
   }
@@ -449,16 +410,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   console.log('[handlePaymentSucceeded] Processing payment for event:', event_id)
 
   // Determine entry type based on payment_type metadata
-  const isTipPayment = payment_type === 'tip'
-  const entryType =
-    payment_type === 'deposit'
-      ? ('deposit' as const)
-      : isTipPayment
-        ? ('tip' as const)
-        : ('payment' as const)
-  const entryDescription = isTipPayment
-    ? `Client tip received for event ${event_id}`
-    : `Stripe payment for event ${event_id} (${payment_type})`
+  const entryType = payment_type === 'deposit' ? ('deposit' as const) : ('payment' as const)
 
   // 1. Append to ledger (transaction_reference = stripe event ID for idempotency)
   const result = await appendLedgerEntryFromWebhook({
@@ -467,7 +419,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     entry_type: entryType,
     amount_cents: paymentIntent.amount, // Already in cents
     payment_method: 'card',
-    description: entryDescription,
+    description: `Stripe payment for event ${event_id} (${payment_type})`,
     event_id,
     transaction_reference: event.id,
     internal_notes: `PaymentIntent: ${paymentIntent.id}`,
@@ -530,64 +482,6 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         transferErr
       )
     }
-  }
-
-  if (isTipPayment) {
-    try {
-      const amountFormatted = (paymentIntent.amount / 100).toFixed(2)
-      const [{ createNotification, getChefAuthUserId }, { createClientNotification }] =
-        await Promise.all([
-          import('@/lib/notifications/actions'),
-          import('@/lib/notifications/client-actions'),
-        ])
-
-      const chefUserId = await getChefAuthUserId(tenant_id)
-      if (chefUserId) {
-        await createNotification({
-          tenantId: tenant_id,
-          recipientId: chefUserId,
-          category: 'payment',
-          action: 'payment_received',
-          title: 'Tip received',
-          body: `$${amountFormatted} tip received`,
-          actionUrl: `/events/${event_id}`,
-          eventId: event_id,
-          clientId: client_id,
-          metadata: {
-            amount_cents: paymentIntent.amount,
-            stripe_event_id: event.id,
-            payment_type: 'tip',
-          },
-        })
-      }
-
-      await createClientNotification({
-        tenantId: tenant_id,
-        clientId: client_id,
-        category: 'payment',
-        action: 'event_paid_to_client',
-        title: 'Tip confirmed',
-        body: `Your $${amountFormatted} tip has been confirmed`,
-        actionUrl: `/my-events/${event_id}#review`,
-        eventId: event_id,
-      })
-    } catch (tipNotifErr) {
-      console.error('[handlePaymentSucceeded] Tip notification failed (non-blocking):', tipNotifErr)
-    }
-
-    try {
-      revalidatePath(`/events/${event_id}`)
-      revalidatePath(`/my-events/${event_id}`)
-      revalidatePath('/events')
-      revalidatePath('/my-events')
-    } catch (cacheErr) {
-      console.error(
-        '[handlePaymentSucceeded] Tip cache invalidation failed (non-blocking):',
-        cacheErr
-      )
-    }
-
-    return
   }
 
   // 3. Check financial summary (reuse the admin client created above)
@@ -674,33 +568,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       )
     }
 
-    // Circle-first: post payment notification to circle (non-blocking)
-    try {
-      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
-      const amount = (paymentIntent.amount / 100).toFixed(2)
-      const typeLabel = payment_type === 'deposit' ? 'Deposit' : 'Payment'
-
-      await circleFirstNotify({
-        eventId: event_id,
-        tenantId: tenant_id,
-        notificationType: 'payment_received',
-        body: `${typeLabel} of $${amount} received. Thank you!`,
-        metadata: {
-          event_id: event_id,
-          amount_cents: paymentIntent.amount,
-          payment_type: payment_type || 'payment',
-        },
-        actionUrl: `/my-events/${event_id}`,
-        actionLabel: 'View Invoice',
-      })
-    } catch (circleErr) {
-      console.error(
-        '[handlePaymentSucceeded] Circle-first notify failed (non-blocking):',
-        circleErr
-      )
-    }
-
-    // Chef email notification (chef-only, stays as standalone email)
+    // Send payment confirmation email to client + chef (non-blocking)
     try {
       const { data: eventData } = await supabaseAdmin
         .from('events')
@@ -710,7 +578,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
       const { data: clientData } = await (supabaseAdmin
         .from('clients')
-        .select('email, full_name')
+        .select('email, full_name, loyalty_tier, loyalty_points')
         .eq('id', client_id)
         .single() as any)
 
@@ -720,24 +588,41 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         .eq('id', tenant_id)
         .single()
 
-      if (chefData?.email && eventData && clientData) {
-        const { sendPaymentReceivedChefEmail } = await import('@/lib/email/notifications')
+      if (clientData?.email && eventData) {
+        const { sendPaymentConfirmationEmail, sendPaymentReceivedChefEmail } =
+          await import('@/lib/email/notifications')
         const remaining = (financialSummary as any).outstanding_balance_cents
 
-        await sendPaymentReceivedChefEmail({
-          chefEmail: chefData.email,
-          chefName: chefData.business_name || chefData.display_name || 'Chef',
+        // Client receipt
+        await sendPaymentConfirmationEmail({
+          clientEmail: clientData.email,
           clientName: clientData.full_name,
           amountCents: paymentIntent.amount,
           paymentType: payment_type || 'payment',
           occasion: eventData.occasion || 'your event',
           eventDate: eventData.event_date,
-          eventId: event_id,
           remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
+          loyaltyTier: (clientData as any).loyalty_tier ?? null,
+          loyaltyPoints: (clientData as any).loyalty_points ?? null,
         })
+
+        // Chef email notification (in addition to in-app notification)
+        if (chefData?.email) {
+          await sendPaymentReceivedChefEmail({
+            chefEmail: chefData.email,
+            chefName: chefData.business_name || chefData.display_name || 'Chef',
+            clientName: clientData.full_name,
+            amountCents: paymentIntent.amount,
+            paymentType: payment_type || 'payment',
+            occasion: eventData.occasion || 'your event',
+            eventDate: eventData.event_date,
+            eventId: event_id,
+            remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
+          })
+        }
       }
     } catch (emailErr) {
-      console.error('[handlePaymentSucceeded] Chef email failed (non-blocking):', emailErr)
+      console.error('[handlePaymentSucceeded] Email failed (non-blocking):', emailErr)
     }
 
     // Instant-book: send dedicated chef notification email (non-blocking)

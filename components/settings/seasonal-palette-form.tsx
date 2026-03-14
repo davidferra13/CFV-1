@@ -279,12 +279,12 @@ export function SeasonalPaletteForm({
       {/* Feedback */}
       {error && (
         <div className="bg-red-950 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-200">{error}</p>
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
       {success && (
         <div className="bg-green-950 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-200">Saved!</p>
+          <p className="text-sm text-green-700">Saved!</p>
         </div>
       )}
 

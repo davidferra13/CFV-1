@@ -78,7 +78,6 @@ function labelForPath(path: string): string {
     '/events/upcoming': 'Upcoming Events',
     '/events/board': 'Event Board',
     '/clients': 'Clients',
-    '/clients/recurring': 'Recurring Board',
     '/clients/new': 'New Client',
     '/inquiries': 'Inquiries',
     '/quotes': 'Quotes',

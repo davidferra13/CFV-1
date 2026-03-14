@@ -14,13 +14,11 @@ export const metadata: Metadata = { title: 'Menu Drafting - ChefFlow' }
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
-  contact_name: string | null
   unknown_fields: unknown
 }): string {
-  if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.client_name as string) || 'Unknown Contact'
+  return (unknown?.client_name as string) || 'Unknown Lead'
 }
 
 export default async function MenuDraftingPage() {

@@ -3,7 +3,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2 } from '@/components/ui/icons'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createWebhookEndpoint, deleteWebhookEndpoint } from '@/lib/webhooks/actions'
 

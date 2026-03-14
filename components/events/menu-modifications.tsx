@@ -51,7 +51,6 @@ export function MenuModifications({
   const [mods, setMods] = useState<Modification[]>(initialModifications)
   const [isAdding, setIsAdding] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [removingId, setRemovingId] = useState<string | null>(null)
   const [modType, setModType] = useState<string>('substitution')
   const [original, setOriginal] = useState('')
   const [actual, setActual] = useState('')
@@ -91,14 +90,14 @@ export function MenuModifications({
   }
 
   async function handleRemove(id: string) {
-    setRemovingId(id)
+    setSaving(true)
     try {
       await deleteMenuModification(id, eventId)
       setMods(mods.filter((m) => m.id !== id))
     } catch (e) {
       console.error(e)
     } finally {
-      setRemovingId(null)
+      setSaving(false)
     }
   }
 
@@ -218,10 +217,10 @@ export function MenuModifications({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemove(m.id)}
-                        disabled={removingId === m.id || saving}
-                        className="text-red-600 hover:text-red-200"
+                        disabled={saving}
+                        className="text-red-600 hover:text-red-700"
                       >
-                        {removingId === m.id ? 'Removing...' : 'Remove'}
+                        Remove
                       </Button>
                     </div>
                   </div>

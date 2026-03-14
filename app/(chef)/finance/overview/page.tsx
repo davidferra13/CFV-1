@@ -4,15 +4,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { getEvents } from '@/lib/events/actions'
 import { getExpenses } from '@/lib/expenses/actions'
-import {
-  getRevenuePerHour,
-  getRevenuePerHourBenchmark,
-} from '@/lib/finance/revenue-per-hour-actions'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
-import { RevenuePerHourCard } from '@/components/finance/revenue-per-hour-card'
-import { getConcentrationRisk } from '@/lib/finance/concentration-actions'
-import { ConcentrationWarningCard } from '@/components/dashboard/concentration-warning-card'
 
 export const metadata: Metadata = { title: 'Finance Overview - ChefFlow' }
 
@@ -39,13 +32,10 @@ const VIEWS = [
 
 export default async function FinanceOverviewPage() {
   await requireChef()
-  const [summary, events, expenses, rphData, rphBenchmark, concentrationRisk] = await Promise.all([
+  const [summary, events, expenses] = await Promise.all([
     getTenantFinancialSummary(),
     getEvents(),
     getExpenses(),
-    getRevenuePerHour('30d'),
-    getRevenuePerHourBenchmark(),
-    getConcentrationRisk(),
   ])
 
   const totalExpenses = expenses.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
@@ -85,37 +75,24 @@ export default async function FinanceOverviewPage() {
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
             Total Business Expenses
           </p>
-          <p className="text-3xl font-bold text-red-200">{formatCurrency(totalExpenses)}</p>
+          <p className="text-3xl font-bold text-red-700">{formatCurrency(totalExpenses)}</p>
           <p className="text-sm text-stone-500 mt-1">{expenses.length} expense records</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
             Completed Event Revenue
           </p>
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(completedRevenue)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(completedRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">{completedEvents.length} completed events</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
             Outstanding Balances
           </p>
-          <p className="text-2xl font-bold text-amber-200">{outstandingEvents.length}</p>
+          <p className="text-2xl font-bold text-amber-700">{outstandingEvents.length}</p>
           <p className="text-sm text-stone-500 mt-1">past events with unpaid balance</p>
         </Card>
       </div>
-
-      {/* Revenue Per Hour Card */}
-      <RevenuePerHourCard
-        effectiveRateCents={rphData.revenuePerHourCents}
-        cookingOnlyRateCents={rphData.cookingOnlyPerHourCents}
-        percentChange={rphBenchmark.percentChange}
-        breakdown={rphData.breakdown}
-        nonCookingPercent={rphData.nonCookingPercent}
-        eventsWithTimeData={rphData.eventsWithTimeData}
-      />
-
-      {/* Revenue Concentration */}
-      <ConcentrationWarningCard risk={concentrationRisk} />
 
       <div className="grid grid-cols-3 gap-4">
         {VIEWS.map((v) => (

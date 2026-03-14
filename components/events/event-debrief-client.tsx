@@ -63,7 +63,7 @@ function Section({
         </div>
         <div className="flex items-center gap-2">
           {saved && (
-            <span className="text-xs font-medium text-green-200 bg-green-900 rounded-full px-2 py-0.5">
+            <span className="text-xs font-medium text-green-700 bg-green-900 rounded-full px-2 py-0.5">
               Saved
             </span>
           )}
@@ -700,7 +700,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   ) : draftState === 'error' ? (
                     <span className="text-red-500">Try again</span>
                   ) : (
-                    <>Auto Draft</>
+                    <>✨ Auto Draft</>
                   )}
                 </button>
               )}
@@ -733,7 +733,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
         {completeError && <p className="text-sm text-red-600">{completeError}</p>}
 
         {blanks.event.debriefCompletedAt ? (
-          <p className="text-sm text-green-200 font-medium">
+          <p className="text-sm text-green-700 font-medium">
             &#10003; Debrief marked complete. You can still edit any section above.
           </p>
         ) : (

@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { generateStaffBriefingTemplate } from '@/lib/templates/staff-briefing'
 
@@ -179,8 +179,7 @@ Return JSON: {
       }),
     // AI: enhanced briefing with personalized tone (when Ollama is online)
     async () => {
-      const aiResult = (await dispatchPrivate(systemPrompt, userContent, StaffBriefingSchema))
-        .result
+      const aiResult = await parseWithOllama(systemPrompt, userContent, StaffBriefingSchema)
       return { ...aiResult, generatedAt: new Date().toISOString() }
     }
   )

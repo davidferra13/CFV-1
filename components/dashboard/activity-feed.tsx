@@ -22,7 +22,7 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
   if (events.length === 0) {
     return (
       <div className="border border-stone-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-stone-200 mb-2">Recent Activity</h3>
+        <h3 className="text-sm font-semibold text-stone-700 mb-2">Recent Activity</h3>
         <p className="text-xs text-stone-400">No activity recorded yet</p>
       </div>
     )
@@ -30,7 +30,7 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
 
   return (
     <div className="border border-stone-200 rounded-lg p-4">
-      <h3 className="text-sm font-semibold text-stone-200 mb-3">Recent Activity</h3>
+      <h3 className="text-sm font-semibold text-stone-700 mb-3">Recent Activity</h3>
       <div className="space-y-1.5 max-h-64 overflow-y-auto">
         {events.map((event) => (
           <ActivityRow key={event.id} event={event} />
@@ -54,7 +54,7 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
     <div className="flex items-center justify-between text-xs py-1 px-1 rounded hover:bg-stone-50 transition-colors">
       <div className="flex items-center gap-2 min-w-0">
         <ActorBadge type={event.actor_type} />
-        <span className="text-stone-200 truncate">
+        <span className="text-stone-700 truncate">
           {description}
           {event.entity_type && <span className="text-stone-400"> ({event.entity_type})</span>}
         </span>
@@ -71,8 +71,8 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
 
 function ActorBadge({ type }: { type: string }) {
   const config: Record<string, { bg: string; label: string }> = {
-    client: { bg: 'bg-blue-900 text-blue-200', label: 'Client' },
-    chef: { bg: 'bg-emerald-900 text-emerald-200', label: 'Chef' },
+    client: { bg: 'bg-blue-900 text-blue-700', label: 'Client' },
+    chef: { bg: 'bg-emerald-900 text-emerald-700', label: 'Chef' },
     system: { bg: 'bg-stone-100 text-stone-600', label: 'System' },
   }
   const c = config[type] || config.system

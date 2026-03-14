@@ -105,8 +105,7 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION
-  WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 DO $$ BEGIN
   CREATE POLICY "dish_photos_chef_update"
@@ -117,8 +116,7 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION
-  WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 DO $$ BEGIN
   CREATE POLICY "dish_photos_chef_delete"
@@ -129,14 +127,12 @@ DO $$ BEGIN
     AND get_current_user_role() = 'chef'
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
-EXCEPTION
-  WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 DO $$ BEGIN
   CREATE POLICY "dish_photos_public_read"
   ON storage.objects FOR SELECT
   TO public
   USING (bucket_id = 'dish-photos');
-EXCEPTION
-  WHEN duplicate_object OR insufficient_privilege THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

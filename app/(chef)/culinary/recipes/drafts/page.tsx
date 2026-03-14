@@ -16,19 +16,19 @@ import {
 export const metadata: Metadata = { title: 'Incomplete Recipes - ChefFlow' }
 
 const CATEGORY_STYLES: Record<string, string> = {
-  sauce: 'bg-orange-900 text-orange-200',
-  protein: 'bg-red-900 text-red-200',
-  starch: 'bg-yellow-900 text-yellow-200',
-  vegetable: 'bg-green-900 text-green-200',
-  fruit: 'bg-lime-900 text-lime-200',
-  dessert: 'bg-pink-900 text-pink-200',
-  bread: 'bg-amber-900 text-amber-200',
+  sauce: 'bg-orange-900 text-orange-700',
+  protein: 'bg-red-900 text-red-700',
+  starch: 'bg-yellow-900 text-yellow-700',
+  vegetable: 'bg-green-900 text-green-700',
+  fruit: 'bg-lime-900 text-lime-700',
+  dessert: 'bg-pink-900 text-pink-700',
+  bread: 'bg-amber-900 text-amber-700',
   pasta: 'bg-yellow-900 text-yellow-600',
-  soup: 'bg-teal-900 text-teal-200',
-  salad: 'bg-emerald-900 text-emerald-200',
-  appetizer: 'bg-purple-900 text-purple-200',
+  soup: 'bg-teal-900 text-teal-700',
+  salad: 'bg-emerald-900 text-emerald-700',
+  appetizer: 'bg-purple-900 text-purple-700',
   condiment: 'bg-stone-800 text-stone-300',
-  beverage: 'bg-sky-900 text-sky-200',
+  beverage: 'bg-sky-900 text-sky-700',
   other: 'bg-stone-800 text-stone-400',
 }
 
@@ -116,7 +116,7 @@ export default async function IncompleteRecipesPage() {
                         {missing.map((field) => (
                           <span
                             key={field}
-                            className="text-xs bg-red-900 text-red-200 px-2 py-0.5 rounded-full"
+                            className="text-xs bg-red-900 text-red-700 px-2 py-0.5 rounded-full"
                           >
                             {field}
                           </span>

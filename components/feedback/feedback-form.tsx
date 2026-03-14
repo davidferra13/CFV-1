@@ -66,13 +66,13 @@ export function FeedbackForm() {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-950 p-5 text-center space-y-2">
         <p className="text-2xl">🙏</p>
-        <p className="font-medium text-emerald-200">Thanks for your feedback!</p>
-        <p className="text-sm text-emerald-200">
+        <p className="font-medium text-emerald-800">Thanks for your feedback!</p>
+        <p className="text-sm text-emerald-700">
           We read every submission and use it to make ChefFlow better.
         </p>
         <button
           onClick={reset}
-          className="mt-2 text-sm text-emerald-200 underline underline-offset-2 hover:text-emerald-900"
+          className="mt-2 text-sm text-emerald-700 underline underline-offset-2 hover:text-emerald-900"
         >
           Send another
         </button>

@@ -3,7 +3,7 @@
 
 import { useRouter } from 'next/navigation'
 import { differenceInDays, format } from 'date-fns'
-import { Calendar, Users, Tag, Clock, DollarSign } from '@/components/ui/icons'
+import { Calendar, Users, Tag, Clock, DollarSign } from 'lucide-react'
 
 export interface KanbanCardInquiry {
   id: string
@@ -67,7 +67,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
       {/* Client name + stuck badge */}
       <div className="flex items-start justify-between gap-1">
         <p className="font-semibold text-stone-100 text-sm leading-snug truncate flex-1">
-          {inquiry.client_name || 'Unknown Contact'}
+          {inquiry.client_name || 'Unknown Lead'}
         </p>
         {isStuck && (
           <span className="shrink-0 text-[10px] font-medium text-red-600 bg-red-900 px-1.5 py-0.5 rounded">
@@ -75,7 +75,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
           </span>
         )}
         {isSlowing && !isStuck && (
-          <span className="shrink-0 text-[10px] font-medium text-amber-200 bg-amber-900 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-900 px-1.5 py-0.5 rounded">
             {daysSinceUpdate}d
           </span>
         )}
@@ -108,7 +108,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
           <span />
         )}
         {budgetFormatted && (
-          <div className="flex items-center gap-0.5 text-xs font-medium text-emerald-200">
+          <div className="flex items-center gap-0.5 text-xs font-medium text-emerald-700">
             <DollarSign className="h-3 w-3 shrink-0" />
             <span>{budgetFormatted.replace('$', '')}</span>
           </div>

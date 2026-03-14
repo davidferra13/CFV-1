@@ -21,7 +21,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
   if (clients.length === 0) {
     return (
       <div className="border border-stone-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-stone-200 mb-2">Active Now</h3>
+        <h3 className="text-sm font-semibold text-stone-700 mb-2">Active Now</h3>
         <p className="text-xs text-stone-400">No clients active in the last 15 minutes</p>
       </div>
     )
@@ -30,7 +30,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
   return (
     <div className="border border-stone-200 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-stone-200">Active Now</h3>
+        <h3 className="text-sm font-semibold text-stone-700">Active Now</h3>
         <span className="flex items-center gap-1.5 text-xs text-emerald-600">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           {clients.length} online
@@ -47,7 +47,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
               <span className="w-6 h-6 rounded-full bg-brand-900 text-brand-700 flex items-center justify-center text-[10px] font-bold">
                 {client.client_name.charAt(0).toUpperCase()}
               </span>
-              <span className="font-medium text-stone-200">{client.client_name}</span>
+              <span className="font-medium text-stone-800">{client.client_name}</span>
             </div>
             <span className="text-stone-400">
               {EVENT_LABELS[client.event_type] || client.event_type}

@@ -1,6 +1,6 @@
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type IncentiveDeliveryEmailProps = {
   recipientName?: string | null
@@ -11,7 +11,6 @@ type IncentiveDeliveryEmailProps = {
   valueLabel: string
   expiresAt?: string | null
   personalMessage?: string | null
-  brand?: ChefBrandProps
 }
 
 function formatTypeLabel(type: 'voucher' | 'gift_card') {
@@ -27,13 +26,9 @@ export function IncentiveDeliveryEmail({
   valueLabel,
   expiresAt,
   personalMessage,
-  brand,
 }: IncentiveDeliveryEmailProps) {
   return (
-    <BaseLayout
-      brand={brand}
-      preview={`${senderName} sent you a ${formatTypeLabel(incentiveType)}`}
-    >
+    <BaseLayout preview={`${senderName} sent you a ${formatTypeLabel(incentiveType)}`}>
       <Text style={heading}>You received a {formatTypeLabel(incentiveType)}</Text>
 
       <Text style={paragraph}>Hi {recipientName?.trim() || 'there'},</Text>

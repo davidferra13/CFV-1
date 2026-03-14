@@ -1,35 +1,17 @@
 'use client'
 
-import { useEffect, useState, FormEvent } from 'react'
+import { useState, FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { FeaturedBookingMenuCard } from '@/components/public/featured-booking-menu-card'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
-import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
-import type {
-  FeaturedBookingMenuShowcase,
-  PublicFeaturedBookingMenu,
-} from '@/lib/booking/featured-menu-shared'
 
 interface Props {
   chefSlug: string
   chefName: string
   primaryColor: string
-  initialValues?: Partial<FormData>
-  campaignSource?: 'public_profile' | 'rebook_qr' | 'referral_qr'
-  rebookToken?: string
-  referralCode?: string
-  formTitle?: string
-  formDescription?: string
-  successTitle?: string
-  successDescription?: string
-  prefillNotice?: string | null
-  submitLabel?: string
-  selectedMenu?: PublicFeaturedBookingMenu | null
-  selectedMenuShowcase?: FeaturedBookingMenuShowcase | null
 }
 
 interface FormData {
@@ -44,12 +26,10 @@ interface FormData {
   guest_count: string
   occasion: string
   budget_range: string
-  budget_exact_amount: string
   allergy_flag: string
   favorite_ingredients_dislikes: string
   allergies_food_restrictions: string
   additional_notes: string
-  website_url: string
 }
 
 interface FormErrors {
@@ -64,36 +44,8 @@ interface FormErrors {
   guest_count?: string
   occasion?: string
   budget_range?: string
-  budget_exact_amount?: string
   allergy_flag?: string
   allergies_food_restrictions?: string
-}
-
-const DEFAULT_FORM_DATA: FormData = {
-  full_name: '',
-  address: '',
-  month: '',
-  day: '',
-  year: '',
-  serve_time: '',
-  email: '',
-  phone: '',
-  guest_count: '',
-  occasion: '',
-  budget_range: '',
-  budget_exact_amount: '',
-  allergy_flag: '',
-  favorite_ingredients_dislikes: '',
-  allergies_food_restrictions: '',
-  additional_notes: '',
-  website_url: '',
-}
-
-function createInitialFormData(initialValues?: Partial<FormData>): FormData {
-  return {
-    ...DEFAULT_FORM_DATA,
-    ...initialValues,
-  }
 }
 
 const MONTH_OPTIONS = [
@@ -117,7 +69,6 @@ const BUDGET_RANGE_OPTIONS = [
   { value: '1500_3000', label: '$1,500 – $3,000' },
   { value: '3000_5000', label: '$3,000 – $5,000' },
   { value: 'over_5000', label: '$5,000+' },
-  { value: 'not_sure', label: 'Not sure yet' },
 ]
 
 const ALLERGY_FLAG_OPTIONS = [
@@ -142,81 +93,29 @@ const GUEST_COUNT_OPTIONS = [
   { value: '20', label: '20+ Guests' },
 ]
 
-function getBudgetMode(
-  budgetRange: string,
-  budgetExactAmount: string
-): 'exact' | 'range' | 'not_sure' | 'unset' {
-  if (budgetExactAmount.trim()) return 'exact'
-  if (budgetRange === 'not_sure') return 'not_sure'
-  if (budgetRange) return 'range'
-  return 'unset'
-}
-
-export function PublicInquiryForm({
-  chefSlug,
-  chefName,
-  primaryColor,
-  initialValues,
-  campaignSource = 'public_profile',
-  rebookToken,
-  referralCode,
-  formTitle = 'Send inquiry',
-  formDescription = "Share the basics and we'll follow up.",
-  successTitle = 'Inquiry sent',
-  successDescription,
-  prefillNotice,
-  submitLabel = 'Send inquiry',
-  selectedMenu = null,
-  selectedMenuShowcase = null,
-}: Props) {
-  const [formData, setFormData] = useState<FormData>(() => createInitialFormData(initialValues))
+export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
+  const [formData, setFormData] = useState<FormData>({
+    full_name: '',
+    address: '',
+    month: '',
+    day: '',
+    year: '',
+    serve_time: '',
+    email: '',
+    phone: '',
+    guest_count: '',
+    occasion: '',
+    budget_range: '',
+    allergy_flag: '',
+    favorite_ingredients_dislikes: '',
+    allergies_food_restrictions: '',
+    additional_notes: '',
+  })
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [returningClient, setReturningClient] = useState(
-    Boolean(prefillNotice) || campaignSource === 'rebook_qr'
-  )
-  const [lookupDone, setLookupDone] = useState(
-    Boolean(initialValues?.email) || campaignSource === 'rebook_qr'
-  )
-
-  useEffect(() => {
-    setFormData(createInitialFormData(initialValues))
-    setReturningClient(Boolean(prefillNotice) || campaignSource === 'rebook_qr')
-    setLookupDone(Boolean(initialValues?.email) || campaignSource === 'rebook_qr')
-  }, [campaignSource, initialValues, prefillNotice])
-
-  // Client lookup on email blur - pre-fill returning client preferences
-  const handleEmailBlur = async () => {
-    const email = formData.email.trim()
-    if (!email || lookupDone) return
-    try {
-      const res = await fetch('/api/public/client-lookup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, chefSlug }),
-      })
-      const data = await res.json()
-      if (data.found && data.prefill) {
-        // NOTE: PII fields (name, phone, allergies, address) are intentionally
-        // NOT returned by the lookup endpoint for unauthenticated callers.
-        // Only non-sensitive event prefill (occasion, guest_count, serve_time)
-        // is available. See security-audit-2026-03-11.md findings #4/#9.
-        setReturningClient(true)
-        setFormData((prev) => ({
-          ...prev,
-          serve_time: prev.serve_time || data.prefill.serve_time || '',
-          guest_count: prev.guest_count || data.prefill.guest_count || '',
-          occasion: prev.occasion || data.prefill.occasion || '',
-        }))
-      }
-      setLookupDone(true)
-    } catch {
-      // Non-critical, ignore
-    }
-  }
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -293,13 +192,6 @@ export function PublicInquiryForm({
       newErrors.budget_range = 'Budget range is required'
     }
 
-    if (formData.budget_exact_amount.trim()) {
-      const parsedBudget = Number(formData.budget_exact_amount)
-      if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
-        newErrors.budget_exact_amount = 'Enter a valid amount'
-      }
-    }
-
     if (!formData.allergy_flag) {
       newErrors.allergy_flag = 'Please indicate allergy status'
     }
@@ -326,17 +218,9 @@ export function PublicInquiryForm({
       const year = Number(formData.year)
       const eventDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const guestCount = parseInt(formData.guest_count, 10)
-      const budgetCents = formData.budget_exact_amount.trim()
-        ? Math.round(Number(formData.budget_exact_amount) * 100)
-        : null
-      const budgetMode = getBudgetMode(formData.budget_range, formData.budget_exact_amount)
 
       await submitPublicInquiry({
         chef_slug: chefSlug,
-        selected_menu_id: selectedMenu?.id,
-        campaign_source: campaignSource,
-        rebook_token: rebookToken,
-        referral_code: referralCode,
         full_name: formData.full_name.trim(),
         address: formData.address.trim(),
         event_date: eventDate,
@@ -345,7 +229,6 @@ export function PublicInquiryForm({
         phone: formData.phone.trim(),
         guest_count: guestCount,
         occasion: formData.occasion.trim(),
-        budget_cents: budgetCents,
         budget_range:
           (formData.budget_range as
             | 'under_500'
@@ -353,26 +236,32 @@ export function PublicInquiryForm({
             | '1500_3000'
             | '3000_5000'
             | 'over_5000'
-            | 'not_sure'
             | undefined) || undefined,
         allergy_flag:
           (formData.allergy_flag as 'none' | 'yes' | 'unknown' | undefined) || undefined,
         favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
         allergies_food_restrictions: formData.allergies_food_restrictions.trim(),
         additional_notes: formData.additional_notes.trim(),
-        website_url: formData.website_url,
-      })
-
-      trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
-        source: campaignSource,
-        budget_mode: budgetMode,
-        budget_range: formData.budget_range || null,
-        budget_exact_entered: budgetCents != null,
-        guest_count: guestCount,
       })
 
       setShowSuccess(true)
-      setFormData(createInitialFormData())
+      setFormData({
+        full_name: '',
+        address: '',
+        month: '',
+        day: '',
+        year: '',
+        serve_time: '',
+        email: '',
+        phone: '',
+        guest_count: '',
+        occasion: '',
+        budget_range: '',
+        allergy_flag: '',
+        favorite_ingredients_dislikes: '',
+        allergies_food_restrictions: '',
+        additional_notes: '',
+      })
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -410,12 +299,9 @@ export function PublicInquiryForm({
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-stone-100 mb-2">{successTitle}</h2>
+          <h2 className="text-2xl font-bold text-stone-100 mb-2">Inquiry sent</h2>
           <p className="text-stone-400 mb-6">
-            {successDescription ||
-              (selectedMenu
-                ? `${chefName} will review your request for ${selectedMenu.name} and reply within 24 hours.`
-                : `${chefName} will review your details and reply within 24 hours.`)}
+            {chefName} will review your details and reply within 24 hours.
           </p>
           <button
             type="button"
@@ -435,45 +321,17 @@ export function PublicInquiryForm({
       <CardContent className="p-6 md:p-8">
         {submitError && (
           <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
-            <p className="text-red-200 text-sm">{submitError}</p>
+            <p className="text-red-700 text-sm">{submitError}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="relative space-y-6">
-          <div className="absolute opacity-0 -z-10 pointer-events-none" aria-hidden="true">
-            <input
-              type="text"
-              name="website_url"
-              tabIndex={-1}
-              autoComplete="off"
-              value={formData.website_url}
-              onChange={handleChange}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-stone-100">{formTitle}</h2>
-            <p className="text-base text-stone-500 mt-2">{formDescription}</p>
+            <h2 className="text-3xl font-semibold text-stone-100">Send inquiry</h2>
+            <p className="text-base text-stone-500 mt-2">
+              Share the basics and we&apos;ll follow up.
+            </p>
           </div>
-
-          {prefillNotice && (
-            <div className="rounded-lg border border-emerald-800 bg-emerald-950/70 px-4 py-3 text-sm text-emerald-400">
-              {prefillNotice}
-            </div>
-          )}
-
-          {selectedMenu && (
-            <FeaturedBookingMenuCard
-              menu={selectedMenu}
-              primaryColor={primaryColor}
-              compact
-              eyebrow={selectedMenuShowcase?.badge || 'Featured Menu'}
-              title={selectedMenuShowcase?.title || selectedMenu.name}
-              description={
-                selectedMenuShowcase?.pitch ||
-                'This inquiry will start from the featured menu below so you can move faster than a fully custom menu request.'
-              }
-            />
-          )}
 
           <Input
             label="Full Name"
@@ -538,7 +396,7 @@ export function PublicInquiryForm({
                 placeholder="HH:MM AM"
               />
             </div>
-            <p className="text-sm text-amber-200">Chef typically arrives 2 hours before service.</p>
+            <p className="text-sm text-amber-700">Chef typically arrives 2 hours before service.</p>
           </div>
 
           <Input
@@ -547,16 +405,10 @@ export function PublicInquiryForm({
             type="email"
             value={formData.email}
             onChange={handleChange}
-            onBlur={handleEmailBlur}
             error={errors.email}
             required
             placeholder="Email"
           />
-          {returningClient && !prefillNotice && (
-            <p className="text-xs text-emerald-500 -mt-3">
-              Welcome back! We pre-filled your details from your last booking.
-            </p>
-          )}
 
           <Input
             label="Phone"
@@ -588,24 +440,12 @@ export function PublicInquiryForm({
           />
 
           <Select
-            label="Target investment (estimate) *"
+            label="Budget range *"
             name="budget_range"
             value={formData.budget_range}
             onChange={handleChange}
             error={errors.budget_range}
             options={BUDGET_RANGE_OPTIONS}
-          />
-          <Input
-            label="Exact budget (optional)"
-            name="budget_exact_amount"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.budget_exact_amount}
-            onChange={handleChange}
-            error={errors.budget_exact_amount}
-            placeholder="e.g. 1800"
-            helperText="If known, enter an exact total budget."
           />
 
           <Textarea
@@ -653,7 +493,7 @@ export function PublicInquiryForm({
             className="w-full text-white hover:opacity-90"
             style={{ backgroundColor: primaryColor }}
           >
-            {isSubmitting ? 'Sending...' : submitLabel}
+            {isSubmitting ? 'Sending...' : 'Send inquiry'}
           </Button>
 
           <p className="text-xs text-stone-400 text-center">

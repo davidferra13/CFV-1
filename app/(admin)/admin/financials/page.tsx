@@ -3,7 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { DollarSign } from '@/components/ui/icons'
+import { DollarSign } from 'lucide-react'
 import { ProfitAndLossReport } from '@/components/finance/ProfitAndLossReport'
 import {
   getDefaultProfitLossWindow,
@@ -18,11 +18,11 @@ function formatCents(cents: number): string {
 }
 
 const ENTRY_TYPE_COLORS: Record<string, string> = {
-  payment: 'bg-green-900 text-green-200',
-  deposit: 'bg-blue-900 text-blue-200',
+  payment: 'bg-green-900 text-green-700',
+  deposit: 'bg-blue-900 text-blue-700',
   expense: 'bg-red-900 text-red-600',
-  tip: 'bg-yellow-900 text-yellow-200',
-  refund: 'bg-orange-900 text-orange-200',
+  tip: 'bg-yellow-900 text-yellow-700',
+  refund: 'bg-orange-900 text-orange-700',
 }
 
 export default async function AdminFinancialsPage() {

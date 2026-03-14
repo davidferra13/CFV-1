@@ -50,32 +50,23 @@ import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-promp
 import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
-import { MarketplaceActionPanel } from '@/components/inquiries/marketplace-action-panel'
+import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
-import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
-import { Suspense } from 'react'
-import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
-import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
-import { getMarketplaceInquiryContext } from '@/lib/marketplace/platform-records'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
-  contact_name: string | null
   unknown_fields: unknown
 }): string {
-  if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.client_name as string) || 'Unknown Contact'
+  return (unknown?.client_name as string) || 'Unknown Lead'
 }
 
 function getDisplayEmail(inquiry: {
   client: { email: string } | null
-  contact_email: string | null
   unknown_fields: unknown
 }): string | null {
-  if (inquiry.contact_email) return inquiry.contact_email
   if (inquiry.client?.email) return inquiry.client.email
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_email as string) || null
@@ -83,10 +74,8 @@ function getDisplayEmail(inquiry: {
 
 function getDisplayPhone(inquiry: {
   client: { phone: string | null } | null
-  contact_phone: string | null
   unknown_fields: unknown
 }): string | null {
-  if (inquiry.contact_phone) return inquiry.contact_phone
   if (inquiry.client?.phone) return inquiry.client.phone
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_phone as string) || null
@@ -98,7 +87,7 @@ function getReferralSource(inquiry: { unknown_fields: unknown }): string | null 
 }
 
 export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
-  const user = await requireChef()
+  await requireChef()
 
   const [
     inquiry,
@@ -112,7 +101,6 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     availableRecipes,
     bookingScore,
     timelineEntries,
-    circleToken,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -125,7 +113,6 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getRecipesForLinker(),
     getBookingScoreForInquiry(params.id).catch(() => null),
     getEntityActivityTimeline('inquiry', params.id),
-    getInquiryCircleToken(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -153,15 +140,6 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   const email = getDisplayEmail(inquiry)
   const phone = getDisplayPhone(inquiry)
   const referralSource = getReferralSource(inquiry)
-  const parsedScheduleRequest = ScheduleRequestSchema.safeParse(
-    (inquiry as any).schedule_request_jsonb ?? undefined
-  )
-  const scheduleRequest = parsedScheduleRequest.success ? parsedScheduleRequest.data : undefined
-  const scheduleSummary = summarizeScheduleRequest(scheduleRequest)
-  const marketplaceContext = await getMarketplaceInquiryContext({
-    tenantId: user.tenantId!,
-    inquiry: inquiry as any,
-  })
 
   // Track which confirmed facts are still missing
   const missingFacts: string[] = []
@@ -251,33 +229,14 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           </p>
         </div>
         <Link href="/inquiries">
-          <Button variant="ghost">Back to Inquiries</Button>
+          <Button variant="ghost">Back to Pipeline</Button>
         </Link>
       </div>
-
-      {/* Dinner Circle Link */}
-      {circleToken && (
-        <Card className="bg-stone-800/50 border-stone-700 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-stone-200">Dinner Circle</p>
-              <p className="text-xs text-stone-400">
-                This inquiry has an active Dinner Circle where the client can view updates
-              </p>
-            </div>
-            <Link href={`/my-hub/g/${circleToken}`}>
-              <Button variant="ghost" className="text-sm">
-                View Circle
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      )}
 
       {/* Missing Facts Warning */}
       {missingFacts.length > 0 && inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
         <div className="bg-amber-950 border border-amber-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-amber-200">Missing event details:</p>
+          <p className="text-sm font-medium text-amber-800">Missing confirmed facts:</p>
           <div className="flex gap-2 mt-2 flex-wrap">
             {missingFacts.map((fact) => (
               <Badge key={fact} variant="warning">
@@ -286,7 +245,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             ))}
           </div>
           <p className="text-xs text-amber-600 mt-2">
-            These need to be confirmed before creating the event.
+            These need to be confirmed before converting to an event.
           </p>
         </div>
       )}
@@ -294,58 +253,8 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* Inquiry Summary — visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
 
-      {/* Conversion Intelligence */}
-      <Suspense fallback={null}>
-        <InquiryIntelligencePanel
-          inquiryId={inquiry.id}
-          guestCount={inquiry.confirmed_guest_count ?? null}
-          occasion={inquiry.confirmed_occasion ?? null}
-          budgetCents={inquiry.confirmed_budget_cents ?? null}
-          channel={inquiry.channel}
-          createdAt={inquiry.created_at}
-        />
-      </Suspense>
-
-      {(inquiry as any).service_mode === 'multi_day' && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Series Request</h2>
-          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            <div>
-              <dt className="text-stone-500">Service Mode</dt>
-              <dd className="text-stone-100 mt-1">Multi-day Service</dd>
-            </div>
-            <div>
-              <dt className="text-stone-500">Date Window</dt>
-              <dd className="text-stone-100 mt-1">
-                {scheduleRequest?.start_date || inquiry.confirmed_date || 'TBD'} to{' '}
-                {scheduleRequest?.end_date ||
-                  scheduleRequest?.start_date ||
-                  inquiry.confirmed_date ||
-                  'TBD'}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-stone-500">Requested Sessions</dt>
-              <dd className="text-stone-100 mt-1">{scheduleRequest?.sessions?.length || 0}</dd>
-            </div>
-          </dl>
-          {scheduleSummary && <p className="text-sm text-stone-400 mt-4">{scheduleSummary}</p>}
-          {scheduleRequest?.outline && (
-            <p className="text-sm text-stone-300 mt-3 whitespace-pre-wrap">
-              {scheduleRequest.outline}
-            </p>
-          )}
-        </Card>
-      )}
-
       {/* TakeAChef workflow guide — collapsible overview for first-time users */}
       {inquiry.channel === 'take_a_chef' && <TacWorkflowGuide inquiryStatus={inquiry.status} />}
-
-      <MarketplaceActionPanel
-        context={marketplaceContext}
-        inquiryStatus={inquiry.status}
-        clientName={name}
-      />
 
       {/* TakeAChef-specific panels — only for take_a_chef channel */}
       {inquiry.channel === 'take_a_chef' && inquiry.status === 'new' && (
@@ -372,9 +281,25 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           clientName={name}
           hasMenu={false}
         />
-      )}{/*
+      )}
 
+      {/* Platform link banner — shows "Open in {Platform}" for any platform inquiry with an external link.
           Skipped for TAC statuses that already have their own button (new → TacAddressLead, awaiting_chef → TacStatusPrompt). */}
+      {(inquiry as any).external_link &&
+        (inquiry as any).external_platform &&
+        !(
+          inquiry.channel === 'take_a_chef' &&
+          (inquiry.status === 'new' || inquiry.status === 'awaiting_chef')
+        ) && (
+          <PlatformLinkBanner
+            platform={(inquiry as any).external_platform}
+            externalLink={(inquiry as any).external_link}
+            externalInquiryId={(inquiry as any).external_inquiry_id ?? null}
+            clientName={name}
+            status={inquiry.status}
+          />
+        )}
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Contact Information */}
@@ -420,7 +345,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     <span className="text-stone-400 text-sm">Not linked to a client record</span>
                     <InquiryAddClientButton
                       inquiryId={inquiry.id}
-                      prefillName={name !== 'Unknown Contact' ? name : undefined}
+                      prefillName={name !== 'Unknown Lead' ? name : undefined}
                       prefillEmail={email ?? undefined}
                       prefillPhone={phone ?? undefined}
                     />
@@ -439,7 +364,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
         {/* Confirmed Facts */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Event Details</h2>
+          <h2 className="text-xl font-semibold mb-4">Confirmed Facts</h2>
           <dl className="space-y-3">
             <div>
               <dt className="text-sm font-medium text-stone-500">Event Date</dt>
@@ -449,7 +374,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     {format(new Date(inquiry.confirmed_date), 'EEEE, MMMM d, yyyy')}
                   </span>
                 ) : (
-                  <span className="text-stone-400 italic">Not yet known</span>
+                  <span className="text-stone-400 italic">Not confirmed</span>
                 )}
               </dd>
             </div>
@@ -459,7 +384,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 {inquiry.confirmed_guest_count ? (
                   <span className="text-stone-100">{inquiry.confirmed_guest_count} guests</span>
                 ) : (
-                  <span className="text-stone-400 italic">Not yet known</span>
+                  <span className="text-stone-400 italic">Not confirmed</span>
                 )}
               </dd>
             </div>
@@ -469,7 +394,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 {inquiry.confirmed_location ? (
                   <span className="text-stone-100">{inquiry.confirmed_location}</span>
                 ) : (
-                  <span className="text-stone-400 italic">Not yet known</span>
+                  <span className="text-stone-400 italic">Not confirmed</span>
                 )}
               </dd>
             </div>
@@ -481,7 +406,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     {formatCurrency(inquiry.confirmed_budget_cents)}
                   </span>
                 ) : (
-                  <span className="text-stone-400 italic">Not yet known</span>
+                  <span className="text-stone-400 italic">Not confirmed</span>
                 )}
               </dd>
             </div>
@@ -516,7 +441,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Pipeline Management */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Follow-up</h2>
+        <h2 className="text-xl font-semibold mb-4">Pipeline</h2>
         {inquiry.next_action_required || inquiry.follow_up_due_at ? (
           <dl className="space-y-3">
             {inquiry.next_action_required && (
@@ -697,7 +622,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-3">Printed Documents</h2>
           <p className="text-stone-500 text-sm">
-            Documents will be available once this inquiry becomes a booked event.
+            Documents will be available once this inquiry converts to a confirmed event.
           </p>
         </Card>
       )}

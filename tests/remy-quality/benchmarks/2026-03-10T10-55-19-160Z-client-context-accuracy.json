@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "timestamp": "2026-03-10T10:55:19.160Z",
+    "suite": "client-context-accuracy"
+  },
+  "contextAccuracy": {
+    "total": 15,
+    "pass": 0,
+    "results": [
+      {
+        "id": "ctx-01",
+        "pass": false,
+        "score": 0,
+        "ms": 6,
+        "response": null
+      },
+      {
+        "id": "ctx-02",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-03",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-04",
+        "pass": false,
+        "score": 0,
+        "ms": 4,
+        "response": null
+      },
+      {
+        "id": "ctx-05",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-06",
+        "pass": false,
+        "score": 0,
+        "ms": 2,
+        "response": null
+      },
+      {
+        "id": "ctx-07",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-08",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-09",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-10",
+        "pass": false,
+        "score": 0,
+        "ms": 2,
+        "response": null
+      },
+      {
+        "id": "ctx-11",
+        "pass": false,
+        "score": 0,
+        "ms": 2,
+        "response": null
+      },
+      {
+        "id": "ctx-12",
+        "pass": false,
+        "score": 0,
+        "ms": 2,
+        "response": null
+      },
+      {
+        "id": "ctx-13",
+        "pass": false,
+        "score": 0,
+        "ms": 2,
+        "response": null
+      },
+      {
+        "id": "ctx-14",
+        "pass": false,
+        "score": 0,
+        "ms": 3,
+        "response": null
+      },
+      {
+        "id": "ctx-15",
+        "pass": false,
+        "score": 0,
+        "ms": 1,
+        "response": null
+      }
+    ]
+  },
+  "consistency": {
+    "prompt": "What events do I have coming up?",
+    "repetitions": 5,
+    "pass": false,
+    "responses": [
+      {
+        "ms": 1,
+        "length": 0,
+        "response": null
+      },
+      {
+        "ms": 2,
+        "length": 0,
+        "response": null
+      },
+      {
+        "ms": 2,
+        "length": 0,
+        "response": null
+      },
+      {
+        "ms": 3,
+        "length": 0,
+        "response": null
+      },
+      {
+        "ms": 2,
+        "length": 0,
+        "response": null
+      }
+    ]
+  }
+}

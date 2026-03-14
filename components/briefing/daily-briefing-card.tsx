@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { generateDailyBriefing } from '@/lib/briefing/daily-actions'
 import type { BriefingContent } from '@/lib/briefing/daily-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Sun, Calendar, CheckSquare, DollarSign, Clock, RefreshCw } from '@/components/ui/icons'
+import { Sun, Calendar, CheckSquare, DollarSign, Clock, RefreshCw } from 'lucide-react'
 
 type Props = {
   briefing: {
@@ -54,7 +54,7 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
         <CardContent className="py-8">
           <div className="text-center">
             <Sun className="h-8 w-8 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-stone-200 mb-1">No briefing for today yet</p>
+            <p className="text-sm font-medium text-stone-700 mb-1">No briefing for today yet</p>
             <p className="text-xs text-stone-500 mb-4">
               Generate your morning summary to see events, tasks, and revenue at a glance.
             </p>
@@ -171,7 +171,7 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
                   className="flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 hover:bg-stone-50 transition-colors group"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-stone-200 group-hover:text-brand-600 truncate">
+                    <p className="text-sm font-medium text-stone-800 group-hover:text-brand-600 truncate">
                       {event.occasion ?? 'Private Event'}
                     </p>
                     <p className="text-xs text-stone-500 truncate">
@@ -204,7 +204,7 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
                   className="flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 hover:bg-stone-50 transition-colors"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-stone-200 truncate">
+                    <p className="text-sm text-stone-700 truncate">
                       {deadline.deadlineType}
                       <span className="text-stone-400"> — </span>
                       <span className="text-stone-500">{deadline.occasion ?? 'Event'}</span>

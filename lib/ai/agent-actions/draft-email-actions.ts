@@ -17,7 +17,7 @@ import {
   generateFoodSafetyIncidentDraft,
 } from '@/lib/ai/draft-actions'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── NL Parser ───────────────────────────────────────────────────────────────
@@ -47,10 +47,9 @@ async function parseDraftRequestFromNL(description: string) {
 Draft types: thank_you, referral_request, testimonial_request, quote_cover_letter, decline, cancellation, payment_reminder, re_engagement, milestone, food_safety_incident.
 Extract: draftType, clientName (if mentioned), eventName (if mentioned), reason (for decline/cancellation), milestone (for milestone recognition), description (for food safety incident).
 Return ONLY valid JSON.`
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedDraftRequestSchema, {
+  return parseWithOllama(systemPrompt, description, ParsedDraftRequestSchema, {
     modelTier: 'standard',
   })
-  return result
 }
 
 // ─── Draft type labels ───────────────────────────────────────────────────────

@@ -221,7 +221,7 @@ const RECIPE_GENERATION_PATTERNS = [
   // "recipe for X" (asking AI to produce a recipe)
   /\brecipe\s+for\s+(?!search|lookup|find)/i,
   // "how to cook/make X" (recipe generation by another name)
-  /\bhow\s+(to|do\s+(you|i))\s+(cook|make|prepare|bake|roast|grill|saut[eé]|braise|fry|smoke|poach|pressure\s+cook|sous\s+vide|slow\s+cook|blanch|steam|sear|deglaze|flamb[eé]|confit|cure|ferment|pickle)\b/i,
+  /\bhow\s+(to|do\s+(you|i))\s+(cook|make|prepare|bake|roast|grill|saut[eé]|braise|fry|smoke|poach)\b/i,
   // "what should I cook/make"
   /\bwhat\s+should\s+I\s+(cook|make|prepare|bake)\b/i,
   // "add a recipe" (not "add ingredient" which is also blocked separately)
@@ -292,27 +292,17 @@ export function checkRecipeGenerationBlock(message: string): string | null {
  */
 const OUT_OF_SCOPE_PATTERNS = [
   // Poetry, creative writing, storytelling (expanded to catch all variations)
-  /\b(write|compose|create|generate|make)\s+(me\s+|up\s+)?(a\s+)?(funny\s+)?(poem|poetry|story|song|joke|limerick|haiku|narrative|tale|story|essay|novel|screenplay|script)\b/i,
-  /\b(generate|compose|write)\s+(a\s+)?(short\s+)?(story|tale|narrative|essay|novel)\b/i,
+  /\b(write|compose|create|generate|make)\s+(me\s+|up\s+)?(a\s+)?(funny\s+)?(poem|poetry|story|song|joke|limerick|haiku|narrative|tale|story)\b/i,
+  /\b(generate|compose|write)\s+(a\s+)?(short\s+)?(story|tale|narrative)\b/i,
   // General philosophical/existential questions
   /\b(what\s+is\s+the\s+meaning|meaning\s+of)\b/i,
   /\b(why\s+do\s+we\s+exist|existential|philosophy|philosophical)\b/i,
   // Entertainment/gaming
-  /\b(tell\s+me\s+a\s+joke|play\s+a\s+game|tell\s+me\s+a\s+story|play\s+trivia)\b/i,
+  /\b(tell\s+me\s+a\s+joke|play\s+a\s+game|tell\s+me\s+a\s+story)\b/i,
   // General knowledge (unless business-related)
-  /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology|chemistry|geography)\b/i,
+  /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology)\b/i,
   // Requests for advice outside chef domain
   /\b(give\s+me\s+relationship|dating|love|life\s+advice)\b/i,
-  // Homework, coding, academic
-  /\b(solve\s+this|help\s+me\s+with\s+homework|write\s+(?:an?\s+)?(?:essay|paper|thesis|code|program|script))\b/i,
-  /\b(debug|compile|code|program|algorithm|data\s+structure)\b.*\b(help|write|fix|create)\b/i,
-  // Medical/legal beyond food domain
-  /\b(diagnose|prescription|symptoms|should\s+i\s+see\s+a\s+doctor|medical\s+advice)\b/i,
-  /\b(legal\s+advice|sue|lawsuit|legal\s+rights|am\s+i\s+liable)\b/i,
-  // Political/religious
-  /\b(who\s+should\s+i\s+vote|political\s+opinion|my\s+faith|pray|religious)\b/i,
-  // Investment/financial outside chef business
-  /\b(invest|stock|crypto|bitcoin|forex|retirement\s+fund|401k|ira)\b/i,
 ]
 
 /** The refusal message for out-of-scope requests */
@@ -352,19 +342,6 @@ const DANGEROUS_ACTION_PATTERNS = [
   // Developer/admin/root mode activation
   /\b(developer|dev|admin|root|debug)\s+mode\b/i,
   /\b(switch|enter|activate|enable|turn)\s+(on\s+)?(developer|dev|admin|root|debug)\b/i,
-  // Data exfiltration — extracting all client data or financials
-  /\b(export|dump|extract|give me)\s+(all|every)\s+(client|customer|financial|revenue|payment|ledger)\s+(data|info|records?|entries|details)\b/i,
-  // SQL/code injection attempts
-  /\b(select|insert|update|drop|alter|truncate)\s+(from|into|table|database|schema)\b/i,
-  /\b(exec|execute|eval|run)\s+(sql|query|command|code|script)\b/i,
-  // Token/API key extraction
-  /\b(api|secret|token|key|password|credential|env)\s*(key|variable|value|string)?\b.*\b(show|reveal|give|tell|print|display)\b/i,
-  /\b(show|reveal|give|tell|print|display)\b.*\b(api|secret|token|key|password|credential|env)\b/i,
-  // Pretend/roleplay as another entity
-  /\b(pretend|act|behave|roleplay|role-?play)\s+(you'?re|as|like)\s+(a|an|the)\b/i,
-  /\byou\s+are\s+now\s+(a|an|the|my)\b/i,
-  // "Forget everything" / memory manipulation
-  /\b(forget|erase|clear|reset)\s+(everything|all|your)\s*(memory|memories|knowledge|context|data)?\b/i,
 ]
 
 /** Refusal for dangerous/protected actions */
@@ -415,15 +392,6 @@ const INJECTION_PATTERNS = [
   /\b(you are|switch to|enter|activate|enable)\s+(now\s+)?(in\s+)?(developer|dev|debug|admin|root)\s+mode\b/i,
   // Context window extraction
   /\b(output|show|display|print|reveal)\s+(your\s+)?(full\s+)?(context\s+window|context|system\s+message)\b/i,
-  // Multi-step jailbreaks ("first... then...")
-  /\bfirst\s+(ignore|forget|disregard)\b/i,
-  // Base64/encoding bypass attempts
-  /\b(decode|base64|hex|encode)\s+(this|the\s+following)\b/i,
-  // Token limit probing
-  /\b(how\s+many|what\s+is\s+your)\s+(tokens?|context\s+(length|window|limit|size))\b/i,
-  // Hidden instruction via markdown/HTML
-  /<!--.*(?:ignore|system|override|instruction).*-->/i,
-  /\[hidden\]|\[system\]|\[instruction\]/i,
 ]
 
 /**
@@ -443,15 +411,14 @@ export function sanitizeForPrompt(value: string | null | undefined): string {
   // Remove null bytes
   sanitized = sanitized.replace(/\0/g, '')
 
-  // Replace injection patterns with [FILTERED] to fully neutralize them
-  // Previously wrapped in brackets which still let the LLM read the injected text
+  // Neutralize injection patterns by wrapping matched text in brackets
+  // This preserves the text for context but breaks the instruction structure
   for (const pattern of INJECTION_PATTERNS) {
-    sanitized = sanitized.replace(pattern, '[FILTERED]')
+    sanitized = sanitized.replace(pattern, (match) => `[${match}]`)
   }
 
-  // Collapse excessive newlines to single newline (injection delimiter attempts)
-  // Previously allowed 3 newlines which is still a delimiter attack vector
-  sanitized = sanitized.replace(/\n{2,}/g, '\n')
+  // Collapse excessive newlines (injection delimiter attempts)
+  sanitized = sanitized.replace(/\n{4,}/g, '\n\n\n')
 
   // Cap length — no single database field should be more than 2000 chars in a prompt
   if (sanitized.length > 2000) {
@@ -496,47 +463,6 @@ export function sanitizeErrorForClient(
   fallback = 'Remy ran into an issue — try again in a moment.'
 ): string {
   const raw = err instanceof Error ? err.message : String(err)
-  const normalized = raw.toLowerCase()
-
-  if (
-    normalized.includes('ollama is offline') ||
-    normalized.includes('ollama needs to be running') ||
-    normalized.includes('no ollama endpoints are reachable')
-  ) {
-    return "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
-  }
-
-  if (normalized.includes('setup timed out') || normalized.includes('pre-stream setup timed out')) {
-    return "I'm taking too long to load your business context. Try again in a moment."
-  }
-
-  if (normalized.includes('task ') && normalized.includes('timed out')) {
-    return 'One part of that request took too long to finish. Try again, or split it into smaller steps.'
-  }
-
-  if (normalized.includes('missing required input')) {
-    return 'I could not parse one part of that request cleanly. Rephrase it with the client, date, or action you want.'
-  }
-
-  if (normalized.includes('calendar')) {
-    return 'I could not load your calendar data just now. Try again in a moment.'
-  }
-
-  if (normalized.includes('email')) {
-    return 'I could not load your email context just now. Try again in a moment.'
-  }
-
-  if (normalized.includes('document')) {
-    return 'I could not load your document context just now. Try again in a moment.'
-  }
-
-  if (normalized.includes('client')) {
-    return 'I could not load that client context just now. Try again in a moment.'
-  }
-
-  if (normalized.includes('event')) {
-    return 'I could not load that event context just now. Try again in a moment.'
-  }
 
   // Check if the error contains any internal patterns
   for (const pattern of INTERNAL_PATTERNS) {

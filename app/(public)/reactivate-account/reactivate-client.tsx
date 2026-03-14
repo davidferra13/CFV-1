@@ -6,7 +6,7 @@ import { cancelAccountDeletion } from '@/lib/compliance/account-deletion-actions
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { CheckCircle2 } from '@/components/ui/icons'
+import { CheckCircle2 } from 'lucide-react'
 
 export function ReactivateAccountClient() {
   const searchParams = useSearchParams()
@@ -38,9 +38,9 @@ export function ReactivateAccountClient() {
               Your account has been restored. You can now sign in again.
             </p>
           </div>
-          <Button variant="primary" href="/auth/signin">
-            Sign In
-          </Button>
+          <a href="/auth/signin">
+            <Button variant="primary">Sign In</Button>
+          </a>
         </CardContent>
       </Card>
     )

@@ -5,8 +5,9 @@ import {
   Circle,
   Clock,
   FileSpreadsheet,
+  Sparkles,
   Upload,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type OnboardingAcceleratorProps = {
@@ -73,7 +74,7 @@ export function OnboardingAccelerator({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-brand-200">
-              <Upload className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
               Bring your business in
             </CardTitle>
             <p className="mt-1 text-sm text-stone-300">

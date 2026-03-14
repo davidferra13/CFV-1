@@ -10,7 +10,7 @@ import {
   recordQuarterlyPayment,
   type TaxYearSummary,
 } from '@/lib/finance/tax-estimate-actions'
-import { Calculator, DollarSign } from '@/components/ui/icons'
+import { Calculator, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -117,7 +117,7 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
           <CardContent className="py-3">
             <div className="flex items-center gap-2">
               <Calculator className="h-4 w-4 text-amber-600" />
-              <p className="text-sm text-amber-200">
+              <p className="text-sm text-amber-800">
                 Safe harbor target: {formatCents(safeHarborCents)} — you need{' '}
                 {formatCents(safeHarborCents - summary.totalPaidCents)} more to avoid underpayment
                 penalties.

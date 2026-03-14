@@ -9,7 +9,7 @@
  * Preserved: the Can/Cannot table below.
  */
 
-import { Check, X, AlertTriangle, Shield } from '@/components/ui/icons'
+import { Check, X, AlertTriangle, Shield } from 'lucide-react'
 
 export function DataFlowAnimated() {
   return (
@@ -63,7 +63,7 @@ export function DataFlowAnimated() {
             ].map((text) => (
               <div key={text} className="flex items-start gap-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-red-400 mt-0.5 shrink-0" />
-                <span className="text-xs text-red-200">{text}</span>
+                <span className="text-xs text-red-800">{text}</span>
               </div>
             ))}
           </div>
@@ -84,7 +84,7 @@ export function DataFlowAnimated() {
           {/* Flow diagram */}
           <div className="flex flex-col items-center gap-1 py-2">
             <div className="rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-950 p-3 space-y-2 w-full">
-              <div className="text-[10px] font-semibold text-emerald-200 text-center">
+              <div className="text-[10px] font-semibold text-emerald-800 text-center">
                 ChefFlow (everything stays here)
               </div>
               <div className="flex items-center justify-center gap-2">
@@ -101,8 +101,8 @@ export function DataFlowAnimated() {
             </div>
             <div className="rounded-md border border-emerald-300 bg-emerald-200 px-3 py-1.5 text-center mt-1">
               <div className="flex items-center gap-1 justify-center">
-                <Shield className="h-3 w-3 text-emerald-200" />
-                <span className="text-[10px] font-bold text-emerald-200">
+                <Shield className="h-3 w-3 text-emerald-700" />
+                <span className="text-[10px] font-bold text-emerald-800">
                   No Third-Party AI Services
                 </span>
               </div>
@@ -118,7 +118,7 @@ export function DataFlowAnimated() {
             ].map((text) => (
               <div key={text} className="flex items-start gap-2">
                 <Check className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                <span className="text-xs text-emerald-200">{text}</span>
+                <span className="text-xs text-emerald-800">{text}</span>
               </div>
             ))}
           </div>
@@ -132,7 +132,7 @@ export function DataFlowAnimated() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-emerald-200 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
               Remy Can
             </p>
             {[

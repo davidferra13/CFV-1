@@ -3,7 +3,7 @@
 
 import { Text, Link } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type MenuItem = {
   menu_name: string
@@ -26,7 +26,7 @@ export function MenuApprovalRequestEmail({
   approvalUrl,
 }: Props) {
   return (
-    <BaseLayout brand={brand} preview={`Menu ready for your review — ${occasion} on ${eventDate}`}>
+    <BaseLayout preview={`Menu ready for your review — ${occasion} on ${eventDate}`}>
       <Text style={heading}>Your menu is ready for review</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

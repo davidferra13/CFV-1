@@ -120,9 +120,9 @@ export function FinancialSummaryView({ data }: Props) {
           <span
             className={`text-xs font-semibold px-3 py-1 rounded-full ${
               isDraft
-                ? 'bg-amber-900 text-amber-200'
+                ? 'bg-amber-900 text-amber-800'
                 : closed
-                  ? 'bg-green-900 text-green-200'
+                  ? 'bg-green-900 text-green-800'
                   : 'bg-stone-800 text-stone-300'
             }`}
           >
@@ -130,7 +130,7 @@ export function FinancialSummaryView({ data }: Props) {
           </span>
         </div>
         {isDraft && (
-          <div className="mt-3 text-xs text-amber-200 bg-amber-950 rounded px-3 py-2">
+          <div className="mt-3 text-xs text-amber-700 bg-amber-950 rounded px-3 py-2">
             Pending: {pendingItems.join(' · ')}. Financial closure requires all payments received
             and receipts reviewed.
           </div>
@@ -314,7 +314,7 @@ export function FinancialSummaryView({ data }: Props) {
               <h2 className="font-semibold text-green-900">
                 Ready to close this event financially?
               </h2>
-              <p className="text-sm text-green-200 mt-1">
+              <p className="text-sm text-green-700 mt-1">
                 All payments received and receipts reviewed. Mark as financially closed.
               </p>
             </div>

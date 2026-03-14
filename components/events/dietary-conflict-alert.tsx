@@ -10,7 +10,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { acknowledgeDietaryConflict } from '@/lib/events/dietary-conflict-actions'
-import { AlertTriangle, AlertCircle, Info, Check } from '@/components/ui/icons'
+import { AlertTriangle, AlertCircle, Info, Check } from 'lucide-react'
 
 type Conflict = {
   id: string
@@ -32,7 +32,7 @@ const SEVERITY_CONFIG = {
     icon: AlertTriangle,
     iconColor: 'text-red-600',
     textColor: 'text-red-900',
-    subtextColor: 'text-red-200',
+    subtextColor: 'text-red-700',
     badgeVariant: 'error' as const,
     label: 'Critical',
   },
@@ -41,7 +41,7 @@ const SEVERITY_CONFIG = {
     icon: AlertCircle,
     iconColor: 'text-amber-600',
     textColor: 'text-amber-900',
-    subtextColor: 'text-amber-200',
+    subtextColor: 'text-amber-700',
     badgeVariant: 'warning' as const,
     label: 'Warning',
   },
@@ -50,7 +50,7 @@ const SEVERITY_CONFIG = {
     icon: Info,
     iconColor: 'text-sky-600',
     textColor: 'text-sky-900',
-    subtextColor: 'text-sky-200',
+    subtextColor: 'text-sky-700',
     badgeVariant: 'info' as const,
     label: 'Info',
   },

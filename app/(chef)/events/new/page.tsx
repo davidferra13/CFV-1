@@ -18,7 +18,7 @@ export default async function NewEventPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex items-center gap-6">
         <p className="text-sm text-stone-500">
           Prefer a shortcut?{' '}
           <a
@@ -26,15 +26,6 @@ export default async function NewEventPage() {
             className="text-brand-600 hover:text-brand-400 font-medium"
           >
             Just describe it &rarr;
-          </a>
-        </p>
-        <p className="text-sm text-stone-500">
-          Recurring client?{' '}
-          <a
-            href="/events/new/recurring"
-            className="text-brand-600 hover:text-brand-400 font-medium"
-          >
-            Create a series &rarr;
           </a>
         </p>
       </div>

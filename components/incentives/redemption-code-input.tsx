@@ -90,7 +90,7 @@ export function RedemptionCodeInput({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <div>
-            <span className="text-sm font-medium text-green-200">
+            <span className="text-sm font-medium text-green-800">
               {code.toUpperCase()} applied — {formatCurrency(validation.appliedCents)} credit
             </span>
             {validation.remainingCents !== null && validation.remainingCents > 0 && (
@@ -102,7 +102,7 @@ export function RedemptionCodeInput({
         </div>
         <button
           onClick={handleClear}
-          className="text-xs text-emerald-600 hover:text-green-200 ml-3"
+          className="text-xs text-emerald-600 hover:text-green-800 ml-3"
         >
           Remove
         </button>

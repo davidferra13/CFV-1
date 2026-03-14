@@ -85,13 +85,6 @@ const SUB_PAGES = [
       'What ingredients do you need for upcoming events? See shortages before they happen',
     icon: 'forecast',
   },
-  {
-    href: '/inventory/reorder',
-    label: 'Smart Reorder',
-    description:
-      'Auto-detect items below par level and generate draft purchase orders to preferred vendors',
-    icon: 'reorder',
-  },
 ]
 
 const ICON_MAP: Record<string, string> = {
@@ -107,7 +100,6 @@ const ICON_MAP: Record<string, string> = {
   clock: '\u23F0',
   forecast: '\uD83D\uDCC8',
   procurement: '\uD83D\uDED2',
-  reorder: '\uD83D\uDD14',
 }
 
 export default async function InventoryPage() {

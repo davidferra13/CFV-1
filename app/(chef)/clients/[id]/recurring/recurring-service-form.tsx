@@ -9,15 +9,6 @@ import { SERVICE_TYPE_LABELS, REACTION_LABELS } from '@/lib/recurring/constants'
 
 const SERVICE_TYPES = Object.entries(SERVICE_TYPE_LABELS)
 const REACTIONS = Object.entries(REACTION_LABELS)
-const WEEK_DAYS = [
-  { value: 0, label: 'Sun' },
-  { value: 1, label: 'Mon' },
-  { value: 2, label: 'Tue' },
-  { value: 3, label: 'Wed' },
-  { value: 4, label: 'Thu' },
-  { value: 5, label: 'Fri' },
-  { value: 6, label: 'Sat' },
-]
 
 export function RecurringServiceForm({ clientId }: { clientId: string }) {
   const router = useRouter()
@@ -29,10 +20,8 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
   const [svcForm, setSvcForm] = useState({
     service_type: 'weekly_meal_prep',
     frequency: 'weekly',
-    day_of_week: [] as number[],
     rate_dollars: '',
     start_date: '',
-    end_date: '',
     typical_guest_count: '',
     notes: '',
   })
@@ -49,11 +38,6 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
     setSaving(true)
     setError(null)
     try {
-      const parsedRate = parseFloat(svcForm.rate_dollars)
-      if (!Number.isFinite(parsedRate) || parsedRate < 0) {
-        throw new Error('Please enter a valid non-negative rate.')
-      }
-
       await createRecurringService({
         client_id: clientId,
         service_type: svcForm.service_type as
@@ -63,10 +47,8 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
           | 'biweekly_prep'
           | 'other',
         frequency: svcForm.frequency as 'weekly' | 'biweekly' | 'monthly',
-        day_of_week: svcForm.day_of_week.length > 0 ? svcForm.day_of_week : undefined,
-        rate_cents: Math.round(parsedRate * 100),
+        rate_cents: Math.round(parseFloat(svcForm.rate_dollars) * 100),
         start_date: svcForm.start_date,
-        end_date: svcForm.end_date || undefined,
         typical_guest_count: svcForm.typical_guest_count
           ? parseInt(svcForm.typical_guest_count)
           : undefined,
@@ -76,10 +58,8 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
       setSvcForm({
         service_type: 'weekly_meal_prep',
         frequency: 'weekly',
-        day_of_week: [],
         rate_dollars: '',
         start_date: '',
-        end_date: '',
         typical_guest_count: '',
         notes: '',
       })
@@ -203,15 +183,6 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-400 mb-1">End date</label>
-                <Input
-                  type="date"
-                  value={svcForm.end_date}
-                  min={svcForm.start_date || undefined}
-                  onChange={(e) => setSvcForm((p) => ({ ...p, end_date: e.target.value }))}
-                />
-              </div>
-              <div>
                 <label className="block text-xs font-medium text-stone-400 mb-1">
                   Typical guests
                 </label>
@@ -224,40 +195,6 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
                   }
                   placeholder="Optional"
                 />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-medium text-stone-400 mb-1">
-                  Service days
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {WEEK_DAYS.map((day) => {
-                    const selected = svcForm.day_of_week.includes(day.value)
-                    return (
-                      <button
-                        key={day.value}
-                        type="button"
-                        className={`rounded-md border px-2 py-1 text-xs transition ${
-                          selected
-                            ? 'border-brand-500 bg-brand-500/20 text-brand-200'
-                            : 'border-stone-700 bg-stone-900 text-stone-400 hover:border-stone-500'
-                        }`}
-                        onClick={() =>
-                          setSvcForm((prev) => ({
-                            ...prev,
-                            day_of_week: selected
-                              ? prev.day_of_week.filter((value) => value !== day.value)
-                              : [...prev.day_of_week, day.value].sort((a, b) => a - b),
-                          }))
-                        }
-                      >
-                        {day.label}
-                      </button>
-                    )
-                  })}
-                </div>
-                <p className="mt-1 text-xs text-stone-500">
-                  Leave blank to use the same weekday as the start date.
-                </p>
               </div>
               <div>
                 <label className="block text-xs font-medium text-stone-400 mb-1">Notes</label>

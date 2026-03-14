@@ -10,7 +10,7 @@ import {
   SIMPLIFIED_MAX_SQFT,
   SIMPLIFIED_MAX_DEDUCTION_CENTS,
 } from '@/lib/tax/home-office-constants'
-import { Home, Info, CheckCircle } from '@/components/ui/icons'
+import { Home, Info, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -93,7 +93,7 @@ export function HomeOfficeForm({
         <CardContent className="py-3">
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-            <p className="text-sm text-blue-200">
+            <p className="text-sm text-blue-800">
               The home office deduction is a <strong>Schedule C, Line 30</strong> deduction. Your
               home office must be used regularly and exclusively for business. Consult your
               accountant to confirm eligibility.
@@ -146,7 +146,7 @@ export function HomeOfficeForm({
       </div>
 
       {saved && (
-        <div className="flex items-center gap-2 text-sm text-emerald-200 bg-emerald-950 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
           <CheckCircle className="h-4 w-4" />
           Settings saved. Deduction: {formatCents(selectedDeduction)} using{' '}
           {form.homeDeductionMethod} method.
@@ -275,7 +275,7 @@ export function HomeOfficeForm({
                 <span className="text-stone-400">Total home expenses: </span>
                 <strong>{formatCents(totalHomeExpenses)}</strong>
                 <span className="text-stone-500"> × {(sqftPct * 100).toFixed(1)}% = </span>
-                <strong className="text-emerald-200">{formatCents(actualLive)} deductible</strong>
+                <strong className="text-emerald-700">{formatCents(actualLive)} deductible</strong>
               </div>
             )}
           </CardContent>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ListOrdered, Loader2, Bot, AlertCircle } from '@/components/ui/icons'
+import { ListOrdered, Loader2, Sparkles, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generatePrepTimeline, type PrepTimeline } from '@/lib/ai/prep-timeline'
@@ -40,7 +40,7 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Prep Plan
               </>
             )}
@@ -71,13 +71,13 @@ export function PrepTimelinePanel({ eventId }: { eventId: string }) {
 
       {result.criticalPath.length > 0 && (
         <div className="bg-amber-950 border border-amber-200 rounded p-2">
-          <div className="flex items-center gap-1 text-xs font-medium text-amber-200 mb-1">
+          <div className="flex items-center gap-1 text-xs font-medium text-amber-800 mb-1">
             <AlertCircle className="w-3 h-3" />
             Critical Path (cannot be delayed)
           </div>
           <ul className="space-y-0.5">
             {result.criticalPath.map((task, i) => (
-              <li key={i} className="text-xs text-amber-200">
+              <li key={i} className="text-xs text-amber-700">
                 • {task}
               </li>
             ))}

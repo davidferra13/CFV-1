@@ -158,10 +158,10 @@ export function UnusedIngredients({
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                           item.reason === 'wasted'
-                            ? 'bg-red-900 text-red-200'
+                            ? 'bg-red-900 text-red-700'
                             : item.reason === 'returned'
-                              ? 'bg-blue-900 text-blue-200'
-                              : 'bg-green-900 text-green-200'
+                              ? 'bg-blue-900 text-blue-700'
+                              : 'bg-green-900 text-green-700'
                         }`}
                       >
                         {reasonLabel(item.reason)}
@@ -198,7 +198,7 @@ export function UnusedIngredients({
                         size="sm"
                         onClick={() => handleMarkExpired(item.id)}
                         disabled={saving}
-                        className="text-amber-600 hover:text-amber-200 text-xs"
+                        className="text-amber-600 hover:text-amber-700 text-xs"
                       >
                         Mark Expired
                       </Button>
@@ -208,7 +208,7 @@ export function UnusedIngredients({
                       size="sm"
                       onClick={() => handleRemove(item.id)}
                       disabled={saving}
-                      className="text-red-600 hover:text-red-200"
+                      className="text-red-600 hover:text-red-700"
                     >
                       Remove
                     </Button>

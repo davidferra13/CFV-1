@@ -2,27 +2,15 @@
 // Button Component - Consistent styling across the app
 'use client'
 
-import { AnchorHTMLAttributes, ButtonHTMLAttributes, forwardRef } from 'react'
+import { ButtonHTMLAttributes, forwardRef } from 'react'
 
-type ButtonBaseProps = {
+// Support rendering as either a <button> or an <a> when `href` is provided.
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
-  disabled?: boolean
+  href?: string
 }
-
-type NativeButtonProps = ButtonBaseProps &
-  ButtonHTMLAttributes<HTMLButtonElement> & {
-    href?: undefined
-  }
-
-type AnchorButtonProps = ButtonBaseProps &
-  AnchorHTMLAttributes<HTMLAnchorElement> & {
-    href: string
-  }
-
-// Support rendering as either a <button> or an <a> when `href` is provided.
-export type ButtonProps = NativeButtonProps | AnchorButtonProps
 
 export const Button = forwardRef<any, ButtonProps>(
   (
@@ -39,7 +27,7 @@ export const Button = forwardRef<any, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'ui-button inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.97] active:duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.97] active:duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
 
     const variants = {
       primary:

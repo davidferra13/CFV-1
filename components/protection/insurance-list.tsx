@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
-import { Shield, Plus, Trash2, Pencil } from '@/components/ui/icons'
+import { Shield, Plus, Trash2, Pencil } from 'lucide-react'
 import { deletePolicy } from '@/lib/protection/insurance-actions'
 import { InsurancePolicyForm } from './insurance-policy-form'
 import { format } from 'date-fns'
@@ -19,7 +19,6 @@ interface Policy {
   effective_date: string | null
   expiry_date: string | null
   notes: string | null
-  document_url: string | null
 }
 
 interface InsuranceListProps {
@@ -183,16 +182,6 @@ export function InsuranceList({ policies }: InsuranceListProps) {
                   {policy.notes && (
                     <p className="mt-2 text-xs text-stone-400 italic">{policy.notes}</p>
                   )}
-                  {policy.document_url && (
-                    <a
-                      href={policy.document_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-block text-xs text-amber-200 underline underline-offset-2"
-                    >
-                      View attached document
-                    </a>
-                  )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Button variant="ghost" size="sm" onClick={() => setEditingPolicy(policy)}>
@@ -203,7 +192,7 @@ export function InsuranceList({ policies }: InsuranceListProps) {
                     size="sm"
                     onClick={() => handleDelete(policy.id)}
                     loading={deletingId === policy.id}
-                    className="text-red-500 hover:text-red-200 hover:bg-red-950"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-950"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

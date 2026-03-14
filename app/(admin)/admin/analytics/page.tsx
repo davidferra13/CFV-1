@@ -7,7 +7,7 @@ import {
   getPlatformOverviewStats,
 } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { BarChart3 } from '@/components/ui/icons'
+import { BarChart3 } from 'lucide-react'
 
 function formatCents(cents: number): string {
   return '$' + (cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })

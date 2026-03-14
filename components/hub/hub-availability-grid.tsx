@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
+import { useState, useTransition } from 'react'
 import type { HubAvailability, HubAvailabilityResponse } from '@/lib/hub/availability-actions'
 import {
   createAvailability,
@@ -8,99 +8,6 @@ import {
   closeAvailability,
   getAvailabilityWithResponses,
 } from '@/lib/hub/availability-actions'
-
-// Best dates summary: shows top 1-3 dates where most people are available
-function BestDatesSummary({
-  dates,
-  responsesByDate,
-}: {
-  dates: string[]
-  responsesByDate: Record<string, HubAvailabilityResponse[]>
-}) {
-  const ranked = useMemo(() => {
-    return dates
-      .map((date) => {
-        const rs = responsesByDate[date] ?? []
-        const avail = rs.filter((r) => r.status === 'available').length
-        const maybe = rs.filter((r) => r.status === 'maybe').length
-        // Score: available = 1 point, maybe = 0.5 points
-        return { date, score: avail + maybe * 0.5, avail, maybe }
-      })
-      .filter((d) => d.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-  }, [dates, responsesByDate])
-
-  if (ranked.length === 0) return null
-
-  return (
-    <div className="mb-3 rounded-lg bg-green-500/10 p-3">
-      <div className="mb-1 text-xs font-semibold text-green-400">Best dates</div>
-      <div className="flex flex-wrap gap-2">
-        {ranked.map((d, i) => {
-          const dt = new Date(d.date + 'T12:00:00')
-          const label = dt.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-          })
-          return (
-            <span
-              key={d.date}
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                i === 0 ? 'bg-green-500/20 text-green-300' : 'bg-stone-700/50 text-stone-300'
-              }`}
-            >
-              {label} ({d.avail}
-              {d.maybe > 0 ? `+${d.maybe}?` : ''})
-            </span>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-// Shows who has responded and their overall status
-function RespondentLegend({ responses }: { responses: HubAvailabilityResponse[] }) {
-  const respondents = useMemo(() => {
-    const map = new Map<
-      string,
-      { name: string; available: number; maybe: number; unavailable: number }
-    >()
-    for (const r of responses) {
-      const name = r.profile?.display_name ?? 'Someone'
-      const key = r.profile_id
-      if (!map.has(key)) {
-        map.set(key, { name, available: 0, maybe: 0, unavailable: 0 })
-      }
-      const entry = map.get(key)!
-      if (r.status === 'available') entry.available++
-      else if (r.status === 'maybe') entry.maybe++
-      else entry.unavailable++
-    }
-    return Array.from(map.values())
-  }, [responses])
-
-  if (respondents.length === 0) return null
-
-  return (
-    <div className="mb-3 flex flex-wrap gap-2">
-      {respondents.map((r) => (
-        <span
-          key={r.name}
-          className="inline-flex items-center gap-1 rounded-full bg-stone-800 px-2 py-0.5 text-xs text-stone-300"
-          title={`${r.name}: ${r.available} available, ${r.maybe} maybe, ${r.unavailable} unavailable`}
-        >
-          {r.name.split(' ')[0]}
-          {r.available > 0 && <span className="text-green-400">{r.available}</span>}
-          {r.maybe > 0 && <span className="text-amber-400">{r.maybe}</span>}
-          {r.unavailable > 0 && <span className="text-red-400">{r.unavailable}</span>}
-        </span>
-      ))}
-    </div>
-  )
-}
 
 interface HubAvailabilityGridProps {
   groupId: string
@@ -363,152 +270,71 @@ function AvailabilityCard({
           {isPending && !loaded ? (
             <div className="py-4 text-center text-sm text-stone-500">Loading...</div>
           ) : (
-            <>
-              {/* Best dates summary */}
-              {responses.length > 0 && (
-                <BestDatesSummary dates={dates} responsesByDate={responsesByDate} />
-              )}
+            <div className="space-y-1">
+              {dates.map((date) => {
+                const dateResponses = responsesByDate[date] ?? []
+                const availCount = dateResponses.filter((r) => r.status === 'available').length
+                const maybeCount = dateResponses.filter((r) => r.status === 'maybe').length
+                const d = new Date(date + 'T12:00:00')
+                const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+                const dayNum = d.getDate()
+                const month = d.toLocaleDateString('en-US', { month: 'short' })
 
-              {/* Respondent legend */}
-              {responses.length > 0 && <RespondentLegend responses={responses} />}
-
-              <div className="space-y-1">
-                {dates.map((date) => {
-                  const dateResponses = responsesByDate[date] ?? []
-                  const availCount = dateResponses.filter((r) => r.status === 'available').length
-                  const maybeCount = dateResponses.filter((r) => r.status === 'maybe').length
-                  const unavailCount = dateResponses.filter(
-                    (r) => r.status === 'unavailable'
-                  ).length
-                  const totalResponses = dateResponses.length
-                  const d = new Date(date + 'T12:00:00')
-                  const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
-                  const dayNum = d.getDate()
-                  const month = d.toLocaleDateString('en-US', { month: 'short' })
-
-                  // Heatmap intensity based on available count
-                  const maxAvail = Math.max(
-                    1,
-                    ...dates.map(
-                      (dt) =>
-                        (responsesByDate[dt] ?? []).filter((r) => r.status === 'available').length
-                    )
-                  )
-                  const heatIntensity = availCount / maxAvail
-
-                  return (
-                    <div key={date}>
-                      <div
-                        className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-stone-800/50"
-                        style={{
-                          background:
-                            availCount > 0
-                              ? `rgba(34, 197, 94, ${heatIntensity * 0.15})`
-                              : undefined,
-                        }}
-                      >
-                        <div className="w-20 text-xs text-stone-400">
-                          {dayName} {month} {dayNum}
-                        </div>
-
-                        {/* Heatmap bar */}
-                        <div className="flex-1">
-                          {totalResponses > 0 ? (
-                            <div className="flex items-center gap-2">
-                              <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-stone-800">
-                                {availCount > 0 && (
-                                  <div
-                                    className="h-full bg-green-500"
-                                    style={{ width: `${(availCount / totalResponses) * 100}%` }}
-                                  />
-                                )}
-                                {maybeCount > 0 && (
-                                  <div
-                                    className="h-full bg-amber-500"
-                                    style={{ width: `${(maybeCount / totalResponses) * 100}%` }}
-                                  />
-                                )}
-                                {unavailCount > 0 && (
-                                  <div
-                                    className="h-full bg-red-500/60"
-                                    style={{ width: `${(unavailCount / totalResponses) * 100}%` }}
-                                  />
-                                )}
-                              </div>
-                              <div className="flex gap-1 text-xs">
-                                {availCount > 0 && (
-                                  <span className="text-green-400">{availCount}</span>
-                                )}
-                                {maybeCount > 0 && (
-                                  <span className="text-amber-400">{maybeCount}?</span>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="h-2 rounded-full bg-stone-800" />
-                          )}
-
-                          {/* Show who responded on this date */}
-                          {dateResponses.length > 0 && (
-                            <div className="mt-0.5 flex flex-wrap gap-1">
-                              {dateResponses.map((r) => (
-                                <span
-                                  key={r.id}
-                                  className={`rounded px-1 text-[10px] ${
-                                    r.status === 'available'
-                                      ? 'bg-green-500/10 text-green-400'
-                                      : r.status === 'maybe'
-                                        ? 'bg-amber-500/10 text-amber-400'
-                                        : 'bg-red-500/10 text-red-400'
-                                  }`}
-                                  title={`${r.profile?.display_name ?? 'Someone'}: ${r.status}`}
-                                >
-                                  {r.profile?.display_name?.split(' ')[0] ?? '?'}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {profileToken && !poll.is_closed && (
-                          <div className="flex gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleResponse(date, 'available')}
-                              className="rounded px-2 py-0.5 text-xs text-green-400 hover:bg-green-500/20"
-                              title="Available"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleResponse(date, 'maybe')}
-                              className="rounded px-2 py-0.5 text-xs text-amber-400 hover:bg-amber-500/20"
-                              title="Maybe"
-                            >
-                              ?
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleResponse(date, 'unavailable')}
-                              className="rounded px-2 py-0.5 text-xs text-red-400 hover:bg-red-500/20"
-                              title="Unavailable"
-                            >
-                              ✗
-                            </button>
-                          </div>
+                return (
+                  <div
+                    key={date}
+                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-stone-800/50"
+                  >
+                    <div className="w-16 text-xs text-stone-400">
+                      {dayName} {month} {dayNum}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex gap-1">
+                        {availCount > 0 && (
+                          <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs text-green-400">
+                            {availCount}
+                          </span>
+                        )}
+                        {maybeCount > 0 && (
+                          <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-400">
+                            {maybeCount}?
+                          </span>
                         )}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </>
+                    {profileToken && !poll.is_closed && (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleResponse(date, 'available')}
+                          className="rounded px-2 py-0.5 text-xs text-green-400 hover:bg-green-500/20"
+                          title="Available"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => handleResponse(date, 'maybe')}
+                          className="rounded px-2 py-0.5 text-xs text-amber-400 hover:bg-amber-500/20"
+                          title="Maybe"
+                        >
+                          ?
+                        </button>
+                        <button
+                          onClick={() => handleResponse(date, 'unavailable')}
+                          className="rounded px-2 py-0.5 text-xs text-red-400 hover:bg-red-500/20"
+                          title="Unavailable"
+                        >
+                          ✗
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           )}
 
           {profileToken && !poll.is_closed && (
             <button
-              type="button"
               onClick={handleClose}
               disabled={isPending}
               className="mt-3 w-full rounded-lg bg-stone-800 py-1.5 text-xs text-stone-400 hover:bg-stone-700"

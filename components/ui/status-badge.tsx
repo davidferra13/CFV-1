@@ -7,11 +7,11 @@ type StatusTier = 'neutral' | 'pending' | 'active' | 'progress' | 'success' | 'd
 
 const TIER_STYLES: Record<StatusTier, string> = {
   neutral: 'bg-stone-800 text-stone-400',
-  pending: 'bg-amber-950 text-amber-200 ring-1 ring-inset ring-amber-800',
-  active: 'bg-emerald-950 text-emerald-200 ring-1 ring-inset ring-emerald-800',
-  progress: 'bg-sky-950 text-sky-200 ring-1 ring-inset ring-sky-800',
-  success: 'bg-emerald-900 text-emerald-200 ring-1 ring-inset ring-emerald-300',
-  danger: 'bg-red-950 text-red-200 ring-1 ring-inset ring-red-800',
+  pending: 'bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800',
+  active: 'bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800',
+  progress: 'bg-sky-950 text-sky-700 ring-1 ring-inset ring-sky-800',
+  success: 'bg-emerald-900 text-emerald-800 ring-1 ring-inset ring-emerald-300',
+  danger: 'bg-red-950 text-red-700 ring-1 ring-inset ring-red-800',
   muted: 'bg-stone-800 text-stone-400 ring-1 ring-inset ring-stone-700',
 }
 
@@ -19,7 +19,7 @@ const TIER_STYLES: Record<StatusTier, string> = {
 const STATUS_MAP: Record<string, { label: string; tier: StatusTier }> = {
   // Events
   draft: { label: 'Draft', tier: 'neutral' },
-  proposed: { label: 'Sent to Client', tier: 'progress' },
+  proposed: { label: 'Proposed', tier: 'progress' },
   accepted: { label: 'Accepted', tier: 'pending' },
   paid: { label: 'Paid', tier: 'active' },
   confirmed: { label: 'Confirmed', tier: 'active' },

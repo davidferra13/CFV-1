@@ -26,7 +26,7 @@ export async function WeatherPanel({ lat, lng, eventDate }: WeatherPanelProps) {
           </span>
           <div>
             <p className="text-sm font-medium text-sky-900">{weather.description}</p>
-            <p className="text-xs text-sky-200">
+            <p className="text-xs text-sky-700">
               {weather.tempMinF}°–{weather.tempMaxF}°F
               {hasPrecip && <span className="ml-2">· {precipIn}" precip</span>}
             </p>

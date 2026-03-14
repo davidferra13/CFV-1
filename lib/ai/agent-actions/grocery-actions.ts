@@ -5,7 +5,7 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { runGroceryPriceQuote, logActualGroceryCost } from '@/lib/grocery/pricing-actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── Event Finder ────────────────────────────────────────────────────────────
@@ -115,14 +115,12 @@ export const groceryAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = (
-        await dispatchPrivate(
-          'Extract: eventIdentifier, actualCostCents (dollars→cents). Return ONLY JSON.',
-          description,
-          z.object({ eventIdentifier: z.string(), actualCostCents: z.number() }),
-          { modelTier: 'standard' }
-        )
-      ).result
+      const parsed = await parseWithOllama(
+        'Extract: eventIdentifier, actualCostCents (dollars→cents). Return ONLY JSON.',
+        description,
+        z.object({ eventIdentifier: z.string(), actualCostCents: z.number() }),
+        { modelTier: 'standard' }
+      )
 
       const event = await findEvent(parsed.eventIdentifier, ctx.tenantId)
       if (!event) {

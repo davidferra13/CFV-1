@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Receipt, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
+import { Receipt, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -46,7 +46,7 @@ export function TaxDeductionPanel() {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Scan Deductions
               </>
             )}
@@ -71,7 +71,7 @@ export function TaxDeductionPanel() {
         </div>
         <div className="flex items-center gap-2">
           {result.totalEstimatedMissedCents > 0 && (
-            <span className="text-xs font-medium text-amber-200">
+            <span className="text-xs font-medium text-amber-700">
               {formatDollars(result.totalEstimatedMissedCents)} potentially missed
             </span>
           )}

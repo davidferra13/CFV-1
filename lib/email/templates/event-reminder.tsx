@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type EventReminderProps = {
   clientName: string
@@ -15,7 +15,6 @@ type EventReminderProps = {
   location: string | null
   guestCount: number | null
   specialRequests: string | null
-  brand?: ChefBrandProps
 }
 
 export function EventReminderEmail({
@@ -28,10 +27,9 @@ export function EventReminderEmail({
   location,
   guestCount,
   specialRequests,
-  brand,
 }: EventReminderProps) {
   return (
-    <BaseLayout brand={brand} preview={`Reminder: ${occasion} tomorrow`}>
+    <BaseLayout preview={`Reminder: ${occasion} tomorrow`}>
       <Text style={heading}>Your event is tomorrow!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

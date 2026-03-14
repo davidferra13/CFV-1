@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { withAiFallback } from './with-ai-fallback'
 import { identifyDeductionsFormula } from '@/lib/formulas/tax-categories'
 import { z } from 'zod'
@@ -128,7 +128,7 @@ Return JSON: {
     // Formula: IRS rule-based analysis — deterministic
     () => identifyDeductionsFormula(formulaExpenses, formulaMileage),
     // AI: enhanced analysis with contextual suggestions (when Ollama is online)
-    async () => (await dispatchPrivate(systemPrompt, userContent, TaxDeductionResultSchema)).result
+    () => parseWithOllama(systemPrompt, userContent, TaxDeductionResultSchema)
   )
 
   return { ...result, _aiSource: source } as TaxDeductionResult

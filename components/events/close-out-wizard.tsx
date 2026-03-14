@@ -155,9 +155,9 @@ function TipStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            <span className="font-semibold text-emerald-200">Tip already recorded</span>
+            <span className="font-semibold text-emerald-800">Tip already recorded</span>
           </div>
-          <p className="text-emerald-200 text-sm ml-8">
+          <p className="text-emerald-700 text-sm ml-8">
             {formatCurrency(existingTip.amountCents)} via {existingTip.paymentMethod}
           </p>
         </div>
@@ -345,7 +345,7 @@ function ReceiptsStep({ data, onNext }: { data: CloseOutData; onNext: () => void
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            <span className="font-semibold text-emerald-200">All receipts uploaded</span>
+            <span className="font-semibold text-emerald-800">All receipts uploaded</span>
           </div>
         </div>
         {groceryCostSection}
@@ -500,11 +500,11 @@ function AARStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            <span className="font-semibold text-emerald-200">
+            <span className="font-semibold text-emerald-800">
               After-action review already filed
             </span>
           </div>
-          <p className="text-emerald-200 text-sm ml-8 mt-1">
+          <p className="text-emerald-700 text-sm ml-8 mt-1">
             You can view or edit it from the event page.
           </p>
         </div>
@@ -609,10 +609,10 @@ function CelebrationAndFollowUp({
 
   const marginColor =
     financial.grossMarginPercent >= 60
-      ? 'text-emerald-200'
+      ? 'text-emerald-700'
       : financial.grossMarginPercent >= 40
-        ? 'text-amber-200'
-        : 'text-red-200'
+        ? 'text-amber-700'
+        : 'text-red-700'
 
   return (
     <div className="py-4">
@@ -663,7 +663,7 @@ function CelebrationAndFollowUp({
           A short message goes a long way. Marks your follow-up as done in the dashboard.
         </p>
         {followUpSent ? (
-          <div className="flex items-center gap-2 text-emerald-200 text-sm font-medium">
+          <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -756,10 +756,10 @@ function CloseStep({ data }: { data: CloseOutData }) {
 
   const marginColor =
     financial.grossMarginPercent >= 60
-      ? 'text-emerald-200'
+      ? 'text-emerald-700'
       : financial.grossMarginPercent >= 40
-        ? 'text-amber-200'
-        : 'text-red-200'
+        ? 'text-amber-700'
+        : 'text-red-700'
 
   const foodCostOk = financial.foodCostPercent <= 30
 
@@ -784,7 +784,7 @@ function CloseStep({ data }: { data: CloseOutData }) {
         {financial.tipCents > 0 && (
           <div className="flex justify-between items-center px-5 py-3">
             <span className="text-sm text-stone-400">Tip received</span>
-            <span className="font-semibold text-emerald-200">
+            <span className="font-semibold text-emerald-700">
               +{formatCurrency(financial.tipCents)}
             </span>
           </div>

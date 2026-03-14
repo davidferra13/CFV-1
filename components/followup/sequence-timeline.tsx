@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Clock, Check, Circle, Mail } from '@/components/ui/icons'
+import { Clock, Check, Circle, Mail } from 'lucide-react'
 
 type SequenceStep = {
   id: string

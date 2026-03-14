@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { HEALTH_ITEM_KEYS } from './business-health-constants'
 
-const REVALIDATE_PATHS = ['/settings/protection', '/settings/protection/business-health']
+const REVALIDATE_PATH = '/settings/protection'
 
 export type HealthItemStatus = 'complete' | 'incomplete' | 'not_applicable'
 
@@ -52,9 +52,7 @@ export async function updateHealthItem(
 
   if (error) throw new Error(`Failed to update health item: ${error.message}`)
 
-  for (const path of REVALIDATE_PATHS) {
-    revalidatePath(path)
-  }
+  revalidatePath(REVALIDATE_PATH)
   return data
 }
 

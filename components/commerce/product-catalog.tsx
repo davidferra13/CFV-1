@@ -14,7 +14,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table'
-import { Search, Pencil } from '@/components/ui/icons'
+import { Search, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'

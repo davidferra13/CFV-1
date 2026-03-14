@@ -37,7 +37,6 @@ type Inquiry = {
   client_id: string | null
   confirmed_date: string | null
   converted_to_event_id: string | null
-  service_mode?: 'one_off' | 'recurring' | 'multi_day' | null
 }
 
 export function InquiryTransitions({
@@ -104,12 +103,7 @@ export function InquiryTransitions({
     try {
       const result = await convertInquiryToEvent(inquiry.id)
       if (result.success && result.event) {
-        trackAction(
-          inquiry.service_mode === 'multi_day'
-            ? 'Converted inquiry to event series'
-            : 'Converted inquiry to event',
-          inquiry.id
-        )
+        trackAction('Converted inquiry to event', inquiry.id)
         router.push(`/events/${result.event.id}`)
       }
     } catch (err) {
@@ -168,10 +162,7 @@ export function InquiryTransitions({
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actions</h2>
-        <p className="text-stone-500">
-          This inquiry has been booked{' '}
-          {inquiry.service_mode === 'multi_day' ? 'as an event series.' : 'as an event.'}
-        </p>
+        <p className="text-stone-500">This inquiry has been converted to an event.</p>
         <Button
           variant="secondary"
           className="mt-3"
@@ -234,7 +225,7 @@ export function InquiryTransitions({
                   loading={loading}
                   disabled={loading}
                 >
-                  I've Responded
+                  Mark Awaiting Client
                 </Button>
                 {canRelease && (
                   <Button
@@ -339,7 +330,7 @@ export function InquiryTransitions({
                   loading={loading}
                   disabled={loading}
                 >
-                  Client Accepted
+                  Mark Confirmed
                 </Button>
                 <Button
                   variant="secondary"
@@ -360,7 +351,7 @@ export function InquiryTransitions({
 
             {inquiry.status === 'confirmed' && !inquiry.converted_to_event_id && (
               <Button onClick={handleConvert} loading={loading} disabled={loading}>
-                {inquiry.service_mode === 'multi_day' ? 'Create Event Series' : 'Create Event'}
+                Convert to Event
               </Button>
             )}
 
@@ -375,26 +366,28 @@ export function InquiryTransitions({
           <div className="text-sm text-stone-400">
             {inquiry.status === 'new' && (
               <p>
-                New inquiry. Click &ldquo;I&rsquo;ve Responded&rdquo; once you&rsquo;ve reached out.
+                New inquiry needs a response. Mark as &ldquo;Awaiting Client&rdquo; once
+                you&rsquo;ve reached out.
               </p>
             )}
             {inquiry.status === 'awaiting_client' && (
-              <p>You&rsquo;ve responded. Waiting for the client to reply.</p>
+              <p>
+                You&rsquo;ve responded. Waiting for the client to reply with details or
+                confirmation.
+              </p>
             )}
             {inquiry.status === 'awaiting_chef' && (
-              <p>Client replied. Review their details and send a quote when ready.</p>
+              <p>Client has replied. Review their details and send a quote when ready.</p>
             )}
             {inquiry.status === 'quoted' && (
-              <p>Quote sent. Waiting for the client to accept or decline.</p>
+              <p>Quote sent. Waiting for client to accept or decline.</p>
             )}
             {inquiry.status === 'confirmed' && (
               <p>
-                Client accepted!{' '}
-                {inquiry.service_mode === 'multi_day'
-                  ? 'Create an event series to start planning.'
-                  : 'Create an event to start planning.'}
-                {!inquiry.client_id && ' Link a client first before creating the event.'}
-                {!inquiry.confirmed_date && ' Confirm the event date first.'}
+                Client confirmed! Convert to an event to start the booking lifecycle.
+                {!inquiry.client_id && ' Note: Link a client first before converting.'}
+                {!inquiry.confirmed_date &&
+                  ' Note: Confirm the event date first before converting.'}
               </p>
             )}
             {inquiry.status === 'expired' && (

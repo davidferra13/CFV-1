@@ -7,7 +7,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { issueAdminCredit } from '@/lib/admin/chef-admin-actions'
 import { useRouter } from 'next/navigation'
-import { PlusCircle } from '@/components/ui/icons'
+import { PlusCircle } from 'lucide-react'
 
 type Props = {
   chefId: string

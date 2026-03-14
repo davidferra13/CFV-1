@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type PaymentConfirmationProps = {
   clientName: string
@@ -14,7 +14,6 @@ type PaymentConfirmationProps = {
   remainingBalanceFormatted: string | null
   loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
   loyaltyPoints?: number | null
-  brand?: ChefBrandProps
 }
 
 export function PaymentConfirmationEmail({
@@ -26,10 +25,9 @@ export function PaymentConfirmationEmail({
   remainingBalanceFormatted,
   loyaltyTier,
   loyaltyPoints,
-  brand,
 }: PaymentConfirmationProps) {
   return (
-    <BaseLayout brand={brand} preview={`Payment of ${amountFormatted} received`}>
+    <BaseLayout preview={`Payment of ${amountFormatted} received`}>
       <Text style={heading}>Payment confirmed</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

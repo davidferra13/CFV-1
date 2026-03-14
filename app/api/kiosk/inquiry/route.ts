@@ -4,9 +4,8 @@
 
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { findExistingClientByEmail } from '@/lib/clients/find-existing'
+import { createClientFromLead } from '@/lib/clients/actions'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
-import { recordInquiryStateTransition } from '@/lib/inquiries/transition-log'
 import { z } from 'zod'
 
 const KioskInquirySchema = z.object({
@@ -61,15 +60,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const rawParsed = KioskInquirySchema.parse(body)
-
-    // SECURITY: Strip HTML tags from freetext fields (defense-in-depth against stored XSS)
-    const stripHtml = (s: string | undefined | null) => (s ? s.replace(/<[^>]*>/g, '').trim() : s)
-    const parsed = {
-      ...rawParsed,
-      full_name: stripHtml(rawParsed.full_name) || rawParsed.full_name,
-      notes: stripHtml(rawParsed.notes) || rawParsed.notes,
-    }
+    const parsed = KioskInquirySchema.parse(body)
 
     // Must have at least email or phone
     const email = parsed.email?.trim()
@@ -95,13 +86,23 @@ export async function POST(request: Request) {
       )
     }
 
-    // Store contact info on the inquiry. Auto-link if already a client (read-only check).
-    const contactName = parsed.full_name.trim()
-    const contactEmail = email || null
-    const contactPhone = phone || null
-    const existingClientId = contactEmail
-      ? await findExistingClientByEmail(supabase, tenantId, contactEmail)
-      : null
+    // 1. Create or find client (use email if provided, otherwise phone as identifier)
+    // For phone-only submissions, use a unique placeholder email to avoid collisions
+    const clientEmail =
+      email || `kiosk-${Date.now()}-${phone?.replace(/\D/g, '')}@placeholder.chefflow.local`
+
+    let client: { id: string }
+    try {
+      client = await createClientFromLead(tenantId, {
+        email: clientEmail.toLowerCase(),
+        full_name: parsed.full_name.trim(),
+        phone: phone || null,
+        source: 'kiosk',
+      })
+    } catch (clientErr) {
+      console.error('[kiosk/inquiry] Client creation failed:', clientErr)
+      return NextResponse.json({ error: 'Failed to create client record' }, { status: 500 })
+    }
 
     // 2. Create inquiry
     const sourceMessage = [
@@ -118,10 +119,7 @@ export async function POST(request: Request) {
       .insert({
         tenant_id: tenantId,
         channel: 'kiosk',
-        client_id: existingClientId,
-        contact_name: contactName,
-        contact_email: contactEmail,
-        contact_phone: contactPhone,
+        client_id: client.id,
         first_contact_at: new Date().toISOString(),
         confirmed_date: parsed.event_date,
         confirmed_guest_count: parsed.party_size,
@@ -142,34 +140,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create inquiry' }, { status: 500 })
     }
 
-    try {
-      await recordInquiryStateTransition({
-        supabase,
-        tenantId,
-        inquiryId: inquiry.id,
-        fromStatus: null,
-        toStatus: 'new',
-        transitionedBy: null,
-        reason: 'kiosk_inquiry_submitted',
-        metadata: {
-          source: 'kiosk',
-          device_id: device.deviceId,
-          staff_member_id: parsed.staff_member_id || null,
-        },
-      })
-    } catch (transitionErr) {
-      console.error(
-        '[kiosk/inquiry] Initial inquiry transition insert failed (non-blocking):',
-        transitionErr
-      )
-    }
-
     // 3. Create draft event
     const { data: event, error: eventError } = await supabase
       .from('events')
       .insert({
         tenant_id: tenantId,
-        client_id: existingClientId,
+        client_id: client.id,
         inquiry_id: inquiry.id,
         event_date: parsed.event_date,
         serve_time: 'TBD',

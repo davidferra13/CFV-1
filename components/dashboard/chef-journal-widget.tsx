@@ -8,7 +8,7 @@ import {
   MapPin,
   NotebookPen,
   UtensilsCrossed,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import type { ChefJourneyInsights, ChefJourneyWithStats } from '@/lib/journey/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

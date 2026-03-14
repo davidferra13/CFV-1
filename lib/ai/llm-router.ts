@@ -129,10 +129,7 @@ export async function routeForRemy(opts?: { preferEndpoint?: LlmEndpoint }): Pro
 
   return {
     host: url,
-    // Use fast tier — the 30B models are 77% CPU-offloaded on 6GB VRAM GPUs,
-    // causing 90-120s responses. The 4B model responds in 5-10s with good quality.
-    // On Pi, getModelForEndpoint() always resolves to the Pi model.
-    model: getModelForEndpoint(endpointName, 'fast'),
+    model: getModelForEndpoint(endpointName, 'standard'),
     endpointName,
   }
 }

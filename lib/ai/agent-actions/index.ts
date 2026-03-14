@@ -26,11 +26,6 @@ import { proactiveAgentActions } from './proactive-actions'
 import { intakeAgentActions } from './intake-actions'
 // ─── Briefing & date hold actions (2026-02-28) ───────────────────────────
 import { briefingAgentActions } from './briefing-actions'
-// ─── Inquiry response actions (2026-03-06) ───────────────────────────────
-import { inquiryResponseAgentActions } from './inquiry-response-actions'
-// ─── Menu proposal + lifecycle circle actions (2026-03-06) ───────────────
-import { menuProposalAgentActions } from './menu-proposal-actions'
-import { lifecycleCircleAgentActions } from './lifecycle-circle-actions'
 
 let registered = false
 
@@ -64,11 +59,4 @@ export function ensureAgentActionsRegistered(): void {
 
   // ─── Briefing & date hold actions (2026-02-28) ───────────────────────────
   registerAgentActions(briefingAgentActions)
-
-  // ─── Inquiry response actions (2026-03-06) ───────────────────────────────
-  registerAgentActions(inquiryResponseAgentActions)
-
-  // ─── Menu proposal + lifecycle circle actions (2026-03-06) ───────────────
-  registerAgentActions(menuProposalAgentActions)
-  registerAgentActions(lifecycleCircleAgentActions)
 }

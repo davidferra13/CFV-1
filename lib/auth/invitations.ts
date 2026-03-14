@@ -34,20 +34,14 @@ export async function getInvitationByToken(token: string) {
 export async function markInvitationUsed(invitationId: string) {
   const supabase = createServerClient({ admin: true })
 
-  // SECURITY: .is('used_at', null) prevents TOCTOU race condition where two
-  // concurrent signup requests with the same token both succeed. Without this
-  // guard, duplicate accounts can be created in the same tenant.
-  const { data: updated, error } = await supabase
+  const { error } = await supabase
     .from('client_invitations')
     .update({ used_at: new Date().toISOString() })
     .eq('id', invitationId)
-    .is('used_at', null)
-    .select('id')
-    .single()
 
-  if (error || !updated) {
-    console.error('[markInvitationUsed] Error or already used:', error)
-    throw new Error('Invitation already used or invalid')
+  if (error) {
+    console.error('[markInvitationUsed] Error:', error)
+    throw new Error('Failed to mark invitation as used')
   }
 
   return { success: true }

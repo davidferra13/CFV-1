@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Plus, Trophy, Clock, FlaskConical } from '@/components/ui/icons'
+import { Plus, Trophy, Clock, FlaskConical } from 'lucide-react'
 import { createABTest, resolveABTest } from '@/lib/marketing/ab-test-actions'
 import { toast } from 'sonner'
 

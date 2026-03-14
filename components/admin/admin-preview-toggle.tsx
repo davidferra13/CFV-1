@@ -5,7 +5,7 @@
 // Only rendered for real admins. Stays in the bottom-right corner above other FABs.
 
 import { useState, useTransition } from 'react'
-import { Eye, EyeOff } from '@/components/ui/icons'
+import { Eye, EyeOff } from 'lucide-react'
 import { toggleAdminPreview } from '@/lib/auth/admin-preview-actions'
 
 type Props = {

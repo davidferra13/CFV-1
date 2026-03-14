@@ -1,18 +1,14 @@
 // Admin Access Control
 // Platform-level gating separate from the chef/client role system.
-// Access is determined by ADMIN_EMAILS env var + founder hard baseline.
+// Access is determined solely by ADMIN_EMAILS env var — no DB table needed.
 
 import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getAdminEmails } from '@/lib/platform/owner-account'
 
-function resolveAdminEmails(): string[] {
-  // Keep explicit env read here for audit/test visibility.
-  void process.env.ADMIN_EMAILS
-  return getAdminEmails()
-}
-
-const ADMIN_EMAILS = resolveAdminEmails()
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean)
 
 export type AdminUser = {
   id: string

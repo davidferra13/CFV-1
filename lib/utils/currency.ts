@@ -2,13 +2,11 @@
 // Can be used in both server and client components
 
 /**
- * Format cents to currency string (for display).
- * Locale parameter controls number/symbol formatting (e.g. 'de-DE' for 1.234,56 EUR).
- * Defaults to 'en-US' for backwards compatibility with all 226+ existing callers.
+ * Format cents to currency string (for display)
  */
-export function formatCurrency(cents: number, currency = 'USD', locale = 'en-US'): string {
+export function formatCurrency(cents: number, currency = 'USD'): string {
   const dollars = cents / 100
-  return new Intl.NumberFormat(locale, {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
   }).format(dollars)

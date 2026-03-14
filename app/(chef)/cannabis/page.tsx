@@ -20,6 +20,27 @@ export default async function CannabisHubPage() {
       <div className="px-6 py-8 max-w-3xl mx-auto">
         <CannabisPortalHeader title="Cannabis Dining" subtitle="Private tier - invitation only" />
 
+        <div
+          className="rounded-xl p-4 mb-6"
+          style={{
+            background: 'rgba(74, 124, 78, 0.12)',
+            border: '1px solid rgba(106, 170, 110, 0.3)',
+          }}
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider mb-1 text-[#8bc34a]">
+            Internal Reminder
+          </p>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#d2e8d4]">
+            <span>Cannabis Handbook content not yet finalized.</span>
+            <Link
+              href="/cannabis/handbook"
+              className="underline underline-offset-2 text-[#8bc34a] font-medium"
+            >
+              Open draft outline -&gt;
+            </Link>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           <HubCard
             href="/cannabis/events"
@@ -65,9 +86,9 @@ export default async function CannabisHubPage() {
           <HubCard
             href="/cannabis/handbook"
             icon="HB"
-            label="Handbook"
+            label="Handbook (Draft)"
             value={null}
-            sublabel="Operational reference guide"
+            sublabel="Internal reference only"
             glow="rgba(74, 124, 78, 0.25)"
           />
         </div>

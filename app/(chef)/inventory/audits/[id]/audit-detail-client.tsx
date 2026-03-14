@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { updateAuditItem, finalizeAudit } from '@/lib/inventory/audit-actions'
-import { toast } from 'sonner'
 
 const STATUS_COLORS: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
   draft: 'default',
@@ -39,7 +38,7 @@ export function AuditDetailClient({ audit }: Props) {
       try {
         await updateAuditItem(itemId, { actualQty: val })
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to update count')
+        console.error('Failed to update count', err)
       }
     })
   }
@@ -55,7 +54,7 @@ export function AuditDetailClient({ audit }: Props) {
         await finalizeAudit(audit.id)
         window.location.reload()
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to finalize audit')
+        console.error('Failed to finalize audit', err)
       }
     })
   }

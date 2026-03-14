@@ -14,9 +14,6 @@ import { LeadScoreBadge } from '@/components/inquiries/lead-score-badge'
 import { getInquiryUrgencies } from '@/lib/analytics/response-time-actions'
 import { computeCompleteness } from '@/lib/leads/completeness'
 import { CompletenessRing } from '@/components/inquiries/completeness-ring'
-import { QuickDismissButton } from '@/components/inquiries/quick-dismiss-button'
-import { QuickConvertButton } from '@/components/inquiries/quick-convert-button'
-import { quickDismissInquiry } from '@/lib/inquiries/actions'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import {
@@ -38,9 +35,7 @@ import {
   InquiriesBulkTable,
   type SerializedInquiry,
 } from '@/components/inquiries/inquiries-bulk-table'
-import { AlertTriangle, Clock, TrendingUp, BarChart3 } from '@/components/ui/icons'
-import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-bar'
-import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
+import { AlertTriangle, Clock, TrendingUp, BarChart3 } from 'lucide-react'
 
 type InquiryFilter =
   | 'all'
@@ -51,60 +46,15 @@ type InquiryFilter =
   | 'confirmed'
   | 'closed'
 
-type BudgetModeFilter = 'all' | 'exact' | 'range' | 'not_sure' | 'unset'
-
 const OPEN_STATUSES = new Set(['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
-  contact_name: string | null
   unknown_fields: unknown
 }): string {
-  if (inquiry.contact_name) return inquiry.contact_name
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.client_name as string) || 'Unknown Contact'
-}
-
-function getBudgetMode(inquiry: {
-  confirmed_budget_cents: number | null
-  unknown_fields: unknown
-}): Exclude<BudgetModeFilter, 'all'> {
-  const exactCents = inquiry.confirmed_budget_cents
-  const unknown =
-    inquiry.unknown_fields && typeof inquiry.unknown_fields === 'object'
-      ? (inquiry.unknown_fields as Record<string, unknown>)
-      : null
-
-  const modeRaw = unknown?.budget_mode
-  const mode = typeof modeRaw === 'string' ? modeRaw : null
-  const rangeRaw = unknown?.budget_range
-  const budgetRange = typeof rangeRaw === 'string' ? rangeRaw : null
-  const unknownExactRaw = unknown?.budget_exact_cents
-  const unknownExactCents =
-    typeof unknownExactRaw === 'number'
-      ? unknownExactRaw
-      : typeof unknownExactRaw === 'string'
-        ? Number.parseInt(unknownExactRaw, 10)
-        : NaN
-
-  if (
-    (typeof exactCents === 'number' && exactCents > 0) ||
-    (Number.isFinite(unknownExactCents) && unknownExactCents > 0) ||
-    mode === 'exact'
-  ) {
-    return 'exact'
-  }
-
-  if (mode === 'not_sure' || budgetRange === 'not_sure') {
-    return 'not_sure'
-  }
-
-  if (mode === 'range' || (budgetRange && budgetRange.trim().length > 0)) {
-    return 'range'
-  }
-
-  return 'unset'
+  return (unknown?.client_name as string) || 'Unknown Lead'
 }
 
 // Shared row component for inquiry cards
@@ -159,13 +109,6 @@ function InquiryRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-stone-100">{name}</span>
-            {inquiry.client?.id ? (
-              <Badge variant="success">Client</Badge>
-            ) : (
-              <Badge variant="default">
-                Lead · {formatDistanceToNow(new Date(inquiry.created_at), { addSuffix: false })}
-              </Badge>
-            )}
             <InquiryStatusBadge status={inquiry.status as any} />
             <InquiryChannelBadge channel={inquiry.channel} />
             {urgency && !urgency.hasResponse && (
@@ -218,17 +161,6 @@ function InquiryRow({
           )}
         </div>
         <div className="text-right flex-shrink-0 flex items-start gap-2">
-          {OPEN_STATUSES.has(inquiry.status) && !inquiry.client?.id && (
-            <QuickConvertButton
-              inquiryId={inquiry.id}
-              contactName={inquiry.contact_name}
-              contactEmail={inquiry.contact_email}
-              contactPhone={inquiry.contact_phone}
-            />
-          )}
-          {OPEN_STATUSES.has(inquiry.status) && (
-            <QuickDismissButton inquiryId={inquiry.id} onDismiss={quickDismissInquiry} />
-          )}
           {completeness && OPEN_STATUSES.has(inquiry.status) && (
             <CompletenessRing completeness={completeness} />
           )}
@@ -254,11 +186,9 @@ function InquiryRow({
 async function InquiryList({
   filter,
   channelFilter,
-  budgetModeFilter,
 }: {
   filter: InquiryFilter
   channelFilter: string | null
-  budgetModeFilter: BudgetModeFilter
 }) {
   await requireChef()
 
@@ -273,10 +203,6 @@ async function InquiryList({
   // Apply channel filter
   if (channelFilter) {
     inquiries = inquiries.filter((i: any) => i.channel === channelFilter)
-  }
-
-  if (budgetModeFilter !== 'all') {
-    inquiries = inquiries.filter((i: any) => getBudgetMode(i) === budgetModeFilter)
   }
 
   // Apply status filter
@@ -340,7 +266,7 @@ async function InquiryList({
           <EmptyState
             illustration={<NoInquiriesIllustration />}
             title="No inquiries yet"
-            description="Log your first inquiry to start tracking everyone who reaches out."
+            description="Log your first inquiry to start tracking leads from initial contact through to a booked event."
             action={{ label: 'Log New Inquiry', href: '/inquiries/new' }}
           />
         ) : (
@@ -430,7 +356,7 @@ async function InquiryList({
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="h-4 w-4 text-emerald-400" />
               <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
-                Active ({activeOpen.length})
+                Active Pipeline ({activeOpen.length})
               </h2>
             </div>
             <div className="space-y-2">
@@ -483,13 +409,12 @@ async function InquiryList({
 export default async function InquiriesPage({
   searchParams,
 }: {
-  searchParams: { status?: InquiryFilter; channel?: string; budget_mode?: BudgetModeFilter }
+  searchParams: { status?: InquiryFilter; channel?: string }
 }) {
   await requireChef()
 
   const filter = (searchParams.status || 'all') as InquiryFilter
   const channelFilter = searchParams.channel || null
-  const budgetModeFilter = (searchParams.budget_mode || 'all') as BudgetModeFilter
 
   // Fetch all inquiries for the kanban board (always shows all, unfiltered)
   const allInquiries = await getInquiries()
@@ -512,10 +437,8 @@ export default async function InquiriesPage({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">Inquiries</h1>
-          <p className="text-stone-400 mt-1">
-            Everyone who has reached out, from first contact to booked event
-          </p>
+          <h1 className="text-3xl font-bold text-stone-100">Inquiry Pipeline</h1>
+          <p className="text-stone-400 mt-1">Track every lead from first contact to booked event</p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/analytics/funnel">
@@ -530,26 +453,12 @@ export default async function InquiriesPage({
         </div>
       </div>
 
-      {/* Pipeline Intelligence Summary */}
-      <Suspense fallback={null}>
-        <PipelineSummaryBar />
-      </Suspense>
-
-      {/* Inquiry Triage & Communication */}
-      <Suspense fallback={null}>
-        <InquiryTriageBar />
-      </Suspense>
-
       {/* View wrapper: manages list/kanban toggle */}
       <InquiriesViewWrapper inquiries={kanbanInquiries}>
         {/* Status Tabs + List — unchanged, passed as children slot */}
         <div className="space-y-4">
           <Card className="p-4">
-            <InquiriesFilterTabs
-              initialStatus={filter}
-              initialChannel={channelFilter}
-              initialBudgetMode={budgetModeFilter}
-            />
+            <InquiriesFilterTabs initialStatus={filter} initialChannel={channelFilter} />
           </Card>
 
           {/* Inquiry List */}
@@ -560,11 +469,7 @@ export default async function InquiriesPage({
               </Card>
             }
           >
-            <InquiryList
-              filter={filter}
-              channelFilter={channelFilter}
-              budgetModeFilter={budgetModeFilter}
-            />
+            <InquiryList filter={filter} channelFilter={channelFilter} />
           </Suspense>
         </div>
       </InquiriesViewWrapper>

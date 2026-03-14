@@ -17,14 +17,14 @@ import { format } from 'date-fns'
 export const metadata: Metadata = { title: 'Rewards - ChefFlow' }
 
 const TYPE_STYLES: Record<string, string> = {
-  gift_card: 'bg-green-900 text-green-200',
-  voucher: 'bg-purple-900 text-purple-200',
-  discount: 'bg-blue-900 text-blue-200',
-  complimentary: 'bg-amber-900 text-amber-200',
+  gift_card: 'bg-green-900 text-green-700',
+  voucher: 'bg-purple-900 text-purple-700',
+  discount: 'bg-blue-900 text-blue-700',
+  complimentary: 'bg-amber-900 text-amber-700',
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-green-900 text-green-200',
+  active: 'bg-green-900 text-green-700',
   redeemed: 'bg-stone-700 text-stone-500',
   expired: 'bg-red-900 text-red-600',
   inactive: 'bg-stone-800 text-stone-500',
@@ -64,7 +64,7 @@ export default async function RewardsPage() {
           <p className="text-sm text-stone-500 mt-1">Total issued</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{active.length}</p>
+          <p className="text-2xl font-bold text-green-700">{active.length}</p>
           <p className="text-sm text-stone-500 mt-1">Active</p>
         </Card>
         <Card className="p-4">
@@ -72,7 +72,7 @@ export default async function RewardsPage() {
           <p className="text-sm text-stone-500 mt-1">Redeemed</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-200">
+          <p className="text-2xl font-bold text-amber-700">
             {formatCurrency(stats.totalValueAppliedCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Total value applied</p>

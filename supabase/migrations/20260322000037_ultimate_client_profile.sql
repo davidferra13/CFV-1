@@ -134,30 +134,21 @@ VALUES (
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 -- Storage RLS: path = {tenant_id}/{client_id}/{photo_id}.{ext}
-DO $$ BEGIN
-  CREATE POLICY "client_photos_chef_upload" ON storage.objects FOR INSERT TO authenticated
-    WITH CHECK (
-      bucket_id = 'client-photos'
-      AND get_current_user_role() = 'chef'
-      AND split_part(name, '/', 1) = get_current_tenant_id()::text
-    );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE POLICY "client_photos_chef_read" ON storage.objects FOR SELECT TO authenticated
-    USING (
-      bucket_id = 'client-photos'
-      AND get_current_user_role() = 'chef'
-      AND split_part(name, '/', 1) = get_current_tenant_id()::text
-    );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE POLICY "client_photos_chef_remove" ON storage.objects FOR DELETE TO authenticated
-    USING (
-      bucket_id = 'client-photos'
-      AND get_current_user_role() = 'chef'
-      AND split_part(name, '/', 1) = get_current_tenant_id()::text
-    );
-EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+CREATE POLICY "client_photos_chef_upload" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'client-photos'
+    AND get_current_user_role() = 'chef'
+    AND split_part(name, '/', 1) = get_current_tenant_id()::text
+  );
+CREATE POLICY "client_photos_chef_read" ON storage.objects FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'client-photos'
+    AND get_current_user_role() = 'chef'
+    AND split_part(name, '/', 1) = get_current_tenant_id()::text
+  );
+CREATE POLICY "client_photos_chef_remove" ON storage.objects FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'client-photos'
+    AND get_current_user_role() = 'chef'
+    AND split_part(name, '/', 1) = get_current_tenant_id()::text
+  );

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Copy, Loader2, Bot } from '@/components/ui/icons'
+import { Star, Copy, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { draftReviewRequest, type ReviewRequestDraft } from '@/lib/ai/review-request'
@@ -46,7 +46,7 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Draft Request
               </>
             )}

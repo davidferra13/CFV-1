@@ -15,12 +15,8 @@ import {
   DollarSign,
   Percent,
   AlertTriangle,
-  CreditCard,
   MapPin,
-  BarChart3,
-  TrendingUp,
-  Star,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'
@@ -64,12 +60,6 @@ export default async function CommerceDashboardPage() {
           <p className="text-stone-400 mt-1">POS register, products, and sales</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/commerce/virtual-terminal">
-            <Button variant="secondary">
-              <CreditCard className="w-4 h-4 mr-2" />
-              Virtual Terminal
-            </Button>
-          </Link>
           <Link href="/commerce/register">
             <Button variant="primary">
               <ShoppingCart className="w-4 h-4 mr-2" />
@@ -121,20 +111,12 @@ export default async function CommerceDashboardPage() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
         <Link href="/commerce/register">
           <Card interactive>
             <CardContent className="p-4 flex items-center gap-3">
               <ShoppingCart className="w-5 h-5 text-brand-500" />
               <span className="text-stone-200 font-medium">POS Register</span>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/commerce/virtual-terminal">
-          <Card interactive>
-            <CardContent className="p-4 flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-brand-500" />
-              <span className="text-stone-200 font-medium">Virtual Terminal</span>
             </CardContent>
           </Card>
         </Link>
@@ -178,43 +160,11 @@ export default async function CommerceDashboardPage() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/commerce/purchase-orders">
-          <Card interactive>
-            <CardContent className="p-4 flex items-center gap-3">
-              <Package className="w-5 h-5 text-brand-500" />
-              <span className="text-stone-200 font-medium">Purchase Orders</span>
-            </CardContent>
-          </Card>
-        </Link>
         <Link href="/commerce/observability">
           <Card interactive>
             <CardContent className="p-4 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-brand-500" />
               <span className="text-stone-200 font-medium">Observability</span>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/commerce/parity">
-          <Card interactive>
-            <CardContent className="p-4 flex items-center gap-3">
-              <BarChart3 className="w-5 h-5 text-brand-500" />
-              <span className="text-stone-200 font-medium">Clover Parity</span>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/commerce/analytics">
-          <Card interactive>
-            <CardContent className="p-4 flex items-center gap-3">
-              <TrendingUp className="w-5 h-5 text-brand-500" />
-              <span className="text-stone-200 font-medium">Analytics</span>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/commerce/specials">
-          <Card interactive>
-            <CardContent className="p-4 flex items-center gap-3">
-              <Star className="w-5 h-5 text-brand-500" />
-              <span className="text-stone-200 font-medium">Daily Specials</span>
             </CardContent>
           </Card>
         </Link>

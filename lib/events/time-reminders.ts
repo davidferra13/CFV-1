@@ -2,7 +2,6 @@
 // Designed to improve completeness without spamming chefs.
 
 import { createServerClient } from '@/lib/supabase/server'
-import { createNotification } from '@/lib/notifications/actions'
 import type { Json } from '@/types/database'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
@@ -206,28 +205,27 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
         `${config.label} has been running for ${formatMinutesAsDuration(runtimeMinutes)} on "${eventName}". ` +
         'Stop when finished so your hours stay accurate.'
 
-      try {
-        await createNotification({
-          tenantId: event.tenant_id,
-          recipientId,
-          category: 'event',
-          action: 'system_alert',
-          title,
-          body,
-          actionUrl: `/events/${event.id}`,
-          eventId: event.id,
-          clientId: event.client_id,
-          metadata: {
-            kind: 'time_tracking_running',
-            activity,
-            runtime_minutes: runtimeMinutes,
-            reminder_interval_minutes: RUNNING_REMINDER_INTERVAL_MINUTES,
-            daily_cap: RUNNING_REMINDER_MAX_PER_DAY,
-          },
-        })
-      } catch (insertErr) {
-        const msg = insertErr instanceof Error ? insertErr.message : String(insertErr)
-        result.errors.push(`time_tracking_running_reminder_${event.id}: ${msg}`)
+      const { error: insertError } = await supabase.from('notifications').insert({
+        tenant_id: event.tenant_id,
+        recipient_id: recipientId,
+        category: 'event',
+        action: 'system_alert',
+        title,
+        body,
+        action_url: `/events/${event.id}`,
+        event_id: event.id,
+        client_id: event.client_id,
+        metadata: {
+          kind: 'time_tracking_running',
+          activity,
+          runtime_minutes: runtimeMinutes,
+          reminder_interval_minutes: RUNNING_REMINDER_INTERVAL_MINUTES,
+          daily_cap: RUNNING_REMINDER_MAX_PER_DAY,
+        } as Json,
+      })
+
+      if (insertError) {
+        result.errors.push(`time_tracking_running_reminder_${event.id}: ${insertError.message}`)
         continue
       }
 
@@ -260,24 +258,25 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
     if (completionSent.has(completionKey)) continue
 
     const eventName = event.occasion || 'this event'
-    try {
-      await createNotification({
-        tenantId: event.tenant_id,
-        recipientId,
-        category: 'event',
-        action: 'system_alert',
-        title: 'Log final event hours?',
-        body: `Event "${eventName}" is completed with no tracked hours yet. Add Shopping, Prep, Packing, Driving, and Execution when you have a moment.`,
-        actionUrl: `/events/${event.id}`,
-        eventId: event.id,
-        clientId: event.client_id,
-        metadata: {
-          kind: 'time_tracking_completion',
-        },
-      })
-    } catch (completionErr) {
-      const msg = completionErr instanceof Error ? completionErr.message : String(completionErr)
-      result.errors.push(`time_tracking_completion_reminder_${event.id}: ${msg}`)
+    const { error: completionError } = await supabase.from('notifications').insert({
+      tenant_id: event.tenant_id,
+      recipient_id: recipientId,
+      category: 'event',
+      action: 'system_alert',
+      title: 'Log final event hours?',
+      body: `Event "${eventName}" is completed with no tracked hours yet. Add Shopping, Prep, Packing, Driving, and Execution when you have a moment.`,
+      action_url: `/events/${event.id}`,
+      event_id: event.id,
+      client_id: event.client_id,
+      metadata: {
+        kind: 'time_tracking_completion',
+      } as Json,
+    })
+
+    if (completionError) {
+      result.errors.push(
+        `time_tracking_completion_reminder_${event.id}: ${completionError.message}`
+      )
       continue
     }
 

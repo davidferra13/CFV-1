@@ -17,7 +17,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Power,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import type { AiDataSummary, AiPreferences } from '@/lib/ai/privacy-actions'
 import {
   deleteAllConversations,
@@ -67,7 +67,7 @@ function DeleteButton({
       <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-950 p-3">
         <div className="flex items-center gap-2">
           <Check className="h-4 w-4 text-emerald-600" />
-          <span className="text-sm font-medium text-emerald-200">Deleted</span>
+          <span className="text-sm font-medium text-emerald-700">Deleted</span>
         </div>
       </div>
     )
@@ -297,7 +297,7 @@ export function DataControls({
           <AlertTriangle className="h-5 w-5 text-red-500" />
           <h3 className="font-semibold text-red-900">Delete All AI Data</h3>
         </div>
-        <p className="text-sm text-red-200">
+        <p className="text-sm text-red-700">
           This permanently deletes every conversation, memory, and artifact Remy has ever created.
           This cannot be undone.
         </p>

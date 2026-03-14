@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { sendProspectEmail } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, Send, CheckCircle, Mail, AlertCircle } from '@/components/ui/icons'
+import { Loader2, Send, CheckCircle, Mail, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 

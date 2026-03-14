@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from '@/components/ui/icons'
+import { X } from 'lucide-react'
 
 interface ShortcutSection {
   category: string
@@ -19,11 +19,6 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['G', 'I'], description: 'Inquiries' },
       { keys: ['G', 'E'], description: 'Events' },
       { keys: ['G', 'F'], description: 'Finance' },
-      { keys: ['G', 'R'], description: 'Recipes' },
-      { keys: ['G', 'K'], description: 'Calendar' },
-      { keys: ['G', 'M'], description: 'Menus' },
-      { keys: ['G', 'L'], description: 'Shopping Lists' },
-      { keys: ['G', 'O'], description: 'Contracts' },
       { keys: ['G', 'S'], description: 'Settings' },
     ],
   },
@@ -32,7 +27,6 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
     shortcuts: [
       { keys: ['N', 'I'], description: 'New Inquiry' },
       { keys: ['N', 'E'], description: 'New Event' },
-      { keys: ['N', 'R'], description: 'New Recurring Series' },
       { keys: ['N', 'Q'], description: 'New Quote' },
       { keys: ['N', 'C'], description: 'New Client' },
     ],

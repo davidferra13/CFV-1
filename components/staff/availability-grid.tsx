@@ -7,7 +7,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Users } from '@/components/ui/icons'
+import { ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import { setAvailability } from '@/lib/staff/availability-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -226,7 +226,7 @@ export function AvailabilityGrid({
                       >
                         <div>{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]}</div>
                         <div
-                          className={`text-sm font-semibold ${isToday ? 'text-brand-600' : 'text-stone-200'}`}
+                          className={`text-sm font-semibold ${isToday ? 'text-brand-600' : 'text-stone-700'}`}
                         >
                           {d.getDate()}
                         </div>

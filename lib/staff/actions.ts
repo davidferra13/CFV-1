@@ -1,4 +1,4 @@
-﻿// Staff & Team Management — Server Actions
+﻿// Staff & Team Management â€” Server Actions
 // Chef-only. Manages the staff roster and event assignments.
 
 'use server'
@@ -184,7 +184,7 @@ export async function getStaffMember(id: string) {
     .select(
       `
       *,
-      events (id, occasion, event_date, status)
+      events (id, title, event_date, status)
     `
     )
     .eq('staff_member_id', id)
@@ -242,7 +242,7 @@ export async function checkAssignmentConflict(
       `
       id,
       event_id,
-      events!inner (id, occasion, event_date)
+      events!inner (id, title, event_date)
     `
     )
     .eq('staff_member_id', staffMemberId)
@@ -330,7 +330,7 @@ export async function getEventStaffRoster(eventId: string) {
 
 /**
  * Record actual hours worked by a staff member after the event.
- * Computes and stores pay_amount_cents = actual_hours × effective_rate.
+ * Computes and stores pay_amount_cents = actual_hours Ã— effective_rate.
  */
 export async function recordStaffHours(input: RecordHoursInput) {
   const user = await requireChef()

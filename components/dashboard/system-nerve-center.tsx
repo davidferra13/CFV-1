@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 // System Nerve Center — Dashboard Panel
@@ -16,7 +15,7 @@ import {
   RefreshCw,
   Shield,
   Zap,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import type {

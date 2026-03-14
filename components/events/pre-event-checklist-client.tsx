@@ -12,7 +12,7 @@ import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { CheckCircle, AlertCircle, ChevronRight } from '@/components/ui/icons'
+import { CheckCircle, AlertCircle, ChevronRight } from 'lucide-react'
 
 interface ChecklistSection {
   title: string

@@ -16,9 +16,6 @@ import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
 import { getClientHealthScores } from '@/lib/clients/health-score'
-import { getChurnPreventionTriggers } from '@/lib/intelligence/churn-prevention-triggers'
-import { RebookingBar } from '@/components/intelligence/rebooking-bar'
-import { DuplicateMergePanel } from '@/components/clients/duplicate-merge-panel'
 
 export default async function ClientsPage() {
   await requireChef()
@@ -31,25 +28,15 @@ export default async function ClientsPage() {
           <p className="text-stone-400 mt-1">Manage your client relationships and invitations</p>
         </div>
         <div className="flex gap-2">
-          <Button href="/clients/recurring" variant="secondary">
-            Recurring Board
-          </Button>
           <a
             href="/clients/export"
             className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
           >
             Export CSV
           </a>
-          <Button href="/clients/new" data-tour="add-client">
-            + Add Client
-          </Button>
+          <Button href="/clients/new">+ Add Client</Button>
         </div>
       </div>
-
-      {/* Rebooking Intelligence */}
-      <Suspense fallback={null}>
-        <RebookingBar />
-      </Suspense>
 
       {/* Invitation Section */}
       <Card id="invite">
@@ -71,11 +58,6 @@ export default async function ClientsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Duplicate Detection */}
-      <Suspense fallback={null}>
-        <DuplicateMergePanel />
-      </Suspense>
 
       {/* Clients List */}
       <Card data-info="client-table">
@@ -103,14 +85,12 @@ async function PendingInvitationsContent() {
 }
 
 async function ClientsListContent() {
-  const [clients, healthSummary, churnResult] = await Promise.all([
+  const [clients, healthSummary] = await Promise.all([
     getClientsWithStats(),
     getClientHealthScores().catch(() => ({ scores: [], medianLtv: 0, avgEventsPerYear: 0 })),
-    getChurnPreventionTriggers().catch(() => null),
   ])
 
   const healthMap = new Map(healthSummary.scores.map((s) => [s.clientId, s]))
-  const churnMap = new Map((churnResult?.atRiskClients || []).map((c) => [c.clientId, c]))
 
   if (clients.length === 0) {
     return (
@@ -123,5 +103,5 @@ async function ClientsListContent() {
     )
   }
 
-  return <ClientsTable clients={clients} healthMap={healthMap} churnMap={churnMap} />
+  return <ClientsTable clients={clients} healthMap={healthMap} />
 }

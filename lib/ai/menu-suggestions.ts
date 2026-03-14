@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 export interface MenuSuggestion {
@@ -89,12 +89,10 @@ Special requests: ${event.special_requests || 'None'}
 Chef's recipe book (use these when possible): ${recipes?.map((r: any) => r.name).join(', ') || 'No recipes on file yet'}`
 
   try {
-    const suggestions = (
-      await dispatchPrivate(SYSTEM_PROMPT, userContent, MenuSuggestionsSchema, {
-        modelTier: 'standard',
-        maxTokens: 1024,
-      })
-    ).result
+    const suggestions = await parseWithOllama(SYSTEM_PROMPT, userContent, MenuSuggestionsSchema, {
+      modelTier: 'standard',
+      maxTokens: 1024,
+    })
     return suggestions
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

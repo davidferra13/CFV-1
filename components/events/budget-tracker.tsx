@@ -56,7 +56,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
   const barColor = isOver ? 'bg-red-500' : isNear ? 'bg-yellow-500' : 'bg-green-500'
 
   const statusLabel = isOver ? 'OVER BUDGET' : isNear ? 'NEAR LIMIT' : 'ON TRACK'
-  const statusColor = isOver ? 'text-red-200' : isNear ? 'text-yellow-200' : 'text-green-200'
+  const statusColor = isOver ? 'text-red-700' : isNear ? 'text-yellow-700' : 'text-green-700'
 
   const borderColor = isOver ? 'border-red-200' : isNear ? 'border-yellow-200' : 'border-green-200'
 
@@ -182,7 +182,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
                 </span>
                 <span>
                   {isOver ? (
-                    <span className="text-red-200 font-semibold">
+                    <span className="text-red-700 font-semibold">
                       Over by {formatCurrency(Math.abs(remainingBudgetCents))}
                     </span>
                   ) : (

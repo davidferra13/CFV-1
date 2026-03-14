@@ -229,7 +229,7 @@ export default async function FinanceGoalsPage() {
                   </div>
                   <span
                     className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
-                      s.achievable ? 'bg-green-900 text-green-200' : 'bg-stone-800 text-stone-500'
+                      s.achievable ? 'bg-green-900 text-green-700' : 'bg-stone-800 text-stone-500'
                     }`}
                   >
                     {s.achievable ? 'Feasible' : 'Tight timeline'}
@@ -243,8 +243,8 @@ export default async function FinanceGoalsPage() {
 
       {closureResult.gap <= 0 && (
         <Card className="p-6 border-green-200 bg-green-950">
-          <p className="text-lg font-semibold text-green-200">Goal achieved!</p>
-          <p className="text-sm text-green-200 mt-1">
+          <p className="text-lg font-semibold text-green-800">Goal achieved!</p>
+          <p className="text-sm text-green-700 mt-1">
             You have met or exceeded your annual revenue target. Excellent work.
           </p>
         </Card>

@@ -103,10 +103,6 @@ export const TRIGGER_CONTEXT_FIELDS: Record<TriggerEvent, TriggerContextField[]>
     { field: 'occasion', label: 'Occasion', hint: 'Dinner Party, Wedding, etc.' },
     { field: 'client_name', label: 'Client name' },
     { field: 'guest_count', label: 'Guest count', hint: 'e.g. 12' },
-    { field: 'budget_mode', label: 'Budget mode', hint: 'exact, range, not_sure, unset' },
-    { field: 'budget_known', label: 'Budget known', hint: 'true or false' },
-    { field: 'budget_range', label: 'Budget range', hint: 'under_500, 500_1500, etc.' },
-    { field: 'budget_cents', label: 'Budget exact (cents)', hint: 'e.g. 250000' },
   ],
   inquiry_status_changed: [
     { field: 'status', label: 'New status', hint: 'awaiting_chef, awaiting_client, expired, etc.' },

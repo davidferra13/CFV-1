@@ -40,8 +40,6 @@ import { FriendsList } from './friends-list'
 import { ContactShares } from './contact-shares'
 import { TrustedCircle } from './trusted-circle'
 import { CollabInboxPanel } from './collab-inbox'
-import { DownloadableQrCard } from '@/components/qr/downloadable-qr-card'
-import { getChefConnectUrl } from '@/lib/qr/qr-code'
 import {
   Rss,
   Hash,
@@ -52,11 +50,9 @@ import {
   Bell,
   Bookmark,
   Handshake,
-} from '@/components/ui/icons'
-import { Suspense } from 'react'
-import { NetworkReferralBar } from '@/components/intelligence/network-referral-bar'
+} from 'lucide-react'
 
-export const metadata: Metadata = { title: 'Chef Community - ChefFlow' }
+export const metadata: Metadata = { title: 'Chef Community — ChefFlow' }
 
 type Tab = 'feed' | 'channels' | 'discover' | 'connections' | 'collab'
 
@@ -132,20 +128,15 @@ export default async function NetworkPage({
         </div>
       </div>
 
-      {/* Referral Intelligence */}
-      <Suspense fallback={null}>
-        <NetworkReferralBar />
-      </Suspense>
-
       {/* Privacy notice */}
       {!discoverable && (
         <div className="bg-amber-950 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
           <ShieldOff className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-200">
+            <p className="text-sm font-medium text-amber-800">
               You&apos;re hidden from the community
             </p>
-            <p className="text-sm text-amber-200 mt-0.5">
+            <p className="text-sm text-amber-700 mt-0.5">
               Other chefs can&apos;t find or follow you.{' '}
               <Link href="/settings" className="underline font-medium hover:text-amber-900">
                 Enable discoverability in Settings
@@ -159,12 +150,12 @@ export default async function NetworkPage({
       {/* Pending connection requests badge */}
       {pending.length > 0 && (
         <div className="bg-blue-950 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
-          <p className="text-sm text-blue-200 font-medium">
+          <p className="text-sm text-blue-800 font-medium">
             {pending.filter((p) => p.direction === 'received').length} pending connection request(s)
           </p>
           <Link
             href="?tab=connections"
-            className="text-sm text-blue-200 font-medium hover:underline"
+            className="text-sm text-blue-700 font-medium hover:underline"
           >
             View →
           </Link>
@@ -186,7 +177,7 @@ export default async function NetworkPage({
               href={`?tab=${id}`}
               className={`flex-1 flex items-center justify-center gap-1.5 py-3.5 text-sm font-medium transition-colors ${
                 tab === id
-                  ? 'text-amber-200 border-b-2 border-amber-500 bg-amber-950/50'
+                  ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-950/50'
                   : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
               }`}
             >
@@ -205,7 +196,7 @@ export default async function NetworkPage({
           {tab === 'feed' && <FeedTab myName={myName} myAvatar={myAvatar} chefId={user.entityId} />}
           {tab === 'channels' && <ChannelsTab />}
           {tab === 'discover' && <DiscoverTab />}
-          {tab === 'connections' && <ConnectionsTab chefId={user.entityId} chefName={myName} />}
+          {tab === 'connections' && <ConnectionsTab chefId={user.entityId} />}
           {tab === 'collab' && <CollabTab focusHandoffId={focusHandoffId} />}
         </div>
       </div>
@@ -282,7 +273,7 @@ async function DiscoverTab() {
             <Link
               key={item.tag}
               href={`?tab=feed&mode=global&tag=${encodeURIComponent(item.tag)}`}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-950 text-amber-200 rounded-full text-sm font-medium hover:bg-amber-900 transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-950 text-amber-700 rounded-full text-sm font-medium hover:bg-amber-900 transition-colors"
             >
               #{item.tag}
               <span className="text-amber-500 text-xs">{item.post_count}</span>
@@ -318,7 +309,7 @@ async function DiscoverTab() {
                         <span>·</span>
                         <Link
                           href={`/network/channels/${post.channel.slug}`}
-                          className="text-amber-200 hover:underline"
+                          className="text-amber-700 hover:underline"
                         >
                           {post.channel.icon} {post.channel.name}
                         </Link>
@@ -341,7 +332,7 @@ async function DiscoverTab() {
 }
 
 // ── Connections Tab ──────────────────────────────────────────
-async function ConnectionsTab({ chefId, chefName }: { chefId: string; chefName: string }) {
+async function ConnectionsTab({ chefId }: { chefId: string }) {
   const [friends, pending, contactShares, trustedCircle] = await Promise.all([
     getMyConnections(),
     getPendingRequests(),
@@ -351,23 +342,6 @@ async function ConnectionsTab({ chefId, chefName }: { chefId: string; chefName: 
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">My Connect QR</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DownloadableQrCard
-            url={getChefConnectUrl(chefId)}
-            title={`${chefName} connect card`}
-            description="Share this at pop-ups, tastings, and industry events so other chefs can connect with you in ChefFlow."
-            downloadBaseName={`chef-connect-${chefId}`}
-            printTitle={`Connect with ${chefName}`}
-            printSubtitle="ChefFlow chef network"
-            openLabel="Open connect page"
-          />
-        </CardContent>
-      </Card>
-
       {/* Search */}
       <Card>
         <CardHeader>

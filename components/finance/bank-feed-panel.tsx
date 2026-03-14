@@ -12,7 +12,7 @@ import {
   type BankConnection,
   type ReconciliationSummary,
 } from '@/lib/finance/bank-feed-actions'
-import { Landmark, Check, X, Filter } from '@/components/ui/icons'
+import { Landmark, Check, X, Filter } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {

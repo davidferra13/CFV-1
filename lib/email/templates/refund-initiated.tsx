@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   clientName: string
@@ -25,7 +25,7 @@ export function RefundInitiatedEmail({
   eventDate,
 }: Props) {
   return (
-    <BaseLayout brand={brand} preview={`Refund of ${amountFormatted} has been initiated`}>
+    <BaseLayout preview={`Refund of ${amountFormatted} has been initiated`}>
       <Text style={heading}>Refund initiated</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

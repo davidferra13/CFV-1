@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { FormEvent, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Camera, Lightbulb, MapPin, Plus, Trash2 } from '@/components/ui/icons'
+import { BookOpen, Camera, Lightbulb, MapPin, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { createChefJourney, deleteChefJourney } from '@/lib/journey/actions'
 import type {
   ChefJourneyInsights,
@@ -341,7 +341,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
               </div>
 
               {error && (
-                <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-200">
+                <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
                   {error}
                 </div>
               )}
@@ -465,7 +465,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                         {journey.key_learnings.slice(0, 2).map((learning, index) => (
                           <span
                             key={`${journey.id}-learning-${index}`}
-                            className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-200 px-2 py-0.5 text-[11px]"
+                            className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-700 px-2 py-0.5 text-[11px]"
                           >
                             <BookOpen className="w-3 h-3" />
                             {learning}
@@ -474,16 +474,16 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                         {journey.inspiration_ideas.slice(0, 2).map((idea, index) => (
                           <span
                             key={`${journey.id}-idea-${index}`}
-                            className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-200 px-2 py-0.5 text-[11px]"
+                            className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-[11px]"
                           >
-                            <Lightbulb className="w-3 h-3" />
+                            <Sparkles className="w-3 h-3" />
                             {idea}
                           </span>
                         ))}
                       </div>
 
                       <div className="rounded-md border border-sky-200 bg-sky-950 px-3 py-2 text-xs text-sky-900 flex items-start gap-2">
-                        <Camera className="w-3.5 h-3.5 mt-0.5 text-sky-200" />
+                        <Camera className="w-3.5 h-3.5 mt-0.5 text-sky-700" />
                         <span>{journeyNudge(journey)}</span>
                       </div>
 
@@ -503,7 +503,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(journey)}
-                          className="text-red-600 hover:text-red-200 hover:bg-red-950"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-950"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

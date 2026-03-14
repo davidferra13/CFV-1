@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Shield, Loader2, Bot, AlertTriangle } from '@/components/ui/icons'
+import { Shield, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateContingencyPlans, type ContingencyAIResult } from '@/lib/ai/contingency-ai'
@@ -46,7 +46,7 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Generate Plans
               </>
             )}
@@ -73,7 +73,7 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
       </div>
 
       {result.topRisk && (
-        <div className="flex items-start gap-2 bg-amber-950 border border-amber-200 rounded p-2 text-xs text-amber-200">
+        <div className="flex items-start gap-2 bg-amber-950 border border-amber-200 rounded p-2 text-xs text-amber-800">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
           <span>
             <span className="font-medium">Top risk:</span> {result.topRisk}
@@ -86,7 +86,7 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
           <div key={i} className={`border rounded p-3 space-y-1.5 ${RISK_COLORS[plan.riskLevel]}`}>
             <div className="flex items-center gap-2">
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${plan.riskLevel === 'critical' ? 'bg-red-200 text-red-200' : plan.riskLevel === 'high' ? 'bg-amber-200 text-amber-200' : 'bg-stone-700 text-stone-300'}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${plan.riskLevel === 'critical' ? 'bg-red-200 text-red-800' : plan.riskLevel === 'high' ? 'bg-amber-200 text-amber-800' : 'bg-stone-700 text-stone-300'}`}
               >
                 {plan.riskLevel}
               </span>

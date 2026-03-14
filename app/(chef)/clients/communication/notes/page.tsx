@@ -37,7 +37,7 @@ export default async function ClientNotesPage() {
 
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{clientsWithNotes.length}</p>
+          <p className="text-2xl font-bold text-green-700">{clientsWithNotes.length}</p>
           <p className="text-sm text-stone-500 mt-1">Clients with notes</p>
         </Card>
         <Card className="p-4">

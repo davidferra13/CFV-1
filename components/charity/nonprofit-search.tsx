@@ -7,7 +7,7 @@ import { NonprofitBadge } from './nonprofit-badge'
 import { browseNonprofits } from '@/lib/charity/propublica-actions'
 import { NTEE_CATEGORIES, US_STATES } from '@/lib/charity/hours-types'
 import type { ProPublicaNonprofit } from '@/lib/charity/hours-types'
-import { Search, MapPin, ChevronDown } from '@/components/ui/icons'
+import { Search, MapPin, ChevronDown } from 'lucide-react'
 
 function formatIncome(income: number): string {
   if (income >= 1_000_000_000) return `$${(income / 1_000_000_000).toFixed(1)}B`

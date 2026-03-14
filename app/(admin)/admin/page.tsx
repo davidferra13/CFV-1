@@ -3,7 +3,6 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformOverviewStats } from '@/lib/admin/platform-stats'
-import { getAdminDebugState } from '@/lib/admin/debug-state'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -19,7 +18,7 @@ import {
   TrendingUp,
   TrendingDown,
   Globe,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 
 const SystemArchitecturePlayer = dynamic(
   () =>
@@ -100,9 +99,8 @@ export default async function AdminOverviewPage() {
   }
 
   let stats = null
-  let debugState = null
   try {
-    ;[stats, debugState] = await Promise.all([getPlatformOverviewStats(), getAdminDebugState()])
+    stats = await getPlatformOverviewStats()
   } catch (err) {
     console.error('[Admin] Failed to load platform stats:', err)
   }
@@ -154,7 +152,7 @@ export default async function AdminOverviewPage() {
           <StatCard label="New Clients (Month)" value={stats.clientsThisMonth} />
         </div>
       ) : (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
           Could not load platform statistics. Check server logs.
         </div>
       )}
@@ -165,36 +163,6 @@ export default async function AdminOverviewPage() {
           Quick Access
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <QuickTile
-            href="/admin/command-center"
-            icon={Activity}
-            label="Command Center"
-            description="Cross-tenant owner observability dashboard"
-          />
-          <QuickTile
-            href="/admin/conversations"
-            icon={Megaphone}
-            label="Conversations"
-            description="Inspect global chat transcripts"
-          />
-          <QuickTile
-            href="/admin/social"
-            icon={Globe}
-            label="Social Feed"
-            description="Monitor platform-wide social activity"
-          />
-          <QuickTile
-            href="/admin/hub"
-            icon={Users}
-            label="Hub Groups"
-            description="Review dinner circles and event hub activity"
-          />
-          <QuickTile
-            href="/admin/notifications"
-            icon={ToggleLeft}
-            label="Notifications"
-            description="Cross-tenant notification stream"
-          />
           <QuickTile
             href="/admin/presence"
             icon={Radio}
@@ -250,59 +218,6 @@ export default async function AdminOverviewPage() {
             description="Approve chefs for the public listing"
           />
         </div>
-      </div>
-
-      <div>
-        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
-          Admin Debug State
-        </h2>
-        {debugState ? (
-          <div className="rounded-xl border border-slate-200 bg-stone-900 p-4 space-y-2 text-xs">
-            <div className="grid gap-2 md:grid-cols-3">
-              <p className="text-stone-400">
-                isAdmin: <span className="text-stone-200">{String(debugState.isAdmin)}</span>
-              </p>
-              <p className="text-stone-400">
-                previewActive:{' '}
-                <span className="text-stone-200">{String(debugState.previewActive)}</span>
-              </p>
-              <p className="text-stone-400">
-                effectiveAdmin:{' '}
-                <span className="text-stone-200">{String(debugState.effectiveAdmin)}</span>
-              </p>
-              <p className="text-stone-400">
-                focusMode: <span className="text-stone-200">{String(debugState.focusMode)}</span>
-              </p>
-              <p className="text-stone-400 break-all">
-                ownerChefId: <span className="text-stone-200">{debugState.ownerChefId ?? '-'}</span>
-              </p>
-              <p className="text-stone-400 break-all">
-                ownerAuthUserId:{' '}
-                <span className="text-stone-200">{debugState.ownerAuthUserId ?? '-'}</span>
-              </p>
-            </div>
-            <p className="text-stone-400">
-              enabledModules:{' '}
-              <span className="text-stone-200">
-                {debugState.enabledModules.length > 0
-                  ? debugState.enabledModules.join(', ')
-                  : '(none)'}
-              </span>
-            </p>
-            <p className="text-stone-400">
-              ownerWarnings:{' '}
-              <span className="text-stone-200">
-                {debugState.ownerWarnings.length > 0
-                  ? debugState.ownerWarnings.join(', ')
-                  : '(none)'}
-              </span>
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-red-200 bg-red-950 p-4 text-xs text-red-200">
-            Debug state unavailable.
-          </div>
-        )}
       </div>
 
       {/* System Architecture */}

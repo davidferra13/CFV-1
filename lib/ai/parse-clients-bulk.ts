@@ -5,7 +5,7 @@
 
 import { z } from 'zod'
 import { type ParseResult } from './parse'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers'
 
@@ -81,9 +81,11 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  */
 export async function parseClientsFromBulk(rawText: string): Promise<ParseResult<ParsedClient[]>> {
   try {
-    const result = (
-      await dispatchPrivate(BULK_CLIENT_SYSTEM_PROMPT, rawText, BulkClientsResponseSchema)
-    ).result
+    const result = await parseWithOllama(
+      BULK_CLIENT_SYSTEM_PROMPT,
+      rawText,
+      BulkClientsResponseSchema
+    )
     return result
   } catch (error) {
     return parseClientsHeuristically(rawText, toFallbackWarning(error))

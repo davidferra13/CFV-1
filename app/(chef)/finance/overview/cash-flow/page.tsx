@@ -77,7 +77,7 @@ export default async function CashFlowPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">Total revenue (12 months)</p>
         </Card>
         <Card className="p-4">
@@ -86,7 +86,7 @@ export default async function CashFlowPage() {
         </Card>
         <Card className="p-4">
           <p
-            className={`text-2xl font-bold ${netCashFlow >= 0 ? 'text-stone-100' : 'text-red-200'}`}
+            className={`text-2xl font-bold ${netCashFlow >= 0 ? 'text-stone-100' : 'text-red-700'}`}
           >
             {formatCurrency(netCashFlow)}
           </p>
@@ -108,14 +108,14 @@ export default async function CashFlowPage() {
             {[...months].reverse().map((m) => (
               <TableRow key={m.key}>
                 <TableCell className="font-medium text-stone-300">{m.label}</TableCell>
-                <TableCell className="text-green-200 text-sm">
+                <TableCell className="text-green-700 text-sm">
                   {m.revenue > 0 ? formatCurrency(m.revenue) : '—'}
                 </TableCell>
                 <TableCell className="text-red-600 text-sm">
                   {m.expenses > 0 ? formatCurrency(m.expenses) : '—'}
                 </TableCell>
                 <TableCell
-                  className={`text-sm font-semibold ${m.net > 0 ? 'text-stone-100' : m.net < 0 ? 'text-red-200' : 'text-stone-400'}`}
+                  className={`text-sm font-semibold ${m.net > 0 ? 'text-stone-100' : m.net < 0 ? 'text-red-700' : 'text-stone-400'}`}
                 >
                   {m.net !== 0 ? formatCurrency(m.net) : '—'}
                 </TableCell>

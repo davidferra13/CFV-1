@@ -5,7 +5,7 @@
 // Provides Decline and Archive bulk actions.
 
 import Link from 'next/link'
-import { formatDistanceToNow, format, differenceInDays } from 'date-fns'
+import { formatDistanceToNow, format } from 'date-fns'
 import { toast } from 'sonner'
 import { BulkSelectTable, type BulkAction } from '@/components/ui/bulk-select-table'
 import {
@@ -14,7 +14,6 @@ import {
 } from '@/components/inquiries/inquiry-status-badge'
 import { Badge } from '@/components/ui/badge'
 import { bulkDeclineInquiries, bulkArchiveInquiries } from '@/lib/inquiries/bulk-actions'
-import { bulkConvertToClients } from '@/lib/inquiries/actions'
 
 export type SerializedInquiry = {
   id: string
@@ -37,28 +36,6 @@ interface InquiriesBulkTableProps {
 
 export function InquiriesBulkTable({ inquiries }: InquiriesBulkTableProps) {
   const bulkActions: BulkAction[] = [
-    {
-      label: 'Convert to Clients',
-      variant: 'primary',
-      confirmMessage:
-        'This will create client records for selected inquiries that have an email address.',
-      onClick: async (selectedIds) => {
-        try {
-          const result = await bulkConvertToClients(selectedIds)
-          if (result.converted > 0) {
-            toast.success(`Converted ${result.converted} to clients`)
-          }
-          if (result.skipped > 0) {
-            toast.info(`${result.skipped} skipped (already linked or no email)`)
-          }
-          if (result.errors.length > 0) {
-            toast.error(`${result.errors.length} failed`)
-          }
-        } catch (err) {
-          toast.error('Failed to convert inquiries')
-        }
-      },
-    },
     {
       label: 'Decline',
       variant: 'secondary',
@@ -95,7 +72,7 @@ export function InquiriesBulkTable({ inquiries }: InquiriesBulkTableProps) {
       renderHeader={() => (
         <>
           <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
-            Name
+            Lead
           </th>
           <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
             Status
@@ -111,9 +88,6 @@ export function InquiriesBulkTable({ inquiries }: InquiriesBulkTableProps) {
           </th>
           <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase tracking-wider">
             Guests
-          </th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
-            Lead Age
           </th>
           <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
             Updated
@@ -156,15 +130,6 @@ export function InquiriesBulkTable({ inquiries }: InquiriesBulkTableProps) {
           </td>
           <td className="px-4 py-3 text-right text-stone-300">
             {inquiry.confirmed_guest_count ?? '-'}
-          </td>
-          <td className="px-4 py-3 text-sm">
-            {(() => {
-              const days = differenceInDays(new Date(), new Date(inquiry.created_at))
-              if (days === 0) return <span className="text-stone-400">Today</span>
-              if (days <= 3) return <span className="text-stone-400">{days}d</span>
-              if (days <= 7) return <span className="text-amber-400">{days}d</span>
-              return <span className="text-red-400">{days}d</span>
-            })()}
           </td>
           <td className="px-4 py-3 text-stone-400 text-sm">
             {formatDistanceToNow(new Date(inquiry.updated_at), { addSuffix: true })}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageCircle } from '@/components/ui/icons'
+import { MessageCircle } from 'lucide-react'
 import { ChatInboxItem } from './chat-inbox-item'
 import { subscribeToInboxUpdates } from '@/lib/chat/realtime'
 import type { ConversationWithDetails } from '@/lib/chat/types'

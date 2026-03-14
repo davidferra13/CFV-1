@@ -1,0 +1,3723 @@
+{
+  "runId": "77c8eee2-7989-4e16-ab8e-062cc2f861ab",
+  "timestamp": "2026-03-10T10:00:54.398Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 100,
+  "passed": 0,
+  "warned": 0,
+  "failed": 100,
+  "passRate": 0,
+  "durationMinutes": 0,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 0,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 2,
+      "avgMs": 0
+    },
+    "client_management": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 1,
+      "avgMs": 0
+    },
+    "event_management": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 1,
+      "avgMs": 0
+    },
+    "financial": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 1,
+      "avgMs": 0
+    },
+    "calendar_scheduling": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "email_drafts": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "menu_recipes": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 1,
+      "avgMs": 0
+    },
+    "operations": {
+      "total": 10,
+      "passed": 0,
+      "warned": 0,
+      "failed": 10,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "memory": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 1,
+      "avgMs": 0
+    },
+    "context_aware": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 0,
+      "avgMs": 0
+    },
+    "analytics": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 1,
+      "avgMs": 0
+    },
+    "conversational": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 0,
+      "avgMs": 0
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-011",
+      "category": "client_management",
+      "prompt": "Find my client Sarah",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-012",
+      "category": "client_management",
+      "prompt": "Show me all my recent clients",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-013",
+      "category": "client_management",
+      "prompt": "Pull up the details for the Johnson family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-014",
+      "category": "client_management",
+      "prompt": "Do I have a client named Martinez?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-015",
+      "category": "client_management",
+      "prompt": "Who was my last client?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-016",
+      "category": "client_management",
+      "prompt": "Search for clients with the last name Williams",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-017",
+      "category": "client_management",
+      "prompt": "How many events has the Henderson family booked with me?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-018",
+      "category": "client_management",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-019",
+      "category": "client_management",
+      "prompt": "Check if any of my clients have nut allergies",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-020",
+      "category": "client_management",
+      "prompt": "What's the lifetime value of my client Thompson?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-021",
+      "category": "event_management",
+      "prompt": "Show me my upcoming events",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-022",
+      "category": "event_management",
+      "prompt": "What events do I have this weekend?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-023",
+      "category": "event_management",
+      "prompt": "List all my events in March",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-024",
+      "category": "event_management",
+      "prompt": "Show me events that are still in draft status",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-025",
+      "category": "event_management",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-026",
+      "category": "event_management",
+      "prompt": "Create a new event for a birthday dinner on March 20th, 12 guests",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-027",
+      "category": "event_management",
+      "prompt": "What are the details on my next event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-028",
+      "category": "event_management",
+      "prompt": "Show me completed events from last month",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-029",
+      "category": "event_management",
+      "prompt": "Do I have any cancelled events?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-030",
+      "category": "event_management",
+      "prompt": "How many events have I done this year?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-031",
+      "category": "financial",
+      "prompt": "What's my financial summary?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-032",
+      "category": "financial",
+      "prompt": "Show me my monthly revenue breakdown",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-033",
+      "category": "financial",
+      "prompt": "What are my total expenses?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-034",
+      "category": "financial",
+      "prompt": "What's my profit margin?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-035",
+      "category": "financial",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-036",
+      "category": "financial",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-037",
+      "category": "financial",
+      "prompt": "What's the food cost on my signature risotto?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-038",
+      "category": "financial",
+      "prompt": "Am I hitting my revenue target?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-039",
+      "category": "financial",
+      "prompt": "What's my net income for this quarter?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-040",
+      "category": "financial",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-041",
+      "category": "calendar_scheduling",
+      "prompt": "Am I free on March 15th?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-042",
+      "category": "calendar_scheduling",
+      "prompt": "What does my schedule look like next week?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-043",
+      "category": "calendar_scheduling",
+      "prompt": "When is my next available Saturday?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-044",
+      "category": "calendar_scheduling",
+      "prompt": "Is April open for a big event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-045",
+      "category": "calendar_scheduling",
+      "prompt": "What days am I blocked this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-046",
+      "category": "calendar_scheduling",
+      "prompt": "Check availability for the first two weekends in April",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-047",
+      "category": "calendar_scheduling",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-048",
+      "category": "calendar_scheduling",
+      "prompt": "How busy am I in March?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-049",
+      "category": "calendar_scheduling",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-050",
+      "category": "calendar_scheduling",
+      "prompt": "What's on my waitlist?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-051",
+      "category": "email_drafts",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-052",
+      "category": "email_drafts",
+      "prompt": "Write a thank-you note for my last event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-053",
+      "category": "email_drafts",
+      "prompt": "Send a referral request to the Hendersons",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-054",
+      "category": "email_drafts",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-055",
+      "category": "email_drafts",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-056",
+      "category": "email_drafts",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-057",
+      "category": "email_drafts",
+      "prompt": "Check my recent emails",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-058",
+      "category": "email_drafts",
+      "prompt": "Summarize my inbox",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-059",
+      "category": "email_drafts",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-060",
+      "category": "email_drafts",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-061",
+      "category": "menu_recipes",
+      "prompt": "Search my recipes for risotto",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-062",
+      "category": "menu_recipes",
+      "prompt": "Show me all my menus",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-063",
+      "category": "menu_recipes",
+      "prompt": "What recipes do I have that use salmon?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-064",
+      "category": "menu_recipes",
+      "prompt": "Do I have any dessert recipes?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-065",
+      "category": "menu_recipes",
+      "prompt": "What's on the menu I created for corporate events?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-066",
+      "category": "menu_recipes",
+      "prompt": "Explain my spring tasting menu to a client",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-067",
+      "category": "menu_recipes",
+      "prompt": "What's the food cost on my lamb dish?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-068",
+      "category": "menu_recipes",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-069",
+      "category": "menu_recipes",
+      "prompt": "How to cook a perfect steak",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-070",
+      "category": "menu_recipes",
+      "prompt": "Suggest a meal for a date night",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-071",
+      "category": "operations",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-072",
+      "category": "operations",
+      "prompt": "Create a packing list for my next event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-073",
+      "category": "operations",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-074",
+      "category": "operations",
+      "prompt": "Calculate portions for 25 guests",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-075",
+      "category": "operations",
+      "prompt": "What do I need to buy for Saturday?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-076",
+      "category": "operations",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-077",
+      "category": "operations",
+      "prompt": "What's on my to-do list?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-078",
+      "category": "operations",
+      "prompt": "Show me my nudges and reminders",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-079",
+      "category": "operations",
+      "prompt": "Draft a food safety incident report",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-080",
+      "category": "operations",
+      "prompt": "List my staff",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-081",
+      "category": "memory",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-082",
+      "category": "memory",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-083",
+      "category": "memory",
+      "prompt": "What do you remember about me?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-084",
+      "category": "memory",
+      "prompt": "Remember that I don't work on Sundays",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-085",
+      "category": "memory",
+      "prompt": "Do you remember what pricing model I use?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-086",
+      "category": "context_aware",
+      "prompt": "What am I looking at right now?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-087",
+      "category": "context_aware",
+      "prompt": "Help me with what I'm doing right now",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-088",
+      "category": "context_aware",
+      "prompt": "I just created a new event, what should I do next?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-089",
+      "category": "context_aware",
+      "prompt": "I keep getting an error on this page",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-090",
+      "category": "context_aware",
+      "prompt": "Take me to the recipes page",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-091",
+      "category": "analytics",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-092",
+      "category": "analytics",
+      "prompt": "Calculate the lifetime value of my top client",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-093",
+      "category": "analytics",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-094",
+      "category": "analytics",
+      "prompt": "What's my most profitable type of event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-095",
+      "category": "analytics",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-096",
+      "category": "conversational",
+      "prompt": "Hey Remy, what can you help me with?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-097",
+      "category": "conversational",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-098",
+      "category": "conversational",
+      "prompt": "Good morning Remy!",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-099",
+      "category": "conversational",
+      "prompt": "How's my week looking?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-100",
+      "category": "conversational",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      },
+      "timing": {
+        "firstEventMs": null,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 0,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-011",
+      "prompt": "Find my client Sarah",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-012",
+      "prompt": "Show me all my recent clients",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-013",
+      "prompt": "Pull up the details for the Johnson family",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-014",
+      "prompt": "Do I have a client named Martinez?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-015",
+      "prompt": "Who was my last client?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-016",
+      "prompt": "Search for clients with the last name Williams",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-017",
+      "prompt": "How many events has the Henderson family booked with me?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-018",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-019",
+      "prompt": "Check if any of my clients have nut allergies",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-020",
+      "prompt": "What's the lifetime value of my client Thompson?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-021",
+      "prompt": "Show me my upcoming events",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-022",
+      "prompt": "What events do I have this weekend?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-023",
+      "prompt": "List all my events in March",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-024",
+      "prompt": "Show me events that are still in draft status",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-025",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-026",
+      "prompt": "Create a new event for a birthday dinner on March 20th, 12 guests",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-027",
+      "prompt": "What are the details on my next event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-028",
+      "prompt": "Show me completed events from last month",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-029",
+      "prompt": "Do I have any cancelled events?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-030",
+      "prompt": "How many events have I done this year?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-031",
+      "prompt": "What's my financial summary?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-032",
+      "prompt": "Show me my monthly revenue breakdown",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-033",
+      "prompt": "What are my total expenses?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-034",
+      "prompt": "What's my profit margin?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-035",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-036",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-037",
+      "prompt": "What's the food cost on my signature risotto?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-038",
+      "prompt": "Am I hitting my revenue target?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-039",
+      "prompt": "What's my net income for this quarter?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-040",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-041",
+      "prompt": "Am I free on March 15th?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-042",
+      "prompt": "What does my schedule look like next week?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-043",
+      "prompt": "When is my next available Saturday?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-044",
+      "prompt": "Is April open for a big event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-045",
+      "prompt": "What days am I blocked this month?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-046",
+      "prompt": "Check availability for the first two weekends in April",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-047",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-048",
+      "prompt": "How busy am I in March?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-049",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-050",
+      "prompt": "What's on my waitlist?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-051",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-052",
+      "prompt": "Write a thank-you note for my last event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-053",
+      "prompt": "Send a referral request to the Hendersons",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-054",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-055",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-056",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-057",
+      "prompt": "Check my recent emails",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-058",
+      "prompt": "Summarize my inbox",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-059",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-060",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-061",
+      "prompt": "Search my recipes for risotto",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-062",
+      "prompt": "Show me all my menus",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-063",
+      "prompt": "What recipes do I have that use salmon?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-064",
+      "prompt": "Do I have any dessert recipes?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-065",
+      "prompt": "What's on the menu I created for corporate events?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-066",
+      "prompt": "Explain my spring tasting menu to a client",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-067",
+      "prompt": "What's the food cost on my lamb dish?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-068",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-069",
+      "prompt": "How to cook a perfect steak",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-070",
+      "prompt": "Suggest a meal for a date night",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-071",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-072",
+      "prompt": "Create a packing list for my next event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-073",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-074",
+      "prompt": "Calculate portions for 25 guests",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-075",
+      "prompt": "What do I need to buy for Saturday?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-076",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-077",
+      "prompt": "What's on my to-do list?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-078",
+      "prompt": "Show me my nudges and reminders",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-079",
+      "prompt": "Draft a food safety incident report",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-080",
+      "prompt": "List my staff",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-081",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-082",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-083",
+      "prompt": "What do you remember about me?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-084",
+      "prompt": "Remember that I don't work on Sundays",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-085",
+      "prompt": "Do you remember what pricing model I use?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-086",
+      "prompt": "What am I looking at right now?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-087",
+      "prompt": "Help me with what I'm doing right now",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-088",
+      "prompt": "I just created a new event, what should I do next?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-089",
+      "prompt": "I keep getting an error on this page",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-090",
+      "prompt": "Take me to the recipes page",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-091",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-092",
+      "prompt": "Calculate the lifetime value of my top client",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-093",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-094",
+      "prompt": "What's my most profitable type of event?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-095",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-096",
+      "prompt": "Hey Remy, what can you help me with?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-097",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-098",
+      "prompt": "Good morning Remy!",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-099",
+      "prompt": "How's my week looking?",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    },
+    {
+      "promptId": "chef-100",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "checks": {
+        "request": {
+          "pass": false,
+          "status": null,
+          "error": "TypeError: Failed to parse URL from https://beta.cheflowhq.com /api/remy/stream (cause: TypeError: Invalid URL)"
+        }
+      }
+    }
+  ]
+}

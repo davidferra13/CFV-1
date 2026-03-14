@@ -3,7 +3,7 @@
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
-import { BaseLayout, type ChefBrandProps } from './base-layout'
+import { BaseLayout } from './base-layout'
 
 type Props = {
   clientName: string
@@ -14,7 +14,7 @@ type Props = {
 
 export function QuoteExpiredClientEmail({ clientName, chefName, quoteName, chefEmail }: Props) {
   return (
-    <BaseLayout brand={brand} preview={`Your quote from ${chefName} has expired`}>
+    <BaseLayout preview={`Your quote from ${chefName} has expired`}>
       <Text style={heading}>Quote expired</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>

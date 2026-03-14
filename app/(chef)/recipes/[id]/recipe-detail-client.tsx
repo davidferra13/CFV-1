@@ -23,7 +23,6 @@ import { NutritionPanel } from '@/components/recipes/nutrition-panel'
 import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
-import { RecipeVersionHistory } from '@/components/recipes/recipe-version-history'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import {
   logProduction,
@@ -462,10 +461,10 @@ export function RecipeDetailClient({ recipe }: Props) {
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
 
-      {/* Nutrition (on-demand, fetches USDA data when chef clicks) */}
+      {/* Nutrition (on-demand — fetches USDA data when chef clicks) */}
       <NutritionPanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
-      {/* Allergen Detection (on-demand, uses Edamam API when chef clicks) */}
+      {/* Allergen Detection (on-demand — uses Edamam API when chef clicks) */}
       <AllergenBadgePanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
       {/* Method */}
@@ -710,9 +709,6 @@ export function RecipeDetailClient({ recipe }: Props) {
         </Card>
       )}
 
-      {/* Version History */}
-      <RecipeVersionHistory recipeId={recipe.id} />
-
       {/* Event History */}
       {recipe.eventHistory.length > 0 && (
         <Card>
@@ -879,7 +875,7 @@ export function RecipeDetailClient({ recipe }: Props) {
           )}
           {!logLoaded && !showLogForm && (
             <p className="text-sm text-stone-500 text-center py-4">
-              Click &quot;Load History&quot; to see past batches.
+              Click &quot;Load History&quot; to see past production entries.
             </p>
           )}
           {logLoaded && productionLog.length > 0 && (

@@ -71,9 +71,6 @@ export function IncidentResolutionTracker({ incident }: { incident: IncidentData
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          {steps.length === 0 && (
-            <p className="text-sm text-stone-500">No follow-up steps yet. Add one below.</p>
-          )}
           {steps.map((step) => (
             <label key={step.id} className="flex items-center gap-2 cursor-pointer">
               <input

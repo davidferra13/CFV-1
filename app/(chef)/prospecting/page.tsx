@@ -27,7 +27,7 @@ import {
   Kanban,
   MapPin,
   Upload,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
 
@@ -252,7 +252,7 @@ export default async function ProspectingPage({
 
             <div className="rounded-lg bg-amber-950 border border-amber-200 p-4">
               <h4 className="font-medium text-amber-900 text-sm mb-2">How the Pipeline Works</h4>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-amber-200">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-amber-800">
                 <span className="rounded-full bg-blue-900 px-2.5 py-1 font-medium">New</span>
                 <ArrowRight className="h-3 w-3" />
                 <span className="rounded-full bg-amber-900 px-2.5 py-1 font-medium">Queued</span>
@@ -265,7 +265,7 @@ export default async function ProspectingPage({
                   Converted!
                 </span>
               </div>
-              <p className="text-xs text-amber-200 mt-2">
+              <p className="text-xs text-amber-700 mt-2">
                 When a prospect books a tasting, they automatically convert into a real ChefFlow
                 inquiry. &ldquo;Not interested&rdquo; and &ldquo;dead leads&rdquo; get archived but
                 stay in your database in case things change later.
@@ -274,7 +274,7 @@ export default async function ProspectingPage({
 
             <div className="rounded-lg bg-blue-950 border border-blue-200 p-4">
               <h4 className="font-medium text-blue-900 text-sm mb-2">Requires Ollama</h4>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-blue-700">
                 AI Scrub uses your local Ollama installation to research prospects. Make sure Ollama
                 is running before starting a scrub. Your data never leaves your machine.
               </p>

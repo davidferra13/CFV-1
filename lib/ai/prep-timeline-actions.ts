@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { buildPrepTimelineFormula } from '@/lib/templates/prep-timeline'
 import { z } from 'zod'
@@ -122,11 +122,9 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
       }),
     // AI: enhanced timeline with contextual tips (when Ollama is online)
     async () => {
-      const aiResult = (
-        await dispatchPrivate(systemPrompt, userPrompt, PrepTimelineSchema, {
-          modelTier: 'standard',
-        })
-      ).result
+      const aiResult = await parseWithOllama(systemPrompt, userPrompt, PrepTimelineSchema, {
+        modelTier: 'standard',
+      })
       return {
         eventName,
         eventDate,

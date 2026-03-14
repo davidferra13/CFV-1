@@ -276,7 +276,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
                 </div>
               </div>
               {!scaleFactor && (
-                <p className="text-xs text-amber-200 mt-1">
+                <p className="text-xs text-amber-700 mt-1">
                   To scale ingredients, set a base yield on this recipe (e.g. &quot;8
                   servings&quot;). The portion standard above is a reference for how much to prepare
                   total.

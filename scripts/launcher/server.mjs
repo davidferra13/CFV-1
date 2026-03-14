@@ -7697,9 +7697,10 @@ ${toolList}
 
   // ── OpenClaw Agent Status (for Pixel Kitchen Command Center) ──
   if (path === '/api/openclaw/status' && method === 'GET') {
-    const agents = { main: { log: [] }, sonnet: { log: [] }, build: { log: [] }, qa: { log: [] }, runner: { log: [] } }
+    const agents = { main: { log: [] }, build: { log: [] }, qa: { log: [] }, runner: { log: [] } }
     let online = false
     let lastActivity = ''
+    let jobSchedule = []
     try {
       // Check if gateway service is active
       const { stdout: svcStatus } = await execAsync(
@@ -7722,66 +7723,74 @@ ${toolList}
           if (tsMatch) lastActivity = tsMatch[1]
         }
 
-        // OpenClaw journal format is freeform. Parse real patterns:
-        // - [ws] = gateway websocket events (connections, responses)
-        // - [warn] Subagent = subagent orchestration
-        // - [tools] = tool usage
-        // - Freeform text = agent output (main's thinking, work summaries)
-        // - node.list, device.pair.list = control UI polls
+        // Also read jobs.json to show the schedule
+        try {
+          const { stdout: jobsJson } = await execAsync(
+            'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "sudo -u openclawcf cat /home/openclawcf/.openclaw-chefflow/cron/jobs.json 2>/dev/null"',
+            { timeout: 5000 }
+          )
+          const parsed = JSON.parse(jobsJson)
+          jobSchedule = (parsed.jobs || []).map(j => ({
+            id: j.id,
+            name: j.name,
+            schedule: j.schedule,
+            agent: j.agent,
+            channel: j.slackChannel || '',
+            enabled: j.enabled !== false
+          }))
+        } catch { /* jobs.json read failed, non-critical */ }
+
+        // Parse journal lines into agent activity
         for (const line of lines) {
-          // Strip journald prefix (timestamp + hostname + process)
           const content = line.replace(/^\d{4}-\d{2}-\d{2}T[\d:.-]+\s+\S+\s+openclaw\[\d+\]:\s*/, '')
-            .replace(/^\d{4}-\d{2}-\d{2}T[\d:.-]+\s*/, '') // strip inner timestamp too
+            .replace(/^\d{4}-\d{2}-\d{2}T[\d:.-]+\s*/, '')
             .trim()
           if (!content || content.length < 5) continue
 
-          // Skip noisy control-UI polling lines
+          // Skip noisy polling
           if (content.includes('node.list') || content.includes('device.pair.list')) continue
-          if (content.includes('webchat connected') || content.includes('webchat disconnected')) {
-            // Gateway connection events go to runner (infra)
-            if (agents.runner.log.length < 5) agents.runner.log.push(content.substring(0, 80))
+
+          // Heartbeat/cron activity -> main (conductor)
+          if (content.includes('[heartbeat]') || content.includes('[cron]') || content.includes('heartbeat')) {
+            if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 100))
             continue
           }
 
-          // Subagent activity -> maps to the orchestrator (main)
-          if (content.includes('Subagent') || content.includes('subagent')) {
-            if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 80))
+          // Subagent orchestration -> main
+          if (content.includes('Subagent') || content.includes('subagent') || content.includes('[agent')) {
+            if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 100))
             continue
           }
 
-          // Tool usage -> build agent
+          // Tool usage -> build
           if (content.startsWith('[tools]')) {
-            if (agents.build.log.length < 5) agents.build.log.push(content.substring(0, 80))
+            if (agents.build.log.length < 5) agents.build.log.push(content.substring(0, 100))
             continue
           }
 
-          // Warnings -> qa agent
+          // Warnings/errors -> qa
           if (content.startsWith('[warn]') || content.includes('error') || content.includes('Error')) {
-            if (agents.qa.log.length < 5) agents.qa.log.push(content.substring(0, 80))
+            if (agents.qa.log.length < 5) agents.qa.log.push(content.substring(0, 100))
             continue
           }
 
-          // Gateway/ws protocol lines -> runner
-          if (content.startsWith('[ws]')) {
-            if (agents.runner.log.length < 5) agents.runner.log.push(content.substring(0, 80))
+          // Gateway/ws/slack/health -> runner (infrastructure)
+          if (content.startsWith('[ws]') || content.startsWith('[slack]') || content.startsWith('[gateway]') ||
+              content.startsWith('[health') || content.startsWith('[browser') || content.startsWith('[canvas]') ||
+              content.includes('webchat')) {
+            if (agents.runner.log.length < 5) agents.runner.log.push(content.substring(0, 100))
             continue
           }
 
-          // Work output (the bulk): code discussion, feature summaries, etc.
-          // These are main's thinking or sonnet's implementation output
-          if (content.includes('implement') || content.includes('migrat') || content.includes('fix') ||
-              content.includes('added') || content.includes('created') || content.includes('updated') ||
-              content.includes('complet') || content.includes('built') || content.includes('refactor')) {
-            if (agents.sonnet.log.length < 5) agents.sonnet.log.push(content.substring(0, 80))
-          } else if (content.startsWith('**') || content.startsWith('David') || content.includes('done') ||
-                     content.includes('summary') || content.includes('accomplished') || content.includes('policy') ||
-                     content.includes('resolved') || content.includes('violations')) {
-            // High-level summaries and reports -> main
-            if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 80))
-          } else {
-            // Everything else -> sonnet (the worker who produces the most output)
-            if (agents.sonnet.log.length < 5) agents.sonnet.log.push(content.substring(0, 80))
+          // Systemd lifecycle -> runner
+          if (content.includes('systemd') || content.includes('Started') || content.includes('Stopped') ||
+              content.includes('Deactivated') || content.includes('CPU time')) {
+            if (agents.runner.log.length < 5) agents.runner.log.push(content.substring(0, 100))
+            continue
           }
+
+          // Work output -> main (conductor produces the bulk of work)
+          if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 100))
         }
 
         // Cap each agent to 5 entries, most recent first
@@ -7793,7 +7802,7 @@ ${toolList}
       // Gateway unreachable
     }
 
-    return json(res, { ok: true, online, agents, lastActivity })
+    return json(res, { ok: true, online, agents, lastActivity, jobs: jobSchedule })
   }
 
   // ── Admin: All Chefs (Users Panel) ────────────────────────────

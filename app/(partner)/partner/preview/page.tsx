@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 // Partner Portal — Preview
 // Shows the partner exactly how they appear on the chef's public showcase page.
 // Fetches the same data that clients see — truth in advertising.
 
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { Eye, EyeOff, ExternalLink } from '@/components/ui/icons'
+import { Eye, EyeOff, ExternalLink } from 'lucide-react'
 
 export default async function PartnerPreviewPage() {
   const user = await requirePartner()

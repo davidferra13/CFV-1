@@ -3,10 +3,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformClientList, type PlatformClientRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
-import { UserCheck, AlertCircle } from '@/components/ui/icons'
-import { ViewAsClientButton } from '@/components/admin/view-as-client-button'
-import { ViewAsChefButton } from '@/components/admin/view-as-chef-button'
-import { CsvExportButton } from '@/components/admin/csv-export-button'
+import { UserCheck, AlertCircle } from 'lucide-react'
 
 function formatCents(cents: number): string {
   if (cents === 0) return '$0'
@@ -47,29 +44,11 @@ export default async function AdminClientListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-200 flex items-center gap-2">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
           <AlertCircle size={14} />
           {error}
         </div>
       )}
-
-      <div className="flex justify-end">
-        <CsvExportButton
-          data={clients}
-          filename="admin-clients"
-          columns={[
-            { header: 'Name', accessor: (c) => c.name },
-            { header: 'Email', accessor: (c) => c.email },
-            { header: 'Chef', accessor: (c) => c.chefBusinessName },
-            { header: 'Events', accessor: (c) => c.eventCount },
-            {
-              header: 'LTV ($)',
-              accessor: (c) => (c.ltvCents ? (c.ltvCents / 100).toFixed(2) : '0'),
-            },
-            { header: 'Joined', accessor: (c) => c.created_at },
-          ]}
-        />
-      </div>
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         {clients.length === 0 && !error ? (
@@ -97,7 +76,6 @@ export default async function AdminClientListPage() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
                     Joined
                   </th>
-                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -118,12 +96,6 @@ export default async function AdminClientListPage() {
                         day: 'numeric',
                         year: 'numeric',
                       })}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <ViewAsClientButton clientId={client.id} />
-                        {client.tenant_id && <ViewAsChefButton chefId={client.tenant_id} />}
-                      </div>
                     </td>
                   </tr>
                 ))}

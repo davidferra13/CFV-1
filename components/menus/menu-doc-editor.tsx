@@ -417,8 +417,8 @@ function CourseBlock({
             title={DIETARY_TAG_OPTIONS.find((t) => t.label === tag)?.title ?? tag}
             className={`text-xs font-semibold px-2 py-0.5 rounded-full border transition-colors ${
               locked
-                ? 'border-emerald-200 text-emerald-200 bg-emerald-950 cursor-default'
-                : 'border-emerald-200 text-emerald-200 bg-emerald-950 hover:border-red-300 hover:text-red-500 hover:bg-red-950 cursor-pointer'
+                ? 'border-emerald-200 text-emerald-700 bg-emerald-950 cursor-default'
+                : 'border-emerald-200 text-emerald-700 bg-emerald-950 hover:border-red-300 hover:text-red-500 hover:bg-red-950 cursor-pointer'
             }`}
           >
             {tag}
@@ -449,7 +449,7 @@ function CourseBlock({
                     title={title}
                     className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                       dietaryTags.includes(label)
-                        ? 'border-emerald-400 bg-emerald-900 text-emerald-200'
+                        ? 'border-emerald-400 bg-emerald-900 text-emerald-800'
                         : 'border-stone-700 text-stone-400 hover:border-stone-400 hover:bg-stone-800'
                     }`}
                   >
@@ -475,8 +475,8 @@ function CourseBlock({
                 title={`Contains ${allergenLabel} — click to remove`}
                 className={`text-xs font-semibold px-2 py-0.5 rounded-full border transition-colors ${
                   locked
-                    ? 'border-orange-200 text-orange-200 bg-orange-950 cursor-default'
-                    : 'border-orange-200 text-orange-200 bg-orange-950 hover:border-red-300 hover:text-red-500 hover:bg-red-950 cursor-pointer'
+                    ? 'border-orange-200 text-orange-700 bg-orange-950 cursor-default'
+                    : 'border-orange-200 text-orange-700 bg-orange-950 hover:border-red-300 hover:text-red-500 hover:bg-red-950 cursor-pointer'
                 }`}
               >
                 ⚠ {allergenLabel}
@@ -508,7 +508,7 @@ function CourseBlock({
                       title={label}
                       className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                         allergenFlags.includes(short)
-                          ? 'border-orange-400 bg-orange-900 text-orange-200'
+                          ? 'border-orange-400 bg-orange-900 text-orange-800'
                           : 'border-stone-700 text-stone-400 hover:border-orange-300 hover:bg-orange-950'
                       }`}
                     >
@@ -610,7 +610,7 @@ function CourseBlock({
             }}
             placeholder="Allergens to watch, timing, techniques, client preferences…"
             minRows={1}
-            className="w-full text-xs text-amber-200 bg-amber-950 border-none outline-none placeholder:text-amber-300 rounded-lg px-3 py-2 leading-relaxed block"
+            className="w-full text-xs text-amber-700 bg-amber-950 border-none outline-none placeholder:text-amber-300 rounded-lg px-3 py-2 leading-relaxed block"
           />
         </div>
       ) : (
@@ -619,7 +619,7 @@ function CourseBlock({
             <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1">
               Internal notes
             </p>
-            <p className="text-xs text-amber-200 bg-amber-950 rounded-lg px-3 py-2 leading-relaxed">
+            <p className="text-xs text-amber-700 bg-amber-950 rounded-lg px-3 py-2 leading-relaxed">
               {chefNotes}
             </p>
           </div>
@@ -887,8 +887,8 @@ function ContextSidebar({
           <p className="font-semibold text-stone-100">{event.client.full_name || 'Client'}</p>
           {allergyText ? (
             <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-              <p className="text-xs font-semibold text-amber-200 mb-0.5">Dietary needs</p>
-              <p className="text-xs text-amber-200 leading-relaxed">{allergyText}</p>
+              <p className="text-xs font-semibold text-amber-800 mb-0.5">Dietary needs</p>
+              <p className="text-xs text-amber-700 leading-relaxed">{allergyText}</p>
             </div>
           ) : (
             <p className="text-xs text-stone-400 mt-1">No dietary restrictions on file</p>
@@ -1179,9 +1179,9 @@ export function MenuDocEditor({
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${
             locked
-              ? 'border-amber-300 bg-amber-950 text-amber-200'
+              ? 'border-amber-300 bg-amber-950 text-amber-700'
               : initialMenu.status === 'shared'
-                ? 'border-blue-300 bg-blue-950 text-blue-200'
+                ? 'border-blue-300 bg-blue-950 text-blue-700'
                 : initialMenu.status === 'archived'
                   ? 'border-stone-600 bg-stone-800 text-stone-500'
                   : 'border-stone-700 bg-stone-900 text-stone-400'
@@ -1321,7 +1321,7 @@ export function MenuDocEditor({
                 <div className="bg-blue-950 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
                   <span className="text-blue-500 text-lg leading-none">✎</span>
                   <div>
-                    <p className="text-sm font-medium text-blue-200">Freeform text mode</p>
+                    <p className="text-sm font-medium text-blue-800">Freeform text mode</p>
                     <p className="text-xs text-blue-600 mt-0.5">
                       Write your menu as freeform text or paste it in directly. Switch back anytime
                       — your structured courses will still be there.

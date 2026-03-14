@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { Pencil, CheckCircle, AlertCircle, Clock } from '@/components/ui/icons'
+import { Pencil, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import type { SocialPost, SocialPostStatus } from '@/lib/social/types'
 import { SOCIAL_STATUS_LABELS } from '@/lib/social/types'
 import { SocialPillarBadge } from '@/components/social/social-pillar-badge'

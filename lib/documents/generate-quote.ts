@@ -7,9 +7,6 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { PDFLayout } from './pdf-layout'
-import { getChefBrand, type ChefBrand } from '@/lib/chef/brand'
-import { fetchLogoAsBase64 } from '@/lib/documents/logo-utils'
-import { renderCostBreakdown } from '@/lib/documents/quote-breakdown-renderer'
 import { format, parseISO } from 'date-fns'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -28,8 +25,6 @@ export type QuoteDocumentData = {
     validUntil: string | null // ISO date string
     pricingNotes: string | null // "What's included" from chef's notes
     sentAt: string | null
-    showCostBreakdown: boolean
-    exclusionsNote: string | null
   }
   chef: {
     businessName: string
@@ -57,12 +52,6 @@ export type QuoteDocumentData = {
     description: string | null // FOH description (dish.description)
     componentNames: string[] // Fallback if no description
   }>
-  costBreakdown: Array<{
-    label: string
-    amountCents: number
-    percentage?: number | null
-    sourceNote?: string | null
-  }>
   cancellationPolicy: {
     cutoffDays: number
     depositRefundable: boolean
@@ -82,7 +71,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       `
       id, created_at, pricing_model, total_quoted_cents, price_per_person_cents,
       guest_count_estimated, deposit_required, deposit_amount_cents,
-      deposit_percentage, valid_until, pricing_notes, sent_at, show_cost_breakdown, exclusions_note,
+      deposit_percentage, valid_until, pricing_notes, sent_at,
       event_id, inquiry_id,
       client:clients(full_name, email, loyalty_tier, loyalty_points)
     `
@@ -121,7 +110,6 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   }
 
   let menuCourses: QuoteDocumentData['menu'] = []
-  let costBreakdown: QuoteDocumentData['costBreakdown'] = []
 
   if (quote.event_id) {
     const { data: event } = await supabase
@@ -254,23 +242,6 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   const shortId = quoteId.replace(/-/g, '').slice(0, 4).toUpperCase()
   const quoteRef = `QUOTE-${year}-${shortId}`
 
-  if (quote.show_cost_breakdown) {
-    const { data: lineItems } = await supabase
-      .from('quote_line_items')
-      .select('label, amount_cents, percentage, source_note')
-      .eq('quote_id', quote.id)
-      .eq('tenant_id', user.tenantId!)
-      .eq('is_visible_to_client', true)
-      .order('sort_order', { ascending: true })
-
-    costBreakdown = ((lineItems ?? []) as any[]).map((item) => ({
-      label: item.label,
-      amountCents: item.amount_cents,
-      percentage: item.percentage,
-      sourceNote: item.source_note,
-    }))
-  }
-
   return {
     quote: {
       id: quote.id,
@@ -285,8 +256,6 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       validUntil: quote.valid_until,
       pricingNotes: quote.pricing_notes,
       sentAt: quote.sent_at,
-      showCostBreakdown: quote.show_cost_breakdown ?? false,
-      exclusionsNote: quote.exclusions_note ?? null,
     },
     chef: {
       businessName: chef.business_name,
@@ -301,7 +270,6 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     },
     event: eventDetails,
     menu: menuCourses,
-    costBreakdown,
     cancellationPolicy: {
       cutoffDays: (chef as any).cancellation_cutoff_days ?? 15,
       depositRefundable: (chef as any).deposit_refundable ?? false,
@@ -317,24 +285,15 @@ function formatCents(cents: number): string {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderQuote(
-  pdf: PDFLayout,
-  data: QuoteDocumentData,
-  brand?: ChefBrand | null,
-  logoBase64?: string | null
-) {
-  const { quote, chef, client, event, menu, costBreakdown, cancellationPolicy } = data
+export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
+  const { quote, chef, client, event, menu, cancellationPolicy } = data
 
   // Density scaling for menus with many courses
   if (menu.length > 6) pdf.setFontScale(0.85)
   if (menu.length > 9) pdf.setFontScale(0.75)
 
   // ── SECTION 1: HEADER ──────────────────────────────────────────────────────
-  if (brand) {
-    pdf.brandedHeader(brand, logoBase64 ?? null)
-  } else {
-    pdf.title(chef.businessName, 14)
-  }
+  pdf.title(chef.businessName, 14)
   pdf.space(1)
 
   // Quote metadata bar
@@ -437,10 +396,6 @@ export function renderQuote(
     `${formatCents(quote.totalQuotedCents)}${guestNote ? '  ·  ' + pricingLabel : ''}`
   )
 
-  if (quote.showCostBreakdown && costBreakdown.length > 0) {
-    renderCostBreakdown(pdf, costBreakdown, quote.exclusionsNote)
-  }
-
   if (quote.depositRequired && quote.depositAmountCents) {
     const depositLabel = quote.depositPercentage
       ? `${quote.depositPercentage}% deposit to reserve`
@@ -496,9 +451,6 @@ export function renderQuote(
 
   // Footer
   pdf.footer(`${quote.quoteRef}  ·  ${chef.businessName}  ·  ${chef.email}`)
-  if (brand?.showPoweredBy) {
-    pdf.poweredByFooter()
-  }
 }
 
 // ─── Generate ─────────────────────────────────────────────────────────────────
@@ -507,11 +459,7 @@ export async function generateQuote(quoteId: string): Promise<Buffer> {
   const data = await fetchQuoteDocumentData(quoteId)
   if (!data) throw new Error('Cannot generate quote: quote not found or access denied')
 
-  const user = await requireChef()
-  const brand = await getChefBrand(user.tenantId!)
-  const logoBase64 = await fetchLogoAsBase64(brand.logoUrl)
-
   const pdf = new PDFLayout()
-  renderQuote(pdf, data, brand, logoBase64)
+  renderQuote(pdf, data)
   return pdf.toBuffer()
 }

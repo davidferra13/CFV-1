@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { type ParseResult } from './parse'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 import { ParsedRecipeSchema, type ParsedRecipe } from './parse-recipe-schema'
 import {
@@ -77,12 +77,15 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
  */
 export async function parseBrainDump(rawText: string): Promise<ParseResult<BrainDumpResult>> {
   try {
-    const result = (
-      await dispatchPrivate(BRAIN_DUMP_SYSTEM_PROMPT, rawText, BrainDumpResponseSchema, {
+    const result = await parseWithOllama(
+      BRAIN_DUMP_SYSTEM_PROMPT,
+      rawText,
+      BrainDumpResponseSchema,
+      {
         modelTier: 'complex',
         maxTokens: 1536,
-      })
-    ).result
+      }
+    )
     return result
   } catch (error) {
     const clientFallback = parseClientsHeuristically(rawText, toFallbackWarning(error))

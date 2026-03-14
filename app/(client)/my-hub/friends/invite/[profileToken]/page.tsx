@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, CheckCircle2, ShieldCheck } from '@/components/ui/icons'
+import { ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { requireClient } from '@/lib/auth/get-user'
 import { requestDinnerCircleInviteByProfileToken } from '@/lib/hub/friend-actions'
 import { getProfileByToken } from '@/lib/hub/profile-actions'

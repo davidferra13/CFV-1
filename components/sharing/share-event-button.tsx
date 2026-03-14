@@ -106,7 +106,7 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
 
   if (error) {
     return (
-      <div className="bg-red-950 text-red-200 px-4 py-3 rounded-lg text-sm">
+      <div className="bg-red-950 text-red-700 px-4 py-3 rounded-lg text-sm">
         {error}
         <button onClick={() => setError('')} className="ml-2 underline">
           Try again
@@ -148,7 +148,7 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
           onClick={handleCopy}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
             copied
-              ? 'bg-emerald-900 text-emerald-200'
+              ? 'bg-emerald-900 text-emerald-700'
               : 'bg-brand-600 text-white hover:bg-brand-700'
           }`}
         >
@@ -190,7 +190,7 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
               onClick={handleCopyViewer}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
                 viewerCopied
-                  ? 'bg-emerald-900 text-emerald-200'
+                  ? 'bg-emerald-900 text-emerald-700'
                   : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
               }`}
             >

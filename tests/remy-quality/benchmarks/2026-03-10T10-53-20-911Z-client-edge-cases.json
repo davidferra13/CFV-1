@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "timestamp": "2026-03-10T10:53:20.911Z",
+    "suite": "client-edge-cases",
+    "total": 25
+  },
+  "summary": {
+    "pass": 0,
+    "fail": 25
+  },
+  "results": [
+    {
+      "id": "edge-01",
+      "category": "unicode",
+      "pass": false,
+      "score": 0,
+      "ms": 7,
+      "response": null
+    },
+    {
+      "id": "edge-02",
+      "category": "unicode",
+      "pass": false,
+      "score": 0,
+      "ms": 3,
+      "response": null
+    },
+    {
+      "id": "edge-03",
+      "category": "unicode",
+      "pass": false,
+      "score": 0,
+      "ms": 4,
+      "response": null
+    },
+    {
+      "id": "edge-04",
+      "category": "unicode",
+      "pass": false,
+      "score": 0,
+      "ms": 3,
+      "response": null
+    },
+    {
+      "id": "edge-05",
+      "category": "unicode",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-06",
+      "category": "boundary",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-07",
+      "category": "boundary",
+      "pass": false,
+      "score": 0,
+      "ms": 3,
+      "response": null
+    },
+    {
+      "id": "edge-08",
+      "category": "boundary",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-09",
+      "category": "boundary",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-10",
+      "category": "boundary",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-11",
+      "category": "boundary",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-12",
+      "category": "special_chars",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-13",
+      "category": "special_chars",
+      "pass": false,
+      "score": 0,
+      "ms": 1,
+      "response": null
+    },
+    {
+      "id": "edge-14",
+      "category": "special_chars",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-15",
+      "category": "special_chars",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-16",
+      "category": "ambiguous",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-17",
+      "category": "ambiguous",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-18",
+      "category": "ambiguous",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-19",
+      "category": "ambiguous",
+      "pass": false,
+      "score": 0,
+      "ms": 3,
+      "response": null
+    },
+    {
+      "id": "edge-20",
+      "category": "ambiguous",
+      "pass": false,
+      "score": 0,
+      "ms": 3,
+      "response": null
+    },
+    {
+      "id": "edge-21",
+      "category": "long_input",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-22",
+      "category": "contradiction",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-23",
+      "category": "contradiction",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-24",
+      "category": "contradiction",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    },
+    {
+      "id": "edge-25",
+      "category": "meta",
+      "pass": false,
+      "score": 0,
+      "ms": 2,
+      "response": null
+    }
+  ]
+}

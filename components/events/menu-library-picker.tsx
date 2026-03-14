@@ -69,11 +69,7 @@ export function MenuLibraryPicker({ eventId, menus, preferences }: Props) {
   // Auto-mark preferences as viewed if they haven't been
   if (preferences && !preferences.chef_viewed_at) {
     startTransition(() => {
-      try {
-        void markPreferencesViewed(eventId)
-      } catch (err) {
-        console.error('[non-blocking] markPreferencesViewed failed:', err)
-      }
+      void markPreferencesViewed(eventId)
     })
   }
 

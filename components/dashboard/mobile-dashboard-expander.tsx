@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from '@/components/ui/icons'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface MobileDashboardExpanderProps {
   children: React.ReactNode

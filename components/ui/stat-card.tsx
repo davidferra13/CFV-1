@@ -1,7 +1,7 @@
 // StatCard — Reusable metric card for dashboards
 // Adapted from legacy ChefFlow ClientDetailModal pattern
 
-import { type LucideIcon } from '@/components/ui/icons'
+import { type LucideIcon } from 'lucide-react'
 
 type StatCardProps = {
   label: string

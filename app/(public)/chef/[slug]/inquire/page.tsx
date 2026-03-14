@@ -1,16 +1,13 @@
 // Public Inquiry Form Page
-// No authentication required. Resolves chef by slug and renders the inquiry form.
+// No authentication required — anyone can submit an inquiry to a chef
+// Resolves chef by slug, renders inquiry form with chef display info
 
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
-import { resolveRequestedFeaturedMenuId } from '@/lib/booking/featured-menu-shared'
 import { getPublicChefProfile } from '@/lib/profile/actions'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 
-type Props = {
-  params: { slug: string }
-  searchParams?: { menu?: string }
-}
+type Props = { params: { slug: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
@@ -22,21 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function InquirePage({ params, searchParams }: Props) {
+export default async function InquirePage({ params }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
-
-  const selectedMenu =
-    resolveRequestedFeaturedMenuId(
-      data.chef.featured_booking_menu_id,
-      typeof searchParams?.menu === 'string' ? searchParams.menu : null
-    ) && data.featured_menu
-      ? data.featured_menu
-      : null
   const primaryColor = data.chef.portal_primary_color || '#1c1917'
   const backgroundColor = data.chef.portal_background_color || '#fafaf9'
   const backgroundImageUrl = data.chef.portal_background_image_url
-  const featuredShowcase = data.featured_menu_showcase
   const pageBackgroundStyle = backgroundImageUrl
     ? {
         backgroundColor,
@@ -50,23 +38,11 @@ export default async function InquirePage({ params, searchParams }: Props) {
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
       <section className="container mx-auto px-4 py-12 md:py-16">
-        <div className="mx-auto max-w-2xl">
+        <div className="max-w-2xl mx-auto">
           <PublicInquiryForm
             chefSlug={params.slug}
             chefName={data.chef.display_name}
             primaryColor={primaryColor}
-            selectedMenu={selectedMenu}
-            selectedMenuShowcase={featuredShowcase}
-            formTitle={
-              selectedMenu ? featuredShowcase.title || `Request ${selectedMenu.name}` : undefined
-            }
-            formDescription={
-              selectedMenu
-                ? featuredShowcase.pitch ||
-                  "We'll start from this ready-to-book menu instead of beginning from a blank custom brief."
-                : undefined
-            }
-            submitLabel={selectedMenu ? 'Request this menu' : undefined}
           />
         </div>
       </section>

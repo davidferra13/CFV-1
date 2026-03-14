@@ -13,10 +13,8 @@ import { z } from 'zod'
 import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { markBetaSignupOnboardedByEmail } from '@/lib/beta/actions'
-import { sendBetaLifecycleEmail } from '@/lib/beta/lifecycle-email'
-import { upsertBetaSignupTracker } from '@/lib/beta/signup-tracker'
-import { seedDefaultBudgetQualificationAutomations } from '@/lib/automations/seed'
-import { signRoleCookie } from '@/lib/auth/signed-cookie'
+import { sendEmail } from '@/lib/email/send'
+import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -62,89 +60,16 @@ export type ClientSignupInput = z.infer<typeof ClientSignupSchema>
 export type SignInInput = z.infer<typeof SignInSchema>
 
 const DEFAULT_TRIAL_DAYS = 14
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 const parsedBetaTrialDays = Number.parseInt(process.env.BETA_TRIAL_DAYS || '', 10)
 const BETA_TRIAL_DAYS =
   Number.isFinite(parsedBetaTrialDays) && parsedBetaTrialDays > 0
     ? parsedBetaTrialDays
     : DEFAULT_TRIAL_DAYS
-const ROLE_COOKIE_NAME = 'chefflow-role-cache'
-const ROLE_COOKIE_MAX_AGE_SECONDS = 300
-const PORTAL_DESTINATIONS = {
-  chef: '/dashboard',
-  client: '/my-events',
-  staff: '/staff-dashboard',
-  partner: '/partner/dashboard',
-} as const
-
-type PortalRole = keyof typeof PORTAL_DESTINATIONS
-
-function clearStaleAuthCookies() {
-  const cookieStore = cookies()
-
-  for (const cookie of cookieStore.getAll()) {
-    // Supabase may chunk auth cookies; remove every auth-related fragment before
-    // establishing a new session so stale local/dev tokens do not poison sign-in.
-    if (cookie.name.startsWith('sb-') && cookie.name.includes('-auth-token')) {
-      cookieStore.delete(cookie.name)
-    }
-  }
-
-  cookieStore.delete(ROLE_COOKIE_NAME)
-  cookieStore.delete('chefflow-session-only')
-}
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
-}
-
-function isPortalRole(role: unknown): role is PortalRole {
-  return role === 'chef' || role === 'client' || role === 'staff' || role === 'partner'
-}
-
-async function resolvePostSignInDestination(
-  supabase: any,
-  userId: string
-): Promise<{ role: PortalRole | null; destination: string }> {
-  const { data, error } = await supabase
-    .from('user_roles')
-    .select('role, entity_id')
-    .eq('auth_user_id', userId)
-    .single()
-
-  if (error) {
-    if ((error as any)?.code === 'PGRST116') {
-      return { role: null, destination: '/auth/role-selection' }
-    }
-
-    log.auth.warn('Post sign-in role lookup failed; falling back to landing page', {
-      error,
-      context: { userId },
-    })
-    return { role: null, destination: '/' }
-  }
-
-  if (!isPortalRole(data?.role)) {
-    return { role: null, destination: '/auth/role-selection' }
-  }
-
-  if (data.role === 'chef' && data.entity_id) {
-    const { data: chefData, error: chefError } = await supabase
-      .from('chefs')
-      .select('onboarding_completed_at')
-      .eq('id', data.entity_id)
-      .single()
-
-    if (chefError) {
-      log.auth.warn('Chef onboarding lookup failed; falling back to dashboard', {
-        error: chefError,
-        context: { userId, chefId: data.entity_id },
-      })
-    } else if (!chefData?.onboarding_completed_at) {
-      return { role: 'chef', destination: '/onboarding' }
-    }
-  }
-
-  return { role: data.role, destination: PORTAL_DESTINATIONS[data.role] }
 }
 
 function isBetaRef(signupRef?: string): boolean {
@@ -158,63 +83,32 @@ function resolveTrialDays(isBetaSignup: boolean): number {
 async function syncBetaOnboarding(
   email: string,
   name: string,
-  signupRef?: string,
-  chefId?: string,
-  authUserId?: string
-) {
+  signupRef?: string
+): Promise<boolean> {
   try {
     return await markBetaSignupOnboardedByEmail({
       email,
       name,
       source: isBetaRef(signupRef) ? 'beta_invite_link' : undefined,
-      chefId,
-      authUserId,
     })
   } catch (error) {
     log.auth.warn('Beta signup sync failed (non-blocking)', { error, context: { email } })
-    return {
-      matched: false,
-      signup: null,
-      tracker: null,
-      onboardingProgress: null,
-    }
+    return false
   }
 }
 
-async function sendBetaActivationEmail(syncResult: Awaited<ReturnType<typeof syncBetaOnboarding>>) {
-  if (!syncResult.matched || !syncResult.signup) return
-  if (syncResult.tracker?.account_ready_sent_at) return
-
+async function sendBetaActivationEmail(email: string, name: string): Promise<void> {
   try {
-    const emailResult = await sendBetaLifecycleEmail({
-      emailType: 'account_ready',
-      signup: syncResult.signup,
-      tracker: syncResult.tracker,
-      onboardingProgress: syncResult.onboardingProgress,
-    })
-
-    if (!emailResult.success) {
-      log.auth.warn('Beta activation email failed (non-blocking)', {
-        error: emailResult.error,
-        context: { email: syncResult.signup.email },
-      })
-      return
-    }
-
-    await upsertBetaSignupTracker({
-      signup: syncResult.signup,
-      supabase: createServerClient({ admin: true }),
-      emailType: 'account_ready',
-      chefId: syncResult.tracker?.chef_id ?? null,
-      authUserId: syncResult.tracker?.auth_user_id ?? null,
-      accountCreatedAt: syncResult.signup.onboarded_at,
-      onboardingProgress: syncResult.onboardingProgress,
+    await sendEmail({
+      to: email,
+      subject: 'Your ChefFlow beta account is ready',
+      react: BetaAccountReadyEmail({
+        name,
+        signInUrl: `${SITE_URL}/auth/signin?redirect=/onboarding`,
+      }),
     })
   } catch (error) {
-    log.auth.warn('Beta activation email failed (non-blocking)', {
-      error,
-      context: { email: syncResult.signup.email },
-    })
+    log.auth.warn('Beta activation email failed (non-blocking)', { error, context: { email } })
   }
 }
 
@@ -294,23 +188,8 @@ export async function signUpChef(input: ChefSignupInput) {
       throw new Error('Failed to initialize chef preferences')
     }
 
-    try {
-      await seedDefaultBudgetQualificationAutomations(chef.id)
-    } catch (seedError) {
-      log.auth.warn('Budget qualification automation seed failed (non-blocking)', {
-        error: seedError,
-        context: { tenantId: chef.id },
-      })
-    }
-
-    const betaSync = await syncBetaOnboarding(
-      email,
-      businessName,
-      validated.signup_ref,
-      chef.id,
-      authData.user.id
-    )
-    const trialDays = resolveTrialDays(betaSync.matched)
+    const isBetaSignup = await syncBetaOnboarding(email, businessName, validated.signup_ref)
+    const trialDays = resolveTrialDays(isBetaSignup)
 
     // Start 14-day trial and create Stripe customer — non-blocking
     try {
@@ -321,8 +200,8 @@ export async function signUpChef(input: ChefSignupInput) {
       log.auth.warn('Stripe customer/trial init failed (non-blocking)', { error: err })
     }
 
-    if (betaSync.matched) {
-      await sendBetaActivationEmail(betaSync)
+    if (isBetaSignup) {
+      await sendBetaActivationEmail(email, businessName)
     }
 
     return { success: true, userId: authData.user.id }
@@ -423,37 +302,6 @@ export async function signUpClient(input: ClientSignupInput) {
       await markInvitationUsed(invitationId)
     }
 
-    // Notify chef when an invited client finishes account signup.
-    // Non-blocking: signup success must never depend on notification delivery.
-    if (tenantId) {
-      try {
-        const { createNotification, getChefAuthUserId } =
-          await import('@/lib/notifications/actions')
-        const chefUserId = await getChefAuthUserId(tenantId)
-
-        if (chefUserId) {
-          await createNotification({
-            tenantId,
-            recipientId: chefUserId,
-            category: 'client',
-            action: 'client_signup',
-            title: 'New client account created',
-            body: `${client.full_name} completed their client portal signup.`,
-            actionUrl: `/clients/${client.id}`,
-            clientId: client.id,
-            metadata: {
-              source: invitationId ? 'invitation_signup' : 'direct_signup',
-            },
-          })
-        }
-      } catch (notifyErr) {
-        log.auth.warn('Client signup notification failed (non-blocking)', {
-          error: notifyErr,
-          context: { tenantId, clientId: client.id },
-        })
-      }
-    }
-
     // Auto-award welcome points for invitation-based signups.
     // Tenant is known at signup time only when an invitation token was used.
     // Non-blocking — welcome point failure must never break account creation.
@@ -464,39 +312,6 @@ export async function signUpClient(input: ClientSignupInput) {
       } catch (welcErr) {
         log.auth.warn('Welcome points award failed (non-blocking)', { error: welcErr })
       }
-    }
-
-    // Create marketplace profile + link (non-blocking).
-    // Enables cross-chef browsing and multi-chef relationships.
-    try {
-      const { data: mktProfile } = await supabase
-        .from('marketplace_profiles')
-        .upsert(
-          {
-            auth_user_id: authData.user.id,
-            email,
-            display_name: validated.full_name.trim(),
-            phone: validated.phone?.trim() ?? null,
-            primary_client_id: client.id,
-          },
-          { onConflict: 'auth_user_id' }
-        )
-        .select('id')
-        .single()
-
-      if (mktProfile && tenantId) {
-        await supabase.from('marketplace_client_links').upsert(
-          {
-            marketplace_profile_id: mktProfile.id,
-            client_id: client.id,
-            tenant_id: tenantId,
-            first_inquiry_at: new Date().toISOString(),
-          },
-          { onConflict: 'marketplace_profile_id,tenant_id' }
-        )
-      }
-    } catch (mktErr) {
-      log.auth.warn('Marketplace profile creation failed (non-blocking)', { error: mktErr })
     }
 
     return { success: true, userId: authData.user.id }
@@ -515,19 +330,12 @@ export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
   const email = validated.email.trim().toLowerCase()
   const isSyntheticTestAccount = email.endsWith('@chefflow.test')
-  const isLocalDemoAccount = email.endsWith('@local.chefflow')
   const bypassRateLimitForE2E =
     process.env.DISABLE_AUTH_RATE_LIMIT_FOR_E2E === 'true' && isSyntheticTestAccount
   const bypassRateLimitForNonProdSyntheticAccount =
     process.env.NODE_ENV !== 'production' && isSyntheticTestAccount
-  const bypassRateLimitForNonProdLocalDemoAccount =
-    process.env.NODE_ENV !== 'production' && isLocalDemoAccount
 
-  if (
-    !bypassRateLimitForE2E &&
-    !bypassRateLimitForNonProdSyntheticAccount &&
-    !bypassRateLimitForNonProdLocalDemoAccount
-  ) {
+  if (!bypassRateLimitForE2E && !bypassRateLimitForNonProdSyntheticAccount) {
     try {
       await checkRateLimit(email)
     } catch (error) {
@@ -549,10 +357,8 @@ export async function signIn(input: SignInInput) {
     throw new Error('Sign-in is temporarily unavailable. Please contact support.')
   }
 
-  clearStaleAuthCookies()
-
   const supabase: any = createServerClient()
-  const cookieStore = cookies()
+
   let data: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['data'] | null = null
   let error: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['error'] | null = null
   try {
@@ -603,8 +409,10 @@ export async function signIn(input: SignInInput) {
     throw new Error('Sign-in failed. Please try again or reset your password.')
   }
 
+  const cookieStore = cookies()
+
   // Clear stale role cache so middleware regenerates it with the correct maxAge
-  cookieStore.delete(ROLE_COOKIE_NAME)
+  cookieStore.delete('chefflow-role-cache')
 
   if (!validated.rememberMe) {
     // Session-only cookie (no maxAge) — cleared when browser closes.
@@ -620,20 +428,8 @@ export async function signIn(input: SignInInput) {
     cookieStore.delete('chefflow-session-only')
   }
 
-  const routing = await resolvePostSignInDestination(supabase, data.user.id)
-
-  if (routing.role) {
-    cookieStore.set(ROLE_COOKIE_NAME, await signRoleCookie(routing.role), {
-      maxAge: validated.rememberMe ? ROLE_COOKIE_MAX_AGE_SECONDS : undefined,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    })
-  }
-
   revalidatePath('/', 'layout')
-  return { success: true, user: data.user, destination: routing.destination }
+  return { success: true, user: data.user }
 }
 
 /**
@@ -823,23 +619,8 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
       })
       if (prefError) throw prefError
 
-      try {
-        await seedDefaultBudgetQualificationAutomations(chef.id)
-      } catch (seedError) {
-        log.auth.warn('Budget qualification automation seed failed after role assignment', {
-          error: seedError,
-          context: { tenantId: chef.id },
-        })
-      }
-
-      const betaSync = await syncBetaOnboarding(
-        email,
-        businessName,
-        context?.signup_ref,
-        chef.id,
-        user.id
-      )
-      const trialDays = resolveTrialDays(betaSync.matched)
+      const isBetaSignup = await syncBetaOnboarding(email, businessName, context?.signup_ref)
+      const trialDays = resolveTrialDays(isBetaSignup)
 
       try {
         const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
@@ -851,8 +632,8 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
         })
       }
 
-      if (betaSync.matched) {
-        await sendBetaActivationEmail(betaSync)
+      if (isBetaSignup) {
+        await sendBetaActivationEmail(email, businessName)
       }
     } else if (role === 'client') {
       const fullName = user.user_metadata?.full_name || 'New Client'

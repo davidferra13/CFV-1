@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
@@ -16,7 +15,7 @@ import {
   ArrowDown,
   ArrowUp,
   ListFilter,
-} from '@/components/ui/icons'
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
@@ -991,22 +990,22 @@ export function CommunicationInboxClient({
                                 </span>
                                 <span className="sm:hidden">{timeAgo(item.event_timestamp)}</span>
                                 {item.tab === 'unlinked' && (
-                                  <Badge className="bg-blue-900 text-blue-200 ring-1 ring-inset ring-blue-300">
+                                  <Badge className="bg-blue-900 text-blue-800 ring-1 ring-inset ring-blue-300">
                                     Unassigned
                                   </Badge>
                                 )}
                                 {item.tab === 'needs_attention' && (
-                                  <Badge className="bg-orange-900 text-orange-200 ring-1 ring-inset ring-orange-300">
+                                  <Badge className="bg-orange-900 text-orange-800 ring-1 ring-inset ring-orange-300">
                                     Action Required
                                   </Badge>
                                 )}
                                 {item.tab === 'resolved' && (
-                                  <Badge className="bg-emerald-900 text-emerald-200 ring-1 ring-inset ring-emerald-300">
+                                  <Badge className="bg-emerald-900 text-emerald-800 ring-1 ring-inset ring-emerald-300">
                                     Done
                                   </Badge>
                                 )}
                                 {responseTurn === 'chef_to_respond' && (
-                                  <Badge className="bg-indigo-900 text-indigo-200 ring-1 ring-inset ring-indigo-300">
+                                  <Badge className="bg-indigo-900 text-indigo-800 ring-1 ring-inset ring-indigo-300">
                                     My Turn
                                   </Badge>
                                 )}
@@ -1014,8 +1013,8 @@ export function CommunicationInboxClient({
                                   <Badge
                                     className={
                                       staleTheirTurn
-                                        ? 'bg-amber-900/50 text-amber-200/80 ring-1 ring-inset ring-amber-300/60'
-                                        : 'bg-amber-900 text-amber-200 ring-1 ring-inset ring-amber-300'
+                                        ? 'bg-amber-900/50 text-amber-800/80 ring-1 ring-inset ring-amber-300/60'
+                                        : 'bg-amber-900 text-amber-800 ring-1 ring-inset ring-amber-300'
                                     }
                                   >
                                     Their Turn
@@ -1031,7 +1030,7 @@ export function CommunicationInboxClient({
                                   <Badge variant="default">No action</Badge>
                                 )}
                                 {item.has_overdue_follow_up && (
-                                  <Badge className="bg-red-900 text-red-200 ring-1 ring-inset ring-red-300">
+                                  <Badge className="bg-red-900 text-red-800 ring-1 ring-inset ring-red-300">
                                     Past Due
                                   </Badge>
                                 )}
@@ -1039,7 +1038,7 @@ export function CommunicationInboxClient({
                                   <Badge variant="info">Snoozed</Badge>
                                 )}
                                 {item.communication_status === 'resolved' && (
-                                  <Badge className="bg-emerald-900 text-emerald-200 ring-1 ring-inset ring-emerald-300">
+                                  <Badge className="bg-emerald-900 text-emerald-800 ring-1 ring-inset ring-emerald-300">
                                     Done
                                   </Badge>
                                 )}

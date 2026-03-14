@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Calendar, X } from '@/components/ui/icons'
+import { Calendar, X } from 'lucide-react'
 import { MiniCalendar } from '@/components/scheduling/mini-calendar'
 import type { CalendarEvent } from '@/lib/scheduling/actions'
 

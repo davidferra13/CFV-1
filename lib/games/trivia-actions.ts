@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -34,9 +34,8 @@ export async function generateTriviaQuestions(
         ? `\nIMPORTANT: The player has already seen questions with these IDs — do NOT reuse them or ask similar questions: ${previousIds.slice(-30).join(', ')}`
         : ''
 
-    const result = (
-      await dispatchPrivate(
-        `You are Remy, ChefFlow's culinary AI. You LOVE teaching chefs new things through fun trivia.
+    const result = await parseWithOllama(
+      `You are Remy, ChefFlow's culinary AI. You LOVE teaching chefs new things through fun trivia.
 Generate exactly 5 multiple-choice culinary trivia questions. Each must have exactly 4 choices with one correct answer.
 Make questions genuinely educational — the chef should learn something new from each one.
 Vary question types: history, technique, science, ingredients, culture, famous chefs, food safety.
@@ -70,13 +69,12 @@ CONFIDENCE RULES (CRITICAL):
 - Do NOT generate questions rated 1-3. Replace them with questions you are confident about.
 
 - ALWAYS return valid JSON matching the schema exactly${avoidClause}`,
-        `Generate 5 ${difficulty} culinary trivia questions about: ${topic}
+      `Generate 5 ${difficulty} culinary trivia questions about: ${topic}
 
 Return JSON: { "questions": [{ "id": "unique_id", "question": "...", "choices": ["A", "B", "C", "D"], "correctIndex": 0, "funFact": "...", "source": "Reference Name", "sourceUrl": "https://...", "confidence": 5 }, ...] }`,
-        TriviaSchema,
-        { modelTier: 'standard', maxTokens: 2048, timeoutMs: 120000 }
-      )
-    ).result
+      TriviaSchema,
+      { modelTier: 'standard', maxTokens: 2048, timeoutMs: 120000 }
+    )
 
     // Filter out any low-confidence questions (keep only 4+)
     const highConfidence = result.questions.filter((q) => q.confidence >= 4)
@@ -241,9 +239,8 @@ export async function generateInternalTriviaQuestions(
         ? `\nIMPORTANT: Do NOT reuse or ask similar questions to these IDs: ${previousIds.slice(-30).join(', ')}`
         : ''
 
-    const result = (
-      await dispatchPrivate(
-        `You are Remy, ChefFlow's culinary AI. You are generating a STUDY QUIZ for a private chef based on THEIR OWN business data.
+    const result = await parseWithOllama(
+      `You are Remy, ChefFlow's culinary AI. You are generating a STUDY QUIZ for a private chef based on THEIR OWN business data.
 The chef wants to practice remembering details about their upcoming events, clients, and menus.
 
 HERE IS THE CHEF'S ACTUAL DATA:
@@ -274,13 +271,12 @@ CONFIDENCE RULES:
 - Only generate questions where the answer is clearly present in the data.
 
 - ALWAYS return valid JSON matching the schema exactly${avoidClause}`,
-        `Generate 5 ${difficulty} quiz questions from the chef's business data above.
+      `Generate 5 ${difficulty} quiz questions from the chef's business data above.
 
 Return JSON: { "questions": [{ "id": "unique_id", "question": "...", "choices": ["A", "B", "C", "D"], "correctIndex": 0, "funFact": "...", "source": "ChefFlow — ...", "sourceUrl": "/clients/...", "confidence": 5 }, ...] }`,
-        TriviaSchema,
-        { modelTier: 'standard', maxTokens: 2048, timeoutMs: 120000 }
-      )
-    ).result
+      TriviaSchema,
+      { modelTier: 'standard', maxTokens: 2048, timeoutMs: 120000 }
+    )
 
     // Filter to high confidence only
     const highConfidence = result.questions.filter((q) => q.confidence >= 4)

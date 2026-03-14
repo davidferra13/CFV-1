@@ -22,11 +22,6 @@ import {
   isEventWorkspacePhaseKey,
   type EventWorkspacePhaseKey,
 } from '@/lib/documents/event-workspace'
-import {
-  getBusinessDocumentVaultOverview,
-  SUPPORTED_CHEF_DOCUMENT_TYPES,
-} from '@/lib/documents/file-service'
-import { BusinessDocumentVault } from '@/components/documents/business-document-vault'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -64,20 +59,6 @@ type SnapshotQueryState = {
   order: SnapshotDrilldownOrder
   q: string
   page: number
-}
-
-type VaultDocumentType = (typeof SUPPORTED_CHEF_DOCUMENT_TYPES)[number]
-
-type VaultQueryState = {
-  q: string
-  type: VaultDocumentType | 'all'
-}
-
-type DocumentsPageState = {
-  phaseFilter: EventWorkspacePhaseKey | 'all'
-  phaseQuery: string
-  snapshot: SnapshotQueryState
-  vault: VaultQueryState
 }
 
 const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [
@@ -124,39 +105,10 @@ const TEMPLATE_GROUPS: TemplateGroup[] = [
   },
 ]
 
-function buildDocumentsPageHref(
-  current: DocumentsPageState,
-  overrides?: {
-    phaseFilter?: EventWorkspacePhaseKey | 'all'
-    phaseQuery?: string
-    snapshot?: Partial<SnapshotQueryState>
-    vault?: Partial<VaultQueryState>
-  }
-): string {
-  const mergedSnapshot: SnapshotQueryState = {
-    ...current.snapshot,
-    ...overrides?.snapshot,
-  }
-  const mergedVault: VaultQueryState = {
-    ...current.vault,
-    ...overrides?.vault,
-  }
-  const phaseFilter = overrides?.phaseFilter ?? current.phaseFilter
-  const phaseQuery = overrides?.phaseQuery ?? current.phaseQuery
+function buildDocumentsFilterHref(phase: EventWorkspacePhaseKey | 'all', query: string): string {
   const params = new URLSearchParams()
-  if (phaseFilter !== 'all') params.set('phase', phaseFilter)
-  if (phaseQuery) params.set('q', phaseQuery)
-
-  if (mergedSnapshot.doc !== 'any') params.set('s_doc', mergedSnapshot.doc)
-  if (mergedSnapshot.from) params.set('s_from', mergedSnapshot.from)
-  if (mergedSnapshot.to) params.set('s_to', mergedSnapshot.to)
-  if (mergedSnapshot.order !== 'newest') params.set('s_order', mergedSnapshot.order)
-  if (mergedSnapshot.q) params.set('s_q', mergedSnapshot.q)
-  if (mergedSnapshot.page > 1) params.set('s_page', String(mergedSnapshot.page))
-
-  if (mergedVault.type !== 'all') params.set('v_type', mergedVault.type)
-  if (mergedVault.q) params.set('v_q', mergedVault.q)
-
+  if (phase !== 'all') params.set('phase', phase)
+  if (query) params.set('q', query)
   const queryString = params.toString()
   return queryString ? `/documents?${queryString}` : '/documents'
 }
@@ -182,12 +134,29 @@ function normalizeSnapshotPage(value: string | undefined): number {
 }
 
 function buildSnapshotFilterHref(
-  current: DocumentsPageState,
+  phase: EventWorkspacePhaseKey | 'all',
+  phaseQuery: string,
+  current: SnapshotQueryState,
   overrides: Partial<SnapshotQueryState>
 ): string {
-  return buildDocumentsPageHref(current, {
-    snapshot: overrides,
-  })
+  const merged: SnapshotQueryState = {
+    ...current,
+    ...overrides,
+  }
+  if (merged.doc === 'any') merged.page = Math.max(1, merged.page)
+  const params = new URLSearchParams()
+  if (phase !== 'all') params.set('phase', phase)
+  if (phaseQuery) params.set('q', phaseQuery)
+
+  if (merged.doc !== 'any') params.set('s_doc', merged.doc)
+  if (merged.from) params.set('s_from', merged.from)
+  if (merged.to) params.set('s_to', merged.to)
+  if (merged.order !== 'newest') params.set('s_order', merged.order)
+  if (merged.q) params.set('s_q', merged.q)
+  if (merged.page > 1) params.set('s_page', String(merged.page))
+
+  const queryString = params.toString()
+  return queryString ? `/documents?${queryString}` : '/documents'
 }
 
 function buildSnapshotExportHref(current: SnapshotQueryState): string {
@@ -231,17 +200,6 @@ function normalizeStatusLabel(status: string): string {
   return status.replace(/_/g, ' ')
 }
 
-function formatTokenLabel(value: string): string {
-  return value
-    .split('_')
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(' ')
-}
-
-function isSupportedVaultDocumentType(value: string): value is VaultDocumentType {
-  return SUPPORTED_CHEF_DOCUMENT_TYPES.includes(value as VaultDocumentType)
-}
-
 export default async function DocumentsIndexPage({
   searchParams,
 }: {
@@ -254,8 +212,6 @@ export default async function DocumentsIndexPage({
     s_order?: string
     s_q?: string
     s_page?: string
-    v_q?: string
-    v_type?: string
   }
 }) {
   const rawDocFilter = (searchParams?.s_doc ?? 'any').trim().toLowerCase()
@@ -274,25 +230,7 @@ export default async function DocumentsIndexPage({
     ;[snapshotFromDate, snapshotToDate] = [snapshotToDate, snapshotFromDate]
   }
 
-  const rawQuery = (searchParams?.q ?? '').trim()
-  const query = rawQuery.toLowerCase()
-  const requestedPhase = searchParams?.phase ?? 'all'
-  const phaseFilter: EventWorkspacePhaseKey | 'all' =
-    requestedPhase === 'all' || !requestedPhase
-      ? 'all'
-      : isEventWorkspacePhaseKey(requestedPhase)
-        ? requestedPhase
-        : 'all'
-  const rawVaultQuery = (searchParams?.v_q ?? '').trim()
-  const requestedVaultType = (searchParams?.v_type ?? 'all').trim().toLowerCase()
-  const vaultDocumentType: VaultDocumentType | 'all' =
-    requestedVaultType === 'all'
-      ? 'all'
-      : isSupportedVaultDocumentType(requestedVaultType)
-        ? requestedVaultType
-        : 'all'
-
-  const [events, recentSnapshots, archetype, archiveDrilldown, vaultOverview] = await Promise.all([
+  const [events, recentSnapshots, archetype, archiveDrilldown] = await Promise.all([
     ((await getEvents().catch(() => [])) || []) as EventListItem[],
     getRecentDocumentSnapshots(400),
     getChefArchetype(),
@@ -305,13 +243,17 @@ export default async function DocumentsIndexPage({
       page: snapshotPage,
       pageSize: 30,
     }),
-    getBusinessDocumentVaultOverview({
-      limit: 10,
-      query: rawVaultQuery || undefined,
-      documentType: vaultDocumentType !== 'all' ? vaultDocumentType : null,
-    }),
   ])
   const pack = getArchetypeDocumentPack(archetype)
+  const rawQuery = (searchParams?.q ?? '').trim()
+  const query = rawQuery.toLowerCase()
+  const requestedPhase = searchParams?.phase ?? 'all'
+  const phaseFilter: EventWorkspacePhaseKey | 'all' =
+    requestedPhase === 'all' || !requestedPhase
+      ? 'all'
+      : isEventWorkspacePhaseKey(requestedPhase)
+        ? requestedPhase
+        : 'all'
 
   const snapshotQueryState: SnapshotQueryState = {
     doc: snapshotDocFilter,
@@ -321,50 +263,6 @@ export default async function DocumentsIndexPage({
     q: snapshotSearch,
     page: archiveDrilldown.page,
   }
-  const vaultQueryState: VaultQueryState = {
-    q: rawVaultQuery,
-    type: vaultDocumentType,
-  }
-  const documentsPageState: DocumentsPageState = {
-    phaseFilter,
-    phaseQuery: rawQuery,
-    snapshot: snapshotQueryState,
-    vault: vaultQueryState,
-  }
-  const preservedVaultParams = [
-    phaseFilter !== 'all' ? { name: 'phase', value: phaseFilter } : null,
-    rawQuery ? { name: 'q', value: rawQuery } : null,
-    snapshotDocFilter !== 'any' ? { name: 's_doc', value: snapshotDocFilter } : null,
-    snapshotFromDate ? { name: 's_from', value: snapshotFromDate } : null,
-    snapshotToDate ? { name: 's_to', value: snapshotToDate } : null,
-    snapshotOrder !== 'newest' ? { name: 's_order', value: snapshotOrder } : null,
-    snapshotSearch ? { name: 's_q', value: snapshotSearch } : null,
-    archiveDrilldown.page > 1 ? { name: 's_page', value: String(archiveDrilldown.page) } : null,
-  ].filter((value): value is { name: string; value: string } => Boolean(value))
-  const vaultCountByType = new Map(
-    vaultOverview.typeCounts.map((entry) => [entry.documentType, entry.count])
-  )
-  const vaultFilterLinks = [
-    {
-      label: `All (${vaultOverview.totalUploaded})`,
-      href: buildDocumentsPageHref(documentsPageState, {
-        vault: { type: 'all' },
-      }),
-      active: vaultQueryState.type === 'all',
-    },
-    ...SUPPORTED_CHEF_DOCUMENT_TYPES.filter(
-      (type) => (vaultCountByType.get(type) ?? 0) > 0 || vaultQueryState.type === type
-    ).map((type) => ({
-      label: `${formatTokenLabel(type)} (${vaultCountByType.get(type) ?? 0})`,
-      href: buildDocumentsPageHref(documentsPageState, {
-        vault: { type },
-      }),
-      active: vaultQueryState.type === type,
-    })),
-  ]
-  const vaultResetHref = buildDocumentsPageHref(documentsPageState, {
-    vault: { q: '', type: 'all' },
-  })
 
   const templateBySlug = new Map<DocumentTemplateSlug, DocumentTemplateEntry>(
     DOCUMENT_TEMPLATE_CATALOG.map((template) => [template.slug, template])
@@ -442,13 +340,6 @@ export default async function DocumentsIndexPage({
         </p>
       </div>
 
-      <BusinessDocumentVault
-        overview={vaultOverview}
-        preservedParams={preservedVaultParams}
-        filterLinks={vaultFilterLinks}
-        resetHref={vaultResetHref}
-      />
-
       <Card className="p-6">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
@@ -487,29 +378,12 @@ export default async function DocumentsIndexPage({
               placeholder="Search event, client, or status..."
               className="h-10 rounded-lg border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200 placeholder:text-stone-500 w-64 max-w-[60vw]"
             />
-            {snapshotDocFilter !== 'any' && <input type="hidden" name="s_doc" value={snapshotDocFilter} />}
-            {snapshotFromDate && <input type="hidden" name="s_from" value={snapshotFromDate} />}
-            {snapshotToDate && <input type="hidden" name="s_to" value={snapshotToDate} />}
-            {snapshotOrder !== 'newest' && <input type="hidden" name="s_order" value={snapshotOrder} />}
-            {snapshotSearch && <input type="hidden" name="s_q" value={snapshotSearch} />}
-            {archiveDrilldown.page > 1 && (
-              <input type="hidden" name="s_page" value={archiveDrilldown.page} />
-            )}
-            {vaultQueryState.type !== 'all' && (
-              <input type="hidden" name="v_type" value={vaultQueryState.type} />
-            )}
-            {vaultQueryState.q && <input type="hidden" name="v_q" value={vaultQueryState.q} />}
             {phaseFilter !== 'all' && <input type="hidden" name="phase" value={phaseFilter} />}
             <Button type="submit" variant="secondary" size="sm">
               Search
             </Button>
             {(rawQuery || phaseFilter !== 'all') && (
-              <Link
-                href={buildDocumentsPageHref(documentsPageState, {
-                  phaseFilter: 'all',
-                  phaseQuery: '',
-                })}
-              >
+              <Link href="/documents">
                 <Button variant="ghost" size="sm">
                   Reset
                 </Button>
@@ -519,11 +393,7 @@ export default async function DocumentsIndexPage({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href={buildDocumentsPageHref(documentsPageState, {
-              phaseFilter: 'all',
-            })}
-          >
+          <Link href={buildDocumentsFilterHref('all', rawQuery)}>
             <Button variant={phaseFilter === 'all' ? 'primary' : 'secondary'} size="sm">
               All ({workspaceRows.length})
             </Button>
@@ -531,12 +401,7 @@ export default async function DocumentsIndexPage({
           {EVENT_WORKSPACE_PHASES.map((phase) => {
             const count = rowsByPhase.get(phase.id)?.length ?? 0
             return (
-              <Link
-                key={phase.id}
-                href={buildDocumentsPageHref(documentsPageState, {
-                  phaseFilter: phase.id,
-                })}
-              >
+              <Link key={phase.id} href={buildDocumentsFilterHref(phase.id, rawQuery)}>
                 <Button variant={phaseFilter === phase.id ? 'primary' : 'secondary'} size="sm">
                   {phase.label} ({count})
                 </Button>
@@ -593,24 +458,24 @@ export default async function DocumentsIndexPage({
                           Open Hub
                         </Button>
                       </Link>
-                      <Button
-                        variant="secondary"
-                        size="sm"
+                      <a
                         href={`/api/documents/${event.id}?type=pack&types=${packTypesParam}&archive=1`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Print Pack
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                        <Button variant="secondary" size="sm">
+                          Print Pack
+                        </Button>
+                      </a>
+                      <a
                         href={`/api/documents/${event.id}?type=all&archive=1`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Print All
-                      </Button>
+                        <Button variant="ghost" size="sm">
+                          Print All
+                        </Button>
+                      </a>
                       <Link href={`/events/${event.id}/financial`}>
                         <Button variant="ghost" size="sm">
                           Financial
@@ -648,15 +513,15 @@ export default async function DocumentsIndexPage({
                         <p className="font-medium text-stone-100">{template.label}</p>
                         <p className="text-xs text-stone-500">{template.description}</p>
                       </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
+                      <a
                         href={`/api/documents/templates/${template.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Download Blank
-                      </Button>
+                        <Button variant="secondary" size="sm">
+                          Download Blank
+                        </Button>
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -676,7 +541,7 @@ export default async function DocumentsIndexPage({
           {SNAPSHOT_TYPE_FILTERS.map((filter) => (
             <Link
               key={filter.value}
-              href={buildSnapshotFilterHref(documentsPageState, {
+              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
                 doc: filter.value,
                 page: 1,
               })}
@@ -697,8 +562,6 @@ export default async function DocumentsIndexPage({
         >
           {phaseFilter !== 'all' && <input type="hidden" name="phase" value={phaseFilter} />}
           {rawQuery && <input type="hidden" name="q" value={rawQuery} />}
-          {vaultQueryState.type !== 'all' && <input type="hidden" name="v_type" value={vaultQueryState.type} />}
-          {vaultQueryState.q && <input type="hidden" name="v_q" value={vaultQueryState.q} />}
           {snapshotDocFilter !== 'any' && (
             <input type="hidden" name="s_doc" value={snapshotDocFilter} />
           )}
@@ -739,7 +602,7 @@ export default async function DocumentsIndexPage({
             </Button>
             {(snapshotSearch || snapshotFromDate || snapshotToDate) && (
               <Link
-                href={buildSnapshotFilterHref(documentsPageState, {
+                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
                   q: '',
                   from: '',
                   to: '',
@@ -755,7 +618,7 @@ export default async function DocumentsIndexPage({
           <div className="flex items-center gap-2">
             <p className="text-xs text-stone-500">Order</p>
             <Link
-              href={buildSnapshotFilterHref(documentsPageState, {
+              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
                 order: 'newest',
                 page: 1,
               })}
@@ -765,7 +628,7 @@ export default async function DocumentsIndexPage({
               </Button>
             </Link>
             <Link
-              href={buildSnapshotFilterHref(documentsPageState, {
+              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
                 order: 'oldest',
                 page: 1,
               })}
@@ -774,9 +637,11 @@ export default async function DocumentsIndexPage({
                 Oldest
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" href={buildSnapshotExportHref(snapshotQueryState)}>
-              Export CSV
-            </Button>
+            <a href={buildSnapshotExportHref(snapshotQueryState)}>
+              <Button variant="ghost" size="sm">
+                Export CSV
+              </Button>
+            </a>
           </div>
         </form>
 
@@ -825,15 +690,15 @@ export default async function DocumentsIndexPage({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <a
                     href={`/api/documents/snapshots/${snapshot.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Open
-                  </Button>
+                    <Button variant="ghost" size="sm">
+                      Open
+                    </Button>
+                  </a>
                   <Link href={`/events/${snapshot.eventId}/documents`}>
                     <Button variant="secondary" size="sm">
                       Event Hub
@@ -852,7 +717,7 @@ export default async function DocumentsIndexPage({
             </p>
             <div className="flex items-center gap-2">
               <Link
-                href={buildSnapshotFilterHref(documentsPageState, {
+                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
                   page: Math.max(1, archiveDrilldown.page - 1),
                 })}
               >
@@ -861,7 +726,7 @@ export default async function DocumentsIndexPage({
                 </Button>
               </Link>
               <Link
-                href={buildSnapshotFilterHref(documentsPageState, {
+                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
                   page: Math.min(archiveDrilldown.totalPages, archiveDrilldown.page + 1),
                 })}
               >

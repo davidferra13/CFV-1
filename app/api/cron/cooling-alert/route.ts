@@ -1,22 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
-import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-const SYSTEM_KEY = 'relationship_cooling'
-
-function getUtcWeekStart(date: Date): string {
-  const day = date.getUTCDay()
-  const offset = day === 0 ? 6 : day - 1 // Monday start
-  const monday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  monday.setUTCDate(monday.getUTCDate() - offset)
-  return monday.toISOString().slice(0, 10)
-}
 
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -28,41 +17,31 @@ export async function GET(request: Request) {
       .split('T')[0]
     const today = new Date().toISOString().split('T')[0]
 
-    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
-    const cycleWeek = getUtcWeekStart(new Date())
-    const recipientCache = new Map<string, string | null>()
-    const coolingPairs = new Map<string, { tenant_id: string; client_id: string }>()
-
-    // Preferred path: RPC if available.
+    // Single query: find clients whose most recent completed event is older than 90 days
+    // and who have no upcoming non-cancelled events
     const { data: coolingClients, error } = await supabaseAdmin.rpc('get_cooling_clients', {
       cutoff_date: ninetyDaysAgo,
       today_date: today,
     })
 
-    if (!error && Array.isArray(coolingClients)) {
-      for (const row of coolingClients as Array<{ tenant_id?: string; client_id?: string }>) {
-        if (!row.tenant_id || !row.client_id) continue
-        coolingPairs.set(`${row.tenant_id}:${row.client_id}`, {
-          tenant_id: row.tenant_id,
-          client_id: row.client_id,
-        })
-      }
-    } else {
-      // Fallback: if RPC doesn't exist, use 2 queries instead of N+1.
+    // Fallback: if the RPC doesn't exist, use a simpler approach with 2 queries instead of N+1
+    if (error) {
       // Get all client-chef pairs with their latest completed event date
       const { data: latestEvents } = await supabaseAdmin
         .from('events')
-        .select('tenant_id, client_id')
+        .select('tenant_id, client_id, event_date')
         .eq('status', 'completed')
-        .not('client_id', 'is', null)
         .lt('event_date', ninetyDaysAgo)
         .order('event_date', { ascending: false })
+
+      if (!latestEvents || latestEvents.length === 0) {
+        return NextResponse.json({ message: 'No cooling relationships detected' })
+      }
 
       // Deduplicate to latest event per tenant+client
       const seen = new Set<string>()
       const candidates: { tenant_id: string; client_id: string }[] = []
-      for (const e of latestEvents ?? []) {
-        if (!e.tenant_id || !e.client_id) continue
+      for (const e of latestEvents) {
         const key = `${e.tenant_id}:${e.client_id}`
         if (!seen.has(key)) {
           seen.add(key)
@@ -81,92 +60,25 @@ export async function GET(request: Request) {
         (upcomingEvents || []).map((e) => `${e.tenant_id}:${e.client_id}`)
       )
 
-      const filteredPairs = candidates.filter(
+      const coolingPairs = candidates.filter(
         (c) => !upcomingSet.has(`${c.tenant_id}:${c.client_id}`)
       )
 
-      for (const pair of filteredPairs) {
-        coolingPairs.set(`${pair.tenant_id}:${pair.client_id}`, pair)
-      }
-    }
-
-    const candidates = Array.from(coolingPairs.values())
-    if (candidates.length === 0) {
-      const emptyResult = { detected: 0, notified: 0, skipped: 0 }
-      await recordCronHeartbeat('cooling-alert', emptyResult)
-      return NextResponse.json(emptyResult)
-    }
-
-    const clientIds = Array.from(new Set(candidates.map((row) => row.client_id)))
-    const { data: clients } = await supabaseAdmin
-      .from('clients')
-      .select('id, full_name')
-      .in('id', clientIds)
-
-    const clientNameById = new Map((clients ?? []).map((client) => [client.id, client.full_name]))
-
-    let notified = 0
-    let skipped = 0
-
-    for (const pair of candidates) {
-      const cached = recipientCache.get(pair.tenant_id)
-      const recipientId =
-        cached !== undefined
-          ? cached
-          : await getChefAuthUserId(pair.tenant_id).then((id) => {
-              recipientCache.set(pair.tenant_id, id)
-              return id
-            })
-      if (!recipientId) {
-        skipped += 1
-        continue
+      for (const pair of coolingPairs) {
+        console.log(`[cooling-alert] Client ${pair.client_id} cooling for chef ${pair.tenant_id}`)
       }
 
-      const { data: existing } = await supabaseAdmin
-        .from('notifications')
-        .select('id')
-        .eq('tenant_id', pair.tenant_id)
-        .eq('action', 'relationship_cooling')
-        .contains('metadata', {
-          system_key: SYSTEM_KEY,
-          client_id: pair.client_id,
-          cycle_week: cycleWeek,
-        })
-        .limit(1)
-
-      if ((existing?.length ?? 0) > 0) {
-        skipped += 1
-        continue
-      }
-
-      const clientName = clientNameById.get(pair.client_id) ?? 'A client'
-      await createNotification({
-        tenantId: pair.tenant_id,
-        recipientId,
-        category: 'client',
-        action: 'relationship_cooling',
-        title: `${clientName} may be cooling off`,
-        body: 'No completed event in the last 90 days and no upcoming booking.',
-        actionUrl: `/clients/${pair.client_id}`,
-        clientId: pair.client_id,
-        metadata: {
-          system_key: SYSTEM_KEY,
-          client_id: pair.client_id,
-          cycle_week: cycleWeek,
-          cutoff_date: ninetyDaysAgo,
-        },
+      return NextResponse.json({
+        message: `Detected ${coolingPairs.length} cooling relationships`,
       })
-      console.log(`[cooling-alert] Client ${pair.client_id} cooling for chef ${pair.tenant_id}`)
-      notified += 1
     }
 
-    const result = {
-      detected: candidates.length,
-      notified,
-      skipped,
+    const totalAlerts = coolingClients?.length ?? 0
+    for (const row of coolingClients ?? []) {
+      console.log(`[cooling-alert] Client ${row.client_id} cooling for chef ${row.tenant_id}`)
     }
-    await recordCronHeartbeat('cooling-alert', result)
-    return NextResponse.json(result)
+
+    return NextResponse.json({ message: `Detected ${totalAlerts} cooling relationships` })
   } catch (err) {
     console.error('[cooling-alert] Cron failed:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

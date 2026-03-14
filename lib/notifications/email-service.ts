@@ -127,7 +127,7 @@ export async function sendNotificationEmail(
 ): Promise<NotificationEmailResult> {
   const copy = getTemplateCopy(input)
 
-  const result = await sendEmail({
+  const sent = await sendEmail({
     to: input.to,
     subject: copy.subject,
     react: buildTemplateElement({
@@ -138,11 +138,11 @@ export async function sendNotificationEmail(
     }),
   })
 
-  if (!result.success) {
+  if (!sent) {
     return {
       success: false,
       subject: copy.subject,
-      error: result.error || 'Email send failed',
+      error: 'Email send failed',
     }
   }
 

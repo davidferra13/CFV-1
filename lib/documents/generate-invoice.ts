@@ -6,7 +6,6 @@
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
 import { format } from 'date-fns'
 import type { InvoiceData } from '@/lib/events/invoice-actions'
-import type { ChefBrand } from '@/lib/chef/brand'
 import { formatTaxRate } from '@/lib/tax/api-ninjas'
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
@@ -33,12 +32,7 @@ function labelForEntryType(entryType: string, isRefund: boolean): string {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderInvoice(
-  pdf: PDFLayout,
-  data: InvoiceData,
-  brand?: ChefBrand | null,
-  logoBase64?: string | null
-) {
+export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   const {
     chef,
     client,
@@ -61,13 +55,8 @@ export function renderInvoice(
   } = data
 
   // ── HEADER ────────────────────────────────────────────────────────────────
-  if (brand) {
-    pdf.brandedHeader(brand, logoBase64 ?? null)
-    pdf.title('INVOICE', 11)
-  } else {
-    pdf.title(chef.businessName, 13)
-    pdf.title('INVOICE', 11)
-  }
+  pdf.title(chef.businessName, 13)
+  pdf.title('INVOICE', 11)
   pdf.space(1)
 
   const metaPairs: Array<[string, string]> = []
@@ -244,23 +233,12 @@ export function renderInvoice(
   // Footer
   const footerRef = invoiceNumber ?? chef.email
   pdf.footer(`${footerRef}  ·  ${chef.businessName}  ·  Thank you`)
-  if (brand?.showPoweredBy) {
-    pdf.poweredByFooter()
-  }
 }
 
 // ─── Generate ─────────────────────────────────────────────────────────────────
 
-/**
- * Generate invoice PDF with optional chef branding.
- * Pass brand + logoBase64 for branded output, or omit for legacy behavior.
- */
-export function generateInvoicePDF(
-  data: InvoiceData,
-  brand?: ChefBrand | null,
-  logoBase64?: string | null
-): Buffer {
+export function generateInvoicePDF(data: InvoiceData): Buffer {
   const pdf = new PDFLayout()
-  renderInvoice(pdf, data, brand, logoBase64)
+  renderInvoice(pdf, data)
   return pdf.toBuffer()
 }

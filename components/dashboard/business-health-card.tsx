@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShieldCheck } from '@/components/ui/icons'
+import { ShieldCheck } from 'lucide-react'
 
 export function BusinessHealthCard({ score, total }: { score: number; total: number }) {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0

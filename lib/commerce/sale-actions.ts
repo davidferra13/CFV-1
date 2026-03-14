@@ -11,7 +11,6 @@ import type { SaleChannel, TaxClass } from './constants'
 import { canVoid } from './sale-fsm'
 import { appendPosAuditLog } from './pos-audit-log'
 import { assertPosManagerAccess, assertPosRoleAccess } from './pos-authorization'
-import { normalizeManualReason } from './mutation-reason'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -227,10 +226,7 @@ export async function voidSale(saleId: string, reason: string) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
-  const normalizedReason = normalizeManualReason({
-    reason,
-    actionLabel: 'Void',
-  })
+  const normalizedReason = reason.trim() || 'Voided by chef'
 
   await assertPosManagerAccess({
     supabase,

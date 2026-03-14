@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Loader2, ImagePlus, X } from '@/components/ui/icons'
+import { Loader2, ImagePlus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { InquiryNoteCategory } from '@/lib/inquiries/note-actions'
 

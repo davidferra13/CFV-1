@@ -8,7 +8,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Check } from '@/components/ui/icons'
+import { Check } from 'lucide-react'
 import { REMY_ARCHETYPES, DEFAULT_ARCHETYPE, type RemyArchetypeId } from '@/lib/ai/remy-archetypes'
 import { saveRemyArchetype } from '@/lib/ai/privacy-actions'
 

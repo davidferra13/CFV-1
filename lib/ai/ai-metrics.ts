@@ -11,9 +11,6 @@ type AiMetricName =
   | 'ai.call.timeout'
   | 'ai.call.offline'
   | 'ai.fallback.to_formula'
-  | 'ai.classifier.regex_hit'
-  | 'ai.classifier.similarity_hit'
-  | 'ai.classifier.ollama_hit'
 
 type TierKey = 'fast' | 'standard' | 'complex'
 

@@ -1,15 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp, Loader2 } from '@/components/ui/icons'
+import { TrendingUp, Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { scoreInquiry, type LeadScore } from '@/lib/ai/lead-scoring'
 import { toast } from 'sonner'
 
 const TIER_COLORS: Record<string, string> = {
-  hot: 'text-red-200 bg-red-950 border border-red-200',
-  warm: 'text-amber-200 bg-amber-950 border border-amber-200',
-  cold: 'text-blue-200 bg-blue-950 border border-blue-200',
+  hot: 'text-red-700 bg-red-950 border border-red-200',
+  warm: 'text-amber-700 bg-amber-950 border border-amber-200',
+  cold: 'text-blue-700 bg-blue-950 border border-blue-200',
 }
 
 export function LeadScoreBadge({
@@ -72,19 +73,27 @@ export function LeadScoreBadge({
             </button>
           </div>
           <p className="text-stone-400">{score.recommendation}</p>
-          {score.factors.length > 0 && (
+          {score.strengths.length > 0 && (
             <div>
-              <div className="text-green-200 font-medium mb-0.5">Score Factors</div>
-              {score.factors.map((f, i) => (
+              <div className="text-green-700 font-medium mb-0.5">Strengths</div>
+              {score.strengths.map((s, i) => (
                 <div key={i} className="text-stone-400">
-                  + {f}
+                  + {s}
                 </div>
               ))}
             </div>
           )}
-          <div className="text-stone-500 text-[10px]">
-            Scored by GOLDMINE formula (deterministic)
-          </div>
+          {score.weaknesses.length > 0 && (
+            <div>
+              <div className="text-red-700 font-medium mb-0.5">Weaknesses</div>
+              {score.weaknesses.map((w, i) => (
+                <div key={i} className="text-stone-400">
+                  - {w}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="text-stone-400 text-[10px]">Confidence: {score.confidence}</div>
         </div>
       )}
     </div>

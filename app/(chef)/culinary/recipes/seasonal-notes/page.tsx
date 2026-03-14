@@ -32,8 +32,8 @@ export default async function SeasonalNotesPage() {
       </div>
 
       <Card className="p-4 bg-sky-950 border-sky-200">
-        <p className="text-sm font-medium text-sky-200">Seasonal notes in ChefFlow</p>
-        <p className="text-sm text-sky-200 mt-1">
+        <p className="text-sm font-medium text-sky-800">Seasonal notes in ChefFlow</p>
+        <p className="text-sm text-sky-700 mt-1">
           Seasonal guidance lives in each recipe&apos;s <strong>Notes</strong> and{' '}
           <strong>Adaptations</strong> fields. Edit any recipe to add seasonal variations,
           peak-season ingredient swaps, or weather-dependent techniques.
@@ -46,11 +46,11 @@ export default async function SeasonalNotesPage() {
           <p className="text-sm text-stone-500 mt-1">Total recipes</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{withNotes.length}</p>
+          <p className="text-2xl font-bold text-green-700">{withNotes.length}</p>
           <p className="text-sm text-stone-500 mt-1">With notes</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-200">{withAdaptations.length}</p>
+          <p className="text-2xl font-bold text-amber-700">{withAdaptations.length}</p>
           <p className="text-sm text-stone-500 mt-1">With adaptations</p>
         </Card>
       </div>
@@ -83,7 +83,7 @@ export default async function SeasonalNotesPage() {
                   {recipe.category}
                 </span>
                 {(recipe as any).adaptations && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-900 text-amber-200">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-900 text-amber-700">
                     Has adaptations
                   </span>
                 )}

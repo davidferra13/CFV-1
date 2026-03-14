@@ -30,15 +30,5 @@
     ".next/types/**/*.ts",
     ".next-dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "tests",
-    ".next/cache",
-    ".next/server",
-    ".next/static",
-    ".next/trace",
-    ".next-dev",
-    ".next-dev-*",
-    ".next-verify-*"
-  ]
+  "exclude": ["node_modules", "tests"]
 }

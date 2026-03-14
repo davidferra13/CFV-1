@@ -63,14 +63,14 @@ export function DisclosurePreflightPanel({
           {/* Hard blocks */}
           {hardBlocks.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-red-200">Posting is blocked:</p>
+              <p className="text-sm font-semibold text-red-700">Posting is blocked:</p>
               {hardBlocks.map((warning, i) => (
                 <div
                   key={i}
                   className="flex items-start gap-2 rounded-lg bg-red-950 border border-red-200 p-3"
                 >
                   <span className="text-red-600 mt-0.5 flex-shrink-0">&#10060;</span>
-                  <p className="text-sm text-red-200">{warning.message}</p>
+                  <p className="text-sm text-red-700">{warning.message}</p>
                 </div>
               ))}
             </div>
@@ -79,7 +79,7 @@ export function DisclosurePreflightPanel({
           {/* Requires confirmation */}
           {confirmationWarnings.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-amber-200">Confirm before posting:</p>
+              <p className="text-sm font-semibold text-amber-700">Confirm before posting:</p>
               {confirmationWarnings.map((warning, i) => {
                 const globalIndex = hardBlocks.length + i
                 const isChecked = acknowledged.has(globalIndex)
@@ -95,7 +95,7 @@ export function DisclosurePreflightPanel({
                       className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-600 flex-shrink-0"
                       disabled={isBlocked}
                     />
-                    <p className="text-sm text-amber-200">{warning.message}</p>
+                    <p className="text-sm text-amber-800">{warning.message}</p>
                   </label>
                 )
               })}

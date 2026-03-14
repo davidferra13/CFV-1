@@ -24,21 +24,6 @@ function formatZodIssues(error: z.ZodError): string {
   return error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')
 }
 
-/** Task type hint for per-task parameter tuning */
-export type OllamaTaskType = 'classification' | 'extraction' | 'draft' | 'reasoning' | 'general'
-
-/** Per-task parameter presets (Formula > AI: deterministic param selection) */
-const TASK_PRESETS: Record<
-  OllamaTaskType,
-  { temperature: number; top_p: number; num_predict: number; think: boolean }
-> = {
-  classification: { temperature: 0.0, top_p: 1.0, num_predict: 50, think: false },
-  extraction: { temperature: 0.0, top_p: 1.0, num_predict: 256, think: false },
-  draft: { temperature: 0.5, top_p: 0.9, num_predict: 512, think: false },
-  reasoning: { temperature: 0.2, top_p: 0.95, num_predict: 1024, think: true },
-  general: { temperature: 0.3, top_p: 0.9, num_predict: 512, think: false },
-}
-
 export interface ParseOllamaOptions {
   /** Task-complexity tier for model routing. Default: 'standard'. */
   modelTier?: ModelTier
@@ -52,16 +37,6 @@ export interface ParseOllamaOptions {
   endpointUrl?: string
   /** Override the model name (e.g. Pi model). If not set, uses tier-based resolution. */
   model?: string
-  /** Task type for automatic parameter tuning. Overrides temperature/top_p/think. */
-  taskType?: OllamaTaskType
-  /** Override temperature (0.0-1.0). If not set, uses taskType preset or default. */
-  temperature?: number
-  /** Override top_p (0.0-1.0). If not set, uses taskType preset or default. */
-  top_p?: number
-  /** Enable/disable thinking mode for Qwen3 models. If not set, uses taskType preset. */
-  think?: boolean
-  /** Provide a Zod schema object for Ollama's native structured output (format param). */
-  jsonSchema?: Record<string, unknown>
 }
 
 /** Default max tokens for structured JSON responses — keeps Ollama from running away */
@@ -138,16 +113,6 @@ export async function parseWithOllama<T>(
   const startTime = Date.now()
   const timeoutMs = options?.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS
 
-  // Resolve task-specific parameters (Formula > AI: deterministic param selection)
-  const preset = options?.taskType ? TASK_PRESETS[options.taskType] : TASK_PRESETS.general
-  const temperature = options?.temperature ?? preset.temperature
-  const top_p = options?.top_p ?? preset.top_p
-  const numPredict = options?.maxTokens ?? preset.num_predict
-  const thinkMode = options?.think ?? preset.think
-
-  // Build the format param: prefer native JSON schema if provided, else basic 'json'
-  const formatParam = options?.jsonSchema ? options.jsonSchema : 'json'
-
   // Retry Ollama call up to 2 times on transient errors, with hard timeout per attempt
   let rawText: string
   const { withRetry } = await import('@/lib/resilience/retry')
@@ -161,10 +126,10 @@ export async function parseWithOllama<T>(
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userContent },
             ],
-            format: formatParam,
-            options: { num_predict: numPredict, temperature, top_p },
+            format: 'json',
+            options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
             keep_alive: '30m',
-            think: thinkMode,
+            think: false,
           } as any) as unknown as Promise<ChatResponse>,
           timeoutMs,
           'chat'
@@ -275,8 +240,8 @@ export async function parseWithOllama<T>(
               ].join('\n'),
             },
           ],
-          format: formatParam,
-          options: { num_predict: numPredict, temperature: 0.0, top_p: 1.0 },
+          format: 'json',
+          options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
           keep_alive: '30m',
           think: false,
         } as any) as unknown as Promise<ChatResponse>,

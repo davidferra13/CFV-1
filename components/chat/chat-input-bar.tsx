@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Send, Paperclip, X } from '@/components/ui/icons'
+import { Send, Paperclip, X } from 'lucide-react'
 import { useDebouncedCallback } from '@/lib/hooks/use-debounce'
 
 interface ChatInputBarProps {
@@ -81,7 +81,6 @@ export function ChatInputBar({
           disabled={disabled || sending}
           className="flex-shrink-0 p-2 text-stone-400 hover:text-stone-400 disabled:opacity-50 transition-colors"
           title="Attach file"
-          aria-label="Attach file"
         >
           <Paperclip className="w-5 h-5" />
         </button>
@@ -107,7 +106,6 @@ export function ChatInputBar({
           disabled={!text.trim() || disabled || sending}
           className="flex-shrink-0 p-2.5 rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-30 disabled:hover:bg-brand-600 transition-colors"
           title="Send message"
-          aria-label="Send message"
         >
           <Send className="w-4 h-4" />
         </button>

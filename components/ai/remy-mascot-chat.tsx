@@ -8,7 +8,7 @@
 
 import { useState, useRef, useEffect, useCallback, useTransition } from 'react'
 import { usePathname } from 'next/navigation'
-import { X, Send, Loader2, RotateCcw } from '@/components/ui/icons'
+import { X, Send, Loader2, RotateCcw } from 'lucide-react'
 import { useRemyContext } from '@/components/ai/remy-context'
 import { useRemyMascotSend } from '@/lib/hooks/use-remy-mascot-send'
 import { RemyAvatar } from '@/components/ai/remy-avatar'

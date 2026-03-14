@@ -49,15 +49,15 @@ export function ClientRSVPSummary({ guests, summary, originalGuestCount }: Clien
       {/* Progress Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="text-center px-3 py-2 bg-emerald-950 rounded-lg">
-          <div className="text-xl font-bold text-emerald-200">{summary.attending_count}</div>
+          <div className="text-xl font-bold text-emerald-700">{summary.attending_count}</div>
           <div className="text-xs text-emerald-600">Attending</div>
         </div>
         <div className="text-center px-3 py-2 bg-amber-950 rounded-lg">
-          <div className="text-xl font-bold text-amber-200">{summary.maybe_count}</div>
+          <div className="text-xl font-bold text-amber-700">{summary.maybe_count}</div>
           <div className="text-xs text-amber-600">Maybe</div>
         </div>
         <div className="text-center px-3 py-2 bg-red-950 rounded-lg">
-          <div className="text-xl font-bold text-red-200">{summary.declined_count}</div>
+          <div className="text-xl font-bold text-red-700">{summary.declined_count}</div>
           <div className="text-xs text-red-600">Declined</div>
         </div>
         <div className="text-center px-3 py-2 bg-stone-800 rounded-lg">

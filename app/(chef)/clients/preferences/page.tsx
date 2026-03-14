@@ -63,15 +63,15 @@ export default async function ClientPreferencesPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-200">{withDietary}</p>
+          <p className="text-2xl font-bold text-amber-700">{withDietary}</p>
           <p className="text-sm text-stone-500 mt-1">With dietary restrictions</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-red-200">{withAllergies}</p>
+          <p className="text-2xl font-bold text-red-700">{withAllergies}</p>
           <p className="text-sm text-stone-500 mt-1">With known allergies</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-200">{withPreferences}</p>
+          <p className="text-2xl font-bold text-green-700">{withPreferences}</p>
           <p className="text-sm text-stone-500 mt-1">With taste preferences on file</p>
         </Card>
       </div>

@@ -18,7 +18,7 @@ const STATUS_CONFIG: Record<
   { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
 > = {
   draft: { label: 'Draft', variant: 'default' },
-  proposed: { label: 'Sent to Client', variant: 'info' },
+  proposed: { label: 'Proposed', variant: 'info' },
   accepted: { label: 'Accepted', variant: 'warning' },
   paid: { label: 'Paid', variant: 'success' },
   confirmed: { label: 'Confirmed', variant: 'success' },

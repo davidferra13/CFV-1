@@ -81,7 +81,7 @@ function WorkItemRow({ item }: { item: WorkItem }) {
 
   return (
     <Link
-      href={item.actionUrl}
+      href={`/events/${item.eventId}`}
       className={`block rounded-lg p-4 hover:shadow-sm transition-all ${URGENCY_STYLES[item.urgency]}`}
     >
       <div className="flex justify-between items-start gap-4">
@@ -108,8 +108,6 @@ function WorkItemRow({ item }: { item: WorkItem }) {
         <span className="text-xs text-stone-400">
           Stage {item.stageNumber}: {item.stageLabel}
         </span>
-        <span className="text-xs text-stone-300">|</span>
-        <span className="text-xs text-brand-400">{item.actionLabel}</span>
         <span className="text-xs text-stone-300">|</span>
         <span className="text-xs text-stone-400">{format(eventDate, 'MMM d, yyyy')}</span>
       </div>

@@ -1,11 +1,10 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { geocodeUsAddress } from '@/lib/public-data/census-geocoder'
 import { geocodeAddress as geocodeWithGeocodio } from '@/lib/geo/geocodio'
 import { geocodeAddress as geocodeWithNominatim } from '@/lib/geocoding/nominatim'
+import { revalidatePath } from 'next/cache'
 
 export async function geocodeEventAddress(eventId: string): Promise<{
   success: boolean
@@ -17,6 +16,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
   const user = await requireChef()
   const supabase: any = createServerClient()
 
+  // Fetch the event (tenant-scoped)
   const { data: event, error: fetchError } = await supabase
     .from('events')
     .select('id, location_address, location_city, location_state, location_zip, tenant_id')
@@ -32,6 +32,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
     return { success: false, error: 'No address to geocode' }
   }
 
+  // Build full address string for Geocodio (single string input)
   const fullAddress = [
     event.location_address,
     event.location_city,
@@ -41,39 +42,24 @@ export async function geocodeEventAddress(eventId: string): Promise<{
     .filter(Boolean)
     .join(', ')
 
+  // Try Geocodio first (more accurate for US addresses, 2500 req/day free)
+  // Falls back to Nominatim if Geocodio fails or API key is not set
   let lat: number | undefined
   let lng: number | undefined
   let displayName: string | undefined
 
   try {
-    const censusResult = await geocodeUsAddress({
-      address: event.location_address,
-      city: event.location_city,
-      state: event.location_state,
-      zip: event.location_zip,
-    })
-    if (censusResult) {
-      lat = censusResult.lat
-      lng = censusResult.lng
-      displayName = censusResult.matchedAddress
+    const geocodioResult = await geocodeWithGeocodio(fullAddress)
+    if (geocodioResult) {
+      lat = geocodioResult.location.lat
+      lng = geocodioResult.location.lng
+      displayName = geocodioResult.formatted_address
     }
   } catch {
-    // Fall through to the next geocoder.
+    // Geocodio failed (missing API key, network error, etc.) — fall through to Nominatim
   }
 
-  if (lat === undefined || lng === undefined) {
-    try {
-      const geocodioResult = await geocodeWithGeocodio(fullAddress)
-      if (geocodioResult) {
-        lat = geocodioResult.location.lat
-        lng = geocodioResult.location.lng
-        displayName = geocodioResult.formatted_address
-      }
-    } catch {
-      // Fall through to the next geocoder.
-    }
-  }
-
+  // Fallback: Nominatim (free, no API key, works worldwide)
   if (lat === undefined || lng === undefined) {
     const nominatimResult = await geocodeWithNominatim(
       event.location_address,
@@ -81,7 +67,6 @@ export async function geocodeEventAddress(eventId: string): Promise<{
       event.location_state,
       event.location_zip
     )
-
     if (nominatimResult) {
       lat = nominatimResult.lat
       lng = nominatimResult.lng
@@ -90,7 +75,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
   }
 
   if (lat === undefined || lng === undefined) {
-    return { success: false, error: 'Address not found. Try adding more detail.' }
+    return { success: false, error: 'Address not found — try adding more detail' }
   }
 
   const { error: updateError } = await supabase

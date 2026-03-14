@@ -14,7 +14,7 @@ import {
   IRS_USEFUL_LIFE_DEFAULTS,
   DEPRECIATION_METHOD_LABELS,
 } from '@/lib/equipment/depreciation-constants'
-import { CheckCircle, Settings, Wrench } from '@/components/ui/icons'
+import { CheckCircle, Settings, Wrench } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -94,12 +94,12 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-200">
+                <p className="text-sm font-medium text-emerald-800">
                   {taxYear} Depreciation Deduction
                 </p>
-                <p className="text-xs text-emerald-200 mt-0.5">Schedule C, Line 13 / Form 4562</p>
+                <p className="text-xs text-emerald-700 mt-0.5">Schedule C, Line 13 / Form 4562</p>
               </div>
-              <p className="text-2xl font-bold text-emerald-200">{formatCents(totalDeduction)}</p>
+              <p className="text-2xl font-bold text-emerald-800">{formatCents(totalDeduction)}</p>
             </div>
           </CardContent>
         </Card>
@@ -107,7 +107,7 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
 
       <Card className="border-amber-200 bg-amber-950">
         <CardContent className="py-3">
-          <p className="text-sm text-amber-200">
+          <p className="text-sm text-amber-800">
             <strong>Note:</strong> Section 179 and depreciation deductions require IRS Form 4562.
             Consult your accountant before claiming. Section 179 has annual limits and phase-out
             rules.

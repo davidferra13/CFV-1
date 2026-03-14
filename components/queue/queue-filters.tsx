@@ -22,9 +22,9 @@ const URGENCY_LABELS: Record<QueueUrgency, string> = {
 }
 
 const URGENCY_COLORS: Record<QueueUrgency, string> = {
-  critical: 'bg-red-900 text-red-200 border-red-200',
-  high: 'bg-amber-900 text-amber-200 border-amber-200',
-  normal: 'bg-emerald-900 text-emerald-200 border-emerald-200',
+  critical: 'bg-red-900 text-red-700 border-red-200',
+  high: 'bg-amber-900 text-amber-700 border-amber-200',
+  normal: 'bg-emerald-900 text-emerald-700 border-emerald-200',
   low: 'bg-stone-800 text-stone-400 border-stone-700',
 }
 

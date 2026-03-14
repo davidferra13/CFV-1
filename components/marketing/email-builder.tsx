@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Plus, Edit2, Trash2, Eye, X, Mail } from '@/components/ui/icons'
+import { Plus, Edit2, Trash2, Eye, X, Mail } from 'lucide-react'
 import { saveEmailTemplate, deleteEmailTemplate } from '@/lib/marketing/email-template-actions'
 import { toast } from 'sonner'
 

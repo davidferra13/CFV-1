@@ -28,7 +28,6 @@ export type CommunicationEventInput = {
   source: CommunicationSource
   externalId?: string | null
   externalThreadKey?: string | null
-  resolvedClientId?: string | null
   timestamp?: string
   senderIdentity: string
   rawContent: string

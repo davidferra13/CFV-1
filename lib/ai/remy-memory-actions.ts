@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { createHash } from 'crypto'
 import { validateMemoryContent } from '@/lib/ai/remy-guardrails'
@@ -68,54 +68,6 @@ For importance scoring:
 Return JSON: { "memories": [...] }
 If there are NO new memories to extract, return: { "memories": [] }`
 
-const MEMORY_EXTRACTION_RETRY_DELAYS_MS = [0, 1200]
-const MEMORY_RETRIEVAL_LIMIT = 80
-const MEMORY_CONTEXT_LIMIT = 30
-const MEMORY_MIN_RETRIEVAL_SCORE = 36
-const MEMORY_STOPWORDS = new Set([
-  'a',
-  'an',
-  'and',
-  'are',
-  'as',
-  'at',
-  'be',
-  'by',
-  'for',
-  'from',
-  'have',
-  'how',
-  'i',
-  'if',
-  'in',
-  'is',
-  'it',
-  'me',
-  'my',
-  'of',
-  'on',
-  'or',
-  'our',
-  'please',
-  'the',
-  'their',
-  'them',
-  'there',
-  'they',
-  'this',
-  'to',
-  'we',
-  'what',
-  'when',
-  'where',
-  'who',
-  'why',
-  'with',
-  'would',
-  'you',
-  'your',
-])
-
 // ─── Extract & Save Memories (background, non-blocking) ────────────────────
 
 export async function extractAndSaveMemories(
@@ -132,12 +84,11 @@ export async function extractAndSaveMemories(
   // perfect — the safest approach is to never show them Remy's text at all.
 
   try {
-    const result = await parseWithMemoryRetries(
-      'extraction',
+    const result = await parseWithOllama(
       EXTRACTION_PROMPT,
       `CHEF: ${userMessage}`,
       ExtractedMemorySchema,
-      { modelTier: 'fast', cache: false, taskType: 'extraction' }
+      { modelTier: 'fast', cache: false }
     )
 
     if (!result.memories || result.memories.length === 0) return
@@ -152,28 +103,61 @@ export async function extractAndSaveMemories(
         continue
       }
 
-      // Resolve client ID if a client name was mentioned
-      const relatedClientId = mem.relatedClientName
-        ? await resolveClientIdByName(supabase, tenantId, mem.relatedClientName)
-        : null
+      const contentHash = hashContent(mem.content)
 
-      // GUARD: If this is a client_insight but the client doesn't exist in DB,
-      // skip saving — it's likely a hallucinated or misheard name.
-      if (mem.category === 'client_insight' && mem.relatedClientName && !relatedClientId) {
-        console.warn(
-          `[remy-memory] Skipping client_insight for unknown client "${mem.relatedClientName}"`
-        )
+      // Check for existing duplicate
+      const { data: existing } = await supabase
+        .from('remy_memories')
+        .select('id, access_count, importance')
+        .eq('tenant_id', tenantId)
+        .eq('content_hash', contentHash)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (existing) {
+        // Reinforce existing memory: bump access_count, update importance if higher
+        await supabase
+          .from('remy_memories')
+          .update({
+            access_count: (existing.access_count as number) + 1,
+            importance: Math.max(existing.importance as number, mem.importance),
+            last_accessed_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id)
         continue
       }
 
-      await saveOrReinforceMemory(supabase, {
-        tenantId,
+      // Resolve client ID if a client name was mentioned
+      let relatedClientId: string | null = null
+      if (mem.relatedClientName) {
+        const { data: clients } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .ilike('full_name', `%${mem.relatedClientName}%`)
+          .limit(1)
+        relatedClientId = (clients?.[0]?.id as string) ?? null
+
+        // GUARD: If this is a client_insight but the client doesn't exist in DB,
+        // skip saving — it's likely a hallucinated or misheard name.
+        if (mem.category === 'client_insight' && !relatedClientId) {
+          console.warn(
+            `[remy-memory] Skipping client_insight for unknown client "${mem.relatedClientName}"`
+          )
+          continue
+        }
+      }
+
+      // Insert new memory
+      await supabase.from('remy_memories').insert({
+        tenant_id: tenantId,
         category: mem.category,
         content: mem.content,
         importance: mem.importance,
-        relatedClientId,
-        sourceArtifactId: sourceArtifactId ?? null,
-        sourceMessage: userMessage,
+        content_hash: contentHash,
+        related_client_id: relatedClientId,
+        source_artifact_id: sourceArtifactId ?? null,
+        source_message: userMessage,
       })
     }
   } catch (err) {
@@ -183,135 +167,6 @@ export async function extractAndSaveMemories(
       return
     }
     console.error('[remy-memory] Memory extraction failed:', err)
-  }
-}
-
-// ─── Correction-Aware Memory (Formula > AI) ──────────────────────────────
-// Detects when a chef corrects Remy ("no, Sarah is allergic to shellfish, not tree nuts")
-// and automatically deactivates the old wrong memory + saves the corrected version.
-
-const CORRECTION_PATTERNS: RegExp[] = [
-  /^no[,.]?\s+(actually|it'?s|she|he|they|that'?s|the|sarah|mike|lisa|dave|james)/i,
-  /^(actually|correction|wait)[,.]?\s/i,
-  /^that'?s (wrong|incorrect|not right|not true)/i,
-  /^(i said|i meant|i mean|what i meant)\b/i,
-  /not\s+(\w+)[,.]?\s*(it'?s|she'?s|he'?s|they'?re|it is|she is|he is)\s+/i,
-  /^(wrong|nope|incorrect)[,.]?\s/i,
-]
-
-function detectsCorrection(message: string): boolean {
-  const trimmed = message.trim()
-  return CORRECTION_PATTERNS.some((p) => p.test(trimmed))
-}
-
-export async function handleCorrectionMemory(
-  userMessage: string
-): Promise<{ corrected: boolean; deactivated?: string; created?: string }> {
-  if (!detectsCorrection(userMessage)) {
-    return { corrected: false }
-  }
-
-  const user = await requireChef()
-  const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
-
-  try {
-    // Use Ollama to understand what's being corrected and what the new fact is
-    const CorrectionSchema = z.object({
-      oldFact: z.string().describe('The incorrect fact being corrected (what was wrong)'),
-      newFact: z.string().describe('The corrected fact (what is actually true)'),
-      category: z.enum([
-        'chef_preference',
-        'client_insight',
-        'business_rule',
-        'communication_style',
-        'culinary_note',
-        'scheduling_pattern',
-        'pricing_pattern',
-        'workflow_preference',
-      ]),
-      importance: z.number().min(1).max(10),
-      relatedClientName: z.string().optional(),
-    })
-
-    const result = await parseWithMemoryRetries(
-      'correction',
-      `You are a correction parser. The chef is correcting something they or their AI assistant previously said.
-Extract what was WRONG (the old fact) and what is CORRECT (the new fact).
-Return JSON: { "oldFact": "...", "newFact": "...", "category": "...", "importance": 1-10, "relatedClientName": "..." }
-If you can't determine a clear correction, return: { "oldFact": "", "newFact": "", "category": "chef_preference", "importance": 1 }`,
-      `Chef says: "${userMessage}"`,
-      CorrectionSchema,
-      { modelTier: 'fast', cache: false, taskType: 'extraction' }
-    )
-
-    // If parsing couldn't extract a meaningful correction, bail
-    if (!result.oldFact || !result.newFact) {
-      return { corrected: false }
-    }
-
-    // Search for existing memories that match the OLD (wrong) fact
-    const relatedClientId = result.relatedClientName
-      ? await resolveClientIdByName(supabase, tenantId, result.relatedClientName)
-      : null
-
-    const { data: candidates } = await supabase
-      .from('remy_memories')
-      .select('id, content, category, related_client_id, importance, last_accessed_at')
-      .eq('tenant_id', tenantId)
-      .eq('is_active', true)
-      .limit(80)
-
-    let bestMatch: { id: string; content: string; score: number } | null = null
-
-    for (const row of candidates ?? []) {
-      const score = scoreCorrectionCandidate(
-        row as Record<string, unknown>,
-        result.oldFact,
-        result.newFact,
-        result.category,
-        relatedClientId
-      )
-      if (score >= 32 && (!bestMatch || score > bestMatch.score)) {
-        bestMatch = { id: row.id as string, content: row.content as string, score }
-      }
-    }
-
-    // Deactivate the old wrong memory if found
-    let deactivatedId: string | undefined
-    if (bestMatch) {
-      await supabase
-        .from('remy_memories')
-        .update({ is_active: false })
-        .eq('id', bestMatch.id)
-        .eq('tenant_id', tenantId)
-      deactivatedId = bestMatch.id
-      console.log(`[remy-memory] Deactivated corrected memory: "${bestMatch.content}"`)
-    }
-
-    const newMem = await saveOrReinforceMemory(supabase, {
-      tenantId,
-      category: result.category,
-      content: result.newFact,
-      importance: result.importance,
-      relatedClientId,
-      sourceMessage: userMessage,
-    })
-
-    console.log(`[remy-memory] Saved corrected memory: "${result.newFact}"`)
-
-    return {
-      corrected: true,
-      deactivated: deactivatedId,
-      created: newMem.id,
-    }
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) {
-      console.warn('[remy-memory] Ollama offline — skipping correction detection')
-      return { corrected: false }
-    }
-    console.error('[remy-memory] Correction detection failed:', err)
-    return { corrected: false }
   }
 }
 
@@ -326,54 +181,102 @@ export async function loadRelevantMemories(
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
 
-  const relatedClientId = mentionedClientName
-    ? await resolveClientIdByName(supabase, tenantId, mentionedClientName)
-    : null
-  const preferredCategories = getPreferredMemoryCategories(intentCategory, currentMessage)
-  const messageKeywords = extractMemoryKeywords(currentMessage)
+  const memories: RemyMemory[] = []
+  const seenIds = new Set<string>()
 
-  const { data, error } = await supabase
+  // Layer 1: Client-specific memories (if a client is mentioned)
+  if (mentionedClientName) {
+    const { data: clients } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .ilike('full_name', `%${mentionedClientName}%`)
+      .limit(1)
+
+    if (clients?.[0]) {
+      const { data } = await supabase
+        .from('remy_memories')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('related_client_id', clients[0].id as string)
+        .eq('is_active', true)
+        .order('importance', { ascending: false })
+        .limit(10)
+
+      for (const row of data ?? []) {
+        if (!seenIds.has(row.id as string)) {
+          seenIds.add(row.id as string)
+          memories.push(mapRowToMemory(row))
+        }
+      }
+    }
+  }
+
+  // Layer 2: High-importance memories (always loaded)
+  const { data: highImportance } = await supabase
     .from('remy_memories')
     .select('*')
     .eq('tenant_id', tenantId)
     .eq('is_active', true)
+    .gte('importance', 8)
     .order('importance', { ascending: false })
-    .order('last_accessed_at', { ascending: false })
-    .limit(MEMORY_RETRIEVAL_LIMIT)
+    .limit(15)
 
-  if (error) {
-    console.error('[remy-memory] Failed to load memories:', error.message)
-    return []
+  for (const row of highImportance ?? []) {
+    if (!seenIds.has(row.id as string)) {
+      seenIds.add(row.id as string)
+      memories.push(mapRowToMemory(row))
+    }
   }
 
-  const scoredEntries: Array<{ row: Record<string, unknown>; score: number }> = (data ?? []).map(
-    (row: Record<string, unknown>) => ({
-      row,
-      score: scoreMemoryForRetrieval(
-        row,
-        currentMessage,
-        messageKeywords,
-        preferredCategories,
-        relatedClientId
-      ),
-    })
-  )
+  // Layer 3: Category-matched memories (based on intent)
+  const categoryMap: Record<string, MemoryCategory[]> = {
+    question: ['chef_preference', 'business_rule', 'culinary_note'],
+    command: ['workflow_preference', 'communication_style', 'scheduling_pattern'],
+  }
+  const categories = categoryMap[intentCategory ?? ''] ?? [
+    'chef_preference',
+    'client_insight',
+    'business_rule',
+  ]
 
-  const capped = scoredEntries
-    .filter((entry: { row: Record<string, unknown>; score: number }) => {
-      return entry.score >= MEMORY_MIN_RETRIEVAL_SCORE
-    })
-    .sort(
-      (
-        a: { row: Record<string, unknown>; score: number },
-        b: { row: Record<string, unknown>; score: number }
-      ) => b.score - a.score
-    )
-    .slice(0, MEMORY_CONTEXT_LIMIT)
-    .map((entry: { row: Record<string, unknown>; score: number }) => mapRowToMemory(entry.row))
+  const { data: categoryMatched } = await supabase
+    .from('remy_memories')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .in('category', categories)
+    .order('last_accessed_at', { ascending: false })
+    .limit(10)
+
+  for (const row of categoryMatched ?? []) {
+    if (!seenIds.has(row.id as string)) {
+      seenIds.add(row.id as string)
+      memories.push(mapRowToMemory(row))
+    }
+  }
+
+  // Layer 4: Recently accessed memories (recency bias)
+  const { data: recent } = await supabase
+    .from('remy_memories')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .order('last_accessed_at', { ascending: false })
+    .limit(5)
+
+  for (const row of recent ?? []) {
+    if (!seenIds.has(row.id as string)) {
+      seenIds.add(row.id as string)
+      memories.push(mapRowToMemory(row))
+    }
+  }
+
+  // Hard cap: 30 memories max in context
+  const capped = memories.slice(0, 30)
 
   // Bump last_accessed_at for all loaded memories (non-blocking)
-  const loadedIds = capped.map((m: RemyMemory) => m.id)
+  const loadedIds = capped.map((m) => m.id)
   if (loadedIds.length > 0) {
     supabase
       .from('remy_memories')
@@ -470,400 +373,44 @@ export async function addRemyMemoryManual(input: {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const supabase: any = createServerClient()
-  return saveOrReinforceMemory(supabase, {
-    tenantId,
-    category: input.category,
-    content: input.content,
-    importance: input.importance,
-    sourceMessage: 'Manually added by chef',
-  })
-}
 
-export async function detectDraftFeedback(
-  userMessage: string,
-  previousTasks: Array<{ taskType?: string | null }>
-): Promise<{ learned: boolean; content?: string }> {
-  const lower = userMessage.trim().toLowerCase()
-  if (!lower) return { learned: false }
+  const contentHash = hashContent(input.content)
 
-  const cameFromDraft =
-    previousTasks?.some((task) => {
-      const taskType = String(task?.taskType ?? '')
-      return taskType.startsWith('draft.') || taskType.startsWith('email.')
-    }) ?? false
-
-  if (!cameFromDraft) return { learned: false }
-
-  let content: string | null = null
-
-  if (/\b(shorter|more concise|less wordy|too long)\b/i.test(lower)) {
-    content =
-      'Keep client-facing drafts shorter and more concise when the chef gives style feedback.'
-  } else if (/\b(more formal|more professional)\b/i.test(lower)) {
-    content = 'Use a more formal, professional tone in client-facing drafts when requested.'
-  } else if (/\b(more casual|less formal|warmer|friendlier)\b/i.test(lower)) {
-    content = 'Use a warmer, more casual tone in client-facing drafts when requested.'
-  } else if (/\b(more direct|be direct|less fluffy)\b/i.test(lower)) {
-    content = 'Keep client-facing drafts direct and avoid unnecessary filler when requested.'
-  }
-
-  if (!content) return { learned: false }
-
-  try {
-    await addRemyMemoryManual({
-      content,
-      category: 'communication_style',
-      importance: 6,
-    })
-    return { learned: true, content }
-  } catch (err) {
-    console.warn('[remy-memory] Draft feedback learning failed:', err)
-    return { learned: false }
-  }
-}
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
-
-async function parseWithMemoryRetries<T>(
-  label: 'extraction' | 'correction',
-  systemPrompt: string,
-  userContent: string,
-  schema: z.ZodType<T>,
-  options?: Partial<import('@/lib/ai/dispatch').DispatchOptions<T>>
-): Promise<T> {
-  let lastError: unknown = null
-
-  for (const [attemptIndex, delayMs] of MEMORY_EXTRACTION_RETRY_DELAYS_MS.entries()) {
-    if (delayMs > 0) {
-      await wait(delayMs)
-    }
-
-    try {
-      return (await dispatchPrivate(systemPrompt, userContent, schema, options)).result
-    } catch (err) {
-      if (err instanceof OllamaOfflineError) throw err
-      lastError = err
-      console.warn(
-        `[remy-memory] ${label} attempt ${attemptIndex + 1}/${MEMORY_EXTRACTION_RETRY_DELAYS_MS.length} failed:`,
-        err instanceof Error ? err.message : err
-      )
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error(`Memory ${label} failed`)
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function resolveClientIdByName(
-  supabase: any,
-  tenantId: string,
-  clientName: string
-): Promise<string | null> {
-  const normalizedName = clientName.trim()
-  if (!normalizedName) return null
-
-  const { data: clients } = await supabase
-    .from('clients')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .ilike('full_name', `%${normalizedName}%`)
-    .limit(1)
-
-  return (clients?.[0]?.id as string) ?? null
-}
-
-async function saveOrReinforceMemory(
-  supabase: any,
-  payload: {
-    tenantId: string
-    category: MemoryCategory
-    content: string
-    importance?: number
-    relatedClientId?: string | null
-    sourceArtifactId?: string | null
-    sourceMessage?: string | null
-  }
-): Promise<{ id: string }> {
-  const contentHash = hashContent(payload.content)
-  const importance = getDeterministicImportance(
-    payload.content,
-    payload.category,
-    payload.importance
-  )
-
+  // Check for duplicates
   const { data: existing } = await supabase
     .from('remy_memories')
-    .select('id, access_count, importance')
-    .eq('tenant_id', payload.tenantId)
+    .select('id')
+    .eq('tenant_id', tenantId)
     .eq('content_hash', contentHash)
     .eq('is_active', true)
     .maybeSingle()
 
   if (existing) {
-    await supabase
-      .from('remy_memories')
-      .update({
-        access_count: (existing.access_count as number) + 1,
-        importance: Math.max(existing.importance as number, importance),
-        last_accessed_at: new Date().toISOString(),
-      })
-      .eq('id', existing.id)
     return { id: existing.id as string }
   }
 
   const { data, error } = await supabase
     .from('remy_memories')
     .insert({
-      tenant_id: payload.tenantId,
-      category: payload.category,
-      content: payload.content.trim(),
-      importance,
+      tenant_id: tenantId,
+      category: input.category,
+      content: input.content,
+      importance: input.importance ?? 5,
       content_hash: contentHash,
-      related_client_id: payload.relatedClientId ?? null,
-      source_artifact_id: payload.sourceArtifactId ?? null,
-      source_message: payload.sourceMessage ?? null,
+      source_message: 'Manually added by chef',
     })
     .select('id')
     .single()
 
-  if (error) {
-    const duplicateLike = error.code === '23505' || /duplicate key/i.test(error.message)
-    if (duplicateLike) {
-      const { data: duplicate } = await supabase
-        .from('remy_memories')
-        .select('id, access_count')
-        .eq('tenant_id', payload.tenantId)
-        .eq('content_hash', contentHash)
-        .eq('is_active', true)
-        .maybeSingle()
-
-      if (duplicate?.id) {
-        await supabase
-          .from('remy_memories')
-          .update({
-            access_count: Number(duplicate.access_count ?? 1) + 1,
-            last_accessed_at: new Date().toISOString(),
-          })
-          .eq('id', duplicate.id)
-        return { id: duplicate.id as string }
-      }
-    }
-    throw new Error(`Failed to save memory: ${error.message}`)
-  }
-
-  return { id: data.id as string }
+  if (error) throw new Error(`Failed to add memory: ${error.message}`)
+  return { id: data.id }
 }
 
-function getPreferredMemoryCategories(
-  intentCategory: string | undefined,
-  currentMessage: string
-): MemoryCategory[] {
-  const lower = currentMessage.toLowerCase()
-
-  if (intentCategory === 'command') {
-    return ['workflow_preference', 'communication_style', 'scheduling_pattern', 'business_rule']
-  }
-
-  if (intentCategory === 'question') {
-    return ['chef_preference', 'business_rule', 'culinary_note', 'client_insight']
-  }
-
-  if (/\b(draft|email|reply|follow up|message|text|tone)\b/i.test(lower)) {
-    return ['communication_style', 'client_insight', 'workflow_preference']
-  }
-
-  if (/\b(price|pricing|quote|rate|charge|budget|deposit)\b/i.test(lower)) {
-    return ['pricing_pattern', 'business_rule', 'chef_preference']
-  }
-
-  if (/\b(allerg|dietary|client|guest|family|anniversary|birthday)\b/i.test(lower)) {
-    return ['client_insight', 'chef_preference', 'business_rule']
-  }
-
-  return ['chef_preference', 'client_insight', 'business_rule']
-}
-
-function extractMemoryKeywords(message: string): string[] {
-  return [...new Set(normalizeMemoryContent(message).split(' '))]
-    .filter((word) => word.length >= 3 && !MEMORY_STOPWORDS.has(word))
-    .slice(0, 16)
-}
-
-function scoreMemoryForRetrieval(
-  row: Record<string, unknown>,
-  currentMessage: string,
-  messageKeywords: string[],
-  preferredCategories: MemoryCategory[],
-  relatedClientId: string | null
-): number {
-  const importance = Number(row.importance ?? 0)
-  const accessCount = Number(row.access_count ?? 0)
-  const category = row.category as MemoryCategory
-  const related = (row.related_client_id as string | null) ?? null
-  const normalizedContent = normalizeMemoryContent(String(row.content ?? ''))
-  const lowerMessage = currentMessage.toLowerCase()
-  const isPreferredCategory = preferredCategories.includes(category)
-  const hasClientMatch = Boolean(relatedClientId && related && relatedClientId === related)
-
-  let score = importance * 8
-  score += Math.min(accessCount, 6) * 2
-
-  if (isPreferredCategory) score += 14
-  if (importance >= 8) score += 10
-  if (hasClientMatch) score += 40
-
-  const overlapCount = messageKeywords.reduce(
-    (count, keyword) => count + (normalizedContent.includes(keyword) ? 1 : 0),
-    0
-  )
-  const hasOverlap = overlapCount > 0
-  score += overlapCount * 8
-
-  if (!hasOverlap && !isPreferredCategory && !hasClientMatch && importance < 8) {
-    return -1
-  }
-
-  if (
-    /\b(allerg|dietary|gluten|shellfish|nut|vegan|vegetarian|kosher|halal)\b/i.test(lowerMessage) &&
-    category === 'client_insight'
-  ) {
-    score += 18
-  }
-
-  const lastAccessedAt = String(row.last_accessed_at ?? '')
-  if (lastAccessedAt) {
-    const daysSinceAccess = Math.max(
-      0,
-      (Date.now() - new Date(lastAccessedAt).getTime()) / (1000 * 60 * 60 * 24)
-    )
-    if (daysSinceAccess <= 1) score += 10
-    else if (daysSinceAccess <= 7) score += 7
-    else if (daysSinceAccess <= 30) score += 4
-    else if (daysSinceAccess <= 90) score += 2
-    else if (!hasOverlap && !hasClientMatch && importance < 7) return -1
-    else if (daysSinceAccess > 180 && importance < 8) score -= 12
-  }
-
-  return score
-}
-
-function scoreCorrectionCandidate(
-  row: Record<string, unknown>,
-  oldFact: string,
-  newFact: string,
-  category: MemoryCategory,
-  relatedClientId: string | null
-): number {
-  const content = normalizeMemoryContent(String(row.content ?? ''))
-  if (!content) return 0
-
-  const normalizedOldFact = normalizeMemoryContent(oldFact)
-  const normalizedNewFact = normalizeMemoryContent(newFact)
-  const oldKeywords = extractMemoryKeywords(oldFact)
-  const newKeywords = extractMemoryKeywords(newFact)
-
-  let score = Number(row.importance ?? 0) * 4
-
-  if ((row.category as MemoryCategory) === category) score += 12
-  if (relatedClientId && row.related_client_id === relatedClientId) score += 24
-  if (normalizedOldFact && content.includes(normalizedOldFact)) score += 36
-  if (normalizedOldFact && normalizedOldFact.includes(content) && content.length >= 12) score += 18
-
-  const oldOverlap = oldKeywords.reduce(
-    (count, keyword) => count + (content.includes(keyword) ? 1 : 0),
-    0
-  )
-  const newOverlap = newKeywords.reduce(
-    (count, keyword) => count + (content.includes(keyword) ? 1 : 0),
-    0
-  )
-
-  score += oldOverlap * 10
-  score -= newOverlap * 5
-
-  if (normalizedNewFact && content.includes(normalizedNewFact)) {
-    score -= 20
-  }
-
-  const lastAccessedAt = String(row.last_accessed_at ?? '')
-  if (lastAccessedAt) {
-    const daysSinceAccess = Math.max(
-      0,
-      (Date.now() - new Date(lastAccessedAt).getTime()) / (1000 * 60 * 60 * 24)
-    )
-    if (daysSinceAccess <= 30) score += 4
-    else if (daysSinceAccess > 180) score -= 6
-  }
-
-  return score
-}
-
-function getDeterministicImportance(
-  content: string,
-  category: MemoryCategory,
-  suggestedImportance?: number
-): number {
-  const normalized = normalizeMemoryContent(content)
-  const wordCount = normalized.split(' ').filter(Boolean).length
-
-  if (
-    /\b(allerg|allergy|anaphyl|epipen|dietary|gluten|shellfish|peanut|tree nut|celiac|kosher|halal|vegan|vegetarian)\b/i.test(
-      normalized
-    )
-  ) {
-    return 10
-  }
-
-  if (
-    category === 'business_rule' &&
-    /\b(always|never|must|cannot|cant|do not|dont|only|rule)\b/i.test(normalized)
-  ) {
-    return 9
-  }
-
-  if (
-    category === 'pricing_pattern' ||
-    /\b(\$|usd|deposit|retainer|minimum|rate|per person|per guest|pricing|price|quote|percent|margin)\b/i.test(
-      normalized
-    )
-  ) {
-    return 8
-  }
-
-  if (category === 'client_insight') {
-    return 7
-  }
-
-  if (
-    category === 'communication_style' ||
-    category === 'workflow_preference' ||
-    category === 'scheduling_pattern'
-  ) {
-    return 6
-  }
-
-  if (category === 'chef_preference' || category === 'culinary_note') {
-    return wordCount <= 4 ? 4 : 6
-  }
-
-  return Math.max(4, Math.min(10, suggestedImportance ?? 5))
-}
-
-function normalizeMemoryContent(content: string): string {
-  return content
-    .normalize('NFKD')
-    .replace(/[’‘]/g, "'")
-    .toLowerCase()
-    .replace(/[^a-z0-9$%/ ]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
+// ─── Helpers ───────────────────────────────────────────────────────────────
 
 function hashContent(content: string): string {
-  return createHash('sha256').update(normalizeMemoryContent(content)).digest('hex').slice(0, 32)
+  const normalized = content.toLowerCase().trim().replace(/\s+/g, ' ')
+  return createHash('sha256').update(normalized).digest('hex').slice(0, 32)
 }
 
 function mapRowToMemory(row: Record<string, unknown>): RemyMemory {

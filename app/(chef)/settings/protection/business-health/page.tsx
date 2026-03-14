@@ -2,13 +2,21 @@
 // Tracks completion of foundational business protection items.
 
 import type { Metadata } from 'next'
-import { getHealthChecklist } from '@/lib/protection/business-health-actions'
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import { BusinessHealthChecklist } from '@/components/protection/business-health-checklist'
 
-export const metadata: Metadata = { title: 'Business Health - ChefFlow' }
+export const metadata: Metadata = { title: 'Business Health — ChefFlow' }
 
 export default async function BusinessHealthPage() {
-  const items = await getHealthChecklist()
+  const chef = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: items } = await supabase
+    .from('chef_business_health_items')
+    .select('*')
+    .eq('tenant_id', chef.tenantId!)
+    .order('sort_order', { ascending: true })
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -20,7 +28,7 @@ export default async function BusinessHealthPage() {
         </p>
       </div>
 
-      <BusinessHealthChecklist items={items} />
+      <BusinessHealthChecklist items={items ?? []} />
     </div>
   )
 }

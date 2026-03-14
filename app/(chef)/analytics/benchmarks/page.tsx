@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getBenchmarkHistory } from '@/lib/analytics/benchmark-actions'
-import { StaticCSVDownloadButton } from '@/components/exports/static-csv-download-button'
 
 const BenchmarkDashboard = dynamic(
   () => import('@/components/analytics/benchmark-dashboard').then((m) => m.BenchmarkDashboard),
@@ -23,7 +22,7 @@ const BenchmarkDashboard = dynamic(
 export const metadata: Metadata = { title: 'Benchmarks - ChefFlow' }
 
 export default async function BenchmarksPage() {
-  await requireChef()
+  const user = await requireChef()
 
   let benchmarkHistory: Awaited<ReturnType<typeof getBenchmarkHistory>> | null = null
   try {
@@ -31,15 +30,6 @@ export default async function BenchmarksPage() {
   } catch {
     benchmarkHistory = null
   }
-  const exportRows =
-    benchmarkHistory?.map((snapshot) => [
-      snapshot.snapshotDate,
-      snapshot.avgEventValueCents,
-      snapshot.avgFoodCostPct,
-      snapshot.bookingConversionRate,
-      snapshot.clientReturnRate,
-      snapshot.revenuePerHourCents,
-    ]) ?? []
 
   return (
     <div className="space-y-6">
@@ -53,20 +43,6 @@ export default async function BenchmarksPage() {
             Track your key performance metrics against historical trends and targets.
           </p>
         </div>
-        {exportRows.length > 0 && (
-          <StaticCSVDownloadButton
-            headers={[
-              'snapshot_date',
-              'avg_event_value_cents',
-              'avg_food_cost_pct',
-              'booking_conversion_rate',
-              'client_return_rate',
-              'revenue_per_hour_cents',
-            ]}
-            rows={exportRows}
-            filename="benchmarks.csv"
-          />
-        )}
       </div>
 
       {benchmarkHistory && benchmarkHistory.length > 0 ? (

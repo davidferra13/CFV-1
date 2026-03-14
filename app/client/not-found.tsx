@@ -22,7 +22,7 @@ export default function ClientPortalNotFound() {
           </svg>
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-stone-200">Link Not Found</h1>
+          <h1 className="text-xl font-semibold text-stone-800">Link Not Found</h1>
           <p className="text-sm text-stone-500 mt-2">
             This portal link may have expired or been revoked.
             Please ask your chef to send you a new link.

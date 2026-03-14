@@ -6,7 +6,7 @@ import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createEvent, updateEvent, getEventById } from '@/lib/events/actions'
 import { transitionEvent } from '@/lib/events/transitions'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
@@ -37,10 +37,7 @@ async function parseEventFromNL(description: string) {
 Extract any of: client_name, event_date (YYYY-MM-DD), serve_time (HH:MM 24h), guest_count (number), occasion, service_style (plated/family_style/buffet/cocktail/tasting_menu/other), location_address, location_city, location_state, location_zip, dietary_restrictions (array), allergies (array), special_requests, quoted_price_cents (convert dollars to cents, e.g. $50 → 5000), notes.
 Return ONLY valid JSON. Omit fields not mentioned.`
 
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedEventSchema, {
-    modelTier: 'standard',
-  })
-  return result
+  return parseWithOllama(systemPrompt, description, ParsedEventSchema, { modelTier: 'standard' })
 }
 
 // ─── NL → Event Update Parser ──────────────────────────────────────────────
@@ -70,10 +67,9 @@ Return JSON with "eventIdentifier" (the event occasion, client name, or descript
 Available fields: event_date (YYYY-MM-DD), serve_time (HH:MM), guest_count, occasion, service_style, location_address, location_city, dietary_restrictions (array), allergies (array), special_requests, quoted_price_cents (dollars→cents).
 Return ONLY valid JSON.`
 
-  const { result } = await dispatchPrivate(systemPrompt, description, ParsedEventUpdateSchema, {
+  return parseWithOllama(systemPrompt, description, ParsedEventUpdateSchema, {
     modelTier: 'standard',
   })
-  return result
 }
 
 // ─── Action Definitions ────────────────────────────────────────────────────

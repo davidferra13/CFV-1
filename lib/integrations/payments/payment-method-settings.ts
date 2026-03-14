@@ -3,7 +3,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { revalidateTag } from 'next/cache'
 
 // Apple Pay / Google Pay toggle per chef.
 // Stripe Checkout already supports these automatically — this toggle
@@ -44,6 +43,5 @@ export async function updatePaymentMethodSettings(input: {
 
   if (error) throw new Error(`Failed to update payment settings: ${error.message}`)
 
-  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }

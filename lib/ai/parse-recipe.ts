@@ -3,7 +3,7 @@
 
 'use server'
 
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import type { ParseResult } from './parse'
 import { ParsedRecipeSchema, type ParsedRecipe, type ParsedIngredient } from './parse-recipe-schema'
 
@@ -72,12 +72,10 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Parse a single recipe from natural language text
  */
 export async function parseRecipeFromText(rawText: string): Promise<ParseResult<ParsedRecipe>> {
-  const result = (
-    await dispatchPrivate(RECIPE_SYSTEM_PROMPT, rawText, ParsedRecipeSchema, {
-      modelTier: 'standard',
-      timeoutMs: 60_000,
-    })
-  ).result
+  const result = await parseWithOllama(RECIPE_SYSTEM_PROMPT, rawText, ParsedRecipeSchema, {
+    modelTier: 'standard',
+    timeoutMs: 60_000,
+  })
   // parseWithOllama returns T directly; wrap in ParseResult for callers
   return result as ParseResult<ParsedRecipe>
 }

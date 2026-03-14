@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, Circle, Compass } from '@/components/ui/icons'
+import { CheckCircle2, Circle, Compass, Sparkles } from 'lucide-react'
 import type {
   ChefJourney,
   ChefJourneyEntry,
@@ -196,11 +196,11 @@ export function JourneyProgressPanel({
 
       <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
         <p className="text-sm font-medium text-amber-900 flex items-center gap-2">
-          <Compass className="w-4 h-4" />
+          <Sparkles className="w-4 h-4" />
           Next Momentum Moves
         </p>
         {remaining.length === 0 ? (
-          <p className="text-sm text-amber-200 mt-1">
+          <p className="text-sm text-amber-800 mt-1">
             Journal is fully documented. Keep adding new entries as this journey evolves.
           </p>
         ) : (

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPaymentMethodSettings } from '@/lib/integrations/payments/payment-method-settings'
 import { PaymentMethodsSettings } from '@/components/settings/payment-methods-settings'

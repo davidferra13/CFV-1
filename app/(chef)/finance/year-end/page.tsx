@@ -120,7 +120,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
             <p className="text-sm text-stone-500 mt-0.5">Total events</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-green-200">{completedEvents.length}</p>
+            <p className="text-2xl font-bold text-green-700">{completedEvents.length}</p>
             <p className="text-sm text-stone-500 mt-0.5">Completed</p>
           </div>
           <div>
@@ -143,7 +143,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
         </h2>
         <div className="grid grid-cols-3 gap-6 mb-5">
           <div>
-            <p className="text-2xl font-bold text-green-200">
+            <p className="text-2xl font-bold text-green-700">
               {formatCurrency(pl.netRevenueCents)}
             </p>
             <p className="text-sm text-stone-500 mt-0.5">Net revenue</p>
@@ -264,7 +264,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
               ))}
               <TableRow>
                 <TableCell className="font-bold text-stone-100 text-sm">Total Expenses</TableCell>
-                <TableCell className="font-bold text-red-200 text-sm">
+                <TableCell className="font-bold text-red-700 text-sm">
                   {formatCurrency(pl.totalExpensesCents)}
                 </TableCell>
                 <TableCell className="text-stone-500 text-sm">
@@ -290,7 +290,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
         <div className="space-y-2 max-w-sm">
           <div className="flex justify-between">
             <span className="text-sm text-stone-400">Gross business income</span>
-            <span className="text-sm font-semibold text-green-200">
+            <span className="text-sm font-semibold text-green-700">
               {formatCurrency(pl.totalRevenueCents)}
             </span>
           </div>
@@ -317,7 +317,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
             </span>
           </div>
         </div>
-        <p className="text-xs text-amber-200 bg-amber-950 rounded px-3 py-2 mt-4">
+        <p className="text-xs text-amber-700 bg-amber-950 rounded px-3 py-2 mt-4">
           This is the figure your accountant typically needs for Schedule C (self-employment
           income). Always verify with a licensed tax professional.
         </p>

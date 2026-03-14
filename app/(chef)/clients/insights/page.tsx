@@ -93,7 +93,7 @@ export default async function ClientInsightsPage() {
               >
                 {topClient.full_name}
               </Link>
-              <p className="text-sm text-green-200 mt-0.5">
+              <p className="text-sm text-green-700 mt-0.5">
                 {formatCurrency(topClient.totalSpentCents ?? 0)} lifetime
               </p>
             </>
@@ -113,7 +113,7 @@ export default async function ClientInsightsPage() {
               >
                 {mostFrequent.full_name}
               </Link>
-              <p className="text-sm text-amber-200 mt-0.5">{mostFrequent.totalEvents} events</p>
+              <p className="text-sm text-amber-700 mt-0.5">{mostFrequent.totalEvents} events</p>
             </>
           ) : (
             <p className="text-stone-400 text-sm">No data yet</p>

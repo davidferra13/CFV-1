@@ -49,19 +49,12 @@ export default async function StaffRosterPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-100">Staff Roster</h1>
-          <p className="mt-1 text-sm text-stone-500">
-            Manage your sous chefs, kitchen assistants, and service staff. Click any name to see
-            their full profile, assignment history, and performance.
-          </p>
-        </div>
-        <Link href="/staff/freelancers">
-          <Button variant="ghost" size="sm">
-            Freelancers
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold text-stone-100">Staff Roster</h1>
+        <p className="mt-1 text-sm text-stone-500">
+          Manage your sous chefs, kitchen assistants, and service staff. Click any name to see their
+          full profile, assignment history, and performance.
+        </p>
       </div>
 
       {/* Search & Filter */}

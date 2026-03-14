@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { X, ClipboardList } from '@/components/ui/icons'
+import { X, ClipboardList } from 'lucide-react'
 
 const DISMISS_KEY = 'beta-survey-banner-dismissed'
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours

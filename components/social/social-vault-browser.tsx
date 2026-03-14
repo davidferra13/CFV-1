@@ -5,16 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { uploadSocialAsset, updateSocialAsset, deleteSocialAsset } from '@/lib/social/actions'
 import type { SocialMediaAsset } from '@/lib/social/types'
-import {
-  Upload,
-  Search,
-  Film,
-  Image as ImageIcon,
-  X,
-  Tag,
-  Archive,
-  Loader2,
-} from '@/components/ui/icons'
+import { Upload, Search, Film, Image as ImageIcon, X, Tag, Archive, Loader2 } from 'lucide-react'
 
 type Props = {
   assets: SocialMediaAsset[]
@@ -160,7 +151,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
       </div>
 
       {uploadError && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-200">
+        <div className="flex items-center gap-2 rounded-lg bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
           <X className="w-4 h-4 flex-shrink-0" />
           {uploadError}
           <button

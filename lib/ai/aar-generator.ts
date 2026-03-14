@@ -9,7 +9,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { dispatchPrivate } from '@/lib/ai/dispatch'
+import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
 
 export interface AARDraft {
@@ -143,13 +143,11 @@ EXISTING NOTES:
   Special requests fulfilled: ${event.special_requests ?? 'None noted'}`
 
   try {
-    const parsed = (
-      await dispatchPrivate(systemPrompt, userContent, AARDraftAISchema, {
-        modelTier: 'complex',
-        timeoutMs: 90_000,
-        maxTokens: 2048,
-      })
-    ).result
+    const parsed = await parseWithOllama(systemPrompt, userContent, AARDraftAISchema, {
+      modelTier: 'complex',
+      timeoutMs: 90_000,
+      maxTokens: 2048,
+    })
     return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

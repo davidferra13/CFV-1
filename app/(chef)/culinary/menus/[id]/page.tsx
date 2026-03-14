@@ -1,49 +1,22 @@
 import { getMenuById } from '@/lib/menus/actions'
+import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
 import { MenuEditorClient } from '@/components/culinary/MenuEditor'
-import { MenuScalingPanel } from '@/components/culinary/MenuScalingPanel'
+import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { getMenuPairings, getBeverages } from '@/lib/beverages/actions'
-import { MenuPairingEditor } from '@/components/beverages/menu-pairing-editor'
-import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/get-user'
-import { ClientDietaryBanner } from '@/components/clients/client-dietary-banner'
 
 export default async function MenuDetailPage({ params }: { params: { id: string } }) {
   const menu = await getMenuById(params.id)
   if (!menu) notFound()
 
-  const [pairings, beverages] = await Promise.all([getMenuPairings(params.id), getBeverages()])
-
-  // Get guest count and client_id from linked event (if any) or menu target
-  let initialGuestCount = menu.target_guest_count ?? null
-  let menuClientId: string | null = null
-  if (menu.event_id) {
-    const user = await requireChef()
-    const supabase: any = createServerClient()
-    const { data: event } = await supabase
-      .from('events')
-      .select('guest_count, client_id')
-      .eq('id', menu.event_id)
-      .eq('tenant_id', user.tenantId!)
-      .single()
-    if (event?.guest_count) {
-      initialGuestCount = event.guest_count
-    }
-    if (event?.client_id) {
-      menuClientId = event.client_id
-    }
-  }
-
-  // Extract dishes for the pairing editor
-  const dishes = (menu.dishes ?? []).map((d: { course_name: string; course_number: number }) => ({
-    name: d.course_name,
-    courseNumber: d.course_number,
-  }))
+  // Menus don't have their own photo — use a stock placeholder based on
+  // menu name + cuisine type for a more relevant image.
+  const searchQuery = [menu.name, menu.cuisine_type].filter(Boolean).join(' ')
+  const placeholderImage = await getPlaceholderImage(searchQuery)
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 py-6 space-y-2">
       <div className="flex items-center justify-between mb-2">
         <Link href="/culinary/menus">
           <Button variant="ghost" size="sm">
@@ -58,30 +31,8 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
           </Link>
         )}
       </div>
-
-      {/* Client Dietary Context (from linked event) */}
-      {menuClientId && <ClientDietaryBanner clientId={menuClientId} />}
-
+      <FoodPlaceholderImage image={placeholderImage} size="hero" />
       <MenuEditorClient menu={menu} />
-
-      {/* Recipe Scaling Section */}
-      <div className="border-t border-stone-700 pt-6">
-        <MenuScalingPanel
-          menuId={params.id}
-          eventId={menu.event_id}
-          initialGuestCount={initialGuestCount}
-        />
-      </div>
-
-      {/* Beverage Pairings Section */}
-      <div className="border-t border-stone-700 pt-6">
-        <MenuPairingEditor
-          menuId={params.id}
-          pairings={pairings}
-          beverages={beverages}
-          dishes={dishes}
-        />
-      </div>
     </div>
   )
 }

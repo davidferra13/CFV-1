@@ -8,15 +8,15 @@ const URGENCY_STYLES: Record<string, { bg: string; text: string; border: string;
   {
     overdue: {
       bg: 'bg-red-950',
-      text: 'text-red-200',
+      text: 'text-red-800',
       border: 'border-red-200',
-      badge: 'bg-red-900 text-red-200',
+      badge: 'bg-red-900 text-red-700',
     },
     actionable: {
       bg: 'bg-amber-950',
-      text: 'text-amber-200',
+      text: 'text-amber-800',
       border: 'border-amber-200',
-      badge: 'bg-amber-900 text-amber-200',
+      badge: 'bg-amber-900 text-amber-700',
     },
     upcoming: {
       bg: 'bg-brand-950',

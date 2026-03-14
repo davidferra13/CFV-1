@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Quote, Loader2, Bot, Copy, Star } from '@/components/ui/icons'
+import { Quote, Loader2, Sparkles, Copy, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -48,7 +48,7 @@ export function TestimonialPanel() {
               </>
             ) : (
               <>
-                <Bot className="w-3 h-3 mr-1" />
+                <Sparkles className="w-3 h-3 mr-1" />
                 Find Best Quotes
               </>
             )}
@@ -104,7 +104,7 @@ export function TestimonialPanel() {
                 </span>
                 <span>{t.bestPlatform}</span>
               </div>
-              <div className="text-[11px] text-green-200">{t.why}</div>
+              <div className="text-[11px] text-green-700">{t.why}</div>
             </div>
           ))}
         </div>

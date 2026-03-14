@@ -3,15 +3,12 @@
 // Runs with admin Supabase client (no user session required) so it works
 // from both the manual UI trigger and the cron endpoint.
 
-import { createAdminClient } from '@/lib/supabase/admin'
-import {
-  getGoogleMailboxAccessToken,
-  getGoogleMailboxById,
-  isPersistedGoogleMailboxId,
-  listActiveGoogleMailboxesForChef,
-  syncLegacyGoogleConnectionFromPrimary,
-  type GoogleMailboxRecord,
-} from '@/lib/google/mailboxes'
+import { createServerClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/database'
+
+type DbClient = SupabaseClient<Database>
+import { getGoogleAccessToken } from '@/lib/google/auth'
 import {
   listRecentMessages,
   listMessagesSinceHistory,
@@ -22,7 +19,7 @@ import {
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { extractAndScoreEmail, scoreInquiryFields } from './extract-inquiry-fields'
-import { findExistingClientByEmail } from '@/lib/clients/find-existing'
+import { createClientFromLead } from '@/lib/clients/actions'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { isCommTriageEnabled } from '@/lib/features'
 import { isTakeAChefEmail, parseTakeAChefEmail } from './take-a-chef-parser'
@@ -40,19 +37,8 @@ import {
 } from './google-business-parser'
 import { isWixFormsEmail, parseWixFormsEmail } from './wix-forms-parser'
 import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
-import { mergePlatformIdentityKeys } from './platform-identity'
-import { buildSeriesSchedulePlan } from '@/lib/booking/series-planning'
-import {
-  materializeSeriesEvents,
-  materializeSeriesSessions,
-  mergeSpecialRequestNotes,
-} from '@/lib/booking/series-materialization'
-import { parseCityStateFromConversation } from '@/lib/inquiries/conversation-scaffold'
-import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 import type { SyncResult, ParsedEmail } from './types'
-import type { Database, Json } from '@/types/database'
-
-type DbClient = any
+import type { Json } from '@/types/database'
 
 // ─── Known Platform Domains ───────────────────────────────────────────────
 // Platform emails may be auto-archived by Gmail filters, so we run a second
@@ -72,51 +58,9 @@ const PLATFORM_DOMAINS = [
   'wix-forms.com',
 ]
 
-function asUnknownFieldsRecord(value: Json | null | undefined): Record<string, unknown> | null {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
-  return value as Record<string, unknown>
-}
-
-function mapCannabisPreferenceToBoolean(value?: string | null): boolean | null {
-  if (!value) return null
-  return ['yes', 'true', 'open'].some((option) => value.toLowerCase().includes(option))
-}
-
-type MailboxParsedEmail = ParsedEmail & {
-  mailboxId?: string
-  mailboxEmail?: string
-}
-
-function getStoredMailboxId(mailboxId?: string | null) {
-  return isPersistedGoogleMailboxId(mailboxId) ? mailboxId : null
-}
-
-async function getExistingSyncLogId(
-  supabase: DbClient,
-  tenantId: string,
-  gmailMessageId: string,
-  mailboxId?: string | null
-) {
-  const storedMailboxId = getStoredMailboxId(mailboxId)
-  let query = supabase.from('gmail_sync_log').select('id').eq('gmail_message_id', gmailMessageId)
-
-  if (storedMailboxId) {
-    query = query.eq('mailbox_id', storedMailboxId)
-  } else {
-    query = query.eq('tenant_id', tenantId)
-  }
-
-  const { data } = await query.maybeSingle()
-  return data?.id ?? null
-}
-
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
-export async function syncGmailInbox(
-  chefId: string,
-  tenantId: string,
-  mailboxId?: string
-): Promise<SyncResult> {
+export async function syncGmailInbox(chefId: string, tenantId: string): Promise<SyncResult> {
   const result: SyncResult = {
     processed: 0,
     inquiriesCreated: 0,
@@ -125,134 +69,86 @@ export async function syncGmailInbox(
     errors: [],
   }
 
-  const supabase = createAdminClient() as any
-  const mailboxes = mailboxId
-    ? [await getGoogleMailboxById(mailboxId)].filter(Boolean)
-    : await listActiveGoogleMailboxesForChef(chefId)
+  const supabase = createServerClient({ admin: true })
 
-  if (mailboxes.length === 0) {
-    result.errors.push('Gmail is not connected. Connect your Google account in Settings first.')
+  // 1. Get valid access token (auto-refreshes if needed)
+  let accessToken: string
+  try {
+    accessToken = await getGoogleAccessToken(chefId)
+  } catch (err) {
+    const error = err as Error
+    result.errors.push(`Token error: ${error.message}`)
     return result
   }
 
-  for (const mailbox of mailboxes) {
-    try {
-      await syncSingleGmailMailbox(
-        supabase,
-        mailbox as GoogleMailboxRecord,
-        chefId,
-        tenantId,
-        result
-      )
-    } catch (err) {
-      const error = err as Error
-      result.errors.push(`${(mailbox as GoogleMailboxRecord).email}: ${error.message}`)
-    }
-  }
+  // 2. Get current sync state
+  const { data: conn } = await supabase
+    .from('google_connections')
+    .select('gmail_history_id')
+    .eq('chef_id', chefId)
+    .single()
 
-  await syncLegacyGoogleConnectionFromPrimary(chefId, tenantId)
+  const historyId = conn?.gmail_history_id
 
-  return result
-}
-
-async function syncSingleGmailMailbox(
-  supabase: any,
-  mailbox: GoogleMailboxRecord,
-  chefId: string,
-  tenantId: string,
-  result: SyncResult
-) {
-  const startingErrorCount = result.errors.length
-  const storedMailboxId = getStoredMailboxId(mailbox.id)
-  let accessToken: string
-  try {
-    accessToken = await getGoogleMailboxAccessToken(mailbox.id)
-  } catch (err) {
-    const error = err as Error
-    result.errors.push(`Token error (${mailbox.email}): ${error.message}`)
-    return
-  }
-
-  const historyId = mailbox.gmailHistoryId
+  // 3. Fetch message IDs to process
   let messageIds: string[]
 
   try {
     if (!historyId) {
+      // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
       const messages = await listRecentMessages(accessToken, {
         maxResults: 50,
         query: 'in:inbox -in:sent',
       })
       messageIds = messages.map((m) => m.id)
 
+      // Bootstrap the history ID for future incremental syncs
       const profile = await getGmailProfile(accessToken)
-      if (storedMailboxId) {
-        await supabase
-          .from('google_mailboxes')
-          .update({ gmail_history_id: profile.historyId })
-          .eq('id', storedMailboxId)
-      } else {
-        await supabase
-          .from('google_connections')
-          .update({ gmail_history_id: profile.historyId })
-          .eq('chef_id', chefId)
-      }
+      await supabase
+        .from('google_connections')
+        .update({ gmail_history_id: profile.historyId })
+        .eq('chef_id', chefId)
     } else {
+      // Incremental sync — only new messages since last history ID
       const historyResult = await listMessagesSinceHistory(accessToken, historyId)
       messageIds = historyResult.messageIds
 
       if (historyResult.latestHistoryId === '') {
+        // History ID too old — fall back to recent inbox messages
         const messages = await listRecentMessages(accessToken, {
           maxResults: 50,
           query: 'in:inbox -in:sent',
         })
         messageIds = messages.map((m) => m.id)
         const profile = await getGmailProfile(accessToken)
-        if (storedMailboxId) {
-          await supabase
-            .from('google_mailboxes')
-            .update({ gmail_history_id: profile.historyId })
-            .eq('id', storedMailboxId)
-        } else {
-          await supabase
-            .from('google_connections')
-            .update({ gmail_history_id: profile.historyId })
-            .eq('chef_id', chefId)
-        }
+        await supabase
+          .from('google_connections')
+          .update({ gmail_history_id: profile.historyId })
+          .eq('chef_id', chefId)
       } else if (historyResult.latestHistoryId) {
-        if (storedMailboxId) {
-          await supabase
-            .from('google_mailboxes')
-            .update({ gmail_history_id: historyResult.latestHistoryId })
-            .eq('id', storedMailboxId)
-        } else {
-          await supabase
-            .from('google_connections')
-            .update({ gmail_history_id: historyResult.latestHistoryId })
-            .eq('chef_id', chefId)
-        }
+        await supabase
+          .from('google_connections')
+          .update({ gmail_history_id: historyResult.latestHistoryId })
+          .eq('chef_id', chefId)
       }
     }
   } catch (err) {
     if (err instanceof GmailScopeError) {
-      if (storedMailboxId) {
-        await supabase
-          .from('google_mailboxes')
-          .update({ gmail_sync_errors: 99 })
-          .eq('id', storedMailboxId)
-      } else {
-        await supabase
-          .from('google_connections')
-          .update({ gmail_sync_errors: 99 })
-          .eq('chef_id', chefId)
-      }
+      // Mark connection as needing reauth so the UI shows a reconnect prompt
+      await supabase
+        .from('google_connections')
+        .update({ gmail_sync_errors: 99 })
+        .eq('chef_id', chefId)
       result.errors.push(
-        `Gmail permissions are insufficient for ${mailbox.email}. Please disconnect and reconnect it in Settings.`
+        'Gmail permissions are insufficient. Please disconnect and reconnect your Gmail in Settings.'
       )
-      return
+      return result
     }
     throw err
   }
 
+  // 3b. Also fetch platform emails that may have been auto-archived by Gmail filters
+  // These domains (TakeAChef, Yhangry, etc.) often get filtered out of inbox
   try {
     const platformQuery = PLATFORM_DOMAINS.map((d) => `from:${d}`).join(' OR ')
     const platformMessages = await listRecentMessages(accessToken, {
@@ -260,6 +156,8 @@ async function syncSingleGmailMailbox(
       query: platformQuery,
     })
     const platformIds = platformMessages.map((m) => m.id)
+
+    // Merge with inbox results, deduplicate by message ID
     const existingSet = new Set(messageIds)
     for (const id of platformIds) {
       if (!existingSet.has(id)) {
@@ -267,17 +165,16 @@ async function syncSingleGmailMailbox(
       }
     }
   } catch (platformErr) {
-    console.error(
-      `[syncGmailInbox] Platform domain query failed for ${mailbox.email} (non-fatal):`,
-      platformErr
-    )
+    // Non-fatal — inbox messages were already fetched
+    console.error('[syncGmailInbox] Platform domain query failed (non-fatal):', platformErr)
   }
 
+  // 4. Load known client emails for classification context
   const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
-  const knownClientEmails = (clients || [])
-    .map((c: { email: string | null }) => c.email)
-    .filter(Boolean) as string[]
 
+  const knownClientEmails = (clients || []).map((c) => c.email).filter(Boolean) as string[]
+
+  // 5. Process each message
   for (const messageId of messageIds) {
     try {
       await processMessage(
@@ -286,25 +183,25 @@ async function syncSingleGmailMailbox(
         messageId,
         chefId,
         tenantId,
-        mailbox,
         knownClientEmails,
         result
       )
     } catch (err) {
       const error = err as Error
-      result.errors.push(`Message ${messageId} (${mailbox.email}): ${error.message}`)
+      result.errors.push(`Message ${messageId}: ${error.message}`)
     }
   }
 
-  const syncUpdate = {
-    gmail_last_sync_at: new Date().toISOString(),
-    gmail_sync_errors: result.errors.length - startingErrorCount,
-  }
-  if (storedMailboxId) {
-    await supabase.from('google_mailboxes').update(syncUpdate).eq('id', storedMailboxId)
-  } else {
-    await supabase.from('google_connections').update(syncUpdate).eq('chef_id', chefId)
-  }
+  // 6. Update sync timestamp
+  await supabase
+    .from('google_connections')
+    .update({
+      gmail_last_sync_at: new Date().toISOString(),
+      gmail_sync_errors: result.errors.length,
+    })
+    .eq('chef_id', chefId)
+
+  return result
 }
 
 // ─── Process Single Message ─────────────────────────────────────────────────
@@ -315,29 +212,34 @@ async function processMessage(
   messageId: string,
   chefId: string,
   tenantId: string,
-  mailbox: GoogleMailboxRecord,
   knownClientEmails: string[],
   result: SyncResult
 ) {
-  const storedMailboxId = getStoredMailboxId(mailbox.id)
-  const existingLogId = await getExistingSyncLogId(supabase, tenantId, messageId, storedMailboxId)
-  if (existingLogId) {
+  // Dedup check — skip if already processed
+  const { data: existing } = await supabase
+    .from('gmail_sync_log')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('gmail_message_id', messageId)
+    .single()
+
+  if (existing) {
     result.skipped++
     return
   }
 
-  const email: MailboxParsedEmail = {
-    ...(await getFullMessage(accessToken, messageId)),
-    mailboxId: storedMailboxId,
-    mailboxEmail: mailbox.email,
-  }
+  // Fetch full message
+  const email = await getFullMessage(accessToken, messageId)
   result.processed++
 
-  if (
-    mailbox.email &&
-    email.from.email &&
-    email.from.email.toLowerCase() === mailbox.email.toLowerCase()
-  ) {
+  // Skip emails sent by the chef themselves (outbound)
+  const { data: conn } = await supabase
+    .from('google_connections')
+    .select('connected_email')
+    .eq('chef_id', chefId)
+    .single()
+
+  if (conn?.connected_email && email.from.email === conn.connected_email) {
     await logSyncEntry(supabase, tenantId, email, {
       classification: 'personal',
       confidence: 'high',
@@ -565,9 +467,25 @@ async function handleInquiry(
     const leadEmail = email.from.email
     const clientPhone = detFields.client_phone || ollamaPhone || null
 
-    // Auto-link if this email belongs to an existing client (read-only, no INSERT).
-    // Otherwise leave unlinked; chef can convert later from the inquiry detail page.
-    const clientId = await findExistingClientByEmail(supabase, tenantId, leadEmail)
+    // Find or create client from lead data
+    let clientId: string | null = null
+
+    try {
+      const clientResult = await createClientFromLead(tenantId, {
+        email: leadEmail,
+        full_name: leadName,
+        phone: clientPhone,
+        dietary_restrictions:
+          detFields.confirmed_dietary_restrictions.length > 0
+            ? detFields.confirmed_dietary_restrictions
+            : null,
+        source: 'email',
+      })
+      clientId = clientResult.id
+    } catch (clientErr) {
+      // Non-fatal: inquiry still gets created, just without client link
+      console.error('[handleInquiry] Client creation failed:', clientErr)
+    }
 
     // Store lead data + lead score in unknown_fields
     const unknownFields: Record<string, unknown> = {
@@ -594,9 +512,6 @@ async function handleInquiry(
         tenant_id: tenantId,
         channel: 'email' as const,
         client_id: clientId,
-        contact_name: leadName,
-        contact_email: leadEmail,
-        contact_phone: clientPhone,
         first_contact_at: email.date
           ? new Date(email.date).toISOString()
           : new Date().toISOString(),
@@ -648,7 +563,6 @@ async function handleInquiry(
         tenant_id: tenantId,
         inquiry_id: inquiry.id,
         client_id: clientId,
-        mailbox_id: email.mailboxId || null,
         channel: 'email' as const,
         direction: 'inbound' as const,
         status: 'logged' as const,
@@ -692,28 +606,6 @@ async function handleInquiry(
       console.error('[handleInquiry] Notification failed (non-fatal):', notifErr)
     }
 
-    // Auto-create Dinner Circle (non-blocking)
-    let circleGroupToken: string | null = null
-    try {
-      const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
-      const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
-      const circle = await createInquiryCircle({
-        inquiryId: inquiry.id,
-        tenantId,
-        clientName: leadName,
-        clientEmail: email.from.email || null,
-        occasion: ollamaOccasion || detFields.confirmed_occasion || null,
-      })
-      circleGroupToken = circle.groupToken
-      await postFirstCircleMessage({
-        groupId: circle.groupId,
-        inquiryId: inquiry.id,
-        tenantId,
-      })
-    } catch (circleErr) {
-      console.error('[handleInquiry] Circle creation failed (non-blocking):', circleErr)
-    }
-
     // Email the chef directly about the new inquiry (non-blocking)
     try {
       const chefProfile = await getChefProfile(tenantId)
@@ -738,9 +630,6 @@ async function handleInquiry(
             chefName: chefProfile.name,
             occasion: ollamaOccasion || detFields.confirmed_occasion || '',
             eventDate: detFields.confirmed_date ?? null,
-            circleUrl: circleGroupToken
-              ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
-              : undefined,
           })
         }
       }
@@ -785,7 +674,6 @@ async function handleExistingThread(
       .insert({
         tenant_id: tenantId,
         client_id: client?.id || null,
-        mailbox_id: email.mailboxId || null,
         channel: 'email' as const,
         direction: 'inbound' as const,
         status: 'logged' as const,
@@ -801,20 +689,14 @@ async function handleExistingThread(
     // Link message to inquiry by thread and auto-advance inquiry status
     let linkedInquiryId: string | null = null
     if (email.threadId) {
-      let threadQuery = supabase
+      const { data: threadMessage } = await supabase
         .from('messages')
         .select('inquiry_id')
         .eq('tenant_id', tenantId)
         .eq('gmail_thread_id', email.threadId)
         .not('inquiry_id', 'is', null)
         .limit(1)
-      if (email.mailboxId) {
-        threadQuery = threadQuery.eq('mailbox_id', email.mailboxId)
-      } else {
-        threadQuery = threadQuery.is('mailbox_id', null)
-      }
-
-      const { data: threadMessage } = await threadQuery.maybeSingle()
+        .maybeSingle()
 
       if (threadMessage?.inquiry_id) {
         linkedInquiryId = threadMessage.inquiry_id
@@ -924,28 +806,6 @@ async function handleExistingThread(
             // Non-fatal — thread processing continues even if extraction fails
             console.error('[handleExistingThread] Field extraction failed (non-fatal):', extractErr)
           }
-        }
-
-        // Route email reply into the Dinner Circle (non-blocking)
-        try {
-          const { routeEmailReplyToCircle } = await import('@/lib/hub/email-to-circle')
-          const convertedEventId = inquiry
-            ? ((await supabase.from('events').select('id').eq('id', linkedInquiryId).maybeSingle())
-                .data?.id ?? null)
-            : null
-
-          await routeEmailReplyToCircle({
-            inquiryId: linkedInquiryId,
-            eventId: convertedEventId,
-            senderEmail: email.from?.email || '',
-            senderName: email.from?.name || email.from?.email || 'Client',
-            emailBody: email.body,
-          })
-        } catch (circleRouteErr) {
-          console.error(
-            '[handleExistingThread] Circle routing failed (non-blocking):',
-            circleRouteErr
-          )
         }
       }
     }
@@ -1081,8 +941,7 @@ async function handleTacNewInquiry(
   // Dedup check — same inquiry sent multiple times?
   const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
     channel: 'take_a_chef',
-    externalId: inquiry.ctaUriToken || undefined,
-    externalIds: inquiry.identityKeys,
+    externalId: inquiry.ctaLink || undefined,
     clientName: inquiry.clientName,
     eventDate: inquiry.eventDate,
   })
@@ -1099,9 +958,25 @@ async function handleTacNewInquiry(
     return
   }
 
-  // Store contact info on the inquiry (no auto-client creation).
-  // TakeAChef inquiries don't have real emails anyway (placeholder was used before).
-  const clientId: string | null = null
+  // Create client record
+  let clientId: string | null = null
+  try {
+    const clientResult = await createClientFromLead(tenantId, {
+      full_name: inquiry.clientName,
+      email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
+      phone: null,
+      dietary_restrictions: inquiry.dietaryRestrictions
+        ? inquiry.dietaryRestrictions
+            .split(/[\n,]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null,
+      source: 'take_a_chef',
+    })
+    clientId = clientResult.id
+  } catch (clientErr) {
+    console.error('[TakeAChef] Client creation failed (non-fatal):', clientErr)
+  }
 
   // Calculate budget in cents from price range + guest count
   let budgetCents: number | null = null
@@ -1130,7 +1005,7 @@ async function handleTacNewInquiry(
   })
 
   // Build unknown_fields with all TakeAChef-specific data + lead score
-  const unknownFields = mergePlatformIdentityKeys(null, inquiry.identityKeys, {
+  const unknownFields: Record<string, unknown> = {
     submission_source: 'take_a_chef_gmail_auto',
     original_sender_name: inquiry.clientName,
     guest_count_text: inquiry.guestCountText,
@@ -1140,18 +1015,13 @@ async function handleTacNewInquiry(
     meal_type: inquiry.mealType,
     partner_name: inquiry.partnerName,
     client_notes: inquiry.clientNotes,
-    tac_event_date_raw: inquiry.eventDateRaw,
     tac_link: inquiry.ctaLink,
-    tac_cta_uri_token: inquiry.ctaUriToken,
     price_min_cents: inquiry.priceMinCents,
     price_max_cents: inquiry.priceMaxCents,
     lead_score: tacLeadScore.lead_score,
     lead_tier: tacLeadScore.lead_tier,
     lead_score_factors: tacLeadScore.lead_score_factors,
-    take_a_chef_finance: {
-      commission_percent: getDefaultTakeAChefCommissionPercent(email.date ?? null),
-    },
-  })
+  }
 
   // Create the inquiry
   const { data: newInquiry, error: inquiryError } = await supabase
@@ -1160,9 +1030,6 @@ async function handleTacNewInquiry(
       tenant_id: tenantId,
       channel: 'take_a_chef' as const,
       client_id: clientId,
-      contact_name: inquiry.clientName,
-      contact_email: null,
-      contact_phone: null,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: inquiry.eventDate,
       confirmed_guest_count: inquiry.guestCountNumber,
@@ -1178,11 +1045,8 @@ async function handleTacNewInquiry(
       confirmed_service_expectations: inquiry.experienceType,
       source_message:
         `${inquiry.clientNotes || ''}\n\n--- Original TakeAChef email ---\n${email.body}`.trim(),
-      service_mode: inquiry.serviceMode,
-      schedule_request_jsonb: inquiry.scheduleRequest as unknown as Json,
       unknown_fields: unknownFields as unknown as Json,
       external_platform: 'take_a_chef',
-      external_inquiry_id: inquiry.ctaUriToken,
       external_link: inquiry.ctaLink,
       status: 'new',
       // GOLDMINE: set chef_likelihood + follow_up_due_at from lead score
@@ -1281,14 +1145,13 @@ async function handleTacClientMessage(
     clientName,
     eventDate,
     orderId: null,
-    externalIds: msg?.identityKeys,
   })
 
   if (inquiryId) {
     // Advance status to awaiting_chef (client has messaged — chef needs to respond)
     const { data: inquiry } = await supabase
       .from('inquiries')
-      .select('status, external_link, unknown_fields')
+      .select('status, external_link')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
@@ -1301,14 +1164,6 @@ async function handleTacClientMessage(
           next_action_required: `${clientName || 'Client'} messaged you on TakeAChef — respond to keep lead warm`,
           next_action_by: 'chef',
           external_link: msg?.ctaLink || inquiry.external_link,
-          unknown_fields: mergePlatformIdentityKeys(
-            asUnknownFieldsRecord(inquiry.unknown_fields as Json | null),
-            msg?.identityKeys ?? [],
-            {
-              tac_link: msg?.ctaLink || inquiry.external_link,
-              tac_cta_uri_token: msg?.ctaUriToken || null,
-            }
-          ) as unknown as Json,
         })
         .eq('id', inquiryId)
         .eq('tenant_id', tenantId)
@@ -1345,156 +1200,6 @@ async function handleTacClientMessage(
   result.messagesLogged++
 }
 
-async function ensureTacSeriesEvents(params: {
-  supabase: DbClient
-  tenantId: string
-  inquiryId: string
-  booking: NonNullable<TacParseResult['booking']>
-  existingInquiry: {
-    id: string
-    client_id: string | null
-    referral_partner_id?: string | null
-    partner_location_id?: string | null
-    confirmed_date: string | null
-    confirmed_guest_count: number | null
-    confirmed_occasion: string | null
-    confirmed_location: string | null
-    confirmed_service_expectations?: string | null
-    confirmed_dietary_restrictions?: string[] | null
-    confirmed_cannabis_preference?: string | null
-    schedule_request_jsonb?: Json | null
-    source_message?: string | null
-  }
-}): Promise<string | null> {
-  const { supabase, tenantId, inquiryId, booking, existingInquiry } = params
-  const clientId = existingInquiry.client_id
-  if (!clientId) return null
-
-  const scheduleSource =
-    existingInquiry.schedule_request_jsonb &&
-    typeof existingInquiry.schedule_request_jsonb === 'object' &&
-    !Array.isArray(existingInquiry.schedule_request_jsonb)
-      ? (existingInquiry.schedule_request_jsonb as Record<string, unknown>)
-      : booking.scheduleRequest || null
-
-  let schedulePlan: ReturnType<typeof buildSeriesSchedulePlan>
-  try {
-    schedulePlan = buildSeriesSchedulePlan({
-      scheduleRequest: scheduleSource as any,
-      fallbackDate: existingInquiry.confirmed_date || booking.primaryServiceDate,
-      fallbackGuestCount: existingInquiry.confirmed_guest_count ?? 2,
-    })
-  } catch (error) {
-    console.error('[TakeAChef] Failed to build series schedule plan:', error)
-    return null
-  }
-
-  const parsedLocation = parseCityStateFromConversation(
-    booking.address || existingInquiry.confirmed_location || '',
-    `${existingInquiry.source_message || ''}\n${booking.address || ''}`
-  )
-
-  const { data: existingSeries } = await supabase
-    .from('event_series')
-    .select('id, service_mode')
-    .eq('tenant_id', tenantId)
-    .eq('inquiry_id', inquiryId)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
-  let series = existingSeries as {
-    id: string
-    service_mode: Database['public']['Enums']['booking_service_mode']
-  } | null
-
-  if (!series) {
-    const { data: createdSeries, error: seriesError } = await supabase
-      .from('event_series')
-      .insert({
-        tenant_id: tenantId,
-        client_id: clientId,
-        inquiry_id: inquiryId,
-        service_mode: 'multi_day',
-        status: 'draft',
-        title: booking.occasion || existingInquiry.confirmed_occasion || 'Multi-day service',
-        start_date: schedulePlan.start_date,
-        end_date: schedulePlan.end_date,
-        base_guest_count: existingInquiry.confirmed_guest_count ?? null,
-        location_address: booking.address || existingInquiry.confirmed_location || null,
-        location_city: parsedLocation.city || 'TBD',
-        location_state: parsedLocation.state || null,
-        pricing_model: null,
-        quoted_total_cents: booking.amountCents,
-        deposit_total_cents: null,
-        notes: mergeSpecialRequestNotes(
-          existingInquiry.confirmed_service_expectations,
-          `TakeAChef Order ID: ${booking.orderId}`,
-          booking.requestType ? `Request type: ${booking.requestType}` : null,
-          booking.serviceDates ? `Service dates: ${booking.serviceDates}` : null
-        ),
-      })
-      .select('id, service_mode')
-      .single()
-
-    if (seriesError || !createdSeries) {
-      console.error('[TakeAChef] Series creation failed:', seriesError)
-      return null
-    }
-
-    series = createdSeries as {
-      id: string
-      service_mode: Database['public']['Enums']['booking_service_mode']
-    }
-  }
-
-  const inquiryContext = {
-    id: existingInquiry.id,
-    client_id: clientId,
-    referral_partner_id: existingInquiry.referral_partner_id || null,
-    partner_location_id: existingInquiry.partner_location_id || null,
-    confirmed_location: booking.address || existingInquiry.confirmed_location || null,
-    confirmed_occasion: booking.occasion || existingInquiry.confirmed_occasion || null,
-    confirmed_guest_count: existingInquiry.confirmed_guest_count ?? 2,
-    confirmed_service_expectations: mergeSpecialRequestNotes(
-      existingInquiry.confirmed_service_expectations,
-      booking.requestType ? `TakeAChef request type: ${booking.requestType}` : null,
-      booking.serviceDates ? `Service dates: ${booking.serviceDates}` : null
-    ),
-    confirmed_dietary_restrictions: existingInquiry.confirmed_dietary_restrictions || [],
-  }
-
-  const sessions = await materializeSeriesSessions({
-    supabase,
-    tenantId,
-    actorId: null,
-    series,
-    inquiry: inquiryContext,
-    plannedSessions: schedulePlan.sessions,
-    parsedLocation,
-  })
-
-  const events = await materializeSeriesEvents({
-    supabase,
-    tenantId,
-    actorId: null,
-    inquiry: inquiryContext,
-    series,
-    sessions,
-    parsedLocation,
-    serveTimeFallback: null,
-    arrivalTimeFallback: null,
-    quotedPriceCents: booking.amountCents,
-    depositAmountCents: null,
-    pricingModel: null,
-    cannabisPreference: mapCannabisPreferenceToBoolean(
-      existingInquiry.confirmed_cannabis_preference || null
-    ),
-  })
-
-  return events[0]?.id || null
-}
-
 // ─── TAC: Booking Confirmed ────────────────────────────────────────────────
 
 async function handleTacBookingConfirmed(
@@ -1521,109 +1226,36 @@ async function handleTacBookingConfirmed(
   const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
     channel: 'take_a_chef',
     clientName: booking.clientName,
-    eventDate: booking.primaryServiceDate,
-    orderId: booking.orderId || null,
-    externalIds: booking.identityKeys,
+    eventDate: null, // Booking may have different date format
+    orderId: null,
   })
 
   if (inquiryId) {
-    const { data: existingInquiry } = await supabase
-      .from('inquiries')
-      .select(
-        'id, client_id, referral_partner_id, partner_location_id, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_service_expectations, confirmed_dietary_restrictions, confirmed_cannabis_preference, source_message, converted_to_event_id, external_link, unknown_fields'
-      )
-      .eq('id', inquiryId)
-      .eq('tenant_id', tenantId)
-      .single()
-
-    // Extract service_mode and schedule_request from unknown_fields
-    const uf = (existingInquiry?.unknown_fields ?? {}) as Record<string, unknown>
-    const existingServiceMode = (uf.service_mode as string) || null
-    const existingScheduleRequest = (uf.schedule_request_jsonb as Json) || null
-
     // Store the Order ID for future matching (customer info, payment)
     await supabase
       .from('inquiries')
       .update({
         status: 'confirmed',
         external_inquiry_id: booking.orderId || null,
-        external_link: booking.ctaLink || existingInquiry?.external_link || null,
+        external_link: booking.ctaLink || null,
         confirmed_budget_cents: booking.amountCents,
         confirmed_location: booking.address,
-        unknown_fields: mergePlatformIdentityKeys(
-          asUnknownFieldsRecord(existingInquiry?.unknown_fields as Json | null),
-          booking.identityKeys,
-          {
-            tac_order_id: booking.orderId || null,
-            tac_link: booking.ctaLink,
-            tac_cta_uri_token: booking.ctaUriToken,
-            tac_service_dates: booking.serviceDates,
-            tac_request_type: booking.requestType,
-            service_mode: existingServiceMode || booking.serviceMode,
-            schedule_request_jsonb:
-              existingScheduleRequest || (booking.scheduleRequest as unknown as Json) || null,
-          }
-        ) as unknown as Json,
         next_action_required: 'TakeAChef booking confirmed — prepare for event',
         next_action_by: 'chef',
       })
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
 
-    if (
-      existingInquiry &&
-      (existingServiceMode === 'multi_day' ||
-        booking.serviceMode === 'multi_day' ||
-        Boolean(
-          booking.scheduleRequest?.sessions?.length && booking.scheduleRequest.sessions.length > 1
-        ))
-    ) {
-      const eventId = await ensureTacSeriesEvents({
-        supabase,
-        tenantId,
-        inquiryId,
-        booking,
-        existingInquiry: {
-          ...existingInquiry,
-          schedule_request_jsonb: existingScheduleRequest,
-        },
-      })
-
-      if (eventId) {
-        await supabase
-          .from('inquiries')
-          .update({ converted_to_event_id: eventId })
-          .eq('id', inquiryId)
-
-        try {
-          const { logChefActivity } = await import('@/lib/activity/log-chef')
-          await logChefActivity({
-            tenantId,
-            actorId: chefId,
-            action: 'event_created',
-            domain: 'event',
-            entityType: 'event',
-            entityId: eventId,
-            summary: `Auto-created event series from TakeAChef booking - Order #${booking.orderId || 'unknown'}. Next: create the final menu.`,
-            context: {
-              source: 'take_a_chef_booking_email',
-              order_id: booking.orderId,
-              inquiry_id: inquiryId,
-              amount_cents: booking.amountCents,
-              service_mode: 'multi_day',
-            },
-          })
-        } catch (actErr) {
-          console.error('[TakeAChef] Activity log failed (non-fatal):', actErr)
-        }
-      }
-    }
-
     // Create draft event from booking details
-    else if (existingInquiry) {
+    const { data: existingInquiry } = await supabase
+      .from('inquiries')
+      .select('client_id, confirmed_date, confirmed_guest_count, confirmed_occasion')
+      .eq('id', inquiryId)
+      .single()
+
+    if (existingInquiry) {
       const eventDate =
         existingInquiry.confirmed_date ||
-        booking.primaryServiceDate ||
         booking.serviceDates?.split(/[-–]/)[0]?.trim() ||
         new Date().toISOString().slice(0, 10)
 
@@ -1751,14 +1383,13 @@ async function handleTacCustomerInfo(
     clientName: info.guestName,
     eventDate: null,
     orderId: null,
-    externalIds: info.identityKeys,
   })
 
   if (inquiryId) {
     // Get the linked client
     const { data: inquiry } = await supabase
       .from('inquiries')
-      .select('client_id, external_link, unknown_fields')
+      .select('client_id')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
@@ -1779,21 +1410,14 @@ async function handleTacCustomerInfo(
       }
     }
 
-    await supabase
-      .from('inquiries')
-      .update({
-        external_link: info.ctaLink || inquiry?.external_link || null,
-        unknown_fields: mergePlatformIdentityKeys(
-          asUnknownFieldsRecord(inquiry?.unknown_fields as Json | null),
-          info.identityKeys,
-          {
-            tac_link: info.ctaLink || inquiry?.external_link || null,
-            tac_cta_uri_token: info.ctaUriToken || null,
-          }
-        ) as unknown as Json,
-      })
-      .eq('id', inquiryId)
-      .eq('tenant_id', tenantId)
+    // Update the inquiry's external link
+    if (info.ctaLink) {
+      await supabase
+        .from('inquiries')
+        .update({ external_link: info.ctaLink })
+        .eq('id', inquiryId)
+        .eq('tenant_id', tenantId)
+    }
 
     // Notify chef
     try {
@@ -1835,78 +1459,19 @@ async function handleTacPayment(
   tenantId: string,
   result: SyncResult
 ) {
-  const payment = parsed.payment
-
-  // Try to match the payment to an existing inquiry by order ID
-  let matchedInquiryId: string | null = null
-  if (payment?.orderId) {
-    const { data: match } = await supabase
-      .from('inquiries')
-      .select('id, converted_to_event_id, unknown_fields')
-      .eq('tenant_id', tenantId)
-      .eq('external_platform', 'take_a_chef')
-      .eq('external_inquiry_id', payment.orderId)
-      .limit(1)
-      .maybeSingle()
-
-    matchedInquiryId = match?.id ?? null
-
-    // Store payout details on the inquiry's unknown_fields
-    if (match) {
-      const existingFields = (match.unknown_fields as Record<string, unknown>) ?? {}
-      const existingPayouts = Array.isArray(existingFields.take_a_chef_payouts)
-        ? (existingFields.take_a_chef_payouts as Record<string, unknown>[])
-        : []
-
-      // Check if this payout email was already recorded (idempotency)
-      const alreadyRecorded = existingPayouts.some((p) => p.email_message_id === email.messageId)
-
-      if (!alreadyRecorded) {
-        const payoutRecord = {
-          email_message_id: email.messageId,
-          recorded_at: new Date().toISOString(),
-          gross_amount_cents: payment.grossAmountCents,
-          commission_cents: payment.commissionCents,
-          net_payout_cents: payment.netPayoutCents,
-          commission_percent: payment.commissionPercent,
-          payout_date: payment.payoutDate,
-          payout_method: payment.payoutMethod,
-          currency: payment.currency,
-        }
-
-        await supabase
-          .from('inquiries')
-          .update({
-            unknown_fields: {
-              ...existingFields,
-              take_a_chef_payouts: [...existingPayouts, payoutRecord],
-              last_payout_recorded_at: new Date().toISOString(),
-            },
-          })
-          .eq('id', match.id)
-          .eq('tenant_id', tenantId)
-      }
-    }
-  }
-
-  // Notify chef with specifics if we have them
+  // Payment email parsing is TBD (no sample email yet).
+  // For now, log it and notify the chef so they can manually close the loop.
   try {
     const chefUserId = await getChefAuthUserId(tenantId)
     if (chefUserId) {
-      const amountText = payment?.netPayoutCents
-        ? ` - Payout: $${(payment.netPayoutCents / 100).toFixed(2)}`
-        : ''
-      const orderText = payment?.orderId ? ` (Order #${payment.orderId})` : ''
-      const matchText = matchedInquiryId ? '' : ' (could not match to an inquiry)'
-
       await createNotification({
         tenantId,
         recipientId: chefUserId,
         category: 'inquiry',
         action: 'inquiry_reply',
-        title: `TakeAChef payment received${orderText}`,
-        body: `Payment notification processed${amountText}${matchText}`,
-        actionUrl: matchedInquiryId ? `/inquiries/${matchedInquiryId}` : '/dashboard/marketplace',
+        title: 'TakeAChef payment notification received',
+        body: `Check your TakeAChef account for payment details — ${email.subject}`,
+        actionUrl: '/inquiries?channel=take_a_chef',
       })
     }
   } catch (notifErr) {
@@ -1916,7 +1481,7 @@ async function handleTacPayment(
   await logSyncEntry(supabase, tenantId, email, {
     classification: 'personal',
     confidence: 'high',
-    action_taken: matchedInquiryId ? 'payment_reconciled' : 'payment_logged',
+    action_taken: 'payment_logged',
     platform_email_type: 'tac_payment',
   })
 
@@ -2019,8 +1584,20 @@ async function handleYhangryNewInquiry(
     return
   }
 
-  // Store contact info on the inquiry (no auto-client creation).
-  const clientId: string | null = null
+  // Create client record — name comes from Yhangry later, use placeholder
+  let clientId: string | null = null
+  try {
+    const clientResult = await createClientFromLead(tenantId, {
+      full_name: inquiry.clientName || 'Yhangry Client',
+      email: `yhangry-${Date.now()}@placeholder.cheflowhq.com`,
+      phone: null,
+      dietary_restrictions: null,
+      source: 'yhangry',
+    })
+    clientId = clientResult.id
+  } catch (clientErr) {
+    console.error('[Yhangry] Client creation failed (non-fatal):', clientErr)
+  }
 
   // Compute lead score from parsed platform fields
   const yhangryLeadScore = scoreInquiryFields({
@@ -2055,9 +1632,6 @@ async function handleYhangryNewInquiry(
       tenant_id: tenantId,
       channel: 'yhangry',
       client_id: clientId,
-      contact_name: inquiry.clientName || 'Yhangry Client',
-      contact_email: null,
-      contact_phone: null,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: inquiry.eventDate,
       confirmed_location: inquiry.location,
@@ -2511,8 +2085,25 @@ async function handleGenericNewLead(
     return
   }
 
-  // Store contact info on the inquiry (no auto-client creation).
-  const clientId: string | null = null
+  // Create client record
+  let clientId: string | null = null
+  try {
+    const clientResult = await createClientFromLead(tenantId, {
+      full_name: fields.clientName,
+      email: `${platform}-${Date.now()}@placeholder.cheflowhq.com`,
+      phone: null,
+      dietary_restrictions: fields.dietaryRestrictions
+        ? fields.dietaryRestrictions
+            .split(/[\n,]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null,
+      source: channelValue,
+    })
+    clientId = clientResult.id
+  } catch (clientErr) {
+    console.error(`[${displayName}] Client creation failed (non-fatal):`, clientErr)
+  }
 
   // Compute lead score from parsed platform fields
   const platformLeadScore = scoreInquiryFields({
@@ -2556,9 +2147,6 @@ async function handleGenericNewLead(
       tenant_id: tenantId,
       channel: channelValue as any,
       client_id: clientId,
-      contact_name: fields.clientName,
-      contact_email: null,
-      contact_phone: null,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: fields.eventDate,
       confirmed_guest_count: fields.guestCount,
@@ -2813,6 +2401,7 @@ async function logSyncEntry(
     platform_email_type?: string | null
   }
 ) {
+  // Parse received_at from email date header
   let receivedAt: string | null = null
   if (email.date) {
     try {
@@ -2822,36 +2411,26 @@ async function logSyncEntry(
     }
   }
 
-  const existingId = await getExistingSyncLogId(
-    supabase,
-    tenantId,
-    email.messageId,
-    email.mailboxId
+  await supabase.from('gmail_sync_log').upsert(
+    {
+      tenant_id: tenantId,
+      gmail_message_id: email.messageId,
+      gmail_thread_id: email.threadId,
+      from_address: email.from.email,
+      subject: email.subject?.slice(0, 500) || null,
+      classification: entry.classification,
+      confidence: entry.confidence,
+      action_taken: entry.action_taken,
+      inquiry_id: entry.inquiry_id || null,
+      message_id: entry.message_id || null,
+      error: entry.error || null,
+      // Remy email awareness — store body content for search/context
+      body_preview: email.body?.slice(0, 2000) || null,
+      snippet: email.body?.slice(0, 200) || null,
+      to_address: email.to || null,
+      received_at: receivedAt,
+      platform_email_type: entry.platform_email_type || null,
+    },
+    { onConflict: 'tenant_id,gmail_message_id' }
   )
-  const payload = {
-    tenant_id: tenantId,
-    mailbox_id: getStoredMailboxId(email.mailboxId),
-    gmail_message_id: email.messageId,
-    gmail_thread_id: email.threadId,
-    from_address: email.from.email,
-    subject: email.subject?.slice(0, 500) || null,
-    classification: entry.classification,
-    confidence: entry.confidence,
-    action_taken: entry.action_taken,
-    inquiry_id: entry.inquiry_id || null,
-    message_id: entry.message_id || null,
-    error: entry.error || null,
-    body_preview: email.body?.slice(0, 2000) || null,
-    snippet: email.body?.slice(0, 200) || null,
-    to_address: email.to || null,
-    received_at: receivedAt,
-    platform_email_type: entry.platform_email_type || null,
-  }
-
-  if (existingId) {
-    await supabase.from('gmail_sync_log').update(payload).eq('id', existingId)
-    return
-  }
-
-  await supabase.from('gmail_sync_log').insert(payload)
 }

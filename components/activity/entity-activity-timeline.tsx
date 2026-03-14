@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useMemo } from 'react'
-import { Download } from '@/components/ui/icons'
+import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { EntityTimelineEntry, TimelineEntityType } from '@/lib/activity/entity-timeline'

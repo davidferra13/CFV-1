@@ -1,10 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState, useEffect, useRef, FormEvent, useCallback } from 'react'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { TurnstileWidget } from '@/components/security/turnstile-widget'
-import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 
 interface Props {
   chefId: string
@@ -26,7 +24,6 @@ interface FormData {
   guest_count: string
   occasion: string
   budget_range: string
-  budget_exact_amount: string
   allergy_flag: string
   allergies_food_restrictions: string
   favorite_ingredients_dislikes: string
@@ -55,11 +52,10 @@ const MONTH_OPTIONS = [
 
 const BUDGET_OPTIONS = [
   { value: 'under_500', label: 'Under $500' },
-  { value: '500_1500', label: '$500 - $1,500' },
-  { value: '1500_3000', label: '$1,500 - $3,000' },
-  { value: '3000_5000', label: '$3,000 - $5,000' },
+  { value: '500_1500', label: '$500 – $1,500' },
+  { value: '1500_3000', label: '$1,500 – $3,000' },
+  { value: '3000_5000', label: '$3,000 – $5,000' },
   { value: 'over_5000', label: '$5,000+' },
-  { value: 'not_sure', label: 'Not sure yet' },
 ]
 
 const GUEST_OPTIONS = [
@@ -80,21 +76,11 @@ const GUEST_OPTIONS = [
 
 const ALLERGY_OPTIONS = [
   { value: 'none', label: 'No known allergies' },
-  { value: 'yes', label: "Yes - I'll describe below" },
+  { value: 'yes', label: "Yes — I'll describe below" },
   { value: 'unknown', label: 'Not sure yet' },
 ]
 
-function getBudgetMode(
-  budgetRange: string,
-  budgetExactAmount: string
-): 'exact' | 'range' | 'not_sure' | 'unset' {
-  if (budgetExactAmount.trim()) return 'exact'
-  if (budgetRange === 'not_sure') return 'not_sure'
-  if (budgetRange) return 'range'
-  return 'unset'
-}
-
-// Determine the API origin - works in both dev and production
+// Determine the API origin — works in both dev and production
 function getApiOrigin(): string {
   if (typeof window !== 'undefined') {
     // In an iframe, we get the origin from the page's own URL
@@ -152,12 +138,11 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
     guest_count: '',
     occasion: '',
     budget_range: '',
-    budget_exact_amount: '',
     allergy_flag: '',
     allergies_food_restrictions: '',
     favorite_ingredients_dislikes: '',
     additional_notes: '',
-    website_url: '', // honeypot - hidden from users
+    website_url: '', // honeypot — hidden from users
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -214,11 +199,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
     if (!formData.guest_count) errs.guest_count = 'Required'
     if (!formData.occasion.trim()) errs.occasion = 'Required'
     if (!formData.budget_range) errs.budget_range = 'Required'
-    if (formData.budget_exact_amount.trim()) {
-      const parsedBudget = Number(formData.budget_exact_amount)
-      if (!Number.isFinite(parsedBudget) || parsedBudget < 0)
-        errs.budget_exact_amount = 'Enter a valid amount'
-    }
     if (!formData.allergy_flag) errs.allergy_flag = 'Required'
     if (formData.allergy_flag === 'yes' && !formData.allergies_food_restrictions.trim())
       errs.allergies_food_restrictions = 'Please describe your allergies'
@@ -239,10 +219,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
       const day = Number(formData.day)
       const year = Number(formData.year)
       const eventDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-      const budgetCents = formData.budget_exact_amount.trim()
-        ? Math.round(Number(formData.budget_exact_amount) * 100)
-        : null
-      const budgetMode = getBudgetMode(formData.budget_range, formData.budget_exact_amount)
 
       const apiOrigin = getApiOrigin()
       const res = await fetch(`${apiOrigin}/api/embed/inquiry`, {
@@ -258,7 +234,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           serve_time: formData.serve_time.trim().toUpperCase(),
           guest_count: parseInt(formData.guest_count, 10),
           occasion: formData.occasion.trim(),
-          budget_cents: budgetCents,
           budget_range: formData.budget_range || undefined,
           allergy_flag: formData.allergy_flag || undefined,
           allergies_food_restrictions: formData.allergies_food_restrictions.trim(),
@@ -282,14 +257,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
         throw new Error(result.error || 'Submission failed')
       }
 
-      trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
-        source: 'embed_widget',
-        budget_mode: budgetMode,
-        budget_range: formData.budget_range || null,
-        budget_exact_entered: budgetCents != null,
-        guest_count: parseInt(formData.guest_count, 10),
-      })
-
       setShowSuccess(true)
 
       // Notify parent window (for embed script to resize/respond)
@@ -311,7 +278,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
 
-  // Inline styles (self-contained - no external CSS dependencies)
+  // ── Inline styles (self-contained — no external CSS deps) ──
   const cardStyle: React.CSSProperties = {
     backgroundColor: bgCard,
     borderRadius: '16px',
@@ -416,7 +383,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
                 guest_count: '',
                 occasion: '',
                 budget_range: '',
-                budget_exact_amount: '',
                 allergy_flag: '',
                 allergies_food_restrictions: '',
                 favorite_ingredients_dislikes: '',
@@ -491,7 +457,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           </p>
         </div>
 
-        {/* Honeypot - hidden from real users, bots fill it */}
+        {/* Honeypot — hidden from real users, bots fill it */}
         <div
           style={{ position: 'absolute', left: '-9999px', height: 0, overflow: 'hidden' }}
           aria-hidden="true"
@@ -678,7 +644,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
 
           {/* Budget */}
           <div>
-            <label style={labelStyle}>Budget *</label>
+            <label style={labelStyle}>Approximate Budget *</label>
             <select
               style={inputStyle}
               name="budget_range"
@@ -694,21 +660,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
               ))}
             </select>
             {errors.budget_range && <p style={errorStyle}>{errors.budget_range}</p>}
-            <div style={{ marginTop: '8px' }}>
-              <label style={labelStyle}>Exact Budget (optional)</label>
-              <input
-                style={inputStyle}
-                name="budget_exact_amount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.budget_exact_amount}
-                onChange={handleChange}
-                aria-label="Exact budget amount"
-                placeholder="e.g. 1800"
-              />
-              {errors.budget_exact_amount && <p style={errorStyle}>{errors.budget_exact_amount}</p>}
-            </div>
           </div>
 
           {/* Favorites/Dislikes */}
@@ -771,7 +722,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
             />
           </div>
 
-          {/* Invisible Turnstile CAPTCHA - renders nothing visible */}
+          {/* Invisible Turnstile CAPTCHA — renders nothing visible */}
           <TurnstileWidget
             onVerify={(token) => setTurnstileToken(token)}
             onExpire={() => setTurnstileToken(null)}
