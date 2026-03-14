@@ -30,6 +30,7 @@ import type { ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { ShoppingCart } from '@/components/ui/icons'
 import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
 import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
@@ -466,10 +467,46 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           <Button variant="secondary" onClick={handleExportExcel}>
             Export Excel
           </Button>
+          {event && (
+            <Link
+              href={`/culinary/prep/shopping?startDate=${event.event_date.split('T')[0]}&endDate=${event.event_date.split('T')[0]}&eventIds=${event.id}`}
+            >
+              <Button variant="secondary">
+                <ShoppingCart className="mr-1.5 h-4 w-4" />
+                Shopping List
+              </Button>
+            </Link>
+          )}
           <Button variant="primary" onClick={() => router.push(`/menus/${menu.id}/editor`)}>
             Open Editor
           </Button>
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2">
+        <Link href={`/menus/${menu.id}/editor`}>
+          <Button size="sm" variant="secondary">
+            Edit Menu
+          </Button>
+        </Link>
+        {event && (
+          <Link
+            href={`/culinary/prep/shopping?startDate=${event.event_date.split('T')[0]}&endDate=${event.event_date.split('T')[0]}&eventIds=${event.id}`}
+          >
+            <Button size="sm" variant="secondary">
+              <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+              Generate Shopping List
+            </Button>
+          </Link>
+        )}
+        {event && (
+          <Link href={`/quotes/new?event_id=${event.id}`}>
+            <Button size="sm" variant="secondary">
+              Create Quote
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">

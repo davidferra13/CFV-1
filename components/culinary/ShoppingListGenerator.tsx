@@ -17,13 +17,15 @@ function formatCurrency(cents: number) {
 
 type Props = {
   initialResult: ShoppingListResult
+  initialEventIds?: string[]
 }
 
-export function ShoppingListGenerator({ initialResult }: Props) {
+export function ShoppingListGenerator({ initialResult, initialEventIds }: Props) {
   const router = useRouter()
   const [result, setResult] = useState(initialResult)
   const [startDate, setStartDate] = useState(initialResult.startDate)
   const [endDate, setEndDate] = useState(initialResult.endDate)
+  const [pinnedEventIds] = useState<string[] | undefined>(initialEventIds)
   const [groupBy, setGroupBy] = useState<'category' | 'supplier'>('category')
   const [showShortagesOnly, setShowShortagesOnly] = useState(true)
   const [selectedSupplier, setSelectedSupplier] = useState('')
@@ -59,7 +61,7 @@ export function ShoppingListGenerator({ initialResult }: Props) {
     setError(null)
     startTransition(async () => {
       try {
-        const next = await generateShoppingList({ startDate, endDate })
+        const next = await generateShoppingList({ startDate, endDate, eventIds: pinnedEventIds })
         setResult(next)
       } catch (err: any) {
         setError(err?.message || 'Failed to generate shopping list')

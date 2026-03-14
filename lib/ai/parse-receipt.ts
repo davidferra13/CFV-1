@@ -1,6 +1,14 @@
 // AI Receipt Extraction
 // Uses Gemini vision to extract structured data from receipt photos
 
+// ⚠️ AI POLICY EXCEPTION: Vision processing
+// These functions use Gemini cloud for image/PDF analysis.
+// Ollama does not currently support vision models on our hardware (6GB VRAM).
+// ACCEPTABLE because: receipts contain store names and prices (LOW sensitivity),
+// not client PII, dietary data, or financial summaries.
+// REVIEW WHEN: A local vision model becomes viable (e.g., LLaVA on Ollama).
+// See AI-POLICY.md for the full data classification rules.
+
 'use server'
 
 import { GoogleGenAI } from '@google/genai'

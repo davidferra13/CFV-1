@@ -16,16 +16,26 @@ function getDefaultWindow() {
   }
 }
 
-export default async function ConsolidatedShoppingPage() {
+interface PageProps {
+  searchParams?: Promise<{ startDate?: string; endDate?: string; eventIds?: string }>
+}
+
+export default async function ConsolidatedShoppingPage({ searchParams }: PageProps) {
   await requireChef()
-  const window = getDefaultWindow()
+  const params = await searchParams
+  const defaultWindow = getDefaultWindow()
+
+  const startDate = params?.startDate ?? defaultWindow.startDate
+  const endDate = params?.endDate ?? defaultWindow.endDate
+  const eventIds = params?.eventIds ? params.eventIds.split(',').filter(Boolean) : undefined
 
   const initialResult = await generateShoppingList({
-    startDate: window.startDate,
-    endDate: window.endDate,
+    startDate,
+    endDate,
+    eventIds,
   }).catch(() => ({
-    startDate: window.startDate,
-    endDate: window.endDate,
+    startDate,
+    endDate,
     items: [],
     totalEstimatedCostCents: 0,
     shortageCount: 0,
@@ -43,7 +53,7 @@ export default async function ConsolidatedShoppingPage() {
         </p>
       </div>
 
-      <ShoppingListGenerator initialResult={initialResult} />
+      <ShoppingListGenerator initialResult={initialResult} initialEventIds={eventIds} />
     </div>
   )
 }

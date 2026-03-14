@@ -1,6 +1,16 @@
 // AI Vision Document Parser
 // Accepts images or PDFs, detects content type, and extracts structured data
 
+// ⚠️ AI POLICY EXCEPTION: Vision processing
+// This function uses Gemini cloud for image/PDF analysis.
+// Ollama does not currently support vision models on our hardware (6GB VRAM).
+// WARNING: The 'client_info' detection path extracts names, emails, phones,
+// dietary restrictions, and allergies. This is HIGH sensitivity data going to cloud.
+// TODO: When a local vision model is available, migrate client_info extraction
+// to Ollama. Other document types (receipt, recipe text, general docs) are
+// lower sensitivity and acceptable as cloud-processed.
+// See AI-POLICY.md for the full data classification rules.
+
 'use server'
 
 import { GoogleGenAI } from '@google/genai'

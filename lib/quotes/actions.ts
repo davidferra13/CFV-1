@@ -937,6 +937,68 @@ export async function reviseQuote(quoteId: string): Promise<{ success: true; new
   return { success: true, newQuoteId: newQuote.id }
 }
 
+// ============================================
+// 11. GET MENU COST FOR EVENT
+// ============================================
+
+/**
+ * Get the food cost from the menu linked to an event.
+ * Returns null if no menu or no cost data available.
+ */
+export async function getEventMenuCost(eventId: string): Promise<{
+  menuId: string
+  menuName: string
+  totalFoodCostCents: number
+  costPerGuestCents: number | null
+  foodCostPercentage: number | null
+  hasAllCosts: boolean
+  guestCount: number | null
+} | null> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Find the menu linked to this event
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('id, name, target_guest_count')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!menu) return null
+
+  // Get cost summary
+  const { data: cost } = await supabase
+    .from('menu_cost_summary')
+    .select(
+      'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs'
+    )
+    .eq('menu_id', menu.id)
+    .maybeSingle()
+
+  if (!cost?.total_recipe_cost_cents) return null
+
+  // Get event guest count
+  const { data: event } = await supabase
+    .from('events')
+    .select('guest_count')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  return {
+    menuId: menu.id,
+    menuName: menu.name,
+    totalFoodCostCents: cost.total_recipe_cost_cents,
+    costPerGuestCents: cost.cost_per_guest_cents,
+    foodCostPercentage: cost.food_cost_percentage,
+    hasAllCosts: cost.has_all_recipe_costs ?? false,
+    guestCount: event?.guest_count ?? menu.target_guest_count ?? null,
+  }
+}
+
 /**
  * Fetch the version history for a quote (all versions sharing the same lineage).
  */
