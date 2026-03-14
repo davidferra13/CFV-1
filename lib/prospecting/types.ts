@@ -67,6 +67,33 @@ export interface Prospect {
   ai_call_script: string | null
   latitude: number | null
   longitude: number | null
+  // Outreach pipeline fields (n8n/Instantly integration)
+  outreach_campaign_id: string | null
+  instantly_lead_id: string | null
+  email_sent_at: string | null
+  email_opened_at: string | null
+  reply_received_at: string | null
+  reply_sentiment: 'interested' | 'not_interested' | 'unknown' | null
+  reply_text: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OutreachCampaign {
+  id: string
+  chef_id: string
+  instantly_campaign_id: string | null
+  name: string
+  status: 'draft' | 'warming' | 'active' | 'paused' | 'completed'
+  email_account: string | null
+  domain: string | null
+  leads_count: number
+  sent_count: number
+  open_count: number
+  reply_count: number
+  bounce_count: number
+  meeting_count: number
+  converted_count: number
   created_at: string
   updated_at: string
 }

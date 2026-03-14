@@ -1,0 +1,62 @@
+{
+  "name": "ChefFlow Reply Handler - Instantly Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instantly-reply",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Instantly Reply Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "typeVersion": 2,
+      "webhookId": "instantly-reply"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "chefflow_url", "value": "http://localhost:3100" },
+            { "name": "prospecting_key", "value": "={{$env.PROSPECTING_API_KEY}}" }
+          ]
+        }
+      },
+      "id": "config",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "position": [450, 300],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.chefflow_url}}/api/prospecting/webhook/reply",
+        "method": "POST",
+        "body": {
+          "email": "={{$node.webhook.json.body.email || $node.webhook.json.body.lead_email}}",
+          "reply_text": "={{$node.webhook.json.body.reply_text || $node.webhook.json.body.message_text || ''}}",
+          "campaign_id": "={{$node.webhook.json.body.campaign_id || ''}}",
+          "lead_id": "={{$node.webhook.json.body.lead_id || ''}}",
+          "is_interested": "={{$node.webhook.json.body.is_interested}}"
+        },
+        "headers": {
+          "X-Prospecting-Key": "={{$node.config.json.prospecting_key}}",
+          "Content-Type": "application/json"
+        },
+        "options": {}
+      },
+      "id": "forward_to_chefflow",
+      "name": "Forward to ChefFlow Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 300],
+      "typeVersion": 4,
+      "notes": "ChefFlow handles all the logic: prospect matching, sentiment classification, pipeline update, auto-conversion. n8n just relays the webhook."
+    }
+  ],
+  "connections": {
+    "Instantly Reply Webhook": { "main": [[{ "node": "Config", "type": "main", "index": 0 }]] },
+    "Config": { "main": [[{ "node": "Forward to ChefFlow Webhook", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

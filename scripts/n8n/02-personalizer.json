@@ -1,0 +1,149 @@
+{
+  "name": "ChefFlow Personalizer - Ollama + Instantly",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [250, 300],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "chefflow_url", "value": "http://localhost:3100" },
+            { "name": "ollama_url", "value": "http://localhost:11434" },
+            { "name": "ollama_model", "value": "qwen3:8b" },
+            { "name": "prospecting_key", "value": "={{$env.PROSPECTING_API_KEY}}" },
+            { "name": "instantly_api_key", "value": "={{$env.INSTANTLY_API_KEY}}" },
+            { "name": "instantly_campaign_id", "value": "" },
+            { "name": "chef_name", "value": "David" },
+            { "name": "chef_title", "value": "Private Chef" },
+            { "name": "chef_location", "value": "South Florida" }
+          ],
+          "number": [{ "name": "batch_size", "value": 20 }]
+        }
+      },
+      "id": "config",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "position": [450, 300],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.chefflow_url}}/api/prospecting/queue?limit={{$node.config.json.batch_size}}",
+        "method": "GET",
+        "headers": {
+          "X-Prospecting-Key": "={{$node.config.json.prospecting_key}}"
+        },
+        "options": {}
+      },
+      "id": "fetch_queue",
+      "name": "Fetch Uncontacted Prospects",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 300],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "functionCode": "// Split prospects into individual items for per-prospect processing\nconst prospects = $input.first().json.prospects || [];\nreturn prospects.map(p => ({ json: p }));"
+      },
+      "id": "split",
+      "name": "Split Prospects",
+      "type": "n8n-nodes-base.code",
+      "position": [850, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.ollama_url}}/api/generate",
+        "method": "POST",
+        "body": {
+          "model": "={{$node.config.json.ollama_model}}",
+          "prompt": "Write a personalized cold email from {{$node.config.json.chef_name}}, a {{$node.config.json.chef_title}} in {{$node.config.json.chef_location}}, to {{$json.contact_person || $json.name}}{{$json.contact_title ? ' (' + $json.contact_title + ')' : ''}} at {{$json.name}}.\n\nAbout them:\n- Category: {{$json.category}}\n- Location: {{$json.city}}{{$json.state ? ', ' + $json.state : ''}}\n- Description: {{$json.description || 'N/A'}}\n{{$json.event_types_hosted ? '- Events they host: ' + $json.event_types_hosted.join(', ') : ''}}\n{{$json.avg_event_budget ? '- Budget range: ' + $json.avg_event_budget : ''}}\n\nRules:\n- 3-4 sentences max, warm but professional\n- Reference something specific about their business\n- Include a clear call to action (complimentary tasting, brief call)\n- Never use em dashes\n- Sound human, not AI-generated\n- No generic flattery\n\nRespond with ONLY a JSON object: {\"subject\": \"...\", \"body\": \"...\"}",
+          "stream": false,
+          "options": { "temperature": 0.7, "num_predict": 300 }
+        },
+        "headers": { "Content-Type": "application/json" },
+        "options": { "timeout": 30000 }
+      },
+      "id": "ollama",
+      "name": "Ollama Personalize",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1050, 300],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse Ollama response and save draft to ChefFlow\nconst prospect = $node.split.json;\nconst ollamaResponse = $input.first().json.response || '';\n\nlet parsed;\ntry {\n  // Extract JSON from response (may have markdown wrapping)\n  const jsonMatch = ollamaResponse.match(/\\{[\\s\\S]*\\}/);\n  parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { subject: 'Quick question', body: ollamaResponse };\n} catch {\n  parsed = { subject: 'Quick question', body: ollamaResponse };\n}\n\nreturn [{ json: { ...prospect, draft_subject: parsed.subject, draft_body: parsed.body } }];"
+      },
+      "id": "parse",
+      "name": "Parse Email",
+      "type": "n8n-nodes-base.code",
+      "position": [1250, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.chefflow_url}}/api/prospecting/{{$json.id}}/draft-email",
+        "method": "PATCH",
+        "body": {
+          "subject": "={{$json.draft_subject}}",
+          "body": "={{$json.draft_body}}"
+        },
+        "headers": {
+          "X-Prospecting-Key": "={{$node.config.json.prospecting_key}}",
+          "Content-Type": "application/json"
+        },
+        "options": {}
+      },
+      "id": "save_draft",
+      "name": "Save Draft to ChefFlow",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1450, 300],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.chefflow_url}}/api/prospecting/{{$json.id}}/log-outreach",
+        "method": "POST",
+        "body": {
+          "outreach_type": "email",
+          "sequence_number": 1,
+          "subject": "={{$json.draft_subject}}",
+          "body": "={{$json.draft_body}}",
+          "pipeline_stage": "contacted",
+          "email_sent_at": "={{new Date().toISOString()}}"
+        },
+        "headers": {
+          "X-Prospecting-Key": "={{$node.config.json.prospecting_key}}",
+          "Content-Type": "application/json"
+        },
+        "options": {}
+      },
+      "id": "log_outreach",
+      "name": "Log Outreach in ChefFlow",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1650, 300],
+      "typeVersion": 4,
+      "notes": "This logs the email AND moves pipeline to 'contacted'. Run this AFTER pushing to Instantly (add Instantly node between save_draft and log_outreach in production)."
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Config", "type": "main", "index": 0 }]] },
+    "Config": { "main": [[{ "node": "Fetch Uncontacted Prospects", "type": "main", "index": 0 }]] },
+    "Fetch Uncontacted Prospects": {
+      "main": [[{ "node": "Split Prospects", "type": "main", "index": 0 }]]
+    },
+    "Split Prospects": { "main": [[{ "node": "Ollama Personalize", "type": "main", "index": 0 }]] },
+    "Ollama Personalize": { "main": [[{ "node": "Parse Email", "type": "main", "index": 0 }]] },
+    "Parse Email": { "main": [[{ "node": "Save Draft to ChefFlow", "type": "main", "index": 0 }]] },
+    "Save Draft to ChefFlow": {
+      "main": [[{ "node": "Log Outreach in ChefFlow", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

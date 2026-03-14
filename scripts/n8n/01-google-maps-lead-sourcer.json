@@ -1,0 +1,120 @@
+{
+  "name": "ChefFlow Lead Sourcer - Google Maps",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [250, 300],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "search_query", "value": "wedding venues" },
+            { "name": "location", "value": "Miami, FL" },
+            { "name": "chefflow_url", "value": "http://localhost:3100" },
+            { "name": "prospecting_key", "value": "={{$env.PROSPECTING_API_KEY}}" }
+          ],
+          "number": [{ "name": "max_results", "value": 50 }]
+        }
+      },
+      "id": "config",
+      "name": "Campaign Config",
+      "type": "n8n-nodes-base.set",
+      "position": [450, 300],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "url": "https://maps.googleapis.com/maps/api/place/textsearch/json",
+        "qs": {
+          "query": "={{$node.config.json.search_query}} in {{$node.config.json.location}}",
+          "key": "={{$env.GOOGLE_MAPS_API_KEY}}"
+        },
+        "options": {}
+      },
+      "id": "google_maps",
+      "name": "Google Maps Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 300],
+      "typeVersion": 4,
+      "notes": "Replace with Outscraper or Apify node for richer data (email, phone, social). Google Places API returns basic info only. See README for setup."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Transform Google Maps results into ChefFlow prospect format\nconst results = $input.all();\nconst prospects = [];\n\nfor (const item of results) {\n  const place = item.json;\n  if (!place.name) continue;\n  \n  // Map Google Maps category to ChefFlow category\n  const types = (place.types || []).join(' ').toLowerCase();\n  let category = 'other';\n  if (types.includes('wedding') || types.includes('banquet')) category = 'wedding_planner';\n  else if (types.includes('hotel') || types.includes('resort')) category = 'luxury_hotel';\n  else if (types.includes('country_club') || types.includes('golf')) category = 'country_club';\n  else if (types.includes('yacht') || types.includes('marina')) category = 'yacht_club';\n  else if (types.includes('event') || types.includes('conference')) category = 'corporate_events';\n  \n  prospects.push({\n    name: place.name,\n    address: place.formatted_address || place.vicinity || null,\n    city: null, // Parsed from address in enrichment\n    state: null,\n    category: category,\n    latitude: place.geometry?.location?.lat || null,\n    longitude: place.geometry?.location?.lng || null,\n    description: place.editorial_summary?.overview || null,\n    tags: ['google-maps-scrape'],\n    priority: (place.rating >= 4.5 && place.user_ratings_total >= 100) ? 'high' : 'normal',\n  });\n}\n\nreturn [{ json: { prospects } }];"
+      },
+      "id": "transform",
+      "name": "Transform to Prospects",
+      "type": "n8n-nodes-base.code",
+      "position": [850, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.chefflow_url}}/api/prospecting/check-dups",
+        "method": "POST",
+        "body": {
+          "prospects": "={{$node.transform.json.prospects.map(p => ({ name: p.name, city: p.city }))}}"
+        },
+        "headers": {
+          "X-Prospecting-Key": "={{$node.config.json.prospecting_key}}",
+          "Content-Type": "application/json"
+        },
+        "options": {}
+      },
+      "id": "dedup_check",
+      "name": "Check Duplicates",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1050, 300],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "functionCode": "// Filter out duplicates\nconst prospects = $node.transform.json.prospects;\nconst dedupResults = $node.dedup_check.json.results || [];\n\nconst newProspects = prospects.filter((p, i) => {\n  const result = dedupResults[i];\n  return result && !result.isDuplicate;\n});\n\nconst skipped = prospects.length - newProspects.length;\nconsole.log(`Dedup: ${newProspects.length} new, ${skipped} duplicates skipped`);\n\nreturn [{ json: { prospects: newProspects, total: prospects.length, new_count: newProspects.length, skipped } }];"
+      },
+      "id": "filter_dupes",
+      "name": "Filter Duplicates",
+      "type": "n8n-nodes-base.code",
+      "position": [1250, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{$node.config.json.chefflow_url}}/api/prospecting/import",
+        "method": "POST",
+        "body": {
+          "prospects": "={{$node.filter_dupes.json.prospects}}"
+        },
+        "headers": {
+          "X-Prospecting-Key": "={{$node.config.json.prospecting_key}}",
+          "Content-Type": "application/json"
+        },
+        "options": {}
+      },
+      "id": "import",
+      "name": "Import to ChefFlow",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1450, 300],
+      "typeVersion": 4
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Campaign Config", "type": "main", "index": 0 }]] },
+    "Campaign Config": { "main": [[{ "node": "Google Maps Search", "type": "main", "index": 0 }]] },
+    "Google Maps Search": {
+      "main": [[{ "node": "Transform to Prospects", "type": "main", "index": 0 }]]
+    },
+    "Transform to Prospects": {
+      "main": [[{ "node": "Check Duplicates", "type": "main", "index": 0 }]]
+    },
+    "Check Duplicates": { "main": [[{ "node": "Filter Duplicates", "type": "main", "index": 0 }]] },
+    "Filter Duplicates": {
+      "main": [[{ "node": "Import to ChefFlow", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}
