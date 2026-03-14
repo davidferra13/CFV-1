@@ -121,6 +121,52 @@ Show the chef their complete financial picture. Revenue, expenses, profit, tax o
 
 ---
 
+---
+
+## PHASE 2: Polish, Integration, and Real-World Hardening
+
+Phase 1 built the infrastructure. Phase 2 makes it seamless for real chefs using ChefFlow every day.
+
+### PRIORITY 7: Workflow Continuity (The "One Click" Chain)
+
+The pieces exist but navigation between them is manual. A chef should flow through the entire event lifecycle without hunting for pages.
+
+- [ ] **Event Dashboard Quick Actions** - From an event detail page: one click to "Build Menu", "Generate Shopping List", "Create Quote", "View Prep Timeline". Currently these are separate pages the chef has to navigate to.
+
+- [ ] **Menu-to-Shopping List Bridge** - "Generate Shopping List" button on the menu detail page. Pre-fills the shopping list generator with the menu's event date and ID. Currently the chef has to navigate to /culinary/prep/shopping/ and enter dates manually.
+
+- [ ] **Post-Event Debrief Flow** - After an event: guided walkthrough to log actual time, capture expenses, rate dishes (which ones landed, which didn't), capture client feedback. Feeds into profitability analysis and recipe optimization.
+
+### PRIORITY 8: Mobile/Field Usability
+
+Beta testers are chefs. They're shopping, prepping, driving. They need ChefFlow on their phone.
+
+- [ ] **Shopping List Mobile View** - Touch-friendly shopping list with checkboxes. Swipe to mark items. Large tap targets. Works offline (service worker). Organized by store section.
+
+- [ ] **Timer/Clock-In Mobile** - Start/stop timers from phone. Large buttons. Minimal UI. One-tap clock in for prep, shopping, driving, execution.
+
+- [ ] **Day-Of Event View** - Simplified single-page view of everything needed for today's event: prep checklist, menu, client notes, venue directions, timeline. No navigation needed.
+
+### PRIORITY 9: Data Quality and Chef Onboarding
+
+New chef experience matters for beta retention.
+
+- [ ] **Ingredient Price Import** - Bulk import ingredient prices from CSV/spreadsheet. Chefs have years of pricing data in spreadsheets. One-time import to bootstrap the ingredient database.
+
+- [ ] **Recipe Import from Text** - Paste a recipe in freeform text (from a Word doc, email, or memory). Ollama parses it into structured recipe format. Chef reviews and confirms. (parsers exist already in lib/ai, may need UX refinement.)
+
+- [ ] **Menu Import from Photo** - Photo of a handwritten or printed menu. Vision AI extracts courses and dishes. Creates structured menu. (parse-document-vision.ts exists but needs dedicated UX.)
+
+### PRIORITY 10: Social Platform Foundation
+
+Part of the ChefFlow vision. Not the ops core, but important for long-term product strategy.
+
+- [ ] **Chef Profile Page** - Public-facing chef profile showing showcase menus, cuisine specialties, service areas, testimonials. The "hire this chef" landing page.
+
+- [ ] **Showcase Menus** - Menus flagged as showcase are visible on the chef's public profile. Beautiful presentation, no pricing visible. _(Partial: is_showcase flag exists, toggle exists.)_
+
+- [ ] **Testimonial Display** - Client testimonials on the public profile. Chef selects which to display. _(Partial: testimonial selection exists in lib/ai/testimonial-selection.ts.)_
+
 ## FUTURE (not now, but documented)
 
 - Staff management (scheduling, pay tracking, availability)
