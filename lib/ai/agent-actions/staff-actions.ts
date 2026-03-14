@@ -12,7 +12,7 @@ import {
   getEventStaffRoster,
 } from '@/lib/staff/actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── Event Finder ────────────────────────────────────────────────────────────
@@ -50,19 +50,21 @@ export const staffAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: full_name, role (sous_chef/line_cook/server/bartender/assistant/other), hourly_rate_cents (dollars→cents), phone, email, notes. Return ONLY JSON.',
-        description,
-        z.object({
-          full_name: z.string(),
-          role: z.string().optional(),
-          hourly_rate_cents: z.number().optional(),
-          phone: z.string().optional(),
-          email: z.string().optional(),
-          notes: z.string().optional(),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: full_name, role (sous_chef/line_cook/server/bartender/assistant/other), hourly_rate_cents (dollars→cents), phone, email, notes. Return ONLY JSON.',
+          description,
+          z.object({
+            full_name: z.string(),
+            role: z.string().optional(),
+            hourly_rate_cents: z.number().optional(),
+            phone: z.string().optional(),
+            email: z.string().optional(),
+            notes: z.string().optional(),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const fields: AgentActionPreview['fields'] = [
         { label: 'Name', value: parsed.full_name, editable: true },
@@ -120,12 +122,14 @@ export const staffAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: staffName (person to assign), eventIdentifier (event name or client). Return ONLY JSON.',
-        description,
-        z.object({ staffName: z.string(), eventIdentifier: z.string() }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: staffName (person to assign), eventIdentifier (event name or client). Return ONLY JSON.',
+          description,
+          z.object({ staffName: z.string(), eventIdentifier: z.string() }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       // Find staff
       const staff = await listStaffMembers(true)
@@ -206,16 +210,18 @@ export const staffAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: staffName, eventIdentifier, hours (number). Return ONLY JSON.',
-        description,
-        z.object({
-          staffName: z.string(),
-          eventIdentifier: z.string(),
-          hours: z.number(),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: staffName, eventIdentifier, hours (number). Return ONLY JSON.',
+          description,
+          z.object({
+            staffName: z.string(),
+            eventIdentifier: z.string(),
+            hours: z.number(),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const staff = await listStaffMembers(true)
       const staffLower = parsed.staffName.toLowerCase()

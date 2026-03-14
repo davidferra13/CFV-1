@@ -7,7 +7,7 @@
 // Jobs that are pure SQL run on PC. Jobs needing LLM prefer the Pi.
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { enqueueTask } from '@/lib/ai/queue/actions'
 import { AI_PRIORITY } from '@/lib/ai/queue/types'
@@ -68,12 +68,14 @@ export async function handleDailyBriefing(
   })
 
   try {
-    const result = await parseWithOllama(
-      `You are Remy, ${chefName}'s AI kitchen assistant. Generate a concise daily briefing. Be warm but efficient. Today is ${today}. Return JSON: { "greeting": "short morning greeting", "todayFocus": ["3 priorities"], "upcomingEvents": ["event summaries"], "actionItems": ["things needing attention"] }`,
-      `Events coming up:\n${events.map((e: any) => `- ${e.occasion ?? 'Event'} on ${e.event_date} for ${e.client?.full_name ?? 'client'} (${e.guest_count ?? '?'} guests, status: ${e.status})`).join('\n') || 'None in next 3 days'}\n\nOpen inquiries: ${inquiries.length}\nDate: ${today}`,
-      BriefingSchema,
-      { modelTier: 'standard', maxTokens: 800 }
-    )
+    const result = (
+      await dispatchPrivate(
+        `You are Remy, ${chefName}'s AI kitchen assistant. Generate a concise daily briefing. Be warm but efficient. Today is ${today}. Return JSON: { "greeting": "short morning greeting", "todayFocus": ["3 priorities"], "upcomingEvents": ["event summaries"], "actionItems": ["things needing attention"] }`,
+        `Events coming up:\n${events.map((e: any) => `- ${e.occasion ?? 'Event'} on ${e.event_date} for ${e.client?.full_name ?? 'client'} (${e.guest_count ?? '?'} guests, status: ${e.status})`).join('\n') || 'None in next 3 days'}\n\nOpen inquiries: ${inquiries.length}\nDate: ${today}`,
+        BriefingSchema,
+        { modelTier: 'standard', maxTokens: 800 }
+      )
+    ).result
 
     return { ...result, generatedAt: new Date().toISOString() }
   } catch (err) {
@@ -183,15 +185,17 @@ export async function handleWeeklyInsights(
   })
 
   try {
-    const result = await parseWithOllama(
-      `You are Remy, ${chefName}'s AI business advisor. Generate a concise weekly business insights report. Be encouraging but honest. Return JSON: { "headline": "one-sentence summary", "wins": ["good things"], "watchOuts": ["concerns"], "recommendations": ["actionable suggestions"] }`,
-      `This week's metrics:
+    const result = (
+      await dispatchPrivate(
+        `You are Remy, ${chefName}'s AI business advisor. Generate a concise weekly business insights report. Be encouraging but honest. Return JSON: { "headline": "one-sentence summary", "wins": ["good things"], "watchOuts": ["concerns"], "recommendations": ["actionable suggestions"] }`,
+        `This week's metrics:
 - ${completedEvents} events completed
 - ${newInquiries} new inquiries
 - ${newClients} new clients`,
-      InsightsSchema,
-      { modelTier: 'standard', maxTokens: 800 }
-    )
+        InsightsSchema,
+        { modelTier: 'standard', maxTokens: 800 }
+      )
+    ).result
 
     return {
       ...result,
@@ -757,12 +761,14 @@ export async function handleSocialPostDraft(
   })
 
   try {
-    const result = await parseWithOllama(
-      `You are a social media assistant for ${chefName}, a private chef. Generate 2-3 social media post ideas based on their recent activity. Mix promotional and engagement posts. Never mention specific client names — privacy first. Return JSON: { "posts": [{ "platform": "Instagram|Facebook|LinkedIn", "caption": "post text", "hashtags": ["tag1", "tag2"], "postType": "recap|promo|engagement|seasonal" }] }`,
-      `Recent completed events:\n${(recentEvents ?? []).map((e: any) => `- ${e.occasion ?? 'Private event'} (${e.guest_count ?? '?'} guests, ${e.event_date})`).join('\n') || 'None this week'}\n\nUpcoming events: ${upcomingEvents?.length ?? 0}\nSeason: ${new Date().toLocaleString('default', { month: 'long' })}`,
-      PostSchema,
-      { modelTier: 'standard', maxTokens: 800 }
-    )
+    const result = (
+      await dispatchPrivate(
+        `You are a social media assistant for ${chefName}, a private chef. Generate 2-3 social media post ideas based on their recent activity. Mix promotional and engagement posts. Never mention specific client names — privacy first. Return JSON: { "posts": [{ "platform": "Instagram|Facebook|LinkedIn", "caption": "post text", "hashtags": ["tag1", "tag2"], "postType": "recap|promo|engagement|seasonal" }] }`,
+        `Recent completed events:\n${(recentEvents ?? []).map((e: any) => `- ${e.occasion ?? 'Private event'} (${e.guest_count ?? '?'} guests, ${e.event_date})`).join('\n') || 'None this week'}\n\nUpcoming events: ${upcomingEvents?.length ?? 0}\nSeason: ${new Date().toLocaleString('default', { month: 'long' })}`,
+        PostSchema,
+        { modelTier: 'standard', maxTokens: 800 }
+      )
+    ).result
 
     return {
       postCount: result.posts.length,
@@ -848,12 +854,14 @@ export async function handleClientSentiment(
         )
         .join('\n')
 
-      sentimentAnalysis = await parseWithOllama(
-        'Analyze the overall client sentiment from these recent messages to a private chef. Look for satisfaction signals, complaints, enthusiasm, or concerns. Do NOT include client names in your output — use "a client" instead. Return JSON: { "overallSentiment": "positive|neutral|negative|mixed", "highlights": ["positive signals"], "concerns": ["negative signals or risks"] }',
-        `Recent client messages (last 30 days):\n${messageSample}`,
-        SentimentSchema,
-        { modelTier: 'fast', maxTokens: 400 }
-      )
+      sentimentAnalysis = (
+        await dispatchPrivate(
+          'Analyze the overall client sentiment from these recent messages to a private chef. Look for satisfaction signals, complaints, enthusiasm, or concerns. Do NOT include client names in your output — use "a client" instead. Return JSON: { "overallSentiment": "positive|neutral|negative|mixed", "highlights": ["positive signals"], "concerns": ["negative signals or risks"] }',
+          `Recent client messages (last 30 days):\n${messageSample}`,
+          SentimentSchema,
+          { modelTier: 'fast', maxTokens: 400 }
+        )
+      ).result
     } catch (err) {
       if (err instanceof OllamaOfflineError) throw err
       // Fall through to data-only report

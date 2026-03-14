@@ -5,7 +5,7 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createQuote, transitionQuote, getQuotes } from '@/lib/quotes/actions'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 const ParsedQuoteSchema = z.object({
@@ -25,7 +25,10 @@ async function parseQuoteFromNL(description: string) {
 Extract: client_name, quote_name (short title), pricing_model (per_person/flat_rate/custom), total_quoted_cents (convert dollars to cents), price_per_person_cents, guest_count_estimated, deposit_percent (e.g. 50 for 50%), valid_days (how many days the quote is valid), pricing_notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  return parseWithOllama(systemPrompt, description, ParsedQuoteSchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedQuoteSchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 export const quoteAgentActions: AgentActionDefinition[] = [

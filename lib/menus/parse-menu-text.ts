@@ -6,7 +6,7 @@
 'use server'
 
 import { z } from 'zod'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 
 // ============================================
 // SCHEMA
@@ -79,11 +79,13 @@ export async function parseMenuText(rawText: string): Promise<MenuParseResult> {
     warnings.push(`Text truncated from ${rawText.length} to ${maxChars} characters`)
   }
 
-  const result = await parseWithOllama(MENU_PARSER_PROMPT, textToSend, MenuParseResultSchema, {
-    modelTier: 'fast',
-    timeoutMs: 90_000,
-    maxTokens: 2048,
-  })
+  const result = (
+    await dispatchPrivate(MENU_PARSER_PROMPT, textToSend, MenuParseResultSchema, {
+      modelTier: 'fast',
+      timeoutMs: 90_000,
+      maxTokens: 2048,
+    })
+  ).result
 
   const dishes: ParsedDish[] = result.dishes.map((d) => ({
     ...d,

@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
 
@@ -285,12 +285,14 @@ export async function optimizeRecipeCost(recipeName: string): Promise<RecipeCost
   })
 
   try {
-    const result = await parseWithOllama(
-      `You are a cost-optimization advisor for a private chef. Given a recipe's ingredients and their costs, suggest 2-4 substitutions or sourcing changes that could reduce costs without sacrificing quality. Focus on: seasonal alternatives, bulk-buy candidates, comparable cheaper ingredients, and waste reduction. Return JSON: { "suggestions": [{ "ingredient": "...", "currentCost": "...", "suggestion": "...", "estimatedSaving": "..." }] }`,
-      `Recipe: ${recipe.name}\nIngredients:\n${ingredientList.join('\n')}\nTotal cost: $${(totalCostCents / 100).toFixed(2)}`,
-      SuggestionSchema,
-      { modelTier: 'standard', maxTokens: 600 }
-    )
+    const result = (
+      await dispatchPrivate(
+        `You are a cost-optimization advisor for a private chef. Given a recipe's ingredients and their costs, suggest 2-4 substitutions or sourcing changes that could reduce costs without sacrificing quality. Focus on: seasonal alternatives, bulk-buy candidates, comparable cheaper ingredients, and waste reduction. Return JSON: { "suggestions": [{ "ingredient": "...", "currentCost": "...", "suggestion": "...", "estimatedSaving": "..." }] }`,
+        `Recipe: ${recipe.name}\nIngredients:\n${ingredientList.join('\n')}\nTotal cost: $${(totalCostCents / 100).toFixed(2)}`,
+        SuggestionSchema,
+        { modelTier: 'standard', maxTokens: 600 }
+      )
+    ).result
 
     return {
       recipeName: recipe.name,

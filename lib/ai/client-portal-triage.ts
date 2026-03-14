@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from './ollama-errors'
 import { z } from 'zod'
 
@@ -79,9 +79,11 @@ Return JSON: {
 }`
 
   try {
-    return await parseWithOllama(systemPrompt, userContent, TriageResultSchema, {
-      modelTier: 'fast',
-    })
+    return (
+      await dispatchPrivate(systemPrompt, userContent, TriageResultSchema, {
+        modelTier: 'fast',
+      })
+    ).result
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
     console.error('[client-portal-triage] Failed:', err)

@@ -21,6 +21,11 @@ function normalizeRetentionDays(value: unknown): number | null {
   return Math.max(MIN_RETENTION_DAYS, Math.min(MAX_RETENTION_DAYS, Math.trunc(numeric)))
 }
 
+type AiPreferenceRow = {
+  tenant_id: string
+  data_retention_days: number | string | null
+}
+
 async function handleAiRetention(request: NextRequest): Promise<NextResponse> {
   const startedAt = Date.now()
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -38,8 +43,8 @@ async function handleAiRetention(request: NextRequest): Promise<NextResponse> {
       throw new Error(`Failed to load AI preferences: ${preferenceError.message}`)
     }
 
-    const preferences = (rawPreferences ?? [])
-      .map((row: any) => ({
+    const preferences = ((rawPreferences ?? []) as AiPreferenceRow[])
+      .map((row) => ({
         tenantId: row.tenant_id as string,
         retentionDays: normalizeRetentionDays(row.data_retention_days),
       }))

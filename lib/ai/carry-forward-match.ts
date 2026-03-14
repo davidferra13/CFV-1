@@ -8,7 +8,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { withAiFallback } from './with-ai-fallback'
 import { matchCarryForwardFormula } from '@/lib/formulas/carry-forward'
 import { getAvailableCarryForwardItems } from '@/lib/events/carry-forward'
@@ -132,7 +132,8 @@ Return JSON: {
     // Formula: Levenshtein fuzzy match + culinary substitution groups — deterministic
     () => matchCarryForwardFormula(leftovers, neededIngredients),
     // AI: enhanced matching with culinary context (when Ollama is online)
-    () => parseWithOllama(systemPrompt, userContent, CarryForwardMatchResultSchema)
+    async () =>
+      (await dispatchPrivate(systemPrompt, userContent, CarryForwardMatchResultSchema)).result
   )
 
   return { ...result, _aiSource: source }

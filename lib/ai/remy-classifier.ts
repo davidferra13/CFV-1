@@ -1,10 +1,9 @@
-
 // Remy — Intent Classifier
 // Uses the fast Ollama model to classify messages as question vs command.
 // PRIVACY: Chef messages may contain client names — must stay local.
 
 import { z } from 'zod'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { incrementAiMetric } from '@/lib/ai/ai-metrics'
 import { trySimilarityClassify } from '@/lib/ai/remy-intent-middle-layer'
@@ -279,12 +278,14 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
     // to avoid model swap on 6GB VRAM. Remy streaming now uses the same tier,
     // eliminates the 60-100s model swap penalty that occurs every request.
     incrementAiMetric('ai.classifier.ollama_hit')
-    const result = await parseWithOllama(
-      CLASSIFIER_SYSTEM_PROMPT,
-      `Classify this message: "${message}"`,
-      ClassificationSchema,
-      { modelTier: 'complex', cache: true, taskType: 'classification' }
-    )
+    const result = (
+      await dispatchPrivate(
+        CLASSIFIER_SYSTEM_PROMPT,
+        `Classify this message: "${message}"`,
+        ClassificationSchema,
+        { modelTier: 'complex', cache: true, taskType: 'classification' }
+      )
+    ).result
 
     // Low confidence: keep the LLM's actual intent but flag the confidence.
     // Previously this overrode to 'question' which silently dropped valid command classifications.

@@ -46,10 +46,16 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('hub-media', 'hub-media', true)
 ON CONFLICT (id) DO NOTHING;
 -- Storage policies for hub-media bucket
-CREATE POLICY "hub_media_read_all" ON storage.objects
-  FOR SELECT USING (bucket_id = 'hub-media');
-CREATE POLICY "hub_media_upload_all" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'hub-media');
+DO $$ BEGIN
+  CREATE POLICY "hub_media_read_all" ON storage.objects
+    FOR SELECT USING (bucket_id = 'hub-media');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY "hub_media_upload_all" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'hub-media');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
 -- RLS
 ALTER TABLE hub_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_pinned_notes ENABLE ROW LEVEL SECURITY;

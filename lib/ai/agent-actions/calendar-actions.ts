@@ -8,7 +8,7 @@ import {
   updateCalendarEntry,
   deleteCalendarEntry,
 } from '@/lib/calendar/entry-actions'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── NL Parser ───────────────────────────────────────────────────────────────
@@ -25,9 +25,10 @@ const ParsedCalendarEntrySchema = z.object({
 async function parseCalendarEntryFromNL(description: string) {
   const systemPrompt = `Extract calendar entry data: title, entry_type (blocked/available/personal/travel), start_date (YYYY-MM-DD), end_date (YYYY-MM-DD, same as start if single day), notes, is_all_day (default true).
 Return ONLY valid JSON. Omit unmentioned fields.`
-  return parseWithOllama(systemPrompt, description, ParsedCalendarEntrySchema, {
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedCalendarEntrySchema, {
     modelTier: 'standard',
   })
+  return result
 }
 
 // ─── Action Definitions ──────────────────────────────────────────────────────
@@ -101,15 +102,17 @@ export const calendarAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: entryTitle (title to find), updates: { title?, start_date?, end_date?, entry_type?, notes? }. Return ONLY JSON.',
-        description,
-        z.object({
-          entryTitle: z.string(),
-          updates: z.record(z.string(), z.unknown()),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: entryTitle (title to find), updates: { title?, start_date?, end_date?, entry_type?, notes? }. Return ONLY JSON.',
+          description,
+          z.object({
+            entryTitle: z.string(),
+            updates: z.record(z.string(), z.unknown()),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const fields: AgentActionPreview['fields'] = [{ label: 'Entry', value: parsed.entryTitle }]
       for (const [key, val] of Object.entries(parsed.updates)) {

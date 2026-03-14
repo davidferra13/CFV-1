@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { createHash } from 'crypto'
 import { validateMemoryContent } from '@/lib/ai/remy-guardrails'
@@ -529,7 +529,7 @@ async function parseWithMemoryRetries<T>(
   systemPrompt: string,
   userContent: string,
   schema: z.ZodType<T>,
-  options: Parameters<typeof parseWithOllama<T>>[3]
+  options?: Partial<import('@/lib/ai/dispatch').DispatchOptions<T>>
 ): Promise<T> {
   let lastError: unknown = null
 
@@ -539,7 +539,7 @@ async function parseWithMemoryRetries<T>(
     }
 
     try {
-      return await parseWithOllama(systemPrompt, userContent, schema, options)
+      return (await dispatchPrivate(systemPrompt, userContent, schema, options)).result
     } catch (err) {
       if (err instanceof OllamaOfflineError) throw err
       lastError = err

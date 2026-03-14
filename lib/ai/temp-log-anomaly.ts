@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { withAiFallback } from './with-ai-fallback'
 import { analyzeTempLogFormula } from '@/lib/formulas/temp-anomaly'
 import { z } from 'zod'
@@ -94,9 +94,9 @@ Return JSON: {
     () => analyzeTempLogFormula(formulaEntries),
     // AI: enhanced analysis with contextual nuance (when Ollama is online)
     () =>
-      parseWithOllama(systemPrompt, userContent, TempLogAnomalyResultSchema, {
+      dispatchPrivate(systemPrompt, userContent, TempLogAnomalyResultSchema, {
         modelTier: 'fast',
-      })
+      }).then((r) => r.result)
   )
 
   return { ...result, _aiSource: source } as TempLogAnomalyResult

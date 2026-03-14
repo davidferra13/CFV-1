@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
 
@@ -58,12 +58,14 @@ For each item, extract:
 Return JSON: { "items": [...] }`
 
   try {
-    const result = await parseWithOllama(
-      systemPrompt,
-      `Parse this grocery list: "${rawInput}"`,
-      GroceryParseSchema,
-      { modelTier: 'fast' }
-    )
+    const result = (
+      await dispatchPrivate(
+        systemPrompt,
+        `Parse this grocery list: "${rawInput}"`,
+        GroceryParseSchema,
+        { modelTier: 'fast' }
+      )
+    ).result
 
     return {
       items: result.items,

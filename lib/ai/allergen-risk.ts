@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from './dispatch'
 import { withAiFallback } from './with-ai-fallback'
 import { buildAllergenMatrixFormula } from '@/lib/formulas/allergen-matrix'
 import { z } from 'zod'
@@ -153,7 +153,18 @@ Return JSON: { "rows": [{"dish":"...","guestName":"...","riskLevel":"safe|may_co
     // Formula: FDA Big 9 + common allergen keyword lookup — deterministic
     () => buildAllergenMatrixFormula(formulaGuests, formulaMenuItems),
     // AI: enhanced analysis with contextual reasoning (when Ollama is online)
-    () => parseWithOllama(systemPrompt, userContent, AllergenRiskResultSchema)
+    async () => {
+      const { result } = await dispatchPrivate(
+        systemPrompt,
+        userContent,
+        AllergenRiskResultSchema,
+        {
+          taskDescription: 'allergen risk analysis with guest dietary restrictions',
+          contentType: 'structured_extraction',
+        }
+      )
+      return result
+    }
   )
 
   return { ...result, _aiSource: source }

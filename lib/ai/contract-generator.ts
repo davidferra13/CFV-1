@@ -8,7 +8,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { generateContractTemplate } from '@/lib/templates/contract'
 
@@ -139,7 +139,7 @@ Return JSON: {
       }),
     // AI: enhanced contract with personalized language (when Ollama is online)
     async () => {
-      const aiResult = await parseWithOllama(systemPrompt, userContent, ContractSchema)
+      const aiResult = (await dispatchPrivate(systemPrompt, userContent, ContractSchema)).result
       return {
         title: aiResult.title ?? 'Private Chef Services Agreement',
         sections: aiResult.sections ?? [],

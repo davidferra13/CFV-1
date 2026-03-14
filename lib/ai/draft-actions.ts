@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import {
   buildDraftContextSections,
   type DraftEventSummary,
@@ -255,12 +255,12 @@ export async function generateThankYouDraft(
   const { result, source } = await withAiFallback(
     () => thankYouTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a heartfelt thank-you note to a client after an event. First person singular "I". Warm, specific, and personal, never generic. Use the context below to reference real details from the event and the relationship, but do not invent facts that are not present. Dietary notes and allergies are background context only unless they are clearly relevant to the hospitality or personalization. Keep it 3-4 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" — do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location ?? 'N/A'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -302,7 +302,7 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
   const { result, source } = await withAiFallback(
     () => referralRequestTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a warm, non-pushy referral request to a loyal client. First person singular "I". Lead with gratitude, acknowledge the existing relationship, and only then make a light referral ask. Use the real client history below so the note feels earned rather than templated. Keep it friendly and 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a referral request for ${client.full_name}.\n\n${buildDraftContextSections({
           client: {
@@ -324,7 +324,7 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
         })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -366,7 +366,7 @@ export async function generateTestimonialRequestDraft(clientName: string): Promi
   const { result, source } = await withAiFallback(
     () => testimonialRequestTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a friendly testimonial request to a client who recently had a strong experience. First person singular "I". Express gratitude, explain why their feedback matters, and make it easy to say yes. Use the actual relationship and event details below so the request sounds grounded, not boilerplate. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a testimonial request for ${client.full_name}.\n\n${buildDraftContextSections({
           client: {
@@ -388,7 +388,7 @@ export async function generateTestimonialRequestDraft(clientName: string): Promi
         })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -439,7 +439,7 @@ export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Prom
   const { result, source } = await withAiFallback(
     () => quoteCoverLetterTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a professional yet warm cover letter to accompany a quote/proposal. First person singular "I". Thank them for considering you, highlight your excitement about the event, and set expectations for what's included in the quote. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a quote cover letter for:
 Client: ${clientName} (first name: ${firstName(clientName)})
@@ -448,7 +448,7 @@ Guests: ${(event as any).guest_count ?? 'TBD'}
 Location: ${(event as any).location ?? 'TBD'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -487,14 +487,14 @@ export async function generateDeclineResponseDraft(
   const { result, source } = await withAiFallback(
     () => declineResponseTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a gracious decline to a potential booking. First person singular "I". Be warm and empathetic — express genuine regret, briefly explain if appropriate, and leave the door open for future opportunities. Suggest alternatives if possible. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a decline response for:
 Client: ${resolvedName} (first name: ${firstName(resolvedName)})
 Reason for declining: ${reason ?? 'scheduling conflict'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -545,7 +545,7 @@ export async function generateCancellationResponseDraft(
   const { result, source } = await withAiFallback(
     () => cancellationResponseTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing an empathetic response to a client who cancelled their event. First person singular "I". Express understanding (never guilt), handle any refund/policy details professionally, and warmly invite them to rebook when ready. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a cancellation response for:
 Client: ${clientName} (first name: ${firstName(clientName)})
@@ -553,7 +553,7 @@ Event: ${(event as any).occasion ?? 'event'} originally on ${(event as any).even
 Event status: ${(event as any).status ?? 'cancelled'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -616,7 +616,7 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
   const { result, source } = await withAiFallback(
     () => paymentReminderTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a friendly payment reminder. First person singular "I". Be warm and professional — never threatening or aggressive. Gently reference the event and the outstanding amount. Offer to help if there are any questions. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a payment reminder for ${client.full_name}.\n\n${buildDraftContextSections({
           client: {
@@ -638,7 +638,7 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
         })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -681,7 +681,7 @@ export async function generateReEngagementDraft(clientName: string): Promise<Dra
   const { result, source } = await withAiFallback(
     () => reEngagementTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef reaching out to a client you haven't heard from in a while. First person singular "I". Be warm and casual — not salesy. Reference your history together, mention something seasonal or exciting you're doing, and invite them to reconnect. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a re-engagement email for ${client.full_name}.\n\n${buildDraftContextSections({
           client: {
@@ -703,7 +703,7 @@ export async function generateReEngagementDraft(clientName: string): Promise<Dra
         })}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -757,7 +757,7 @@ export async function generateMilestoneRecognitionDraft(
   const { result, source } = await withAiFallback(
     () => milestoneRecognitionTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef celebrating a milestone with a loyal client. First person singular "I". Express genuine gratitude and excitement. Make them feel special and valued. Reference the milestone specifically. 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a milestone recognition email for:
 Client: ${client.full_name} (first name: ${firstName(client.full_name)})
@@ -766,7 +766,7 @@ Total events together: ${count ?? 'unknown'}
 Client notes: ${client.vibe_notes ?? 'none'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
-      )
+      ).then((r) => r.result)
   )
 
   return {
@@ -798,14 +798,14 @@ export async function generateFoodSafetyIncidentDraft(description: string): Prom
   const { result, source } = await withAiFallback(
     () => foodSafetyIncidentTemplate(templateVars),
     () =>
-      parseWithOllama(
+      dispatchPrivate(
         `You are ${chefName}, a private chef writing a formal food safety incident report. First person singular "I". Be factual, thorough, and professional. Include: what happened, when, what immediate action was taken, who was affected, what corrective action will be implemented. This is for internal records and potentially insurance/regulatory purposes. Keep it structured and clear. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a food safety incident report for:
 Incident description: ${description}
 Date: ${new Date().toISOString().split('T')[0]}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 1024 }
-      )
+      ).then((r) => r.result)
   )
 
   return {

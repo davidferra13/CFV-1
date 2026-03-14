@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS hub_group_events (
   added_by_profile_id UUID REFERENCES hub_guest_profiles(id) ON DELETE SET NULL,
   UNIQUE(group_id, event_id)
 );
-CREATE INDEX idx_hub_group_events_group ON hub_group_events(group_id);
-CREATE INDEX idx_hub_group_events_event ON hub_group_events(event_id);
+CREATE INDEX IF NOT EXISTS idx_hub_group_events_group ON hub_group_events(group_id);
+CREATE INDEX IF NOT EXISTS idx_hub_group_events_event ON hub_group_events(event_id);
 -- Add group_type column to hub_groups for distinguishing single-event vs multi-event circles
 ALTER TABLE hub_groups ADD COLUMN IF NOT EXISTS group_type TEXT NOT NULL DEFAULT 'circle';
 -- group_type values: 'circle' (default single event), 'dinner_club' (recurring), 'planning' (multi-event)

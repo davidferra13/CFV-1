@@ -88,13 +88,24 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   // Skip the gate when an admin is impersonating (they need to see the chef's actual portal).
   const pathname = headers().get('x-pathname') ?? ''
   const isAdminImpersonating = !!getImpersonatedChefId()
+  const isOnboardingRoute = pathname.startsWith('/onboarding')
   // If pathname is empty (middleware failed), still check onboarding status rather than
   // silently skipping the gate. Only bypass for /onboarding routes or admin impersonation.
-  if (!pathname.startsWith('/onboarding') && !isAdminImpersonating) {
+  if (!isOnboardingRoute && !isAdminImpersonating) {
     const onboardingComplete = await getOnboardingStatus().catch(() => true) // fail open
     if (!onboardingComplete) {
       redirect('/onboarding')
     }
+  }
+  if (isOnboardingRoute) {
+    return (
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <ToastProvider />
+        <main id="main-content" className="min-h-screen">
+          {children}
+        </main>
+      </ThemeProvider>
+    )
   }
   // Parallelized — all calls are independent. All 6 use unstable_cache (60s TTL)
   // so navigating between pages costs ~0ms for these after the first load.

@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import type { ParseResult } from './parse'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 
 // --- Schema ---
 
@@ -82,9 +82,11 @@ RESPOND WITH ONLY valid JSON matching this exact structure:
  * Parse document text using AI to extract structure and metadata
  */
 export async function parseDocumentFromText(text: string): Promise<ParseResult<ParsedDocument>> {
-  const result = await parseWithOllama(DOCUMENT_SYSTEM_PROMPT, text, ParsedDocumentSchema, {
-    maxTokens: 2048, // Documents can be long — need room for content_text
-    timeoutMs: 90_000, // 90s for large documents
-  })
+  const result = (
+    await dispatchPrivate(DOCUMENT_SYSTEM_PROMPT, text, ParsedDocumentSchema, {
+      maxTokens: 2048, // Documents can be long — need room for content_text
+      timeoutMs: 90_000, // 90s for large documents
+    })
+  ).result
   return result as ParseResult<ParsedDocument>
 }

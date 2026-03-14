@@ -26,7 +26,17 @@ import { OllamaOfflineError, getOllamaErrorHelp } from '../../lib/ai/ollama-erro
 
 import { withAiFallback, formulaOnly } from '../../lib/ai/with-ai-fallback'
 
-import { isOllamaEnabled, getOllamaModel, getOllamaConfig } from '../../lib/ai/providers'
+import {
+  getGitHubModelsConfig,
+  getGitHubModelsModel,
+  getOllamaConfig,
+  getOllamaModel,
+  getWorkersAiConfig,
+  getWorkersAiModel,
+  isGitHubModelsEnabled,
+  isOllamaEnabled,
+  isWorkersAiEnabled,
+} from '../../lib/ai/providers'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A) ai-metrics.ts
@@ -264,6 +274,19 @@ describe('providers', () => {
   const origModel = process.env.OLLAMA_MODEL
   const origFast = process.env.OLLAMA_MODEL_FAST
   const origComplex = process.env.OLLAMA_MODEL_COMPLEX
+  const origGitHubToken = process.env.GITHUB_MODELS_TOKEN
+  const origGitHubBaseUrl = process.env.GITHUB_MODELS_BASE_URL
+  const origGitHubApiVersion = process.env.GITHUB_MODELS_API_VERSION
+  const origGitHubOrg = process.env.GITHUB_MODELS_ORG
+  const origGitHubModel = process.env.GITHUB_MODELS_MODEL
+  const origGitHubFast = process.env.GITHUB_MODELS_MODEL_FAST
+  const origGitHubComplex = process.env.GITHUB_MODELS_MODEL_COMPLEX
+  const origCfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID
+  const origCfApiToken = process.env.CLOUDFLARE_API_TOKEN
+  const origCfBaseUrl = process.env.CLOUDFLARE_WORKERS_AI_BASE_URL
+  const origCfModel = process.env.CLOUDFLARE_WORKERS_AI_MODEL
+  const origCfFast = process.env.CLOUDFLARE_WORKERS_AI_MODEL_FAST
+  const origCfComplex = process.env.CLOUDFLARE_WORKERS_AI_MODEL_COMPLEX
 
   function restoreEnv() {
     if (origUrl) process.env.OLLAMA_BASE_URL = origUrl
@@ -274,6 +297,32 @@ describe('providers', () => {
     else delete process.env.OLLAMA_MODEL_FAST
     if (origComplex) process.env.OLLAMA_MODEL_COMPLEX = origComplex
     else delete process.env.OLLAMA_MODEL_COMPLEX
+    if (origGitHubToken) process.env.GITHUB_MODELS_TOKEN = origGitHubToken
+    else delete process.env.GITHUB_MODELS_TOKEN
+    if (origGitHubBaseUrl) process.env.GITHUB_MODELS_BASE_URL = origGitHubBaseUrl
+    else delete process.env.GITHUB_MODELS_BASE_URL
+    if (origGitHubApiVersion) process.env.GITHUB_MODELS_API_VERSION = origGitHubApiVersion
+    else delete process.env.GITHUB_MODELS_API_VERSION
+    if (origGitHubOrg) process.env.GITHUB_MODELS_ORG = origGitHubOrg
+    else delete process.env.GITHUB_MODELS_ORG
+    if (origGitHubModel) process.env.GITHUB_MODELS_MODEL = origGitHubModel
+    else delete process.env.GITHUB_MODELS_MODEL
+    if (origGitHubFast) process.env.GITHUB_MODELS_MODEL_FAST = origGitHubFast
+    else delete process.env.GITHUB_MODELS_MODEL_FAST
+    if (origGitHubComplex) process.env.GITHUB_MODELS_MODEL_COMPLEX = origGitHubComplex
+    else delete process.env.GITHUB_MODELS_MODEL_COMPLEX
+    if (origCfAccountId) process.env.CLOUDFLARE_ACCOUNT_ID = origCfAccountId
+    else delete process.env.CLOUDFLARE_ACCOUNT_ID
+    if (origCfApiToken) process.env.CLOUDFLARE_API_TOKEN = origCfApiToken
+    else delete process.env.CLOUDFLARE_API_TOKEN
+    if (origCfBaseUrl) process.env.CLOUDFLARE_WORKERS_AI_BASE_URL = origCfBaseUrl
+    else delete process.env.CLOUDFLARE_WORKERS_AI_BASE_URL
+    if (origCfModel) process.env.CLOUDFLARE_WORKERS_AI_MODEL = origCfModel
+    else delete process.env.CLOUDFLARE_WORKERS_AI_MODEL
+    if (origCfFast) process.env.CLOUDFLARE_WORKERS_AI_MODEL_FAST = origCfFast
+    else delete process.env.CLOUDFLARE_WORKERS_AI_MODEL_FAST
+    if (origCfComplex) process.env.CLOUDFLARE_WORKERS_AI_MODEL_COMPLEX = origCfComplex
+    else delete process.env.CLOUDFLARE_WORKERS_AI_MODEL_COMPLEX
   }
 
   it('isOllamaEnabled returns true when env is set', () => {
@@ -305,6 +354,78 @@ describe('providers', () => {
     const config = getOllamaConfig()
     assert.equal(config.baseUrl, 'http://localhost:11434')
     assert.equal(config.model, 'qwen3-coder:30b')
+    restoreEnv()
+  })
+
+  it('isGitHubModelsEnabled returns true when token is set', () => {
+    process.env.GITHUB_MODELS_TOKEN = 'ghp_test'
+    assert.equal(isGitHubModelsEnabled(), true)
+    restoreEnv()
+  })
+
+  it('isGitHubModelsEnabled returns false when token is missing', () => {
+    delete process.env.GITHUB_MODELS_TOKEN
+    assert.equal(isGitHubModelsEnabled(), false)
+    restoreEnv()
+  })
+
+  it('getGitHubModelsModel returns correct defaults per tier', () => {
+    delete process.env.GITHUB_MODELS_MODEL
+    delete process.env.GITHUB_MODELS_MODEL_FAST
+    delete process.env.GITHUB_MODELS_MODEL_COMPLEX
+
+    assert.equal(getGitHubModelsModel('fast'), 'meta/Llama-3.1-8B-Instruct')
+    assert.equal(getGitHubModelsModel('standard'), 'openai/gpt-4.1-mini')
+    assert.equal(getGitHubModelsModel('complex'), 'openai/gpt-4.1')
+    restoreEnv()
+  })
+
+  it('getGitHubModelsConfig returns defaults when env not set', () => {
+    delete process.env.GITHUB_MODELS_TOKEN
+    delete process.env.GITHUB_MODELS_BASE_URL
+    delete process.env.GITHUB_MODELS_API_VERSION
+    delete process.env.GITHUB_MODELS_ORG
+    const config = getGitHubModelsConfig()
+    assert.equal(config.baseUrl, 'https://models.github.ai')
+    assert.equal(config.apiVersion, '2026-03-10')
+    assert.equal(config.org, null)
+    assert.equal(config.token, '')
+    restoreEnv()
+  })
+
+  it('isWorkersAiEnabled returns true when account ID and token are set', () => {
+    process.env.CLOUDFLARE_ACCOUNT_ID = 'acct'
+    process.env.CLOUDFLARE_API_TOKEN = 'token'
+    assert.equal(isWorkersAiEnabled(), true)
+    restoreEnv()
+  })
+
+  it('isWorkersAiEnabled returns false when account ID or token is missing', () => {
+    process.env.CLOUDFLARE_ACCOUNT_ID = 'acct'
+    delete process.env.CLOUDFLARE_API_TOKEN
+    assert.equal(isWorkersAiEnabled(), false)
+    restoreEnv()
+  })
+
+  it('getWorkersAiModel returns correct defaults per tier', () => {
+    delete process.env.CLOUDFLARE_WORKERS_AI_MODEL
+    delete process.env.CLOUDFLARE_WORKERS_AI_MODEL_FAST
+    delete process.env.CLOUDFLARE_WORKERS_AI_MODEL_COMPLEX
+
+    assert.equal(getWorkersAiModel('fast'), '@cf/meta/llama-3.1-8b-instruct')
+    assert.equal(getWorkersAiModel('standard'), '@cf/meta/llama-3.3-70b-instruct-fp8-fast')
+    assert.equal(getWorkersAiModel('complex'), '@cf/nvidia/nemotron-3-120b-a12b')
+    restoreEnv()
+  })
+
+  it('getWorkersAiConfig returns defaults when env not set', () => {
+    delete process.env.CLOUDFLARE_ACCOUNT_ID
+    delete process.env.CLOUDFLARE_API_TOKEN
+    delete process.env.CLOUDFLARE_WORKERS_AI_BASE_URL
+    const config = getWorkersAiConfig()
+    assert.equal(config.accountId, '')
+    assert.equal(config.apiToken, '')
+    assert.equal(config.baseUrl, 'https://api.cloudflare.com/client/v4/accounts//ai/v1')
     restoreEnv()
   })
 })

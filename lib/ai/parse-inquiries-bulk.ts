@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { type ParseResult } from './parse'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import type { ParsedInquiryRow } from './parse-csv-inquiries'
 
 // ============================================
@@ -240,12 +240,12 @@ export async function parseInquiriesFromBulk(
   rawText: string
 ): Promise<ParseResult<ParsedInquiryRow[]>> {
   try {
-    const result = await parseWithOllama(
-      BULK_INQUIRY_SYSTEM_PROMPT,
-      rawText,
-      BulkInquiriesResponseSchema,
-      { maxTokens: 2048, timeoutMs: 90_000 }
-    )
+    const result = (
+      await dispatchPrivate(BULK_INQUIRY_SYSTEM_PROMPT, rawText, BulkInquiriesResponseSchema, {
+        maxTokens: 2048,
+        timeoutMs: 90_000,
+      })
+    ).result
 
     // Add unique IDs to each parsed row
     const rows: ParsedInquiryRow[] = result.parsed.map((row) => ({

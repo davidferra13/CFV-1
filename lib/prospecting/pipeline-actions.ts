@@ -9,7 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import {
   FOLLOW_UP_SEQUENCE_SYSTEM_PROMPT,
   buildFollowUpSequencePrompt,
@@ -265,16 +265,18 @@ export async function generateFollowUpSequence(prospectId: string) {
     newsIntel: prospect.news_intel,
   })
 
-  const raw = await (parseWithOllama as any)(userPrompt, {
-    systemPrompt: FOLLOW_UP_SEQUENCE_SYSTEM_PROMPT,
-    format: 'json',
-    temperature: 0.7,
-    model: 'complex',
-    timeoutMs: 90_000,
-  })
-
-  const parsed = FollowUpSequenceSchema.safeParse(raw)
-  if (!parsed.success) throw new Error('Failed to parse follow-up sequence from AI')
+  const { result: parsed } = await dispatchPrivate(
+    FOLLOW_UP_SEQUENCE_SYSTEM_PROMPT,
+    userPrompt,
+    FollowUpSequenceSchema,
+    {
+      taskDescription: 'generate follow-up email sequence with prospect PII',
+      contentType: 'generation',
+      modelTier: 'complex',
+      temperature: 0.7,
+      timeoutMs: 90_000,
+    }
+  )
 
   // Build complete sequence: email 1 is the existing draft, emails 2-3 from AI
   const fullSequence: FollowUpSequence = {
@@ -291,7 +293,7 @@ export async function generateFollowUpSequence(prospectId: string) {
           ]
         : []),
       // Emails 2-3: from AI
-      ...parsed.data.emails,
+      ...parsed.emails,
     ],
   }
 
@@ -354,19 +356,20 @@ export async function generateAICallScript(prospectId: string) {
     competitorsPresent: prospect.competitors_present,
   })
 
-  const raw = await (parseWithOllama as any)(userPrompt, {
-    systemPrompt: AI_CALL_SCRIPT_SYSTEM_PROMPT,
-    format: 'json',
-    temperature: 0.7,
-    model: 'complex',
-    timeoutMs: 90_000,
-  })
-
-  const parsed = CallScriptSchema.safeParse(raw)
-  if (!parsed.success) throw new Error('Failed to parse call script from AI')
+  const { result: script } = await dispatchPrivate(
+    AI_CALL_SCRIPT_SYSTEM_PROMPT,
+    userPrompt,
+    CallScriptSchema,
+    {
+      taskDescription: 'generate AI call script with prospect PII and business intel',
+      contentType: 'generation',
+      modelTier: 'complex',
+      temperature: 0.7,
+      timeoutMs: 90_000,
+    }
+  )
 
   // Format the script as readable text
-  const script = parsed.data
   const formattedScript = [
     '📞 OPENING:',
     script.opening,

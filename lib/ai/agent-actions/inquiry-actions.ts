@@ -11,7 +11,7 @@ import {
   getInquiries,
 } from '@/lib/inquiries/actions'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 const ParsedInquirySchema = z.object({
@@ -46,7 +46,10 @@ async function parseInquiryFromNL(description: string) {
 Extract: client_name, client_email, client_phone, event_date (YYYY-MM-DD), guest_count, occasion, channel (text/email/instagram/take_a_chef/phone/website/referral/walk_in/other), budget_range_min_cents and budget_range_max_cents (dollars→cents), service_style, dietary_restrictions (array), notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  return parseWithOllama(systemPrompt, description, ParsedInquirySchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedInquirySchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 export const inquiryAgentActions: AgentActionDefinition[] = [

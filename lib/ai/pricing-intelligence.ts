@@ -8,7 +8,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { withAiFallback } from './with-ai-fallback'
 import { calculatePricingFormula } from '@/lib/formulas/pricing-intelligence'
 import { z } from 'zod'
@@ -122,7 +122,7 @@ Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "sugges
         }))
       ),
     // AI: enhanced pricing analysis with narrative (when Ollama is online)
-    () => parseWithOllama(systemPrompt, userContent, PricingIntelligenceSchema)
+    async () => (await dispatchPrivate(systemPrompt, userContent, PricingIntelligenceSchema)).result
   )
 
   return { ...result, _aiSource: source } as PricingIntelligenceResult

@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { loadRemyContext } from '@/lib/ai/remy-context'
 import { determineContextScope } from '@/app/api/remy/stream/route-prompt-utils'
@@ -1185,12 +1185,14 @@ export async function sendRemyMessage(
         executionContext,
         'mixed'
       )
-      const conversationalResult = await parseWithOllama(
-        systemPrompt,
-        `${history}Chef: ${questionInput}\n\nUse the turn execution context above when answering. If it already answers the chef's question, lead with that answer naturally.`,
-        RemyConversationalSchema,
-        { taskType: 'reasoning' }
-      )
+      const conversationalResult = (
+        await dispatchPrivate(
+          systemPrompt,
+          `${history}Chef: ${questionInput}\n\nUse the turn execution context above when answering. If it already answers the chef's question, lead with that answer naturally.`,
+          RemyConversationalSchema,
+          { taskType: 'reasoning' }
+        )
+      ).result
 
       const taskSummary = summarizeTaskResults(tasks)
       const text = conversationalResult.response.trim() || taskSummary
@@ -1234,12 +1236,14 @@ export async function sendRemyMessage(
     )
     const history = formatConversationHistory(conversationHistory)
     const questionLlmStartedAt = Date.now()
-    const result = await parseWithOllama(
-      systemPrompt,
-      `${history}Chef: ${userMessage}`,
-      RemyConversationalSchema,
-      { taskType: 'reasoning' }
-    )
+    const result = (
+      await dispatchPrivate(
+        systemPrompt,
+        `${history}Chef: ${userMessage}`,
+        RemyConversationalSchema,
+        { taskType: 'reasoning' }
+      )
+    ).result
     stageLatencies['question.llm'] = Date.now() - questionLlmStartedAt
     stageLatencies['request.total'] = Date.now() - requestStartedAt
     recordRemyStageBatch(stageLatencies)

@@ -401,30 +401,39 @@ SET
 -- Path format:
 -- cannabis-control-packets/{tenant_id}/{event_id}/{snapshot_id}/{evidence_id}.{ext}
 
-DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
-CREATE POLICY ccp_storage_chef_insert
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'cannabis-control-packets'
-  AND get_current_user_role() = 'chef'
-  AND split_part(name, '/', 1) = get_current_tenant_id()::text
-);
-DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
-CREATE POLICY ccp_storage_chef_select
-ON storage.objects FOR SELECT
-TO authenticated
-USING (
-  bucket_id = 'cannabis-control-packets'
-  AND get_current_user_role() = 'chef'
-  AND split_part(name, '/', 1) = get_current_tenant_id()::text
-);
-DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
-CREATE POLICY ccp_storage_chef_delete
-ON storage.objects FOR DELETE
-TO authenticated
-USING (
-  bucket_id = 'cannabis-control-packets'
-  AND get_current_user_role() = 'chef'
-  AND split_part(name, '/', 1) = get_current_tenant_id()::text
-);
+DO $$ BEGIN
+  DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
+  CREATE POLICY ccp_storage_chef_insert
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'cannabis-control-packets'
+    AND get_current_user_role() = 'chef'
+    AND split_part(name, '/', 1) = get_current_tenant_id()::text
+  );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
+  CREATE POLICY ccp_storage_chef_select
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (
+    bucket_id = 'cannabis-control-packets'
+    AND get_current_user_role() = 'chef'
+    AND split_part(name, '/', 1) = get_current_tenant_id()::text
+  );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+DO $$ BEGIN
+  DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
+  CREATE POLICY ccp_storage_chef_delete
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'cannabis-control-packets'
+    AND get_current_user_role() = 'chef'
+    AND split_part(name, '/', 1) = get_current_tenant_id()::text
+  );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;

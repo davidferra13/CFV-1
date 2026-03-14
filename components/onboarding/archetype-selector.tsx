@@ -21,6 +21,7 @@ export function ArchetypeSelector() {
       try {
         await selectArchetype(selected)
         trackEvent(ANALYTICS_EVENTS.ONBOARDING_ARCHETYPE_SELECTED, { archetype: selected })
+        router.push('/dashboard')
         router.refresh()
       } catch (err) {
         setError('Something went wrong. Please try again.')

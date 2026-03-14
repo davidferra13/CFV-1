@@ -8,7 +8,7 @@ import { addClientTag, removeClientTag } from '@/lib/clients/tag-actions'
 import { addInquiryNote } from '@/lib/inquiries/note-actions'
 import { searchClientsByName } from '@/lib/clients/actions'
 import { getInquiries } from '@/lib/inquiries/actions'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── Action Definitions ──────────────────────────────────────────────────────
@@ -28,16 +28,18 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: clientName (who the note is about), noteText (the note content), category (general/dietary/preference/followup/feedback). Return ONLY JSON.',
-        description,
-        z.object({
-          clientName: z.string(),
-          noteText: z.string(),
-          category: z.string().optional(),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: clientName (who the note is about), noteText (the note content), category (general/dietary/preference/followup/feedback). Return ONLY JSON.',
+          description,
+          z.object({
+            clientName: z.string(),
+            noteText: z.string(),
+            category: z.string().optional(),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const clients = await searchClientsByName(parsed.clientName)
       if (!clients.length) {
@@ -100,12 +102,14 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: clientName, tag (the tag to add, e.g. "VIP", "corporate", "holiday-regular"). Return ONLY JSON.',
-        description,
-        z.object({ clientName: z.string(), tag: z.string() }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: clientName, tag (the tag to add, e.g. "VIP", "corporate", "holiday-regular"). Return ONLY JSON.',
+          description,
+          z.object({ clientName: z.string(), tag: z.string() }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const clients = await searchClientsByName(parsed.clientName)
       if (!clients.length) {
@@ -158,12 +162,14 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: clientName, tag (the tag to remove). Return ONLY JSON.',
-        description,
-        z.object({ clientName: z.string(), tag: z.string() }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: clientName, tag (the tag to remove). Return ONLY JSON.',
+          description,
+          z.object({ clientName: z.string(), tag: z.string() }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const clients = await searchClientsByName(parsed.clientName)
       if (!clients.length) {
@@ -213,12 +219,14 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: inquiryIdentifier (occasion or client name to find), noteText (note content). Return ONLY JSON.',
-        description,
-        z.object({ inquiryIdentifier: z.string(), noteText: z.string() }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: inquiryIdentifier (occasion or client name to find), noteText (note content). Return ONLY JSON.',
+          description,
+          z.object({ inquiryIdentifier: z.string(), noteText: z.string() }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const inquiries = await getInquiries()
       const lower = parsed.inquiryIdentifier.toLowerCase()

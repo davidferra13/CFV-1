@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { type ParseResult } from './parse'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers'
 
@@ -130,15 +130,12 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
  */
 export async function parseTranscript(rawText: string): Promise<ParseResult<TranscriptResult>> {
   try {
-    const result = await parseWithOllama(
-      TRANSCRIPT_SYSTEM_PROMPT,
-      rawText,
-      TranscriptResponseSchema,
-      {
+    const result = (
+      await dispatchPrivate(TRANSCRIPT_SYSTEM_PROMPT, rawText, TranscriptResponseSchema, {
         modelTier: 'standard',
         timeoutMs: 90_000,
-      }
-    )
+      })
+    ).result
     return result
   } catch (error) {
     // Heuristic fallback: try to at least extract clients

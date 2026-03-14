@@ -10,6 +10,39 @@ const path = require('path')
 const createNextIntlPlugin = require('next-intl/plugin')
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
+function parseOrigin(candidate) {
+  if (!candidate) return null
+
+  try {
+    return new URL(candidate).origin
+  } catch {
+    return null
+  }
+}
+
+function buildSupabaseConnectSrc() {
+  const sources = ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co']
+  const supabaseOrigin = parseOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL)
+
+  if (!supabaseOrigin) return sources
+
+  const { hostname, protocol } = new URL(supabaseOrigin)
+  if (hostname !== '127.0.0.1' && hostname !== 'localhost') {
+    return sources
+  }
+
+  sources.push(supabaseOrigin)
+  sources.push(
+    protocol === 'https:'
+      ? supabaseOrigin.replace(/^https:/, 'wss:')
+      : supabaseOrigin.replace(/^http:/, 'ws:')
+  )
+
+  return [...new Set(sources)]
+}
+
+const supabaseConnectSrc = buildSupabaseConnectSrc()
+
 let withPWA
 if (process.env.ENABLE_PWA_BUILD === '1') {
   try {
@@ -38,6 +71,9 @@ const nextConfig = {
   // Allow LAN access in development so internal /_next assets are not
   // rejected as cross-origin. Add hosts via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
   allowedDevOrigins: [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
     ...String(process.env.NEXT_ALLOWED_DEV_ORIGINS || '')
       .split(',')
       .map((value) => value.trim())
@@ -155,7 +191,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
+              `connect-src ${supabaseConnectSrc.join(' ')} https://challenges.cloudflare.com`,
               "worker-src 'self'",
               'frame-src https://challenges.cloudflare.com',
               'frame-ancestors *',
@@ -202,7 +238,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://api.qrserver.com https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              `connect-src ${supabaseConnectSrc.join(' ')}`,
               "worker-src 'self'",
               "frame-ancestors 'none'",
               "object-src 'none'",
@@ -253,7 +289,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com",
+              `connect-src ${supabaseConnectSrc.join(' ')} https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com`,
               "worker-src 'self'",
               'frame-src https://js.stripe.com',
               "frame-ancestors 'none'",

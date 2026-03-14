@@ -78,6 +78,21 @@ const PORTAL_DESTINATIONS = {
 
 type PortalRole = keyof typeof PORTAL_DESTINATIONS
 
+function clearStaleAuthCookies() {
+  const cookieStore = cookies()
+
+  for (const cookie of cookieStore.getAll()) {
+    // Supabase may chunk auth cookies; remove every auth-related fragment before
+    // establishing a new session so stale local/dev tokens do not poison sign-in.
+    if (cookie.name.startsWith('sb-') && cookie.name.includes('-auth-token')) {
+      cookieStore.delete(cookie.name)
+    }
+  }
+
+  cookieStore.delete(ROLE_COOKIE_NAME)
+  cookieStore.delete('chefflow-session-only')
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
@@ -92,7 +107,7 @@ async function resolvePostSignInDestination(
 ): Promise<{ role: PortalRole | null; destination: string }> {
   const { data, error } = await supabase
     .from('user_roles')
-    .select('role')
+    .select('role, entity_id')
     .eq('auth_user_id', userId)
     .single()
 
@@ -110,6 +125,23 @@ async function resolvePostSignInDestination(
 
   if (!isPortalRole(data?.role)) {
     return { role: null, destination: '/auth/role-selection' }
+  }
+
+  if (data.role === 'chef' && data.entity_id) {
+    const { data: chefData, error: chefError } = await supabase
+      .from('chefs')
+      .select('onboarding_completed_at')
+      .eq('id', data.entity_id)
+      .single()
+
+    if (chefError) {
+      log.auth.warn('Chef onboarding lookup failed; falling back to dashboard', {
+        error: chefError,
+        context: { userId, chefId: data.entity_id },
+      })
+    } else if (!chefData?.onboarding_completed_at) {
+      return { role: 'chef', destination: '/onboarding' }
+    }
   }
 
   return { role: data.role, destination: PORTAL_DESTINATIONS[data.role] }
@@ -483,12 +515,19 @@ export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
   const email = validated.email.trim().toLowerCase()
   const isSyntheticTestAccount = email.endsWith('@chefflow.test')
+  const isLocalDemoAccount = email.endsWith('@local.chefflow')
   const bypassRateLimitForE2E =
     process.env.DISABLE_AUTH_RATE_LIMIT_FOR_E2E === 'true' && isSyntheticTestAccount
   const bypassRateLimitForNonProdSyntheticAccount =
     process.env.NODE_ENV !== 'production' && isSyntheticTestAccount
+  const bypassRateLimitForNonProdLocalDemoAccount =
+    process.env.NODE_ENV !== 'production' && isLocalDemoAccount
 
-  if (!bypassRateLimitForE2E && !bypassRateLimitForNonProdSyntheticAccount) {
+  if (
+    !bypassRateLimitForE2E &&
+    !bypassRateLimitForNonProdSyntheticAccount &&
+    !bypassRateLimitForNonProdLocalDemoAccount
+  ) {
     try {
       await checkRateLimit(email)
     } catch (error) {
@@ -510,8 +549,10 @@ export async function signIn(input: SignInInput) {
     throw new Error('Sign-in is temporarily unavailable. Please contact support.')
   }
 
-  const supabase: any = createServerClient()
+  clearStaleAuthCookies()
 
+  const supabase: any = createServerClient()
+  const cookieStore = cookies()
   let data: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['data'] | null = null
   let error: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['error'] | null = null
   try {
@@ -561,8 +602,6 @@ export async function signIn(input: SignInInput) {
 
     throw new Error('Sign-in failed. Please try again or reset your password.')
   }
-
-  const cookieStore = cookies()
 
   // Clear stale role cache so middleware regenerates it with the correct maxAge
   cookieStore.delete(ROLE_COOKIE_NAME)

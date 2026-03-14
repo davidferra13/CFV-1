@@ -5,7 +5,7 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { searchClientsByName } from '@/lib/clients/actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── Schedule Call ──────────────────────────────────────────────────────────
@@ -24,7 +24,10 @@ async function parseCallFromNL(description: string) {
   const systemPrompt = `Extract call/meeting data: client_name, title, call_type (phone/video/in_person), scheduled_date (YYYY-MM-DD), scheduled_time (HH:MM 24h), duration_minutes, notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  return parseWithOllama(systemPrompt, description, ParsedCallSchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedCallSchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 // ─── Create Todo ────────────────────────────────────────────────────────────
@@ -40,7 +43,10 @@ async function parseTodoFromNL(description: string) {
   const systemPrompt = `Extract todo/task data: title (short), due_date (YYYY-MM-DD), priority (low/medium/high/urgent), notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  return parseWithOllama(systemPrompt, description, ParsedTodoSchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedTodoSchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 // ─── Log Expense ────────────────────────────────────────────────────────────
@@ -59,7 +65,10 @@ async function parseExpenseFromNL(description: string) {
   const systemPrompt = `Extract expense data: description, amount_cents (convert dollars to cents, e.g. $45.50 → 4550), category (groceries/equipment/travel/supplies/labor/venue/other), vendor, date (YYYY-MM-DD), event_identifier (event name if expense is for a specific event), notes.
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  return parseWithOllama(systemPrompt, description, ParsedExpenseSchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedExpenseSchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 export const operationsAgentActions: AgentActionDefinition[] = [

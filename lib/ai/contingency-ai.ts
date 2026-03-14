@@ -9,7 +9,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { parseWithOllama } from './parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from './ollama-errors'
 
 export interface ContingencyPlan {
@@ -109,10 +109,12 @@ Menu complexity (${menu.length} dishes):
 ${menu.map((m) => `  - [${m.course_type ?? 'Course'}] ${m.name}`).join('\n') || '  - Not yet assigned'}`
 
   try {
-    const parsed = await parseWithOllama(systemPrompt, userContent, ContingencyAIResultSchema, {
-      modelTier: 'standard',
-      timeoutMs: 60_000,
-    })
+    const parsed = (
+      await dispatchPrivate(systemPrompt, userContent, ContingencyAIResultSchema, {
+        modelTier: 'standard',
+        timeoutMs: 60_000,
+      })
+    ).result
     return {
       plans: parsed.plans ?? [],
       topRisk: parsed.topRisk ?? '',

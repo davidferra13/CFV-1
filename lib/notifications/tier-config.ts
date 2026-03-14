@@ -83,6 +83,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   payment_overdue: 'alert',
   dispute_funds_withdrawn: 'critical',
   refund_processed_to_client: 'info',
+  expense_anomaly: 'alert',
+  budget_variance_warning: 'alert',
+  daily_settlement_summary: 'info',
 
   // Chat
   new_message: 'alert',
@@ -136,6 +139,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   order_status: 'alert',
   low_stock: 'critical',
   guest_comp: 'alert',
+  equipment_maintenance_due: 'alert',
+  dietary_accommodation_check: 'critical',
+  stale_data_digest: 'info',
 
   // System
   system_alert: 'critical',

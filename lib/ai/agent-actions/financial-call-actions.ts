@@ -8,7 +8,7 @@ import { logCallOutcome, cancelCall, getUpcomingCalls } from '@/lib/calls/action
 import { updateInquiry, declineInquiry } from '@/lib/inquiries/actions'
 import { getInquiries } from '@/lib/inquiries/actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── Action Definitions ──────────────────────────────────────────────────────
@@ -26,15 +26,17 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: expenseIdentifier (description or vendor to find), updates: { description?, amount_cents? (dollars→cents), category?, vendor?, expense_date?, notes? }. Return ONLY JSON.',
-        description,
-        z.object({
-          expenseIdentifier: z.string(),
-          updates: z.record(z.string(), z.unknown()),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: expenseIdentifier (description or vendor to find), updates: { description?, amount_cents? (dollars→cents), category?, vendor?, expense_date?, notes? }. Return ONLY JSON.',
+          description,
+          z.object({
+            expenseIdentifier: z.string(),
+            updates: z.record(z.string(), z.unknown()),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       // Find the expense
       const supabase: any = createServerClient()
@@ -117,17 +119,19 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: callIdentifier (client name or call title to find), outcome_notes (what happened), next_steps (follow-up actions), sentiment (positive/neutral/negative). Return ONLY JSON.',
-        description,
-        z.object({
-          callIdentifier: z.string(),
-          outcome_notes: z.string(),
-          next_steps: z.string().optional(),
-          sentiment: z.string().optional(),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: callIdentifier (client name or call title to find), outcome_notes (what happened), next_steps (follow-up actions), sentiment (positive/neutral/negative). Return ONLY JSON.',
+          description,
+          z.object({
+            callIdentifier: z.string(),
+            outcome_notes: z.string(),
+            next_steps: z.string().optional(),
+            sentiment: z.string().optional(),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       // Find the call
       const calls = await getUpcomingCalls(20)
@@ -253,12 +257,14 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: inquiryIdentifier (occasion or client name), reason (why declining, optional). Return ONLY JSON.',
-        description,
-        z.object({ inquiryIdentifier: z.string(), reason: z.string().optional() }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: inquiryIdentifier (occasion or client name), reason (why declining, optional). Return ONLY JSON.',
+          description,
+          z.object({ inquiryIdentifier: z.string(), reason: z.string().optional() }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const inquiries = await getInquiries()
       const lower = parsed.inquiryIdentifier.toLowerCase()
@@ -324,15 +330,17 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: inquiryIdentifier (occasion or client name), updates (guest_count, event_date YYYY-MM-DD, occasion, notes, budget_range_min_cents, budget_range_max_cents). Return JSON with "inquiryIdentifier" and "updates".',
-        description,
-        z.object({
-          inquiryIdentifier: z.string(),
-          updates: z.record(z.string(), z.unknown()),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: inquiryIdentifier (occasion or client name), updates (guest_count, event_date YYYY-MM-DD, occasion, notes, budget_range_min_cents, budget_range_max_cents). Return JSON with "inquiryIdentifier" and "updates".',
+          description,
+          z.object({
+            inquiryIdentifier: z.string(),
+            updates: z.record(z.string(), z.unknown()),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const inquiries = await getInquiries()
       const lower = parsed.inquiryIdentifier.toLowerCase()

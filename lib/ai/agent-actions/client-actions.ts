@@ -10,7 +10,7 @@ import {
   getClientById,
   inviteClient,
 } from '@/lib/clients/actions'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── NL → Structured Client Parser ────────────────────────────────────────
@@ -37,7 +37,10 @@ Extract any of these fields: full_name, email, phone, birthday (month or date st
 "hates X" or "doesn't like X" = dislikes. "allergic to X" = allergies. "gluten-free/vegan/etc" = dietary_restrictions.
 Return ONLY valid JSON. If a field is not mentioned, omit it.`
 
-  return parseWithOllama(systemPrompt, description, ParsedClientSchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedClientSchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 // ─── NL → Client Update Parser ─────────────────────────────────────────────
@@ -68,9 +71,10 @@ Return JSON with "clientName" (the client to update) and "updates" (object with 
 Available update fields: full_name, email, phone, dietary_restrictions (array), allergies (array), occupation, status (active/dormant/repeat_ready/vip), address, preferred_contact_method, dislikes (array), favorite_cuisines (array), favorite_dishes (array), wine_beverage_preferences, spice_tolerance (none/mild/medium/hot/very_hot).
 Return ONLY valid JSON. Only include fields that are being changed.`
 
-  return parseWithOllama(systemPrompt, description, ParsedClientUpdateSchema, {
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedClientUpdateSchema, {
     modelTier: 'standard',
   })
+  return result
 }
 
 // ─── Action Definitions ────────────────────────────────────────────────────

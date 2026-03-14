@@ -906,8 +906,8 @@ async function executeEmailGeneric(inputs: Record<string, unknown>) {
     return { draftText: '', error: 'Please describe what the email should be about.' }
   }
 
-  // Use Ollama to draft the email
-  const { parseWithOllama } = await import('@/lib/ai/parse-ollama')
+  // Use dispatch layer to draft the email (private - client context)
+  const { dispatchPrivate } = await import('@/lib/ai/dispatch')
   const { z } = await import('zod')
 
   const EmailDraftSchema = z.object({
@@ -915,7 +915,7 @@ async function executeEmailGeneric(inputs: Record<string, unknown>) {
     body: z.string(),
   })
 
-  const result = await parseWithOllama(
+  const { result } = await dispatchPrivate(
     `You are a private chef's email assistant. Draft a professional, warm email based on the chef's description. Write in the chef's voice (first person singular "I"). Keep it concise (3-5 short paragraphs max). Don't be salesy. Return JSON: { "subject": "...", "body": "..." }`,
     `Draft this email: ${description}`,
     EmailDraftSchema,

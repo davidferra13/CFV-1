@@ -12,7 +12,7 @@
 //   6.   Ollama AI classification (fallback when deterministic layers miss)
 
 import { z } from 'zod'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { isTakeAChefEmail } from './take-a-chef-parser'
 import { isYhangryEmail } from './yhangry-parser'
@@ -592,12 +592,12 @@ BODY:
 ${body.slice(0, 3000)}`
 
   try {
-    const result = await parseWithOllama(
-      CLASSIFICATION_SYSTEM_PROMPT,
-      emailContent,
-      EmailClassificationSchema,
-      { modelTier: 'fast', cache: true }
-    )
+    const result = (
+      await dispatchPrivate(CLASSIFICATION_SYSTEM_PROMPT, emailContent, EmailClassificationSchema, {
+        modelTier: 'fast',
+        cache: true,
+      })
+    ).result
     return result.classification
   } catch (error) {
     if (error instanceof OllamaOfflineError) throw error

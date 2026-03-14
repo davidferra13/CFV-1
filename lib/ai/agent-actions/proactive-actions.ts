@@ -7,7 +7,7 @@ import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createEmergencyContact } from '@/lib/contingency/actions'
 import { createFolder, searchDocuments } from '@/lib/ai/document-management-actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 // ─── Action Definitions ──────────────────────────────────────────────────────
@@ -159,18 +159,20 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
-      const parsed = await parseWithOllama(
-        'Extract: name, phone, email, role (e.g. backup_chef, plumber, electrician, venue_contact), notes. Return ONLY JSON.',
-        description,
-        z.object({
-          name: z.string(),
-          phone: z.string().optional(),
-          email: z.string().optional(),
-          role: z.string().optional(),
-          notes: z.string().optional(),
-        }),
-        { modelTier: 'standard' }
-      )
+      const parsed = (
+        await dispatchPrivate(
+          'Extract: name, phone, email, role (e.g. backup_chef, plumber, electrician, venue_contact), notes. Return ONLY JSON.',
+          description,
+          z.object({
+            name: z.string(),
+            phone: z.string().optional(),
+            email: z.string().optional(),
+            role: z.string().optional(),
+            notes: z.string().optional(),
+          }),
+          { modelTier: 'standard' }
+        )
+      ).result
 
       const fields: AgentActionPreview['fields'] = [
         { label: 'Name', value: parsed.name, editable: true },

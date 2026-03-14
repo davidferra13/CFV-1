@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 const FollowUpDraftSchema = z.object({
@@ -81,9 +81,11 @@ Last event: ${lastEvent?.occasion || 'None on record'} on ${lastEvent?.event_dat
 Guest count: ${lastEvent?.guest_count || 'Unknown'}`
 
   try {
-    const result = await parseWithOllama(SYSTEM_PROMPT, userContent, FollowUpDraftSchema, {
-      modelTier: 'complex',
-    })
+    const result = (
+      await dispatchPrivate(SYSTEM_PROMPT, userContent, FollowUpDraftSchema, {
+        modelTier: 'complex',
+      })
+    ).result
     return result.message.trim()
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

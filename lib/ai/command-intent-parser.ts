@@ -5,7 +5,7 @@
 // Parses freeform chef input into a structured task plan using local Ollama only.
 
 import { z } from 'zod'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { buildTaskListForPrompt } from '@/lib/ai/command-task-descriptions'
 import { buildRouteLookupMap } from '@/lib/navigation/route-registry'
@@ -2122,9 +2122,11 @@ export async function parseCommandIntent(rawInput: string): Promise<CommandPlan>
   const userContent = `Chef command: "${resolved}"\n\nDecompose this into tasks.`
 
   try {
-    const parsed = await parseWithOllama(systemPrompt, userContent, CommandPlanSchema, {
-      modelTier: 'fast',
-    })
+    const parsed = (
+      await dispatchPrivate(systemPrompt, userContent, CommandPlanSchema, {
+        modelTier: 'fast',
+      })
+    ).result
 
     // Validate that all dependsOn references actually exist in this plan
     const taskIds = new Set(parsed.tasks.map((t) => t.id))

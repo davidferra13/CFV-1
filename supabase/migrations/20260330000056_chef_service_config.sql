@@ -85,22 +85,71 @@ CREATE TABLE IF NOT EXISTS chef_service_config (
 );
 -- RLS
 ALTER TABLE chef_service_config ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "chef_service_config_select"
-  ON chef_service_config FOR SELECT
-  USING (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
-CREATE POLICY "chef_service_config_insert"
-  ON chef_service_config FOR INSERT
-  WITH CHECK (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
-CREATE POLICY "chef_service_config_update"
-  ON chef_service_config FOR UPDATE
-  USING (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
-CREATE POLICY "chef_service_config_delete"
-  ON chef_service_config FOR DELETE
-  USING (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
+DO $$ BEGIN
+  CREATE POLICY "chef_service_config_select"
+    ON chef_service_config FOR SELECT
+    USING (
+      tenant_id = (
+        SELECT entity_id
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY "chef_service_config_insert"
+    ON chef_service_config FOR INSERT
+    WITH CHECK (
+      tenant_id = (
+        SELECT entity_id
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY "chef_service_config_update"
+    ON chef_service_config FOR UPDATE
+    USING (
+      tenant_id = (
+        SELECT entity_id
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    )
+    WITH CHECK (
+      tenant_id = (
+        SELECT entity_id
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE POLICY "chef_service_config_delete"
+    ON chef_service_config FOR DELETE
+    USING (
+      tenant_id = (
+        SELECT entity_id
+        FROM user_roles
+        WHERE auth_user_id = auth.uid() AND role = 'chef'
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 -- updated_at trigger
+DROP TRIGGER IF EXISTS chef_service_config_updated_at ON chef_service_config;
 CREATE TRIGGER chef_service_config_updated_at
   BEFORE UPDATE ON chef_service_config
   FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
+  EXECUTE FUNCTION update_updated_at_column();
 -- Grant access to authenticated users (RLS handles scoping)
 GRANT SELECT, INSERT, UPDATE, DELETE ON chef_service_config TO authenticated;

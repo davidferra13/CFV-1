@@ -1,22 +1,25 @@
 // Server-side Supabase client with cookie handling
 // Used in Server Components, Server Actions, and API Routes
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createServerClient as createSupabaseServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 type LooseSupabaseClient = SupabaseClient<any, 'public', any>
-type LooseServiceRoleClient = LooseSupabaseClient
-type RequestScopedClient = LooseSupabaseClient
+type ServerCookie = {
+  name: string
+  value: string
+  options?: Record<string, unknown>
+}
 
-export function createServerClient(options: { admin: true }): LooseServiceRoleClient
-export function createServerClient(options?: { admin?: false }): RequestScopedClient
-export function createServerClient({ admin = false }: { admin?: boolean } = {}) {
+export function createServerClient({
+  admin = false,
+}: { admin?: boolean } = {}): LooseSupabaseClient {
   // Use service role key for admin operations (webhooks, signup)
   // Keep service-role clients intentionally loose: the fully generated database
   // query types create pathological TS performance across admin/server actions.
   if (admin) {
-    return createClient<any, 'public', any>(
+    return createSupabaseClient<any, 'public', any>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
@@ -30,7 +33,7 @@ export function createServerClient({ admin = false }: { admin?: boolean } = {}) 
 
   const cookieStore = cookies()
 
-  return createSupabaseServerClient<any, 'public', any>(
+  return createSupabaseServerClient<any, 'public'>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -38,10 +41,10 @@ export function createServerClient({ admin = false }: { admin?: boolean } = {}) 
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: ServerCookie[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options as Parameters<typeof cookieStore.set>[2])
             )
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -53,3 +56,5 @@ export function createServerClient({ admin = false }: { admin?: boolean } = {}) 
     }
   )
 }
+
+export const createClient = createServerClient

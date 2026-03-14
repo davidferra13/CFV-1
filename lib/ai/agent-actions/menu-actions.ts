@@ -6,7 +6,7 @@ import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createMenu, updateMenu, applyMenuToEvent, getMenus } from '@/lib/menus/actions'
 import { searchClientsByName } from '@/lib/clients/actions'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { z } from 'zod'
 
 const ParsedMenuSchema = z.object({
@@ -26,7 +26,10 @@ async function parseMenuFromNL(description: string) {
 Extract: name, description, service_style (plated/family_style/buffet/cocktail/tasting_menu/other), cuisine_type, target_guest_count, notes, event_identifier (event name/occasion to link to, if mentioned).
 Return ONLY valid JSON. Omit unmentioned fields.`
 
-  return parseWithOllama(systemPrompt, description, ParsedMenuSchema, { modelTier: 'standard' })
+  const { result } = await dispatchPrivate(systemPrompt, description, ParsedMenuSchema, {
+    modelTier: 'standard',
+  })
+  return result
 }
 
 export const menuAgentActions: AgentActionDefinition[] = [

@@ -73,6 +73,19 @@ async function verifySupabase() {
   }
   console.log('  OK event_financial_summary')
 
+  console.log('\nChecking required chef_preferences columns...')
+  const chefPreferencesCheck = await supabase
+    .from('chef_preferences')
+    .select('archetype, enabled_modules, primary_nav_hrefs, saved_custom_nav_hrefs', {
+      head: true,
+      count: 'exact',
+    })
+
+  if (chefPreferencesCheck.error) {
+    throw new Error(`chef_preferences column check failed: ${chefPreferencesCheck.error.message}`)
+  }
+  console.log('  OK chef_preferences onboarding columns')
+
   console.log('\nSample row counts:')
   const countsToShow = [
     'chefs',

@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import type { SocialPlatform } from './types'
 
@@ -225,11 +225,13 @@ export async function generateCaption(
 
     const userContent = `Write a short social media caption for this event:\n${eventContext}`
 
-    const result = await parseWithOllama(systemPrompt, userContent, CaptionSchema, {
-      modelTier: 'fast',
-      maxTokens: 256,
-      timeoutMs: 15000,
-    })
+    const result = (
+      await dispatchPrivate(systemPrompt, userContent, CaptionSchema, {
+        modelTier: 'fast',
+        maxTokens: 256,
+        timeoutMs: 15000,
+      })
+    ).result
 
     return { success: true, caption: result.caption, aiGenerated: true }
   } catch (err) {

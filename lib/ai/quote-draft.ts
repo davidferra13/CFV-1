@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dispatchPrivate } from '@/lib/ai/dispatch'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 export interface QuoteDraftResult {
@@ -104,10 +104,12 @@ Service expectations: ${inquiry.confirmed_service_expectations || 'Full service 
 Chef's average per-person rate (from history): $${(avgPerGuest / 100).toFixed(0)}`
 
   try {
-    const parsed = await parseWithOllama(SYSTEM_PROMPT, userContent, QuoteDraftSchema, {
-      modelTier: 'standard',
-      maxTokens: 1024,
-    })
+    const parsed = (
+      await dispatchPrivate(SYSTEM_PROMPT, userContent, QuoteDraftSchema, {
+        modelTier: 'standard',
+        maxTokens: 1024,
+      })
+    ).result
     const totalCents = parsed.lineItems.reduce(
       (sum, item) => sum + item.quantity * item.unit_price_cents,
       0
