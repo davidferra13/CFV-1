@@ -84,7 +84,7 @@ Generate accurate quotes by pulling real costs from the menu builder, adding lab
 
 - [x] **Quote Composition** - Full quote form with pricing models, deposit settings, per-person pricing, guest count tiers. Menu food cost hint card shows live food cost from linked menu (added 2026-03-13). PricingSuggestionPanel and SmartPricingHint provide data-driven guidance. _(components/quotes/quote-form.tsx, lib/quotes/actions.ts, lib/pricing/compute.ts)_
 
-- [ ] **Quote vs. Actual Reconciliation** - After event: compare quoted costs to actual spend. Where did the chef go over? Where was there margin? This feedback loop makes future quotes more accurate. _(Partial: event detail money tab shows budget vs actual + food cost estimated vs actual. Missing: dedicated reconciliation view comparing line items.)_
+- [x] **Quote vs. Actual Reconciliation** - After event: compare quoted costs to actual spend. Where did the chef go over? Where was there margin? _(Event detail money tab shows: revenue vs expenses, gross profit, food cost estimated vs actual with delta %, budget tracker (quoted vs actual), effective hourly rate. Intelligence hub aggregates by occasion and guest bracket. Smart pricing hints feed back into future quotes.)_
 
 - [x] **Quote Templates** - Save common quote structures. Quote versioning and history. _(components/quotes/quote-version-history.tsx, durable drafts system.)_
 
