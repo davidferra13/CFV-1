@@ -77,7 +77,7 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
     dietaryCapabilities: [],
     serviceArea: null,
     culinaryProfile,
-    serviceConfigPrompt: serviceConfig ? formatServiceConfigForPrompt(serviceConfig) : null,
+    serviceConfigPrompt: serviceConfig ? await formatServiceConfigForPrompt(serviceConfig) : null,
   }
 }
 
