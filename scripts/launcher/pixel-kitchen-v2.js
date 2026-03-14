@@ -2651,16 +2651,27 @@
   }
 
   // Poll OpenClaw activity log from MC server endpoint
+  let lastOpenClawActivity = ''
   async function pollAgentActivity() {
     try {
       const resp = await fetch('/api/openclaw/status')
       if (!resp.ok) throw new Error('not ok')
       const data = await resp.json()
+      if (data.lastActivity) lastOpenClawActivity = data.lastActivity
       if (data.agents) {
         Object.keys(data.agents).forEach((name) => {
           if (agentActivityLog[name] !== undefined) {
             const log = (data.agents[name].log || []).slice(0, 5)
-            agentActivityLog[name] = log.length > 0 ? log : data.online ? ['Idle'] : ['OFFLINE']
+            if (log.length > 0) {
+              agentActivityLog[name] = log
+            } else if (data.online) {
+              // Online but no parsed activity for this agent
+              agentActivityLog[name] = lastOpenClawActivity
+                ? ['Standing by (last: ' + lastOpenClawActivity.replace('T', ' ') + ')']
+                : ['Standing by']
+            } else {
+              agentActivityLog[name] = ['OFFLINE']
+            }
           }
         })
       }
@@ -2673,7 +2684,7 @@
       // Endpoint unreachable; use bizData as fallback
       const ocUp = bizData.agentStates?.openclawGateway || false
       Object.keys(agentActivityLog).forEach((k) => {
-        agentActivityLog[k] = ocUp ? ['Waiting for tasks...'] : ['OFFLINE']
+        agentActivityLog[k] = ocUp ? ['Gateway online, polling...'] : ['OFFLINE']
       })
     }
   }
