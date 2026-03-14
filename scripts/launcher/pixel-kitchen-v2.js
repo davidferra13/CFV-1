@@ -422,23 +422,7 @@
     const main = models.find((m) => m.startsWith('qwen3:')) || models[0] || ''
     return [models.length + ' models ready', main]
   }
-  function getLineCookBubble(name) {
-    const infr = bizData.infrastructure
-    if (!infr) return ['Checking...']
-    if (name === 'Saute') {
-      if (!infr.devServer?.online) return ['DEV DOWN']
-      return ['localhost:3100', infr.devServer.latency + 'ms']
-    }
-    if (name === 'Grill') {
-      if (!infr.betaServer?.online) return ['BETA DOWN']
-      return ['localhost:3200', infr.betaServer.latency + 'ms']
-    }
-    if (name === 'Fry') {
-      if (!infr.production?.online) return ['PROD DOWN']
-      return ['cheflowhq.com', infr.production.latency + 'ms']
-    }
-    return null
-  }
+  // Line cook bubble removed: Dev/Beta/Prod are stove burners (equipment), not chef characters
   function getExpoBubble() {
     const act = bizData.activity
     if (!act) return ['Watching...']
@@ -448,15 +432,10 @@
     }
     return lines
   }
-  function getWashBubble() {
-    const git = bizData.infrastructure?.git
-    if (!git) return ['Checking git...']
-    const lines = [git.dirty + ' dirty files']
-    if (git.branch) {
-      const short = git.branch.length > 20 ? git.branch.substring(0, 18) + '..' : git.branch
-      lines.push(short)
-    }
-    return lines
+  // ── OpenClaw agent bubble helpers ──
+  function getOpenClawStatus() {
+    const ocUp = bizData.agentStates?.openclawGateway || false
+    return { online: ocUp }
   }
 
   // Initialize sprite loading immediately
@@ -470,7 +449,7 @@
     inquiries: { open: 0, overdue: 0, overdueList: [] },
     clients: { total: 0 },
     upcoming: [],
-    agentStates: { ollama: false, devServer: false, betaServer: false },
+    agentStates: { ollama: false, devServer: false, betaServer: false, openclawGateway: false },
     activity: { recentCommits: 0, recentFileChanges: 0 },
     staff: [],
     weather: null,
@@ -789,11 +768,11 @@
   let Z = {} // zone rects, computed in drawScene
 
   function computeZones(w, h) {
-    const wallH = h * 0.12 // top wall
-    const kitchenH = h * 0.38 // kitchen zone
-    const passH = h * 0.06 // the pass
-    const diningH = h * 0.32 // dining room
-    const hudH = h * 0.12 // bottom HUD
+    const wallH = h * 0.08 // top wall (smaller to give dining more room)
+    const kitchenH = h * 0.28 // kitchen zone (smaller)
+    const passH = h * 0.04 // the pass
+    const diningH = h * 0.5 // dining room (HUGE - agents need to be visible)
+    const hudH = h * 0.1 // bottom HUD
     Z = {
       wall: { x: 0, y: 0, w, h: wallH },
       kitchen: { x: 0, y: wallH, w, h: kitchenH },
@@ -952,6 +931,162 @@
       },
       'Timers'
     )
+
+    // ── AI PROVIDER SHELF (wall-mounted rack of cloud providers) ──
+    const shelfX = z.w * 0.35,
+      shelfY = z.y + z.h * 0.55
+    // Shelf (metal bracket)
+    rect(shelfX, shelfY, z.w * 0.55, 2, C.steel)
+    rect(shelfX, shelfY + 2, 2, 6, C.steelDark)
+    rect(shelfX + z.w * 0.55 - 2, shelfY + 2, 2, 6, C.steelDark)
+
+    const providers = [
+      { label: 'Groq', color: C.skyBlue },
+      { label: 'Cerebras', color: C.cyan },
+      { label: 'Mistral', color: C.purple },
+      { label: 'SambaNova', color: C.lime },
+      { label: 'GitHub', color: '#888' },
+      { label: 'Workers', color: C.amber },
+    ]
+    const provSpacing = (z.w * 0.55) / providers.length
+    providers.forEach((prov, i) => {
+      const px = shelfX + 4 + i * provSpacing
+      const py = shelfY - 18
+
+      // Each provider gets a unique kitchen equipment shape
+      if (prov.label === 'Groq') {
+        // Speed rack (tall wire rack, fast cooling)
+        rect(px, py + 2, 14, 16, '#333')
+        for (let r = 0; r < 4; r++) rect(px + 1, py + 3 + r * 4, 12, 1, prov.color)
+        rect(px, py + 2, 1, 16, C.steel)
+        rect(px + 13, py + 2, 1, 16, C.steel)
+      } else if (prov.label === 'Cerebras') {
+        // Microwave (box with spinning plate)
+        rect(px, py + 2, 16, 14, prov.color)
+        rect(px + 1, py + 3, 10, 10, '#111') // door window
+        // Spinning plate inside
+        const plateAngle = tick * 0.04
+        const cpx = px + 6,
+          cpy = py + 8
+        ctx.fillStyle = '#444'
+        ctx.beginPath()
+        ctx.arc(cpx, cpy, 3, 0, Math.PI * 2)
+        ctx.fill()
+        rect(px + 12, py + 4, 3, 3, '#ddd') // buttons
+        rect(px + 12, py + 8, 3, 3, '#ddd')
+      } else if (prov.label === 'Mistral') {
+        // Magnetic knife strip with 3 knives
+        rect(px, py + 6, 16, 3, '#555') // strip
+        for (let k = 0; k < 3; k++) {
+          rect(px + 2 + k * 5, py + 2, 2, 5, C.steel) // blade
+          rect(px + 2 + k * 5, py + 7, 2, 4, prov.color) // handle
+        }
+      } else if (prov.label === 'SambaNova') {
+        // Food processor / blender
+        rect(px + 3, py + 2, 8, 4, '#ddd') // lid
+        rect(px + 2, py + 6, 10, 10, prov.color) // jar body
+        rect(px + 4, py + 8, 6, 6, 'rgba(0,0,0,0.2)') // contents
+        rect(px + 4, py + 16, 6, 2, C.steelDark) // base
+      } else if (prov.label === 'GitHub') {
+        // Recipe binder / book
+        rect(px + 1, py + 2, 12, 16, '#444') // cover
+        rect(px + 2, py + 3, 10, 14, '#555') // pages
+        rect(px + 1, py + 2, 2, 16, '#333') // spine
+        // Octocat silhouette (tiny)
+        rect(px + 5, py + 6, 4, 4, '#fff')
+        rect(px + 4, py + 5, 2, 2, '#fff')
+        rect(px + 8, py + 5, 2, 2, '#fff')
+      } else if (prov.label === 'Workers') {
+        // Takeout container (edge = portable)
+        rect(px + 1, py + 4, 12, 10, prov.color)
+        rect(px + 2, py + 5, 10, 8, 'rgba(0,0,0,0.2)')
+        // Wire handle
+        ctx.strokeStyle = C.steel
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.arc(px + 7, py + 2, 5, Math.PI, Math.PI * 2)
+        ctx.stroke()
+      }
+
+      // Name below shelf
+      text(prov.label, px + 7, shelfY + 14, '#999', 6, 'center')
+
+      registerClickRegion(
+        px,
+        py,
+        16,
+        32,
+        () => {
+          const descriptions = {
+            Groq: [
+              'Speed Rack (ultra-fast inference)',
+              '~800 tok/s, free tier',
+              'Llama 3.1 8B + 3.3 70B',
+            ],
+            Cerebras: [
+              'Microwave (wafer-scale speed)',
+              '~2000 tok/s, free tier',
+              'Llama 3.1 8B, 3.3 70B, Scout',
+            ],
+            Mistral: [
+              'Knife Set (precision tools)',
+              'Free tier, Codestral for code',
+              'Small, Medium, Large + Code',
+            ],
+            SambaNova: [
+              'Food Processor (reasoning)',
+              'Free tier cloud inference',
+              'Llama 3.1 8B, 3.3 70B, DeepSeek R1',
+            ],
+            GitHub: [
+              'Recipe Binder (code reference)',
+              'Free via GitHub Models',
+              'GPT-4.1-mini, GPT-4.1, Llama',
+            ],
+            Workers: [
+              'Food Truck (edge inference)',
+              'Cloudflare Workers AI, free',
+              'Llama 3.1 8B at the edge',
+            ],
+          }
+          tooltipData = {
+            title: prov.label + ' AI',
+            color: prov.color,
+            lines: descriptions[prov.label] || ['Cloud AI provider'],
+          }
+        },
+        prov.label
+      )
+    })
+
+    // ── FOOD TRUCK outside window (Workers AI visual) ──
+    const truckX = z.w * 0.88,
+      truckY = z.y + z.h * 0.35
+    rect(truckX, truckY, 26, 16, C.amber)
+    rect(truckX + 2, truckY + 2, 10, 8, '#fff') // serving window
+    rect(truckX + 16, truckY + 10, 8, 8, '#333') // wheel
+    rect(truckX + 2, truckY + 10, 8, 8, '#333') // wheel
+    text('CF', truckX + 13, truckY + 9, C.amber, 7, 'center')
+    text('Edge', truckX + 13, truckY + 28, '#888', 7, 'center')
+
+    registerClickRegion(
+      truckX,
+      truckY,
+      28,
+      30,
+      () => {
+        tooltipData = {
+          title: 'Food Truck (Workers AI)',
+          color: C.amber,
+          lines: [
+            'Cloudflare edge inference',
+            '@cf/meta/llama-3.1-8b-instruct',
+            'Serves requests at the edge, not in the kitchen',
+          ],
+        }
+      },
+      'Food Truck'
+    )
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1026,28 +1161,24 @@
     const prepY = z.y + z.h * 0.45
     drawPrepStation(prepX, prepY)
 
-    // ── LINE COOKS (Claude Code agents working the line) ──
-    // Positioned at bottom of kitchen zone, spread across stove width
-    const cookY = z.y + z.h - 110
-    const cookColors = [C.skyBlue, C.lime, C.flameOrange]
-    const cookNames = ['Saute', 'Grill', 'Fry']
-    const cookStates = [
-      bizData.agentStates.devServer,
-      bizData.agentStates.betaServer,
-      isUp('production'),
-    ]
-    for (let lc = 0; lc < 3; lc++) {
-      const lcX = z.w * 0.08 + lc * z.w * 0.15
-      drawBigCook(lcX, cookY, cookNames[lc], cookColors[lc], cookStates[lc])
-      // Speech bubble showing live status
-      const bubble = getLineCookBubble(cookNames[lc])
-      if (bubble) drawSpeechBubble(lcX, cookY - 12, bubble, cookColors[lc])
-    }
+    // Dev/Beta/Prod are EQUIPMENT (stove burners), not chefs.
+    // Git is EQUIPMENT (dish pit). Only agents get chef characters.
 
-    // ── DISHWASHER (Git/Dish Pit worker) at dish pit ──
-    const dwUp = (bizData.infrastructure?.git?.dirtyFiles || 0) > 0
-    drawBigCook(z.w * 0.87, cookY, 'Wash', C.salmon, dwUp)
-    drawSpeechBubble(z.w * 0.87, cookY - 12, getWashBubble(), C.salmon)
+    // ── OPENCLAW BRIGADE (5 tiny characters near delivery door) ──
+    const ocUp = isUp('openclawGateway')
+    const brigadeX = z.x + 32
+    const brigadeY = z.y + z.h * 0.42
+    drawOpenClawBrigade(brigadeX, brigadeY, ocUp)
+
+    // ── AI DISPATCH TICKET WHEEL (between kitchen and pass) ──
+    const wheelX = z.w * 0.58
+    const wheelY = z.y + z.h * 0.68
+    drawDispatchWheel(wheelX, wheelY)
+
+    // ── CLAUDE CODE PORTRAIT (framed on wall, watching over everything) ──
+    const portraitX = z.w * 0.55
+    const portraitY = z.y + z.h * 0.02
+    drawClaudeCodePortrait(portraitX, portraitY)
   }
 
   // ── STOVE LINE (3 burners: Dev, Beta, Prod) ──
@@ -1759,64 +1890,7 @@
     )
   }
 
-  // ── LINE COOKS (Claude Code agents at their stations) ──
-  function drawLineCook(x, y, name, color, working) {
-    const bob = working ? Math.sin(tick * 0.045 + x * 0.1) * 1.5 : 0
-    const coatColor = working ? C.coatWhite : '#ddd'
-
-    // Standing mat (bright colored pad under feet)
-    rect(x - 10, y + 30, 20, 6, color)
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.3)'
-    ctx.beginPath()
-    ctx.ellipse(x, y + 31 + bob, 10, 3, 0, 0, Math.PI * 2)
-    ctx.fill()
-    // Shoes
-    rect(x - 5, y + 26 + bob, 4, 5, '#272727')
-    rect(x + 1, y + 26 + bob, 4, 5, '#272727')
-    // Legs
-    rect(x - 4, y + 20 + bob, 4, 7, '#333')
-    rect(x + 1, y + 20 + bob, 4, 7, '#333')
-    // Body (white coat)
-    rect(x - 7, y + 6 + bob, 14, 15, coatColor)
-    // Apron with color accent (always visible, even when idle)
-    rect(x - 5, y + 8 + bob, 10, 13, color)
-    // Head
-    rect(x - 4, y - 2 + bob, 8, 9, C.skin)
-    // Eyes
-    rect(x - 2, y + 2 + bob, 2, 2, '#131313')
-    rect(x + 2, y + 2 + bob, 2, 2, '#131313')
-    // Skull cap
-    rect(x - 5, y - 5 + bob, 10, 4, working ? '#ffffff' : '#ccc')
-    // Arms
-    rect(x - 10, y + 7 + bob, 3, 12, coatColor)
-    rect(x + 7, y + 7 + bob, 3, 12, coatColor)
-    // Hands
-    rect(x - 10, y + 18 + bob, 3, 3, C.skin)
-    rect(x + 7, y + 18 + bob, 3, 3, C.skin)
-
-    if (working) {
-      // Chopping animation
-      if (tick % 30 < 15) {
-        rect(x + 10, y + 10 + bob, 2, 10, C.steel)
-      } else {
-        rect(x + 10, y + 8 + bob, 2, 10, C.steel)
-      }
-      // Activity indicator (spark above head)
-      if (tick % 20 < 10) {
-        rect(x - 1, y - 8 + bob, 3, 3, C.flameYellow)
-      }
-    } else {
-      // Arms crossed (idle)
-      rect(x - 6, y + 14, 12, 2, coatColor)
-      // ZZZ sleep indicator
-      text('zzz', x + 10, y - 4, '#888', 6, 'left')
-    }
-
-    // Name plate (bright, always visible)
-    rect(x - 14, y + 37, 28, 10, 'rgba(0,0,0,0.5)')
-    text(name, x, y + 44, color, 8, 'center')
-  }
+  // drawLineCook removed: servers are equipment (burners), not chefs
 
   // ── BIG EXPO CHEF (doubled-size, at the pass) ──
   function drawBigExpo(x, y) {
@@ -1896,84 +1970,175 @@
     )
   }
 
-  // ── BIG COOK (doubled-size character for visibility) ──
-  function drawBigCook(x, y, name, color, working) {
-    const s = 3 // size multiplier (3x for strong visibility)
-    const bob = working ? Math.sin(tick * 0.045 + x * 0.1) * 2 : 0
+  // drawBigCook removed: servers are equipment (burners), not chefs
 
-    // Standing mat (bright colored)
-    rect(x - 12 * s, y + 20 * s, 24 * s, 4 * s, color)
+  // ── OPENCLAW BRIGADE (5 agents near the delivery door - bigger, readable) ──
+  function drawOpenClawBrigade(bx, by, online) {
+    // Brigade title (bigger)
+    text('OPENCLAW BRIGADE', bx + 60, by - 12, online ? '#8a8' : '#664', 11, 'center')
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.35)'
-    ctx.beginPath()
-    ctx.ellipse(x, y + 21 * s + bob, 12 * s, 3 * s, 0, 0, Math.PI * 2)
-    ctx.fill()
+    const agents = [
+      { name: 'main', color: C.crimson, role: 'Opus', icon: '\u2605' },
+      { name: 'sonnet', color: C.skyBlue, role: 'Sonnet', icon: '\u270E' },
+      { name: 'build', color: C.lime, role: 'Build', icon: '\u2713' },
+      { name: 'qa', color: C.gold, role: 'QA', icon: '?' },
+      { name: 'runner', color: C.salmon, role: 'Run', icon: '>' },
+    ]
 
-    // Shoes
-    rect(x - 4 * s, y + 17 * s + bob, 3 * s, 3 * s, '#272727')
-    rect(x + 1 * s, y + 17 * s + bob, 3 * s, 3 * s, '#272727')
+    agents.forEach((agent, i) => {
+      const ax = bx + i * 32
+      const ay = by
+      const working = online && (tick + i * 60) % 300 < 200
+      const s = 2 // scale (was 1, now 2x)
+      const bob = working ? Math.sin(tick * 0.06 + i * 1.2) * 1.5 : 0
 
-    // Legs
-    rect(x - 3 * s, y + 13 * s + bob, 3 * s, 5 * s, '#333')
-    rect(x + 1 * s, y + 13 * s + bob, 3 * s, 5 * s, '#333')
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'
+      ctx.beginPath()
+      ctx.ellipse(ax, ay + 12 * s + bob, 4 * s, 1.5 * s, 0, 0, Math.PI * 2)
+      ctx.fill()
 
-    // Body (white coat)
-    rect(x - 6 * s, y + 4 * s + bob, 12 * s, 10 * s, working ? C.coatWhite : '#ddd')
-
-    // Apron (bright color, always visible)
-    rect(x - 4 * s, y + 5 * s + bob, 8 * s, 9 * s, color)
-
-    // Head
-    rect(x - 4 * s, y - 2 * s + bob, 8 * s, 7 * s, C.skin)
-
-    // Eyes
-    rect(x - 2 * s, y + bob, 2 * s, 2 * s, '#131313')
-    rect(x + 1 * s, y + bob, 2 * s, 2 * s, '#131313')
-
-    // Skull cap
-    rect(x - 5 * s, y - 4 * s + bob, 10 * s, 3 * s, working ? '#fff' : '#ccc')
-
-    // Arms
-    rect(x - 8 * s, y + 5 * s + bob, 2 * s, 8 * s, working ? C.coatWhite : '#ddd')
-    rect(x + 6 * s, y + 5 * s + bob, 2 * s, 8 * s, working ? C.coatWhite : '#ddd')
-
-    // Hands
-    rect(x - 8 * s, y + 12 * s + bob, 2 * s, 2 * s, C.skin)
-    rect(x + 6 * s, y + 12 * s + bob, 2 * s, 2 * s, C.skin)
-
-    if (working) {
-      // Knife animation
-      const knifeOff = tick % 30 < 15 ? 0 : -2 * s
-      rect(x + 8 * s, y + 7 * s + bob + knifeOff, 1 * s, 7 * s, C.steel)
-      // Spark above head
-      if (tick % 20 < 10) {
-        rect(x - 1 * s, y - 6 * s + bob, 2 * s, 2 * s, C.flameYellow)
+      // Legs
+      rect(ax - 2 * s, ay + 9 * s + bob, 2 * s, 3 * s, '#333')
+      rect(ax + 1 * s, ay + 9 * s + bob, 2 * s, 3 * s, '#333')
+      // Body
+      rect(ax - 3 * s, ay + 3 * s + bob, 7 * s, 7 * s, online ? agent.color : '#444')
+      // Head
+      rect(ax - 2 * s, ay - 1 * s + bob, 5 * s, 4 * s, online ? C.skin : '#666')
+      // Eyes
+      rect(ax - 1 * s, ay + bob, 1 * s, 1 * s, '#131313')
+      rect(ax + 1 * s, ay + bob, 1 * s, 1 * s, '#131313')
+      // Hat
+      if (agent.name === 'main') {
+        rect(ax - 2 * s, ay - 4 * s + bob, 5 * s, 3 * s, '#fff')
+        rect(ax - 1 * s, ay - 6 * s + bob, 3 * s, 2 * s, '#fff')
+      } else {
+        rect(ax - 3 * s, ay - 2 * s + bob, 7 * s, 1.5 * s, agent.color)
       }
-    } else {
-      // Arms crossed
-      rect(x - 5 * s, y + 9 * s, 10 * s, 2 * s, '#ddd')
-      // ZZZ
-      text('zzz', x + 8 * s, y - 3 * s, '#888', 8, 'left')
-    }
+      // Arms
+      rect(ax - 5 * s, ay + 4 * s + bob, 2 * s, 5 * s, online ? agent.color : '#444')
+      rect(ax + 4 * s, ay + 4 * s + bob, 2 * s, 5 * s, online ? agent.color : '#444')
 
-    // Name plate (dark bg + bright text)
-    rect(x - 16 * s, y + 24 * s, 32 * s, 7 * s, 'rgba(0,0,0,0.6)')
-    text(name, x, y + 29 * s, color, 10, 'center')
+      // Activity indicator
+      if (working && online) {
+        if (tick % 20 < 10) rect(ax - 1 * s, ay - 7 * s + bob, 2 * s, 2 * s, C.flameYellow)
+      } else if (!online) {
+        text('x', ax, ay + 2 + bob, '#a66', 8, 'center')
+      }
 
+      // Name below (bigger)
+      text(agent.name, ax, ay + 14 * s, online ? agent.color : '#555', 9, 'center')
+    })
+
+    // Click region for whole brigade
     registerClickRegion(
-      x - 12 * s,
-      y - 6 * s,
-      24 * s,
-      36 * s,
+      bx - 8,
+      by - 14,
+      170,
+      50,
       () => {
         tooltipData = {
-          title: name + ' (Line Cook)',
-          color: color,
-          lines: [working ? 'ACTIVE' : 'IDLE', 'Server agent'],
+          title: 'OpenClaw Brigade (Pi)',
+          color: online ? C.statusGreen : C.statusRed,
+          lines: [
+            online ? 'Gateway: ONLINE' : 'Gateway: OFFLINE',
+            'main (Opus 4.6): Orchestrator',
+            'sonnet (Sonnet 4.6): Senior engineer',
+            'build (Groq 70B): Build validator',
+            'qa (Groq 70B): Quality assurance',
+            'runner (Groq 8B): Task runner',
+          ],
         }
       },
-      name + ' Cook'
+      'OpenClaw Brigade'
+    )
+  }
+
+  // ── AI DISPATCH TICKET WHEEL (routes tasks to right model) ──
+  function drawDispatchWheel(wx, wy) {
+    const r = 12
+    // Wheel base (circular ticket carousel)
+    ctx.strokeStyle = C.steel
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(wx, wy, r, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Center hub
+    rect(wx - 3, wy - 3, 6, 6, C.steelDark)
+
+    // Spinning tickets (4 slots, rotating)
+    const angle = tick * 0.02
+    for (let i = 0; i < 4; i++) {
+      const a = angle + (i * Math.PI) / 2
+      const tx = wx + Math.cos(a) * (r - 4)
+      const ty = wy + Math.sin(a) * (r - 4)
+      rect(tx - 2, ty - 1, 4, 3, '#fff')
+    }
+
+    // Label
+    text('DISPATCH', wx, wy + r + 8, '#888', 6, 'center')
+    text('Router', wx, wy + r + 16, C.teal, 5, 'center')
+
+    registerClickRegion(
+      wx - r,
+      wy - r,
+      r * 2,
+      r * 2 + 18,
+      () => {
+        tooltipData = {
+          title: 'AI Dispatch (Ticket Wheel)',
+          color: C.teal,
+          lines: [
+            'Routes tasks to the right model',
+            'Privacy gate: PII stays local (Ollama)',
+            'Cloud-safe tasks go to cheapest provider',
+            'Classifier + cost tracker + fallback chain',
+          ],
+        }
+      },
+      'Dispatch'
+    )
+  }
+
+  // ── CLAUDE CODE PORTRAIT (framed photo on wall - the boss watching) ──
+  function drawClaudeCodePortrait(px, py) {
+    const w = 20,
+      h = 24
+    // Frame (gold, ornate)
+    rect(px - 2, py - 2, w + 4, h + 4, C.gold)
+    rect(px - 1, py - 1, w + 2, h + 2, C.woodDark)
+    // Photo background
+    rect(px, py, w, h, '#1a1932')
+    // Simple face silhouette (glowing eyes watching the kitchen)
+    rect(px + 6, py + 6, 8, 10, '#2a2f4e') // head shape
+    // Glowing eyes (subtle pulse)
+    const eyeGlow = 0.6 + Math.sin(tick * 0.03) * 0.3
+    ctx.fillStyle = 'rgba(90,197,79,' + eyeGlow + ')'
+    ctx.fillRect(px + 8, py + 10, 2, 2)
+    ctx.fillRect(px + 12, py + 10, 2, 2)
+    // Nameplate under portrait
+    rect(px - 1, py + h + 2, w + 2, 8, C.gold)
+    text('CC', px + w / 2, py + h + 9, '#1b1b1b', 6, 'center')
+
+    registerClickRegion(
+      px - 2,
+      py - 2,
+      w + 4,
+      h + 14,
+      () => {
+        tooltipData = {
+          title: 'Claude Code (Lead Engineer)',
+          color: C.statusGreen,
+          lines: [
+            'Rank 1. The boss of all code.',
+            'Anthropic subscription (OAuth)',
+            'Reviews everything. Decides everything.',
+            'The one watching right now.',
+          ],
+        }
+      },
+      'Claude Code'
     )
   }
 
@@ -2100,20 +2265,20 @@
     // Wall strip at top
     rect(z.x, z.y, z.w, 4, C.diningWall)
 
-    // ── HOST STAND (Inquiries) ──
-    drawHostStand(z.x + 10, z.y + 10)
+    // ══════════════════════════════════════════════════
+    // OPENCLAW COMMAND CENTER (the MAIN event - 85% of dining zone)
+    // 5 HUGE agents with live activity feeds beside each
+    // ══════════════════════════════════════════════════
+    drawOpenClawCommandCenter(z.x + 4, z.y + 8, z.w * 0.85, z.h - 16)
 
-    // ── DINING TABLES (Events) ──
-    drawDiningTables(z.x + z.w * 0.15, z.y + 10, z.w * 0.45, z.h - 20)
-
-    // ── CASH REGISTER (Revenue) ──
-    drawCashRegister(z.x + z.w * 0.65, z.y + 10)
-
-    // ── BAR (External Services) ──
-    drawBar(z.x + z.w * 0.78, z.y + 6, z.w * 0.2, z.h - 16)
+    // ── Compact sidebar items (right edge) ──
+    const sideX = z.x + z.w * 0.87
+    drawHostStand(sideX, z.y + 10)
+    drawCashRegister(sideX, z.y + z.h * 0.35)
+    drawBar(sideX, z.y + z.h * 0.65, z.w * 0.12, z.h * 0.3)
 
     // ── FRONT DOOR (Google OAuth) ──
-    drawFrontDoor(z.x + z.w - 30, z.y + z.h * 0.4)
+    drawFrontDoor(z.x + z.w - 24, z.y + z.h * 0.4)
 
     // ── Smoke Detector (Sentry) + Camera (PostHog) on ceiling ──
     // Smoke detector
@@ -2152,6 +2317,18 @@
       },
       'PostHog'
     )
+
+    // Remy and Gustav removed: they're app features, not infrastructure agents.
+    // Only agents get chef characters in the pixel kitchen.
+
+    // ── GMAIL MAILBOX (wall-mounted mail slot) ──
+    drawGmailMailbox(z.x + z.w - 50, z.y + z.h * 0.15)
+
+    // ── REDIS SPEED RAIL (under the bar) ──
+    drawRedisSpeedRail(z.x + z.w * 0.78, z.y + z.h - 16, z.w * 0.2)
+
+    // ── CLOUDINARY PHOTO WALL (framed photos on dining wall) ──
+    drawPhotoWall(z.x + z.w * 0.38, z.y + 2)
   }
 
   // ── HOST STAND (Inquiries) ──
@@ -2460,6 +2637,354 @@
     )
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // OPENCLAW COMMAND CENTER - The main visual. 5 big agents
+  // with live activity feed next to each one.
+  // ══════════════════════════════════════════════════════════════
+  // Agent activity log (populated from OpenClaw panel polling or simulated from bizData)
+  let agentActivityLog = {
+    main: [],
+    sonnet: [],
+    build: [],
+    qa: [],
+    runner: [],
+  }
+
+  // Poll OpenClaw activity log from MC server endpoint
+  async function pollAgentActivity() {
+    try {
+      const resp = await fetch('/api/openclaw/status')
+      if (!resp.ok) throw new Error('not ok')
+      const data = await resp.json()
+      if (data.agents) {
+        Object.keys(data.agents).forEach((name) => {
+          if (agentActivityLog[name] !== undefined) {
+            const log = (data.agents[name].log || []).slice(0, 5)
+            agentActivityLog[name] = log.length > 0 ? log : data.online ? ['Idle'] : ['OFFLINE']
+          }
+        })
+      }
+      if (!data.online) {
+        Object.keys(agentActivityLog).forEach((k) => {
+          agentActivityLog[k] = ['OFFLINE']
+        })
+      }
+    } catch {
+      // Endpoint unreachable; use bizData as fallback
+      const ocUp = bizData.agentStates?.openclawGateway || false
+      Object.keys(agentActivityLog).forEach((k) => {
+        agentActivityLog[k] = ocUp ? ['Waiting for tasks...'] : ['OFFLINE']
+      })
+    }
+  }
+  pollAgentActivity()
+  setInterval(pollAgentActivity, 8000)
+
+  function drawOpenClawCommandCenter(cx, cy, cw, ch) {
+    const ocUp = isUp('openclawGateway')
+
+    // Command center background panel (full dark backdrop)
+    roundRect(cx, cy, cw, ch, 6, 'rgba(10,5,20,0.85)')
+    // Thick border, glowing when online
+    ctx.strokeStyle = ocUp ? 'rgba(90,197,79,0.5)' : 'rgba(234,50,60,0.5)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.roundRect(cx, cy, cw, ch, 6)
+    ctx.stroke()
+
+    // Title bar (big, readable)
+    const titleH = 22
+    rect(cx + 1, cy + 1, cw - 2, titleH, 'rgba(42,47,78,0.9)')
+    const statusDot = ocUp ? C.statusGreen : C.statusRed
+    rect(cx + 10, cy + 7, 10, 10, statusDot)
+    text('OPENCLAW COMMAND CENTER', cx + 28, cy + 16, ocUp ? C.cream : '#a66', 14, 'left')
+    text(
+      ocUp ? 'ONLINE  10.0.0.177' : 'GATEWAY OFFLINE',
+      cx + cw - 12,
+      cy + 16,
+      ocUp ? C.statusGreen : C.statusRed,
+      12,
+      'right'
+    )
+
+    // 5 agent rows - BIG characters, BIG text, BIG activity feed
+    const agents = [
+      { name: 'main', role: 'Orchestrator', model: 'Opus 4.6', color: C.crimson, hat: 'toque' },
+      {
+        name: 'sonnet',
+        role: 'Sr. Engineer',
+        model: 'Sonnet 4.6',
+        color: C.skyBlue,
+        hat: 'bandana',
+      },
+      { name: 'build', role: 'Build Check', model: 'Groq 70B', color: C.lime, hat: 'bandana' },
+      { name: 'qa', role: 'QA Tester', model: 'Groq 70B', color: C.gold, hat: 'bandana' },
+      { name: 'runner', role: 'Task Runner', model: 'Groq 8B', color: C.salmon, hat: 'bandana' },
+    ]
+
+    const contentTop = cy + titleH + 6
+    const contentH = ch - titleH - 10
+    const rowH = contentH / agents.length
+    const charAreaW = 60 // space for the big character
+
+    agents.forEach((agent, i) => {
+      const ry = contentTop + i * rowH
+      const working = ocUp && (tick + i * 60) % 300 < 200
+
+      // Row separator (visible line between agents)
+      if (i > 0) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(cx + 8, ry)
+        ctx.lineTo(cx + cw - 8, ry)
+        ctx.stroke()
+      }
+
+      // Row highlight on hover-style (alternating subtle bg)
+      if (i % 2 === 0) {
+        roundRect(cx + 2, ry + 1, cw - 4, rowH - 2, 3, 'rgba(255,255,255,0.02)')
+      }
+
+      // ── BIG status dot (left edge) ──
+      const dotColor = !ocUp ? C.statusRed : working ? C.statusGreen : C.statusYellow
+      rect(cx + 8, ry + rowH / 2 - 5, 8, 8, dotColor)
+      // Glow effect when active
+      if (working && ocUp) {
+        ctx.fillStyle = dotColor === C.statusGreen ? 'rgba(90,197,79,0.15)' : 'rgba(234,179,8,0.15)'
+        ctx.beginPath()
+        ctx.arc(cx + 12, ry + rowH / 2 - 1, 10, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // ── Agent character (scaled 4x - HUGE, immediately visible) ──
+      const charX = cx + 38
+      const charCenterY = ry + rowH / 2
+      const bob = working ? Math.sin(tick * 0.05 + i * 1.5) * 2 : 0
+      const s = 4 // BIG scale
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'
+      ctx.beginPath()
+      ctx.ellipse(charX, charCenterY + (10 * s) / 2 + bob, 4 * s, 1.5 * s, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Legs
+      rect(charX - 2 * s, charCenterY + 5 * s + bob, 2 * s, 3 * s, '#333')
+      rect(charX + 1 * s, charCenterY + 5 * s + bob, 2 * s, 3 * s, '#333')
+      // Body (colored apron - BIG)
+      rect(charX - 3 * s, charCenterY - 1 * s + bob, 7 * s, 7 * s, ocUp ? agent.color : '#444')
+      // Head
+      rect(charX - 2 * s, charCenterY - 5 * s + bob, 5 * s, 4 * s, ocUp ? C.skin : '#666')
+      // Eyes (visible!)
+      rect(charX - 1 * s, charCenterY - 4 * s + bob, 2 * s, 2 * s, '#131313')
+      rect(charX + 1 * s, charCenterY - 4 * s + bob, 2 * s, 2 * s, '#131313')
+      // Hat
+      if (agent.hat === 'toque') {
+        rect(charX - 2 * s, charCenterY - 8 * s + bob, 5 * s, 3 * s, '#fff')
+        rect(charX - 1 * s, charCenterY - 10 * s + bob, 3 * s, 3 * s, '#fff')
+      } else {
+        rect(charX - 3 * s, charCenterY - 6 * s + bob, 7 * s, 2 * s, agent.color)
+      }
+      // Arms
+      rect(charX - 5 * s, charCenterY + bob, 2 * s, 5 * s, ocUp ? agent.color : '#444')
+      rect(charX + 5 * s, charCenterY + bob, 2 * s, 5 * s, ocUp ? agent.color : '#444')
+
+      // Activity spark when working (BIG spark)
+      if (working && ocUp) {
+        if (tick % 20 < 10)
+          rect(charX - 1 * s, charCenterY - 11 * s + bob, 3 * s, 3 * s, C.flameYellow)
+      }
+
+      // ── Agent info text (BIG, readable at a glance) ──
+      const infoX = cx + charAreaW + 20
+      const nameY = ry + 16
+      // Agent name - HUGE and colored
+      text(agent.name.toUpperCase(), infoX, nameY, agent.color, 16, 'left')
+      // Role and model on the same line, right of name
+      text(
+        agent.role + '  |  ' + agent.model,
+        infoX + agent.name.length * 11 + 10,
+        nameY,
+        '#777',
+        11,
+        'left'
+      )
+
+      // ── Live activity feed (BIG text, the whole point) ──
+      const log = agentActivityLog[agent.name] || []
+      const feedX = infoX
+      const feedY = nameY + 6
+      const feedLineH = 14
+
+      if (log.length > 0) {
+        log.forEach((entry, j) => {
+          if (j >= 4) return // max 4 visible lines
+          const entryText = typeof entry === 'string' ? entry : entry.text || entry.message || ''
+          const lineY = feedY + j * feedLineH
+          // Truncate to fit panel width
+          const maxLen = Math.floor((cw - charAreaW - 40) / 6.5)
+          const display =
+            entryText.length > maxLen ? entryText.substring(0, maxLen - 2) + '..' : entryText
+          // First line bright, rest dimmer
+          const lineColor = j === 0 ? (ocUp ? '#e0e0e0' : '#666') : j === 1 ? '#999' : '#666'
+          text((j === 0 ? '\u25B6 ' : '  ') + display, feedX, lineY + 12, lineColor, 11, 'left')
+        })
+      } else {
+        text(
+          ocUp ? '\u25B6 Waiting for tasks...' : '\u25B6 OFFLINE',
+          feedX,
+          feedY + 12,
+          ocUp ? '#888' : '#664444',
+          11,
+          'left'
+        )
+      }
+
+      // Click region per agent (full row)
+      registerClickRegion(
+        cx,
+        ry,
+        cw,
+        rowH,
+        () => {
+          tooltipData = {
+            title: agent.name.toUpperCase() + ' (' + agent.model + ')',
+            color: agent.color,
+            lines: [
+              agent.role,
+              ocUp ? 'ONLINE' : 'OFFLINE',
+              ...(log.length > 0
+                ? log.slice(0, 5).map((e) => (typeof e === 'string' ? e : e.text || ''))
+                : ['No activity']),
+            ],
+          }
+        },
+        agent.name
+      )
+    })
+  }
+
+  // Remy and Gustav functions removed: app features, not infrastructure agents
+
+  // ── GMAIL MAILBOX (wall-mounted mail slot) ──
+  function drawGmailMailbox(mx, my) {
+    const w = 16,
+      h = 12
+    // Mailbox body
+    rect(mx, my, w, h, '#c42430') // Gmail red
+    rect(mx + 2, my + 2, w - 4, h - 4, '#e55')
+    // Mail slot
+    rect(mx + 3, my + 4, w - 6, 2, '#333')
+    // Envelope poking out
+    if (tick % 200 < 120) {
+      rect(mx + 5, my + 1, 6, 4, '#fff')
+      rect(mx + 6, my + 2, 4, 1, '#ddd') // fold line
+    }
+    // Flag (up = syncing)
+    const syncing = tick % 300 < 150
+    if (syncing) {
+      rect(mx + w, my, 2, 8, '#888')
+      rect(mx + w, my, 4, 3, C.statusGreen)
+    }
+
+    text('Gmail', mx + w / 2, my + h + 8, '#c42430', 6, 'center')
+
+    registerClickRegion(
+      mx,
+      my,
+      w + 4,
+      h + 10,
+      () => {
+        tooltipData = {
+          title: 'Gmail Sync (Mailbox)',
+          color: '#c42430',
+          lines: [
+            'GOLDMINE email intelligence',
+            'Incoming inquiries from email',
+            'Deterministic extraction + lead scoring',
+            'Thread replies enrich parent inquiry',
+          ],
+        }
+      },
+      'Gmail'
+    )
+  }
+
+  // ── REDIS SPEED RAIL (bartender quick-access under the bar) ──
+  function drawRedisSpeedRail(rx, ry, rw) {
+    // Metal rail under bar counter
+    rect(rx, ry, rw, 3, C.steel)
+    rect(rx + 1, ry + 1, rw - 2, 1, C.chrome)
+
+    // Small bottles on the rail (cached values)
+    const bottleCount = 6
+    for (let i = 0; i < bottleCount; i++) {
+      const bx = rx + 4 + i * (rw / bottleCount)
+      const colors = [C.skyBlue, C.lime, C.amber, C.rose, C.teal, C.purple]
+      rect(bx, ry - 6, 4, 6, colors[i])
+      rect(bx + 1, ry - 8, 2, 3, '#ddd') // bottle cap
+    }
+
+    text('Redis', rx + rw / 2, ry + 8, '#a44', 5, 'center')
+
+    registerClickRegion(
+      rx,
+      ry - 10,
+      rw,
+      20,
+      () => {
+        tooltipData = {
+          title: 'Upstash Redis (Speed Rail)',
+          color: '#a44',
+          lines: [
+            "Bartender's speed rail: instant access",
+            'Session cache, rate limiting, queues',
+            'Quick-grab bottles for fast service',
+          ],
+        }
+      },
+      'Redis'
+    )
+  }
+
+  // ── CLOUDINARY PHOTO WALL (framed food photos on dining wall) ──
+  function drawPhotoWall(px, py) {
+    // 3 small framed "photos" on the wall
+    for (let i = 0; i < 3; i++) {
+      const fx = px + i * 22
+      // Frame
+      rect(fx, py, 18, 14, C.gold)
+      rect(fx + 1, py + 1, 16, 12, '#2a2f4e')
+      // "Photo" content (food tile if loaded, colored square if not)
+      const photoTiles = [66, 35, 48] // pizza, meat, cake
+      if (!drawFoodTile(photoTiles[i], fx + 2, py + 2, 0.7)) {
+        rect(fx + 2, py + 2, 14, 10, ['#644', '#464', '#446'][i])
+      }
+    }
+
+    text('Photos', px + 33, py + 20, '#888', 5, 'center')
+
+    registerClickRegion(
+      px,
+      py,
+      66,
+      22,
+      () => {
+        tooltipData = {
+          title: 'Cloudinary (Photo Wall)',
+          color: C.gold,
+          lines: [
+            'Image hosting & optimization',
+            'Menu photos, event photos, avatars',
+            'CDN delivery, auto-format, resize',
+          ],
+        }
+      },
+      'Photos'
+    )
+  }
+
   // ═══════════════════════════════════════════════════════════
   // HUD BAR - Status summary at bottom
   // ═══════════════════════════════════════════════════════════
@@ -2482,6 +3007,7 @@
       { label: 'Prod', up: isUp('production') },
       { label: 'Ollama', up: bizData.agentStates.ollama },
       { label: 'Supabase', up: isUp('supabase') },
+      { label: 'OpenClaw', up: isUp('openclawGateway') },
     ]
     services.forEach((s) => {
       rect(hx, hy - 4, 6, 6, s.up ? C.statusGreen : C.statusRed)
