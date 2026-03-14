@@ -5,8 +5,9 @@
 // inside a shared context provider. Both chat interfaces can be open
 // simultaneously. Used in the chef portal layout.
 
-import { MessageSquare, Bot, X, Move } from 'lucide-react'
+import { MessageSquare, Bot, X, Move } from '@/components/ui/icons'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useIsDemoMode } from '@/lib/demo-mode'
 import { RemyProvider, useRemyContext } from '@/components/ai/remy-context'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyMascotChat } from '@/components/ai/remy-mascot-chat'
@@ -302,6 +303,8 @@ function RemyInner() {
 }
 
 export function RemyWrapper() {
+  const isDemo = useIsDemoMode()
+  if (isDemo) return null
   return (
     <RemyProvider>
       <RemyInner />

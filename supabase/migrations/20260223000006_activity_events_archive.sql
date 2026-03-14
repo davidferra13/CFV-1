@@ -14,9 +14,12 @@ CREATE TABLE IF NOT EXISTS activity_events_archive (
   archived_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (id, archived_at)
 );
+
 CREATE INDEX IF NOT EXISTS idx_activity_archive_tenant_created
   ON activity_events_archive (tenant_id, created_at DESC);
+
 ALTER TABLE activity_events_archive ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Chefs read own tenant archived activity"
   ON activity_events_archive
   FOR SELECT
@@ -26,6 +29,7 @@ CREATE POLICY "Chefs read own tenant archived activity"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY "Service role manages archived activity"
   ON activity_events_archive
   FOR ALL

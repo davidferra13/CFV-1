@@ -1,17 +1,85 @@
 'use client'
 
+'use client'
+
+import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import { updateTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
 
 interface TakeAChefSetupProps {
   gmailConnected: boolean
   lastSyncAt: string | null
   tacLeadCount: number
+  defaultCommissionPercent: number
 }
 
-export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: TakeAChefSetupProps) {
+function TakeAChefCommissionDefaults({ initialPercent }: { initialPercent: number }) {
+  const [commissionPercent, setCommissionPercent] = useState(initialPercent)
+  const [message, setMessage] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
+
+  const handleSave = () => {
+    setMessage(null)
+    startTransition(async () => {
+      try {
+        await updateTakeAChefIntegrationSettings({
+          defaultCommissionPercent: commissionPercent,
+        })
+        setMessage('Saved')
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : 'Failed to save')
+      }
+    })
+  }
+
+  return (
+    <div className="pt-3 border-t border-stone-800 space-y-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-stone-200">Default commission rate</p>
+          <p className="text-xs text-stone-500">
+            ChefFlow defaults to the current Take a Chef base commission unless you override it per
+            booking.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={50}
+            step={1}
+            value={commissionPercent}
+            onChange={(e) =>
+              setCommissionPercent(Math.max(0, Math.min(50, Number(e.target.value))))
+            }
+            className="w-20 rounded-md border border-stone-700 bg-stone-900 px-3 py-1.5 text-center text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          <span className="text-sm text-stone-500">%</span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={handleSave}
+            disabled={pending}
+          >
+            {pending ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+      </div>
+      {message && <p className="text-xs text-stone-500">{message}</p>}
+    </div>
+  )
+}
+
+export function TakeAChefSetup({
+  gmailConnected,
+  lastSyncAt,
+  tacLeadCount,
+  defaultCommissionPercent,
+}: TakeAChefSetupProps) {
   // --- State 1: Connected with leads captured ---
   if (gmailConnected && tacLeadCount > 0) {
     return (
@@ -46,6 +114,7 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
                 Disconnect Gmail (coming soon)
               </button>
             </div>
+            <TakeAChefCommissionDefaults initialPercent={defaultCommissionPercent} />
           </div>
         </CardContent>
       </Card>
@@ -78,6 +147,7 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
               dashboard within 5 minutes.
             </p>
           </div>
+          <TakeAChefCommissionDefaults initialPercent={defaultCommissionPercent} />
         </CardContent>
       </Card>
     )
@@ -141,10 +211,10 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
             <div className="flex-1 space-y-2">
               <h4 className="text-sm font-semibold text-stone-100">Commission rate</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
-                TakeAChef typically takes 25% of each booking. Commission rate settings will be
-                available once Gmail is connected.
+                Set the default TakeAChef commission rate ChefFlow should use when logging booking
+                margin and platform expenses.
               </p>
-              <p className="text-xs text-stone-600 italic">Default: 25%</p>
+              <TakeAChefCommissionDefaults initialPercent={defaultCommissionPercent} />
             </div>
           </li>
         </ol>

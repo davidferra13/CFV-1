@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { getImportedClients } from '@/lib/clients/import-actions'
 import { ClientImportForm } from '@/components/onboarding/client-import-form'
 

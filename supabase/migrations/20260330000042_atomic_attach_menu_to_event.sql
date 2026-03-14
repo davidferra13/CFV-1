@@ -83,4 +83,7 @@ BEGIN
     'course_count', GREATEST(v_course_count, 1)
   );
 END;
-$$;;
+$$;
+
+
+

@@ -17,6 +17,7 @@ ALTER TABLE chef_preferences
     {"id":"hours","enabled":true},
     {"id":"activity","enabled":true}
   ]'::jsonb;
+
 ALTER TABLE chef_preferences
   ADD CONSTRAINT chef_preferences_dashboard_widgets_array
     CHECK (jsonb_typeof(dashboard_widgets) = 'array');

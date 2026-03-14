@@ -1,0 +1,73 @@
+// Task Carry-Forward (Phase 1)
+// Queries incomplete tasks from previous days and surfaces them on today's board.
+
+'use server'
+
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
+import type { Task } from './actions'
+
+export type CarriedTask = Task & {
+  originalDate: string
+  daysOverdue: number
+}
+
+/**
+ * Get all incomplete tasks from previous days (not done, not cancelled).
+ * Returns them sorted by date (oldest first), then priority.
+ */
+export async function getCarriedOverTasks(today: string): Promise<CarriedTask[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
+    .eq('chef_id', user.tenantId!)
+    .lt('due_date', today)
+    .in('status', ['pending', 'in_progress'])
+    .is('recurring_rule', null) // Don't carry forward recurring templates
+    .order('due_date', { ascending: true })
+    .order('priority', { ascending: false })
+
+  if (error) {
+    console.error('[getCarriedOverTasks] Error:', error)
+    return []
+  }
+
+  const todayDate = new Date(today + 'T00:00:00')
+
+  return ((data ?? []) as Task[]).map((task) => {
+    const taskDate = new Date(task.due_date + 'T00:00:00')
+    const diffDays = Math.floor((todayDate.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24))
+    return {
+      ...task,
+      originalDate: task.due_date,
+      daysOverdue: diffDays,
+    }
+  })
+}
+
+/**
+ * Get count of overdue tasks (for dashboard badge).
+ */
+export async function getOverdueTaskCount(): Promise<number> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  const { count, error } = await supabase
+    .from('tasks')
+    .select('id', { count: 'exact', head: true })
+    .eq('chef_id', user.tenantId!)
+    .lt('due_date', today)
+    .in('status', ['pending', 'in_progress'])
+    .is('recurring_rule', null)
+
+  if (error) {
+    console.error('[getOverdueTaskCount] Error:', error)
+    return 0
+  }
+
+  return count ?? 0
+}

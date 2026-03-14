@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Copy, Loader2, Sparkles } from 'lucide-react'
+import { Star, Copy, Loader2, Sparkles } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { draftReviewRequest, type ReviewRequestDraft } from '@/lib/ai/review-request'

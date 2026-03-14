@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Eye, Clock, MousePointer } from 'lucide-react'
+import { Eye, Clock, MousePointer } from '@/components/ui/icons'
 
 type ProposalViewData = {
   totalViews: number

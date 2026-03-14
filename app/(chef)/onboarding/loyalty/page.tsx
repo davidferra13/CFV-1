@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { getLoyaltyConfig, getRewards } from '@/lib/loyalty/actions'
 import { getImportedClients } from '@/lib/clients/import-actions'
 import { LoyaltySetup } from '@/components/onboarding/loyalty-setup'

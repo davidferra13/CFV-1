@@ -104,7 +104,11 @@ export async function onInquiryCreated(
     clientName?: string
     occasion?: string
     budgetCents?: number
+    budgetMode?: 'exact' | 'range' | 'not_sure' | 'unset'
+    budgetRange?: string
     guestCount?: number
+    serviceMode?: 'one_off' | 'recurring' | 'multi_day'
+    recurringFrequency?: 'weekly' | 'biweekly' | 'monthly'
   }
 ): Promise<void> {
   try {
@@ -118,7 +122,11 @@ export async function onInquiryCreated(
         clientName: metadata?.clientName,
         occasion: metadata?.occasion,
         budgetCents: metadata?.budgetCents,
+        budgetMode: metadata?.budgetMode,
+        budgetRange: metadata?.budgetRange,
         guestCount: metadata?.guestCount,
+        serviceMode: metadata?.serviceMode,
+        recurringFrequency: metadata?.recurringFrequency,
       },
       priority: AI_PRIORITY.REACTIVE,
       relatedInquiryId: inquiryId,

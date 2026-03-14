@@ -127,6 +127,9 @@ export interface RemyContext {
     guestCount: number | null
     clientLoyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
     clientLoyaltyPoints?: number | null
+    prepReady?: boolean
+    groceryReady?: boolean
+    timelineReady?: boolean
   }>
   recentClients?: Array<{
     id: string
@@ -233,6 +236,125 @@ export interface RemyContext {
   pendingMenuApprovals?: Array<{ clientName: string }>
   /** Unread messages from inquiry leads */
   unreadInquiryMessages?: Array<{ leadName: string }>
+  /** Stale inquiries — no response in >3 days, sorted by urgency (proactive nudge) */
+  staleInquiries?: Array<{
+    leadName: string
+    daysSinceContact: number
+    leadScore: number
+    urgency: number
+  }>
+  /** Overdue payments — past due date (proactive nudge) */
+  overduePayments?: Array<{ clientName: string; amountCents: number; daysOverdue: number }>
+  /** Revenue pattern — busy/slow months from historical data */
+  revenuePattern?: {
+    busiestMonth: string
+    slowestMonth: string
+    monthlyAvgCents: number
+  }
+  /** Client re-engagement signals — clients overdue for a booking based on their cadence */
+  clientReengagement?: Array<{
+    clientName: string
+    avgIntervalDays: number
+    daysSinceLastBooking: number
+    eventCount: number
+  }>
+  /** Quote distribution — historical range for comparison intelligence */
+  quoteDistribution?: {
+    count: number
+    minCents: number
+    maxCents: number
+    medianCents: number
+    p25Cents: number
+    p75Cents: number
+  }
+  /** Profitability stats — aggregate margins across events */
+  profitabilityStats?: {
+    eventCount: number
+    avgMargin: number
+    bestMargin: number
+    worstMargin: number
+    avgProfitCents: number
+  }
+  /** Upcoming payment deadlines — due within 7 days, not yet overdue */
+  upcomingPaymentDeadlines?: Array<{
+    clientName: string
+    occasion: string
+    amountCents: number
+    dueDate: string
+    daysUntilDue: number
+  }>
+  /** Expiring quotes — valid_until within 7 days */
+  expiringQuotes?: Array<{
+    clientName: string
+    occasion: string
+    totalCents: number
+    validUntil: string
+    daysUntilExpiry: number
+  }>
+  /** Inquiry velocity — week-over-week comparison */
+  inquiryVelocity?: {
+    thisWeek: number
+    lastWeek: number
+  }
+  /** Conversion rate — inquiry to event */
+  conversionRate?: {
+    total: number
+    converted: number
+    rate: number
+    byChannel: Array<{ channel: string; total: number; converted: number; rate: number }>
+  }
+  /** Expense category breakdown */
+  expenseBreakdown?: Array<{ category: string; totalCents: number }>
+  /** Day-of-week event patterns */
+  dayOfWeekPattern?: {
+    busiestDay: string
+    slowestDay: string
+    distribution: Array<{ day: string; count: number }>
+  }
+  /** Service style distribution */
+  serviceStyles?: Array<{ style: string; count: number; pct: number }>
+  /** Repeat client ratio */
+  repeatClientRatio?: {
+    totalClients: number
+    repeatClients: number
+    ratio: number
+  }
+  /** Guest count trend */
+  guestCountTrend?: {
+    recentAvg: number
+    previousAvg: number
+    direction: string
+  }
+  /** Average booking lead time */
+  avgLeadTime?: {
+    avgDays: number
+    medianDays: number
+    shortestDays: number
+    longestDays: number
+  }
+  /** Dietary restriction frequency across events */
+  dietaryProfile?: {
+    topDietary: Array<{ name: string; count: number }>
+    topAllergies: Array<{ name: string; count: number }>
+  }
+  /** Menu approval turnaround stats */
+  menuApprovalStats?: {
+    avgDays: number
+    medianDays: number
+    fastestDays: number
+    slowestDays: number
+  }
+  /** Client referral sources */
+  referralSources?: Array<{ source: string; count: number; pct: number }>
+  /** Cash flow projection from upcoming events */
+  cashFlowProjection?: {
+    expectedCents: number
+    eventCount: number
+  }
+  /** Business intelligence summary — cross-engine synthesized insights */
+  businessIntelligence?: string
+  /** Chef service configuration — what services/policies/extras the chef offers */
+  serviceConfigPrompt?: string
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

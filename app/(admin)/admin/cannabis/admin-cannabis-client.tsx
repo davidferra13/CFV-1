@@ -137,24 +137,38 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
   return (
     <div>
       {/* Tab Bar */}
-      <div className="flex gap-2 mb-6">
-        <button className={tabClass('queue')} onClick={() => setTab('queue')}>
-          Invite Queue{' '}
-          {localPending.length > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-amber-900/50 text-amber-400">
-              {localPending.length}
-            </span>
-          )}
-        </button>
-        <button className={tabClass('users')} onClick={() => setTab('users')}>
-          Tier Users ({localUsers.length})
-        </button>
-        <button className={tabClass('grant')} onClick={() => setTab('grant')}>
-          Direct Grant
-        </button>
-        <button className={tabClass('history')} onClick={() => setTab('history')}>
-          All Invites ({allInvites.length})
-        </button>
+      <div className="mb-6 overflow-x-auto">
+        <div className="flex w-max min-w-full gap-2">
+          <button
+            className={`${tabClass('queue')} whitespace-nowrap`}
+            onClick={() => setTab('queue')}
+          >
+            Invite Queue{' '}
+            {localPending.length > 0 && (
+              <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-amber-900/50 text-amber-400">
+                {localPending.length}
+              </span>
+            )}
+          </button>
+          <button
+            className={`${tabClass('users')} whitespace-nowrap`}
+            onClick={() => setTab('users')}
+          >
+            Tier Users ({localUsers.length})
+          </button>
+          <button
+            className={`${tabClass('grant')} whitespace-nowrap`}
+            onClick={() => setTab('grant')}
+          >
+            Direct Grant
+          </button>
+          <button
+            className={`${tabClass('history')} whitespace-nowrap`}
+            onClick={() => setTab('history')}
+          >
+            All Invites ({allInvites.length})
+          </button>
+        </div>
       </div>
 
       {/* Invite Queue */}

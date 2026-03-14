@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { mergeProspects } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, Merge, AlertCircle, CheckCircle } from 'lucide-react'
+import { Loader2, Merge, AlertCircle, CheckCircle } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 import type { Prospect } from '@/lib/prospecting/types'
 

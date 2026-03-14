@@ -11,7 +11,6 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
-import { TEST_API_BASE_URL } from '../helpers/runtime-base-url.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -26,7 +25,7 @@ const getEnv = (key) => {
 const SUPABASE_URL = getEnv('NEXT_PUBLIC_SUPABASE_URL')
 const SUPABASE_ANON_KEY = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 const PROJECT_REF = 'luefkpakzvxcsqroxyhz'
-const API_BASE = TEST_API_BASE_URL
+const API_BASE = 'http://localhost:3100'
 const REPORT_DIR = path.join(path.dirname(__dirname), '..', 'data', 'access-control-reports')
 
 // Test accounts

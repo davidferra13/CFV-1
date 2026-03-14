@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { runPreDeletionChecks, type DeletionBlocker } from '@/lib/compliance/pre-deletion-checks'
-import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { CheckCircle2, XCircle, Loader2 } from '@/components/ui/icons'
 
 type Props = {
   chefId: string

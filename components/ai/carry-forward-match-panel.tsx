@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Recycle, Loader2, Sparkles, DollarSign } from 'lucide-react'
+import { Recycle, Loader2, Sparkles, DollarSign } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {

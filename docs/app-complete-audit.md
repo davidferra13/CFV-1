@@ -1,6 +1,6 @@
 # ChefFlow — Complete Application Audit
 
-> **Generated:** 2026-02-23 ~6:00 PM EST | **Last incremental update:** 2026-03-08
+> **Generated:** 2026-02-23 ~6:00 PM EST (snapshot — source code may have changed since)
 > **Scope:** Every page, every button, every tab, every link, every form, every modal, every overlay, every data display, every conditional element, every navigation path in the entire ChefFlow application.
 > **Source:** Direct source code analysis of all ~265 page.tsx files and their imported components.
 >
@@ -93,14 +93,14 @@
 
 ### Header (always visible)
 
-| Element                                    | Type                  | What It Does                                                                                                                             |
-| ------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| "Dashboard"                                | h1                    | Static title                                                                                                                             |
-| "Good [morning/afternoon/evening], [name]" | Text                  | Time-of-day greeting from user session                                                                                                   |
-| "Briefing"                                 | Link button           | → `/briefing`                                                                                                                            |
-| "Full Queue"                               | Link button           | → `/queue`                                                                                                                               |
-| Primary action (archetype-based)           | Link button (primary) | → varies by archetype (e.g. "New Event" for caterers, "New Client" for private chefs)                                                    |
-| Cmd+K Global Search                        | Hotkey → Modal        | Enhanced with "Quick Actions" section (New Event, Client, Quote, Inquiry, Expense, Recipe) when query is empty or matches "new"/"create" |
+| Element                                    | Type                  | What It Does                                                                                                                                                                                                                                                                               |
+| ------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "Dashboard"                                | h1                    | Static title                                                                                                                                                                                                                                                                               |
+| "Good [morning/afternoon/evening], [name]" | Text                  | Time-of-day greeting from user session                                                                                                                                                                                                                                                     |
+| "Layout" button                            | Button → Dropdown     | Opens `DashboardQuickSettings` panel for reordering widgets. Contains: up/down arrows per widget, "Manage widget visibility" link → `/settings/dashboard`, "Collapse All"/"Expand All" toggle, Save/Close buttons. Per-widget collapse via `collapsible-widget.tsx`, state in localStorage |
+| "Full Queue"                               | Link button           | → `/queue`                                                                                                                                                                                                                                                                                 |
+| "New Event"                                | Link button (primary) | → `/events/new`                                                                                                                                                                                                                                                                            |
+| Cmd+K Global Search                        | Hotkey → Modal        | Enhanced with "Quick Actions" section (New Event, Client, Quote, Inquiry, Expense, Recipe) when query is empty or matches "new"/"create"                                                                                                                                                   |
 
 ### Banners (conditional, above widgets)
 
@@ -112,41 +112,6 @@
 | **Response Time SLA**      | Any open inquiry awaiting response      | Card showing count of overdue (24h+) / urgent (4h+) / fresh inquiries + avg response time. Red/amber/green styling. Links to `/inquiries?status=new`                                                             |
 | **Pending Follow-Ups**     | Stale inquiries (3+ days quiet)         | Card listing inquiries where client hasn't responded in 3+ days. Shows client name, occasion, "Xd quiet" badge. Links to inquiry detail. Max 5 shown.                                                            |
 | **Holiday Outreach Panel** | `holidayOutreachSuggestions.length > 0` | Per holiday: expandable row with AI outreach text + "Copy" button, promo code creation form (code/discount%/expiry inputs + "Create code" button), client rows with "Send" button opening email/SMS compose form |
-
-### Tab System (DashboardTabs)
-
-Dashboard content is organized into 5 tabs via a client-side tab switcher. Header, shortcut strip, and priority banner remain above the tabs (always visible).
-
-| Tab              | Content                                                                    | Source                             |
-| ---------------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| **My Dashboard** | Fully customizable personal dashboard (client component, fetches own data) | `my-dashboard-tab.tsx`             |
-| **Schedule**     | Server-rendered schedule widgets (Today's Schedule, Week Strip, etc.)      | `_sections/schedule-cards.tsx`     |
-| **Alerts**       | Server-rendered alert widgets (Follow-ups, Cooling, Stuck Events, etc.)    | `_sections/alerts-cards.tsx`       |
-| **Business**     | Server-rendered financial widgets (Revenue, Payments, Invoices, etc.)      | `_sections/business-cards.tsx`     |
-| **Intelligence** | Server-rendered AI insight widgets                                         | `_sections/intelligence-cards.tsx` |
-
-#### My Dashboard Tab
-
-| Element                              | Type               | What It Does                                                                 |
-| ------------------------------------ | ------------------ | ---------------------------------------------------------------------------- |
-| "Editing Dashboard" / "My Dashboard" | h2                 | Title changes in edit mode                                                   |
-| "Templates" button                   | Button (ghost)     | Toggles template picker panel (10 templates, archetype match highlighted)    |
-| "Customize" button                   | Button (secondary) | Enters edit mode: drag-to-reorder, up/down arrows, remove widgets            |
-| "Add Widgets" button (edit mode)     | Button (ghost)     | Opens WidgetPickerModal (120 widgets, 8 category tabs, search, multi-select) |
-| "Save" / "Cancel" (edit mode)        | Buttons            | Saves widget order to DB / reverts to saved                                  |
-| Notes scratchpad                     | Textarea           | Free-text notes, auto-saved with 1s debounce                                 |
-
-**Empty state:** Shows all 10 template cards in a grid. Archetype-matched template shown first with "Recommended for you" badge. "Or start from scratch" button opens widget picker.
-
-**Templates (10 total):**
-
-- 6 archetype-based: Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery/Pastry
-- 4 use-case: Financial Focus, Client First, Ops Command Center, Minimal
-- Each template pre-selects ~10 widgets. Applying a template saves immediately.
-
-**Widget Picker Modal:** Full-screen overlay with search bar + 8 category filter tabs (All, Schedule, Clients, Financial, Operations, Intelligence, Communication, Quick Actions). Shows all 120 widgets with icons. Already-added widgets disabled with checkmark. Multi-select + "Add Selected" button.
-
-**Widget Renderer:** 8 widgets have full data rendering (payments_due, expiring_quotes, business_snapshot, stuck_events, cooling_alerts, response_time, pending_followups, invoice_pulse). All others render as styled shortcut cards linking to their detail pages.
 
 ### Widgets (configurable show/hide/reorder via Layout settings)
 
@@ -352,7 +317,7 @@ Dashboard content is organized into 5 tabs via a client-side tab switcher. Heade
 #### Header
 
 - h1: event occasion, `EventStatusBadge`, date/time
-- Buttons: "Edit Event" (draft only) → `/events/[id]/edit`, "Schedule" → `/events/[id]/schedule`, "Packing List" (not draft/cancelled) → `/events/[id]/pack`, "Grocery Quote" (has menu, not cancelled) → `/events/[id]/grocery-quote`, "Print Labels" (not draft/cancelled) → `/meal-prep/labels?eventId=...`, "Travel Plan" → `/events/[id]/travel`, "Back to Events" → `/events`
+- Buttons: "Edit Event" (draft only) → `/events/[id]/edit`, "Schedule" → `/events/[id]/schedule`, "Packing List" (not draft/cancelled) → `/events/[id]/pack`, "Grocery Quote" (has menu, not cancelled) → `/events/[id]/grocery-quote`, "Travel Plan" → `/events/[id]/travel`, "Back to Events" → `/events`
 - Realtime sync component (auto-refreshes on FSM change)
 
 #### Banners (conditional)
@@ -546,8 +511,6 @@ Dashboard content is organized into 5 tabs via a client-side tab switcher. Heade
 | `/clients/loyalty/rewards`                    | Reward codes table                                                                                                                                                                                                                         |
 | `/clients/loyalty/referrals`                  | Referral source analysis with bars + top referrer cards                                                                                                                                                                                    |
 | `/clients/presence`                           | Real-time client portal monitoring (Supabase Realtime), online count, activity stream with high-intent badges                                                                                                                              |
-| `/client-requests`                            | Chef's queue of client quick requests. Pending/approved/declined tabs. Per request: client name, date requested, guest count, occasion, notes, approve (convert to event) / decline buttons. Dashboard stat card shows pending count       |
-| `/my-events/request` (client portal)          | Client-side quick request form. Simplified booking for existing clients: date, time, guest count, occasion, notes. Skips the full inquiry flow                                                                                             |
 
 ---
 
@@ -692,20 +655,18 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 5.10 Other Financial
 
-| Route                          | Content                                                                                                                                                                                                               |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/finance/recurring`           | Recurring invoice form                                                                                                                                                                                                |
-| `/finance/retainers`           | Retainer list + detail + create. Detail: agreement, billing timeline, linked events, status actions                                                                                                                   |
-| `/finance/bank-feed`           | Bank feed panel + manual transaction form                                                                                                                                                                             |
-| `/finance/cash-flow`           | 30-day cash flow forecast chart                                                                                                                                                                                       |
-| `/finance/forecast`            | Revenue forecast with trend + next 3 months                                                                                                                                                                           |
-| `/finance/disputes`            | Dispute tracker                                                                                                                                                                                                       |
-| `/finance/contractors`         | 1099 contractor panel                                                                                                                                                                                                 |
-| `/finance/sales-tax`           | Sales tax panel with settings (enable/disable, state rate, local rate, filing frequency, registration #) + remittance history                                                                                         |
-| `/finance/planning/break-even` | Break-even calculator                                                                                                                                                                                                 |
-| `/finance/year-end`            | Year-end summary with revenue, expenses, tax prep, "Download for Accountant" CSV, "Email to Myself"                                                                                                                   |
-| `/finance/pricing-calculator`  | Pricing calculator for new chefs. Input: guest count, courses, drive distance, ingredient cost, hours. Output: recommended price with margin targets, market comparison, cost breakdown. Pure TypeScript math (no AI) |
-| `/finance/revenue-per-hour`    | Revenue per hour analysis. True hourly rate across all work types (prep, travel, shopping, cleanup, not just service). Recharts bar/line/area charts. Per-event breakdown table. Trend over time                      |
+| Route                          | Content                                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `/finance/recurring`           | Recurring invoice form                                                                                                        |
+| `/finance/retainers`           | Retainer list + detail + create. Detail: agreement, billing timeline, linked events, status actions                           |
+| `/finance/bank-feed`           | Bank feed panel + manual transaction form                                                                                     |
+| `/finance/cash-flow`           | 30-day cash flow forecast chart                                                                                               |
+| `/finance/forecast`            | Revenue forecast with trend + next 3 months                                                                                   |
+| `/finance/disputes`            | Dispute tracker                                                                                                               |
+| `/finance/contractors`         | 1099 contractor panel                                                                                                         |
+| `/finance/sales-tax`           | Sales tax panel with settings (enable/disable, state rate, local rate, filing frequency, registration #) + remittance history |
+| `/finance/planning/break-even` | Break-even calculator                                                                                                         |
+| `/finance/year-end`            | Year-end summary with revenue, expenses, tax prep, "Download for Accountant" CSV, "Email to Myself"                           |
 
 ### 5.11 Goals
 
@@ -771,15 +732,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 - **`/culinary-board`** — Visual culinary vocabulary display. Board/List/Submissions(admin) views. "Add Word" dialog.
 
-### 6.10 Beverages
-
-**`/culinary/beverages`** — Wine and beverage program. Beverage list with add form (name, type, producer, vintage, tasting notes, cost). Menu pairing editor to link beverages to dishes with pairing notes. Beverage costing separate from food costs. Drink recipe support for custom cocktails/mocktails.
-
-### 6.11 Plating Guides
-
-**`/culinary/plating-guides`** — Per-dish plating guides. Visual references, garnish specifications, plate/vessel selection notes. Staff communication tool for plating standards. Editor with structured presentation instructions per recipe.
-
-### 6.12 Seasonal Palettes
+### 6.10 Seasonal Palettes
 
 - **`/settings/repertoire`** — Palette list with create button.
 - **`/settings/repertoire/[id]`** — Edit palette: season name, micro-windows (add/edit/delete), proven wins (link recipes), save/delete.
@@ -911,12 +864,6 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 **Staff nav bar:** Links to Dashboard, Tasks, Station, Recipes, Schedule + Sign Out. Responsive hamburger menu on mobile.
 
-### Public Staff Event Portal (token-based, no login)
-
-| Route                | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/staff-portal/[id]` | **Token-gated event briefing** for kitchen staff (no login required, link shared by chef). Mobile-first. Shows: event details (location, date, time), dietary alerts, staff schedule (prep/service/cleanup times), tasks with completion checkboxes (optimistic UI + rollback), hours logging form, chef contact info, Google Maps link. Three states: valid (briefing view), revoked (error), expired (error). Replaces old `/staff/[id]/page.tsx` public route. |
-
 ---
 
 ## 10. ANALYTICS
@@ -935,7 +882,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 | Culinary   | Recipe reuse rate, top recipes, dietary restrictions, menu modification/approval rates                                                           |
 | Benchmarks | → `/analytics/benchmarks`                                                                                                                        |
 
-**Sub-pages:** `/analytics/daily-report` (daily business snapshot — 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution), `/analytics/capacity` (capacity planning: utilization %, weekly hours used/available, burnout risk assessment, what-if scenario simulator for adding clients, day-of-week heatmap, weekly trend charts. 6 Recharts components. Pure deterministic math, Formula > AI. Dashboard widget shows utilization + burnout risk).
+**Sub-pages:** `/analytics/daily-report` (daily business snapshot — 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
 
 ---
 
@@ -1140,16 +1087,6 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 **`/operations/equipment`** — Owned tab (add form, per-item "Log Maintenance" button) + Rentals tab (log rental form). Maintenance alert banner.
 
 **`/operations/kitchen-rentals`** — Rental list with delete buttons + booking form (facility, date, cost, times, hours, confirmation #, address, purpose, notes).
-
-**`/shopping`** — Shopping lists hub. Create lists from events (auto-consolidates grocery items). List cards with item count, status, link to shopping mode.
-
-**`/shopping/[id]`** — Mobile shopping mode. 40px checkboxes for touch, Wake Lock API (screen stays on), items grouped by category/aisle, real-time subtotal, "Convert to Expense" button. Optimized for in-store use.
-
-**`/meal-prep/labels`** — Meal prep container label generator. Select event or manual entry. Printable grid with dish name, date prepared, use-by date, reheating instructions, allergen warnings, macros/calories. CSS @media print stylesheet with cutting guides.
-
-**`/packing-templates`** — Reusable equipment packing list templates. Create templates by event type ("Intimate dinner for 2" always needs X, Y, Z). Editor with add/remove/reorder items. Apply template to event packing list.
-
-**`PostServiceChecklistButton`** — Post-service cleanup checklist on event Ops tab (in_progress/completed events). 19 items in 4 sections (Equipment, Kitchen, Documentation, Final). Modal overlay with full-screen mobile layout. Progress bar + completion badge. localStorage persistence per event.
 
 ---
 
@@ -1707,12 +1644,11 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 
 ### Public Pages (no auth required — `/hub` in `skipAuthPaths`)
 
-| Route                      | Content                                                                                                                                                                                                                                                                                                           |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/hub/g/[groupToken]`      | Group view with 6 tabs: Chat (real-time feed), Events (linked events), Photos (gallery + upload), Schedule (availability polls), Notes (sticky notes), Members (list + dietary info). "My Hub" link in header. Share Experience button (opens modal to select content + generate social share card). Mute toggle. |
-| `/hub/join/[groupToken]`   | Join page for first-time visitors - group name, member count, "Enter your name" input.                                                                                                                                                                                                                            |
-| `/experience/[shareToken]` | Social share card page - public, no auth. Shows frozen snapshot of a dinner circle experience: event name/emoji/theme, chef name, menu courses with dishes, photos, cover image. OG meta tags + dynamic OG image (`/api/og/experience?token=`) for social previews. CTA to book on ChefFlow.                      |
-| `/hub/me/[profileToken]`   | Guest profile — 3 tabs: My Dinners (event history with menus), My Groups (with unread badges), Dietary (allergies + restrictions). Edit Profile button opens inline editor.                                                                                                                                       |
+| Route                    | Content                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/hub/g/[groupToken]`    | Group view with 6 tabs: Chat (real-time feed), Events (linked events), Photos (gallery + upload), Schedule (availability polls), Notes (sticky notes), Members (list + dietary info). "My Hub" link in header. |
+| `/hub/join/[groupToken]` | Join page for first-time visitors — group name, member count, "Enter your name" input.                                                                                                                         |
+| `/hub/me/[profileToken]` | Guest profile — 3 tabs: My Dinners (event history with menus), My Groups (with unread badges), Dietary (allergies + restrictions). Edit Profile button opens inline editor.                                    |
 
 ### Client Hub Pages (client auth required — `/my-hub` routes)
 
@@ -1759,54 +1695,6 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 | `/events/[id]` (chef) | Hub link panel near Guests section — links to hub group or shows "No hub group yet". Guest Experience Panel with 7 tabs (messages, reminders, dietary, pre-event, documents, feedback, attendance) |
 | RSVP submission       | Non-blocking: auto-creates hub profile, adds event history, auto-joins group.                                                                                                                      |
 | Event completion      | Non-blocking: snapshots menu items into guest event history.                                                                                                                                       |
-
----
-
-## 23b. OPEN TABLES (Social Dining Discovery)
-
-Pro module: `social-dining`. Clients make their dinner circles discoverable to other foodies in the chef's network. Private by default, unanimous consent required, chef approves every match.
-
-### Chef Pages (auth + Pro required)
-
-| Route          | Content                                                                                                                                                                                                                                                                                                                                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/open-tables` | Chef dashboard with 3 tabs: **Requests** (pending join requests with approve/decline, requester info, group size, allergies, message), **Active Tables** (all open tables with consent status Live/Blocked/Pending, open seats, pending request count), **Matchmaker** (deterministic compatibility suggestions between open tables based on area, vibe overlap, dietary match, with percentage score and reasons) |
-
-### Client Pages (client auth required)
-
-| Route         | Content                                                                                                                                                                                                                                                                                                         |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/discover`   | Browse open tables from the chef's network. Filter by area. Card grid with vibe/dietary tags, open seats. Inline join request form (name, email, group size, message, dietary restrictions, allergies).                                                                                                         |
-| `/my-profile` | **Open Table Toggle** added to profile page. Weighted toggle with amber border ("Social Discovery" label). Two-step confirmation: toggle click opens confirmation modal showing "What people will see" vs "What stays private", then setup form (area, vibes, open seats, description). Turning OFF is instant. |
-
-### Client Onboarding
-
-| Component             | Content                                                                                                                                                                                                                                       |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OpenTableOnboarding` | 3-step modal: Story (what open tables are), Scenario (how it works), Control (privacy assurance). Progress dots, skip button. Final CTA: "Keep my table private" (prominent) vs "Sounds fun!" (secondary). Calls `markOpenTablesIntroSeen()`. |
-
-### Public Pages (no auth)
-
-| Route                   | Content                                                                                                                                                                                                                                                          |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/open-tables/[chefId]` | Public discovery page. Browse a chef's open tables without auth. Card grid with vibe/dietary tags, open seats, "I'm Interested" button links to embed inquiry form pre-filled with occasion and notes. Empty state when no tables. "Powered by ChefFlow" footer. |
-
-### Remy Integration
-
-| Command                                         | Task Type              | What it does                                       |
-| ----------------------------------------------- | ---------------------- | -------------------------------------------------- |
-| "Show open tables"                              | `open_tables.browse`   | Lists all open tables for the chef's tenant        |
-| "Open my table" / "Make my circle discoverable" | `open_tables.enable`   | Informs chef this is a client-side setting         |
-| "Pending join requests"                         | `open_tables.requests` | Shows pending join requests with requester details |
-
-### Server Actions (`lib/hub/open-table-actions.ts`)
-
-`ensureDinnerCircle`, `toggleOpenTable`, `respondToConsent`, `revokeConsent`, `getOpenTables`, `submitJoinRequest`, `reviewJoinRequest`, `getChefOpenTables`, `getPendingRequests`, `markOpenTablesIntroSeen`, `toggleOpenTablesNotify`, `getMatchSuggestions`
-
-### Navigation
-
-- Chef sidebar: "Open Tables" under Social Hub (Compass icon, `module: 'social-dining'`)
-- Client sidebar: "Discover" (Compass icon)
 
 ---
 

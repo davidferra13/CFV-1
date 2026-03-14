@@ -33,18 +33,23 @@ CREATE TABLE IF NOT EXISTS remy_artifacts (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- Index for listing artifacts by chef (most recent first)
 CREATE INDEX idx_remy_artifacts_tenant_created
   ON remy_artifacts(tenant_id, created_at DESC);
+
 -- Index for filtering by type
 CREATE INDEX idx_remy_artifacts_tenant_type
   ON remy_artifacts(tenant_id, artifact_type, created_at DESC);
+
 -- Index for pinned artifacts
 CREATE INDEX idx_remy_artifacts_pinned
   ON remy_artifacts(tenant_id, pinned, created_at DESC)
   WHERE pinned = true;
+
 -- RLS
 ALTER TABLE remy_artifacts ENABLE ROW LEVEL SECURITY;
+
 -- Chef can see their own artifacts
 CREATE POLICY remy_artifacts_select ON remy_artifacts
   FOR SELECT USING (
@@ -53,6 +58,7 @@ CREATE POLICY remy_artifacts_select ON remy_artifacts
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Chef can insert their own artifacts
 CREATE POLICY remy_artifacts_insert ON remy_artifacts
   FOR INSERT WITH CHECK (
@@ -61,6 +67,7 @@ CREATE POLICY remy_artifacts_insert ON remy_artifacts
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Chef can update their own artifacts (pin/unpin, edit title)
 CREATE POLICY remy_artifacts_update ON remy_artifacts
   FOR UPDATE USING (
@@ -69,6 +76,7 @@ CREATE POLICY remy_artifacts_update ON remy_artifacts
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Chef can delete their own artifacts
 CREATE POLICY remy_artifacts_delete ON remy_artifacts
   FOR DELETE USING (
@@ -77,6 +85,7 @@ CREATE POLICY remy_artifacts_delete ON remy_artifacts
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Auto-update updated_at
 CREATE TRIGGER set_remy_artifacts_updated_at
   BEFORE UPDATE ON remy_artifacts

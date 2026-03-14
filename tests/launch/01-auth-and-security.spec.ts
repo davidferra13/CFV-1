@@ -4,6 +4,8 @@
 import { test, expect } from '../helpers/fixtures'
 import { ROUTES } from '../helpers/test-utils'
 
+const BASE = 'http://localhost:3100'
+
 test.describe('Auth — Sign In', () => {
   test('sign-in page renders email and password fields', async ({ page }) => {
     await page.goto(ROUTES.signIn)

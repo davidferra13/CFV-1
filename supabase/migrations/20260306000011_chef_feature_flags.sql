@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS chef_feature_flags (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (chef_id, flag_name)
 );
+
 CREATE INDEX IF NOT EXISTS idx_chef_feature_flags_chef_id ON chef_feature_flags (chef_id);
+
 -- Keep updated_at fresh on toggle
 CREATE OR REPLACE FUNCTION set_feature_flag_updated_at()
 RETURNS trigger LANGUAGE plpgsql AS $$
@@ -18,11 +20,14 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
 CREATE TRIGGER trg_chef_feature_flags_updated_at
   BEFORE UPDATE ON chef_feature_flags
   FOR EACH ROW EXECUTE FUNCTION set_feature_flag_updated_at();
+
 -- RLS
 ALTER TABLE chef_feature_flags ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can read their own flags (for server-side feature gating)
 CREATE POLICY "chefs_read_own_flags"
   ON chef_feature_flags FOR SELECT
@@ -34,5 +39,6 @@ CREATE POLICY "chefs_read_own_flags"
       LIMIT 1
     )
   );
+
 -- Seed initial flags as disabled for any existing chefs
--- (new chefs inherit defaults; flags are opt-in from admin panel);
+-- (new chefs inherit defaults; flags are opt-in from admin panel)

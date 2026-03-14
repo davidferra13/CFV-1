@@ -2,7 +2,7 @@
 // Shows item counts per lane and links to the Daily Ops page.
 
 import Link from 'next/link'
-import { ListChecks, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { ListChecks, ArrowRight, CheckCircle2 } from '@/components/ui/icons'
 
 type Props = {
   stats: {

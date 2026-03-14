@@ -2,45 +2,73 @@
 // Server Component checks role before rendering any child components
 
 import { requireChef } from '@/lib/auth/get-user'
+import dynamic from 'next/dynamic'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
-import { PushPermissionPrompt } from '@/components/notifications/push-permission-prompt'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getOnboardingStatus } from '@/lib/chef/profile-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
-import { RemyWrapper } from '@/components/ai/remy-wrapper'
 import { OfflineProvider } from '@/components/offline/offline-provider'
-import { OfflineStatusBar } from '@/components/offline/offline-status-bar'
-import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
-import { BreadcrumbTracker } from '@/components/activity/breadcrumb-tracker'
-import { QuickCapture } from '@/components/mobile/quick-capture'
-import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
-import { getTierForChef } from '@/lib/billing/tier'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
-import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import {
   getCachedCannabisAccess,
   getCachedChefArchetype,
   getCachedDeletionStatus,
   getCachedIsAdmin,
 } from '@/lib/chef/layout-data-cache'
-import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
-import { AdminPreviewToggle } from '@/components/admin/admin-preview-toggle'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
+import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
+
+const PushPermissionPrompt = dynamic(
+  () =>
+    import('@/components/notifications/push-permission-prompt').then((m) => m.PushPermissionPrompt),
+  { ssr: false }
+)
+const FeedbackNudgeModal = dynamic(
+  () => import('@/components/feedback/feedback-nudge-modal').then((m) => m.FeedbackNudgeModal),
+  { ssr: false }
+)
+const OfflineStatusBar = dynamic(
+  () => import('@/components/offline/offline-status-bar').then((m) => m.OfflineStatusBar),
+  { ssr: false }
+)
+const RemyWrapper = dynamic(
+  () => import('@/components/ai/remy-wrapper').then((m) => m.RemyWrapper),
+  {
+    ssr: false,
+  }
+)
+const QuickCapture = dynamic(
+  () => import('@/components/mobile/quick-capture').then((m) => m.QuickCapture),
+  { ssr: false }
+)
+const BreadcrumbTracker = dynamic(
+  () => import('@/components/activity/breadcrumb-tracker').then((m) => m.BreadcrumbTracker),
+  { ssr: false }
+)
+const MilestoneOverlay = dynamic(
+  () => import('@/components/ui/milestone-overlay').then((m) => m.MilestoneOverlay),
+  { ssr: false }
+)
+const PresenceBeacon = dynamic(
+  () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
+  { ssr: false }
+)
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -61,28 +89,20 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       redirect('/onboarding')
     }
   }
-  // Parallelized — all calls are independent. All 7 use unstable_cache (60s TTL)
+  // Parallelized — all calls are independent. All 6 use unstable_cache (60s TTL)
   // so navigating between pages costs ~0ms for these after the first load.
   const [
     layoutData,
     announcement,
-    tierStatus,
     _unusedCannabisTier,
     userIsAdmin,
     chefArchetype,
     deletionStatus,
-    aiPreferences,
   ] = await Promise.all([
     // Cached for 60s — slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
     // Platform announcement (non-fatal — fail open)
     getAnnouncement().catch(() => null),
-    // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
-    getTierForChef(user.entityId).catch(() => ({
-      tier: 'pro' as const,
-      isGrandfathered: true,
-      subscriptionStatus: 'grandfathered',
-    })),
     // Cannabis tier check — kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
     getCachedCannabisAccess(user.id, user.email ?? '').catch(() => false),
     // Admin check — cached 60s, env-based (no DB call)
@@ -97,17 +117,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       requestedAt: null,
       reason: null,
     })),
-    // Remy runtime preference gate — fail closed to avoid forcing UI on users.
-    getAiPreferences().catch(() => ({
-      remy_enabled: false,
-      onboarding_completed: false,
-      onboarding_completed_at: null,
-      data_retention_days: null,
-      allow_memory: true,
-      allow_suggestions: true,
-      allow_document_drafts: true,
-      remy_archetype: null,
-    })),
   ])
   // Archetype gate — new chefs pick their persona before seeing the portal.
   // Admins skip this (they have full access and don't need a preset).
@@ -121,9 +130,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     return <ArchetypeSelector />
   }
 
-  // Admin preview mode: when active, sidebar/nav treat admin as regular chef
-  const previewActive = userIsAdmin && isAdminPreviewActive()
-  const effectiveAdmin = (userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && !previewActive
+  const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
 
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
@@ -134,9 +141,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
-  const remyAllowedByPrefs = aiPreferences.remy_enabled && aiPreferences.onboarding_completed
-  const shouldRenderRemy =
-    (tierStatus.tier === 'pro' || userIsAdmin) && (userIsAdmin || remyAllowedByPrefs)
+  const shouldRenderRemy = true
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -144,6 +149,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
         <SidebarProvider>
           <NotificationProvider userId={user.id}>
             <ToastProvider />
+            <TestAccountBanner />
             <KeyboardShortcutsWrapper>
               <div
                 className="min-h-screen"
@@ -169,8 +175,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
                 )}
                 {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
-                {/* Admin preview toggle — lets admins see the app as a regular chef */}
-                {userIsAdmin && <AdminPreviewToggle initialPreview={previewActive} />}
                 {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
                 <TrialBanner chefId={user.entityId} />
                 {/* Beta survey banner — non-blocking, shows when an active survey hasn't been submitted */}
@@ -206,7 +210,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 />
 
                 {/* Main content — offset adjusts dynamically based on sidebar state */}
-                <ChefMainContent>{children}</ChefMainContent>
+                <ChefMainContent>
+                  <ChefTourWrapper>{children}</ChefTourWrapper>
+                </ChefMainContent>
 
                 {/* Push notification permission prompt — appears after 5s if not subscribed */}
                 <PushPermissionPrompt />
@@ -229,6 +235,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                 {/* Analytics identity -- associates events with logged-in user */}
                 <AnalyticsIdentify userId={user.id} email={user.email} role={user.role} />
+
+                {/* Presence beacon -- authenticated user presence for live admin visibility */}
+                <PresenceBeacon />
               </div>
             </KeyboardShortcutsWrapper>
           </NotificationProvider>

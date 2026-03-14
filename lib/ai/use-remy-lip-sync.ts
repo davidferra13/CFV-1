@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // useRemyLipSync — React hook that drives Remy's mouth animation
 // Consumes streaming text and outputs the current viseme for rendering.
 

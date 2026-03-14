@@ -17,7 +17,7 @@ import {
   Plus,
   Loader2,
   Send,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { AccessibleDialog } from '@/components/ui/accessible-dialog'
 import { confirmPolicy, type ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'

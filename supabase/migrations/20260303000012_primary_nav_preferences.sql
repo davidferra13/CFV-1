@@ -3,6 +3,7 @@
 
 ALTER TABLE chef_preferences
   ADD COLUMN IF NOT EXISTS primary_nav_hrefs JSONB NOT NULL DEFAULT '[]'::jsonb;
+
 DO $$
 BEGIN
   IF NOT EXISTS (

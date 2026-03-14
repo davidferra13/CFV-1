@@ -10,6 +10,21 @@ import type { Json } from '@/types/database'
 import type { NotificationCategory, NotificationAction, Notification } from './types'
 import { routeNotification } from './channel-router'
 import { DEFAULT_TIER_MAP } from './tier-config'
+import { resolveOwnerAuthUserId } from '@/lib/platform/owner-account'
+
+let founderRecipientCache: { recipientId: string | null; expiresAt: number } | null = null
+const FOUNDER_CACHE_TTL_MS = 60_000
+
+async function getFounderNotificationRecipientId(supabase: any): Promise<string | null> {
+  const now = Date.now()
+  if (founderRecipientCache && now < founderRecipientCache.expiresAt) {
+    return founderRecipientCache.recipientId
+  }
+
+  const recipientId = await resolveOwnerAuthUserId(supabase)
+  founderRecipientCache = { recipientId, expiresAt: now + FOUNDER_CACHE_TTL_MS }
+  return recipientId
+}
 
 // ─── Create ─────────────────────────────────────────────────────────────
 
@@ -87,6 +102,37 @@ export async function createNotification({
   if (error || !notification) {
     console.error('[createNotification] Insert failed:', error)
     throw new Error('Failed to create notification')
+  }
+
+  // Founder mirror feed (in-app only): copy notifications across tenants
+  // so the owner account can monitor platform activity from one inbox.
+  // Out-of-app channels (email/push/sms) are intentionally not mirrored here.
+  try {
+    const founderRecipientId = await getFounderNotificationRecipientId(supabase)
+    if (founderRecipientId && founderRecipientId !== recipientId) {
+      const mirrorMetadata = {
+        ...metadata,
+        _founder_mirror: true,
+        _original_recipient_id: recipientId,
+        _original_tenant_id: tenantId,
+      }
+
+      await supabase.from('notifications').insert({
+        tenant_id: tenantId,
+        recipient_id: founderRecipientId,
+        category,
+        action,
+        title: sanitizedTitle,
+        body: sanitizedBody,
+        action_url: resolvedActionUrl,
+        event_id: eventId ?? null,
+        inquiry_id: inquiryId ?? null,
+        client_id: clientId ?? null,
+        metadata: mirrorMetadata as unknown as Json,
+      })
+    }
+  } catch (mirrorErr) {
+    console.error('[createNotification] Founder mirror failed (non-blocking):', mirrorErr)
   }
 
   // Fire out-of-app channels (email, push, SMS) as a non-blocking side effect.

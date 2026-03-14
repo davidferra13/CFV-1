@@ -3,7 +3,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, ChevronDown, ExternalLink } from 'lucide-react'
+import { Star, ChevronDown, ExternalLink } from '@/components/ui/icons'
 import type { PublicReviewItem, PublicReviewStats } from '@/lib/reviews/public-actions'
 
 // ── Star Display ──

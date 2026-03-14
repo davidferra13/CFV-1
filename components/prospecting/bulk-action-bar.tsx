@@ -9,7 +9,7 @@ import {
   PIPELINE_STAGES,
   PROSPECT_PRIORITIES,
 } from '@/lib/prospecting/constants'
-import { Loader2, Trash2, X } from 'lucide-react'
+import { Loader2, Trash2, X } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 interface BulkActionBarProps {

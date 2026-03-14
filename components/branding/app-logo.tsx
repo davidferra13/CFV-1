@@ -12,7 +12,7 @@ export function AppLogo({ size = 32, className = '' }: AppLogoProps) {
       alt="ChefFlow logo"
       width={size}
       height={size}
-      className={`rounded-lg object-cover ${className}`.trim()}
+      className={`h-auto w-auto rounded-lg object-cover ${className}`.trim()}
       priority
     />
   )

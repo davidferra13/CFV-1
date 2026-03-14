@@ -7,10 +7,12 @@
 
 import { useState, useEffect } from 'react'
 import { usePushSubscription } from './use-push-subscription'
+import { useIsDemoMode } from '@/lib/demo-mode'
 
 const DISMISSED_KEY = 'chefflow:push-prompt-dismissed'
 
 export function PushPermissionPrompt() {
+  const isDemo = useIsDemoMode()
   const { state, isLoading, subscribe } = usePushSubscription()
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(true) // start hidden, load from storage
@@ -47,6 +49,7 @@ export function PushPermissionPrompt() {
     setVisible(false)
   }
 
+  if (isDemo) return null
   if (!visible) return null
   if (state !== 'default') return null
 

@@ -16,13 +16,12 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
-import { TEST_BASE_URL } from '../../helpers/runtime-base-url.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const ROOT = path.resolve(__dirname, '../../..')
 
-const BASE_URL = TEST_BASE_URL
+const BASE_URL = 'http://localhost:3100'
 const API_ENDPOINT = '/api/remy/client'
 const PROJECT_REF = 'luefkpakzvxcsqroxyhz'
 const RATE_LIMIT_DELAY_MS = 6500

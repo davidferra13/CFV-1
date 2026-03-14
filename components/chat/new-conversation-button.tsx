@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Alert } from '@/components/ui/alert'
 import { getClients } from '@/lib/clients/actions'
 import { getOrCreateConversation } from '@/lib/chat/actions'
-import { MessageCircle, Search } from 'lucide-react'
+import { MessageCircle, Search } from '@/components/ui/icons'
 
 type Client = {
   id: string
@@ -86,6 +86,7 @@ export function NewConversationButton() {
               <button
                 onClick={handleClose}
                 className="text-stone-400 hover:text-stone-400 text-xl leading-none"
+                aria-label="Close new conversation modal"
               >
                 &times;
               </button>

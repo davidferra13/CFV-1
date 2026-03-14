@@ -12,11 +12,14 @@ CREATE TABLE IF NOT EXISTS prospect_stage_history (
   changed_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   notes        TEXT
 );
+
 CREATE INDEX prospect_stage_history_prospect_idx
   ON prospect_stage_history (prospect_id, changed_at DESC);
 CREATE INDEX prospect_stage_history_chef_idx
   ON prospect_stage_history (chef_id, to_stage, changed_at DESC);
+
 ALTER TABLE prospect_stage_history ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "stage_history_select" ON prospect_stage_history
   FOR SELECT USING (
     chef_id IN (
@@ -24,6 +27,7 @@ CREATE POLICY "stage_history_select" ON prospect_stage_history
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY "stage_history_insert" ON prospect_stage_history
   FOR INSERT WITH CHECK (
     chef_id IN (

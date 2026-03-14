@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, X, ChevronLeft, ChevronRight } from '@/components/ui/icons'
 import type { StoryGroup, SocialStory } from '@/lib/social/chef-social-actions'
 import {
   markStoryViewed,

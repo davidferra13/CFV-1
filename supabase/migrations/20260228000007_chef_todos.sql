@@ -13,9 +13,12 @@ CREATE TABLE chef_todos (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_by   UUID        NOT NULL REFERENCES auth.users(id)
 );
+
 -- Index for fast per-chef ordered fetches
 CREATE INDEX chef_todos_chef_order_idx ON chef_todos (chef_id, completed, sort_order, created_at);
+
 ALTER TABLE chef_todos ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "chef_todos_select" ON chef_todos
   FOR SELECT USING (
     chef_id IN (
@@ -23,6 +26,7 @@ CREATE POLICY "chef_todos_select" ON chef_todos
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY "chef_todos_insert" ON chef_todos
   FOR INSERT WITH CHECK (
     chef_id IN (
@@ -30,6 +34,7 @@ CREATE POLICY "chef_todos_insert" ON chef_todos
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY "chef_todos_update" ON chef_todos
   FOR UPDATE USING (
     chef_id IN (
@@ -37,6 +42,7 @@ CREATE POLICY "chef_todos_update" ON chef_todos
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY "chef_todos_delete" ON chef_todos
   FOR DELETE USING (
     chef_id IN (

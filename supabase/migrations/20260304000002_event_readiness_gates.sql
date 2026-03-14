@@ -60,25 +60,32 @@ CREATE TABLE event_readiness_gates (
   -- One row per gate per event
   UNIQUE(event_id, gate)
 );
+
 COMMENT ON TABLE event_readiness_gates IS
   'Precondition gate tracking for FSM transitions. Each gate represents a '
   'safety or quality check that should be satisfied before an event advances. '
   'Gates can be passed automatically or overridden by the chef with a reason.';
+
 COMMENT ON COLUMN event_readiness_gates.gate IS
   'Gate identifier. See migration comments for full catalog.';
+
 COMMENT ON COLUMN event_readiness_gates.status IS
   'pending=not yet met; passed=auto-confirmed; overridden=chef bypassed with reason';
+
 COMMENT ON COLUMN event_readiness_gates.override_reason IS
   'Required when status=overridden. Logged for audit trail.';
+
 -- ─── Indexes ────────────────────────────────────────────────────────────────
 
 -- Most common: what gates are pending for a given event?
 CREATE INDEX idx_readiness_gates_event
   ON event_readiness_gates(event_id, status);
+
 -- Chef dashboard: all pending gates across tenant
 CREATE INDEX idx_readiness_gates_tenant_pending
   ON event_readiness_gates(tenant_id, status)
   WHERE status = 'pending';
+
 -- ─── Auto-update timestamp ───────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION update_readiness_gate_updated_at()
@@ -88,15 +95,19 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
 CREATE TRIGGER readiness_gate_updated_at
   BEFORE UPDATE ON event_readiness_gates
   FOR EACH ROW EXECUTE FUNCTION update_readiness_gate_updated_at();
+
 -- ─── RLS ────────────────────────────────────────────────────────────────────
 
 ALTER TABLE event_readiness_gates ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY readiness_gates_chef_all ON event_readiness_gates
   FOR ALL USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
+
 GRANT SELECT, INSERT, UPDATE ON event_readiness_gates TO authenticated;

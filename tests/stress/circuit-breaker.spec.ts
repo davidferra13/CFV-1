@@ -18,9 +18,8 @@
 import { test, expect } from '@playwright/test'
 import * as path from 'path'
 import * as fs from 'fs'
-import { TEST_API_BASE_URL } from '../helpers/runtime-base-url'
 
-const API_BASE = TEST_API_BASE_URL
+const API_BASE = 'http://localhost:3100'
 const REPORT_DIR = path.join(process.cwd(), 'data', 'stress-reports')
 
 interface CircuitBreakerTestResult {

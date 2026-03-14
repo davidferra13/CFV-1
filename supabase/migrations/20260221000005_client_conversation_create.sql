@@ -16,6 +16,7 @@ CREATE POLICY conversations_client_insert ON conversations
     get_current_user_role() = 'client' AND
     tenant_id = get_current_tenant_id()
   );
+
 -- ─── 2. Client can add participants to their conversations ─────────────────
 
 DROP POLICY IF EXISTS conv_participants_client_insert ON conversation_participants;

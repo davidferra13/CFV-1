@@ -15,28 +15,37 @@ CREATE TABLE IF NOT EXISTS remy_abuse_log (
   reviewed_by_admin boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
 -- Indexes for admin review
 CREATE INDEX IF NOT EXISTS idx_remy_abuse_log_tenant
   ON remy_abuse_log(tenant_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_remy_abuse_log_unreviewed
   ON remy_abuse_log(tenant_id) WHERE reviewed_by_admin = false;
+
 CREATE INDEX IF NOT EXISTS idx_remy_abuse_log_user
   ON remy_abuse_log(auth_user_id, severity, created_at DESC);
+
 -- RLS
 ALTER TABLE remy_abuse_log ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Chefs see own tenant abuse log"
   ON remy_abuse_log FOR SELECT
   USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 CREATE POLICY "System inserts abuse log"
   ON remy_abuse_log FOR INSERT
   WITH CHECK (true);
+
 -- ─── Blocking column on chefs table ─────────────────────────────────────────
 
 ALTER TABLE chefs ADD COLUMN IF NOT EXISTS remy_blocked_until timestamptz;
+
 COMMENT ON COLUMN chefs.remy_blocked_until
   IS 'If set and > now(), user is temporarily blocked from using Remy due to repeated policy violations.';
+
 COMMENT ON TABLE remy_abuse_log
   IS 'Audit trail for Remy guardrail violations. Admin can review flagged incidents.';

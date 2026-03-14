@@ -10,12 +10,15 @@
 
 ALTER TABLE chef_feedback
   ADD COLUMN IF NOT EXISTS public_display BOOLEAN NOT NULL DEFAULT false;
+
 COMMENT ON COLUMN chef_feedback.public_display IS
   'When true, this feedback entry is visible on the chef public profile page.
    Defaults to false — chefs must opt-in each entry for public display.';
+
 CREATE INDEX IF NOT EXISTS idx_chef_feedback_public_display
   ON chef_feedback(tenant_id)
   WHERE public_display = true;
+
 -- Note: No separate public RLS policy needed — the public profile page uses
 -- createServerClient({ admin: true }) which bypasses RLS. The public_display
--- column is filtered in the application query layer instead.;
+-- column is filtered in the application query layer instead.

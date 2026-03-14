@@ -5,9 +5,8 @@
  */
 import { chromium, type Page, type BrowserContext } from '@playwright/test'
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs'
-import { TEST_BASE_URL } from './helpers/runtime-base-url'
 
-const BASE_URL = TEST_BASE_URL
+const BASE_URL = 'http://localhost:3100'
 
 // All chef routes
 const SECTIONS: Record<string, string[]> = {

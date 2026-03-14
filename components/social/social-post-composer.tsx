@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useTransition } from 'react'
-import { ImagePlus, Globe, Users, Lock, ChevronDown, X, MapPin, Hash } from 'lucide-react'
+import { ImagePlus, Globe, Users, Lock, ChevronDown, X, MapPin, Hash } from '@/components/ui/icons'
 import { createSocialPost, uploadPostMedia } from '@/lib/social/chef-social-actions'
 import type { PostVisibility, SocialChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'

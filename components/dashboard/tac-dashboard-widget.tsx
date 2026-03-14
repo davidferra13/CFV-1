@@ -241,12 +241,20 @@ export async function TacDashboardWidget() {
       </CardContent>
 
       <CardFooter className="py-2 px-4 flex items-center justify-between">
-        <Link
-          href="/inquiries?channel=take_a_chef"
-          className="text-xs text-brand-600 hover:text-brand-400 font-medium"
-        >
-          View all TakeAChef leads
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/marketplace"
+            className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+          >
+            Open marketplace command center
+          </Link>
+          <Link
+            href="/marketplace/capture"
+            className="text-xs text-stone-400 hover:text-stone-100 font-medium"
+          >
+            Capture live page
+          </Link>
+        </div>
         {stats.lastSyncAt && (
           <p className="text-xs text-muted-foreground">Synced {formatSyncAge(stats.lastSyncAt)}</p>
         )}

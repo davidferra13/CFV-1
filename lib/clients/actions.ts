@@ -85,6 +85,9 @@ const CreateClientSchema = z.object({
   preferred_event_days: z.array(z.string()).optional(),
   budget_range_min_cents: z.number().int().optional(),
   budget_range_max_cents: z.number().int().optional(),
+  recurring_pricing_model: z.enum(['none', 'flat_rate', 'per_person']).optional(),
+  recurring_price_cents: z.number().int().optional(),
+  recurring_pricing_notes: z.string().optional(),
   cleanup_expectations: z.string().optional(),
   leftovers_preference: z.string().optional(),
   // Personality / Communication
@@ -169,6 +172,9 @@ const UpdateClientSchema = z.object({
   preferred_event_days: z.array(z.string()).optional(),
   budget_range_min_cents: z.number().int().nullable().optional(),
   budget_range_max_cents: z.number().int().nullable().optional(),
+  recurring_pricing_model: z.enum(['none', 'flat_rate', 'per_person']).nullable().optional(),
+  recurring_price_cents: z.number().int().nullable().optional(),
+  recurring_pricing_notes: z.string().nullable().optional(),
   cleanup_expectations: z.string().optional(),
   leftovers_preference: z.string().optional(),
   // Personality / Communication
@@ -408,6 +414,9 @@ export async function createClient(input: CreateClientInput) {
     'preferred_event_days',
     'budget_range_min_cents',
     'budget_range_max_cents',
+    'recurring_pricing_model',
+    'recurring_price_cents',
+    'recurring_pricing_notes',
     'cleanup_expectations',
     'leftovers_preference',
     'formality_level',
@@ -1410,6 +1419,93 @@ export async function createClientDirect(input: {
     console.error('[createClientDirect] Error:', err)
     return { success: false, error: 'An unexpected error occurred' }
   }
+}
+
+// ============================================
+// CLIENT QUICK LOOKUP (Dashboard Widget)
+// ============================================
+
+export interface ClientQuickResult {
+  id: string
+  full_name: string
+  loyalty_tier: string | null
+  dietary_restrictions: string | null
+  allergies: string | null
+  event_count: number
+  last_event_date: string | null
+  lifetime_revenue_cents: number
+}
+
+/**
+ * Quick client search for the dashboard lookup widget.
+ * Searches by name, dietary restrictions, and allergies (case-insensitive).
+ * Enriches with event count, last event date, and lifetime revenue.
+ * Returns top 5 matches.
+ */
+export async function searchClientsQuick(query: string): Promise<ClientQuickResult[]> {
+  const user = await requireChef()
+
+  if (!query || query.trim().length < 2) return []
+
+  const supabase: any = createServerClient()
+  const q = query.trim()
+
+  // Search clients by name, dietary_restrictions, or allergies
+  const { data: clients, error } = await supabase
+    .from('clients')
+    .select('id, full_name, loyalty_tier, dietary_restrictions, allergies')
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+    .or(`full_name.ilike.%${q}%,dietary_restrictions.ilike.%${q}%,allergies.ilike.%${q}%`)
+    .order('full_name', { ascending: true })
+    .limit(5)
+
+  if (error || !clients?.length) {
+    if (error) console.error('[searchClientsQuick] Error:', error)
+    return []
+  }
+
+  // Enrich with event data and revenue in parallel
+  const enriched = await Promise.all(
+    clients.map(async (client: any) => {
+      // Get event count + last event date
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('id, event_date')
+        .eq('tenant_id', user.tenantId!)
+        .eq('client_id', client.id)
+        .is('deleted_at' as any, null)
+        .order('event_date', { ascending: false })
+
+      const events = eventData ?? []
+
+      // Get lifetime revenue from ledger
+      const { data: revenueData } = await supabase
+        .from('ledger_entries')
+        .select('amount_cents')
+        .eq('tenant_id', user.tenantId!)
+        .eq('client_id', client.id)
+        .eq('entry_type', 'payment')
+
+      const lifetimeRevenue = (revenueData ?? []).reduce(
+        (sum: number, e: any) => sum + (e.amount_cents ?? 0),
+        0
+      )
+
+      return {
+        id: client.id,
+        full_name: client.full_name ?? 'Unknown',
+        loyalty_tier: client.loyalty_tier ?? null,
+        dietary_restrictions: client.dietary_restrictions ?? null,
+        allergies: client.allergies ?? null,
+        event_count: events.length,
+        last_event_date: events[0]?.event_date ?? null,
+        lifetime_revenue_cents: lifetimeRevenue,
+      } satisfies ClientQuickResult
+    })
+  )
+
+  return enriched
 }
 
 /**

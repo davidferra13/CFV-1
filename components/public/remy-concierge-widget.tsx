@@ -5,9 +5,10 @@
 // Platform-level concierge: no tenantId, hits /api/remy/landing endpoint.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
+import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from '@/components/ui/icons'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints } from '@/lib/ai/chefflow-feature-map'
 import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'
 
@@ -64,6 +65,7 @@ export function RemyConciergeWidget() {
   }, [setMode])
 
   const handleOpen = useCallback(() => {
+    trackEvent(ANALYTICS_EVENTS.REMY_CHAT_OPENED, { source: 'public_widget' })
     setMode('expanded')
   }, [setMode])
 
@@ -72,6 +74,10 @@ export function RemyConciergeWidget() {
       const trimmed = (text ?? input).trim()
       if (!trimmed || isStreaming) return
 
+      trackEvent(ANALYTICS_EVENTS.REMY_MESSAGE_SENT, {
+        source: 'public_widget',
+        message_length: trimmed.length,
+      })
       setError(null)
 
       const userMsg: Message = {

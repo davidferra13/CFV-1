@@ -12,6 +12,7 @@ ALTER TABLE events
   ADD COLUMN IF NOT EXISTS chef_outcome_rating    SMALLINT
     CONSTRAINT events_chef_outcome_rating_range
       CHECK (chef_outcome_rating IS NULL OR chef_outcome_rating BETWEEN 1 AND 5);
+
 COMMENT ON COLUMN events.debrief_completed_at IS
   'Timestamp when the chef clicked "Complete Debrief". NULL means not yet completed.';
 COMMENT ON COLUMN events.chef_outcome_notes IS

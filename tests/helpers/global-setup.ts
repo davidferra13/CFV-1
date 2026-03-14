@@ -1,40 +1,24 @@
-// Playwright global setup
-// 1. Seeds remote test data
-// 2. Logs in role accounts and saves storage state
-// 3. Writes .auth/seed-ids.json for test fixtures
+// Playwright globalSetup — runs once before all E2E tests
+// 1. Seeds remote test data (idempotent — safe to run on every test run)
+// 2. Logs in as test chef → saves .auth/chef.json
+// 3. Logs in as test client → saves .auth/client.json
+// 4. Logs in as test staff → saves .auth/staff.json
+// 5. Logs in as test partner → saves .auth/partner.json
+// 6. Writes .auth/seed-ids.json (read by fixtures.ts in every test)
 //
-// Auth strategy:
-// 1. Prefer /api/e2e/auth when the target explicitly allows it.
-// 2. Fall back to the real browser sign-in flow when beta blocks the test-only endpoint.
+// Auth strategy: posts to /api/e2e/auth (guarded by SUPABASE_E2E_ALLOW_REMOTE=true).
+// This bypasses the in-memory rate limiter in the signIn server action, which would
+// otherwise accumulate counts across test runs while reuseExistingServer is true.
 
 import { chromium } from '@playwright/test'
-import type { FullConfig, Page } from '@playwright/test'
+import type { FullConfig } from '@playwright/test'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 import { seedE2EData } from './e2e-seed'
 
 dotenv.config({ path: '.env.local' })
 
-function envFlag(value: string | undefined, fallback: boolean): boolean {
-  if (value === undefined) return fallback
-  const normalized = value.trim().toLowerCase()
-  return normalized === '1' || normalized === 'true' || normalized === 'yes'
-}
-
-function isLocalBaseUrl(url: string): boolean {
-  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i.test(url)
-}
-
-const DEFAULT_REMOTE_BASE_URL = 'https://beta.cheflowhq.com'
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || DEFAULT_REMOTE_BASE_URL
-const ALLOW_LOCAL_TARGET = envFlag(process.env.PLAYWRIGHT_ALLOW_LOCAL, false)
-
-if (isLocalBaseUrl(BASE_URL) && !ALLOW_LOCAL_TARGET) {
-  throw new Error(
-    `Local Playwright targets are disabled by default. Set PLAYWRIGHT_BASE_URL to ${DEFAULT_REMOTE_BASE_URL} or opt into localhost with PLAYWRIGHT_ALLOW_LOCAL=true.`
-  )
-}
-
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
 const PUBLIC_ONLY_PROJECTS = new Set([
   'smoke',
   'public',
@@ -43,11 +27,12 @@ const PUBLIC_ONLY_PROJECTS = new Set([
   'launch-public',
 ])
 
-const ADMIN_PROJECTS = new Set(['coverage-admin', 'interactions-admin'])
+function needsAuthBootstrap(config: FullConfig): boolean {
+  if (process.env.PLAYWRIGHT_SKIP_AUTH_BOOTSTRAP === 'true') {
+    return false
+  }
 
-function getSelectedProjects(config: FullConfig): string[] {
   const selectedProjects: string[] = []
-
   for (let i = 0; i < process.argv.length; i += 1) {
     const arg = process.argv[i]
     if (arg.startsWith('--project=')) {
@@ -61,61 +46,42 @@ function getSelectedProjects(config: FullConfig): string[] {
   }
 
   if (selectedProjects.length > 0) {
-    return selectedProjects
+    return selectedProjects.some((name) => !PUBLIC_ONLY_PROJECTS.has(name))
   }
 
-  return config.projects.map((project) => project.name)
-}
-
-function needsAuthBootstrap(config: FullConfig): boolean {
-  if (process.env.PLAYWRIGHT_SKIP_AUTH_BOOTSTRAP === 'true') {
-    return false
-  }
-
-  return getSelectedProjects(config).some((name) => !PUBLIC_ONLY_PROJECTS.has(name))
+  return config.projects.some((project) => !PUBLIC_ONLY_PROJECTS.has(project.name))
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function waitForServerReady(maxAttempts = isLocalBaseUrl(BASE_URL) ? 60 : 30): Promise<void> {
-  const requestTimeoutMs = isLocalBaseUrl(BASE_URL) ? 5_000 : 3_000
-  const readinessProbes = [
-    { path: '/api/health', method: 'HEAD' as const },
-    { path: '/api/health', method: 'GET' as const },
-    { path: '/', method: 'GET' as const },
-    { path: '/auth/signin', method: 'GET' as const },
-  ]
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    for (const probe of readinessProbes) {
+async function waitForServerReady(maxAttempts = 20): Promise<void> {
+  const readinessPaths = ['/api/health', '/auth/signin', '/']
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (const path of readinessPaths) {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), requestTimeoutMs)
-        const resp = await fetch(`${BASE_URL}${probe.path}`, {
-          method: probe.method,
+        const timeout = setTimeout(() => controller.abort(), 3_000)
+        const resp = await fetch(`${BASE_URL}${path}`, {
+          method: path === '/api/health' ? 'HEAD' : 'GET',
           redirect: 'manual',
           signal: controller.signal,
         })
         clearTimeout(timeout)
         if (resp.status < 500) {
-          console.log(
-            `[globalSetup] Test target is ready (${BASE_URL}) via ${probe.method} ${probe.path}`
-          )
+          console.log(`[globalSetup] Dev server is ready (${BASE_URL}) via ${path}`)
           return
         }
       } catch {
         // Probe next endpoint.
       }
     }
-    console.log(
-      `[globalSetup] Waiting for test target (${attempt}/${maxAttempts}) at ${BASE_URL}...`
-    )
+    console.log(`[globalSetup] Waiting for dev server (${attempt}/${maxAttempts})...`)
     await sleep(2_000)
   }
 
-  throw new Error(`[globalSetup] Test target did not become ready at ${BASE_URL} in time.`)
+  throw new Error(`[globalSetup] Dev server did not become ready at ${BASE_URL} in time.`)
 }
 
 async function warmE2EAuthEndpoint(): Promise<void> {
@@ -134,51 +100,6 @@ async function warmE2EAuthEndpoint(): Promise<void> {
   }
 }
 
-async function loginViaSignInPage(
-  page: Page,
-  email: string,
-  password: string,
-  expectedUrlPattern: RegExp
-) {
-  await page.goto(`${BASE_URL}/auth/signin`, { timeout: 90_000, waitUntil: 'domcontentloaded' })
-
-  const emailInput = page.locator('input[type="email"]').first()
-  const passwordInput = page.locator('input[type="password"]').first()
-  const submitButton = page.getByRole('button', { name: /^sign in$/i }).first()
-
-  await emailInput.waitFor({ state: 'visible', timeout: 30_000 })
-  await passwordInput.waitFor({ state: 'visible', timeout: 30_000 })
-  await submitButton.waitFor({ state: 'visible', timeout: 30_000 })
-
-  await emailInput.fill(email)
-  await passwordInput.fill(password)
-
-  try {
-    await Promise.all([
-      page.waitForURL(expectedUrlPattern, { timeout: 90_000 }),
-      submitButton.click(),
-    ])
-  } catch (error) {
-    const alertText =
-      (await page
-        .locator('[role="alert"]')
-        .first()
-        .textContent()
-        .catch(() => null)) ||
-      (await page
-        .locator('text=/invalid|incorrect|failed|temporarily unavailable/i')
-        .first()
-        .textContent()
-        .catch(() => null))
-
-    throw new Error(
-      `UI sign-in did not reach ${expectedUrlPattern}. Current URL: ${page.url()}${
-        alertText ? ` | Alert: ${alertText.trim()}` : ''
-      } | ${String(error)}`
-    )
-  }
-}
-
 async function loginAndSaveStateOnce(
   browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,
   email: string,
@@ -192,32 +113,23 @@ async function loginAndSaveStateOnce(
   const page = await context.newPage()
 
   try {
-    let usedUiFallback = false
-
+    // POST to the test-only auth endpoint — no rate limiter, sets SSR auth cookies
     const resp = await page.request.post(`${BASE_URL}/api/e2e/auth`, {
       data: { email, password },
       timeout: 90_000,
     })
 
-    if (resp.ok()) {
-      await page.goto(`${BASE_URL}${navigateTo}`, { timeout: 90_000 })
-      await page.waitForURL(expectedUrlPattern, { timeout: 60_000 })
-    } else {
+    if (!resp.ok()) {
       const body = await resp.text()
-      const shouldFallbackToUi =
-        resp.status() === 403 || resp.status() === 404 || resp.status() === 405
-
-      if (!shouldFallbackToUi) {
-        throw new Error(`E2E auth endpoint returned ${resp.status()}: ${body}`)
-      }
-
-      usedUiFallback = true
-      console.log(
-        `[globalSetup] ${label} /api/e2e/auth unavailable on ${BASE_URL} (${resp.status()}). Falling back to browser sign-in.`
-      )
-      await loginViaSignInPage(page, email, password, expectedUrlPattern)
+      throw new Error(`E2E auth endpoint returned ${resp.status()}: ${body}`)
     }
 
+    // Cookies are now in the browser context. Navigate to the portal entry point
+    // so middleware/layout resolves the role. Default: / (middleware redirects by role).
+    // Some roles (e.g. partner) need a direct URL since middleware doesn't route them.
+    // Generous timeout for dev server on-demand page compilation.
+    await page.goto(`${BASE_URL}${navigateTo}`, { timeout: 90_000 })
+    await page.waitForURL(expectedUrlPattern, { timeout: 60_000 })
     await context.addCookies([
       {
         name: 'cookieConsent',
@@ -226,9 +138,7 @@ async function loginAndSaveStateOnce(
       },
     ])
     await context.storageState({ path: outputPath })
-    console.log(
-      `[globalSetup] ${label} auth state saved -> ${outputPath}${usedUiFallback ? ' (UI login fallback)' : ''}`
-    )
+    console.log(`[globalSetup] ${label} auth state saved → ${outputPath}`)
   } catch (err) {
     const url = page.url()
     throw new Error(
@@ -239,6 +149,7 @@ async function loginAndSaveStateOnce(
   }
 }
 
+/** Retry wrapper — handles ECONNRESET / timeout when dev server is under load */
 async function loginAndSaveState(
   browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,
   email: string,
@@ -249,7 +160,7 @@ async function loginAndSaveState(
   maxRetries = 3,
   navigateTo = '/'
 ) {
-  for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       await loginAndSaveStateOnce(
         browser,
@@ -270,9 +181,7 @@ async function loginAndSaveState(
         msg.includes('Timeout') ||
         msg.includes('timeout') ||
         msg.includes('disposed')
-
       if (!isRetryable || attempt === maxRetries) throw err
-
       console.log(
         `[globalSetup] ${label} attempt ${attempt}/${maxRetries} failed (retryable). Waiting 8s...`
       )
@@ -283,6 +192,7 @@ async function loginAndSaveState(
 }
 
 export default async function globalSetup(config: FullConfig) {
+  // Ensure .auth/ directory exists
   mkdirSync('.auth', { recursive: true })
 
   if (!needsAuthBootstrap(config)) {
@@ -294,16 +204,17 @@ export default async function globalSetup(config: FullConfig) {
 
   await waitForServerReady()
 
+  // Seed test data — idempotent, safe to call on every run
   console.log('\n[globalSetup] Seeding E2E test data...')
   const seedResult = await seedE2EData()
 
+  // Write seed IDs to disk so test fixtures can read them across worker boundaries
   writeFileSync('.auth/seed-ids.json', JSON.stringify(seedResult, null, 2), 'utf-8')
   console.log('[globalSetup] Seed IDs written to .auth/seed-ids.json')
 
   await warmE2EAuthEndpoint()
 
   const browser = await chromium.launch()
-  const selectedProjects = new Set(getSelectedProjects(config))
 
   await loginAndSaveState(
     browser,
@@ -314,6 +225,7 @@ export default async function globalSetup(config: FullConfig) {
     'Chef'
   )
 
+  // Small delay between logins — dev server auth endpoint takes ~25s under cold start
   await sleep(2_000)
 
   await loginAndSaveState(
@@ -354,14 +266,12 @@ export default async function globalSetup(config: FullConfig) {
     '/partner/dashboard'
   )
 
+  // Admin auth — only runs if ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD are set.
+  // These are the credentials for davidferra13@gmail.com (the platform admin).
+  // Without them, coverage-admin tests are skipped gracefully.
   const adminEmail = process.env.ADMIN_E2E_EMAIL
   const adminPassword = process.env.ADMIN_E2E_PASSWORD
-  const shouldBootstrapAdmin =
-    adminEmail &&
-    adminPassword &&
-    Array.from(selectedProjects).some((name) => ADMIN_PROJECTS.has(name))
-
-  if (shouldBootstrapAdmin) {
+  if (adminEmail && adminPassword) {
     await loginAndSaveState(
       browser,
       adminEmail,
@@ -373,7 +283,11 @@ export default async function globalSetup(config: FullConfig) {
       '/admin'
     )
   } else {
-    console.log('[globalSetup] Skipping admin auth bootstrap for this project selection.')
+    console.log(
+      '[globalSetup] ADMIN_E2E_EMAIL/ADMIN_E2E_PASSWORD not set — skipping admin auth state. Admin coverage tests will be skipped.'
+    )
+    // Write an empty storage state so coverage-admin project does not crash on missing file
+    const { writeFileSync } = await import('fs')
     writeFileSync('.auth/admin.json', JSON.stringify({ cookies: [], origins: [] }), 'utf-8')
   }
 

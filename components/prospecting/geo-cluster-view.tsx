@@ -18,7 +18,7 @@ import {
   Loader2,
   Globe,
   Target,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 interface GeoClusterViewProps {
   clusters: GeoCluster[]

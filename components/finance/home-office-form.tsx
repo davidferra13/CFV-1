@@ -10,7 +10,7 @@ import {
   SIMPLIFIED_MAX_SQFT,
   SIMPLIFIED_MAX_DEDUCTION_CENTS,
 } from '@/lib/tax/home-office-constants'
-import { Home, Info, CheckCircle } from 'lucide-react'
+import { Home, Info, CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

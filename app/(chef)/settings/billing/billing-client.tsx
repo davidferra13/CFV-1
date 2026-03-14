@@ -8,7 +8,15 @@ import type { SubscriptionStatus } from '@/lib/stripe/subscription'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PRO_FEATURES } from '@/lib/billing/pro-features'
-import { CheckCircle2, Clock, AlertTriangle, CreditCard, Star, Sparkles, X } from 'lucide-react'
+import {
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  CreditCard,
+  Star,
+  Sparkles,
+  X,
+} from '@/components/ui/icons'
 
 type Props = {
   status: SubscriptionStatus

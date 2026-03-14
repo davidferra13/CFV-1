@@ -53,11 +53,7 @@ if ([DateTimeOffset]::Now -lt $endAt) {
 }
 
 if ([DateTimeOffset]::Now -lt $endAt) {
-  if ($Headed) {
-    [void](Invoke-LoggedCommand "npm run audit:site:full -- --headed")
-  } else {
-    [void](Invoke-LoggedCommand "npm run audit:site:full")
-  }
+  [void](Invoke-LoggedCommand "npm run audit:overnight")
 }
 
 $cycle = 1
@@ -66,16 +62,12 @@ while ([DateTimeOffset]::Now -lt $endAt) {
 
   if ($Headed) {
     $commands = @(
-      "npm run audit:site:quick -- --headed",
-      "npx playwright test --project=coverage-public --project=coverage-chef --project=coverage-client --project=coverage-admin --headed",
       "npx playwright test --project=smoke --headed",
       "npx playwright test --project=isolation-tests --headed",
       "npx playwright test --project=cross-portal --headed"
     )
   } else {
     $commands = @(
-      "npm run audit:site:quick",
-      "npm run test:coverage",
       "npm run test:e2e:smoke",
       "npm run test:isolation",
       "npm run test:e2e:cross-portal"

@@ -7,6 +7,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import {
+  detectSessionEventConflicts,
+  type PlannedSessionForConflict,
+} from '@/lib/availability/session-conflicts'
 
 // ============================================
 // SCHEMAS
@@ -168,6 +172,48 @@ export type DateConflictResult = {
   warnings: string[]
 }
 
+export type SeriesSessionConflict = {
+  session_date: string
+  meal_slot: string
+  reason: string
+}
+
+export type SeriesSessionConflictCheckResult = {
+  hasConflicts: boolean
+  conflicts: SeriesSessionConflict[]
+}
+
+function parseTimeToMinutes(value: string | null): number | null {
+  if (!value) return null
+  const parts = value.split(':')
+  if (parts.length < 2) return null
+  const hours = Number.parseInt(parts[0] || '0', 10)
+  const minutes = Number.parseInt(parts[1] || '0', 10)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null
+  return hours * 60 + minutes
+}
+
+function buildWindowMinutes(
+  start: string | null,
+  end: string | null,
+  fallbackMinutes: number
+): { start: number; end: number } | null {
+  const startMinutes = parseTimeToMinutes(start)
+  if (startMinutes == null) return null
+  const endMinutes = parseTimeToMinutes(end)
+  if (endMinutes == null || endMinutes <= startMinutes) {
+    return { start: startMinutes, end: startMinutes + fallbackMinutes }
+  }
+  return { start: startMinutes, end: endMinutes }
+}
+
+function overlapsWindowMinutes(
+  a: { start: number; end: number },
+  b: { start: number; end: number }
+): boolean {
+  return a.start < b.end && b.start < a.end
+}
+
 /**
  * Check if a proposed event date conflicts with existing blocks or events.
  * Returns warnings (soft) or hard block signal — does NOT prevent creation.
@@ -245,6 +291,159 @@ export async function checkDateConflicts(
   }
 
   return { hasManualBlock, existingEvents, isHardBlocked, warnings }
+}
+
+/**
+ * Validate a set of planned sessions against existing events, manual blocks,
+ * and booking notice rules before materializing a multi-day series.
+ */
+export async function checkSeriesSessionConflicts(
+  sessions: PlannedSessionForConflict[]
+): Promise<SeriesSessionConflictCheckResult> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  if (sessions.length === 0) {
+    return { hasConflicts: false, conflicts: [] }
+  }
+
+  const dates = [...new Set(sessions.map((session) => session.session_date))].sort()
+  const rangeStart = dates[0]
+  const rangeEnd = dates[dates.length - 1]
+  if (!rangeStart || !rangeEnd) return { hasConflicts: false, conflicts: [] }
+
+  const [{ data: chef }, { data: blocks }, { data: events }] = await Promise.all([
+    supabase.from('chefs').select('booking_min_notice_days').eq('id', user.tenantId!).single(),
+    supabase
+      .from('chef_availability_blocks')
+      .select('block_date, block_type, start_time, end_time, reason, is_event_auto')
+      .eq('chef_id', user.tenantId!)
+      .gte('block_date', rangeStart)
+      .lte('block_date', rangeEnd),
+    supabase
+      .from('events')
+      .select('id, event_date, status, occasion, serve_time, arrival_time, departure_time')
+      .eq('tenant_id', user.tenantId!)
+      .in('status', ['confirmed', 'in_progress', 'paid', 'accepted'])
+      .gte('event_date', rangeStart)
+      .lte('event_date', `${rangeEnd}T23:59:59Z`),
+  ])
+
+  const conflicts: SeriesSessionConflict[] = []
+  const minNoticeDays = Number(chef?.booking_min_notice_days || 0)
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+
+  const manualBlocksByDate = new Map<
+    string,
+    Array<{
+      block_type: string
+      reason: string | null
+      start_time: string | null
+      end_time: string | null
+    }>
+  >()
+
+  for (const block of blocks || []) {
+    if (block.is_event_auto) continue
+    const date = block.block_date as string
+    const existing = manualBlocksByDate.get(date) || []
+    existing.push({
+      block_type: block.block_type,
+      reason: block.reason,
+      start_time: block.start_time,
+      end_time: block.end_time,
+    })
+    manualBlocksByDate.set(date, existing)
+  }
+
+  for (const session of sessions) {
+    const sessionDate = session.session_date
+    const sessionDateValue = new Date(`${sessionDate}T00:00:00.000Z`)
+    const daysAhead = Math.floor(
+      (sessionDateValue.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    )
+
+    if (daysAhead < minNoticeDays) {
+      conflicts.push({
+        session_date: sessionDate,
+        meal_slot: session.meal_slot,
+        reason: `Date violates minimum notice (${daysAhead}d ahead, requires ${minNoticeDays}d)`,
+      })
+    }
+
+    const blockConflicts = manualBlocksByDate.get(sessionDate) || []
+    for (const block of blockConflicts) {
+      if (block.block_type === 'full_day') {
+        conflicts.push({
+          session_date: sessionDate,
+          meal_slot: session.meal_slot,
+          reason: block.reason
+            ? `Date is manually blocked: ${block.reason}`
+            : 'Date is manually blocked',
+        })
+      } else {
+        const sessionWindow = buildWindowMinutes(session.start_time, session.end_time, 240)
+        const blockWindow = buildWindowMinutes(block.start_time, block.end_time, 240)
+
+        if (!sessionWindow) {
+          conflicts.push({
+            session_date: sessionDate,
+            meal_slot: session.meal_slot,
+            reason:
+              'Date has a partial availability block. Add session times to check overlap accurately.',
+          })
+          continue
+        }
+
+        if (!blockWindow || overlapsWindowMinutes(sessionWindow, blockWindow)) {
+          conflicts.push({
+            session_date: sessionDate,
+            meal_slot: session.meal_slot,
+            reason: block.reason
+              ? `Session overlaps partial availability block: ${block.reason}`
+              : 'Session overlaps a partial availability block',
+          })
+        }
+      }
+    }
+  }
+
+  const eventConflicts = detectSessionEventConflicts({
+    sessions,
+    events: (events || []).map((event: any) => ({
+      id: event.id,
+      event_date: String(event.event_date),
+      status: String(event.status),
+      occasion: event.occasion ?? null,
+      serve_time: event.serve_time ?? null,
+      arrival_time: event.arrival_time ?? null,
+      departure_time: event.departure_time ?? null,
+    })),
+  })
+
+  for (const conflict of eventConflicts) {
+    conflicts.push({
+      session_date: conflict.session_date,
+      meal_slot: conflict.meal_slot,
+      reason: conflict.reason,
+    })
+  }
+
+  const deduped = new Map<string, SeriesSessionConflict>()
+  for (const conflict of conflicts) {
+    const key = `${conflict.session_date}|${conflict.meal_slot}|${conflict.reason}`
+    if (!deduped.has(key)) deduped.set(key, conflict)
+  }
+
+  return {
+    hasConflicts: deduped.size > 0,
+    conflicts: Array.from(deduped.values()).sort((a, b) => {
+      const dateCompare = a.session_date.localeCompare(b.session_date)
+      if (dateCompare !== 0) return dateCompare
+      return a.meal_slot.localeCompare(b.meal_slot)
+    }),
+  }
 }
 
 // ============================================

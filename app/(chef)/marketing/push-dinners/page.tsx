@@ -3,7 +3,7 @@ import { CAMPAIGN_TYPE_LABELS } from '@/lib/marketing/constants'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { Plus, Utensils, ArrowRight } from 'lucide-react'
+import { Plus, Utensils, ArrowRight } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 
 function statusVariant(status: string): 'default' | 'success' | 'warning' | 'error' | 'info' {

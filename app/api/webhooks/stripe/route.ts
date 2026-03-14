@@ -29,6 +29,13 @@ export async function POST(req: Request) {
 
   if (!signature) {
     console.error('[Stripe Webhook] No signature header')
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: 'signature_missing',
+      status: 'failed',
+      errorText: 'Missing stripe-signature header',
+      payloadSizeBytes: body.length,
+    })
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
@@ -43,6 +50,13 @@ export async function POST(req: Request) {
   } catch (err) {
     const error = err as Error
     console.error('[Stripe Webhook] Signature verification failed')
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: 'signature_verification_failed',
+      status: 'failed',
+      errorText: error.message,
+      payloadSizeBytes: body.length,
+    })
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -86,6 +100,14 @@ export async function POST(req: Request) {
 
     if (existingEntry) {
       console.log('[Stripe Webhook] Event already processed (idempotent):', event.id)
+      await logWebhookEvent({
+        provider: 'stripe',
+        eventType: event.type,
+        providerEventId: event.id,
+        status: 'skipped',
+        result: { reason: 'duplicate_ledger_entry' },
+        payloadSizeBytes: body.length,
+      })
       return NextResponse.json({ received: true, cached: true })
     }
   }
@@ -165,10 +187,27 @@ export async function POST(req: Request) {
         console.log('[Stripe Webhook] Unhandled event type:', event.type)
     }
 
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: event.type,
+      providerEventId: event.id,
+      status: 'processed',
+      result: { ok: true },
+      payloadSizeBytes: body.length,
+    })
+
     return NextResponse.json({ received: true })
   } catch (error) {
     const err = error as Error
     console.error('[Stripe Webhook] Handler error:', err.message)
+    await logWebhookEvent({
+      provider: 'stripe',
+      eventType: event.type,
+      providerEventId: event.id,
+      status: 'failed',
+      errorText: err.message,
+      payloadSizeBytes: body.length,
+    })
     // Return 500 so Stripe retries
     return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
   }
@@ -568,7 +607,33 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       )
     }
 
-    // Send payment confirmation email to client + chef (non-blocking)
+    // Circle-first: post payment notification to circle (non-blocking)
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      const amount = (paymentIntent.amount / 100).toFixed(2)
+      const typeLabel = payment_type === 'deposit' ? 'Deposit' : 'Payment'
+
+      await circleFirstNotify({
+        eventId: event_id,
+        tenantId: tenant_id,
+        notificationType: 'payment_received',
+        body: `${typeLabel} of $${amount} received. Thank you!`,
+        metadata: {
+          event_id: event_id,
+          amount_cents: paymentIntent.amount,
+          payment_type: payment_type || 'payment',
+        },
+        actionUrl: `/my-events/${event_id}`,
+        actionLabel: 'View Invoice',
+      })
+    } catch (circleErr) {
+      console.error(
+        '[handlePaymentSucceeded] Circle-first notify failed (non-blocking):',
+        circleErr
+      )
+    }
+
+    // Chef email notification (chef-only, stays as standalone email)
     try {
       const { data: eventData } = await supabaseAdmin
         .from('events')
@@ -578,7 +643,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
       const { data: clientData } = await (supabaseAdmin
         .from('clients')
-        .select('email, full_name, loyalty_tier, loyalty_points')
+        .select('email, full_name')
         .eq('id', client_id)
         .single() as any)
 
@@ -588,41 +653,24 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         .eq('id', tenant_id)
         .single()
 
-      if (clientData?.email && eventData) {
-        const { sendPaymentConfirmationEmail, sendPaymentReceivedChefEmail } =
-          await import('@/lib/email/notifications')
+      if (chefData?.email && eventData && clientData) {
+        const { sendPaymentReceivedChefEmail } = await import('@/lib/email/notifications')
         const remaining = (financialSummary as any).outstanding_balance_cents
 
-        // Client receipt
-        await sendPaymentConfirmationEmail({
-          clientEmail: clientData.email,
+        await sendPaymentReceivedChefEmail({
+          chefEmail: chefData.email,
+          chefName: chefData.business_name || chefData.display_name || 'Chef',
           clientName: clientData.full_name,
           amountCents: paymentIntent.amount,
           paymentType: payment_type || 'payment',
           occasion: eventData.occasion || 'your event',
           eventDate: eventData.event_date,
+          eventId: event_id,
           remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
-          loyaltyTier: (clientData as any).loyalty_tier ?? null,
-          loyaltyPoints: (clientData as any).loyalty_points ?? null,
         })
-
-        // Chef email notification (in addition to in-app notification)
-        if (chefData?.email) {
-          await sendPaymentReceivedChefEmail({
-            chefEmail: chefData.email,
-            chefName: chefData.business_name || chefData.display_name || 'Chef',
-            clientName: clientData.full_name,
-            amountCents: paymentIntent.amount,
-            paymentType: payment_type || 'payment',
-            occasion: eventData.occasion || 'your event',
-            eventDate: eventData.event_date,
-            eventId: event_id,
-            remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
-          })
-        }
       }
     } catch (emailErr) {
-      console.error('[handlePaymentSucceeded] Email failed (non-blocking):', emailErr)
+      console.error('[handlePaymentSucceeded] Chef email failed (non-blocking):', emailErr)
     }
 
     // Instant-book: send dedicated chef notification email (non-blocking)

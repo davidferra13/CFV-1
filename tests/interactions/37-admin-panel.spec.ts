@@ -235,7 +235,7 @@ test.describe('Admin — Non-Admin Access Blocked', () => {
     // Create fresh context with no cookies
     const ctx = await browser.newContext()
     const page = await ctx.newPage()
-    const resp = await page.goto('/admin')
+    const resp = await page.goto('http://localhost:3100/admin')
     await page.waitForLoadState('networkidle')
     const status = resp?.status() ?? 0
     const url = page.url()

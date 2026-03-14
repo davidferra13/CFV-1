@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAllUnrecordedComponents } from '@/lib/recipes/actions'
 import { RecipeSprintClient } from '@/components/recipes/recipe-sprint-client'
 import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
+import { BookOpen } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Recipe Sprint — ChefFlow' }
 

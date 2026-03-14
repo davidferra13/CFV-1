@@ -4,7 +4,14 @@ import { useState, useTransition, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { importProspectsFromCSV } from '@/lib/prospecting/pipeline-actions'
-import { Upload, FileText, Loader2, CheckCircle, AlertCircle, Download } from 'lucide-react'
+import {
+  Upload,
+  FileText,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Download,
+} from '@/components/ui/icons'
 
 export function CSVImportForm() {
   const [csvText, setCsvText] = useState('')

@@ -144,6 +144,24 @@ export async function createRaffleRound(input: {
     return { success: false, error: 'Failed to create raffle round.' }
   }
 
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenantId)
+    if (chefUserId) {
+      await createNotification({
+        tenantId,
+        recipientId: chefUserId,
+        category: 'loyalty',
+        action: 'raffle_new_round',
+        title: `New raffle round created: ${monthLabel}`,
+        body: 'The monthly raffle is now active.',
+        actionUrl: '/loyalty/raffle',
+      })
+    }
+  } catch (notifyErr) {
+    console.error('[non-blocking] Raffle round creation notification failed:', notifyErr)
+  }
+
   revalidatePath('/my-rewards')
   revalidatePath('/loyalty/raffle')
   return { success: true, roundId: data.id }
@@ -767,6 +785,24 @@ export async function drawRaffleWinner(roundId: string): Promise<{
     } catch (err) {
       console.error('[non-blocking] Raffle winner notification failed', err)
     }
+  }
+
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(round.tenant_id)
+    if (chefUserId) {
+      await createNotification({
+        tenantId: round.tenant_id,
+        recipientId: chefUserId,
+        category: 'loyalty',
+        action: 'raffle_drawn_chef',
+        title: 'Raffle draw completed',
+        body: `Winners selected from ${entries.length} entries across ${uniqueParticipants} participants.`,
+        actionUrl: '/loyalty/raffle',
+      })
+    }
+  } catch (notifyErr) {
+    console.error('[non-blocking] Chef raffle draw notification failed:', notifyErr)
   }
 
   return {

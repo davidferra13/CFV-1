@@ -21,27 +21,35 @@ VALUES (
   ]
 )
 ON CONFLICT (id) DO NOTHING;
+
 -- RLS: chefs can upload to their own tenant folder
-CREATE POLICY "Chefs can upload menu files"
-  ON storage.objects FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    bucket_id = 'menu-uploads'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text FROM user_roles
-      WHERE auth_user_id = auth.uid()
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  CREATE POLICY "Chefs can upload menu files"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      bucket_id = 'menu-uploads'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text FROM user_roles
+        WHERE auth_user_id = auth.uid()
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+
 -- RLS: chefs can read their own uploads
-CREATE POLICY "Chefs can read own menu files"
-  ON storage.objects FOR SELECT
-  TO authenticated
-  USING (
-    bucket_id = 'menu-uploads'
-    AND (storage.foldername(name))[1] = (
-      SELECT entity_id::text FROM user_roles
-      WHERE auth_user_id = auth.uid()
-      LIMIT 1
-    )
-  );
+DO $$ BEGIN
+  CREATE POLICY "Chefs can read own menu files"
+    ON storage.objects FOR SELECT
+    TO authenticated
+    USING (
+      bucket_id = 'menu-uploads'
+      AND (storage.foldername(name))[1] = (
+        SELECT entity_id::text FROM user_roles
+        WHERE auth_user_id = auth.uid()
+        LIMIT 1
+      )
+    );
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;

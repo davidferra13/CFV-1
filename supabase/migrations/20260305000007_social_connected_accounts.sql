@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS social_connected_accounts (
   last_refreshed_at      TIMESTAMPTZ,
   updated_at             TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- ── Comments ───────────────────────────────────────────────
 
 COMMENT ON TABLE  social_connected_accounts IS 'Stores OAuth credentials and account metadata for each social platform a chef has connected. Tokens are never sent to the browser.';
@@ -71,19 +72,23 @@ COMMENT ON COLUMN social_connected_accounts.granted_scopes    IS 'Scopes the use
 COMMENT ON COLUMN social_connected_accounts.platform_account_id IS 'Opaque platform user or page ID. Used to identify the account when calling APIs.';
 COMMENT ON COLUMN social_connected_accounts.meta_ig_account_id IS 'Instagram Business Account ID linked to the chosen Facebook Page. Only populated for the instagram row.';
 COMMENT ON COLUMN social_connected_accounts.error_count       IS 'Incremented on each publish failure. Reset to 0 on successful publish or token refresh.';
+
 -- ── Indexes ────────────────────────────────────────────────
 
 -- One active connection per platform per chef
 CREATE UNIQUE INDEX IF NOT EXISTS sca_tenant_platform_active_idx
   ON social_connected_accounts (tenant_id, platform)
   WHERE is_active = true;
+
 -- For Phase 3 cron: quickly look up a token by (tenant_id, platform)
 CREATE INDEX IF NOT EXISTS sca_tenant_platform_idx
   ON social_connected_accounts (tenant_id, platform);
+
 -- Auto-update updated_at
 CREATE TRIGGER social_connected_accounts_updated_at
   BEFORE UPDATE ON social_connected_accounts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================
 -- 2. Row Level Security
 -- ============================================================
@@ -92,12 +97,14 @@ CREATE TRIGGER social_connected_accounts_updated_at
 -- createAdminClient() which bypasses RLS with the service role key).
 
 ALTER TABLE social_connected_accounts ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "chef_sca_select"
   ON social_connected_accounts FOR SELECT
   USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 -- No INSERT/UPDATE/DELETE policies — only service role via createAdminClient() writes here.
 
 -- ============================================================
@@ -111,4 +118,5 @@ SECURITY DEFINER
 AS $$
   DELETE FROM social_oauth_states WHERE expires_at < now();
 $$;
+
 COMMENT ON FUNCTION cleanup_expired_social_oauth_states() IS 'Called by the Phase 3 cron to purge stale OAuth PKCE state rows.';

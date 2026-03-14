@@ -4,4 +4,5 @@
 
 ALTER TABLE ai_preferences
 ADD COLUMN IF NOT EXISTS remy_archetype TEXT DEFAULT NULL;
+
 COMMENT ON COLUMN ai_preferences.remy_archetype IS 'Remy personality archetype: veteran, hype, zen, numbers, mentor, classic. NULL = veteran (default).';

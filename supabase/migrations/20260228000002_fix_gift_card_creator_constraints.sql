@@ -26,6 +26,7 @@
 -- =====================================================================================
 
 ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'system';
+
 -- =====================================================================================
 -- STEP 2: Make created_by_user_id nullable on client_incentives
 -- Previously NOT NULL, this was fine for chef- and client-created records.
@@ -35,6 +36,7 @@ ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'system';
 
 ALTER TABLE client_incentives
   ALTER COLUMN created_by_user_id DROP NOT NULL;
+
 -- =====================================================================================
 -- STEP 3: Update the creator role shape check constraint
 -- NOTE: Cannot reference the new 'system' enum value in the same transaction
@@ -47,9 +49,11 @@ ALTER TABLE client_incentives
 -- The new constraint (with the system case) is added in the next migration.
 ALTER TABLE client_incentives
   DROP CONSTRAINT IF EXISTS chk_client_incentives_creator_role_shape;
+
 COMMENT ON COLUMN client_incentives.created_by_role IS
   'chef = created by chef in dashboard; client = created by a registered client;
    system = created by webhook or automated process (e.g. Stripe gift card purchase by guest).';
+
 -- =====================================================================================
 -- END
--- =====================================================================================;
+-- =====================================================================================

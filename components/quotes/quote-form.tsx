@@ -31,6 +31,7 @@ import {
   type PricingBreakdown,
 } from '@/lib/pricing/compute'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
+import { SmartPricingHint } from '@/components/intelligence/smart-pricing-hint'
 import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
@@ -43,6 +44,9 @@ type Client = {
   id: string
   full_name: string
   email: string
+  recurring_pricing_model?: 'none' | 'flat_rate' | 'per_person' | null
+  recurring_price_cents?: number | null
+  recurring_pricing_notes?: string | null
 }
 
 type PricingHistoryEntry = {
@@ -114,6 +118,8 @@ type QuoteFormProps = {
   prefilledEventId?: string | null
   existingQuote?: ExistingQuote
 }
+
+const RECURRING_PRICE_WARNING_PERCENT = 20
 
 export function QuoteForm({
   tenantId,
@@ -228,6 +234,93 @@ export function QuoteForm({
   const [internalNotes, setInternalNotes] = useState(
     existingQuote?.internal_notes || prefilledInternalNotes || ''
   )
+
+  const selectedClient = useMemo(
+    () => clients.find((client) => client.id === clientId) ?? null,
+    [clientId, clients]
+  )
+
+  const recurringPricingCheck = useMemo(() => {
+    if (isEditing || !selectedClient) return null
+
+    const recurringModel = selectedClient.recurring_pricing_model
+    const recurringRateRaw = selectedClient.recurring_price_cents
+    if (
+      !recurringModel ||
+      recurringModel === 'none' ||
+      typeof recurringRateRaw !== 'number' ||
+      !Number.isFinite(recurringRateRaw) ||
+      recurringRateRaw <= 0
+    ) {
+      return null
+    }
+    const recurringRateCents = Math.round(recurringRateRaw)
+
+    const guestCountNum = Number.parseInt(guestCount, 10)
+    const hasGuestCount = Number.isFinite(guestCountNum) && guestCountNum > 0
+    const totalCents = totalAmount.trim() ? parseCurrencyToCents(totalAmount) : Number.NaN
+    const perPersonCents = pricePerPerson.trim() ? parseCurrencyToCents(pricePerPerson) : Number.NaN
+
+    if (pricingModel === 'per_person' && recurringModel === 'per_person') {
+      const hasComparablePerPerson = Number.isFinite(perPersonCents) && perPersonCents > 0
+      if (!hasComparablePerPerson) {
+        return {
+          recurringModel,
+          recurringRateCents,
+          needsGuestCountForComparison: false,
+          comparison: null,
+        }
+      }
+      return {
+        recurringModel,
+        recurringRateCents,
+        needsGuestCountForComparison: false,
+        comparison: {
+          basis: 'per_person' as const,
+          baselineCents: recurringRateCents,
+          currentCents: perPersonCents,
+          deltaPercent: ((perPersonCents - recurringRateCents) / recurringRateCents) * 100,
+        },
+      }
+    }
+
+    if (!Number.isFinite(totalCents) || totalCents <= 0) {
+      return {
+        recurringModel,
+        recurringRateCents,
+        needsGuestCountForComparison: recurringModel === 'per_person' && !hasGuestCount,
+        comparison: null,
+      }
+    }
+
+    const baselineTotalCents =
+      recurringModel === 'flat_rate'
+        ? recurringRateCents
+        : hasGuestCount
+          ? recurringRateCents * guestCountNum
+          : null
+
+    if (!baselineTotalCents || baselineTotalCents <= 0) {
+      return {
+        recurringModel,
+        recurringRateCents,
+        needsGuestCountForComparison: recurringModel === 'per_person' && !hasGuestCount,
+        comparison: null,
+      }
+    }
+
+    return {
+      recurringModel,
+      recurringRateCents,
+      needsGuestCountForComparison: false,
+      comparison: {
+        basis: 'total' as const,
+        baselineCents: baselineTotalCents,
+        currentCents: totalCents,
+        deltaPercent: ((totalCents - baselineTotalCents) / baselineTotalCents) * 100,
+      },
+    }
+  }, [guestCount, isEditing, pricePerPerson, pricingModel, selectedClient, totalAmount])
 
   // ── Pricing Calculator state ─────────────────────────────────────────────
   const [calcOpen, setCalcOpen] = useState(false)
@@ -610,6 +703,13 @@ export function QuoteForm({
     { value: 'per_person', label: 'Per Person' },
     { value: 'custom', label: 'Custom' },
   ]
+  const recurringComparison = recurringPricingCheck?.comparison ?? null
+  const recurringDeviationPercent = recurringComparison
+    ? Math.abs(recurringComparison.deltaPercent)
+    : null
+  const showRecurringDeviationWarning =
+    recurringDeviationPercent != null &&
+    recurringDeviationPercent >= RECURRING_PRICE_WARNING_PERCENT
 
   return (
     <div className="space-y-6">
@@ -651,6 +751,12 @@ export function QuoteForm({
       <PricingSuggestionPanel
         suggestion={pricingSuggestion ?? null}
         benchmarkHint={benchmarkHint}
+      />
+
+      {/* ── Smart Pricing (Intelligence Engine) ──────────────────────────── */}
+      <SmartPricingHint
+        guestCount={parseInt(guestCount) || 0}
+        onSuggestedPrice={(totalCents) => setTotalAmount((totalCents / 100).toFixed(2))}
       />
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}
@@ -902,6 +1008,40 @@ export function QuoteForm({
               Review values below, select client, and save as a draft quote.
             </div>
           )}
+          {prefilledSource === 'recurring_default' && (
+            <div className="rounded-lg bg-emerald-950 border border-emerald-700 px-4 py-3 text-sm text-emerald-700">
+              <span className="font-medium text-emerald-600">
+                Prefilled from recurring client default pricing.
+              </span>{' '}
+              Confirm totals for this service before sending.
+            </div>
+          )}
+          {recurringPricingCheck && (
+            <div className="rounded-lg bg-stone-900 border border-stone-700 px-4 py-3 text-sm text-stone-300">
+              <span className="font-medium text-stone-100">Repeat-client default: </span>
+              {recurringPricingCheck.recurringModel === 'per_person'
+                ? `${formatCurrency(recurringPricingCheck.recurringRateCents)} per person`
+                : `${formatCurrency(recurringPricingCheck.recurringRateCents)} flat rate`}
+              {selectedClient?.recurring_pricing_notes && (
+                <span className="text-stone-500"> · {selectedClient.recurring_pricing_notes}</span>
+              )}
+            </div>
+          )}
+          {recurringPricingCheck?.needsGuestCountForComparison && (
+            <Alert variant="info" title="Recurring pricing check">
+              Add an estimated guest count to compare this total against the client&apos;s
+              per-person recurring default.
+            </Alert>
+          )}
+          {showRecurringDeviationWarning && recurringComparison && (
+            <Alert variant="warning" title="Recurring pricing drift">
+              This quote is {Math.round(recurringDeviationPercent ?? 0)}%{' '}
+              {recurringComparison.deltaPercent >= 0 ? 'above' : 'below'} the recurring{' '}
+              {recurringComparison.basis === 'per_person' ? 'per-person rate' : 'total benchmark'} (
+              {formatCurrency(recurringComparison.baselineCents)} baseline vs{' '}
+              {formatCurrency(recurringComparison.currentCents)} currently entered).
+            </Alert>
+          )}
 
           {/* Client Selection (create only) */}
           {!isEditing && (
@@ -916,9 +1056,11 @@ export function QuoteForm({
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
                 helperText={
-                  prefilledClientId
-                    ? 'Pre-selected from inquiry'
-                    : 'Select the client for this quote'
+                  prefilledSource === 'recurring_default'
+                    ? 'Pre-selected repeat client defaults applied'
+                    : prefilledClientId
+                      ? 'Pre-selected from inquiry'
+                      : 'Select the client for this quote'
                 }
               />
             </div>

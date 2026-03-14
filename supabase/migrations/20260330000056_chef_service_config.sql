@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS chef_service_config (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   chef_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
-  tenant_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
+  tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
   -- SERVICES I OFFER
   offers_wine_pairings boolean NOT NULL DEFAULT false,
@@ -83,24 +83,31 @@ CREATE TABLE IF NOT EXISTS chef_service_config (
   CONSTRAINT chef_service_config_chef_unique UNIQUE(chef_id),
   CONSTRAINT gratuity_policy_check CHECK (gratuity_policy IN ('not_expected', 'appreciated', 'included'))
 );
+
 -- RLS
 ALTER TABLE chef_service_config ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "chef_service_config_select"
   ON chef_service_config FOR SELECT
   USING (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
+
 CREATE POLICY "chef_service_config_insert"
   ON chef_service_config FOR INSERT
   WITH CHECK (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
+
 CREATE POLICY "chef_service_config_update"
   ON chef_service_config FOR UPDATE
   USING (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
+
 CREATE POLICY "chef_service_config_delete"
   ON chef_service_config FOR DELETE
   USING (tenant_id = (SELECT c.tenant_id FROM chefs c WHERE c.id = chef_service_config.chef_id));
+
 -- updated_at trigger
 CREATE TRIGGER chef_service_config_updated_at
   BEFORE UPDATE ON chef_service_config
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
+
 -- Grant access to authenticated users (RLS handles scoping)
 GRANT SELECT, INSERT, UPDATE, DELETE ON chef_service_config TO authenticated;

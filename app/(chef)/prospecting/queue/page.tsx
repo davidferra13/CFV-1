@@ -7,7 +7,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Phone } from 'lucide-react'
+import { ArrowLeft, Phone } from '@/components/ui/icons'
 import { CallQueueClient } from './call-queue-client'
 
 export const metadata: Metadata = { title: 'Call Queue - Prospecting - ChefFlow' }

@@ -38,12 +38,16 @@ CREATE TABLE recurring_services (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_recurring_chef        ON recurring_services(chef_id, status);
 CREATE INDEX idx_recurring_client      ON recurring_services(chef_id, client_id);
+
 COMMENT ON TABLE recurring_services IS 'Ongoing service arrangements with clients (weekly meal prep, standing dinners, etc.)';
+
 CREATE TRIGGER trg_recurring_updated_at
   BEFORE UPDATE ON recurring_services
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 2: SERVED DISH HISTORY
 -- ============================================
@@ -66,21 +70,26 @@ CREATE TABLE served_dish_history (
 
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_served_dish_client  ON served_dish_history(chef_id, client_id, served_date DESC);
 CREATE INDEX idx_served_dish_recipe  ON served_dish_history(chef_id, recipe_id);
 CREATE INDEX idx_served_dish_chef    ON served_dish_history(chef_id, served_date DESC);
+
 COMMENT ON TABLE served_dish_history IS 'Rolling log of dishes served to each client. Used to suggest variety and track favorites/dislikes.';
 COMMENT ON COLUMN served_dish_history.client_reaction IS 'Chef-assessed reaction. loved/liked dishes can be served again; disliked dishes avoided.';
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE recurring_services  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE served_dish_history ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY rs_chef_select ON recurring_services FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY rs_chef_insert ON recurring_services FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY rs_chef_update ON recurring_services FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY rs_chef_delete ON recurring_services FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 CREATE POLICY sdh_chef_select ON served_dish_history FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sdh_chef_insert ON served_dish_history FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sdh_chef_update ON served_dish_history FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

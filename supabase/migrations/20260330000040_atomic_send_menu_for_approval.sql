@@ -86,4 +86,7 @@ BEGIN
     'client_id', v_event.client_id
   );
 END;
-$$;;
+$$;
+
+
+

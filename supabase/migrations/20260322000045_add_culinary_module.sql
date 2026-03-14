@@ -5,6 +5,7 @@
 ALTER TABLE chef_preferences
 ALTER COLUMN enabled_modules
 SET DEFAULT ARRAY['dashboard','pipeline','events','culinary','calendar','clients','finance'];
+
 -- 2. Backfill existing chefs: add 'culinary' to anyone who doesn't already have it
 UPDATE chef_preferences
 SET enabled_modules = array_append(enabled_modules, 'culinary')

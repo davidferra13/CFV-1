@@ -37,40 +37,50 @@ CREATE TABLE menu_preferences (
 
   UNIQUE(event_id)
 );
+
 CREATE INDEX idx_menu_preferences_event ON menu_preferences(event_id);
 CREATE INDEX idx_menu_preferences_tenant ON menu_preferences(tenant_id);
+
 -- =====================================================================================
 -- 2. SHOWCASE & USAGE COLUMNS ON MENUS
 -- =====================================================================================
 
 ALTER TABLE menus ADD COLUMN IF NOT EXISTS is_showcase BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE menus ADD COLUMN IF NOT EXISTS times_used INTEGER NOT NULL DEFAULT 0;
+
 CREATE INDEX idx_menus_showcase ON menus(tenant_id) WHERE is_showcase = true;
+
 -- =====================================================================================
 -- 3. RLS POLICIES
 -- =====================================================================================
 
 ALTER TABLE menu_preferences ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can read preferences for events on their tenant
 CREATE POLICY chef_read_menu_preferences ON menu_preferences
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
+
 -- Chefs can update (mark as viewed)
 CREATE POLICY chef_update_menu_preferences ON menu_preferences
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id());
+
 -- Clients can insert their own preferences
 CREATE POLICY client_insert_menu_preferences ON menu_preferences
   FOR INSERT
   WITH CHECK (client_id = auth.uid());
+
 -- Clients can read their own preferences
 CREATE POLICY client_read_menu_preferences ON menu_preferences
   FOR SELECT
   USING (client_id = auth.uid());
+
 -- Clients can update their own preferences (re-submit)
 CREATE POLICY client_update_menu_preferences ON menu_preferences
   FOR UPDATE
   USING (client_id = auth.uid());
+
 -- =====================================================================================
 -- 4. CLIENT CAN VIEW SHOWCASE MENUS (read-only)
 -- =====================================================================================
@@ -91,6 +101,7 @@ CREATE POLICY client_view_showcase_menus ON menus
         )
     )
   );
+
 -- Also let clients see dishes on showcase menus
 CREATE POLICY client_view_showcase_dishes ON dishes
   FOR SELECT

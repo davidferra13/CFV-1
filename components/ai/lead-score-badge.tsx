@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp, Loader2 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { TrendingUp, Loader2 } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { scoreInquiry, type LeadScore } from '@/lib/ai/lead-scoring'
 import { toast } from 'sonner'
@@ -73,27 +72,19 @@ export function LeadScoreBadge({
             </button>
           </div>
           <p className="text-stone-400">{score.recommendation}</p>
-          {score.strengths.length > 0 && (
+          {score.factors.length > 0 && (
             <div>
-              <div className="text-green-700 font-medium mb-0.5">Strengths</div>
-              {score.strengths.map((s, i) => (
+              <div className="text-green-700 font-medium mb-0.5">Score Factors</div>
+              {score.factors.map((f, i) => (
                 <div key={i} className="text-stone-400">
-                  + {s}
+                  + {f}
                 </div>
               ))}
             </div>
           )}
-          {score.weaknesses.length > 0 && (
-            <div>
-              <div className="text-red-700 font-medium mb-0.5">Weaknesses</div>
-              {score.weaknesses.map((w, i) => (
-                <div key={i} className="text-stone-400">
-                  - {w}
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="text-stone-400 text-[10px]">Confidence: {score.confidence}</div>
+          <div className="text-stone-500 text-[10px]">
+            Scored by GOLDMINE formula (deterministic)
+          </div>
         </div>
       )}
     </div>

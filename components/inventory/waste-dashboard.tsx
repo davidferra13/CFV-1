@@ -5,7 +5,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Trash2, DollarSign, Hash, TrendingUp } from 'lucide-react'
+import { Trash2, DollarSign, Hash, TrendingUp } from '@/components/ui/icons'
 import {
   ComposedChart,
   Bar,

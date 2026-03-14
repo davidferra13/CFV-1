@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformChefList, type PlatformChefRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Users, TrendingUp, AlertCircle } from 'lucide-react'
+import { Users, TrendingUp, AlertCircle } from '@/components/ui/icons'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 
 function formatCents(cents: number): string {

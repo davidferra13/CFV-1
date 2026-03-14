@@ -26,14 +26,18 @@ CREATE TABLE IF NOT EXISTS event_themes (
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- Enable RLS
 ALTER TABLE event_themes ENABLE ROW LEVEL SECURITY;
+
 -- Anyone can read themes (public catalog)
 CREATE POLICY "event_themes_select_all" ON event_themes
   FOR SELECT USING (true);
+
 -- Only service role can insert/update (admin seeding)
 CREATE POLICY "event_themes_manage_service" ON event_themes
   FOR ALL USING (auth.role() = 'service_role');
+
 -- Seed curated themes
 INSERT INTO event_themes (slug, name, category, primary_color, secondary_color, accent_color, background_gradient, emoji, description, sort_order) VALUES
   ('bachelorette', 'Bachelorette', 'celebration', '#ec4899', '#f9a8d4', '#be185d', 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%)', '💍', 'Pink and bubbly — perfect for the bride-to-be', 1),
@@ -55,7 +59,9 @@ INSERT INTO event_themes (slug, name, category, primary_color, secondary_color, 
   ('black-tie', 'Black Tie', 'formal', '#111827', '#6b7280', '#030712', 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%)', '🎩', 'Classic elegance', 17),
   ('tropical', 'Tropical Paradise', 'seasonal', '#0891b2', '#22d3ee', '#0e7490', 'linear-gradient(135deg, #ecfeff 0%, #cffafe 50%, #a5f3fc 100%)', '🌴', 'Island vibes and ocean breezes', 18)
 ON CONFLICT (slug) DO NOTHING;
+
 -- Add theme_id to event_shares
 ALTER TABLE event_shares ADD COLUMN IF NOT EXISTS theme_id UUID REFERENCES event_themes(id) ON DELETE SET NULL;
+
 -- Index
 CREATE INDEX IF NOT EXISTS idx_event_themes_category ON event_themes(category) WHERE is_active = true;

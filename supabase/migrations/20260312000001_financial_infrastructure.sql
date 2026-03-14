@@ -20,10 +20,13 @@ CREATE TABLE IF NOT EXISTS bank_connections (
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (chef_id, provider_account_id)
 );
+
 CREATE INDEX idx_bank_connections_chef ON bank_connections(chef_id, is_active);
+
 CREATE TRIGGER trg_bank_connections_updated_at
   BEFORE UPDATE ON bank_connections
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 2: BANK TRANSACTIONS
 -- ============================================
@@ -46,11 +49,14 @@ CREATE TABLE IF NOT EXISTS bank_transactions (
   updated_at                TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (chef_id, provider_transaction_id)
 );
+
 CREATE INDEX idx_bank_transactions_chef_status ON bank_transactions(chef_id, status);
 CREATE INDEX idx_bank_transactions_chef_date ON bank_transactions(chef_id, date DESC);
+
 CREATE TRIGGER trg_bank_transactions_updated_at
   BEFORE UPDATE ON bank_transactions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 3: TAX QUARTERLY ESTIMATES
 -- ============================================
@@ -71,10 +77,13 @@ CREATE TABLE IF NOT EXISTS tax_quarterly_estimates (
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (chef_id, tax_year, quarter)
 );
+
 CREATE INDEX idx_tax_quarterly_chef_year ON tax_quarterly_estimates(chef_id, tax_year DESC);
+
 CREATE TRIGGER trg_tax_quarterly_updated_at
   BEFORE UPDATE ON tax_quarterly_estimates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 4: CONTRACTOR PAYMENTS (1099 Tracking)
 -- ============================================
@@ -91,8 +100,10 @@ CREATE TABLE IF NOT EXISTS contractor_payments (
   tax_year          INTEGER NOT NULL,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_contractor_payments_chef_year ON contractor_payments(chef_id, tax_year);
 CREATE INDEX idx_contractor_payments_staff ON contractor_payments(staff_member_id, tax_year);
+
 -- ============================================
 -- TABLE 5: RECURRING INVOICES
 -- ============================================
@@ -113,10 +124,13 @@ CREATE TABLE IF NOT EXISTS recurring_invoices (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_recurring_invoices_chef ON recurring_invoices(chef_id, is_active);
+
 CREATE TRIGGER trg_recurring_invoices_updated_at
   BEFORE UPDATE ON recurring_invoices
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 6: PAYMENT DISPUTES
 -- ============================================
@@ -137,10 +151,13 @@ CREATE TABLE IF NOT EXISTS payment_disputes (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_payment_disputes_chef_status ON payment_disputes(chef_id, status);
+
 CREATE TRIGGER trg_payment_disputes_updated_at
   BEFORE UPDATE ON payment_disputes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -151,31 +168,37 @@ ALTER TABLE tax_quarterly_estimates   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contractor_payments       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recurring_invoices        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_disputes          ENABLE ROW LEVEL SECURITY;
+
 -- bank_connections
 CREATE POLICY bc_chef_select ON bank_connections FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bc_chef_insert ON bank_connections FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bc_chef_update ON bank_connections FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bc_chef_delete ON bank_connections FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- bank_transactions
 CREATE POLICY bt_chef_select ON bank_transactions FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bt_chef_insert ON bank_transactions FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bt_chef_update ON bank_transactions FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bt_chef_delete ON bank_transactions FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- tax_quarterly_estimates
 CREATE POLICY tqe_chef_select ON tax_quarterly_estimates FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY tqe_chef_insert ON tax_quarterly_estimates FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY tqe_chef_update ON tax_quarterly_estimates FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY tqe_chef_delete ON tax_quarterly_estimates FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- contractor_payments
 CREATE POLICY cp_chef_select ON contractor_payments FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cp_chef_insert ON contractor_payments FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cp_chef_update ON contractor_payments FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cp_chef_delete ON contractor_payments FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- recurring_invoices
 CREATE POLICY ri_chef_select ON recurring_invoices FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ri_chef_insert ON recurring_invoices FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ri_chef_update ON recurring_invoices FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ri_chef_delete ON recurring_invoices FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- payment_disputes
 CREATE POLICY pd_chef_select ON payment_disputes FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pd_chef_insert ON payment_disputes FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

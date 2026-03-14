@@ -5,7 +5,7 @@ import { updateNDA } from '@/lib/clients/nda-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronUp, Shield } from 'lucide-react'
+import { ChevronDown, ChevronUp, Shield } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type NDAData = {

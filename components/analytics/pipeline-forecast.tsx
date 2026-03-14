@@ -12,7 +12,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

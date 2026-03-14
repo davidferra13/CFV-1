@@ -16,6 +16,7 @@ BEGIN
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+
 DO $$
 BEGIN
   CREATE TYPE event_session_meal_slot AS ENUM (
@@ -29,6 +30,7 @@ BEGIN
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+
 DO $$
 BEGIN
   CREATE TYPE event_session_execution_type AS ENUM (
@@ -40,6 +42,7 @@ BEGIN
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+
 -- -----------------------------------------------------------------------------
 -- MASTER SERIES TABLE
 -- -----------------------------------------------------------------------------
@@ -88,7 +91,9 @@ CREATE TABLE IF NOT EXISTS event_series (
     OR deposit_total_cents <= quoted_total_cents
   )
 );
+
 COMMENT ON TABLE event_series IS 'Master booking record for multi-day, recurring, or bundled service plans.';
+
 -- -----------------------------------------------------------------------------
 -- SERVICE SESSION TABLE
 -- -----------------------------------------------------------------------------
@@ -144,7 +149,9 @@ CREATE TABLE IF NOT EXISTS event_service_sessions (
     OR deposit_amount_cents <= quoted_price_cents
   )
 );
+
 COMMENT ON TABLE event_service_sessions IS 'Per-day/per-meal service blocks belonging to an event series.';
+
 -- -----------------------------------------------------------------------------
 -- EXISTING TABLE EXTENSIONS
 -- -----------------------------------------------------------------------------
@@ -152,6 +159,7 @@ COMMENT ON TABLE event_service_sessions IS 'Per-day/per-meal service blocks belo
 ALTER TABLE inquiries
   ADD COLUMN IF NOT EXISTS service_mode booking_service_mode,
   ADD COLUMN IF NOT EXISTS schedule_request_jsonb JSONB;
+
 UPDATE inquiries
 SET service_mode = CASE
   WHEN unknown_fields->>'service_mode' IN ('one_off', 'recurring', 'multi_day')
@@ -159,10 +167,12 @@ SET service_mode = CASE
   ELSE service_mode
 END
 WHERE service_mode IS NULL;
+
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS service_mode booking_service_mode NOT NULL DEFAULT 'one_off',
   ADD COLUMN IF NOT EXISTS event_series_id UUID,
   ADD COLUMN IF NOT EXISTS source_session_id UUID;
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -174,6 +184,7 @@ BEGIN
       FOREIGN KEY (event_series_id) REFERENCES event_series(id) ON DELETE SET NULL;
   END IF;
 END $$;
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -185,6 +196,7 @@ BEGIN
       FOREIGN KEY (source_session_id) REFERENCES event_service_sessions(id) ON DELETE SET NULL;
   END IF;
 END $$;
+
 -- Expand booking_source constraint to include series-created events.
 DO $$
 DECLARE
@@ -200,25 +212,33 @@ BEGIN
     EXECUTE format('ALTER TABLE events DROP CONSTRAINT %I', c.conname);
   END LOOP;
 END $$;
+
 ALTER TABLE events
   ADD CONSTRAINT events_booking_source_check
   CHECK (booking_source IS NULL OR booking_source IN ('inquiry', 'instant_book', 'series'));
+
 -- -----------------------------------------------------------------------------
 -- INDEXES
 -- -----------------------------------------------------------------------------
 
 CREATE INDEX IF NOT EXISTS idx_event_series_tenant_dates
   ON event_series(tenant_id, start_date, end_date);
+
 CREATE INDEX IF NOT EXISTS idx_event_series_client
   ON event_series(tenant_id, client_id);
+
 CREATE INDEX IF NOT EXISTS idx_event_series_status
   ON event_series(tenant_id, status);
+
 CREATE INDEX IF NOT EXISTS idx_event_service_sessions_series_date
   ON event_service_sessions(series_id, session_date, sort_order);
+
 CREATE INDEX IF NOT EXISTS idx_event_service_sessions_tenant_date
   ON event_service_sessions(tenant_id, session_date);
+
 CREATE INDEX IF NOT EXISTS idx_event_service_sessions_tenant_status_date
   ON event_service_sessions(tenant_id, status, session_date);
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_event_service_sessions_dedupe
   ON event_service_sessions (
     series_id,
@@ -226,10 +246,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_event_service_sessions_dedupe
     meal_slot,
     COALESCE(start_time, '00:00:00'::time)
   );
+
 CREATE INDEX IF NOT EXISTS idx_events_event_series_id
   ON events(event_series_id);
+
 CREATE INDEX IF NOT EXISTS idx_events_source_session_id
   ON events(source_session_id);
+
 -- -----------------------------------------------------------------------------
 -- UPDATED_AT TRIGGERS
 -- -----------------------------------------------------------------------------
@@ -238,51 +261,61 @@ DROP TRIGGER IF EXISTS set_updated_at_event_series ON event_series;
 CREATE TRIGGER set_updated_at_event_series
   BEFORE UPDATE ON event_series
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 DROP TRIGGER IF EXISTS set_updated_at_event_service_sessions ON event_service_sessions;
 CREATE TRIGGER set_updated_at_event_service_sessions
   BEFORE UPDATE ON event_service_sessions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- -----------------------------------------------------------------------------
 -- RLS
 -- -----------------------------------------------------------------------------
 
 ALTER TABLE event_series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_service_sessions ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS "event_series_chef_select" ON event_series;
 CREATE POLICY "event_series_chef_select"
   ON event_series
   FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_series_chef_insert" ON event_series;
 CREATE POLICY "event_series_chef_insert"
   ON event_series
   FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_series_chef_update" ON event_series;
 CREATE POLICY "event_series_chef_update"
   ON event_series
   FOR UPDATE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_series_chef_delete" ON event_series;
 CREATE POLICY "event_series_chef_delete"
   ON event_series
   FOR DELETE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_service_sessions_chef_select" ON event_service_sessions;
 CREATE POLICY "event_service_sessions_chef_select"
   ON event_service_sessions
   FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_service_sessions_chef_insert" ON event_service_sessions;
 CREATE POLICY "event_service_sessions_chef_insert"
   ON event_service_sessions
   FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_service_sessions_chef_update" ON event_service_sessions;
 CREATE POLICY "event_service_sessions_chef_update"
   ON event_service_sessions
   FOR UPDATE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 DROP POLICY IF EXISTS "event_service_sessions_chef_delete" ON event_service_sessions;
 CREATE POLICY "event_service_sessions_chef_delete"
   ON event_service_sessions

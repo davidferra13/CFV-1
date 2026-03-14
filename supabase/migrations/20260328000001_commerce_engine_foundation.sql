@@ -30,6 +30,7 @@ CREATE TYPE sale_status AS ENUM (
   'fully_refunded',
   'voided'
 );
+
 CREATE TYPE sale_channel AS ENUM (
   'counter',          -- In-person POS
   'order_ahead',      -- Client placed order for pickup/delivery
@@ -37,6 +38,7 @@ CREATE TYPE sale_channel AS ENUM (
   'online',           -- Web storefront (future)
   'phone'             -- Phone order
 );
+
 CREATE TYPE commerce_payment_status AS ENUM (
   'pending',
   'authorized',
@@ -48,11 +50,13 @@ CREATE TYPE commerce_payment_status AS ENUM (
   'partially_refunded',
   'disputed'
 );
+
 CREATE TYPE refund_status AS ENUM (
   'pending',
   'processed',
   'failed'
 );
+
 CREATE TYPE tax_class AS ENUM (
   'standard',         -- Default food tax rate
   'reduced',          -- Lower rate (some states for groceries)
@@ -62,6 +66,8 @@ CREATE TYPE tax_class AS ENUM (
   'prepared_food',    -- Prepared food rate
   'zero'              -- Explicitly zero-rated
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- TABLE: product_projections
 -- Snapshot of a sellable item. Source: dish_index, dishes, or manual.
@@ -109,6 +115,8 @@ CREATE TABLE product_projections (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- TABLE: sales
 -- Universal revenue container. One sale = one transaction.
@@ -158,6 +166,8 @@ CREATE TABLE sales (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by      UUID REFERENCES auth.users(id)
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- TABLE: sale_items
 -- Line items on a sale. Snapshot of product at time of sale.
@@ -196,6 +206,8 @@ CREATE TABLE sale_items (
   sort_order            INTEGER NOT NULL DEFAULT 0,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- TABLE: commerce_payments
 -- Operational payment records with processor details.
@@ -251,6 +263,8 @@ CREATE TABLE commerce_payments (
   CONSTRAINT commerce_payments_idempotency UNIQUE (idempotency_key),
   CONSTRAINT commerce_payments_txn_ref UNIQUE (transaction_reference)
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- TABLE: commerce_refunds
 -- Tracks refunds against commerce_payments.
@@ -281,6 +295,8 @@ CREATE TABLE commerce_refunds (
 
   CONSTRAINT commerce_refunds_idempotency UNIQUE (idempotency_key)
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- TABLE: commerce_payment_schedules
 -- Installment plans for events/large orders.
@@ -302,6 +318,8 @@ CREATE TABLE commerce_payment_schedules (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
 -- ═══════════════════════════════════════════════════════
 -- SALE NUMBER GENERATOR
 -- Format: SL-YYYY-NNNNN (sequential per tenant per year)
@@ -328,9 +346,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER generate_sale_number_trigger
   BEFORE INSERT ON sales
   FOR EACH ROW EXECUTE FUNCTION generate_sale_number();
+
+
 -- ═══════════════════════════════════════════════════════
 -- INDEXES
 -- ═══════════════════════════════════════════════════════
@@ -342,6 +363,7 @@ CREATE INDEX idx_product_projections_active ON product_projections(tenant_id, is
 CREATE INDEX idx_product_projections_sku ON product_projections(tenant_id, sku)
   WHERE sku IS NOT NULL;
 CREATE INDEX idx_product_projections_category ON product_projections(tenant_id, category);
+
 -- Sales
 CREATE INDEX idx_sales_tenant ON sales(tenant_id);
 CREATE INDEX idx_sales_event ON sales(event_id) WHERE event_id IS NOT NULL;
@@ -350,10 +372,12 @@ CREATE INDEX idx_sales_channel ON sales(tenant_id, channel);
 CREATE INDEX idx_sales_created ON sales(tenant_id, created_at DESC);
 CREATE INDEX idx_sales_number ON sales(tenant_id, sale_number);
 CREATE INDEX idx_sales_client ON sales(client_id) WHERE client_id IS NOT NULL;
+
 -- Sale items
 CREATE INDEX idx_sale_items_sale ON sale_items(sale_id);
 CREATE INDEX idx_sale_items_product ON sale_items(product_projection_id)
   WHERE product_projection_id IS NOT NULL;
+
 -- Commerce payments
 CREATE INDEX idx_commerce_payments_tenant ON commerce_payments(tenant_id);
 CREATE INDEX idx_commerce_payments_sale ON commerce_payments(sale_id) WHERE sale_id IS NOT NULL;
@@ -363,15 +387,19 @@ CREATE INDEX idx_commerce_payments_stripe_pi ON commerce_payments(stripe_payment
   WHERE stripe_payment_intent_id IS NOT NULL;
 CREATE INDEX idx_commerce_payments_settlement ON commerce_payments(tenant_id, settlement_date)
   WHERE settlement_date IS NOT NULL;
+
 -- Commerce refunds
 CREATE INDEX idx_commerce_refunds_payment ON commerce_refunds(payment_id);
 CREATE INDEX idx_commerce_refunds_sale ON commerce_refunds(sale_id) WHERE sale_id IS NOT NULL;
+
 -- Payment schedules
 CREATE INDEX idx_commerce_schedules_sale ON commerce_payment_schedules(sale_id)
   WHERE sale_id IS NOT NULL;
 CREATE INDEX idx_commerce_schedules_event ON commerce_payment_schedules(event_id)
   WHERE event_id IS NOT NULL;
 CREATE INDEX idx_commerce_schedules_due ON commerce_payment_schedules(tenant_id, due_date, status);
+
+
 -- ═══════════════════════════════════════════════════════
 -- TRIGGERS — updated_at
 -- ═══════════════════════════════════════════════════════
@@ -379,15 +407,20 @@ CREATE INDEX idx_commerce_schedules_due ON commerce_payment_schedules(tenant_id,
 CREATE TRIGGER update_product_projections_updated_at
   BEFORE UPDATE ON product_projections
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_sales_updated_at
   BEFORE UPDATE ON sales
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_commerce_payments_updated_at
   BEFORE UPDATE ON commerce_payments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_commerce_schedules_updated_at
   BEFORE UPDATE ON commerce_payment_schedules
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
 -- ═══════════════════════════════════════════════════════
 -- TRIGGER: Commerce Payment → Ledger Entry Bridge
 -- Only fires for captured/settled payments that have a client_id.
@@ -459,9 +492,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER commerce_payment_to_ledger
   BEFORE INSERT ON commerce_payments
   FOR EACH ROW EXECUTE FUNCTION create_ledger_entry_from_commerce_payment();
+
+
 -- ═══════════════════════════════════════════════════════
 -- TRIGGER: Commerce Refund → Ledger Entry Bridge
 -- ═══════════════════════════════════════════════════════
@@ -508,9 +544,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER commerce_refund_to_ledger
   BEFORE INSERT ON commerce_refunds
   FOR EACH ROW EXECUTE FUNCTION create_ledger_entry_from_commerce_refund();
+
+
 -- ═══════════════════════════════════════════════════════
 -- SALE STATUS TRANSITION GUARD
 -- Prevents illegal status transitions.
@@ -560,9 +599,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER guard_sale_status
   BEFORE UPDATE OF status ON sales
   FOR EACH ROW EXECUTE FUNCTION guard_sale_status_transition();
+
+
 -- ═══════════════════════════════════════════════════════
 -- VIEW: sale_financial_summary
 -- Per-sale financial totals derived from commerce_payments/refunds.
@@ -608,6 +650,8 @@ LEFT JOIN LATERAL (
   FROM sale_items
   WHERE sale_id = s.id AND unit_cost_cents IS NOT NULL
 ) cost ON true;
+
+
 -- ═══════════════════════════════════════════════════════
 -- RLS POLICIES
 -- ═══════════════════════════════════════════════════════
@@ -618,53 +662,69 @@ ALTER TABLE sale_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commerce_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commerce_refunds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commerce_payment_schedules ENABLE ROW LEVEL SECURITY;
+
 -- Chef policies (full CRUD for tenant's data)
 CREATE POLICY "chef_product_projections" ON product_projections
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
+
 CREATE POLICY "chef_sales" ON sales
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
+
 CREATE POLICY "chef_sale_items" ON sale_items
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
+
 CREATE POLICY "chef_commerce_payments" ON commerce_payments
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
+
 CREATE POLICY "chef_commerce_refunds" ON commerce_refunds
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
+
 CREATE POLICY "chef_commerce_schedules" ON commerce_payment_schedules
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
+
 -- Client policies (read own sales and payments)
 CREATE POLICY "client_sales_read" ON sales
   FOR SELECT USING (
     client_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client')
   );
+
 CREATE POLICY "client_commerce_payments_read" ON commerce_payments
   FOR SELECT USING (
     client_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client')
   );
+
 -- Service role policies (for webhooks/background jobs)
 CREATE POLICY "service_product_projections" ON product_projections
   FOR ALL USING (auth.role() = 'service_role');
+
 CREATE POLICY "service_sales" ON sales
   FOR ALL USING (auth.role() = 'service_role');
+
 CREATE POLICY "service_sale_items" ON sale_items
   FOR ALL USING (auth.role() = 'service_role');
+
 CREATE POLICY "service_commerce_payments" ON commerce_payments
   FOR ALL USING (auth.role() = 'service_role');
+
 CREATE POLICY "service_commerce_refunds" ON commerce_refunds
   FOR ALL USING (auth.role() = 'service_role');
+
 CREATE POLICY "service_commerce_schedules" ON commerce_payment_schedules
   FOR ALL USING (auth.role() = 'service_role');
+
+
 -- ═══════════════════════════════════════════════════════
 -- COMMENTS
 -- ═══════════════════════════════════════════════════════

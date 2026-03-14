@@ -11,6 +11,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 CREATE TABLE IF NOT EXISTS cash_drawer_movements (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id           UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -43,11 +44,14 @@ CREATE TABLE IF NOT EXISTS cash_drawer_movements (
     END
   )
 );
+
 DROP TRIGGER IF EXISTS update_cash_drawer_movements_updated_at ON cash_drawer_movements;
 CREATE TRIGGER update_cash_drawer_movements_updated_at
   BEFORE UPDATE ON cash_drawer_movements
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 ALTER TABLE cash_drawer_movements ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS cash_drawer_movements_chef_all ON cash_drawer_movements;
 CREATE POLICY cash_drawer_movements_chef_all ON cash_drawer_movements
   FOR ALL USING (
@@ -56,10 +60,12 @@ CREATE POLICY cash_drawer_movements_chef_all ON cash_drawer_movements
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE INDEX IF NOT EXISTS idx_cash_drawer_movements_tenant_session_created
   ON cash_drawer_movements(tenant_id, register_session_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_cash_drawer_movements_tenant_type
   ON cash_drawer_movements(tenant_id, movement_type, created_at DESC);
+
 CREATE OR REPLACE FUNCTION create_cash_drawer_movement_from_payment()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -120,10 +126,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS commerce_payment_to_cash_drawer ON commerce_payments;
 CREATE TRIGGER commerce_payment_to_cash_drawer
   AFTER INSERT OR UPDATE OF status ON commerce_payments
   FOR EACH ROW EXECUTE FUNCTION create_cash_drawer_movement_from_payment();
+
 CREATE OR REPLACE FUNCTION create_cash_drawer_movement_from_refund()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -179,10 +187,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS commerce_refund_to_cash_drawer ON commerce_refunds;
 CREATE TRIGGER commerce_refund_to_cash_drawer
   AFTER INSERT OR UPDATE OF status ON commerce_refunds
   FOR EACH ROW EXECUTE FUNCTION create_cash_drawer_movement_from_refund();
+
 -- Backfill historical payments/refunds for existing register sessions.
 INSERT INTO cash_drawer_movements (
   tenant_id,
@@ -217,6 +227,7 @@ WHERE p.payment_method = 'cash'
   AND p.status IN ('captured', 'settled')
   AND s.register_session_id IS NOT NULL
 ON CONFLICT (commerce_payment_id) DO NOTHING;
+
 INSERT INTO cash_drawer_movements (
   tenant_id,
   register_session_id,
@@ -251,3 +262,4 @@ WHERE r.status = 'processed'
   AND p.payment_method = 'cash'
   AND s.register_session_id IS NOT NULL
 ON CONFLICT (commerce_refund_id) DO NOTHING;
+

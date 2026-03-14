@@ -9,7 +9,7 @@ import {
   competitorIntelScrub,
 } from '@/lib/prospecting/scrub-actions'
 import { SCRUB_PRESETS } from '@/lib/prospecting/constants'
-import { Loader2, Search, Zap, Eye, Target } from 'lucide-react'
+import { Loader2, Search, Zap, Eye, Target } from '@/components/ui/icons'
 
 type ScrubMode = 'standard' | 'competitor'
 

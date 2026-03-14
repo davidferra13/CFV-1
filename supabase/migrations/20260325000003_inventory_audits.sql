@@ -14,6 +14,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 DO $$ BEGIN
   CREATE TYPE inventory_audit_status AS ENUM (
     'draft',
@@ -23,6 +24,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- ============================================
 -- TABLE: inventory_audits
 -- ============================================
@@ -50,12 +52,15 @@ CREATE TABLE inventory_audits (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_audits_chef_status ON inventory_audits(chef_id, status);
 CREATE INDEX idx_audits_event ON inventory_audits(event_id) WHERE event_id IS NOT NULL;
 CREATE INDEX idx_audits_chef_date ON inventory_audits(chef_id, audit_date DESC);
+
 CREATE TRIGGER trg_audits_updated_at
   BEFORE UPDATE ON inventory_audits
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE: inventory_audit_items
 -- ============================================
@@ -81,13 +86,16 @@ CREATE TABLE inventory_audit_items (
   counted_at        TIMESTAMPTZ,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_audit_items_audit ON inventory_audit_items(audit_id);
 CREATE INDEX idx_audit_items_ingredient ON inventory_audit_items(ingredient_id) WHERE ingredient_id IS NOT NULL;
+
 -- ============================================
 -- RLS
 -- ============================================
 ALTER TABLE inventory_audits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_audit_items ENABLE ROW LEVEL SECURITY;
+
 -- inventory_audits: chef-only CRUD
 CREATE POLICY ia_chef_select ON inventory_audits FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
@@ -97,6 +105,7 @@ CREATE POLICY ia_chef_update ON inventory_audits FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 CREATE POLICY ia_chef_delete ON inventory_audits FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+
 -- inventory_audit_items: via parent audit join
 CREATE POLICY iai_chef_select ON inventory_audit_items FOR SELECT
   USING (EXISTS (

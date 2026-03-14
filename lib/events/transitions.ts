@@ -392,17 +392,60 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'confirmed' && fromStatus === 'paid') {
-        await sendEventConfirmedEmail({
-          clientEmail: client.email,
-          clientName: client.full_name,
-          chefName,
-          occasion,
-          eventDate: event.event_date,
-          serveTime: event.serve_time,
-          location,
-          guestCount: event.guest_count,
-          eventId,
-        })
+        // Circle-first: post confirmation to circle, email points there
+        try {
+          const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+          const datePart = event.event_date
+            ? ` for ${new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`
+            : ''
+          await circleFirstNotify({
+            eventId,
+            tenantId: event.tenant_id,
+            notificationType: 'event_confirmed',
+            body: `Event confirmed${datePart}! Prep is underway. I'll share the full plan here soon.`,
+            metadata: {
+              event_id: eventId,
+              event_date: event.event_date,
+              location,
+              guest_count: event.guest_count,
+            },
+            actionUrl: `/my-events/${eventId}`,
+            actionLabel: 'View Event Details',
+            fallbackEmail: client.email
+              ? {
+                  to: client.email,
+                  subject: `Event confirmed: ${occasion}`,
+                  react: (await import('react')).createElement(
+                    (await import('@/lib/email/templates/event-confirmed')).EventConfirmedEmail,
+                    {
+                      clientName: client.full_name,
+                      chefName,
+                      occasion,
+                      eventDate: event.event_date,
+                      serveTime: event.serve_time,
+                      location,
+                      guestCount: event.guest_count,
+                      eventId,
+                    }
+                  ),
+                }
+              : undefined,
+          })
+        } catch (cfErr) {
+          log.events.warn('Circle-first confirmed notify failed (non-blocking)', { error: cfErr })
+          // Fallback: send the email directly
+          await sendEventConfirmedEmail({
+            clientEmail: client.email,
+            clientName: client.full_name,
+            chefName,
+            occasion,
+            eventDate: event.event_date,
+            serveTime: event.serve_time,
+            location,
+            guestCount: event.guest_count,
+            eventId,
+          })
+        }
 
         // Persist an FOH HTML render for the linked event menu (non-blocking).
         try {
@@ -507,14 +550,50 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
-        await sendEventCompletedEmail({
-          clientEmail: client.email,
-          clientName: client.full_name,
-          chefName,
-          eventId,
-          occasion,
-          eventDate: event.event_date,
-        })
+        // Circle-first: post completion to circle
+        try {
+          const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+          const clientFirst = client.full_name?.split(' ')[0] || ''
+          let thankYou = 'Thank you for a wonderful evening!'
+          if (clientFirst) thankYou = `Thank you for a wonderful evening, ${clientFirst}!`
+          thankYou += " I hope everyone enjoyed the meal. I'll share photos here soon."
+
+          await circleFirstNotify({
+            eventId,
+            tenantId: event.tenant_id,
+            notificationType: 'event_completed',
+            body: thankYou,
+            metadata: { event_id: eventId },
+            actionUrl: `/my-events/${eventId}`,
+            actionLabel: 'Leave a Review',
+            fallbackEmail: client.email
+              ? {
+                  to: client.email,
+                  subject: `Thank you for a wonderful evening!`,
+                  react: (await import('react')).createElement(
+                    (await import('@/lib/email/templates/event-completed')).EventCompletedEmail,
+                    {
+                      clientName: client.full_name,
+                      chefName,
+                      eventId,
+                      occasion,
+                      eventDate: event.event_date,
+                    }
+                  ),
+                }
+              : undefined,
+          })
+        } catch (cfErr) {
+          log.events.warn('Circle-first completed notify failed (non-blocking)', { error: cfErr })
+          await sendEventCompletedEmail({
+            clientEmail: client.email,
+            clientName: client.full_name,
+            chefName,
+            eventId,
+            occasion,
+            eventDate: event.event_date,
+          })
+        }
       }
 
       if (toStatus === 'cancelled') {
@@ -543,6 +622,8 @@ export async function transitionEvent({
   } catch (emailErr) {
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
+
+  // Circle posts for confirmed + completed are now handled by circleFirstNotify() above
 
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {

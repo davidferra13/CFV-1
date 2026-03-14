@@ -7,6 +7,7 @@
 -- ENUM: Add 'retainer' to ledger_entry_type
 -- ============================================
 ALTER TYPE ledger_entry_type ADD VALUE IF NOT EXISTS 'retainer';
+
 -- ============================================
 -- TABLE 1: RETAINERS
 -- ============================================
@@ -44,14 +45,18 @@ CREATE TABLE IF NOT EXISTS retainers (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_retainers_tenant_status ON retainers(tenant_id, status);
 CREATE INDEX IF NOT EXISTS idx_retainers_client ON retainers(tenant_id, client_id);
 CREATE INDEX IF NOT EXISTS idx_retainers_next_billing ON retainers(tenant_id, next_billing_date)
   WHERE status = 'active';
+
 COMMENT ON TABLE retainers IS 'Recurring service agreements between chef and client. Financial truth lives in ledger_entries.';
+
 CREATE TRIGGER trg_retainers_updated_at
   BEFORE UPDATE ON retainers
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 2: RETAINER PERIODS
 -- ============================================
@@ -81,12 +86,16 @@ CREATE TABLE IF NOT EXISTS retainer_periods (
 
   CONSTRAINT period_dates_valid CHECK (period_end > period_start)
 );
+
 CREATE INDEX IF NOT EXISTS idx_retainer_periods_retainer ON retainer_periods(retainer_id, period_start DESC);
 CREATE INDEX IF NOT EXISTS idx_retainer_periods_tenant ON retainer_periods(tenant_id, status);
+
 COMMENT ON TABLE retainer_periods IS 'Individual billing periods within a retainer agreement. status tracks payment; usage tracks events/hours consumed.';
+
 CREATE TRIGGER trg_retainer_periods_updated_at
   BEFORE UPDATE ON retainer_periods
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- ALTER EVENTS: Add retainer FK columns
 -- ============================================
@@ -94,22 +103,28 @@ CREATE TRIGGER trg_retainer_periods_updated_at
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS retainer_id        UUID REFERENCES retainers(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS retainer_period_id UUID REFERENCES retainer_periods(id) ON DELETE SET NULL;
+
 CREATE INDEX IF NOT EXISTS idx_events_retainer ON events(retainer_id) WHERE retainer_id IS NOT NULL;
+
 COMMENT ON COLUMN events.retainer_id IS 'If this event is part of a retainer agreement, links to the retainer';
 COMMENT ON COLUMN events.retainer_period_id IS 'Specific billing period this event counts against';
+
 -- ============================================
 -- ALTER CLIENTS: Add Stripe customer ID
 -- ============================================
 
 ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+
 COMMENT ON COLUMN clients.stripe_customer_id IS 'Stripe Customer ID for retainer billing. Created on-demand when a retainer subscription is set up.';
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE retainers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE retainer_periods ENABLE ROW LEVEL SECURITY;
+
 -- Chef policies
 CREATE POLICY retainers_chef_all ON retainers
   FOR ALL USING (
@@ -120,6 +135,7 @@ CREATE POLICY retainers_chef_all ON retainers
         AND user_roles.role = 'chef'
     )
   );
+
 CREATE POLICY retainer_periods_chef_all ON retainer_periods
   FOR ALL USING (
     EXISTS (
@@ -129,6 +145,7 @@ CREATE POLICY retainer_periods_chef_all ON retainer_periods
         AND user_roles.role = 'chef'
     )
   );
+
 -- Client policies (read their own retainers)
 CREATE POLICY retainers_client_select ON retainers
   FOR SELECT USING (
@@ -138,6 +155,7 @@ CREATE POLICY retainers_client_select ON retainers
         AND clients.auth_user_id = auth.uid()
     )
   );
+
 CREATE POLICY retainer_periods_client_select ON retainer_periods
   FOR SELECT USING (
     EXISTS (

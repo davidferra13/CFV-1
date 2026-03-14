@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { lookalikeProspect } from '@/lib/prospecting/scrub-actions'
-import { Loader2, Target } from 'lucide-react'
+import { Loader2, Target } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 interface LookalikeButtonProps {

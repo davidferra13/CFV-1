@@ -6,6 +6,9 @@ import { requireStaff } from '@/lib/auth/get-user'
 import { getMyProfile } from '@/lib/staff/staff-portal-actions'
 import { redirect } from 'next/navigation'
 import { StaffNav } from '@/components/staff/staff-nav'
+import { PresenceBeacon } from '@/components/admin/presence-beacon'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
+import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
 
 export const metadata = {
   title: {
@@ -27,6 +30,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-stone-800">
+      <TestAccountBanner />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"
@@ -35,8 +39,9 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       </a>
       <StaffNav staffName={staffName} staffEmail={user.email} />
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {children}
+        <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>
+      <PresenceBeacon />
     </div>
   )
 }

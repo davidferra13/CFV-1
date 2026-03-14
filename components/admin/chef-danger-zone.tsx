@@ -7,7 +7,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { suspendChef, reactivateChef } from '@/lib/admin/chef-admin-actions'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 
 type Props = {
   chefId: string

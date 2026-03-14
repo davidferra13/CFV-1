@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Copy, RefreshCw, Calendar } from 'lucide-react'
+import { Copy, RefreshCw, Calendar } from '@/components/ui/icons'
 import { toggleICalFeed, regenerateICalFeedToken } from '@/lib/integrations/ical/ical-actions'
 import { toast } from 'sonner'
 

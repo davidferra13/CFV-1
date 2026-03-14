@@ -9,7 +9,7 @@
  * what actually happens — a closed loop within ChefFlow.
  */
 
-import { Check, X, Shield, Server } from 'lucide-react'
+import { Check, X, Shield, Server } from '@/components/ui/icons'
 
 export function DataFlowSchematic() {
   return (

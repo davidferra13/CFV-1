@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { runAutoPipelineRules } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, Zap } from 'lucide-react'
+import { Loader2, Zap } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 export function AutoPipelineRulesButton() {

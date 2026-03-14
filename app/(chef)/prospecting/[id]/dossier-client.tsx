@@ -57,7 +57,7 @@ import {
   MailPlus,
   TrendingUp,
   TrendingDown,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ReEnrichButton } from '@/components/prospecting/re-enrich-button'

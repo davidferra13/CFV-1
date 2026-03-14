@@ -36,13 +36,17 @@ CREATE TABLE chef_certifications (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_certifications_chef        ON chef_certifications(chef_id, status);
 CREATE INDEX idx_certifications_expiry      ON chef_certifications(chef_id, expiry_date);
+
 COMMENT ON TABLE chef_certifications IS 'Chef professional certifications and licenses with expiry tracking.';
 COMMENT ON COLUMN chef_certifications.reminder_days_before IS 'How many days before expiry to trigger a reminder notification.';
+
 CREATE TRIGGER trg_certifications_updated_at
   BEFORE UPDATE ON chef_certifications
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 2: EVENT TEMPERATURE LOGS
 -- ============================================
@@ -75,20 +79,25 @@ CREATE TABLE event_temp_logs (
 
   notes            TEXT
 );
+
 CREATE INDEX idx_temp_logs_event ON event_temp_logs(event_id, logged_at DESC);
 CREATE INDEX idx_temp_logs_chef  ON event_temp_logs(chef_id);
+
 COMMENT ON TABLE event_temp_logs IS 'Food temperature log per event phase. Used for food safety auditing and HACCP compliance awareness.';
 COMMENT ON COLUMN event_temp_logs.is_safe IS 'Chef-assessed: was the temperature within the safe range for this phase?';
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE chef_certifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_temp_logs     ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY cert_chef_select ON chef_certifications FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cert_chef_insert ON chef_certifications FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cert_chef_update ON chef_certifications FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY cert_chef_delete ON chef_certifications FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 CREATE POLICY tl_chef_select ON event_temp_logs FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY tl_chef_insert ON event_temp_logs FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY tl_chef_update ON event_temp_logs FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

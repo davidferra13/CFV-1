@@ -1,4 +1,4 @@
-// Chef Event Detail Page
+﻿// Chef Event Detail Page
 // Shows comprehensive event information and allows state transitions
 
 import { notFound, redirect } from 'next/navigation'
@@ -58,6 +58,7 @@ import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { EventStaffPanel } from '@/components/events/event-staff-panel'
 import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
 import { MenuLibraryPicker } from '@/components/events/menu-library-picker'
+import { PreServiceChecklistSection } from '@/components/events/pre-service-checklist-section'
 import { getMenuLibraryForEvent } from '@/lib/menus/showcase-actions'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
 import { PrepBlockNudgeBanner } from '@/components/events/prep-block-nudge'
@@ -65,10 +66,11 @@ import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { getEventReadiness } from '@/lib/events/readiness'
 import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
-import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
+import { getTakeAChefEventFinance } from '@/lib/integrations/take-a-chef-finance-actions'
+import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actions'
+import { MarketplaceConvertBanner } from '@/components/events/marketplace-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
-import { sendClientSurvey } from '@/lib/surveys/actions'
 import { ContractSection } from '@/components/contracts/contract-section'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { AvailableLeftovers } from '@/components/events/available-leftovers'
@@ -100,10 +102,6 @@ import { MenuNutritionalPanel } from '@/components/ai/menu-nutritional-panel'
 import { TempSafetyPanel } from '@/components/ai/temp-safety-panel'
 import { PricingIntelligencePanel } from '@/components/ai/pricing-intelligence-panel'
 import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel'
-import { AARGeneratorPanel } from '@/components/ai/aar-generator-panel'
-import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
-import { GratuityPanel } from '@/components/ai/gratuity-panel'
-import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { getEventGuestLeadCount } from '@/lib/guest-leads/actions'
 import { HostMessageTemplate } from '@/components/sharing/host-message-template'
@@ -112,12 +110,28 @@ import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-
 import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
-import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
+import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
+import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
+import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
+import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
+import { Suspense } from 'react'
+import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
+
+function isEventSoon(eventDate: string): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const dayAfter = new Date(today)
+  dayAfter.setDate(dayAfter.getDate() + 2)
+  const evDate = new Date(eventDate + 'T00:00:00')
+  return evDate >= today && evDate < dayAfter
+}
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase: any = createServerClient()
@@ -286,10 +300,11 @@ export default async function EventDetailPage({
     observer: 'Observer',
   }
 
-  // ALL remaining fetches in a single Promise.all — eliminates sequential waterfalls
+  // ALL remaining fetches in a single Promise.all â€” eliminates sequential waterfalls
   const [
     refundRecommendationData,
     tacConversion,
+    marketplaceConversion,
     guestShares,
     guestList,
     rsvpSummary,
@@ -313,14 +328,19 @@ export default async function EventDetailPage({
     hubGroupToken,
     menuLibraryData,
     chefDisplayName,
+    takeAChefFinance,
   ] = await Promise.all([
-    // Refund recommendation — only for cancelled events with payments
+    // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
       ? getCancellationRefundRecommendation(params.id).catch(() => null)
       : Promise.resolve(null),
-    // Take a Chef conversion — only for completed events
+    // Take a Chef conversion (legacy) â€” only for completed events
     event.status === 'completed'
       ? getTakeAChefConversionData(params.id).catch(() => null)
+      : Promise.resolve(null),
+    // Generalized marketplace conversion â€” any platform, completed events
+    event.status === 'completed'
+      ? getMarketplaceConversionData(params.id).catch(() => null)
       : Promise.resolve(null),
     // Guest & sharing data
     getEventShares(params.id),
@@ -380,6 +400,7 @@ export default async function EventDetailPage({
         return 'your chef'
       }
     })(),
+    getTakeAChefEventFinance(params.id).catch(() => null),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
@@ -406,7 +427,7 @@ export default async function EventDetailPage({
 
   return (
     <div className="space-y-6">
-      {/* Realtime event status subscription — auto-refreshes when FSM state changes */}
+      {/* Realtime event status subscription â€” auto-refreshes when FSM state changes */}
       <EventStatusRealtimeSync eventId={params.id} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -451,13 +472,18 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/travel`}>
             <Button variant="secondary">Travel Plan</Button>
           </Link>
+          {event.status === 'completed' && (
+            <Link href={`/events/${event.id}/story`}>
+              <Button variant="secondary">Create Story</Button>
+            </Link>
+          )}
           <Link href="/events">
             <Button variant="ghost">Back to Events</Button>
           </Link>
         </div>
       </div>
 
-      {/* Collaborator role banner — shown when viewing another chef's event */}
+      {/* Collaborator role banner â€” shown when viewing another chef's event */}
       {!isEventOwner && myCollaboratorRow && (
         <div className="rounded-lg border border-brand-700 bg-brand-950/50 px-4 py-3 flex items-center gap-3">
           <div className="flex-1">
@@ -479,7 +505,7 @@ export default async function EventDetailPage({
         </div>
       )}
 
-      {/* Deposit Shortfall Banner — accepted/paid events with uncollected deposit */}
+      {/* Deposit Shortfall Banner â€” accepted/paid events with uncollected deposit */}
       {['accepted', 'paid'].includes(event.status) &&
         (event as any).deposit_amount_cents > 0 &&
         totalPaid < (event as any).deposit_amount_cents && (
@@ -488,23 +514,25 @@ export default async function EventDetailPage({
               Awaiting {formatCurrency((event as any).deposit_amount_cents - totalPaid)} deposit
             </p>
             <p className="text-xs text-amber-700 mt-0.5">
-              {formatCurrency((event as any).deposit_amount_cents)} required •{' '}
-              {formatCurrency(totalPaid)} collected — record payment below to proceed to
+              {formatCurrency((event as any).deposit_amount_cents)} required â€¢{' '}
+              {formatCurrency(totalPaid)} collected â€” record payment below to proceed to
               confirmation.
             </p>
           </div>
         )}
 
-      {/* Take a Chef → Direct Conversion Banner */}
-      {tacConversion?.isTakeAChef && tacConversion.directBookingUrl && (
-        <TakeAChefConvertBanner
-          clientName={tacConversion.clientName}
-          directBookingUrl={tacConversion.directBookingUrl}
+      {/* Take a Chef â†’ Direct Conversion Banner */}
+      {/* Marketplace Convert Banner â€" works for all platforms (TAC, Yhangry, Cozymeal, etc.) */}
+      {marketplaceConversion?.isMarketplace && marketplaceConversion.directBookingUrl && (
+        <MarketplaceConvertBanner
+          clientName={marketplaceConversion.clientName}
+          directBookingUrl={marketplaceConversion.directBookingUrl}
           eventId={params.id}
+          platformLabel={marketplaceConversion.platformLabel!}
         />
       )}
 
-      {/* Quick Debrief — surfaces within 48h of completion when no AAR exists */}
+      {/* Quick Debrief â€” surfaces within 48h of completion when no AAR exists */}
       {event.status === 'completed' && (
         <QuickDebriefPrompt
           eventId={params.id}
@@ -512,6 +540,18 @@ export default async function EventDetailPage({
           completedAt={(event as any).service_completed_at ?? event.updated_at}
         />
       )}
+
+      {/* Event Intelligence */}
+      <Suspense fallback={null}>
+        <EventIntelligencePanel
+          eventId={params.id}
+          guestCount={event.guest_count ?? null}
+          occasion={event.occasion ?? null}
+          quotedPriceCents={(event as any).quoted_price_cents ?? null}
+          status={event.status}
+          eventDate={event.event_date ?? null}
+        />
+      </Suspense>
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (
@@ -533,7 +573,7 @@ export default async function EventDetailPage({
         </Card>
       )}
 
-      {/* Packing Progress — for confirmed/in_progress events */}
+      {/* Packing Progress â€” for confirmed/in_progress events */}
       {['confirmed', 'in_progress'].includes(event.status) && (
         <Card className="p-4">
           <div className="flex items-center justify-between">
@@ -555,7 +595,7 @@ export default async function EventDetailPage({
                   packed
                 </p>
               ) : (
-                <p className="text-sm text-stone-300">Not started — open checklist to begin</p>
+                <p className="text-sm text-stone-300">Not started â€” open checklist to begin</p>
               )}
             </div>
             {(event as any).car_packed && (
@@ -567,7 +607,11 @@ export default async function EventDetailPage({
         </Card>
       )}
 
-      {/* Prep Block Nudge — confirmed events with no prep blocks scheduled */}
+      {/* Pre-Service Checklist (Phase 4) - shown for today/tomorrow events */}
+      {['confirmed', 'paid', 'in_progress', 'accepted'].includes(event.status) &&
+        isEventSoon(event.event_date) && <PreServiceChecklistSection eventId={event.id} />}
+
+      {/* Prep Block Nudge - confirmed events with no prep blocks scheduled */}
       {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
         <PrepBlockNudgeBanner eventId={event.id} />
       )}
@@ -578,1166 +622,103 @@ export default async function EventDetailPage({
       )}
 
       {/* ============================================ */}
-      {/* MOBILE TAB NAV — hidden on md+               */}
+      {/* MOBILE TAB NAV â€” hidden on md+               */}
       {/* ============================================ */}
       <EventDetailMobileNav />
 
       {/* ============================================ */}
+      {/* ============================================ */}
       {/* TAB: OVERVIEW — Event details, client, comms */}
       {/* ============================================ */}
-      <EventDetailSection tab="overview" activeTab={activeTab}>
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Event Details */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Event Details</h2>
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Location</dt>
-                <dd className="text-sm text-stone-100 mt-1">
-                  {[
-                    event.location_address,
-                    event.location_city,
-                    event.location_state,
-                    event.location_zip,
-                  ]
-                    .filter(Boolean)
-                    .join(', ') || 'Not set'}
-                </dd>
-                {(event as any).location_lat && (event as any).location_lng ? (
-                  <div className="mt-2 space-y-2">
-                    {/* Mapbox static map — clickable to open Google Maps directions */}
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${(event as any).location_lat},${(event as any).location_lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={getEventMapUrl(
-                          (event as any).location_lng,
-                          (event as any).location_lat
-                        )}
-                        alt="Event location map"
-                        className="w-full h-[200px] object-cover rounded-lg border border-stone-700"
-                      />
-                    </a>
-                    {/* Travel distance/time from chef's home */}
-                    {travelInfo && (
-                      <p className="text-xs text-stone-300">
-                        {travelInfo.distanceMiles} miles &middot; ~{travelInfo.durationMinutes} min
-                        drive from home
-                      </p>
-                    )}
-                    {/* Open-Meteo weather forecast for the event date */}
-                    <WeatherPanel
-                      lat={(event as any).location_lat}
-                      lng={(event as any).location_lng}
-                      eventDate={event.event_date}
-                    />
-                  </div>
-                ) : event.location_address ? (
-                  <GeocodeAddressButton eventId={event.id} />
-                ) : null}
-              </div>
-              {(event as any).referral_partner && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Partner Venue</dt>
-                  <dd className="text-sm text-stone-100 mt-1">
-                    <Link
-                      href={`/partners/${(event as any).referral_partner_id}`}
-                      className="text-brand-600 hover:underline font-medium"
-                    >
-                      {(event as any).referral_partner.name}
-                    </Link>
-                    {(event as any).partner_location && (
-                      <span className="text-stone-500">
-                        {' '}
-                        → {(event as any).partner_location.name}
-                        {(event as any).partner_location.city && (
-                          <span className="text-stone-300">
-                            {' '}
-                            (
-                            {[
-                              (event as any).partner_location.city,
-                              (event as any).partner_location.state,
-                            ]
-                              .filter(Boolean)
-                              .join(', ')}
-                            )
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  </dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Number of Guests</dt>
-                <dd className="text-sm text-stone-100 mt-1">{event.guest_count}</dd>
-              </div>
-              {event.special_requests && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Special Requests</dt>
-                  <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
-                    {event.special_requests}
-                  </dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Created</dt>
-                <dd className="text-sm text-stone-100 mt-1">
-                  {format(new Date(event.created_at), 'MMM d, yyyy')}
-                </dd>
-              </div>
-            </dl>
-          </Card>
+      <EventDetailOverviewTab
+        activeTab={activeTab}
+        event={event}
+        dopProgress={dopProgress}
+        packingConfirmedCount={packingConfirmedCount}
+        travelInfo={travelInfo}
+        eventLoyaltyImpact={eventLoyaltyImpact}
+        eventLoyaltyPoints={eventLoyaltyPoints}
+        activeShare={activeShare}
+        shortShareUrl={shortShareUrl}
+        fullShareUrl={fullShareUrl}
+        eventMenus={eventMenus}
+        hubGroupToken={hubGroupToken as string | null}
+        guestList={guestList as any[]}
+        rsvpSummary={rsvpSummary as any}
+        chefDisplayName={chefDisplayName}
+        guestLeadCount={guestLeadCount as number}
+        guestWallMessages={guestWallMessages as any[]}
+        messages={messages}
+        templates={templates}
+      />
 
-          {/* Client Information */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Client Information</h2>
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Name</dt>
-                <dd className="text-sm text-stone-100 mt-1">{event.client?.full_name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Email</dt>
-                <dd className="text-sm text-stone-100 mt-1">
-                  <a
-                    href={`mailto:${event.client?.email}`}
-                    className="text-brand-600 hover:underline"
-                  >
-                    {event.client?.email}
-                  </a>
-                </dd>
-              </div>
-              {event.client?.phone && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Phone</dt>
-                  <dd className="text-sm text-stone-100 mt-1">
-                    <a
-                      href={`tel:${event.client.phone}`}
-                      className="text-brand-600 hover:underline"
-                    >
-                      {event.client.phone}
-                    </a>
-                  </dd>
-                </div>
-              )}
-              {eventLoyaltyImpact && (
-                <div className="pt-2 border-t border-stone-800">
-                  <dt className="text-sm font-medium text-stone-500">Loyalty</dt>
-                  <dd className="text-sm text-stone-100 mt-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center rounded-full bg-brand-950 px-2 py-0.5 text-xs font-semibold text-brand-300 capitalize">
-                        {eventLoyaltyImpact.currentTier}
-                      </span>
-                      <span className="text-stone-300">
-                        {eventLoyaltyImpact.pointsBalance.toLocaleString()} points
-                      </span>
-                    </div>
-                    {event.status === 'completed' ? (
-                      eventLoyaltyPoints > 0 ? (
-                        <p className="text-xs text-emerald-700">
-                          This event awarded {eventLoyaltyPoints} points.
-                        </p>
-                      ) : (
-                        <p className="text-xs text-stone-500">
-                          No points were awarded for this event.
-                        </p>
-                      )
-                    ) : eventLoyaltyImpact.programMode === 'full' ? (
-                      <p className="text-xs text-stone-300">
-                        Estimated earn: {eventLoyaltyImpact.estimatedPoints} pts (
-                        {eventLoyaltyImpact.estimatedBreakdown}).
-                      </p>
-                    ) : eventLoyaltyImpact.programMode === 'lite' ? (
-                      <p className="text-xs text-stone-300">
-                        Lite mode active: this event contributes to visit-based tier progress.
-                      </p>
-                    ) : (
-                      <p className="text-xs text-stone-500">Loyalty program is currently off.</p>
-                    )}
-                    {eventLoyaltyImpact.nextTierName && eventLoyaltyImpact.pointsToNextTier > 0 && (
-                      <p className="text-xs text-stone-500">
-                        {eventLoyaltyImpact.pointsToNextTier.toLocaleString()} points to{' '}
-                        {eventLoyaltyImpact.nextTierName}.
-                      </p>
-                    )}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </Card>
-        </div>
-
-        {/* Client Portal QR Code */}
-        {event.status !== 'cancelled' && event.status !== 'draft' && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Client Portal Access</h2>
-            <p className="text-sm text-stone-500 mb-4">
-              Share this QR code or link so your client can view their event portal.
-            </p>
-            <ClientPortalQR eventId={event.id} />
-          </Card>
-        )}
-
-        {/* Share QR Code — only when an active event share link exists */}
-        {activeShare && shortShareUrl && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Share QR</h2>
-            <p className="text-sm text-stone-500 mb-4">
-              Guests scan this code to view event details, RSVP, and more.
-            </p>
-            <div className="flex items-center gap-5">
-              <div className="flex-shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getQrCodeUrl(shortShareUrl, 150)}
-                  alt="Event share QR code"
-                  width={150}
-                  height={150}
-                  className="rounded-lg border border-stone-700 shadow-sm"
-                />
-              </div>
-              <div className="flex-1 space-y-2">
-                <p className="text-xs text-stone-300 break-all">{shortShareUrl}</p>
-                <a
-                  href={fullShareUrl!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block text-xs text-brand-600 hover:underline"
-                >
-                  Open share page ↗
-                </a>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Service Contract */}
-        <ContractSection eventId={event.id} eventStatus={event.status} />
-
-        {/* AI Contract Generator */}
-        {!['cancelled'].includes(event.status) && <ContractGeneratorPanel eventId={event.id} />}
-
-        {/* Social Hub Link */}
-        {event.status !== 'draft' && event.status !== 'cancelled' && (
-          <EventHubLinkPanel groupToken={hubGroupToken as string | null} />
-        )}
-
-        {/* Guests & RSVPs */}
-        {event.status !== 'draft' && event.status !== 'cancelled' && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Guests & RSVPs</h2>
-            <ChefGuestPanel
-              eventShareId={activeShare?.id || null}
-              guests={guestList as any[]}
-              summary={rsvpSummary as any}
-              originalGuestCount={event.guest_count}
-              visibility={(activeShare?.visibility_settings as any) || null}
-            />
-            {activeShare && shortShareUrl && (
-              <HostMessageTemplate
-                shareUrl={shortShareUrl}
-                occasion={event.occasion}
-                eventDate={event.event_date}
-                chefName={chefDisplayName}
-              />
-            )}
-
-            {/* RSVP Tracker + Photo Consent — below the guest panel */}
-            {(guestList as any[]).length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <RSVPTrackerPanel
-                  guests={guestList as any[]}
-                  totalExpected={event.guest_count}
-                  shareUrl={shortShareUrl}
-                  occasion={event.occasion}
-                />
-                <PhotoConsentSummary guests={guestList as any[]} />
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* Share Recap — for completed events with an active share link */}
-        {event.status === 'completed' && activeShare && (
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-stone-100">Event Recap</h3>
-                <p className="text-sm text-stone-500 mt-0.5">
-                  Share a keepsake page with guests — photos, messages, and a booking link.
-                </p>
-              </div>
-              <a
-                href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}/recap`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="secondary">View Recap Page</Button>
-              </a>
-            </div>
-          </Card>
-        )}
-
-        {/* Guest Pipeline QR Code */}
-        {event.status !== 'cancelled' && (event as any).guest_code && (
-          <GuestCodePanel
-            eventId={event.id}
-            guestCode={(event as any).guest_code}
-            guestLeadCount={guestLeadCount as number}
-          />
-        )}
-
-        {/* Guest Excitement Wall — Chef Moderation */}
-        {event.status !== 'cancelled' && (guestWallMessages as any[]).length > 0 && (
-          <GuestMessagesPanel messages={guestWallMessages as any[]} eventId={event.id} />
-        )}
-
-        {/* Post-Event Guest Outreach (completed events only) */}
-        {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
-
-        {/* AI Allergen Risk Matrix */}
-        {event.status !== 'draft' && event.status !== 'cancelled' && (
-          <AllergenRiskPanel eventId={event.id} />
-        )}
-
-        {/* AI Menu Nutritional Summary */}
-        {eventMenus && event.status !== 'cancelled' && <MenuNutritionalPanel eventId={event.id} />}
-
-        {/* Communication Log */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Communication</h2>
-          {event.inquiry_id && messages.some((m: any) => m.inquiry_id) && (
-            <p className="text-xs text-stone-300 mb-3">
-              Includes messages from the original inquiry.
-            </p>
-          )}
-          <MessageThread messages={messages} />
-          <div className="mt-4 pt-4 border-t border-stone-700">
-            <MessageLogForm
-              eventId={event.id}
-              clientId={event.client_id ?? undefined}
-              templates={templates}
-            />
-          </div>
-        </Card>
-      </EventDetailSection>
-
+      {/* TAB: MONEY â€” Financials, payments, expenses  */}
       {/* ============================================ */}
-      {/* TAB: MONEY — Financials, payments, expenses  */}
-      {/* ============================================ */}
-      <EventDetailSection tab="money" activeTab={activeTab}>
-        {/* Menu Library Picker — shown when no menu is attached or to swap */}
-        {event.status !== 'cancelled' && (menuLibraryData as any)?.menus?.length > 0 && (
-          <MenuLibraryPicker
-            eventId={event.id}
-            menus={(menuLibraryData as any).menus}
-            preferences={(menuLibraryData as any).preferences}
-          />
-        )}
-
-        {/* Menu Approval */}
-        {eventMenus && event.status !== 'cancelled' && menuApprovalData && (
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Menu Approval</h2>
-              {typeof eventMenus === 'string' && (
-                <Link href={`/menus/${eventMenus}/editor`}>
-                  <Button variant="secondary" size="sm">
-                    Edit Menu
-                  </Button>
-                </Link>
-              )}
-            </div>
-            <MenuApprovalStatus
-              eventId={event.id}
-              status={((menuApprovalData as any).event?.menu_approval_status ?? 'not_sent') as any}
-              sentAt={(menuApprovalData as any).event?.menu_sent_at ?? null}
-              approvedAt={(menuApprovalData as any).event?.menu_approved_at ?? null}
-              revisionNotes={(menuApprovalData as any).event?.menu_revision_notes ?? null}
-            />
-          </Card>
-        )}
-
-        {/* Financial Summary */}
-        <Card className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Financial Summary</h2>
-            <div className="flex items-center gap-2">
-              <Link href={`/events/${event.id}/invoice`}>
-                <Button variant="ghost" size="sm">
-                  View Invoice
-                </Button>
-              </Link>
-              <EventExportButton eventId={event.id} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                {formatCurrency(event.quoted_price_cents ?? 0)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Deposit Amount</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                {formatCurrency(event.deposit_amount_cents ?? 0)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Amount Paid</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
-                {formatCurrency(totalPaid)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Balance Due</dt>
-              <dd
-                className={`text-xl sm:text-2xl font-bold mt-1 ${outstandingBalance > 0 ? 'text-red-600' : 'text-emerald-600'}`}
-              >
-                {formatCurrency(outstandingBalance)}
-              </dd>
-            </div>
-          </div>
-        </Card>
-
-        {/* AI Pricing Intelligence */}
-        {['proposed', 'accepted'].includes(event.status) && (
-          <PricingIntelligencePanel eventId={event.id} />
-        )}
-
-        {/* Record Payment — for accepted events with outstanding balance */}
-        {['accepted', 'paid'].includes(event.status) && outstandingBalance > 0 && (
-          <RecordPaymentPanel
-            eventId={event.id}
-            outstandingBalanceCents={outstandingBalance}
-            depositAmountCents={event.deposit_amount_cents ?? 0}
-            totalPaidCents={totalPaid}
-          />
-        )}
-
-        {/* Payment Plan — installment schedule */}
-        {event.status !== 'cancelled' && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Payment Plan</h2>
-            <PaymentPlanPanel
-              eventId={event.id}
-              initialInstallments={paymentPlanInstallments}
-              quotedPriceCents={event.quoted_price_cents}
-            />
-          </Card>
-        )}
-
-        {/* Mileage Log */}
-        {event.status !== 'cancelled' && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Mileage Log</h2>
-            <MileageLogPanel eventId={event.id} initialEntries={mileageEntries} />
-          </Card>
-        )}
-
-        {/* Tip Log */}
-        {(event.status === 'in_progress' || event.status === 'completed') && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Tips Received</h2>
-            <TipLogPanel eventId={event.id} initialTips={eventTips} />
-          </Card>
-        )}
-
-        {/* Process Refund — for cancelled events with prior payments */}
-        {event.status === 'cancelled' && totalPaid > 0 && refundRecommendationData && (
-          <ProcessRefundPanel
-            eventId={event.id}
-            totalPaidCents={totalPaid}
-            totalRefundedCents={totalRefunded}
-            depositPaidCents={refundRecommendationData.depositPaidCents}
-            recommendation={refundRecommendationData.recommendation}
-          />
-        )}
-
-        {/* Budget Tracker — shows budget vs. actual spend, lets chef set a custom budget */}
-        {budgetGuardrail.quotedPriceCents > 0 && (
-          <BudgetTracker eventId={event.id} guardrail={budgetGuardrail} />
-        )}
-
-        {/* Quick Receipt Capture — shown for active/confirmed events */}
-        {['confirmed', 'in_progress'].includes(event.status) && (
-          <QuickReceiptCapture eventId={event.id} />
-        )}
-
-        {/* Expenses Section */}
-        {eventExpenseData.expenses.length > 0 && (
-          <Card className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Expenses</h2>
-              <div className="flex items-center gap-2">
-                <Link href={`/events/${event.id}/receipts`}>
-                  <Button size="sm" variant="ghost">
-                    Receipt Summary
-                  </Button>
-                </Link>
-                <Link href={`/expenses/new?event_id=${event.id}`}>
-                  <Button size="sm" variant="secondary">
-                    Add Expense
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {eventExpenseData.expenses.map((exp: any) => (
-                <div
-                  key={exp.id}
-                  className="flex items-center justify-between py-2 border-b border-stone-800 last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-stone-100">{exp.description}</p>
-                      <p className="text-xs text-stone-500">
-                        {exp.vendor_name && `${exp.vendor_name} · `}
-                        {format(new Date(exp.expense_date), 'MMM d')}
-                        {!exp.is_business && (
-                          <span className="ml-1 text-amber-600 font-medium">(Personal)</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">{formatCurrency(exp.amount_cents)}</span>
-                    <Link href={`/expenses/${exp.id}`}>
-                      <Button variant="ghost" size="sm">
-                        View
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Category Subtotals */}
-            {Object.keys(eventExpenseData.subtotals).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-stone-700">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  {Object.entries(eventExpenseData.subtotals).map(([cat, total]) => (
-                    <div key={cat}>
-                      <span className="text-stone-500 capitalize">{cat.replace('_', ' ')}</span>
-                      <p className="font-medium">{formatCurrency(total)}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between mt-3 pt-3 border-t border-stone-800 font-medium text-sm">
-                  <span>Total Business Expenses</span>
-                  <span>{formatCurrency(eventExpenseData.totalBusinessCents)}</span>
-                </div>
-                {eventExpenseData.totalPersonalCents > 0 && (
-                  <div className="flex justify-between mt-1 text-sm text-amber-600">
-                    <span>Personal (excluded)</span>
-                    <span>{formatCurrency(eventExpenseData.totalPersonalCents)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* Profit Summary — when both revenue and expenses exist */}
-        {profitSummary.expenses.totalBusinessCents > 0 &&
-          profitSummary.revenue.totalPaidCents > 0 && (
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Profit Summary</h2>
-              <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Revenue</dt>
-                  <dd className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
-                    {formatCurrency(
-                      profitSummary.revenue.totalPaidCents + profitSummary.revenue.tipCents
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Expenses</dt>
-                  <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                    {formatCurrency(profitSummary.expenses.totalBusinessCents)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Profit</dt>
-                  <dd
-                    className={`text-xl sm:text-2xl font-bold mt-1 ${
-                      profitSummary.profit.grossProfitCents >= 0
-                        ? 'text-emerald-600'
-                        : 'text-red-600'
-                    }`}
-                  >
-                    {formatCurrency(profitSummary.profit.grossProfitCents)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Margin</dt>
-                  <dd
-                    className={`text-xl sm:text-2xl font-bold mt-1 ${
-                      profitSummary.profit.profitMarginPercent >= 60
-                        ? 'text-emerald-600'
-                        : profitSummary.profit.profitMarginPercent >= 40
-                          ? 'text-yellow-600'
-                          : 'text-red-600'
-                    }`}
-                  >
-                    {profitSummary.profit.profitMarginPercent}%
-                  </dd>
-                </div>
-              </dl>
-              <div className="flex flex-wrap gap-4 mt-3 text-sm text-stone-500">
-                {profitSummary.profit.foodCostPercent > 0 && (
-                  <span>
-                    Food cost: {profitSummary.profit.foodCostPercent}% of revenue
-                    {profitSummary.profit.chefAvgFoodCostPercent !== null && (
-                      <span
-                        className={`ml-1.5 font-medium ${
-                          profitSummary.profit.foodCostPercent >
-                          profitSummary.profit.chefAvgFoodCostPercent
-                            ? 'text-amber-600'
-                            : 'text-emerald-600'
-                        }`}
-                      >
-                        (
-                        {profitSummary.profit.foodCostPercent >
-                        profitSummary.profit.chefAvgFoodCostPercent
-                          ? '↑'
-                          : '↓'}{' '}
-                        avg {profitSummary.profit.chefAvgFoodCostPercent}%)
-                      </span>
-                    )}
-                  </span>
-                )}
-                {/* Estimated vs Actual food cost from grocery quote */}
-                {profitSummary.estimatedFoodCost.estimatedCents !== null &&
-                  profitSummary.estimatedFoodCost.actualCents !== null &&
-                  profitSummary.estimatedFoodCost.deltaPct !== null && (
-                    <span
-                      className={`font-medium ${
-                        Math.abs(Number(profitSummary.estimatedFoodCost.deltaPct)) <= 10
-                          ? 'text-emerald-600'
-                          : 'text-amber-600'
-                      }`}
-                    >
-                      Estimated: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)}
-                      {' → '}Actual: {formatCurrency(profitSummary.estimatedFoodCost.actualCents)} (
-                      {Number(profitSummary.estimatedFoodCost.deltaPct) > 0 ? '+' : ''}
-                      {profitSummary.estimatedFoodCost.deltaPct}%)
-                    </span>
-                  )}
-                {profitSummary.estimatedFoodCost.estimatedCents !== null &&
-                  profitSummary.estimatedFoodCost.actualCents === null && (
-                    <span className="text-stone-500">
-                      Estimated food cost:{' '}
-                      {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)} (from grocery
-                      quote)
-                    </span>
-                  )}
-                {profitSummary.profit.effectiveHourlyRateCents && (
-                  <span className="font-medium text-stone-300">
-                    Effective rate: {formatCurrency(profitSummary.profit.effectiveHourlyRateCents)}
-                    /hr
-                  </span>
-                )}
-                {(event as any).leftover_value_received_cents > 0 && (
-                  <span className="text-emerald-600">
-                    Leftover credit applied: −
-                    {formatCurrency((event as any).leftover_value_received_cents)}
-                  </span>
-                )}
-                {profitSummary.cashback && (
-                  <span className="text-emerald-600">
-                    Est. cash back: {formatCurrency(profitSummary.cashback.estimatedCents)}
-                  </span>
-                )}
-              </div>
-              {profitSummary.perGuest && (
-                <div className="mt-3 pt-3 border-t border-stone-800 flex flex-wrap gap-4 text-sm text-stone-500">
-                  <span className="font-medium text-stone-300">
-                    Per guest ({profitSummary.perGuest.guestCount} guests):
-                  </span>
-                  <span>{formatCurrency(profitSummary.perGuest.revenuePerGuestCents)} revenue</span>
-                  <span className="text-red-600">
-                    {formatCurrency(profitSummary.perGuest.costPerGuestCents)} cost
-                  </span>
-                  <span
-                    className={
-                      profitSummary.perGuest.profitPerGuestCents >= 0
-                        ? 'text-emerald-600 font-medium'
-                        : 'text-red-600 font-medium'
-                    }
-                  >
-                    {formatCurrency(profitSummary.perGuest.profitPerGuestCents)} profit
-                  </span>
-                </div>
-              )}
-            </Card>
-          )}
-
-        {/* Loyalty Points Awarded */}
-        {event.status === 'completed' && eventLoyaltyPoints > 0 && (
-          <Card className="p-6 border-purple-200 bg-purple-950">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-purple-900">Loyalty Points Awarded</h2>
-                <p className="text-sm text-purple-700 mt-1">
-                  {eventLoyaltyPoints} points earned for this event ({event.guest_count} guests)
-                </p>
-              </div>
-              {event.client_id && (
-                <Link href={`/clients/${event.client_id}`}>
-                  <Button variant="secondary" size="sm">
-                    View Client Loyalty
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </Card>
-        )}
-      </EventDetailSection>
+      <EventDetailMoneyTab
+        activeTab={activeTab}
+        event={event}
+        menuLibraryData={menuLibraryData}
+        eventMenus={eventMenus}
+        menuApprovalData={menuApprovalData}
+        totalPaid={totalPaid}
+        outstandingBalance={outstandingBalance}
+        paymentPlanInstallments={paymentPlanInstallments}
+        mileageEntries={mileageEntries}
+        eventTips={eventTips}
+        refundRecommendationData={refundRecommendationData}
+        totalRefunded={totalRefunded}
+        budgetGuardrail={budgetGuardrail}
+        eventExpenseData={eventExpenseData}
+        profitSummary={profitSummary}
+        eventLoyaltyPoints={eventLoyaltyPoints}
+        takeAChefFinance={takeAChefFinance}
+      />
 
       {/* ============================================ */}
       {/* TAB: OPS — Staff, temps, docs, transitions   */}
       {/* ============================================ */}
-      <EventDetailSection tab="ops" activeTab={activeTab}>
-        {/* Time Tracking */}
-        {canTrackTime && (
-          <TimeTracking
-            eventId={event.id}
-            initialData={{
-              time_shopping_minutes: (event as any).time_shopping_minutes ?? null,
-              time_prep_minutes: (event as any).time_prep_minutes ?? null,
-              time_travel_minutes: (event as any).time_travel_minutes ?? null,
-              time_service_minutes: (event as any).time_service_minutes ?? null,
-              time_reset_minutes: (event as any).time_reset_minutes ?? null,
-              shopping_started_at: (event as any).shopping_started_at ?? null,
-              shopping_completed_at: (event as any).shopping_completed_at ?? null,
-              prep_started_at: (event as any).prep_started_at ?? null,
-              prep_completed_at: (event as any).prep_completed_at ?? null,
-              travel_started_at: (event as any).travel_started_at ?? null,
-              travel_completed_at: (event as any).travel_completed_at ?? null,
-              service_started_at: (event as any).service_started_at ?? null,
-              service_completed_at: (event as any).service_completed_at ?? null,
-              reset_started_at: (event as any).reset_started_at ?? null,
-              reset_completed_at: (event as any).reset_completed_at ?? null,
-            }}
-            onSave={updateEventTimeAndCard}
-            onStart={startEventActivity}
-            onStop={stopEventActivity}
-          />
-        )}
-
-        {/* Event Staff */}
-        {!['draft', 'cancelled'].includes(event.status) && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Event Staff</h2>
-            <EventStaffPanel
-              eventId={event.id}
-              roster={staffMembers as any}
-              assignments={staffAssignments as any}
-            />
-          </Card>
-        )}
-
-        {/* AI Staff Briefing */}
-        {!['draft', 'cancelled'].includes(event.status) && (
-          <StaffBriefingAIPanel eventId={event.id} />
-        )}
-
-        {/* AI Prep Timeline */}
-        {['confirmed', 'in_progress'].includes(event.status) && (
-          <PrepTimelinePanel eventId={event.id} />
-        )}
-
-        {/* AI Service Timeline */}
-        {['confirmed', 'in_progress'].includes(event.status) && (
-          <ServiceTimelinePanel eventId={event.id} />
-        )}
-
-        {/* Chef Collaboration — shown to event owner on any non-cancelled event */}
-        {event.status !== 'cancelled' && (
-          <EventCollaboratorsPanel
-            eventId={event.id}
-            isOwner={isEventOwner}
-            collaborators={eventCollaborators as any}
-          />
-        )}
-
-        {/* Temperature Log — active and completed events */}
-        {['in_progress', 'completed'].includes(event.status) && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Temperature Log</h2>
-            <TempLogPanel eventId={event.id} initialLogs={tempLogs as any} />
-          </Card>
-        )}
-
-        {/* AI Temperature Safety Analysis */}
-        {['in_progress', 'completed'].includes(event.status) && (
-          <TempSafetyPanel eventId={event.id} />
-        )}
-
-        {/* Shopping Substitutions — available for any non-draft event */}
-        {!['draft', 'cancelled'].includes(event.status) && (
-          <ShoppingSubstitutions eventId={event.id} initialItems={substitutionItems} />
-        )}
-
-        {/* Menu Modifications — for completed events */}
-        {isCompletedOrBeyond && (
-          <MenuModifications eventId={event.id} initialModifications={menuMods as any} />
-        )}
-
-        {/* Carry-Forward Inventory — leftovers from other events available for use here */}
-        {event.status !== 'cancelled' && (
-          <AvailableLeftovers eventId={event.id} items={carryForwardItems} />
-        )}
-
-        {/* AI Carry-Forward Ingredient Matching */}
-        {event.status !== 'cancelled' && <CarryForwardMatchPanel eventId={event.id} />}
-
-        {/* AI Grocery List Consolidation */}
-        {eventMenus && event.status !== 'cancelled' && (
-          <GroceryConsolidationPanel eventId={event.id} />
-        )}
-
-        {/* Unused Ingredients — for completed events */}
-        {isCompletedOrBeyond && (
-          <UnusedIngredients eventId={event.id} initialItems={unusedItems as any} />
-        )}
-
-        {/* Contingency Plans */}
-        {event.status !== 'cancelled' && (
-          <Card className="p-6">
-            <ContingencyPanel
-              eventId={event.id}
-              initialNotes={contingencyNotes as any}
-              emergencyContacts={emergencyContacts as any}
-            />
-          </Card>
-        )}
-
-        {/* AI Contingency Suggestions */}
-        {event.status !== 'cancelled' && <ContingencyAIPanel eventId={event.id} />}
-
-        {/* Printed Documents (8 Sheets) + Business Documents */}
-        <DocumentSection eventId={event.id} readiness={docReadiness} businessDocs={businessDocs} />
-
-        {/* Readiness Gate Panel — shown for events approaching their next transition */}
-        {eventReadiness && eventReadiness.gates.length > 0 && (
-          <ReadinessGatePanel
-            eventId={event.id}
-            readiness={eventReadiness}
-            targetLabel={
-              event.status === 'paid'
-                ? 'Confirm Event'
-                : event.status === 'confirmed'
-                  ? 'Start Service'
-                  : event.status === 'in_progress'
-                    ? 'Complete Service'
-                    : 'Next Step'
-            }
-          />
-        )}
-
-        {/* Event Transitions (Actions) */}
-        <EventTransitions event={event} readiness={eventReadiness} />
-
-        {/* Closure Status — for completed events */}
-        {event.status === 'completed' && closureStatus && (
-          <Card className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold">Post-Event Closure</h2>
-              {closureStatus.allComplete && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-800">
-                  All Complete
-                </span>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.aarFiled ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
-                >
-                  {closureStatus.aarFiled ? '\u2713' : '\u2717'}
-                </span>
-                <span className="text-sm text-stone-300">AAR Filed</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.resetComplete ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
-                >
-                  {closureStatus.resetComplete ? '\u2713' : '\u2717'}
-                </span>
-                <span className="text-sm text-stone-300">Reset Complete</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.followUpSent ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
-                >
-                  {closureStatus.followUpSent ? '\u2713' : '\u2717'}
-                </span>
-                <span className="text-sm text-stone-300">Follow-Up Sent</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.financiallyClosed ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
-                >
-                  {closureStatus.financiallyClosed ? '\u2713' : '\u2717'}
-                </span>
-                <span className="text-sm text-stone-300">Financially Closed</span>
-              </div>
-            </div>
-
-            {/* Action buttons for incomplete items */}
-            <div className="flex flex-wrap gap-2">
-              {!closureStatus.aarFiled && (
-                <Link href={`/events/${event.id}/aar`}>
-                  <Button size="sm">File Event Review</Button>
-                </Link>
-              )}
-              <EventClosureActions
-                eventId={event.id}
-                resetComplete={closureStatus.resetComplete}
-                followUpSent={closureStatus.followUpSent}
-              />
-              <Link href={`/events/${event.id}/financial`}>
-                <Button size="sm" variant={closureStatus.financiallyClosed ? 'ghost' : 'secondary'}>
-                  {closureStatus.financiallyClosed
-                    ? 'View Financial Summary'
-                    : 'Open Financial Summary'}
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        )}
-
-        {/* AAR Summary — if filed */}
-        {aar && (
-          <Card className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold">Event Review</h2>
-              <div className="flex gap-2">
-                <Link href={`/events/${event.id}/aar`}>
-                  <Button variant="ghost" size="sm">
-                    Edit Review
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Calm Rating</dt>
-                <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                  {aar.calm_rating}/5
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Preparation Rating</dt>
-                <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                  {aar.preparation_rating}/5
-                </dd>
-              </div>
-              {aar.forgotten_items && aar.forgotten_items.length > 0 && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Forgotten Items</dt>
-                  <dd className="mt-1">
-                    <div className="flex flex-wrap gap-1">
-                      {aar.forgotten_items.map((item: string) => (
-                        <span
-                          key={item}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-800"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </dd>
-                </div>
-              )}
-            </dl>
-
-            {(aar.what_went_well || aar.what_went_wrong) && (
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-stone-800">
-                {aar.what_went_well && (
-                  <div>
-                    <dt className="text-sm font-medium text-stone-500">What went well</dt>
-                    <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
-                      {aar.what_went_well}
-                    </dd>
-                  </div>
-                )}
-                {aar.what_went_wrong && (
-                  <div>
-                    <dt className="text-sm font-medium text-stone-500">What went wrong</dt>
-                    <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
-                      {aar.what_went_wrong}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            )}
-          </Card>
-        )}
-
-        {/* Dinner Photos — upload and manage dish photos after the event */}
-        {isCompletedOrBeyond && (
-          <EventPhotoGallery eventId={event.id} initialPhotos={eventPhotos} />
-        )}
-
-        {/* Recipe Capture — for completed/in_progress events with menus */}
-        {isCompletedOrBeyond && eventMenus && (
-          <RecipeCapturePrompt
-            eventId={event.id}
-            unrecordedComponents={unrecordedComponents}
-            aiConfigured={aiConfigured}
-          />
-        )}
-      </EventDetailSection>
-
+      <EventDetailOpsTab
+        activeTab={activeTab}
+        event={event}
+        canTrackTime={canTrackTime}
+        updateEventTimeAndCard={updateEventTimeAndCard}
+        startEventActivity={startEventActivity}
+        stopEventActivity={stopEventActivity}
+        staffMembers={staffMembers as any[]}
+        staffAssignments={staffAssignments as any[]}
+        isEventOwner={isEventOwner}
+        eventCollaborators={eventCollaborators as any[]}
+        tempLogs={tempLogs as any[]}
+        substitutionItems={substitutionItems}
+        isCompletedOrBeyond={isCompletedOrBeyond}
+        menuMods={menuMods as any[]}
+        carryForwardItems={carryForwardItems}
+        unusedItems={unusedItems as any[]}
+        contingencyNotes={contingencyNotes as any[]}
+        emergencyContacts={emergencyContacts as any[]}
+        docReadiness={docReadiness}
+        businessDocs={businessDocs}
+        eventReadiness={eventReadiness}
+        closureStatus={closureStatus}
+        aar={aar}
+        eventPhotos={eventPhotos}
+        eventMenus={eventMenus}
+        unrecordedComponents={unrecordedComponents}
+        aiConfigured={aiConfigured}
+      />
+      {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
       {/* ============================================ */}
-      {/* TAB: WRAP-UP — Debrief, survey, history      */}
-      {/* ============================================ */}
-      <EventDetailSection tab="wrap" activeTab={activeTab}>
-        {/* File AAR button — prominent, for completed events without AAR */}
-        {event.status === 'completed' && !aar && !closureStatus && (
-          <Card className="p-6 border-brand-700 bg-brand-950">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-brand-200">Ready to review this dinner?</h2>
-                <p className="text-sm text-brand-400 mt-1">
-                  File your Event Review to track what went well and what to improve.
-                </p>
-              </div>
-              <Link href={`/events/${event.id}/aar`}>
-                <Button>File Event Review</Button>
-              </Link>
-            </div>
-          </Card>
-        )}
-
-        {/* Post-Event Debrief CTA — capture what you learned while it's fresh */}
-        {event.status === 'completed' && !(event as any).debrief_completed_at && (
-          <Card className="p-6 border-amber-200 bg-amber-950">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-amber-900">Capture what you learned tonight</h2>
-                <p className="text-sm text-amber-700 mt-1">
-                  Client insights, recipe notes, dish photos &#8212; while it&#39;s still fresh.
-                </p>
-              </div>
-              <Link href={`/events/${event.id}/debrief`}>
-                <Button>Start Debrief</Button>
-              </Link>
-            </div>
-          </Card>
-        )}
-
-        {/* Debrief complete indicator */}
-        {event.status === 'completed' && (event as any).debrief_completed_at && (
-          <Card className="p-4 border-green-200 bg-green-950">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-600 font-medium">&#10003;</span>
-                <span className="text-sm font-medium text-green-900">Debrief complete</span>
-                <span className="text-xs text-emerald-600">
-                  {format(new Date((event as any).debrief_completed_at), 'MMM d')}
-                </span>
-              </div>
-              <Link href={`/events/${event.id}/debrief`}>
-                <Button variant="ghost" size="sm">
-                  View / Edit
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        )}
-
-        {/* Client Satisfaction Survey */}
-        {event.status === 'completed' && event.client_id && (
-          <Card className="p-6 border-blue-200 bg-blue-950">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h3 className="font-semibold text-blue-900">Client Satisfaction Survey</h3>
-                <p className="text-sm text-blue-700 mt-1">
-                  Send a post-event survey to collect NPS score, ratings, and a testimonial.
-                </p>
-              </div>
-              <form
-                action={async (_: FormData) => {
-                  'use server'
-                  await sendClientSurvey(event.id)
-                }}
-              >
-                <Button variant="secondary" size="sm" type="submit">
-                  Send Survey
-                </Button>
-              </form>
-            </div>
-          </Card>
-        )}
-
-        {/* AI AAR Generator — for completed events without a filed review */}
-        {event.status === 'completed' && !aar && <AARGeneratorPanel eventId={event.id} />}
-
-        {/* AI Review Request Drafter */}
-        {event.status === 'completed' && <ReviewRequestPanel eventId={event.id} />}
-
-        {/* AI Gratuity Framing */}
-        {event.status === 'completed' && <GratuityPanel eventId={event.id} />}
-
-        {/* AI Social Media Captions */}
-        {event.status === 'completed' && <SocialCaptionsPanel eventId={event.id} />}
-
-        {/* Transition History */}
-        {transitions.length > 0 && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Status History</h2>
-            <div className="space-y-3">
-              {transitions.map((transition: any) => (
-                <div key={transition.id} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      {transition.from_status && (
-                        <>
-                          <span className="text-sm font-medium text-stone-100 capitalize">
-                            {transition.from_status}
-                          </span>
-                          <span className="text-stone-300">&rarr;</span>
-                        </>
-                      )}
-                      <span className="text-sm font-medium text-stone-100 capitalize">
-                        {transition.to_status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-500 mt-1">
-                      {format(new Date(transition.transitioned_at), "MMM d, yyyy 'at' h:mm a")}
-                    </p>
-                    {transition.metadata &&
-                      typeof transition.metadata === 'object' &&
-                      'reason' in (transition.metadata as Record<string, unknown>) && (
-                        <p className="text-sm text-stone-300 mt-1">
-                          Reason: {String((transition.metadata as Record<string, unknown>).reason)}
-                        </p>
-                      )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        <EntityActivityTimeline entityType="event" entityId={event.id} entries={timelineEntries} />
-      </EventDetailSection>
+      <EventDetailWrapTab
+        activeTab={activeTab}
+        eventId={event.id}
+        eventStatus={event.status}
+        eventClientId={event.client_id}
+        debriefCompletedAt={(event as any).debrief_completed_at ?? null}
+        hasAAR={!!aar}
+        hasClosureStatus={!!closureStatus}
+        transitions={transitions as any[]}
+        timelineEntries={timelineEntries}
+      />
     </div>
   )
 }

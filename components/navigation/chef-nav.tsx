@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react'
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from '@/components/ui/icons'
 import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
-import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
+import type { NavGroup, NavCollapsibleItem, NavSubItem, NavItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
@@ -16,6 +16,12 @@ import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
+import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
+import {
+  getStrictFocusGroupRank,
+  isStrictFocusGroupVisible,
+  STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS,
+} from '@/lib/navigation/focus-mode-nav'
 
 import {
   LogOut,
@@ -31,7 +37,7 @@ import {
   Plus,
   Lock,
   Sparkles,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 type SidebarContextType = {
@@ -88,8 +94,6 @@ const QUICK_CREATE_ITEMS: NavQuickItem[] = [
   { href: '/inquiries/new', label: 'Inquiry', icon: Plus },
   { href: '/clients/new', label: 'Client', icon: Plus },
 ]
-
-const CORE_GROUP_ORDER = ['remy', 'sales', 'clients', 'events', 'culinary', 'operations', 'finance']
 
 const cannabisSectionItems = [
   { href: '/cannabis', label: 'Cannabis Hub' },
@@ -598,25 +602,38 @@ export function ChefSidebar({
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
-  const primaryItems = resolveStandaloneTop(primaryNavHrefs)
+  const primaryItems = useMemo(
+    () =>
+      resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
+    [focusMode, primaryNavHrefs]
+  )
+  const visiblePrimaryItems = useMemo(
+    () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
+    [isAdmin, primaryItems]
+  )
 
-  // Filter nav groups by enabled modules (progressive disclosure)
-  // Admins always see every group — they're the developer, not a gated user
-  // Also strip adminOnly items (e.g. prospecting) for non-admin users
+  // Filter nav groups by role + focus mode.
+  // Focus Mode should simplify nav for everyone, including admins.
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
-  const accessibleGroups = useMemo(
-    () =>
-      isAdmin
-        ? navGroups
-        : navGroups.map((group) => ({
-            ...group,
-            items: group.items.filter((item) => !item.adminOnly),
-          })),
-    [isAdmin]
-  )
+  const accessibleGroups = useMemo(() => {
+    const baseGroups = navGroups
+      .map((group) => ({
+        ...group,
+        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
+      }))
+      .filter((group) => group.items.length > 0)
+
+    if (!focusMode) return baseGroups
+    const strictGroups = baseGroups.filter((group) =>
+      isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
+    )
+    return strictGroups.sort(
+      (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
+    )
+  }, [isAdmin, focusMode])
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
@@ -637,14 +654,10 @@ export function ChefSidebar({
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    // Focus Mode: hide non-core standalone items (admins always see everything)
-    if (focusMode && !isAdmin) {
-      items = items.filter((item) => item.coreFeature)
-    }
+    const items = visiblePrimaryItems
     if (!q) return items
     return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, primaryItems, isAdmin, focusMode])
+  }, [navFilter, visiblePrimaryItems])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS
@@ -765,15 +778,17 @@ export function ChefSidebar({
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
-              aria-label="Open Remy"
-              title="Open Remy"
-            >
-              <Bot className="w-[18px] h-[18px]" />
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+                className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+                aria-label="Open Remy"
+                title="Open Remy"
+              >
+                <Bot className="w-[18px] h-[18px]" />
+              </button>
+            )}
             <NotificationBell />
             <button
               type="button"
@@ -807,20 +822,22 @@ export function ChefSidebar({
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
-              aria-label="Open Remy"
-              title="Open Remy"
-            >
-              <Bot className="w-[18px] h-[18px]" />
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+                className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+                aria-label="Open Remy"
+                title="Open Remy"
+              >
+                <Bot className="w-[18px] h-[18px]" />
+              </button>
+            )}
             <OfflineNavIndicator />
             <ActivityDot collapsed />
 
             {/* Dashboard */}
-            {primaryItems.map((item) => {
+            {visiblePrimaryItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href, searchParams)
               return (
@@ -838,6 +855,11 @@ export function ChefSidebar({
                   {item.href === '/inbox' && (
                     <span className="absolute -top-1 -right-1">
                       <InboxUnreadBadge />
+                    </span>
+                  )}
+                  {item.href === '/circles' && (
+                    <span className="absolute -top-1 -right-1">
+                      <CirclesUnreadBadge />
                     </span>
                   )}
                 </Link>
@@ -959,6 +981,7 @@ export function ChefSidebar({
                       />
                       {item.label}
                       {item.href === '/inbox' && <InboxUnreadBadge />}
+                      {item.href === '/circles' && <CirclesUnreadBadge />}
                     </Link>
                   )
                 })}
@@ -1027,7 +1050,7 @@ export function ChefSidebar({
 
             <div className="border-t border-stone-800 my-2" />
 
-            {isAdmin && (
+            {isAdmin && !focusMode && (
               <SectionAccordion
                 title="Cannabis"
                 items={filteredCannabisItems}
@@ -1047,23 +1070,25 @@ export function ChefSidebar({
               />
             )}
 
-            <SectionAccordion
-              title="Community"
-              items={filteredCommunityItems}
-              icon={Rss}
-              isOpen={communitySectionOpen}
-              onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-              pathname={pathname}
-              searchParams={searchParams}
-              headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-              headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-              dividerClass="border-indigo-800/30"
-              itemActiveClass="text-indigo-400"
-              itemInactiveClass="text-stone-500 hover:text-stone-300"
-              activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
-              iconActiveColor="#818cf8"
-              iconInactiveColor="rgba(99, 102, 241, 0.5)"
-            />
+            {!focusMode && (
+              <SectionAccordion
+                title="Community"
+                items={filteredCommunityItems}
+                icon={Rss}
+                isOpen={communitySectionOpen}
+                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+                pathname={pathname}
+                searchParams={searchParams}
+                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+                dividerClass="border-indigo-800/30"
+                itemActiveClass="text-indigo-400"
+                itemInactiveClass="text-stone-500 hover:text-stone-300"
+                activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
+                iconActiveColor="#818cf8"
+                iconInactiveColor="rgba(99, 102, 241, 0.5)"
+              />
+            )}
 
             <div className="border-t border-stone-800 my-2" />
 
@@ -1461,9 +1486,11 @@ function MobileGroupSection({
 function MobileBottomTabBar({
   pathname,
   onMoreClick,
+  tabItems,
 }: {
   pathname: string
   onMoreClick: () => void
+  tabItems: NavItem[]
 }) {
   // Ref for the "More" button — attaches a native onclick as backup
   const moreRef = useRef<HTMLButtonElement>(null)
@@ -1480,7 +1507,7 @@ function MobileBottomTabBar({
   return (
     <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
       <div className="flex items-center justify-around h-11">
-        {mobileTabItems.map((item) => {
+        {tabItems.map((item) => {
           const active = isItemActive(pathname, item.href)
           const Icon = item.icon
           return (
@@ -1543,25 +1570,48 @@ export function ChefMobileNav({
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
-  const primaryItems = resolveStandaloneTop(primaryNavHrefs)
+  const primaryItems = useMemo(
+    () =>
+      resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
+    [focusMode, primaryNavHrefs]
+  )
+  const visiblePrimaryItems = useMemo(
+    () => (isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)),
+    [isAdmin, primaryItems]
+  )
+  const tabItems = useMemo(
+    () =>
+      focusMode
+        ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
+            ...item,
+            label: item.href === '/dashboard' ? 'Home' : item.label,
+          }))
+        : mobileTabItems,
+    [focusMode]
+  )
 
-  // Filter nav groups by enabled modules (progressive disclosure)
-  // Admins always see every group — they're the developer, not a gated user
-  // Also strip adminOnly items (e.g. prospecting) for non-admin users
+  // Filter nav groups by role + focus mode.
+  // Focus Mode should simplify nav for everyone, including admins.
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
-  const accessibleGroups = useMemo(
-    () =>
-      isAdmin
-        ? navGroups
-        : navGroups.map((group) => ({
-            ...group,
-            items: group.items.filter((item) => !item.adminOnly),
-          })),
-    [isAdmin]
-  )
+  const accessibleGroups = useMemo(() => {
+    const baseGroups = navGroups
+      .map((group) => ({
+        ...group,
+        items: isAdmin ? group.items : group.items.filter((item) => !item.adminOnly),
+      }))
+      .filter((group) => group.items.length > 0)
+
+    if (!focusMode) return baseGroups
+    const strictGroups = baseGroups.filter((group) =>
+      isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
+    )
+    return strictGroups.sort(
+      (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
+    )
+  }, [isAdmin, focusMode])
   const groupEntries = useMemo(
     () =>
       accessibleGroups.map((group) => ({
@@ -1582,14 +1632,10 @@ export function ChefMobileNav({
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    // Focus Mode: hide non-core standalone items (admins always see everything)
-    if (focusMode && !isAdmin) {
-      items = items.filter((item) => item.coreFeature)
-    }
+    const items = visiblePrimaryItems
     if (!q) return items
     return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, primaryItems, isAdmin, focusMode])
+  }, [navFilter, visiblePrimaryItems])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS
@@ -1705,15 +1751,17 @@ export function ChefMobileNav({
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
-              aria-label="Open Remy"
-              title="Open Remy"
-            >
-              <Bot className="w-[18px] h-[18px]" />
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+                className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+                aria-label="Open Remy"
+                title="Open Remy"
+              >
+                <Bot className="w-[18px] h-[18px]" />
+              </button>
+            )}
             <NotificationBell />
             <button
               type="button"
@@ -1849,7 +1897,7 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {isAdmin && (
+              {isAdmin && !focusMode && (
                 <SectionAccordion
                   title="Cannabis"
                   items={filteredCannabisItems}
@@ -1869,23 +1917,25 @@ export function ChefMobileNav({
                 />
               )}
 
-              <SectionAccordion
-                title="Community"
-                items={filteredCommunityItems}
-                icon={Rss}
-                isOpen={communitySectionOpen}
-                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-                pathname={pathname}
-                searchParams={searchParams}
-                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
-                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
-                dividerClass="border-indigo-800/30"
-                itemActiveClass="text-indigo-400 bg-indigo-950/50"
-                itemInactiveClass="text-stone-500 hover:bg-stone-800"
-                iconActiveColor="#818cf8"
-                iconInactiveColor="rgba(99, 102, 241, 0.5)"
-                onNavigate={closeMenu}
-              />
+              {!focusMode && (
+                <SectionAccordion
+                  title="Community"
+                  items={filteredCommunityItems}
+                  icon={Rss}
+                  isOpen={communitySectionOpen}
+                  onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+                  pathname={pathname}
+                  searchParams={searchParams}
+                  headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+                  headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+                  dividerClass="border-indigo-800/30"
+                  itemActiveClass="text-indigo-400 bg-indigo-950/50"
+                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
+                  iconActiveColor="#818cf8"
+                  iconInactiveColor="rgba(99, 102, 241, 0.5)"
+                  onNavigate={closeMenu}
+                />
+              )}
               <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}
@@ -1958,7 +2008,11 @@ export function ChefMobileNav({
       {/* Mobile bottom tab bar — uses native <a> tags so navigation works
           even when React hydration fails. This is the MOST CRITICAL nav on mobile;
           it must never depend on React's event system being functional. */}
-      <MobileBottomTabBar pathname={pathname} onMoreClick={() => setMenuOpen(true)} />
+      <MobileBottomTabBar
+        pathname={pathname}
+        onMoreClick={() => setMenuOpen(true)}
+        tabItems={tabItems}
+      />
     </>
   )
 }

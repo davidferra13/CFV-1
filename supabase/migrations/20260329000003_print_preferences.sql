@@ -10,5 +10,6 @@ ALTER TABLE chef_preferences
       "default_print_mode": "standard",
       "custom_footer": null
     }'::jsonb;
+
 COMMENT ON COLUMN chef_preferences.print_preferences IS
   'Print/document preferences. Keys: show_attribution (bool), attribution_name (string|null, defaults to business_name), default_print_mode (standard|thermal-80|thermal-58), custom_footer (string|null)';

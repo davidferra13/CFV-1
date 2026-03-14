@@ -21,7 +21,7 @@ import {
   TrendingUp,
   TrendingDown,
   DollarSign,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 interface PipelineBoardProps {

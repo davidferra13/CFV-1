@@ -14,6 +14,7 @@ import {
   importTakeAChefBooking,
   type TakeAChefImportResult,
 } from '@/lib/ai/import-take-a-chef-action'
+import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -21,11 +22,17 @@ type Phase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
 
 // ─── Component ────────────────────────────────────────────────────────────
 
-export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
+export function TakeAChefImport({
+  aiConfigured,
+  defaultCommissionPercent = getDefaultTakeAChefCommissionPercent(),
+}: {
+  aiConfigured: boolean
+  defaultCommissionPercent?: number
+}) {
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('input')
   const [rawText, setRawText] = useState('')
-  const [commissionPercent, setCommissionPercent] = useState(25)
+  const [commissionPercent, setCommissionPercent] = useState(defaultCommissionPercent)
   const [logCommission, setLogCommission] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<TakeAChefImportResult | null>(null)
@@ -74,7 +81,7 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
   const handleReset = () => {
     setPhase('input')
     setRawText('')
-    setCommissionPercent(25)
+    setCommissionPercent(defaultCommissionPercent)
     setLogCommission(true)
     setError(null)
     setResult(null)
@@ -172,7 +179,7 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
                 className="w-20 px-3 py-1.5 border border-stone-700 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-500"
                 disabled={phase === 'saving'}
               />
-              <span className="text-sm text-stone-500">% (typical: 20–30%)</span>
+              <span className="text-sm text-stone-500">% (uses your current TAC default)</span>
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm text-stone-400 cursor-pointer">

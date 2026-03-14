@@ -29,24 +29,32 @@ CREATE TABLE IF NOT EXISTS event_stubs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_event_stubs_creator
   ON event_stubs(created_by_profile_id);
+
 CREATE INDEX IF NOT EXISTS idx_event_stubs_status
   ON event_stubs(status) WHERE status != 'cancelled';
+
 CREATE INDEX IF NOT EXISTS idx_event_stubs_adopted_tenant
   ON event_stubs(adopted_tenant_id) WHERE adopted_tenant_id IS NOT NULL;
+
 -- RLS
 ALTER TABLE event_stubs ENABLE ROW LEVEL SECURITY;
+
 -- Public can read stubs (link-based access via app layer)
 CREATE POLICY "event_stubs_select_anon" ON event_stubs
   FOR SELECT USING (true);
+
 -- Public can create stubs (client-initiated)
 CREATE POLICY "event_stubs_insert_anon" ON event_stubs
   FOR INSERT WITH CHECK (true);
+
 -- Service role manages
 CREATE POLICY "event_stubs_manage_service" ON event_stubs
   FOR ALL USING (auth.role() = 'service_role');
+
 -- Chefs can read stubs adopted by them
 CREATE POLICY "event_stubs_chef_read" ON event_stubs
   FOR SELECT USING (

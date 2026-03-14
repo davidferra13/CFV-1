@@ -6,8 +6,9 @@
 // Falls back to a static FAQ accordion if Ollama is offline.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Send, Loader2, MessageCircle, ChevronDown } from 'lucide-react'
+import { Send, Loader2, MessageCircle, ChevronDown } from '@/components/ui/icons'
 import Link from 'next/link'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints, CHEFFLOW_FEATURE_MAP } from '@/lib/ai/chefflow-feature-map'
 import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
 
@@ -40,6 +41,10 @@ export function RemyConciergeSection() {
       const trimmed = (text ?? input).trim()
       if (!trimmed || isStreaming) return
 
+      trackEvent(ANALYTICS_EVENTS.REMY_MESSAGE_SENT, {
+        source: 'landing_section',
+        message_length: trimmed.length,
+      })
       setError(null)
 
       const userMsg: Message = {

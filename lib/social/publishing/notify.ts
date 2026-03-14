@@ -1,7 +1,8 @@
 // Chef notification when a social post fails 3 consecutive publish attempts.
-// Uses the existing in-app notification system.
+// Uses the centralized notification pipeline.
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createNotification } from '@/lib/notifications/actions'
 import type { SocialPlatform } from '@/lib/social/types'
 
 const PLATFORM_LABELS: Record<SocialPlatform, string> = {
@@ -23,7 +24,6 @@ export async function sendChefPublishFailureNotification(
   const supabase: any = createAdminClient()
   const label = PLATFORM_LABELS[platform] ?? platform
 
-  // Resolve chef's auth_user_id from user_roles
   const { data: role } = await supabase
     .from('user_roles')
     .select('auth_user_id')
@@ -33,15 +33,18 @@ export async function sendChefPublishFailureNotification(
 
   if (!role?.auth_user_id) return
 
-  await supabase.from('notifications').insert({
-    user_id: role.auth_user_id,
-    tenant_id: tenantId,
-    type: 'social_publish_failed',
+  await createNotification({
+    tenantId,
+    recipientId: role.auth_user_id,
+    category: 'system',
+    action: 'system_alert',
     title: `Publishing failed: ${label}`,
     body: `"${postTitle || 'Your post'}" failed to publish to ${label} after 3 attempts. Go to the Social planner to review and retry.`,
-    entity_type: 'social_post',
-    entity_id: postId,
-    action_url: `/social/posts/${postId}`,
-    is_read: false,
+    actionUrl: `/social/posts/${postId}`,
+    metadata: {
+      kind: 'social_publish_failed',
+      platform,
+      post_id: postId,
+    },
   })
 }

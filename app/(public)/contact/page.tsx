@@ -6,12 +6,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { submitContactForm } from '@/lib/contact/actions'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 
 interface FormData {
   name: string
   email: string
   subject: string
   message: string
+  website: string
 }
 
 interface FormErrors {
@@ -26,6 +28,7 @@ export default function ContactPage() {
     email: '',
     subject: '',
     message: '',
+    website: '',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -73,7 +76,8 @@ export default function ContactPage() {
       await submitContactForm(formData)
 
       setShowSuccess(true)
-      setFormData({ name: '', email: '', subject: '', message: '' })
+      setFormData({ name: '', email: '', subject: '', message: '', website: '' })
+      trackEvent(ANALYTICS_EVENTS.CONTACT_FORM_SUBMITTED, { source: 'public_contact_page' })
 
       setTimeout(() => {
         setShowSuccess(false)
@@ -148,7 +152,20 @@ export default function ContactPage() {
                     </div>
                   )}
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="relative space-y-6">
+                    <div
+                      className="absolute opacity-0 -z-10 pointer-events-none"
+                      aria-hidden="true"
+                    >
+                      <input
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={formData.website}
+                        onChange={handleChange}
+                      />
+                    </div>
                     <Input
                       label="Name"
                       name="name"

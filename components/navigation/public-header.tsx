@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X } from '@/components/ui/icons'
+import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { Button } from '@/components/ui/button'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
+  { href: '/compare', label: 'Compare' },
   { href: '/chefs', label: 'Find a Chef' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
@@ -19,6 +21,7 @@ export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const isBeta = LAUNCH_MODE === 'beta'
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12)
@@ -46,39 +49,47 @@ export function PublicHeader() {
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
               return (
-                <Link
+                <TrackedLink
                   key={item.href}
                   href={item.href}
+                  analyticsName={`header_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
+                  analyticsProps={{ section: 'public_header' }}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-brand-950 text-brand-400'
-                      : 'text-stone-400 hover:bg-stone-700 hover:text-stone-100'
+                      : 'text-muted-soft hover:bg-stone-700 hover:text-stone-100'
                   }`}
                 >
                   {item.label}
-                </Link>
+                </TrackedLink>
               )
             })}
           </div>
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link href="/auth/signin">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/auth/signup">
-            <Button variant="primary" size="sm">
-              Sign up
-            </Button>
-          </Link>
+          <TrackedLink
+            href="/auth/signin"
+            analyticsName="header_signin"
+            analyticsProps={{ section: 'public_header' }}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+          >
+            Sign In
+          </TrackedLink>
+          <TrackedLink
+            href={PRIMARY_SIGNUP_HREF}
+            analyticsName="header_signup"
+            analyticsProps={{ section: 'public_header' }}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            {isBeta ? 'Join Beta' : 'Sign up'}
+          </TrackedLink>
         </div>
 
         <button
           type="button"
           onClick={() => setMobileMenuOpen((open) => !open)}
-          className="rounded-lg p-2 text-stone-400 hover:bg-stone-700 md:hidden"
+          className="rounded-lg p-2 text-muted-soft hover:bg-stone-700 md:hidden"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -91,30 +102,40 @@ export function PublicHeader() {
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
               return (
-                <Link
+                <TrackedLink
                   key={item.href}
                   href={item.href}
+                  analyticsName={`header_mobile_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
+                  analyticsProps={{ section: 'public_header_mobile' }}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium ${
                     isActive ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-stone-700'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
-                </Link>
+                </TrackedLink>
               )
             })}
           </div>
           <div className="mx-auto flex max-w-6xl gap-2 px-4 pb-4 sm:px-6 lg:px-8">
-            <Link href="/auth/signin" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="secondary" size="sm" className="w-full">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/auth/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" size="sm" className="w-full">
-                Sign up
-              </Button>
-            </Link>
+            <TrackedLink
+              href="/auth/signin"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-700 hover:text-stone-100"
+              analyticsName="header_mobile_signin"
+              analyticsProps={{ section: 'public_header_mobile' }}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Sign In
+            </TrackedLink>
+            <TrackedLink
+              href={PRIMARY_SIGNUP_HREF}
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              analyticsName="header_mobile_signup"
+              analyticsProps={{ section: 'public_header_mobile' }}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {isBeta ? 'Join Beta' : 'Sign up'}
+            </TrackedLink>
           </div>
         </div>
       )}

@@ -4,7 +4,15 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { ChevronLeft, Phone, Clock, User, Building2, Calendar, FileText } from 'lucide-react'
+import {
+  ChevronLeft,
+  Phone,
+  Clock,
+  User,
+  Building2,
+  Calendar,
+  FileText,
+} from '@/components/ui/icons'
 import { getCall } from '@/lib/calls/actions'
 import { CallPrepPanel } from '@/components/calls/call-prep-panel'
 import { CallOutcomeForm } from '@/components/calls/call-outcome-form'

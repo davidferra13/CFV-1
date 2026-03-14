@@ -9,7 +9,7 @@ import {
 } from '@/lib/finance/sales-tax-actions'
 import { SalesTaxPanel } from '@/components/finance/sales-tax-panel'
 import { Badge } from '@/components/ui/badge'
-import { Settings } from 'lucide-react'
+import { Settings } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Sales Tax — ChefFlow' }
 

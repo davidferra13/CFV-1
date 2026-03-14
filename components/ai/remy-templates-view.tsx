@@ -9,7 +9,7 @@ import {
   getProjects,
 } from '@/lib/ai/remy-local-storage'
 import type { LocalProject, LocalTemplate } from '@/lib/ai/remy-types'
-import { BookTemplate, Plus, Play, Edit3, Trash2, X } from 'lucide-react'
+import { BookTemplate, Plus, Play, Edit3, Trash2, X } from '@/components/ui/icons'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 function interpolateTemplate(prompt: string): string {

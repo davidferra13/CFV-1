@@ -12,6 +12,14 @@ import { QuoteForm } from '@/components/quotes/quote-form'
 type SearchParamValue = string | string[] | undefined
 type NewQuoteSearchParams = Record<string, SearchParamValue>
 type PricingModel = 'flat_rate' | 'per_person' | 'custom'
+type ClientRecord = {
+  id: string
+  full_name: string
+  email: string
+  recurring_pricing_model?: 'none' | 'flat_rate' | 'per_person' | null
+  recurring_price_cents?: number | null
+  recurring_pricing_notes?: string | null
+}
 
 function firstValue(value: SearchParamValue): string | undefined {
   if (Array.isArray(value)) return value[0]
@@ -80,7 +88,7 @@ export default async function NewQuotePage({
 }) {
   const user = await requireChef()
 
-  const clients = await getClients()
+  const clients = (await getClients()) as ClientRecord[]
 
   // Pre-fill from query params and inquiry if provided
   let prefilledClientId = readString(searchParams, 'client_id', 80)
@@ -118,6 +126,42 @@ export default async function NewQuotePage({
       prefilledBudgetCents = inquiry.confirmed_budget_cents
       prefilledOccasion = inquiry.confirmed_occasion ?? null
       prefilledEventDate = inquiry.confirmed_date ?? null
+    }
+  }
+
+  const selectedClient = prefilledClientId
+    ? (clients.find((client) => client.id === prefilledClientId) ?? null)
+    : null
+
+  const hasExplicitBudgetPrefill = !!(prefilledBudgetCents && prefilledBudgetCents > 0)
+  const hasExplicitPerPersonPrefill = !!(
+    prefilledPricePerPersonCents && prefilledPricePerPersonCents > 0
+  )
+  const recurringRateCents = selectedClient?.recurring_price_cents ?? null
+  const recurringModel = selectedClient?.recurring_pricing_model ?? null
+
+  if (
+    selectedClient &&
+    recurringModel &&
+    recurringModel !== 'none' &&
+    recurringRateCents &&
+    recurringRateCents > 0 &&
+    !hasExplicitBudgetPrefill &&
+    !hasExplicitPerPersonPrefill
+  ) {
+    if (recurringModel === 'per_person') {
+      prefilledPricingModel = prefilledPricingModel ?? 'per_person'
+      prefilledPricePerPersonCents = recurringRateCents
+      if (prefilledGuestCount && prefilledGuestCount > 0) {
+        prefilledBudgetCents = recurringRateCents * prefilledGuestCount
+      }
+    } else {
+      prefilledPricingModel = prefilledPricingModel ?? 'flat_rate'
+      prefilledBudgetCents = recurringRateCents
+    }
+    if (!prefilledSource) prefilledSource = 'recurring_default'
+    if (!prefilledPricingNotes && selectedClient.recurring_pricing_notes) {
+      prefilledPricingNotes = selectedClient.recurring_pricing_notes
     }
   }
 

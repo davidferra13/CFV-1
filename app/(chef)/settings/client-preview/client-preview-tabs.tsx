@@ -5,7 +5,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Monitor, Smartphone, ExternalLink, Eye } from 'lucide-react'
+import { Monitor, Smartphone, ExternalLink, Eye } from '@/components/ui/icons'
 import { PublicProfilePreview } from './public-profile-preview'
 import { ClientPortalPreview } from './client-portal-preview'
 import {

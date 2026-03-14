@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { generateW2Summaries } from '@/lib/finance/payroll-actions'
 import type { PayrollW2Summary } from '@/lib/finance/payroll-actions'
-import { Download } from 'lucide-react'
+import { Download } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {

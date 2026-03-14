@@ -4,9 +4,8 @@
  */
 import { chromium } from '@playwright/test'
 import { mkdirSync, writeFileSync } from 'fs'
-import { TEST_BASE_URL } from './helpers/runtime-base-url'
 
-const BASE = TEST_BASE_URL
+const BASE = 'http://localhost:3100'
 
 const ROUTES: Record<string, string[]> = {
   dashboard: ['/dashboard'],

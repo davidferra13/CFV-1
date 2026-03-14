@@ -29,13 +29,18 @@ CREATE TABLE IF NOT EXISTS vendor_catalog_import_rows (
   reviewed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_vendor_catalog_import_rows_vendor_status
   ON vendor_catalog_import_rows (vendor_id, status, source_row_number);
+
 CREATE INDEX IF NOT EXISTS idx_vendor_catalog_import_rows_chef_status
   ON vendor_catalog_import_rows (chef_id, status, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_vendor_catalog_import_rows_chef_vendor
   ON vendor_catalog_import_rows (chef_id, vendor_id, created_at DESC);
+
 ALTER TABLE vendor_catalog_import_rows ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS vendor_catalog_import_rows_chef_all ON vendor_catalog_import_rows;
 CREATE POLICY vendor_catalog_import_rows_chef_all ON vendor_catalog_import_rows
   FOR ALL USING (
@@ -45,8 +50,10 @@ CREATE POLICY vendor_catalog_import_rows_chef_all ON vendor_catalog_import_rows
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 DROP POLICY IF EXISTS vendor_catalog_import_rows_service_all ON vendor_catalog_import_rows;
 CREATE POLICY vendor_catalog_import_rows_service_all ON vendor_catalog_import_rows
   FOR ALL USING (auth.role() = 'service_role');
+
 COMMENT ON TABLE vendor_catalog_import_rows IS
   'Staging queue for vendor catalog imports before rows are applied to vendor_items.';

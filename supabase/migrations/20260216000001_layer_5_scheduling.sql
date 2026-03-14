@@ -52,19 +52,23 @@ CREATE TABLE chef_preferences (
   CONSTRAINT prefs_packing_positive CHECK (default_packing_minutes >= 10 AND default_packing_minutes <= 120),
   CONSTRAINT prefs_margin_range CHECK (target_margin_percent >= 0 AND target_margin_percent <= 100)
 );
+
 CREATE INDEX idx_chef_preferences_chef_id ON chef_preferences(chef_id);
 CREATE INDEX idx_chef_preferences_tenant_id ON chef_preferences(tenant_id);
+
 -- ============================================
 -- 2. ADD travel_time_minutes TO EVENTS
 -- Per-event override for travel time estimation.
 -- ============================================
 
 ALTER TABLE events ADD COLUMN travel_time_minutes INTEGER DEFAULT 30;
+
 -- ============================================
 -- 3. RLS POLICIES FOR chef_preferences
 -- ============================================
 
 ALTER TABLE chef_preferences ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can read/write their own preferences
 CREATE POLICY "chef_preferences_select_own" ON chef_preferences
   FOR SELECT USING (
@@ -75,6 +79,7 @@ CREATE POLICY "chef_preferences_select_own" ON chef_preferences
       LIMIT 1
     )
   );
+
 CREATE POLICY "chef_preferences_insert_own" ON chef_preferences
   FOR INSERT WITH CHECK (
     tenant_id = (
@@ -84,6 +89,7 @@ CREATE POLICY "chef_preferences_insert_own" ON chef_preferences
       LIMIT 1
     )
   );
+
 CREATE POLICY "chef_preferences_update_own" ON chef_preferences
   FOR UPDATE USING (
     tenant_id = (
@@ -93,6 +99,7 @@ CREATE POLICY "chef_preferences_update_own" ON chef_preferences
       LIMIT 1
     )
   );
+
 -- ============================================
 -- 4. AUTO-UPDATE TRIGGER
 -- ============================================

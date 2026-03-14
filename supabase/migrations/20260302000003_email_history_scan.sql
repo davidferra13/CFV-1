@@ -19,6 +19,7 @@ ALTER TABLE google_connections
   ADD COLUMN IF NOT EXISTS historical_scan_started_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS historical_scan_completed_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS historical_scan_last_run_at TIMESTAMPTZ;
+
 -- ─── 2. Staged findings table ─────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS gmail_historical_findings (
@@ -41,17 +42,22 @@ CREATE TABLE IF NOT EXISTS gmail_historical_findings (
 
   CONSTRAINT unique_historical_finding UNIQUE (tenant_id, gmail_message_id)
 );
+
 -- ─── 3. Indexes ───────────────────────────────────────────────────────────────
 
 CREATE INDEX IF NOT EXISTS idx_historical_findings_chef_status
   ON gmail_historical_findings(chef_id, status);
+
 CREATE INDEX IF NOT EXISTS idx_historical_findings_tenant
   ON gmail_historical_findings(tenant_id);
+
 CREATE INDEX IF NOT EXISTS idx_historical_findings_received
   ON gmail_historical_findings(tenant_id, received_at DESC);
+
 -- ─── 4. Row-Level Security ────────────────────────────────────────────────────
 
 ALTER TABLE gmail_historical_findings ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "historical_findings_select_own" ON gmail_historical_findings
   FOR SELECT USING (
     tenant_id = (
@@ -60,6 +66,7 @@ CREATE POLICY "historical_findings_select_own" ON gmail_historical_findings
       LIMIT 1
     )
   );
+
 CREATE POLICY "historical_findings_update_own" ON gmail_historical_findings
   FOR UPDATE USING (
     tenant_id = (
@@ -68,6 +75,7 @@ CREATE POLICY "historical_findings_update_own" ON gmail_historical_findings
       LIMIT 1
     )
   );
+
 -- Service role has full access (for cron job processing)
 CREATE POLICY "historical_findings_service_all" ON gmail_historical_findings
   FOR ALL USING (auth.role() = 'service_role');

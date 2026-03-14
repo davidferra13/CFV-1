@@ -6,7 +6,15 @@
 // Replaces the flat allergy string[] with severity-aware, source-tracked records.
 
 import { useState, useTransition } from 'react'
-import { ShieldAlert, AlertTriangle, Info, CheckCircle2, Plus, Trash2, Loader2 } from 'lucide-react'
+import {
+  ShieldAlert,
+  AlertTriangle,
+  Info,
+  CheckCircle2,
+  Plus,
+  Trash2,
+  Loader2,
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

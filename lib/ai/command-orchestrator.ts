@@ -68,6 +68,136 @@ import {
 } from '@/lib/ai/remy-approval-policy-core'
 import { getTenantRemyApprovalPolicyMap } from '@/lib/ai/remy-approval-policy-actions'
 import { validateSignificantApprovalPhrase } from '@/lib/ai/remy-significant-approval'
+import {
+  executeContractGeneration,
+  executeContingencyPlanning,
+  executeSeasonalProduce,
+  executeGroceryConsolidation,
+  executeRevenueForecast,
+  executePnLReport,
+  executeTaxSummary,
+  executePricingAnalysis,
+  executeUtilizationAnalysis,
+  executeClientMilestones,
+  executeReEngagementScoring,
+  executeAcquisitionFunnel,
+  executeMultiEventComparison,
+  executeGoalsDashboard,
+  executeEquipmentList,
+  executeEquipmentMaintenance,
+  executeVendorsList,
+  executeMorningBriefing,
+  executeCancellationImpact,
+  executePostEventSequence,
+  executeIngredientSubstitution,
+} from '@/lib/ai/remy-intelligence-actions'
+import {
+  executeClientSpending,
+  executeClientChurnRisk,
+  executeClientBirthdays,
+  executeClientNextBestActions,
+  executeClientCooling,
+  executeClientLTVTrajectory,
+  executeClientMenuHistory,
+  executeClientReferralHealth,
+  executeClientNDAStatus,
+  executeClientPaymentPlans,
+  executeEventDietaryConflicts,
+  executeEventDebrief,
+  executeEventCountdown,
+  executeInvoiceLookup,
+  executeInquiryFollowUps,
+  executeInquiryLikelihood,
+  executeMenuFoodCost,
+  executeMenuDishIndex,
+  executeMenuShowcase,
+  executeRecipeAllergens,
+  executeRecipeNutrition,
+  executeRecipeProductionLogs,
+  executeCashFlowForecast,
+  executeMileageSummary,
+  executeTipSummary,
+  executeContractorSummary,
+  executeDisputes,
+  executePaymentPlanLookup,
+  executeRecurringInvoices,
+  executeTaxPackage,
+  executePayrollSummary,
+  executeVendorInvoices,
+  executeVendorPriceInsights,
+  executeVendorPaymentAging,
+  executeEquipmentRentals,
+  executeStaffAvailability,
+  executeStaffBriefing,
+  executeStaffClockSummary,
+  executeStaffPerformance,
+  executeStaffLaborDashboard,
+  executeCapacityCheck,
+  executePrepBlocks,
+  executeProtectedTime,
+  executeSchedulingGaps,
+  executePipelineAnalytics,
+  executeYearOverYear,
+  executeDemandForecast,
+  executeBenchmarks,
+  executePricingSuggestions,
+  executeResponseTimeMetrics,
+  executeCostTrends,
+  executeReferralAnalytics,
+  executeQuoteLossAnalysis,
+  executeRevenueByServiceType,
+  executeGoalHistory,
+  executeGoalCheckIns,
+  executeCertificationStatus,
+  executeBusinessHealthScore,
+  executeLoyaltyRedemptions,
+  executeLoyaltyGiftCards,
+  executeInventoryStatus,
+  executePurchaseOrders,
+  executeCommerceSalesSummary,
+  executeGuestList,
+  executeMarketingCampaigns,
+  executeNewsletterStatus,
+  executeReviewsSummary,
+  executeGmailSenderReputation,
+  executeNotificationPreferences,
+  executeDocumentSnapshots,
+} from '@/lib/ai/remy-intelligence-actions-2'
+import {
+  executeCirclesList,
+  executeCirclesUnread,
+  executeCircleEvents,
+  executeRateCard,
+  executeTasksList,
+  executeTasksByDate,
+  executeTasksOverdue,
+  executeTravelPlan,
+  executeTravelUpcoming,
+  executeCommerceProducts,
+  executeCommerceRecentSales,
+  executeCommerceDailyReport,
+  executeCommerceProductReport,
+  executeCommerceInventoryLow,
+  executeDailyPlan,
+  executeDailyPlanStats,
+  executePriorityQueue,
+  executeStationsList,
+  executeStationDetail,
+  executeOpsLog,
+  executeWasteLog,
+  executeTestimonialsList,
+  executeTestimonialsPending,
+  executePartnersList,
+  executePartnerEvents,
+  executePartnerPerformance,
+  executeActivityFeed,
+  executeEngagementStats,
+  executeAARList,
+  executeAARStats,
+  executeEventsWithoutAAR,
+  executeAARForgottenItems,
+  executeWaitlistStatus,
+} from '@/lib/ai/remy-intelligence-actions-3'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -78,32 +208,72 @@ async function executeClientSearch(inputs: Record<string, unknown>) {
 
   // Enrich with dietary/allergy data (safety-critical)
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const supabase: any = createServerClient()
   const clientIds = clients.map((c) => c.id)
-  const { data: enriched } = await supabase
-    .from('clients')
-    .select('id, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points')
-    .eq('tenant_id', user.tenantId!)
-    .in('id', clientIds)
+
+  const [{ data: enriched }, { data: eventCounts }] = await Promise.all([
+    supabase
+      .from('clients')
+      .select('id, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points')
+      .eq('tenant_id', tenantId)
+      .in('id', clientIds),
+    // Frequency-based resolution: rank by event count when multiple clients match
+    clients.length > 1
+      ? supabase
+          .from('events')
+          .select('client_id')
+          .eq('tenant_id', tenantId)
+          .in('client_id', clientIds)
+      : Promise.resolve({ data: [] }),
+  ])
 
   const enrichedMap = new Map(
     ((enriched ?? []) as Array<Record<string, unknown>>).map((e) => [e.id as string, e])
   )
 
+  // Count events per client for frequency ranking
+  const eventCountMap = new Map<string, number>()
+  for (const row of (eventCounts ?? []) as Array<Record<string, unknown>>) {
+    const cid = row.client_id as string
+    eventCountMap.set(cid, (eventCountMap.get(cid) || 0) + 1)
+  }
+
+  const enrichedClients = clients.map((c) => {
+    const extra = enrichedMap.get(c.id)
+    const allergies = (extra?.allergies as string[]) ?? []
+    const dietary = (extra?.dietary_restrictions as string[]) ?? []
+    return {
+      id: c.id,
+      name: c.full_name ?? '',
+      email: c.email ?? '',
+      status: c.status ?? '',
+      allergies,
+      dietaryRestrictions: dietary,
+      loyaltyTier: (extra?.loyalty_tier as string) ?? null,
+      eventCount: eventCountMap.get(c.id) ?? 0,
+    }
+  })
+
+  // Sort by event frequency (most events = most likely the chef's intended client)
+  if (enrichedClients.length > 1) {
+    enrichedClients.sort((a, b) => b.eventCount - a.eventCount)
+  }
+
+  // Ambiguity detection: if multiple clients match and the top two have similar event counts,
+  // the match is genuinely ambiguous — flag it so dependent tasks can hold for clarification
+  const isAmbiguous =
+    enrichedClients.length > 1 &&
+    Math.abs(enrichedClients[0].eventCount - enrichedClients[1].eventCount) <= 1
+
   return {
-    clients: clients.map((c) => {
-      const extra = enrichedMap.get(c.id)
-      const allergies = (extra?.allergies as string[]) ?? []
-      const dietary = (extra?.dietary_restrictions as string[]) ?? []
-      return {
-        id: c.id,
-        name: c.full_name ?? '',
-        email: c.email ?? '',
-        status: c.status ?? '',
-        allergies,
-        dietaryRestrictions: dietary,
-        loyaltyTier: (extra?.loyalty_tier as string) ?? null,
-      }
+    clients: enrichedClients,
+    ambiguous: isAmbiguous,
+    // Signal to Remy when auto-resolving ambiguity
+    ...(enrichedClients.length > 1 && {
+      disambiguationNote: isAmbiguous
+        ? `Found ${enrichedClients.length} clients matching "${query}": ${enrichedClients.map((c) => `${c.name} (${c.eventCount} events)`).join(', ')}. Which one did you mean?`
+        : `Found ${enrichedClients.length} clients matching "${query}". Ranked by event frequency — "${enrichedClients[0].name}" has ${enrichedClients[0].eventCount} events.`,
     }),
   }
 }
@@ -169,8 +339,20 @@ async function executeEmailFollowup(
 ) {
   // Try to resolve client from a prior client.search dependency
   const searchResult = resolvedDeps['client.search'] as
-    | { clients: Array<{ id: string; name: string }> }
+    | {
+        clients: Array<{ id: string; name: string }>
+        ambiguous?: boolean
+        disambiguationNote?: string
+      }
     | undefined
+
+  // If client search was ambiguous, hold this task for disambiguation
+  if (searchResult?.ambiguous && searchResult.clients.length > 1) {
+    throw new Error(
+      `Multiple clients match — ${searchResult.disambiguationNote ?? 'which one did you mean?'}`
+    )
+  }
+
   let clientId: string | null = searchResult?.clients?.[0]?.id ?? null
   const clientName = String(inputs.clientName ?? searchResult?.clients?.[0]?.name ?? 'Client')
 
@@ -1074,80 +1256,22 @@ async function executeSingleTask(
       }
     }
 
-    // ─── Legacy task types (read-only + existing drafts) ────────────────
-    // Fail-fast: If taskType is not explicitly supported, return error immediately
-    const supportedTaskTypes = new Set([
-      'client.search',
-      'calendar.availability',
-      'event.list_upcoming',
-      'finance.summary',
-      'email.followup',
-      'email.recent',
-      'email.search',
-      'email.thread',
-      'email.inbox_summary',
-      'email.draft_reply',
-      'event.create_draft',
-      'client.list_recent',
-      'client.details',
-      'event.details',
-      'event.list_by_status',
-      'inquiry.list_open',
-      'inquiry.details',
-      'finance.monthly_snapshot',
-      'recipe.search',
-      'menu.list',
-      'scheduling.next_available',
-      'web.search',
-      'web.read',
-      'dietary.check',
-      'chef.favorite_chefs',
-      'chef.culinary_profile',
-      'prep.timeline',
-      'nudge.list',
-      'grocery.quick_add',
-      'document.search',
-      'document.list_folders',
-      'document.create_folder',
-      'email.generic',
-      'draft.thank_you',
-      'draft.referral_request',
-      'draft.testimonial_request',
-      'draft.quote_cover_letter',
-      'draft.decline_response',
-      'draft.cancellation_response',
-      'draft.payment_reminder',
-      'draft.re_engagement',
-      'draft.milestone_recognition',
-      'draft.food_safety_incident',
-      'ops.portion_calc',
-      'ops.packing_list',
-      'ops.cross_contamination',
-      'analytics.break_even',
-      'analytics.client_ltv',
-      'analytics.recipe_cost',
-      'client.event_recap',
-      'client.menu_explanation',
-      'nav.go',
-      'loyalty.status',
-      'safety.event_allergens',
-      'waitlist.list',
-      'draft.confirmation',
-    ])
-    if (!supportedTaskTypes.has(task.taskType)) {
+    // ─── Security guardrail: block dangerous/injection task types ────────────
+    // The switch statement below handles all supported tasks; unknown types hit default.
+    // This check blocks explicitly dangerous patterns before they reach the switch.
+    if (
+      task.taskType.includes('system') ||
+      task.taskType.includes('prompt') ||
+      task.taskType.includes('delete') ||
+      task.taskType.includes('agent.')
+    ) {
       return {
         taskId: task.id,
         taskType: task.taskType,
         tier: 3,
         name: task.taskType,
         status: 'error',
-        error:
-          task.taskType.includes('system') ||
-          task.taskType.includes('prompt') ||
-          task.taskType.includes('delete') ||
-          task.taskType.includes('agent.')
-            ? 'That request is outside the scope of what I can help with.'
-            : `Task type "${task.taskType}" is not supported. No further attempts will be made.`,
+        error: 'That request is outside the scope of what I can help with.',
       }
     }
 
@@ -1170,6 +1294,11 @@ async function executeSingleTask(
       case 'event.create_draft':
         data = await executeEventCreateDraft(task.inputs)
         break
+      case 'client.count': {
+        const allForCount = await getClients()
+        data = { totalClients: (allForCount ?? []).length }
+        break
+      }
       case 'client.list_recent':
         data = await executeClientListRecent(task.inputs)
         break
@@ -1207,6 +1336,8 @@ async function executeSingleTask(
         data = await executeWebRead(task.inputs)
         break
       case 'dietary.check':
+      case 'client.dietary':
+      case 'client.dietary_restrictions':
         data = await executeDietaryCheck(task.inputs)
         break
       case 'chef.favorite_chefs':
@@ -1246,6 +1377,7 @@ async function executeSingleTask(
         data = await executeEmailThread(task.inputs)
         break
       case 'email.inbox_summary':
+      case 'email.status':
         data = await executeEmailInboxSummary()
         break
       case 'email.draft_reply':
@@ -1311,6 +1443,7 @@ async function executeSingleTask(
 
       // ─── New tools (Remy upgrade) ──────────────────────────────────────────
       case 'nav.go':
+      case 'navigation.goto':
         data = executeNavGo(task.inputs)
         break
       case 'loyalty.status':
@@ -1324,6 +1457,470 @@ async function executeSingleTask(
         break
       case 'quote.compare':
         data = await executeQuoteCompare(task.inputs, tenantId)
+        break
+
+      // ─── Phase 1: Wire existing features ──────────────────────────────────
+      case 'contract.generate':
+        data = await executeContractGeneration(task.inputs)
+        break
+      case 'contingency.plan':
+        data = await executeContingencyPlanning(task.inputs)
+        break
+      case 'seasonal.produce':
+        data = executeSeasonalProduce()
+        break
+      case 'grocery.consolidate':
+        data = await executeGroceryConsolidation(task.inputs)
+        break
+
+      // ─── Phase 2: Financial intelligence ──────────────────────────────────
+      case 'finance.forecast':
+        data = await executeRevenueForecast(tenantId)
+        break
+      case 'finance.pnl':
+        data = await executePnLReport(tenantId, task.inputs)
+        break
+      case 'finance.tax_summary':
+        data = await executeTaxSummary(tenantId, task.inputs)
+        break
+      case 'finance.pricing':
+        data = await executePricingAnalysis(tenantId)
+        break
+
+      // ─── Phase 3: Capacity ────────────────────────────────────────────────
+      case 'capacity.utilization':
+        data = await executeUtilizationAnalysis(tenantId, task.inputs)
+        break
+
+      // ─── Phase 4: Relationship intelligence ───────────────────────────────
+      case 'relationship.milestones':
+        data = await executeClientMilestones(tenantId)
+        break
+      case 'relationship.reengagement':
+        data = await executeReEngagementScoring(tenantId)
+        break
+      case 'relationship.acquisition':
+        data = await executeAcquisitionFunnel(tenantId)
+        break
+
+      // ─── Phase 5: Entity awareness ────────────────────────────────────────
+      case 'goals.dashboard':
+        data = await executeGoalsDashboard()
+        break
+      case 'equipment.list':
+        data = await executeEquipmentList()
+        break
+      case 'equipment.maintenance':
+        data = await executeEquipmentMaintenance()
+        break
+      case 'vendors.list':
+        data = await executeVendorsList(tenantId)
+        break
+
+      // ─── Phase 6: Multi-event intelligence ────────────────────────────────
+      case 'analytics.compare_events':
+        data = await executeMultiEventComparison(task.inputs, tenantId)
+        break
+
+      // ─── Phase 7: Day-of support ──────────────────────────────────────────
+      case 'briefing.morning':
+        data = await executeMorningBriefing(tenantId)
+        break
+
+      // ─── Phase 6: Workflow chains ─────────────────────────────────────────
+      case 'workflow.cancellation_impact':
+        data = await executeCancellationImpact(task.inputs, tenantId)
+        break
+      case 'workflow.post_event':
+        data = await executePostEventSequence(task.inputs)
+        break
+
+      // ─── Phase 8-9: Operational intelligence ──────────────────────────────
+      case 'ops.ingredient_sub':
+        data = executeIngredientSubstitution(task.inputs)
+        break
+
+      // ─── Batch 2: Complete Domain Coverage ────────────────────────────────
+
+      // Client Intelligence
+      case 'client.spending':
+        data = await executeClientSpending()
+        break
+      case 'client.churn_risk':
+        data = await executeClientChurnRisk()
+        break
+      case 'client.birthdays':
+        data = await executeClientBirthdays()
+        break
+      case 'client.next_best_action':
+        data = await executeClientNextBestActions()
+        break
+      case 'client.cooling':
+        data = await executeClientCooling()
+        break
+      case 'client.ltv_trajectory':
+        data = await executeClientLTVTrajectory(task.inputs)
+        break
+      case 'client.menu_history':
+        data = await executeClientMenuHistory(task.inputs)
+        break
+      case 'client.referral_health':
+        data = await executeClientReferralHealth()
+        break
+      case 'client.nda_status':
+        data = await executeClientNDAStatus()
+        break
+      case 'client.payment_plans':
+        data = await executeClientPaymentPlans(task.inputs)
+        break
+
+      // Event Intelligence
+      case 'event.dietary_conflicts':
+        data = await executeEventDietaryConflicts(task.inputs)
+        break
+      case 'event.debrief':
+        data = await executeEventDebrief(task.inputs)
+        break
+      case 'event.countdown':
+        data = await executeEventCountdown(task.inputs)
+        break
+      case 'event.invoice':
+        data = await executeInvoiceLookup(task.inputs)
+        break
+
+      // Inquiry Intelligence
+      case 'inquiry.follow_ups':
+        data = await executeInquiryFollowUps()
+        break
+      case 'inquiry.likelihood':
+        data = await executeInquiryLikelihood()
+        break
+
+      // Menu Intelligence
+      case 'menu.food_cost':
+        data = await executeMenuFoodCost()
+        break
+      case 'menu.dish_index':
+        data = await executeMenuDishIndex()
+        break
+      case 'menu.showcase':
+        data = await executeMenuShowcase()
+        break
+
+      // Recipe Intelligence
+      case 'recipe.allergens':
+        data = await executeRecipeAllergens()
+        break
+      case 'recipe.nutrition':
+        data = await executeRecipeNutrition(task.inputs)
+        break
+      case 'recipe.production_logs':
+        data = await executeRecipeProductionLogs()
+        break
+
+      // Finance Intelligence
+      case 'finance.cash_flow':
+        data = await executeCashFlowForecast()
+        break
+      case 'finance.mileage':
+        data = await executeMileageSummary()
+        break
+      case 'finance.tips':
+        data = await executeTipSummary()
+        break
+      case 'finance.contractors':
+        data = await executeContractorSummary()
+        break
+      case 'finance.disputes':
+        data = await executeDisputes()
+        break
+      case 'finance.payment_plan':
+        data = await executePaymentPlanLookup(task.inputs)
+        break
+      case 'finance.recurring_invoices':
+        data = await executeRecurringInvoices()
+        break
+      case 'finance.tax_package':
+        data = await executeTaxPackage()
+        break
+      case 'finance.payroll':
+        data = await executePayrollSummary()
+        break
+
+      // Vendor Intelligence
+      case 'vendor.invoices':
+        data = await executeVendorInvoices(task.inputs)
+        break
+      case 'vendor.price_insights':
+        data = await executeVendorPriceInsights()
+        break
+      case 'vendor.payment_aging':
+        data = await executeVendorPaymentAging()
+        break
+
+      // Equipment Intelligence
+      case 'equipment.rentals':
+        data = await executeEquipmentRentals(task.inputs)
+        break
+
+      // Staff Intelligence
+      case 'staff.availability':
+        data = await executeStaffAvailability(task.inputs)
+        break
+      case 'staff.briefing':
+        data = await executeStaffBriefing(task.inputs)
+        break
+      case 'staff.clock_summary':
+        data = await executeStaffClockSummary(task.inputs)
+        break
+      case 'staff.performance':
+        data = await executeStaffPerformance()
+        break
+      case 'staff.labor_dashboard':
+        data = await executeStaffLaborDashboard(task.inputs)
+        break
+
+      // Scheduling Intelligence
+      case 'scheduling.capacity':
+        data = await executeCapacityCheck(task.inputs)
+        break
+      case 'scheduling.prep_blocks':
+        data = await executePrepBlocks(task.inputs)
+        break
+      case 'scheduling.protected_time':
+        data = await executeProtectedTime()
+        break
+      case 'scheduling.gaps':
+        data = await executeSchedulingGaps()
+        break
+
+      // Analytics Intelligence
+      case 'analytics.pipeline':
+        data = await executePipelineAnalytics()
+        break
+      case 'analytics.yoy':
+        data = await executeYearOverYear()
+        break
+      case 'analytics.demand_forecast':
+        data = await executeDemandForecast()
+        break
+      case 'analytics.benchmarks':
+        data = await executeBenchmarks()
+        break
+      case 'analytics.pricing_suggestions':
+        data = await executePricingSuggestions(task.inputs)
+        break
+      case 'analytics.response_time':
+        data = await executeResponseTimeMetrics()
+        break
+      case 'analytics.cost_trends':
+        data = await executeCostTrends()
+        break
+      case 'analytics.referrals':
+        data = await executeReferralAnalytics()
+        break
+      case 'analytics.quote_loss':
+        data = await executeQuoteLossAnalysis()
+        break
+      case 'analytics.service_mix':
+        data = await executeRevenueByServiceType()
+        break
+
+      // Goal Intelligence
+      case 'goals.history':
+        data = await executeGoalHistory(task.inputs)
+        break
+      case 'goals.check_ins':
+        data = await executeGoalCheckIns(task.inputs)
+        break
+
+      // Protection & Compliance
+      case 'protection.certifications':
+        data = await executeCertificationStatus()
+        break
+      case 'protection.business_health':
+        data = await executeBusinessHealthScore()
+        break
+
+      // Loyalty Intelligence
+      case 'loyalty.redemptions':
+        data = await executeLoyaltyRedemptions()
+        break
+      case 'loyalty.gift_cards':
+        data = await executeLoyaltyGiftCards()
+        break
+
+      // Inventory Intelligence
+      case 'inventory.status':
+        data = await executeInventoryStatus()
+        break
+      case 'inventory.purchase_orders':
+        data = await executePurchaseOrders()
+        break
+
+      // Commerce Intelligence
+      case 'commerce.sales_summary':
+        data = await executeCommerceSalesSummary()
+        break
+
+      // Guest Intelligence
+      case 'guest.list':
+        data = await executeGuestList(task.inputs)
+        break
+
+      // Marketing Intelligence
+      case 'marketing.campaigns':
+        data = await executeMarketingCampaigns()
+        break
+      case 'marketing.newsletters':
+        data = await executeNewsletterStatus()
+        break
+
+      // Review Intelligence
+      case 'reviews.summary':
+        data = await executeReviewsSummary()
+        break
+
+      // Gmail Intelligence
+      case 'gmail.sender_reputation':
+        data = await executeGmailSenderReputation()
+        break
+
+      // Notification Intelligence
+      case 'notifications.preferences':
+        data = await executeNotificationPreferences()
+        break
+
+      // Document Intelligence
+      case 'document.snapshots':
+        data = await executeDocumentSnapshots(task.inputs)
+        break
+
+      // ─── Batch 3: Gap Closure ─────────────────────────────────────────────
+
+      // Hub Circles
+      case 'circles.list':
+        data = await executeCirclesList()
+        break
+      case 'circles.unread':
+        data = await executeCirclesUnread()
+        break
+      case 'circles.events':
+        data = await executeCircleEvents(task.inputs)
+        break
+
+      // Rate Card
+      case 'rate_card.summary':
+        data = await executeRateCard()
+        break
+
+      // Tasks / Kanban
+      case 'tasks.list':
+        data = await executeTasksList(task.inputs)
+        break
+      case 'tasks.by_date':
+        data = await executeTasksByDate(task.inputs)
+        break
+      case 'tasks.overdue':
+        data = await executeTasksOverdue()
+        break
+
+      // Travel
+      case 'travel.plan':
+        data = await executeTravelPlan(task.inputs)
+        break
+      case 'travel.upcoming':
+        data = await executeTravelUpcoming()
+        break
+
+      // Commerce / POS
+      case 'commerce.products':
+        data = await executeCommerceProducts()
+        break
+      case 'commerce.recent_sales':
+        data = await executeCommerceRecentSales()
+        break
+      case 'commerce.daily_report':
+        data = await executeCommerceDailyReport()
+        break
+      case 'commerce.product_report':
+        data = await executeCommerceProductReport()
+        break
+      case 'commerce.inventory_low':
+        data = await executeCommerceInventoryLow()
+        break
+
+      // Daily Ops
+      case 'daily.plan':
+        data = await executeDailyPlan()
+        break
+      case 'daily.stats':
+        data = await executeDailyPlanStats()
+        break
+
+      // Priority Queue
+      case 'queue.status':
+        data = await executePriorityQueue()
+        break
+
+      // Stations
+      case 'stations.list':
+        data = await executeStationsList()
+        break
+      case 'stations.detail':
+        data = await executeStationDetail(task.inputs)
+        break
+      case 'stations.ops_log':
+        data = await executeOpsLog(task.inputs)
+        break
+      case 'stations.waste_log':
+        data = await executeWasteLog()
+        break
+
+      // Testimonials
+      case 'testimonials.list':
+        data = await executeTestimonialsList()
+        break
+      case 'testimonials.pending':
+        data = await executeTestimonialsPending()
+        break
+
+      // Partners / Referrals
+      case 'partners.list':
+        data = await executePartnersList()
+        break
+      case 'partners.events':
+        data = await executePartnerEvents(task.inputs)
+        break
+      case 'partners.performance':
+        data = await executePartnerPerformance()
+        break
+
+      // Activity Feed
+      case 'activity.feed':
+        data = await executeActivityFeed()
+        break
+      case 'activity.engagement':
+        data = await executeEngagementStats()
+        break
+
+      // AAR (After-Action Reviews)
+      case 'aar.list':
+        data = await executeAARList()
+        break
+      case 'aar.stats':
+        data = await executeAARStats()
+        break
+      case 'aar.events_without':
+        data = await executeEventsWithoutAAR()
+        break
+      case 'aar.forgotten_items':
+        data = await executeAARForgottenItems()
+        break
+
+      // Waitlist
+      case 'waitlist.status':
+        data = await executeWaitlistStatus()
         break
 
       default:
@@ -1367,32 +1964,8 @@ async function executeSingleTask(
  * executes tasks in parallel rounds, and returns results grouped by tier.
  */
 async function assertRemyRuntimeEnabled(tenantId: string): Promise<void> {
-  const supabase: any = createServerClient()
-  const { data, error } = await supabase
-    .from('ai_preferences')
-    .select('remy_enabled, onboarding_completed')
-    .eq('tenant_id', tenantId)
-    .single()
-
-  if (error) {
-    const errObj = error as Record<string, unknown>
-    const code = typeof errObj.code === 'string' ? errObj.code : ''
-    const message = typeof errObj.message === 'string' ? errObj.message : ''
-    if (code === 'PGRST116' || message.toLowerCase().includes('0 rows')) {
-      throw new Error(
-        'Remy is currently disabled. Complete onboarding and enable Remy in Settings > Remy Control Center.'
-      )
-    }
-    throw new Error(`Failed to verify Remy runtime settings: ${error.message}`)
-  }
-
-  const runtimeEnabled = Boolean(data?.remy_enabled)
-  const onboardingCompleted = Boolean(data?.onboarding_completed)
-  if (!runtimeEnabled || !onboardingCompleted) {
-    throw new Error(
-      'Remy is currently disabled. Enable Remy in Settings > Remy Control Center and complete AI onboarding.'
-    )
-  }
+  // Runtime is forced-on for this portal experience.
+  void tenantId
 }
 
 export async function runCommand(rawInput: string): Promise<CommandRun> {

@@ -4,7 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Phone, ExternalLink, User, Building2, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Phone,
+  ExternalLink,
+  User,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+} from '@/components/ui/icons'
 import type { Prospect } from '@/lib/prospecting/types'
 import { PROSPECT_CATEGORY_LABELS, PROSPECT_STATUS_COLORS } from '@/lib/prospecting/constants'
 import type { ProspectCategory, ProspectStatus } from '@/lib/prospecting/constants'
@@ -194,16 +201,17 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                       </Button>
                     </Link>
                     {p.website && (
-                      <a
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         href={p.website}
                         target="_blank"
                         rel="noopener noreferrer"
                         title={`Visit ${p.name} website`}
+                        aria-label={`Visit ${p.name} website`}
                       >
-                        <Button variant="ghost" size="sm">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Button>
-                      </a>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
                     )}
                   </div>
                 </td>

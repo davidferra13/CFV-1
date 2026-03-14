@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
+import { Download } from '@/components/ui/icons'
 import {
   exportSalesCsv,
   exportPaymentsCsv,

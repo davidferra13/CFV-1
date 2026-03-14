@@ -22,6 +22,7 @@
 
 ALTER TABLE dishes
   ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
 -- ─── 2. Create dish-photos storage bucket (PUBLIC) ─────────────────────────────
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -37,6 +38,7 @@ SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
+
 -- ─── 3. Storage RLS policies ────────────────────────────────────────────────────
 --
 -- Path structure:
@@ -57,6 +59,7 @@ WITH CHECK (
   AND get_current_user_role() = 'chef'
   AND split_part(name, '/', 1) = get_current_tenant_id()::text
 );
+
 -- Chefs: replace objects in their tenant prefix (upsert path)
 CREATE POLICY "dish_photos_chef_update"
 ON storage.objects FOR UPDATE
@@ -66,6 +69,7 @@ USING (
   AND get_current_user_role() = 'chef'
   AND split_part(name, '/', 1) = get_current_tenant_id()::text
 );
+
 -- Chefs: delete objects in their tenant prefix
 CREATE POLICY "dish_photos_chef_delete"
 ON storage.objects FOR DELETE
@@ -75,6 +79,7 @@ USING (
   AND get_current_user_role() = 'chef'
   AND split_part(name, '/', 1) = get_current_tenant_id()::text
 );
+
 -- Everyone (including unauthenticated): read all dish photos
 -- Public bucket = portfolio images safe to share publicly
 CREATE POLICY "dish_photos_public_read"

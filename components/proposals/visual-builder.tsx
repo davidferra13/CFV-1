@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 'use client'
 
 import { useState, useTransition } from 'react'
@@ -5,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createProposalTemplate, type ProposalTemplate } from '@/lib/proposals/template-actions'
-import { FileText, Image, Plus } from 'lucide-react'
+import { FileText, Image, Plus } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

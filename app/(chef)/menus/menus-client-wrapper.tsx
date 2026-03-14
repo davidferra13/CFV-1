@@ -17,7 +17,7 @@ import {
   SlidersHorizontal,
   Users,
   X,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'

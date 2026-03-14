@@ -1,5 +1,5 @@
-// Quote Client Actions — Client-side
-// Clients can view pending quotes and accept/reject them
+// Quote Client Actions - Client-side
+// Clients can view pending quotes and accept/reject them.
 
 'use server'
 
@@ -7,7 +7,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import type { Database, Json } from '@/types/database'
+import { pushToDLQ } from '@/lib/resilience/retry'
 
 // ============================================
 // 1. GET CLIENT QUOTES
@@ -70,120 +70,40 @@ export async function getClientQuoteById(quoteId: string) {
 // ============================================
 
 /**
- * Client accepts a quote
- * Freezes pricing snapshot and triggers downstream effects:
- * - If linked to inquiry at 'quoted' status → transitions inquiry to 'confirmed'
- * - If linked to event → updates event pricing
+ * Client accepts a quote.
+ * Atomic DB RPC updates:
+ * - quotes.status -> accepted (with frozen snapshot trigger)
+ * - inquiries.status quoted -> confirmed (if linked)
+ * - events pricing fields (if linked)
  */
 export async function acceptQuote(quoteId: string) {
   const user = await requireClient()
   const supabase: any = createServerClient()
 
-  // Fetch quote with full pricing data
-  const { data: quote, error: fetchError } = await supabase
-    .from('quotes')
-    .select('*, tenant_id')
-    .eq('id', quoteId)
-    .eq('client_id', user.entityId)
-    .single()
+  const { data: response, error: responseError } = await supabase.rpc('respond_to_quote_atomic', {
+    p_quote_id: quoteId,
+    p_client_id: user.entityId,
+    p_new_status: 'accepted',
+    p_actor_id: user.id,
+    p_rejected_reason: null,
+  })
 
-  if (fetchError || !quote) {
-    throw new Error('Quote not found')
+  if (responseError || !response) {
+    throw new Error(
+      responseError?.message
+        ? `Failed to accept quote: ${responseError.message}`
+        : 'Failed to accept quote'
+    )
   }
 
-  if (quote.status !== 'sent') {
-    throw new Error('Quote is not pending review')
-  }
-
-  // Freeze the pricing snapshot
-  const pricingSnapshot = {
-    total_quoted_cents: quote.total_quoted_cents,
-    price_per_person_cents: quote.price_per_person_cents,
-    guest_count_estimated: quote.guest_count_estimated,
-    pricing_model: quote.pricing_model,
-    deposit_amount_cents: quote.deposit_amount_cents,
-    deposit_percentage: quote.deposit_percentage,
-    deposit_required: quote.deposit_required,
-    frozen_at: new Date().toISOString(),
-  }
-
-  // Update quote to accepted. Prefer client-scoped update (RLS-enforced).
-  const updatePayload = {
-    status: 'accepted',
-    accepted_at: new Date().toISOString(),
-    snapshot_frozen: true,
-    pricing_snapshot: pricingSnapshot as unknown as Json,
-  }
-
-  const { data: updatedByClient, error: updateError } = await supabase
-    .from('quotes')
-    .update(updatePayload)
-    .eq('id', quoteId)
-    .eq('client_id', user.entityId)
-    .eq('status', 'sent')
-    .select('id')
-    .maybeSingle()
-
-  // Downstream effects use admin client to bypass RLS
-  const adminSupabase: any = createAdminClient()
-
-  // Backward compatibility: if client-scoped UPDATE errors (including RLS trigger failures)
-  // or returns no row due missing client UPDATE policy, complete transition via admin client
-  // after ownership/status were already verified above.
-  if (updateError || !updatedByClient) {
-    if (updateError) {
-      console.warn(
-        '[acceptQuote] Client update failed; trying admin fallback:',
-        updateError.message
-      )
-    }
-    const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
-      .from('quotes')
-      .update(updatePayload)
-      .eq('id', quoteId)
-      .eq('client_id', user.entityId)
-      .eq('status', 'sent')
-      .select('id')
-      .maybeSingle()
-
-    if (adminUpdateError || !updatedByAdmin) {
-      console.error('[acceptQuote] Admin fallback failed:', adminUpdateError)
-      throw new Error(
-        adminUpdateError
-          ? `Failed to accept quote: ${adminUpdateError.message}`
-          : updateError
-            ? `Failed to accept quote: ${updateError.message}`
-            : 'Failed to accept quote: no rows updated'
-      )
-    }
-  }
-
-  // If linked to inquiry at 'quoted' → transition to 'confirmed'
-  if (quote.inquiry_id) {
-    const { data: inquiry } = await adminSupabase
-      .from('inquiries')
-      .select('status')
-      .eq('id', quote.inquiry_id)
-      .single()
-
-    if (inquiry && inquiry.status === 'quoted') {
-      await adminSupabase
-        .from('inquiries')
-        .update({ status: 'confirmed' })
-        .eq('id', quote.inquiry_id)
-    }
-  }
-
-  // If linked to event → update event pricing
-  if (quote.event_id) {
-    await adminSupabase
-      .from('events')
-      .update({
-        quoted_price_cents: quote.total_quoted_cents,
-        deposit_amount_cents: quote.deposit_amount_cents,
-        pricing_model: quote.pricing_model,
-      })
-      .eq('id', quote.event_id)
+  const quote = response as {
+    tenant_id: string
+    event_id: string | null
+    inquiry_id: string | null
+    quote_name?: string | null
+    total_quoted_cents?: number | null
+    deposit_required?: boolean | null
+    deposit_amount_cents?: number | null
   }
 
   revalidatePath('/my-quotes')
@@ -202,12 +122,38 @@ export async function acceptQuote(quoteId: string) {
     revalidatePath('/events')
   }
 
+  // Circle-first: post quote accepted notification (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      await circleFirstNotify({
+        eventId: quote.event_id,
+        inquiryId: quote.inquiry_id,
+        tenantId: quote.tenant_id,
+        notificationType: 'quote_accepted',
+        body: "Quote accepted! We're locked in. Next up: finalizing the menu and confirming all the details.",
+        metadata: { quote_id: quoteId },
+        actionUrl: quote.event_id ? `/my-events/${quote.event_id}` : undefined,
+        actionLabel: quote.event_id ? 'View Event' : undefined,
+      })
+    } catch (circleErr) {
+      console.error('[acceptQuote] Circle-first notify failed (non-blocking):', circleErr)
+    }
+  }
+
   // Notify chef that quote was accepted (non-blocking)
-  const quoteTenantId = quote.tenant_id as string | undefined
-  if (quoteTenantId) {
-    notifyChefOfQuoteAccepted(quoteTenantId, quoteId, quote, user.entityId).catch((err) =>
+  if (quote.tenant_id) {
+    notifyChefOfQuoteAccepted(quote.tenant_id, quoteId, quote, user.entityId).catch(async (err) => {
       console.error('[acceptQuote] Chef notification failed:', err)
-    )
+      await pushToDLQ(createAdminClient() as any, {
+        tenantId: quote.tenant_id,
+        jobType: 'quote.accepted.notify_chef',
+        jobId: quoteId,
+        payload: { quote_id: quoteId, client_id: user.entityId },
+        errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
+        attempts: 1,
+      })
+    })
   }
 
   return { success: true }
@@ -221,63 +167,26 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   const user = await requireClient()
   const supabase: any = createServerClient()
 
-  const { data: quote, error: fetchError } = await supabase
-    .from('quotes')
-    .select('status, tenant_id, quote_name, inquiry_id')
-    .eq('id', quoteId)
-    .eq('client_id', user.entityId)
-    .single()
+  const { data: response, error: responseError } = await supabase.rpc('respond_to_quote_atomic', {
+    p_quote_id: quoteId,
+    p_client_id: user.entityId,
+    p_new_status: 'rejected',
+    p_actor_id: user.id,
+    p_rejected_reason: reason ?? null,
+  })
 
-  if (fetchError || !quote) {
-    throw new Error('Quote not found')
+  if (responseError || !response) {
+    throw new Error(
+      responseError?.message
+        ? `Failed to reject quote: ${responseError.message}`
+        : 'Failed to reject quote'
+    )
   }
 
-  if (quote.status !== 'sent') {
-    throw new Error('Quote is not pending review')
-  }
-
-  const updatePayload = {
-    status: 'rejected',
-    rejected_at: new Date().toISOString(),
-    rejected_reason: reason || null,
-  }
-
-  const { data: updatedByClient, error: updateError } = await supabase
-    .from('quotes')
-    .update(updatePayload)
-    .eq('id', quoteId)
-    .eq('client_id', user.entityId)
-    .eq('status', 'sent')
-    .select('id')
-    .maybeSingle()
-
-  if (updateError || !updatedByClient) {
-    const adminSupabase: any = createAdminClient()
-    if (updateError) {
-      console.warn(
-        '[rejectQuote] Client update failed; trying admin fallback:',
-        updateError.message
-      )
-    }
-    const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
-      .from('quotes')
-      .update(updatePayload)
-      .eq('id', quoteId)
-      .eq('client_id', user.entityId)
-      .eq('status', 'sent')
-      .select('id')
-      .maybeSingle()
-
-    if (adminUpdateError || !updatedByAdmin) {
-      console.error('[rejectQuote] Admin fallback failed:', adminUpdateError)
-      throw new Error(
-        adminUpdateError
-          ? `Failed to reject quote: ${adminUpdateError.message}`
-          : updateError
-            ? `Failed to reject quote: ${updateError.message}`
-            : 'Failed to reject quote: no rows updated'
-      )
-    }
+  const quote = response as {
+    tenant_id: string
+    quote_name?: string | null
+    inquiry_id?: string | null
   }
 
   revalidatePath('/my-quotes')
@@ -295,13 +204,23 @@ export async function rejectQuote(quoteId: string, reason?: string) {
       { quote_name: quote.quote_name, inquiry_id: quote.inquiry_id },
       user.entityId,
       reason || null
-    ).catch((err) => console.error('[rejectQuote] Chef notification failed:', err))
+    ).catch(async (err) => {
+      console.error('[rejectQuote] Chef notification failed:', err)
+      await pushToDLQ(createAdminClient() as any, {
+        tenantId: quote.tenant_id,
+        jobType: 'quote.rejected.notify_chef',
+        jobId: quoteId,
+        payload: { quote_id: quoteId, client_id: user.entityId },
+        errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
+        attempts: 1,
+      })
+    })
   }
 
   return { success: true }
 }
 
-// ─── Internal: notify chef when a quote is accepted ──────────────────────────
+// --- Internal: notify chef when a quote is accepted ---
 
 async function notifyChefOfQuoteAccepted(
   tenantId: string,
@@ -368,7 +287,7 @@ async function notifyChefOfQuoteAccepted(
   }
 }
 
-// ─── Internal: notify chef when a quote is rejected ──────────────────────────
+// --- Internal: notify chef when a quote is rejected ---
 
 async function notifyChefOfQuoteRejected(
   tenantId: string,

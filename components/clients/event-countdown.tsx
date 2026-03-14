@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { CalendarDays, Clock } from 'lucide-react'
+import { CalendarDays, Clock } from '@/components/ui/icons'
 
 type Props = {
   eventName: string

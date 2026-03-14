@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState, useTransition } from 'react'
-import { Lightbulb, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Lightbulb, Pencil, Plus, Trash2 } from '@/components/ui/icons'
 import {
   createChefJourneyIdea,
   deleteChefJourneyIdea,

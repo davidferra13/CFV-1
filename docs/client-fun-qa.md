@@ -22,7 +22,7 @@ The feature exists for two reasons:
 | `prove_yourself`      | 👨‍🍳    | If I could only cook you one dish to prove myself, what should it be?                                                  |
 | `food_you_hate`       | 🤢    | What's a food you hate that everyone else seems to love?                                                               |
 | `midnight_snack`      | 🌙    | What's the most "you" snack at 11pm?                                                                                   |
-| `dinner_vibe`         | 🕯️    | Pick one: cozy dinner party, chaotic feast, or quiet two-person meal — what's your vibe?                               |
+| `dinner_vibe`         | ✨    | Pick one: cozy dinner party, chaotic feast, or quiet two-person meal — what's your vibe?                               |
 | `dream_menu_theme`    | 🌊    | What's your dream menu theme: seafood night, steakhouse, Italian, coastal New England, or "surprise me"?               |
 | `obsessed_ingredient` | 🧄    | What's one ingredient you're obsessed with right now?                                                                  |
 | `best_meal_ever`      | 🏆    | What's the best meal you've ever had, and what made it unforgettable?                                                  |

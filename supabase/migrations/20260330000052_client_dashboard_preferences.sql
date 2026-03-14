@@ -11,9 +11,12 @@ CREATE TABLE IF NOT EXISTS client_preferences (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_client_preferences_client_id ON client_preferences(client_id);
 CREATE INDEX IF NOT EXISTS idx_client_preferences_tenant_id ON client_preferences(tenant_id);
+
 ALTER TABLE client_preferences ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS client_preferences_select_own ON client_preferences;
 CREATE POLICY client_preferences_select_own ON client_preferences
   FOR SELECT USING (
@@ -24,6 +27,7 @@ CREATE POLICY client_preferences_select_own ON client_preferences
         AND c.auth_user_id = auth.uid()
     )
   );
+
 DROP POLICY IF EXISTS client_preferences_insert_own ON client_preferences;
 CREATE POLICY client_preferences_insert_own ON client_preferences
   FOR INSERT WITH CHECK (
@@ -35,6 +39,7 @@ CREATE POLICY client_preferences_insert_own ON client_preferences
         AND c.tenant_id = client_preferences.tenant_id
     )
   );
+
 DROP POLICY IF EXISTS client_preferences_update_own ON client_preferences;
 CREATE POLICY client_preferences_update_own ON client_preferences
   FOR UPDATE USING (
@@ -54,6 +59,7 @@ CREATE POLICY client_preferences_update_own ON client_preferences
         AND c.tenant_id = client_preferences.tenant_id
     )
   );
+
 DROP TRIGGER IF EXISTS set_client_preferences_updated_at ON client_preferences;
 CREATE TRIGGER set_client_preferences_updated_at
   BEFORE UPDATE ON client_preferences

@@ -3,10 +3,14 @@
 import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Settings2, ArrowUp, ArrowDown } from 'lucide-react'
+import { Settings2 } from '@/components/ui/icons'
 import { updateChefPreferences } from '@/lib/chef/actions'
-import type { DashboardWidgetPreference } from '@/lib/scheduling/types'
-import { DASHBOARD_WIDGET_LABELS } from '@/lib/scheduling/types'
+import type { DashboardWidgetPreference, DashboardWidgetId } from '@/lib/scheduling/types'
+import {
+  DASHBOARD_WIDGET_LABELS,
+  DASHBOARD_WIDGET_META,
+  groupWidgetsByCategory,
+} from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 
 function cloneWidgets(widgets: DashboardWidgetPreference[]): DashboardWidgetPreference[] {
@@ -24,20 +28,11 @@ export function DashboardQuickSettings({
   const [widgets, setWidgets] = useState<DashboardWidgetPreference[]>(cloneWidgets(initialWidgets))
   const [error, setError] = useState<string | null>(null)
 
-  const visibleWidgets = useMemo(() => widgets.filter((widget) => widget.enabled), [widgets])
+  const grouped = useMemo(() => groupWidgetsByCategory(widgets), [widgets])
+  const enabledCount = useMemo(() => widgets.filter((w) => w.enabled).length, [widgets])
 
-  const moveVisibleWidget = (index: number, direction: 'up' | 'down') => {
-    setWidgets((prev) => {
-      const visible = prev.filter((widget) => widget.enabled)
-      const hidden = prev.filter((widget) => !widget.enabled)
-      const target = direction === 'up' ? index - 1 : index + 1
-      if (target < 0 || target >= visible.length) return prev
-
-      const nextVisible = [...visible]
-      const [moved] = nextVisible.splice(index, 1)
-      nextVisible.splice(target, 0, moved)
-      return [...nextVisible, ...hidden]
-    })
+  const toggleWidget = (widgetId: DashboardWidgetId) => {
+    setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, enabled: !w.enabled } : w)))
   }
 
   const handleSave = () => {
@@ -74,59 +69,54 @@ export function DashboardQuickSettings({
       {isOpen && (
         <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-stone-700 bg-stone-900 p-4 shadow-lg">
           <div className="mb-3">
-            <p className="text-sm font-semibold text-stone-100">Reorder Dashboard</p>
-            <p className="text-xs text-stone-500">Use up/down to reorder visible widgets.</p>
+            <p className="text-sm font-semibold text-stone-100">Dashboard Widgets</p>
+            <p className="text-xs text-stone-500">{enabledCount} enabled. Toggle widgets on/off.</p>
           </div>
 
-          <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-            {visibleWidgets.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-600 p-3 text-xs text-stone-500">
-                No visible widgets. Enable them in Settings.
-              </p>
-            )}
-
-            {visibleWidgets.map((widget, index) => (
-              <div
-                key={widget.id}
-                className="flex items-center justify-between gap-2 rounded-md border border-stone-700 p-2"
-              >
-                <p className="text-xs font-medium text-stone-200">
-                  {DASHBOARD_WIDGET_LABELS[widget.id]}
-                </p>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={index === 0}
-                    onClick={() => moveVisibleWidget(index, 'up')}
-                    className="h-7 px-2"
-                  >
-                    <ArrowUp className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={index === visibleWidgets.length - 1}
-                    onClick={() => moveVisibleWidget(index, 'down')}
-                    className="h-7 px-2"
-                  >
-                    <ArrowDown className="h-3.5 w-3.5" />
-                  </Button>
+          <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+            {grouped.map(({ category, label, widgets: catWidgets }) => {
+              const enabledInCat = catWidgets.filter((w) => w.enabled).length
+              return (
+                <div key={category}>
+                  <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">
+                    {label}
+                    <span className="ml-1 font-normal">
+                      ({enabledInCat}/{catWidgets.length})
+                    </span>
+                  </p>
+                  <div className="space-y-1">
+                    {catWidgets.map((widget) => (
+                      <label
+                        key={widget.id}
+                        className="flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer hover:bg-stone-800 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={widget.enabled}
+                          onChange={() => toggleWidget(widget.id)}
+                          className="h-3.5 w-3.5 rounded border-stone-600 bg-stone-800 text-brand-600 focus:ring-brand-500 focus:ring-offset-0"
+                        />
+                        <span
+                          className={`text-xs ${widget.enabled ? 'text-stone-200' : 'text-stone-500'}`}
+                        >
+                          {DASHBOARD_WIDGET_LABELS[widget.id]}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
 
-          <div className="mt-4 flex items-center justify-between gap-2">
+          <div className="mt-4 flex items-center justify-between gap-2 border-t border-stone-700 pt-3">
             <Link
               href="/settings/dashboard"
               className="text-xs text-brand-600 hover:text-brand-400"
             >
-              Manage widget visibility
+              Full settings
             </Link>
             <div className="flex gap-2">
               <Button

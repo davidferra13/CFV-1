@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { createExpense, type CreateExpenseInput } from '@/lib/expenses/actions'
 import { EXPENSE_CATEGORY_OPTIONS, type ExpenseCategory } from '@/lib/constants/expense-categories'
@@ -105,6 +105,7 @@ export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {
             type="button"
             onClick={onClose}
             className="p-1 rounded hover:bg-stone-700 text-stone-400 hover:text-stone-200"
+            aria-label="Close quick expense modal"
           >
             <X className="w-5 h-5" />
           </button>

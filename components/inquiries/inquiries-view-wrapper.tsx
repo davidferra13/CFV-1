@@ -2,7 +2,7 @@
 // The existing list (server component) is passed as children; kanban data is a prop.
 'use client'
 
-import { List, LayoutGrid } from 'lucide-react'
+import { List, LayoutGrid } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { KanbanBoard, type KanbanBoardInquiry } from './kanban-board'
 import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'

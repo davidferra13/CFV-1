@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bot, MessageSquare, Brain, ShieldCheck, Trash2, Sparkles } from 'lucide-react'
+import { Bot, MessageSquare, Brain, ShieldCheck, Trash2, Sparkles } from '@/components/ui/icons'
 import { CommandCenterClient } from '@/components/ai/command-center-client'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
 import { DataControls } from '@/components/ai-privacy/data-controls'

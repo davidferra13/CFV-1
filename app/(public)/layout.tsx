@@ -2,12 +2,10 @@
 
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
-import { PageInfoButton } from '@/components/ui/page-info'
-import { RemyConciergeWidget } from '@/components/public/remy-concierge-widget'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a1210] via-[#141110] to-stone-950 flex flex-col relative">
+    <div className="relative flex min-h-screen flex-col overflow-x-clip bg-gradient-to-b from-[#1a1210] via-[#141110] to-stone-950">
       {/* Skip link removed — root layout.tsx already provides one */}
       {/* Ambient glow — warm brand radiance behind the page */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -20,8 +18,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <PublicFooter />
-      <PageInfoButton />
-      <RemyConciergeWidget />
     </div>
   )
 }

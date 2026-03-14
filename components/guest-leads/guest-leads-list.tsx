@@ -169,11 +169,13 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                       </>
                     )}
                     {lead.status === 'converted' && lead.converted_client_id && (
-                      <a href={`/clients/${lead.converted_client_id}`}>
-                        <Button variant="secondary" className="text-xs">
-                          View Client
-                        </Button>
-                      </a>
+                      <Button
+                        variant="secondary"
+                        className="text-xs"
+                        href={`/clients/${lead.converted_client_id}`}
+                      >
+                        View Client
+                      </Button>
                     )}
                     {lead.status === 'archived' && (
                       <Button

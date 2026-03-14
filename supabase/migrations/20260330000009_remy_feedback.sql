@@ -28,17 +28,22 @@ CREATE TABLE IF NOT EXISTS remy_feedback (
   response_time_ms integer,       -- how long the response took
   created_at      timestamptz NOT NULL DEFAULT now()
 );
+
 -- Index for querying feedback by tenant and time
 CREATE INDEX idx_remy_feedback_tenant_created
   ON remy_feedback (tenant_id, created_at DESC);
+
 -- Index for aggregating ratings
 CREATE INDEX idx_remy_feedback_rating
   ON remy_feedback (rating, created_at DESC);
+
 -- RLS: chefs can only see/create their own feedback
 ALTER TABLE remy_feedback ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Chefs can insert their own feedback"
   ON remy_feedback FOR INSERT
   WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+
 CREATE POLICY "Chefs can view their own feedback"
   ON remy_feedback FOR SELECT
   USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);

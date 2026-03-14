@@ -458,24 +458,24 @@ export default async function DocumentsIndexPage({
                           Open Hub
                         </Button>
                       </Link>
-                      <a
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         href={`/api/documents/${event.id}?type=pack&types=${packTypesParam}&archive=1`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Button variant="secondary" size="sm">
-                          Print Pack
-                        </Button>
-                      </a>
-                      <a
+                        Print Pack
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         href={`/api/documents/${event.id}?type=all&archive=1`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Button variant="ghost" size="sm">
-                          Print All
-                        </Button>
-                      </a>
+                        Print All
+                      </Button>
                       <Link href={`/events/${event.id}/financial`}>
                         <Button variant="ghost" size="sm">
                           Financial
@@ -513,15 +513,15 @@ export default async function DocumentsIndexPage({
                         <p className="font-medium text-stone-100">{template.label}</p>
                         <p className="text-xs text-stone-500">{template.description}</p>
                       </div>
-                      <a
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         href={`/api/documents/templates/${template.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Button variant="secondary" size="sm">
-                          Download Blank
-                        </Button>
-                      </a>
+                        Download Blank
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -637,11 +637,9 @@ export default async function DocumentsIndexPage({
                 Oldest
               </Button>
             </Link>
-            <a href={buildSnapshotExportHref(snapshotQueryState)}>
-              <Button variant="ghost" size="sm">
-                Export CSV
-              </Button>
-            </a>
+            <Button variant="ghost" size="sm" href={buildSnapshotExportHref(snapshotQueryState)}>
+              Export CSV
+            </Button>
           </div>
         </form>
 
@@ -690,15 +688,15 @@ export default async function DocumentsIndexPage({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <a
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     href={`/api/documents/snapshots/${snapshot.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Button variant="ghost" size="sm">
-                      Open
-                    </Button>
-                  </a>
+                    Open
+                  </Button>
                   <Link href={`/events/${snapshot.eventId}/documents`}>
                     <Button variant="secondary" size="sm">
                       Event Hub

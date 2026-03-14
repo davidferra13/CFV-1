@@ -6,7 +6,7 @@
 
 import { useState, useRef } from 'react'
 import { addClientTag, removeClientTag } from '@/lib/clients/tag-actions'
-import { X, Plus } from 'lucide-react'
+import { X, Plus } from '@/components/ui/icons'
 
 interface ClientTagsProps {
   clientId: string

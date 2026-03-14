@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Share2, Check, Loader2, ChefHat, Star } from 'lucide-react'
+import { Share2, Check, Loader2, ChefHat, Star } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { shareChefWithFriend } from '@/lib/hub/chef-share-actions'

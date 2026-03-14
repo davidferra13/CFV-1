@@ -15,7 +15,7 @@ import {
 import { getInquiries } from '@/lib/inquiries/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Clock, TrendingUp, Ghost, XCircle } from 'lucide-react'
+import { ArrowLeft, Clock, TrendingUp, Ghost, XCircle } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'Conversion Funnel - ChefFlow',

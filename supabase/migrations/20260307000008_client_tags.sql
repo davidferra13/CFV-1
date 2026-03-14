@@ -11,10 +11,13 @@ CREATE TABLE IF NOT EXISTS client_tags (
 
   UNIQUE (client_id, tag)
 );
+
 CREATE INDEX IF NOT EXISTS idx_client_tags_client  ON client_tags(client_id);
 CREATE INDEX IF NOT EXISTS idx_client_tags_tenant  ON client_tags(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_client_tags_tag     ON client_tags(tenant_id, tag);
+
 ALTER TABLE client_tags ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Chefs manage own client tags"
   ON client_tags
   FOR ALL

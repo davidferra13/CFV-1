@@ -1,7 +1,14 @@
 // Next Best Actions Widget — shows top 5 client actions needed on the dashboard
 
 import Link from 'next/link'
-import { ArrowRight, MessageCircle, Calendar, RefreshCw, Gift, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  MessageCircle,
+  Calendar,
+  RefreshCw,
+  Gift,
+  Sparkles,
+} from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 

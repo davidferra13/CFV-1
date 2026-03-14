@@ -17,15 +17,19 @@ CREATE TABLE user_feedback (
   page_context TEXT,       -- URL path captured at submission time
   metadata     JSONB       NOT NULL DEFAULT '{}'
 );
+
 ALTER TABLE user_feedback ENABLE ROW LEVEL SECURITY;
+
 -- Only the service role (admin client) can read feedback
 CREATE POLICY "service_role_read_feedback"
   ON user_feedback FOR SELECT
   USING (auth.role() = 'service_role');
+
 -- Anyone — authenticated or not — can insert via the server action
 CREATE POLICY "anyone_insert_feedback"
   ON user_feedback FOR INSERT
   WITH CHECK (true);
+
 -- Index for admin queries (most recent first)
 CREATE INDEX idx_user_feedback_created_at ON user_feedback (created_at DESC);
 CREATE INDEX idx_user_feedback_sentiment   ON user_feedback (sentiment);

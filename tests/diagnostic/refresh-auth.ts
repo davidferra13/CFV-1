@@ -5,7 +5,6 @@
 
 import { chromium } from '@playwright/test'
 import { readFileSync } from 'fs'
-import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 async function refreshAuth() {
   // Use agent account (permanent, not ephemeral E2E seeds)
@@ -19,7 +18,7 @@ async function refreshAuth() {
   const page = await context.newPage()
 
   // Go to sign-in and wait for form
-  await page.goto(`${TEST_BASE_URL}/sign-in`)
+  await page.goto('http://localhost:3100/sign-in')
   await page.waitForLoadState('networkidle')
 
   // Follow redirect if any

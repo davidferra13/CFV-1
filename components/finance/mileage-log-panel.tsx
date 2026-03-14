@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { addMileageEntry, deleteMileageEntry } from '@/lib/finance/mileage-actions'
 import type { MileageEntry } from '@/lib/finance/mileage-actions'
-import { Trash2, Plus, Car } from 'lucide-react'
+import { Trash2, Plus, Car } from '@/components/ui/icons'
 
 interface Props {
   eventId?: string

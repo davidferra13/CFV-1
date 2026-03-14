@@ -12,7 +12,7 @@ import {
   FILING_FREQUENCY_LABELS,
   bpsToPercent,
 } from '@/lib/finance/sales-tax-constants'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 export default function SalesTaxSettingsPage() {

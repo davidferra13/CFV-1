@@ -16,6 +16,7 @@
 -- =====================================================================================
 
 ALTER TYPE payment_method ADD VALUE IF NOT EXISTS 'gift_card';
+
 -- =====================================================================================
 -- STEP 2: Add new columns to client_incentives
 -- All nullable / have defaults so existing rows are unaffected.
@@ -27,13 +28,16 @@ ALTER TABLE client_incentives
   ADD COLUMN IF NOT EXISTS purchase_status TEXT NOT NULL DEFAULT 'issued',
   ADD COLUMN IF NOT EXISTS purchased_by_user_id UUID REFERENCES auth.users(id),
   ADD COLUMN IF NOT EXISTS purchased_by_email TEXT;
+
 ALTER TABLE client_incentives
   ADD CONSTRAINT chk_incentive_purchase_status
     CHECK (purchase_status IN ('issued', 'pending_payment', 'paid'));
+
 COMMENT ON COLUMN client_incentives.remaining_balance_cents IS 'For gift cards: remaining redeemable value in cents. Decremented on each partial redemption. NULL for vouchers.';
 COMMENT ON COLUMN client_incentives.purchase_status IS 'issued = chef created; pending_payment = Stripe session open; paid = purchased by client via Stripe.';
 COMMENT ON COLUMN client_incentives.purchased_by_user_id IS 'Auth user who bought this gift card (vs. the recipient).';
 COMMENT ON COLUMN client_incentives.purchased_by_email IS 'Email of the buyer (for confirmation emails even if not an auth user).';
+
 -- =====================================================================================
 -- STEP 3: Trigger — auto-initialize remaining_balance_cents for gift cards
 -- When a new gift card is inserted without remaining_balance_cents set,
@@ -49,11 +53,13 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
 DROP TRIGGER IF EXISTS trg_init_gift_card_balance ON client_incentives;
 CREATE TRIGGER trg_init_gift_card_balance
   BEFORE INSERT ON client_incentives
   FOR EACH ROW
   EXECUTE FUNCTION initialize_gift_card_balance();
+
 -- =====================================================================================
 -- STEP 4: gift_card_purchase_intents table
 -- Holds pre-payment state for Stripe Checkout sessions initiated by clients
@@ -97,19 +103,24 @@ CREATE TABLE IF NOT EXISTS gift_card_purchase_intents (
     position('@' in buyer_email) > 1
   )
 );
+
 COMMENT ON TABLE gift_card_purchase_intents IS 'Pre-payment state for Stripe Checkout gift card purchases. One row per purchase attempt. Webhook updates status to paid and links created_incentive_id.';
+
 CREATE INDEX IF NOT EXISTS idx_gift_card_purchase_intents_tenant ON gift_card_purchase_intents(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_gift_card_purchase_intents_session ON gift_card_purchase_intents(stripe_checkout_session_id)
   WHERE stripe_checkout_session_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_gift_card_purchase_intents_status ON gift_card_purchase_intents(status, created_at);
+
 -- RLS: Webhook uses service role (bypasses RLS). Chefs can view their tenant's intents.
 ALTER TABLE gift_card_purchase_intents ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS gift_card_purchase_intents_chef_select ON gift_card_purchase_intents;
 CREATE POLICY gift_card_purchase_intents_chef_select ON gift_card_purchase_intents
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 -- =====================================================================================
 -- STEP 5: incentive_redemptions table
 -- Immutable audit log. One row per redemption event (a code used against an event).
@@ -142,13 +153,17 @@ CREATE TABLE IF NOT EXISTS incentive_redemptions (
   redeemed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 COMMENT ON TABLE incentive_redemptions IS 'Immutable audit log of voucher/gift card redemptions. One row per use against an event. Never update or delete.';
+
 CREATE INDEX IF NOT EXISTS idx_incentive_redemptions_tenant ON incentive_redemptions(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_incentive_redemptions_incentive ON incentive_redemptions(incentive_id);
 CREATE INDEX IF NOT EXISTS idx_incentive_redemptions_event ON incentive_redemptions(event_id);
 CREATE INDEX IF NOT EXISTS idx_incentive_redemptions_client ON incentive_redemptions(client_id);
 CREATE INDEX IF NOT EXISTS idx_incentive_redemptions_redeemed_at ON incentive_redemptions(redeemed_at DESC);
+
 ALTER TABLE incentive_redemptions ENABLE ROW LEVEL SECURITY;
+
 -- Chef sees all redemptions within their tenant
 DROP POLICY IF EXISTS incentive_redemptions_chef_select ON incentive_redemptions;
 CREATE POLICY incentive_redemptions_chef_select ON incentive_redemptions
@@ -156,6 +171,7 @@ CREATE POLICY incentive_redemptions_chef_select ON incentive_redemptions
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 -- Client sees their own redemptions
 DROP POLICY IF EXISTS incentive_redemptions_client_select ON incentive_redemptions;
 CREATE POLICY incentive_redemptions_client_select ON incentive_redemptions
@@ -163,6 +179,7 @@ CREATE POLICY incentive_redemptions_client_select ON incentive_redemptions
     get_current_user_role() = 'client'
     AND client_id = get_current_client_id()
   );
+
 -- =====================================================================================
 -- STEP 6: Atomic redemption RPC
 -- Called from the server action; runs as a single DB transaction.
@@ -261,7 +278,9 @@ BEGIN
   RETURN v_ledger_id;
 END;
 $$;
+
 COMMENT ON FUNCTION redeem_incentive IS 'Atomically applies a voucher/gift card to an event: inserts ledger credit, decrements gift card balance, inserts audit row. Must be called via supabase.rpc() from server-side code only.';
+
 -- =====================================================================================
 -- END
--- =====================================================================================;
+-- =====================================================================================

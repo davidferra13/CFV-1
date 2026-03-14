@@ -14,6 +14,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- ── Households table ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS households (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -24,11 +25,14 @@ CREATE TABLE IF NOT EXISTS households (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_households_tenant
   ON households(tenant_id);
+
 -- RLS
 ALTER TABLE households ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY households_chef_select ON households
   FOR SELECT USING (
     tenant_id IN (
@@ -36,6 +40,7 @@ CREATE POLICY households_chef_select ON households
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY households_chef_insert ON households
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -43,6 +48,7 @@ CREATE POLICY households_chef_insert ON households
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY households_chef_update ON households
   FOR UPDATE USING (
     tenant_id IN (
@@ -50,6 +56,7 @@ CREATE POLICY households_chef_update ON households
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY households_chef_delete ON households
   FOR DELETE USING (
     tenant_id IN (
@@ -57,11 +64,13 @@ CREATE POLICY households_chef_delete ON households
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Updated_at trigger
 CREATE TRIGGER set_households_updated_at
   BEFORE UPDATE ON households
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
 -- ── Household Members table ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS household_members (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -72,13 +81,16 @@ CREATE TABLE IF NOT EXISTS household_members (
 
   CONSTRAINT uq_household_client UNIQUE(household_id, client_id)
 );
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_household_members_household
   ON household_members(household_id);
 CREATE INDEX IF NOT EXISTS idx_household_members_client
   ON household_members(client_id);
+
 -- RLS (via household tenant)
 ALTER TABLE household_members ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY household_members_chef_select ON household_members
   FOR SELECT USING (
     household_id IN (
@@ -89,6 +101,7 @@ CREATE POLICY household_members_chef_select ON household_members
       )
     )
   );
+
 CREATE POLICY household_members_chef_insert ON household_members
   FOR INSERT WITH CHECK (
     household_id IN (
@@ -99,6 +112,7 @@ CREATE POLICY household_members_chef_insert ON household_members
       )
     )
   );
+
 CREATE POLICY household_members_chef_update ON household_members
   FOR UPDATE USING (
     household_id IN (
@@ -109,6 +123,7 @@ CREATE POLICY household_members_chef_update ON household_members
       )
     )
   );
+
 CREATE POLICY household_members_chef_delete ON household_members
   FOR DELETE USING (
     household_id IN (
@@ -119,8 +134,10 @@ CREATE POLICY household_members_chef_delete ON household_members
       )
     )
   );
+
 -- ── Add household_id to events (additive, nullable) ──────────
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS household_id UUID REFERENCES households(id) ON DELETE SET NULL;
+
 CREATE INDEX IF NOT EXISTS idx_events_household
   ON events(household_id) WHERE household_id IS NOT NULL;

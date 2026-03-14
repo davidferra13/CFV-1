@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { ChefHat, Link2, Unlink, Plus, Search, X } from 'lucide-react'
+import { ChefHat, Link2, Unlink, Plus, Search, X } from '@/components/ui/icons'
 import { linkRecipeToInquiry, unlinkRecipeFromInquiry } from '@/lib/inquiries/note-actions'
 import { toast } from 'sonner'
 import type { InquiryRecipeLink } from '@/lib/inquiries/note-actions'

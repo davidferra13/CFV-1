@@ -37,6 +37,7 @@ type Inquiry = {
   client_id: string | null
   confirmed_date: string | null
   converted_to_event_id: string | null
+  service_mode?: 'one_off' | 'recurring' | 'multi_day' | null
 }
 
 export function InquiryTransitions({
@@ -103,7 +104,12 @@ export function InquiryTransitions({
     try {
       const result = await convertInquiryToEvent(inquiry.id)
       if (result.success && result.event) {
-        trackAction('Converted inquiry to event', inquiry.id)
+        trackAction(
+          inquiry.service_mode === 'multi_day'
+            ? 'Converted inquiry to event series'
+            : 'Converted inquiry to event',
+          inquiry.id
+        )
         router.push(`/events/${result.event.id}`)
       }
     } catch (err) {
@@ -162,7 +168,10 @@ export function InquiryTransitions({
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actions</h2>
-        <p className="text-stone-500">This inquiry has been converted to an event.</p>
+        <p className="text-stone-500">
+          This inquiry has been converted to{' '}
+          {inquiry.service_mode === 'multi_day' ? 'a series of events.' : 'an event.'}
+        </p>
         <Button
           variant="secondary"
           className="mt-3"
@@ -351,7 +360,7 @@ export function InquiryTransitions({
 
             {inquiry.status === 'confirmed' && !inquiry.converted_to_event_id && (
               <Button onClick={handleConvert} loading={loading} disabled={loading}>
-                Convert to Event
+                {inquiry.service_mode === 'multi_day' ? 'Convert to Series' : 'Convert to Event'}
               </Button>
             )}
 
@@ -384,7 +393,10 @@ export function InquiryTransitions({
             )}
             {inquiry.status === 'confirmed' && (
               <p>
-                Client confirmed! Convert to an event to start the booking lifecycle.
+                Client confirmed!{' '}
+                {inquiry.service_mode === 'multi_day'
+                  ? 'Convert to a series to generate the multi-day schedule.'
+                  : 'Convert to an event to start the booking lifecycle.'}
                 {!inquiry.client_id && ' Note: Link a client first before converting.'}
                 {!inquiry.confirmed_date &&
                   ' Note: Confirm the event date first before converting.'}

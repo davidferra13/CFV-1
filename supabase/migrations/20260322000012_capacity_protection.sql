@@ -9,6 +9,7 @@ ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS off_hours_end TIME,
   ADD COLUMN IF NOT EXISTS off_days TEXT[] DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS business_continuity_plan JSONB DEFAULT '{}';
+
 -- Protected time blocks in calendar (only if prep_blocks table exists)
 DO $$
 BEGIN

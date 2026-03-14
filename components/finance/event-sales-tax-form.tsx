@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { setEventSalesTax } from '@/lib/finance/sales-tax-actions'
 import type { EventSalesTax, SalesTaxSettings } from '@/lib/finance/sales-tax-actions'
 import { bpsToPercent, computeTaxCents } from '@/lib/finance/sales-tax-constants'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {

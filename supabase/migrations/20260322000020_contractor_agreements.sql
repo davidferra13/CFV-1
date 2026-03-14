@@ -16,8 +16,10 @@ CREATE TABLE IF NOT EXISTS contractor_service_agreements (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
 -- Add tenant_id if it doesn't exist (table may have been created with chef_id instead)
 ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES chefs(id) ON DELETE CASCADE;
+
 -- Backfill tenant_id from chef_id if chef_id column exists
 DO $$
 BEGIN
@@ -25,6 +27,7 @@ BEGIN
     UPDATE contractor_service_agreements SET tenant_id = chef_id WHERE tenant_id IS NULL;
   END IF;
 END $$;
+
 -- Ensure all columns exist if table was pre-created with fewer columns
 ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS staff_member_id UUID;
 ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS effective_date DATE;
@@ -39,7 +42,9 @@ ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS expires_at DA
 ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS notes TEXT;
 ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE contractor_service_agreements ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 ALTER TABLE contractor_service_agreements ENABLE ROW LEVEL SECURITY;
+
 -- Drop existing policy if present, then recreate
 DROP POLICY IF EXISTS "contractor_agreements_own_tenant" ON contractor_service_agreements;
 CREATE POLICY "contractor_agreements_own_tenant" ON contractor_service_agreements
@@ -48,5 +53,6 @@ CREATE POLICY "contractor_agreements_own_tenant" ON contractor_service_agreement
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
     )
   );
+
 CREATE INDEX IF NOT EXISTS idx_contractor_agreements_tenant ON contractor_service_agreements(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_contractor_agreements_member ON contractor_service_agreements(staff_member_id);

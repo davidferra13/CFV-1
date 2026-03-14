@@ -11,7 +11,7 @@ import {
 } from '@/lib/finance/sales-tax-actions'
 import type { SalesTaxSummary, SalesTaxRemittance } from '@/lib/finance/sales-tax-actions'
 import { bpsToPercent } from '@/lib/finance/sales-tax-constants'
-import { CheckCircle, AlertTriangle, DollarSign } from 'lucide-react'
+import { CheckCircle, AlertTriangle, DollarSign } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {

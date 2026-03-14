@@ -10,7 +10,7 @@ import {
   deleteAddon,
   type ProposalAddon,
 } from '@/lib/proposals/addon-actions'
-import { PlusCircle, Trash2, Edit2 } from 'lucide-react'
+import { PlusCircle, Trash2, Edit2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

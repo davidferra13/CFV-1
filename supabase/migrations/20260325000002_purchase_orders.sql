@@ -15,6 +15,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- ============================================
 -- TABLE: purchase_orders
 -- ============================================
@@ -41,12 +42,15 @@ CREATE TABLE purchase_orders (
   created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_po_chef_status ON purchase_orders(chef_id, status);
 CREATE INDEX idx_po_vendor ON purchase_orders(vendor_id) WHERE vendor_id IS NOT NULL;
 CREATE INDEX idx_po_event ON purchase_orders(event_id) WHERE event_id IS NOT NULL;
+
 CREATE TRIGGER trg_po_updated_at
   BEFORE UPDATE ON purchase_orders
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE: purchase_order_items
 -- ============================================
@@ -82,13 +86,16 @@ CREATE TABLE purchase_order_items (
   notes                     TEXT,
   created_at                TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_po_items_po ON purchase_order_items(purchase_order_id);
 CREATE INDEX idx_po_items_ingredient ON purchase_order_items(ingredient_id) WHERE ingredient_id IS NOT NULL;
+
 -- ============================================
 -- RLS
 -- ============================================
 ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
+
 -- purchase_orders: chef-only CRUD
 CREATE POLICY po_chef_select ON purchase_orders FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
@@ -98,6 +105,7 @@ CREATE POLICY po_chef_update ON purchase_orders FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 CREATE POLICY po_chef_delete ON purchase_orders FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+
 -- purchase_order_items: via parent PO join
 CREATE POLICY poi_chef_select ON purchase_order_items FOR SELECT
   USING (EXISTS (

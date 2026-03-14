@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/admin'
+import { redirect } from 'next/navigation'
 import {
   listRemyApprovalPolicies,
   listRemyApprovalPolicyTargets,
@@ -11,11 +12,15 @@ import {
 } from '@/lib/ai/remy-action-audit-actions'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { RemyControlClient } from './remy-control-client'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata: Metadata = { title: 'Remy Control Center - ChefFlow' }
 
 export default async function RemySettingsPage() {
-  await requireChef()
+  const admin = await requireAdmin()
+  if (!isFounderEmail(admin.email)) {
+    redirect('/unauthorized')
+  }
 
   const [targets, policies, auditRows, summary, aiPrefs] = await Promise.all([
     listRemyApprovalPolicyTargets().catch(() => []),

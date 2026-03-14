@@ -18,13 +18,18 @@ CREATE TABLE IF NOT EXISTS remy_action_audit_log (
   duration_ms integer CHECK (duration_ms IS NULL OR duration_ms >= 0),
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_remy_action_audit_log_tenant_created
   ON remy_action_audit_log (tenant_id, created_at DESC);
+
 CREATE INDEX idx_remy_action_audit_log_tenant_status_created
   ON remy_action_audit_log (tenant_id, status, created_at DESC);
+
 CREATE INDEX idx_remy_action_audit_log_tenant_task_type
   ON remy_action_audit_log (tenant_id, task_type, created_at DESC);
+
 ALTER TABLE remy_action_audit_log ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY remy_action_audit_log_select
   ON remy_action_audit_log FOR SELECT
   USING (
@@ -34,6 +39,7 @@ CREATE POLICY remy_action_audit_log_select
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_action_audit_log_insert
   ON remy_action_audit_log FOR INSERT
   WITH CHECK (
@@ -43,6 +49,7 @@ CREATE POLICY remy_action_audit_log_insert
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_action_audit_log_update
   ON remy_action_audit_log FOR UPDATE
   USING (
@@ -59,4 +66,5 @@ CREATE POLICY remy_action_audit_log_update
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
--- No delete policy: audit rows should not be removed through app-level access.;
+
+-- No delete policy: audit rows should not be removed through app-level access.

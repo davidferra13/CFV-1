@@ -17,9 +17,12 @@ CREATE TABLE IF NOT EXISTS shift_handoff_notes (
   pinned      BOOLEAN NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_handoff_notes_chef_date ON shift_handoff_notes(chef_id, date DESC);
 CREATE INDEX idx_handoff_notes_pinned ON shift_handoff_notes(chef_id, pinned) WHERE pinned = true;
+
 ALTER TABLE shift_handoff_notes ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Tenant isolation for shift_handoff_notes"
   ON shift_handoff_notes
   FOR ALL
@@ -29,6 +32,7 @@ CREATE POLICY "Tenant isolation for shift_handoff_notes"
   WITH CHECK (chef_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
   ));
+
 -- ============================================
 -- PREP TIMELINE (Phase 5)
 -- ============================================
@@ -49,10 +53,13 @@ CREATE TABLE IF NOT EXISTS prep_timeline (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_prep_timeline_chef ON prep_timeline(chef_id, status);
 CREATE INDEX idx_prep_timeline_end ON prep_timeline(chef_id, end_at) WHERE status = 'active';
 CREATE INDEX idx_prep_timeline_event ON prep_timeline(event_id) WHERE event_id IS NOT NULL;
+
 ALTER TABLE prep_timeline ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Tenant isolation for prep_timeline"
   ON prep_timeline
   FOR ALL

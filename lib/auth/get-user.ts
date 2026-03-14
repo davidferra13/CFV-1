@@ -5,6 +5,7 @@
 import { cache } from 'react'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminEmails } from '@/lib/platform/owner-account'
 
 export type AuthUser = {
   id: string
@@ -258,10 +259,7 @@ export async function requireStaff(): Promise<StaffAuthUser> {
 export async function requireChefAdmin(): Promise<AuthUser> {
   const user = await requireChef()
 
-  const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
+  const adminEmails = getAdminEmails()
 
   if (!adminEmails.includes(user.email.toLowerCase())) {
     throw new Error('Unauthorized: Admin access required')

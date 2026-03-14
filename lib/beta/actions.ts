@@ -5,6 +5,8 @@ import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
 import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
+import { getAdminNotificationRecipients, resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { createNotification } from '@/lib/notifications/actions'
 
 export interface BetaSignupInput {
   name: string
@@ -23,8 +25,7 @@ type BetaOnboardingLinkInput = {
   source?: string
 }
 
-// Admin email for signup notifications
-const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com'
+const ADMIN_NOTIFICATION_RECIPIENTS = getAdminNotificationRecipients()
 
 // ── In-memory IP rate limiting (same pattern as embed inquiry) ──
 const ipBuckets = new Map<string, { count: number; windowStart: number }>()
@@ -126,7 +127,7 @@ export async function submitBetaSignup(
       try {
         const totalSignups = await getBetaSignupCount()
         await sendEmail({
-          to: ADMIN_EMAIL,
+          to: ADMIN_NOTIFICATION_RECIPIENTS,
           subject: `New beta signup: ${name}`,
           react: BetaSignupAdminEmail({
             name,
@@ -140,6 +141,29 @@ export async function submitBetaSignup(
         })
       } catch (err) {
         console.error('[beta-signup] Admin notification failed:', err)
+      }
+
+      // 3. Founder in-app alert (owner control plane feed)
+      try {
+        const owner = await resolveOwnerIdentity(supabase)
+        if (owner.ownerChefId && owner.ownerAuthUserId) {
+          await createNotification({
+            tenantId: owner.ownerChefId,
+            recipientId: owner.ownerAuthUserId,
+            category: 'system',
+            action: 'system_alert',
+            title: `New beta signup: ${name}`,
+            body: `${email} joined the beta waitlist.`,
+            actionUrl: '/admin/beta',
+            metadata: {
+              kind: 'beta_signup_received',
+              signup_name: name,
+              signup_email: email,
+            },
+          })
+        }
+      } catch (err) {
+        console.error('[beta-signup] Founder in-app alert failed:', err)
       }
     }
 

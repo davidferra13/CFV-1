@@ -63,7 +63,7 @@ Across every panel:
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | Component file names (`copilot-drawer.tsx`, `staff-briefing-ai-panel.tsx`, etc.) | Internal — not visible to chefs                            |
 | Import paths and TypeScript type names                                           | Internal code only                                         |
-| `<Bot />` icon on generation buttons                                             | Neutral visual, explicit about AI assistance               |
+| `<Sparkles />` icon on generation buttons                                        | Neutral visual, widely used outside AI contexts            |
 | `ollama-status-badge.tsx` component                                              | Kept intact for developer/debugging use                    |
 | `/api/ollama-status` route                                                       | Kept for developer use                                     |
 | All AI routing logic, privacy rules, Ollama/Gemini behavior                      | Functional — no change                                     |

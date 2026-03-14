@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from 'lucide-react'
+import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Protection Hub — ChefFlow' }
 

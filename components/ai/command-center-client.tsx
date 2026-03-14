@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Bot, Send, Loader2, Zap } from 'lucide-react'
+import { Bot, Send, Loader2, Zap } from '@/components/ui/icons'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { CommandResultCard } from '@/components/ai/command-result-card'
 import type { CommandRun, TaskResult } from '@/lib/ai/command-types'

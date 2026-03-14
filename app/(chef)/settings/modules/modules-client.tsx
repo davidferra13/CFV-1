@@ -8,7 +8,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Sparkles, Lock, Focus, Eye, EyeOff } from 'lucide-react'
+import { Sparkles, Lock, Focus, Eye, EyeOff } from '@/components/ui/icons'
 import { MODULES } from '@/lib/billing/modules'
 import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
@@ -118,8 +118,8 @@ export function ModulesClient({
               <h3 className="text-base font-semibold text-stone-100">Focus Mode</h3>
               <p className="text-sm text-stone-400 mt-0.5">
                 {focusMode
-                  ? 'Showing essentials only — inquiries, events, clients, menus, recipes, and finances.'
-                  : 'All modules visible. Turn on to simplify your sidebar.'}
+                  ? 'Strict Focus Mode is active: only Remy, Sales, Events, and Clients groups are shown (plus Admin when available), with fixed shortcuts.'
+                  : 'All modules visible. Turn on Focus Mode to enforce a strict simplified sidebar.'}
               </p>
             </div>
           </div>
@@ -147,23 +147,26 @@ export function ModulesClient({
             </p>
             <div className="grid gap-1.5 sm:grid-cols-2">
               {[
-                { label: 'Dashboard', desc: 'Your home base' },
-                { label: 'Sales Pipeline', desc: 'Inquiries, quotes, leads' },
-                { label: 'Events', desc: 'Calendar, event management' },
-                { label: 'Culinary', desc: 'Menus, recipes, prep' },
-                { label: 'Clients', desc: 'Client profiles, communication' },
-                { label: 'Finance', desc: 'Revenue, expenses, payments' },
+                { label: 'Dashboard', desc: 'Primary shortcut' },
+                { label: 'Inbox', desc: 'Primary shortcut' },
+                { label: 'Inquiries', desc: 'Primary shortcut' },
+                { label: 'Events', desc: 'Primary shortcut' },
+                { label: 'Clients', desc: 'Primary shortcut' },
+                { label: 'Remy group', desc: 'Visible in strict Focus Mode' },
+                { label: 'Sales group', desc: 'Visible in strict Focus Mode' },
+                { label: 'Events group', desc: 'Visible in strict Focus Mode' },
+                { label: 'Clients group', desc: 'Visible in strict Focus Mode' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm text-stone-300">
                   <Eye size={12} className="text-brand-400 shrink-0" />
                   <span>{item.label}</span>
-                  <span className="text-stone-500">— {item.desc}</span>
+                  <span className="text-stone-500">- {item.desc}</span>
                 </div>
               ))}
             </div>
             <p className="text-xs text-stone-500 mt-3">
-              All other features are preserved — just hidden from the sidebar. Turn off Focus Mode
-              anytime.
+              Other areas stay available by direct URL, but are hidden from the sidebar until Focus
+              Mode is turned off.
             </p>
           </div>
         )}

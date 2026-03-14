@@ -2,7 +2,7 @@
 // Shown on dashboard to help chef plan capacity and logistics.
 
 import Link from 'next/link'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 import { format } from 'date-fns'
 import type { MultiEventDay } from '@/lib/scheduling/multi-event-days'
 

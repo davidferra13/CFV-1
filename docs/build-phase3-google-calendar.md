@@ -83,7 +83,7 @@ All DB columns already existed from migration `20260307000011_google_calendar_ev
 
 ## Key Inventory Update (from deep scan)
 
-**Currently LIVE:** Supabase, Gemini AI (API key configured locally), Resend email (API key configured locally), Spoonacular, Kroger, Cron jobs
+**Currently LIVE:** Supabase, Gemini AI (AIzaSyCVtyMWWk3-1B96For0jlX*w-68g20qauE), Resend email (re_B7B4AHin*…), Spoonacular, Kroger, Cron jobs
 
 **OAuth keys configured, now UI-complete:** Google Calendar + Gmail (GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET present)
 

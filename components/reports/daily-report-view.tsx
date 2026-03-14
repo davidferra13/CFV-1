@@ -20,7 +20,7 @@ import {
   Gift,
   UserMinus,
   BarChart3,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 type Props = {
   report: DailyReport

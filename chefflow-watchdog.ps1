@@ -294,8 +294,6 @@ Ensure-MissionControlRunning
 # Port check -- prevents restart loop when server is already running
 
 $port = 3100
-$script:lastGmailSyncAt = [DateTime]::MinValue
-$script:lastEmailHistoryScanAt = [DateTime]::MinValue
 
 function Test-PortInUse {
     param($p)
@@ -304,77 +302,14 @@ function Test-PortInUse {
 }
 
 function Test-ServerHealthy {
-    if (-not (Test-PortInUse $port)) { return $false }
-
     try {
         $response = Invoke-WebRequest -Uri "http://localhost:$port/" `
-            -TimeoutSec 15 -UseBasicParsing -ErrorAction Stop
-        return $true
+            -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+        return $response.StatusCode -eq 200
     } catch {
         # A 3xx/4xx still means the server is alive and responding
         if ($_.Exception.Response) { return $true }
-        # Next dev can be slow while compiling; if the port is listening,
-        # attempt the cron anyway and let the cron request be the real check.
-        return $true
-    }
-}
-
-function Get-CronSecret {
-    $envFile = "$projectDir\.env.local"
-    if (-not (Test-Path $envFile)) { return $null }
-
-    $line = Get-Content $envFile | Where-Object { $_ -match '^CRON_SECRET=' }
-    if (-not $line) { return $null }
-
-    return ($line -split '=', 2)[1].Trim()
-}
-
-function Invoke-ChefFlowCron {
-    param(
-        [string]$Path,
-        [string]$Name
-    )
-
-    $cronSecret = Get-CronSecret
-    if (-not $cronSecret) {
-        Write-Log "[cron] Skipping $Name -- CRON_SECRET missing from .env.local"
         return $false
-    }
-
-    try {
-        $response = Invoke-WebRequest `
-            -Uri "http://localhost:$port$Path" `
-            -Method POST `
-            -Headers @{ Authorization = "Bearer $cronSecret" } `
-            -TimeoutSec 900 `
-            -UseBasicParsing `
-            -ErrorAction Stop
-        Write-Log "[cron] $Name ok ($($response.StatusCode))."
-        return $true
-    } catch {
-        $statusCode = $null
-        try { $statusCode = [int]$_.Exception.Response.StatusCode } catch { }
-        $detail = if ($statusCode) { "HTTP $statusCode" } else { $_.Exception.Message }
-        Write-Log "[cron] $Name failed: $detail"
-        return $false
-    }
-}
-
-function Invoke-LocalEmailAutomation {
-    if (-not (Test-ServerHealthy)) { return }
-
-    $now = Get-Date
-
-    if (($now - $script:lastGmailSyncAt).TotalMinutes -ge 5) {
-        if (Invoke-ChefFlowCron "/api/gmail/sync" "gmail-sync") {
-            $script:lastGmailSyncAt = $now
-        }
-    }
-
-    if (($now - $script:lastEmailHistoryScanAt).TotalMinutes -ge 3) {
-        if (Invoke-ChefFlowCron "/api/scheduled/email-history-scan" "email-history-scan") {
-            $script:lastEmailHistoryScanAt = $now
-        }
     }
 }
 
@@ -406,7 +341,6 @@ while ($true) {
         if ($loopCount -eq 1) {
             Write-Log "Port $port already in use -- server is running externally. Watching."
         }
-        Invoke-LocalEmailAutomation
         Start-Sleep -Seconds 30
         continue
     }

@@ -492,6 +492,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
         sendEventReminderEmail,
         buildLocation,
       } = await import('@/lib/email/notifications')
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
 
       for (const event of upcomingEvents5) {
         try {
@@ -609,6 +610,41 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               })
             }
 
+            if (threshold.days === 7) {
+              await createClientNotification({
+                tenantId: event.tenant_id,
+                clientId: client.id,
+                category: 'event',
+                action: 'event_reminder_7d',
+                title: `Your ${occasion5} is in 7 days`,
+                body: `${chefName5} sent a reminder for your upcoming event.`,
+                actionUrl: `/my-events/${event.id}`,
+                eventId: event.id,
+              })
+            } else if (threshold.days === 2) {
+              await createClientNotification({
+                tenantId: event.tenant_id,
+                clientId: client.id,
+                category: 'event',
+                action: 'event_reminder_2d',
+                title: `Your ${occasion5} is in 2 days`,
+                body: `${chefName5} sent a reminder for your upcoming event.`,
+                actionUrl: `/my-events/${event.id}`,
+                eventId: event.id,
+              })
+            } else if (threshold.days === 1) {
+              await createClientNotification({
+                tenantId: event.tenant_id,
+                clientId: client.id,
+                category: 'event',
+                action: 'event_reminder_1d',
+                title: `Your ${occasion5} is tomorrow`,
+                body: `${chefName5} is preparing for tomorrow's event.`,
+                actionUrl: `/my-events/${event.id}`,
+                eventId: event.id,
+              })
+            }
+
             // Mark as sent
             await supabase
               .from('events')
@@ -654,6 +690,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
     if (expiringQuotes && expiringQuotes.length > 0) {
       const { sendQuoteExpiringEmail } = await import('@/lib/email/notifications')
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
       const { createClientNotification } = await import('@/lib/notifications/client-actions')
 
       for (const quote of expiringQuotes) {
@@ -709,6 +746,21 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             totalCents: quote.total_quoted_cents,
             quoteId: quote.id,
           })
+
+          const chefUserId = await getChefAuthUserId(quote.tenant_id)
+          if (chefUserId) {
+            await createNotification({
+              tenantId: quote.tenant_id,
+              recipientId: chefUserId,
+              category: 'quote',
+              action: 'quote_expiring',
+              title: 'Quote expiring soon',
+              body: `Quote for ${client.full_name} expires in less than 48 hours.`,
+              actionUrl: `/quotes/${quote.id}`,
+              inquiryId: quote.inquiry_id ?? undefined,
+              clientId: client.id,
+            })
+          }
 
           // In-app notification (non-blocking — silently skips if no portal account)
           await createClientNotification({

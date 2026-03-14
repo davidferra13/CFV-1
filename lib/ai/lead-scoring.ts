@@ -1,27 +1,42 @@
 'use server'
 
-// Lead Scoring
-// Scores each incoming inquiry by conversion likelihood (0–100).
-// Routed to Ollama (contains budget + PII).
-// Output is INSIGHT ONLY — never modifies inquiry data without chef action.
+// Lead Scoring — GOLDMINE deterministic formula
+// Formula > AI. No LLM calls. Pure math derived from 49 real conversations.
+//
+// Previously used Ollama to "reason" about conversion likelihood.
+// Removed: the talk on LLM limitations proved that AI pattern-matches on
+// statistical shortcuts (label names, prompt format) rather than reasoning
+// about the actual inquiry. A formula derived from real conversion data
+// is strictly more reliable. GOLDMINE scores are instant, consistent,
+// auditable, and free.
+//
+// This file is kept as a thin wrapper so existing imports (lead-score-badge.tsx)
+// continue to work without changing import paths.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { parseWithOllama } from './parse-ollama'
-import { z } from 'zod'
+import { scoreFromExtraction, type LeadScoreResult } from '@/lib/inquiries/goldmine-lead-score'
 
-// ── Zod schema ──────────────────────────────────────────────────────────────
+// ── Output type (adapted from GOLDMINE for badge compatibility) ──────────
 
-const LeadScoreSchema = z.object({
-  score: z.number().min(0).max(100),
-  tier: z.enum(['hot', 'warm', 'cold']),
-  strengths: z.array(z.string()), // factors boosting the score
-  weaknesses: z.array(z.string()), // factors reducing the score
-  recommendation: z.string(), // one-sentence action recommendation
-  confidence: z.enum(['high', 'medium', 'low']),
-})
+export interface LeadScore {
+  score: number
+  tier: 'hot' | 'warm' | 'cold'
+  factors: string[] // what contributed to the score
+  recommendation: string // one-sentence action recommendation
+}
 
-export type LeadScore = z.infer<typeof LeadScoreSchema>
+// ── Recommendation templates (deterministic, no AI) ──────────────────────
+
+function getRecommendation(tier: 'hot' | 'warm' | 'cold', score: number): string {
+  if (tier === 'hot')
+    return 'High-intent lead. Follow up within 24 hours with a personalized quote.'
+  if (tier === 'warm' && score >= 55)
+    return 'Promising lead. Send a follow-up to clarify details and move toward a quote.'
+  if (tier === 'warm')
+    return 'Moderate interest. Respond promptly and ask about date, guest count, or budget to qualify further.'
+  return 'Low engagement so far. A brief, friendly check-in may surface interest, but prioritize hotter leads.'
+}
 
 // ── Server Action ─────────────────────────────────────────────────────────
 
@@ -29,79 +44,63 @@ export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const [inquiryResult, historicalResult] = await Promise.all([
-    supabase
-      .from('inquiries')
-      .select(
-        `
-        status, source_message, created_at, confirmed_budget_cents,
-        clients(full_name, dietary_restrictions),
-        events(occasion, guest_count, event_date, quoted_price_cents)
+  // Fetch the inquiry and its related data
+  const { data: inquiry, error } = await supabase
+    .from('inquiries')
+    .select(
       `
-      )
-      .eq('id', inquiryId)
-      .eq('tenant_id', user.tenantId!)
-      .single(),
-    // Get chef's historical conversion stats
-    supabase
-      .from('inquiries')
-      .select('status')
-      .eq('tenant_id', user.tenantId!)
-      .in('status', ['confirmed', 'declined', 'expired']),
-  ])
+      status, source_message, created_at, confirmed_budget_cents,
+      confirmed_date, confirmed_guest_count, confirmed_location,
+      confirmed_occasion, confirmed_dietary_restrictions,
+      confirmed_cannabis_preference, referral_source,
+      messages:inquiry_messages(id)
+    `
+    )
+    .eq('id', inquiryId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
 
-  const inquiry = inquiryResult.data
-  if (!inquiry) throw new Error('Inquiry not found')
+  if (error || !inquiry) throw new Error('Inquiry not found')
 
-  const historical = historicalResult.data ?? []
-  const totalHistorical = historical.length
-  const converted = historical.filter((i: { status: string }) => i.status === 'confirmed').length
-  const historicalRate = totalHistorical > 0 ? Math.round((converted / totalHistorical) * 100) : 0
+  // Count messages for multi-message signal
+  const messageCount = Array.isArray(inquiry.messages) ? inquiry.messages.length : 0
 
-  const event = Array.isArray(inquiry.events) ? inquiry.events[0] : inquiry.events
-  const client = Array.isArray(inquiry.clients) ? inquiry.clients[0] : inquiry.clients
+  // Check if chef has quoted pricing (any event with a quoted price)
+  const { count: quotedCount } = await supabase
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('inquiry_id', inquiryId)
+    .eq('tenant_id', user.tenantId!)
+    .gt('quoted_price_cents', 0)
 
-  const today = new Date()
-  const eventDate = event?.event_date ? new Date(event.event_date) : null
-  const daysUntilEvent = eventDate
-    ? Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    : null
-  const daysSinceInquiry = Math.round(
-    (today.getTime() - new Date(inquiry.created_at).getTime()) / (1000 * 60 * 60 * 24)
+  // Run GOLDMINE formula
+  const result: LeadScoreResult = scoreFromExtraction(
+    {
+      dates: inquiry.confirmed_date ? [{ raw: inquiry.confirmed_date }] : [],
+      guest_counts: inquiry.confirmed_guest_count
+        ? [{ number: inquiry.confirmed_guest_count }]
+        : [],
+      budget_mentions: inquiry.confirmed_budget_cents
+        ? [{ amount_cents: inquiry.confirmed_budget_cents }]
+        : [],
+      occasion_keywords: inquiry.confirmed_occasion ? [inquiry.confirmed_occasion] : [],
+      dietary_mentions: inquiry.confirmed_dietary_restrictions || [],
+      cannabis_mentions: inquiry.confirmed_cannabis_preference
+        ? [inquiry.confirmed_cannabis_preference]
+        : [],
+      location_mentions: inquiry.confirmed_location ? [inquiry.confirmed_location] : [],
+      referral_signals: inquiry.referral_source ? [inquiry.referral_source] : [],
+    },
+    {
+      total_messages: messageCount,
+      has_pricing_quoted: (quotedCount ?? 0) > 0,
+    }
   )
 
-  const budgetCents = inquiry.confirmed_budget_cents ?? event?.quoted_price_cents ?? 0
-
-  const systemPrompt = `You are a business analyst for a private chef. Score this inquiry's conversion likelihood from 0 to 100.
-Scoring framework:
-  - Budget (20 pts): Is budget present? Is it in a realistic range for private chef events ($500–$5000+)?
-  - Lead time (20 pts): 30–90 days = ideal. <7 days = rushed. >180 days = low urgency.
-  - Engagement (20 pts): How detailed is the inquiry? Specific requests = higher intent.
-  - Event clarity (20 pts): Guest count known? Occasion specified? Date set?
-  - Client history (20 pts): Returning client? Preferences noted?
-Tiers: 70–100 = hot, 40–69 = warm, 0–39 = cold.
-Return valid JSON only.`
-
-  const userContent = `
-Inquiry Details:
-  Status: ${inquiry.status}
-  Budget: ${budgetCents > 0 ? '$' + (budgetCents / 100).toFixed(0) : 'Not specified'}
-  Notes/description: ${inquiry.source_message ?? 'None'}
-  Days since inquiry: ${daysSinceInquiry}
-  Days until event: ${daysUntilEvent ?? 'Date not set'}
-  Occasion: ${event?.occasion ?? 'Not specified'}
-  Guest count: ${event?.guest_count ?? 'Unknown'}
-  Client: ${client ? (client.full_name ?? 'Unknown') : 'New client'}
-  Client preferences on file: ${client ? (client.dietary_restrictions?.join(', ') ?? 'None') : 'No prior history'}
-
-Chef's historical conversion rate: ${historicalRate}% (based on ${totalHistorical} closed inquiries)
-
-Return JSON: { "score": 0-100, "tier": "hot|warm|cold", "strengths": ["..."], "weaknesses": ["..."], "recommendation": "one sentence", "confidence": "high|medium|low" }`
-
-  try {
-    return await parseWithOllama(systemPrompt, userContent, LeadScoreSchema)
-  } catch (err) {
-    console.error('[lead-scoring] Failed:', err)
-    throw new Error('Could not score inquiry. Please try again.')
+  return {
+    score: result.score,
+    tier: result.tier,
+    factors: result.factors,
+    recommendation: getRecommendation(result.tier, result.score),
   }
 }

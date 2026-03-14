@@ -3,7 +3,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { KanbanCard, type KanbanCardInquiry } from './kanban-card'
 

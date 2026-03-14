@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { saveSmartField } from '@/lib/proposals/smart-field-actions'
-import { Braces, Plus } from 'lucide-react'
+import { Braces, Plus } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type SmartField = {

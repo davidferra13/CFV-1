@@ -3378,24 +3378,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           document_type: string
-          entity_id: string | null
-          entity_type: string | null
-          extraction_confidence: number | null
-          extraction_status: string
           event_id: string | null
-          file_hash: string | null
-          file_size_bytes: number | null
           folder_id: string | null
           id: string
           is_template: boolean
           key_terms: Json | null
-          mime_type: string | null
-          original_filename: string | null
           source_filename: string | null
-          source_url: string | null
           source_type: string
-          storage_bucket: string | null
-          storage_path: string | null
           summary: string | null
           tags: string[] | null
           tenant_id: string
@@ -3409,24 +3398,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           document_type?: string
-          entity_id?: string | null
-          entity_type?: string | null
-          extraction_confidence?: number | null
-          extraction_status?: string
           event_id?: string | null
-          file_hash?: string | null
-          file_size_bytes?: number | null
           folder_id?: string | null
           id?: string
           is_template?: boolean
           key_terms?: Json | null
-          mime_type?: string | null
-          original_filename?: string | null
           source_filename?: string | null
-          source_url?: string | null
           source_type?: string
-          storage_bucket?: string | null
-          storage_path?: string | null
           summary?: string | null
           tags?: string[] | null
           tenant_id: string
@@ -3440,24 +3418,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           document_type?: string
-          entity_id?: string | null
-          entity_type?: string | null
-          extraction_confidence?: number | null
-          extraction_status?: string
           event_id?: string | null
-          file_hash?: string | null
-          file_size_bytes?: number | null
           folder_id?: string | null
           id?: string
           is_template?: boolean
           key_terms?: Json | null
-          mime_type?: string | null
-          original_filename?: string | null
           source_filename?: string | null
-          source_url?: string | null
           source_type?: string
-          storage_bucket?: string | null
-          storage_path?: string | null
           summary?: string | null
           tags?: string[] | null
           tenant_id?: string
@@ -6148,10 +6115,6 @@ export type Database = {
           booking_model: string | null
           booking_pricing_type: string | null
           booking_slug: string | null
-          featured_booking_badge: string | null
-          featured_booking_menu_id: string | null
-          featured_booking_pitch: string | null
-          featured_booking_title: string | null
           business_continuity_plan: Json | null
           business_name: string
           cancellation_cutoff_days: number
@@ -6229,10 +6192,6 @@ export type Database = {
           booking_model?: string | null
           booking_pricing_type?: string | null
           booking_slug?: string | null
-          featured_booking_badge?: string | null
-          featured_booking_menu_id?: string | null
-          featured_booking_pitch?: string | null
-          featured_booking_title?: string | null
           business_continuity_plan?: Json | null
           business_name: string
           cancellation_cutoff_days?: number
@@ -6310,10 +6269,6 @@ export type Database = {
           booking_model?: string | null
           booking_pricing_type?: string | null
           booking_slug?: string | null
-          featured_booking_badge?: string | null
-          featured_booking_menu_id?: string | null
-          featured_booking_pitch?: string | null
-          featured_booking_title?: string | null
           business_continuity_plan?: Json | null
           business_name?: string
           cancellation_cutoff_days?: number
@@ -15262,15 +15217,12 @@ export type Database = {
           gmail_sync_errors: number
           historical_scan_completed_at: string | null
           historical_scan_enabled: boolean
-          historical_scan_include_spam_trash: boolean
           historical_scan_last_run_at: string | null
           historical_scan_lookback_days: number
           historical_scan_page_token: string | null
-          historical_scan_result_size_estimate: number | null
           historical_scan_started_at: string | null
           historical_scan_status: string
           historical_scan_total_processed: number
-          historical_scan_total_seen: number
           id: string
           refresh_token: string | null
           scopes: string[]
@@ -15290,15 +15242,12 @@ export type Database = {
           gmail_sync_errors?: number
           historical_scan_completed_at?: string | null
           historical_scan_enabled?: boolean
-          historical_scan_include_spam_trash?: boolean
           historical_scan_last_run_at?: string | null
           historical_scan_lookback_days?: number
           historical_scan_page_token?: string | null
-          historical_scan_result_size_estimate?: number | null
           historical_scan_started_at?: string | null
           historical_scan_status?: string
           historical_scan_total_processed?: number
-          historical_scan_total_seen?: number
           id?: string
           refresh_token?: string | null
           scopes?: string[]
@@ -15318,15 +15267,12 @@ export type Database = {
           gmail_sync_errors?: number
           historical_scan_completed_at?: string | null
           historical_scan_enabled?: boolean
-          historical_scan_include_spam_trash?: boolean
           historical_scan_last_run_at?: string | null
           historical_scan_lookback_days?: number
           historical_scan_page_token?: string | null
-          historical_scan_result_size_estimate?: number | null
           historical_scan_started_at?: string | null
           historical_scan_status?: string
           historical_scan_total_processed?: number
-          historical_scan_total_seen?: number
           id?: string
           refresh_token?: string | null
           scopes?: string[]
@@ -17923,7 +17869,6 @@ export type Database = {
           partner_location_id: string | null
           referral_partner_id: string | null
           referral_source: string | null
-          selected_menu_id: string | null
           service_style_pref: string | null
           source_message: string | null
           status: Database["public"]["Enums"]["inquiry_status"]
@@ -17966,7 +17911,6 @@ export type Database = {
           partner_location_id?: string | null
           referral_partner_id?: string | null
           referral_source?: string | null
-          selected_menu_id?: string | null
           service_style_pref?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
@@ -18009,7 +17953,6 @@ export type Database = {
           partner_location_id?: string | null
           referral_partner_id?: string | null
           referral_source?: string | null
-          selected_menu_id?: string | null
           service_style_pref?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
@@ -18075,20 +18018,6 @@ export type Database = {
             columns: ["referral_partner_id"]
             isOneToOne: false
             referencedRelation: "referral_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inquiries_selected_menu_id_fkey"
-            columns: ["selected_menu_id"]
-            isOneToOne: false
-            referencedRelation: "menu_cost_summary"
-            referencedColumns: ["menu_id"]
-          },
-          {
-            foreignKeyName: "inquiries_selected_menu_id_fkey"
-            columns: ["selected_menu_id"]
-            isOneToOne: false
-            referencedRelation: "menus"
             referencedColumns: ["id"]
           },
           {
@@ -20589,7 +20518,6 @@ export type Database = {
           body: string
           channel: Database["public"]["Enums"]["message_channel"]
           client_id: string | null
-          conversation_thread_id: string | null
           created_at: string
           direction: Database["public"]["Enums"]["message_direction"]
           event_id: string | null
@@ -20598,7 +20526,6 @@ export type Database = {
           gmail_thread_id: string | null
           id: string
           inquiry_id: string | null
-          recipient_email: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["message_status"]
           subject: string | null
@@ -20612,7 +20539,6 @@ export type Database = {
           body: string
           channel: Database["public"]["Enums"]["message_channel"]
           client_id?: string | null
-          conversation_thread_id?: string | null
           created_at?: string
           direction: Database["public"]["Enums"]["message_direction"]
           event_id?: string | null
@@ -20621,7 +20547,6 @@ export type Database = {
           gmail_thread_id?: string | null
           id?: string
           inquiry_id?: string | null
-          recipient_email?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["message_status"]
           subject?: string | null
@@ -20635,7 +20560,6 @@ export type Database = {
           body?: string
           channel?: Database["public"]["Enums"]["message_channel"]
           client_id?: string | null
-          conversation_thread_id?: string | null
           created_at?: string
           direction?: Database["public"]["Enums"]["message_direction"]
           event_id?: string | null
@@ -20644,7 +20568,6 @@ export type Database = {
           gmail_thread_id?: string | null
           id?: string
           inquiry_id?: string | null
-          recipient_email?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["message_status"]
           subject?: string | null
@@ -20659,13 +20582,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_financial_summary"
             referencedColumns: ["event_id"]
-          },
-          {
-            foreignKeyName: "messages_conversation_thread_id_fkey"
-            columns: ["conversation_thread_id"]
-            isOneToOne: false
-            referencedRelation: "conversation_threads"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_messages_event"

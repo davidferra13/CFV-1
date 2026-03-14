@@ -1,6 +1,6 @@
 'use client'
 
-import { Cpu, FlaskConical } from 'lucide-react'
+import { Cpu, FlaskConical } from '@/components/ui/icons'
 
 /**
  * Subtle badge showing whether a result was produced by deterministic formula or AI.

@@ -5,5 +5,6 @@
 
 ALTER TABLE chef_preferences
 ADD COLUMN IF NOT EXISTS focus_mode BOOLEAN DEFAULT true;
+
 COMMENT ON COLUMN chef_preferences.focus_mode IS
   'Progressive disclosure: when true, sidebar shows only core modules. All features remain accessible when turned off.';

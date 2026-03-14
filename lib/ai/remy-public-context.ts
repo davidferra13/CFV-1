@@ -3,6 +3,10 @@
 // No financials, no client lists, no internal notes.
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  getServiceConfigForTenant,
+  formatServiceConfigForPrompt,
+} from '@/lib/chef-services/service-config-actions'
 
 export interface RemyPublicContext {
   chefName: string | null
@@ -14,6 +18,7 @@ export interface RemyPublicContext {
   dietaryCapabilities: string[]
   serviceArea: string | null
   culinaryProfile: string | null
+  serviceConfigPrompt: string | null
 }
 
 /**
@@ -23,12 +28,15 @@ export interface RemyPublicContext {
 export async function loadRemyPublicContext(tenantId: string): Promise<RemyPublicContext> {
   const supabase: any = createAdminClient()
 
-  // Load chef public profile
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('display_name, business_name, tagline, bio')
-    .eq('id', tenantId)
-    .single()
+  // Load chef public profile + service config in parallel
+  const [{ data: chef }, serviceConfig] = await Promise.all([
+    supabase
+      .from('chefs')
+      .select('display_name, business_name, tagline, bio')
+      .eq('id', tenantId)
+      .single(),
+    getServiceConfigForTenant(tenantId).catch(() => null),
+  ])
 
   // Load culinary profile (public-safe subset)
   let culinaryProfile: string | null = null
@@ -69,6 +77,7 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
     dietaryCapabilities: [],
     serviceArea: null,
     culinaryProfile,
+    serviceConfigPrompt: serviceConfig ? formatServiceConfigForPrompt(serviceConfig) : null,
   }
 }
 
@@ -88,6 +97,10 @@ export function formatPublicContext(ctx: RemyPublicContext): string {
 
   if (ctx.culinaryProfile) {
     parts.push(`\nCULINARY APPROACH:\n${ctx.culinaryProfile}`)
+  }
+
+  if (ctx.serviceConfigPrompt) {
+    parts.push(`\n${ctx.serviceConfigPrompt}`)
   }
 
   parts.push(`\nGROUNDING RULE (CRITICAL):

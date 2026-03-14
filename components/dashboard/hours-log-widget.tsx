@@ -14,7 +14,9 @@ import {
   type DashboardHoursTopActivity,
   type DashboardHoursCategoryEntry,
   type ManualLaborCategory,
+  type UnloggedEvent,
 } from '@/lib/dashboard/actions'
+import Link from 'next/link'
 import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 const CATEGORY_OPTIONS: { value: ManualLaborCategory; label: string }[] = [
@@ -73,6 +75,7 @@ type HoursLogWidgetProps = {
   trackingStreak: number
   todayLogged: boolean
   weekCategoryBreakdown: DashboardHoursCategoryEntry[]
+  unloggedEvents?: UnloggedEvent[]
 }
 
 function formatEntryDate(date: string): string {
@@ -91,8 +94,11 @@ export function HoursLogWidget({
   trackingStreak,
   todayLogged,
   weekCategoryBreakdown,
+  unloggedEvents = [],
 }: HoursLogWidgetProps) {
   const router = useRouter()
+  const [dismissedUnlogged, setDismissedUnlogged] = useState<Set<string>>(new Set())
+  const [loggingEventId, setLoggingEventId] = useState<string | null>(null)
 
   const today = new Date().toISOString().slice(0, 10)
   const [loggedFor, setLoggedFor] = useState(() => today)
@@ -184,6 +190,115 @@ export function HoursLogWidget({
             </p>
           </div>
         </div>
+
+        {/* Unlogged Event Hours Prompt */}
+        {unloggedEvents.filter((e) => !dismissedUnlogged.has(e.id)).length > 0 && (
+          <div className="space-y-2">
+            {unloggedEvents
+              .filter((e) => !dismissedUnlogged.has(e.id))
+              .map((evt) => (
+                <div key={evt.id} className="rounded-lg border border-brand-700 bg-brand-950 p-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <p className="text-sm font-medium text-brand-200">
+                        No hours logged for {evt.occasion}
+                      </p>
+                      <p className="text-xs text-brand-400 mt-0.5">
+                        {evt.clientName} · {formatEntryDate(evt.date)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDismissedUnlogged((prev) => new Set([...prev, evt.id]))}
+                      className="text-brand-500 hover:text-brand-300 text-xs shrink-0"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+
+                  {loggingEventId === evt.id ? (
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      {(
+                        [
+                          ['Service', evt.suggestedHours.service, 'cooking_service'],
+                          ['Prep', evt.suggestedHours.prep, 'prep_work'],
+                          ['Shopping', evt.suggestedHours.shopping, 'shopping_sourcing'],
+                          ['Travel', evt.suggestedHours.travel, 'travel'],
+                        ] as const
+                      ).map(([label, suggested, cat]) => (
+                        <div key={label} className="text-center">
+                          <p className="text-stone-400 mb-1">{label}</p>
+                          <p className="text-stone-200 font-medium">{suggested}h</p>
+                        </div>
+                      ))}
+                      <div className="col-span-4 flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          loading={submitting}
+                          onClick={async () => {
+                            setSubmitting(true)
+                            try {
+                              const entries = [
+                                {
+                                  minutes: Math.round(evt.suggestedHours.service * 60),
+                                  logged_for: evt.date,
+                                  category: 'cooking_service' as ManualLaborCategory,
+                                  note: `Auto-logged for ${evt.occasion}`,
+                                },
+                                {
+                                  minutes: Math.round(evt.suggestedHours.prep * 60),
+                                  logged_for: evt.date,
+                                  category: 'prep_work' as ManualLaborCategory,
+                                  note: `Auto-logged for ${evt.occasion}`,
+                                },
+                                {
+                                  minutes: Math.round(evt.suggestedHours.shopping * 60),
+                                  logged_for: evt.date,
+                                  category: 'shopping_sourcing' as ManualLaborCategory,
+                                  note: `Auto-logged for ${evt.occasion}`,
+                                },
+                                {
+                                  minutes: Math.round(evt.suggestedHours.travel * 60),
+                                  logged_for: evt.date,
+                                  category: 'travel' as ManualLaborCategory,
+                                  note: `Auto-logged for ${evt.occasion}`,
+                                },
+                              ].filter((e) => e.minutes > 0)
+
+                              for (const entry of entries) {
+                                await logDashboardHours(entry)
+                              }
+
+                              setDismissedUnlogged((prev) => new Set([...prev, evt.id]))
+                              setLoggingEventId(null)
+                              setSuccess(`Logged ${entries.length} entries for ${evt.occasion}`)
+                              router.refresh()
+                            } catch (err) {
+                              setError('Failed to log event hours')
+                            } finally {
+                              setSubmitting(false)
+                            }
+                          }}
+                        >
+                          Log these hours
+                        </Button>
+                        <Link
+                          href={`/events/${evt.id}`}
+                          className="inline-flex items-center px-3 py-1 text-xs text-stone-400 hover:text-stone-200"
+                        >
+                          Edit first
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button variant="ghost" size="sm" onClick={() => setLoggingEventId(evt.id)}>
+                      Log hours for this event
+                    </Button>
+                  )}
+                </div>
+              ))}
+          </div>
+        )}
 
         {/* Streak */}
         {showStreakBanner && (

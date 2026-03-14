@@ -7,7 +7,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Clock, MapPin, Play, Square, UserPlus, X } from 'lucide-react'
+import { Clock, MapPin, Play, Square, UserPlus, X } from '@/components/ui/icons'
 import { clockIn, clockOut } from '@/lib/staff/clock-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

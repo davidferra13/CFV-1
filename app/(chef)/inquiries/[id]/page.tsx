@@ -53,6 +53,10 @@ import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
 import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
+import { Suspense } from 'react'
+import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
+import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -86,6 +90,58 @@ function getReferralSource(inquiry: { unknown_fields: unknown }): string | null 
   return (unknown?.referral_source as string) || null
 }
 
+function getTakeAChefPageCapture(inquiry: { unknown_fields: unknown }) {
+  const unknown = inquiry.unknown_fields as Record<string, unknown> | null
+  const capture =
+    unknown?.take_a_chef_page_capture &&
+    typeof unknown.take_a_chef_page_capture === 'object' &&
+    !Array.isArray(unknown.take_a_chef_page_capture)
+      ? (unknown.take_a_chef_page_capture as Record<string, unknown>)
+      : null
+  const workflow =
+    unknown?.take_a_chef_workflow &&
+    typeof unknown.take_a_chef_workflow === 'object' &&
+    !Array.isArray(unknown.take_a_chef_workflow)
+      ? (unknown.take_a_chef_workflow as Record<string, unknown>)
+      : null
+
+  if (!capture) return null
+
+  return {
+    captureType:
+      typeof capture.capture_type === 'string' ? (capture.capture_type as string) : 'other',
+    capturedAt:
+      typeof capture.last_captured_at === 'string' ? (capture.last_captured_at as string) : null,
+    pageUrl: typeof capture.page_url === 'string' ? (capture.page_url as string) : null,
+    pageTitle: typeof capture.page_title === 'string' ? (capture.page_title as string) : null,
+    summary: typeof capture.summary === 'string' ? (capture.summary as string) : null,
+    notes: typeof capture.notes === 'string' ? (capture.notes as string) : null,
+    extractedEmail:
+      typeof capture.extracted_email === 'string' ? (capture.extracted_email as string) : null,
+    extractedPhone:
+      typeof capture.extracted_phone === 'string' ? (capture.extracted_phone as string) : null,
+    extractedBookingDate:
+      typeof capture.extracted_booking_date === 'string'
+        ? (capture.extracted_booking_date as string)
+        : null,
+    extractedLocation:
+      typeof capture.extracted_location === 'string'
+        ? (capture.extracted_location as string)
+        : null,
+    proposalCapturedAt:
+      typeof workflow?.proposal_captured_at === 'string'
+        ? (workflow.proposal_captured_at as string)
+        : null,
+    proposalAmountCents:
+      typeof workflow?.proposal_amount_cents === 'number'
+        ? (workflow.proposal_amount_cents as number)
+        : null,
+    menuCapturedAt:
+      typeof workflow?.menu_captured_at === 'string' ? (workflow.menu_captured_at as string) : null,
+    menuSeen: workflow?.menu_seen === true,
+  }
+}
+
 export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
@@ -101,6 +157,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     availableRecipes,
     bookingScore,
     timelineEntries,
+    circleToken,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -113,6 +170,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getRecipesForLinker(),
     getBookingScoreForInquiry(params.id).catch(() => null),
     getEntityActivityTimeline('inquiry', params.id),
+    getInquiryCircleToken(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -140,6 +198,12 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   const email = getDisplayEmail(inquiry)
   const phone = getDisplayPhone(inquiry)
   const referralSource = getReferralSource(inquiry)
+  const parsedScheduleRequest = ScheduleRequestSchema.safeParse(
+    (inquiry as any).schedule_request_jsonb ?? undefined
+  )
+  const scheduleRequest = parsedScheduleRequest.success ? parsedScheduleRequest.data : undefined
+  const scheduleSummary = summarizeScheduleRequest(scheduleRequest)
+  const tacPageCapture = inquiry.channel === 'take_a_chef' ? getTakeAChefPageCapture(inquiry) : null
 
   // Track which confirmed facts are still missing
   const missingFacts: string[] = []
@@ -233,6 +297,25 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </Link>
       </div>
 
+      {/* Dinner Circle Link */}
+      {circleToken && (
+        <Card className="bg-stone-800/50 border-stone-700 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-stone-200">Dinner Circle</p>
+              <p className="text-xs text-stone-400">
+                This inquiry has an active Dinner Circle where the client can view updates
+              </p>
+            </div>
+            <Link href={`/my-hub/g/${circleToken}`}>
+              <Button variant="ghost" className="text-sm">
+                View Circle
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       {/* Missing Facts Warning */}
       {missingFacts.length > 0 && inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
         <div className="bg-amber-950 border border-amber-200 rounded-lg p-4">
@@ -253,8 +336,134 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* Inquiry Summary — visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
 
+      {/* Conversion Intelligence */}
+      <Suspense fallback={null}>
+        <InquiryIntelligencePanel
+          inquiryId={inquiry.id}
+          guestCount={inquiry.confirmed_guest_count ?? null}
+          occasion={inquiry.confirmed_occasion ?? null}
+          budgetCents={inquiry.confirmed_budget_cents ?? null}
+          channel={inquiry.channel}
+          createdAt={inquiry.created_at}
+        />
+      </Suspense>
+
+      {(inquiry as any).service_mode === 'multi_day' && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Series Request</h2>
+          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+              <dt className="text-stone-500">Service Mode</dt>
+              <dd className="text-stone-100 mt-1">Multi-day Service</dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Date Window</dt>
+              <dd className="text-stone-100 mt-1">
+                {scheduleRequest?.start_date || inquiry.confirmed_date || 'TBD'} to{' '}
+                {scheduleRequest?.end_date ||
+                  scheduleRequest?.start_date ||
+                  inquiry.confirmed_date ||
+                  'TBD'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Requested Sessions</dt>
+              <dd className="text-stone-100 mt-1">{scheduleRequest?.sessions?.length || 0}</dd>
+            </div>
+          </dl>
+          {scheduleSummary && <p className="text-sm text-stone-400 mt-4">{scheduleSummary}</p>}
+          {scheduleRequest?.outline && (
+            <p className="text-sm text-stone-300 mt-3 whitespace-pre-wrap">
+              {scheduleRequest.outline}
+            </p>
+          )}
+        </Card>
+      )}
+
       {/* TakeAChef workflow guide — collapsible overview for first-time users */}
       {inquiry.channel === 'take_a_chef' && <TacWorkflowGuide inquiryStatus={inquiry.status} />}
+
+      {tacPageCapture && (
+        <Card className="p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-semibold">Latest Marketplace Capture</h2>
+                <Badge variant="info">{tacPageCapture.captureType.replace('_', ' ')}</Badge>
+              </div>
+              {tacPageCapture.capturedAt && (
+                <p className="mt-1 text-sm text-stone-400">
+                  Captured{' '}
+                  {formatDistanceToNow(new Date(tacPageCapture.capturedAt), { addSuffix: true })}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/marketplace/capture">
+                <Button variant="ghost">Capture another page</Button>
+              </Link>
+              {tacPageCapture.pageUrl && (
+                <a
+                  href={tacPageCapture.pageUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+                >
+                  Open captured page
+                </a>
+              )}
+            </div>
+          </div>
+          <div className="mt-4 space-y-3 text-sm">
+            {tacPageCapture.pageTitle && (
+              <p className="text-stone-200">
+                <span className="text-stone-500">Page title:</span> {tacPageCapture.pageTitle}
+              </p>
+            )}
+            {tacPageCapture.summary && <p className="text-stone-300">{tacPageCapture.summary}</p>}
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-stone-400">
+              {tacPageCapture.extractedBookingDate && (
+                <span>Date: {tacPageCapture.extractedBookingDate}</span>
+              )}
+              {tacPageCapture.extractedLocation && (
+                <span>Location: {tacPageCapture.extractedLocation}</span>
+              )}
+              {tacPageCapture.extractedEmail && <span>Email: {tacPageCapture.extractedEmail}</span>}
+              {tacPageCapture.extractedPhone && <span>Phone: {tacPageCapture.extractedPhone}</span>}
+            </div>
+            {(tacPageCapture.proposalCapturedAt ||
+              tacPageCapture.proposalAmountCents != null ||
+              tacPageCapture.menuSeen) && (
+              <div className="flex flex-wrap gap-x-4 gap-y-2 text-stone-400">
+                {tacPageCapture.proposalCapturedAt && (
+                  <span>
+                    Proposal captured{' '}
+                    {formatDistanceToNow(new Date(tacPageCapture.proposalCapturedAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                )}
+                {tacPageCapture.proposalAmountCents != null && (
+                  <span>Proposal amount: {formatCurrency(tacPageCapture.proposalAmountCents)}</span>
+                )}
+                {tacPageCapture.menuSeen && (
+                  <span>
+                    Menu captured
+                    {tacPageCapture.menuCapturedAt
+                      ? ` ${formatDistanceToNow(new Date(tacPageCapture.menuCapturedAt), {
+                          addSuffix: true,
+                        })}`
+                      : ''}
+                  </span>
+                )}
+              </div>
+            )}
+            {tacPageCapture.notes && (
+              <p className="whitespace-pre-wrap text-stone-300">{tacPageCapture.notes}</p>
+            )}
+          </div>
+        </Card>
+      )}
 
       {/* TakeAChef-specific panels — only for take_a_chef channel */}
       {inquiry.channel === 'take_a_chef' && inquiry.status === 'new' && (

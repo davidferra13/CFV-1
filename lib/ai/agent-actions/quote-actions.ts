@@ -1,4 +1,4 @@
-// Remy Agent — Quote Actions
+// Remy Agent - Quote Actions
 // Create and transition quotes on the chef's behalf.
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
@@ -37,8 +37,8 @@ export const quoteAgentActions: AgentActionDefinition[] = [
     description:
       'Create a pricing quote for a client. Extracts pricing model, total, deposit, and validity.',
     inputSchema:
-      '{ "description": "string — quote details, e.g. Quote for Sarah Johnson, flat rate $2500, 50% deposit, valid 14 days" }',
-    tierNote: 'ALWAYS tier 2 — chef reviews pricing before saving.',
+      '{ "description": "string - quote details, e.g. Quote for Sarah Johnson, flat rate $2500, 50% deposit, valid 14 days" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews pricing before saving.',
 
     async executor(inputs) {
       const description = String(inputs.description ?? '')
@@ -73,7 +73,7 @@ export const quoteAgentActions: AgentActionDefinition[] = [
 
       const warnings: string[] = []
       if (!clientId)
-        warnings.push(`Client "${parsed.client_name}" not found — please create the client first.`)
+        warnings.push(`Client "${parsed.client_name}" not found - please create the client first.`)
 
       return {
         preview: {
@@ -89,7 +89,7 @@ export const quoteAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (!payload.client_id)
-        return { success: false, message: 'Client not found — create the client first.' }
+        return { success: false, message: 'Client not found - create the client first.' }
 
       const validUntil = new Date()
       validUntil.setDate(validUntil.getDate() + ((payload.valid_days as number) ?? 14))
@@ -128,14 +128,30 @@ export const quoteAgentActions: AgentActionDefinition[] = [
     name: 'Move Quote Forward',
     tier: 2,
     safety: 'significant',
-    description: 'Transition a quote to a new status (draft → sent → accepted/rejected/expired).',
+    description: 'Transition a quote to a chef-managed status (draft -> sent, sent -> expired).',
     inputSchema:
-      '{ "quoteIdentifier": "string — quote name or client name", "toStatus": "string — target: sent, accepted, rejected, expired" }',
+      '{ "quoteIdentifier": "string - quote name or client name", "toStatus": "string - target: sent or expired" }',
     tierNote: 'ALWAYS tier 2.',
 
     async executor(inputs) {
       const identifier = String(inputs.quoteIdentifier ?? '').toLowerCase()
       const toStatus = String(inputs.toStatus ?? '')
+
+      if (!['sent', 'expired'].includes(toStatus)) {
+        return {
+          preview: {
+            actionType: 'agent.transition_quote',
+            summary: 'Unsupported quote transition target',
+            fields: [
+              { label: 'Requested Status', value: toStatus || '(empty)' },
+              { label: 'Allowed', value: 'sent, expired' },
+            ],
+            warnings: ['Use client portal response for accepted/rejected decisions.'],
+            safety: 'significant' as const,
+          },
+          commitPayload: { _error: true, errorMessage: 'Invalid status target' },
+        }
+      }
 
       const quotes = await getQuotes({})
       const match = (quotes ?? []).find((q: Record<string, unknown>) => {
@@ -151,14 +167,14 @@ export const quoteAgentActions: AgentActionDefinition[] = [
             fields: [{ label: 'Error', value: 'No matching quote found.' }],
             safety: 'significant' as const,
           },
-          commitPayload: { _error: true },
+          commitPayload: { _error: true, errorMessage: 'Quote not found.' },
         }
       }
 
       return {
         preview: {
           actionType: 'agent.transition_quote',
-          summary: `Move quote: ${(match as Record<string, unknown>).status} → ${toStatus}`,
+          summary: `Move quote: ${(match as Record<string, unknown>).status} -> ${toStatus}`,
           fields: [
             {
               label: 'Quote',
@@ -175,7 +191,12 @@ export const quoteAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      if (payload._error) return { success: false, message: 'Quote not found.' }
+      if (payload._error) {
+        const message =
+          typeof payload.errorMessage === 'string' ? payload.errorMessage : 'Quote not found.'
+        return { success: false, message }
+      }
+
       const result = await transitionQuote(
         String(payload.quoteId),
         payload.toStatus as Parameters<typeof transitionQuote>[1]

@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, AlertCircle } from '@/components/ui/icons'
 import { setSplitBilling } from '@/lib/operations/split-billing-actions'
 import { toast } from 'sonner'
 

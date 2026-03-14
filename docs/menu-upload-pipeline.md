@@ -2,7 +2,7 @@
 
 > **Status:** Design phase — not yet implemented
 > **Created:** 2026-02-27
-> **Purpose:** Allow chefs to bulk-upload historical menus (PDFs, images, text, DOCX, and RTF files) and automatically build a master Dish Index from 10+ years of service history.
+> **Purpose:** Allow chefs to bulk-upload historical menus (PDFs, images, text, Word docs) and automatically build a master Dish Index from 10+ years of service history.
 
 ---
 
@@ -17,7 +17,7 @@ A private chef with 10 years of experience may have 100+ menus scattered across 
 ## Architecture Overview
 
 ```
-Upload Files (PDF, JPG/JPEG/PNG/HEIC/WEBP, DOCX, TXT, RTF)
+Upload Files (PDF, image, DOCX, TXT)
     ↓
 Text Extraction (deterministic — Tesseract OCR, pdf-parse, mammoth)
     ↓
@@ -42,13 +42,13 @@ Costing & Analytics (formula-driven from existing systems)
 
 ### Supported Formats
 
-| Format                       | Parser                   | Notes                                      |
-| ---------------------------- | ------------------------ | ------------------------------------------ |
-| PDF                          | `pdf-parse` (npm)        | Text-based PDFs extracted directly         |
-| Image (JPG, JPEG, PNG, HEIC, WEBP) | Tesseract.js (local OCR) | Photos of printed menus and scans          |
-| Word (.docx)                 | `mammoth` (npm)          | Common format for emailed menus            |
-| Plain text (.txt)            | Pass-through             | Copy-pasted menu text                      |
-| Rich text (.rtf)             | Plain-text extraction    | Formatting is ignored                      |
+| Format                 | Parser                        | Notes                                      |
+| ---------------------- | ----------------------------- | ------------------------------------------ |
+| PDF                    | `pdf-parse` (npm)             | Text-based PDFs extracted directly         |
+| Image (JPG, PNG, HEIC) | Tesseract.js (local OCR)      | Photos of printed menus, handwritten menus |
+| Word (.docx)           | `mammoth` (npm)               | Common format for emailed menus            |
+| Plain text (.txt)      | Pass-through                  | Copy-pasted menu text                      |
+| Rich text (.rtf)       | `mammoth` or strip formatting | Less common but supported                  |
 
 ### Upload UX
 
@@ -74,7 +74,7 @@ CREATE TABLE menu_upload_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id),
   file_name TEXT NOT NULL,
-  file_type TEXT NOT NULL,               -- 'pdf', 'jpg', 'png', 'docx', 'txt', 'rtf', etc.
+  file_type TEXT NOT NULL,               -- 'pdf', 'image', 'docx', 'txt'
   file_storage_path TEXT,                -- Supabase Storage path
   extracted_text TEXT,                   -- Raw OCR/parsed text
   parsed_dishes JSONB,                   -- Structured output from Ollama
@@ -114,7 +114,6 @@ async function extractTextFromFile(file: File): Promise<string> {
     case 'jpeg':
     case 'png':
     case 'heic':
-    case 'webp':
       return extractFromImage(file) // Tesseract.js (local)
     case 'docx':
       return extractFromDocx(file) // mammoth

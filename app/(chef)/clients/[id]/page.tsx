@@ -71,6 +71,7 @@ import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
 import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
+import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -218,9 +219,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             />
           </div>
         </div>
-        <Link href={`/events/new?client_id=${client.id}`}>
-          <Button>Create Event for Client</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/clients/${client.id}/recurring`}>
+            <Button variant="secondary">Recurring Planning</Button>
+          </Link>
+          <Link href={`/events/new?client_id=${client.id}`}>
+            <Button>Create Event for Client</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Dormancy Warning */}
@@ -250,6 +256,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA && clientNBA.actionType !== 'none' && <NextBestActionCard action={clientNBA} />}
+
+      {/* Relationship Intelligence */}
+      <Suspense fallback={null}>
+        <ClientIntelligencePanel clientId={client.id} />
+      </Suspense>
 
       {/* Profile Completeness Meter */}
       {(() => {
@@ -730,6 +741,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         preferredEventDays={(client as any).preferred_event_days ?? null}
         budgetRangeMinCents={(client as any).budget_range_min_cents ?? null}
         budgetRangeMaxCents={(client as any).budget_range_max_cents ?? null}
+        recurringPricingModel={(client as any).recurring_pricing_model ?? null}
+        recurringPriceCents={(client as any).recurring_price_cents ?? null}
+        recurringPricingNotes={(client as any).recurring_pricing_notes ?? null}
         cleanupExpectations={(client as any).cleanup_expectations ?? null}
         leftoversPref={(client as any).leftovers_preference ?? null}
       />

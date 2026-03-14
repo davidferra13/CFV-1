@@ -11,10 +11,13 @@ CREATE TABLE IF NOT EXISTS hub_message_reads (
   read_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(message_id, profile_id)
 );
+
 CREATE INDEX idx_hub_message_reads_message ON hub_message_reads(message_id);
 CREATE INDEX idx_hub_message_reads_profile ON hub_message_reads(profile_id);
+
 -- RLS
 ALTER TABLE hub_message_reads ENABLE ROW LEVEL SECURITY;
+
 -- Members can view reads for messages in their groups
 CREATE POLICY hub_message_reads_select ON hub_message_reads
   FOR SELECT USING (
@@ -26,6 +29,7 @@ CREATE POLICY hub_message_reads_select ON hub_message_reads
         AND gp.auth_user_id = auth.uid()
     )
   );
+
 -- Members can insert their own reads
 CREATE POLICY hub_message_reads_insert ON hub_message_reads
   FOR INSERT WITH CHECK (
@@ -35,6 +39,7 @@ CREATE POLICY hub_message_reads_insert ON hub_message_reads
         AND gp.auth_user_id = auth.uid()
     )
   );
+
 -- 2. Notification throttle: track when each member was last notified
 ALTER TABLE hub_group_members
   ADD COLUMN IF NOT EXISTS last_notified_at TIMESTAMPTZ;

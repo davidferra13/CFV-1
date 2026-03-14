@@ -18,6 +18,7 @@ CREATE TYPE custom_field_type AS ENUM (
   'multi_select',
   'toggle'
 );
+
 -- ─── custom_field_definitions ────────────────────────────────────────────────
 
 CREATE TABLE custom_field_definitions (
@@ -32,7 +33,9 @@ CREATE TABLE custom_field_definitions (
   display_order   INT NOT NULL DEFAULT 0,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 ALTER TABLE custom_field_definitions ENABLE ROW LEVEL SECURITY;
+
 -- Standard tenant-isolation policy: chef can only see/modify their own definitions
 CREATE POLICY "tenant_isolation" ON custom_field_definitions
   FOR ALL
@@ -43,8 +46,10 @@ CREATE POLICY "tenant_isolation" ON custom_field_definitions
         AND role = 'chef'
     )
   );
+
 CREATE INDEX idx_custom_field_definitions_tenant_entity
   ON custom_field_definitions (tenant_id, entity_type);
+
 -- ─── custom_field_values ─────────────────────────────────────────────────────
 
 CREATE TABLE custom_field_values (
@@ -64,7 +69,9 @@ CREATE TABLE custom_field_values (
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (entity_id, field_definition_id)
 );
+
 ALTER TABLE custom_field_values ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "tenant_isolation" ON custom_field_values
   FOR ALL
   USING (
@@ -74,10 +81,13 @@ CREATE POLICY "tenant_isolation" ON custom_field_values
         AND role = 'chef'
     )
   );
+
 CREATE INDEX idx_custom_field_values_entity
   ON custom_field_values (entity_id);
+
 CREATE INDEX idx_custom_field_values_tenant_entity
   ON custom_field_values (tenant_id, entity_id);
+
 -- Auto-update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_custom_field_values_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
@@ -86,6 +96,7 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
 CREATE TRIGGER trg_custom_field_values_updated_at
   BEFORE UPDATE ON custom_field_values
   FOR EACH ROW EXECUTE FUNCTION update_custom_field_values_updated_at();

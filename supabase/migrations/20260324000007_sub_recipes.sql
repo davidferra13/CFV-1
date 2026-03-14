@@ -35,20 +35,24 @@ CREATE TABLE recipe_sub_recipes (
   CHECK (parent_recipe_id != child_recipe_id),
   UNIQUE (parent_recipe_id, child_recipe_id)
 );
+
 -- Indexes
 CREATE INDEX idx_recipe_sub_recipes_parent ON recipe_sub_recipes(parent_recipe_id);
 CREATE INDEX idx_recipe_sub_recipes_child ON recipe_sub_recipes(child_recipe_id);
+
 -- Updated_at trigger (reuse existing Layer 4 function)
 CREATE TRIGGER update_recipe_sub_recipes_updated_at
   BEFORE UPDATE ON recipe_sub_recipes
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
+
 -- =====================================================================================
 -- RLS: recipe_sub_recipes
 -- Follows same pattern as recipe_ingredients (inherit from parent recipe)
 -- =====================================================================================
 
 ALTER TABLE recipe_sub_recipes ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes
   FOR SELECT
   USING (
@@ -63,6 +67,7 @@ CREATE POLICY tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes
       )
     )
   );
+
 CREATE POLICY tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes
   FOR INSERT
   WITH CHECK (
@@ -72,6 +77,7 @@ CREATE POLICY tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes
       )
     )
   );
+
 CREATE POLICY tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes
   FOR UPDATE
   USING (
@@ -88,6 +94,7 @@ CREATE POLICY tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes
       )
     )
   );
+
 CREATE POLICY tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes
   FOR DELETE
   USING (
@@ -97,6 +104,7 @@ CREATE POLICY tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes
       )
     )
   );
+
 -- =====================================================================================
 -- TRIGGER: Prevent circular sub-recipe references
 -- Uses recursive CTE to walk ancestor chain before allowing insert/update
@@ -134,10 +142,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER prevent_circular_sub_recipe_trigger
   BEFORE INSERT OR UPDATE ON recipe_sub_recipes
   FOR EACH ROW
   EXECUTE FUNCTION prevent_circular_sub_recipe();
+
 -- =====================================================================================
 -- UPDATED FUNCTION: get_recipe_allergen_flags — now walks sub-recipes recursively
 -- =====================================================================================
@@ -163,6 +173,7 @@ RETURNS TEXT[] AS $$
     WHERE ri.recipe_id IN (SELECT recipe_id FROM all_recipes)
   ) subquery;
 $$ LANGUAGE SQL STABLE;
+
 -- =====================================================================================
 -- UPDATED FUNCTION: compute_recipe_cost_cents — now sums sub-recipe costs recursively
 -- =====================================================================================

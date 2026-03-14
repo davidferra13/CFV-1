@@ -1,12 +1,15 @@
 // Chef Menus List - Protected by layout
 
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
 import { MenusClientWrapper } from './menus-client-wrapper'
+import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'
+import { IngredientConsolidationBar } from '@/components/intelligence/ingredient-consolidation-bar'
 
 export default async function MenusPage() {
   const user = await requireChef()
@@ -35,5 +38,19 @@ export default async function MenusPage() {
     costSummaries.map((summary) => [summary.menu_id, summary])
   )
 
-  return <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />
+  return (
+    <div className="space-y-4">
+      {/* Dietary Intelligence */}
+      <Suspense fallback={null}>
+        <DietaryTrendsBar />
+      </Suspense>
+
+      {/* Ingredient Consolidation */}
+      <Suspense fallback={null}>
+        <IngredientConsolidationBar />
+      </Suspense>
+
+      <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />
+    </div>
+  )
 }

@@ -6,10 +6,10 @@ An admin-only test page at `/admin/animations` that lets you fire any of the 30 
 
 ## Files Created / Modified
 
-| File                                    | Action                                                        |
-| --------------------------------------- | ------------------------------------------------------------- |
-| `app/(admin)/admin/animations/page.tsx` | New — the test page                                           |
-| `components/admin/admin-sidebar.tsx`    | Modified — added "Animations" nav item with a new accent icon |
+| File                                    | Action                                                    |
+| --------------------------------------- | --------------------------------------------------------- |
+| `app/(admin)/admin/animations/page.tsx` | New — the test page                                       |
+| `components/admin/admin-sidebar.tsx`    | Modified — added "Animations" nav item with Sparkles icon |
 
 ## How It Works
 
@@ -47,7 +47,7 @@ A small dot + text near the top of the page shows which animation is active (gre
 
 ## Navigation
 
-"Animations" appears at the bottom of the admin sidebar with the new accent icon.
+"Animations" appears at the bottom of the admin sidebar with the Sparkles icon.
 
 ## What's Covered
 

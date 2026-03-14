@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useIsDemoMode } from '@/lib/demo-mode'
 
 const ROLE_MAP: Record<string, { label: string; color: string }> = {
   'e2e.chef-b': { label: 'CHEF B', color: '#d4762c' },
@@ -23,6 +24,7 @@ function detectRole(email: string): { label: string; color: string; email: strin
 }
 
 export function TestAccountBanner() {
+  const isDemo = useIsDemoMode()
   const [info, setInfo] = useState<{ label: string; color: string; email: string } | null>(null)
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function TestAccountBanner() {
     })
   }, [])
 
-  if (!info) return null
+  if (isDemo || !info) return null
 
   return (
     <div
@@ -49,11 +51,10 @@ export function TestAccountBanner() {
         lineHeight: '28px',
         textAlign: 'center',
         font: 'bold 13px/28px Inter, system-ui, sans-serif',
-        color: '#fff',
+        color: '#111827',
         background: `${info.color}cc`,
         pointerEvents: 'none',
         letterSpacing: '0.5px',
-        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
       }}
     >
       {info.label} &mdash; {info.email}

@@ -38,23 +38,29 @@ CREATE TABLE IF NOT EXISTS event_surveys (
   -- One survey per event
   CONSTRAINT event_surveys_one_per_event UNIQUE (event_id)
 );
+
 COMMENT ON TABLE event_surveys IS
   'Post-event client satisfaction surveys. Created when an event transitions '
   'to completed. One per event. submitted_at = NULL means not yet submitted.';
+
 COMMENT ON COLUMN event_surveys.token IS
   'UUID used as the public survey URL token (/survey/[token]). '
   'Never expose the internal event_id publicly.';
+
 COMMENT ON COLUMN event_surveys.submitted_at IS
   'NULL = survey not yet submitted. Set to now() when client submits the form. '
   'Once set, the form is no longer shown (idempotent).';
+
 -- ── Indexes ──────────────────────────────────────────────────────────────────
 
 CREATE INDEX IF NOT EXISTS idx_event_surveys_tenant_id ON event_surveys(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_event_surveys_event_id  ON event_surveys(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_surveys_token     ON event_surveys(token);
+
 -- ── Row Level Security ────────────────────────────────────────────────────────
 
 ALTER TABLE event_surveys ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can read surveys for their own tenant
 CREATE POLICY event_surveys_chef_read ON event_surveys
   FOR SELECT TO authenticated
@@ -65,6 +71,7 @@ CREATE POLICY event_surveys_chef_read ON event_surveys
       LIMIT 1
     )
   );
+
 -- Public survey submissions use the service role key in the server action.
 -- No RLS policy needed for unauthenticated writes — the server action validates
--- the token and uses the admin client to perform the update.;
+-- the token and uses the admin client to perform the update.

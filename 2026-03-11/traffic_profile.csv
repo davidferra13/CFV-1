@@ -1,0 +1,91 @@
+schemaname,table_name,blocks_read,write_tuples,blocks_write,activity_ratio
+realtime,subscription,6,6250,12500,2083.3:1 (Write-Heavy)
+public,remy_memories,5,31737,5770.36363636364,1154.1:1 (Write-Heavy)
+public,communication_action_log,3,483,2052.75,684.3:1 (Write-Heavy)
+auth,users,49,13767,1529.66666666667,31.2:1 (Write-Heavy)
+auth,sessions,25,11589,761.321167883212,30.5:1 (Write-Heavy)
+public,audit_log,19,3079,688.608262108262,36.2:1 (Write-Heavy)
+auth,refresh_tokens,34,7878,573.640776699029,16.9:1 (Write-Heavy)
+auth,mfa_amr_claims,9,6852,400.116788321168,44.5:1 (Write-Heavy)
+public,chef_preferences,6,1195,337.051282051282,56.2:1 (Write-Heavy)
+public,events,48,3277,284.418867924528,5.9:1 (Write-Heavy)
+public,chefs,51,1193,119.3,2.3:1 (Write-Heavy)
+public,communication_events,6,218,163.5,27.3:1 (Write-Heavy)
+public,inquiries,27,1022,131.4,4.9:1 (Write-Heavy)
+public,chef_breadcrumbs,3,5584,138.534351145038,46.2:1 (Write-Heavy)
+public,gmail_sync_log,5,639,106.068825910931,21.2:1 (Write-Heavy)
+public,follow_up_timers,3,203,101.5,33.8:1 (Write-Heavy)
+public,simulation_results,3,453,92.0612903225806,30.7:1 (Write-Heavy)
+public,activity_events,4,1633,89.3940165499682,22.3:1 (Write-Heavy)
+public,clients,39,869,51.4962962962963,1.3:1 (Write-Heavy)
+supabase_migrations,schema_migrations,6,498,71.1428571428571,11.9:1 (Write-Heavy)
+public,quotes,11,1799,58.5720930232558,5.3:1 (Write-Heavy)
+public,staff_members,5,767,51.1333333333333,10.2:1 (Write-Heavy)
+public,referral_partners,11,386,38.6,3.5:1 (Write-Heavy)
+public,user_roles,13,2504,35.7714285714286,2.8:1 (Write-Heavy)
+public,notification_delivery_log,3,393,38.9459459459459,13.0:1 (Write-Heavy)
+public,messages,15,62,20.6666666666667,1.4:1 (Write-Heavy)
+public,simulation_runs,4,276,26.2857142857143,6.6:1 (Write-Heavy)
+public,google_connections,3,53,26.5,8.8:1 (Write-Heavy)
+auth,identities,20,159,9.49253731343284,0.5:1 (Write-Heavy)
+public,chef_activity_log,5,166,24.1454545454545,4.8:1 (Write-Heavy)
+public,fine_tuning_examples,2,91,22.3207547169811,11.2:1 (Write-Heavy)
+public,ledger_entries,17,180,6.60550458715596,0.4:1 (Write-Heavy)
+public,conversation_threads,5,210,15,3.0:1 (Write-Heavy)
+public,dishes,5,230,12.7777777777778,2.6:1 (Write-Heavy)
+public,recipes,6,123,11.1818181818182,1.9:1 (Write-Heavy)
+public,gmail_historical_findings,5,67,11.7543859649123,2.4:1 (Write-Heavy)
+public,menus,13,116,3.05263157894737,0.2:1 (Write-Heavy)
+public,expenses,7,135,5.93406593406593,0.8:1 (Write-Heavy)
+auth,one_time_tokens,11,18,-0,Read-Only
+public,hub_groups,8,1,1,1:8.0 (Read-Heavy)
+auth,schema_migrations,8,68,0.918918918918919,1:8.7 (Read-Heavy)
+realtime,schema_migrations,7,68,1.01492537313433,1:6.9 (Read-Heavy)
+public,cron_executions,3,114,4.26168224299065,1.4:1 (Write-Heavy)
+public,chef_connections,7,2,-0,Read-Only
+public,ai_task_queue,7,1,-0,Read-Only
+public,event_cannabis_settings,3,278,3.97142857142857,1.3:1 (Write-Heavy)
+public,hub_messages,5,1,1,1:1 (Balanced)
+public,register_sessions,4,32,2,0.5:1 (Write-Heavy)
+public,chef_calendar_entries,6,18,-0,Read-Only
+public,loyalty_rewards,3,77,2.75,0.9:1 (Write-Heavy)
+public,seasonal_palettes,5,37,-0,Read-Only
+public,wix_submissions,5,1,-0,Read-Only
+public,rebook_tokens,5,1,-0,Read-Only
+public,beta_signups,5,1,-0,Read-Only
+public,notifications,5,188,0,Read-Only
+public,cannabis_host_agreements,5,1,-0,Read-Only
+public,hub_guest_profiles,5,40,-0,Read-Only
+public,event_themes,3,18,1,0.3:1 (Write-Heavy)
+public,inquiry_state_transitions,4,1,-0,Read-Only
+public,client_reviews,4,15,-0,Read-Only
+public,hub_group_members,4,1,-0,Read-Only
+storage,buckets,4,18,-0,Read-Only
+public,remy_artifacts,4,45,-0,Read-Only
+public,event_stubs,4,5,-0,Read-Only
+public,menu_templates,4,10,-0,Read-Only
+public,client_preferences,4,42,-0,Read-Only
+public,beta_survey_definitions,3,2,-0,Read-Only
+public,partner_locations,3,11,-0,Read-Only
+public,quote_state_transitions,3,39,-0,Read-Only
+storage,migrations,2,57,1,0.5:1 (Write-Heavy)
+public,daily_plan_dismissals,3,1,-0,Read-Only
+public,event_state_transitions,3,6,-0,Read-Only
+public,loyalty_config,3,24,-0,Read-Only
+public,wix_connections,3,3,-0,Read-Only
+public,event_floor_plans,3,1,-0,Read-Only
+public,mutation_idempotency,3,2,-0,Read-Only
+public,remy_messages,3,26,-0,Read-Only
+public,menu_state_transitions,3,1,-0,Read-Only
+public,haccp_plans,3,2,-0,Read-Only
+public,chef_momentum_snapshots,3,1,-0,Read-Only
+public,chef_social_channels,2,12,-0,Read-Only
+public,conversation_thread_reads,2,10,-0,Read-Only
+public,prospect_scrub_sessions,2,14,-0,Read-Only
+public,remy_conversations,2,38,-0,Read-Only
+public,ai_preferences,2,3,-0,Read-Only
+public,suggested_links,2,26,-0,Read-Only
+public,stations,2,1,-0,Read-Only
+public,contact_submissions,2,2,-0,Read-Only
+public,communication_classification_rules,1,33,-0,Read-Only
+public,platform_settings,1,2,-0,Read-Only

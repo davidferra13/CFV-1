@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useIsDemoMode } from '@/lib/demo-mode'
 import { getChefMilestoneStats, type ChefMilestoneStats } from '@/lib/milestones/stats-action'
 import { MILESTONE_DEFS, type MilestoneDef } from '@/lib/milestones/milestone-defs'
 
@@ -333,6 +334,7 @@ function MilestoneAnimLayer({ def, onDone }: { def: MilestoneDef; onDone: () => 
 // ---------------------------------------------------------------------------
 
 export function MilestoneOverlay() {
+  const isDemo = useIsDemoMode()
   const [queue, setQueue] = useState<MilestoneDef[]>([])
   const [current, setCurrent] = useState<MilestoneDef | null>(null)
   const [animKey, setAnimKey] = useState(0)
@@ -342,6 +344,7 @@ export function MilestoneOverlay() {
 
   // Fetch stats and compute queue on mount
   useEffect(() => {
+    if (isDemo) return
     let cancelled = false
 
     async function init() {

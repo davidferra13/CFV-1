@@ -9,7 +9,7 @@
  * Preserved: the Can/Cannot table below.
  */
 
-import { Check, X, AlertTriangle, Shield } from 'lucide-react'
+import { Check, X, AlertTriangle, Shield } from '@/components/ui/icons'
 
 export function DataFlowAnimated() {
   return (

@@ -5,7 +5,7 @@
 
 import { notFound } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { BookingPageClient } from './booking-page-client'
 
 type ChefPublicProfile = {
@@ -25,7 +25,7 @@ type ChefPublicProfile = {
 
 const getChefForBooking = unstable_cache(
   async (slug: string): Promise<ChefPublicProfile | null> => {
-    const supabase = createServerClient({ admin: true })
+    const supabase = createAdminClient()
 
     const { data } = await supabase
       .from('chefs')

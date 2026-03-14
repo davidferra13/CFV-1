@@ -7,6 +7,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { extractBearerToken, hashToken } from '@/lib/devices/token'
 import type { KioskConfig } from '@/lib/devices/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const token = extractBearerToken(request)

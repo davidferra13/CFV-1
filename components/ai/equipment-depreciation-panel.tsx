@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Wrench, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
+import { Wrench, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {

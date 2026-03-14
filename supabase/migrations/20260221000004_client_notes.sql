@@ -14,7 +14,9 @@ CREATE TYPE note_category AS ENUM (
   'logistics',
   'relationship'
 );
+
 COMMENT ON TYPE note_category IS 'Categories for client notes: general, dietary, preference, logistics, relationship';
+
 -- ─── Table ─────────────────────────────────────────────────────────────────
 
 CREATE TABLE client_notes (
@@ -31,21 +33,27 @@ CREATE TABLE client_notes (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
+
 COMMENT ON TABLE client_notes IS 'Quick notes about clients. Chef-only, tenant-scoped. Separate from CRM message log.';
+
 -- ─── Indexes ───────────────────────────────────────────────────────────────
 
 CREATE INDEX idx_client_notes_tenant_client
   ON client_notes(tenant_id, client_id);
+
 CREATE INDEX idx_client_notes_pinned
   ON client_notes(tenant_id, client_id, pinned DESC, created_at DESC);
+
 -- ─── RLS ───────────────────────────────────────────────────────────────────
 
 ALTER TABLE client_notes ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY client_notes_chef_all ON client_notes
   FOR ALL USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
+
 -- ─── Trigger ───────────────────────────────────────────────────────────────
 
 CREATE TRIGGER client_notes_updated_at

@@ -14,6 +14,7 @@ ALTER TABLE raffle_rounds
   ADD COLUMN IF NOT EXISTS prize_random_draw TEXT,
   ADD COLUMN IF NOT EXISTS prize_top_scorer TEXT,
   ADD COLUMN IF NOT EXISTS prize_most_dedicated TEXT;
+
 -- ── Top Scorer winner (highest game_score — deterministic) ──
 
 ALTER TABLE raffle_rounds
@@ -21,12 +22,14 @@ ALTER TABLE raffle_rounds
   ADD COLUMN IF NOT EXISTS top_scorer_alias TEXT,
   ADD COLUMN IF NOT EXISTS top_scorer_entry_id UUID REFERENCES raffle_entries(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS top_scorer_score INTEGER;
+
 -- ── Most Dedicated winner (most days played — deterministic) ──
 
 ALTER TABLE raffle_rounds
   ADD COLUMN IF NOT EXISTS most_dedicated_client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS most_dedicated_alias TEXT,
   ADD COLUMN IF NOT EXISTS most_dedicated_entry_count INTEGER;
+
 -- ── Per-category delivery tracking ──
 
 ALTER TABLE raffle_rounds
@@ -36,11 +39,13 @@ ALTER TABLE raffle_rounds
   ADD COLUMN IF NOT EXISTS prize_top_scorer_delivered_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS prize_most_dedicated_delivered BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS prize_most_dedicated_delivered_at TIMESTAMPTZ;
+
 -- ── Backfill: copy prize_description into prize_random_draw for existing rounds ──
 
 UPDATE raffle_rounds
   SET prize_random_draw = prize_description
   WHERE prize_random_draw IS NULL AND prize_description IS NOT NULL;
+
 -- ── Comments ──
 
 COMMENT ON COLUMN raffle_rounds.prize_random_draw IS 'Prize for random draw winner (main raffle)';

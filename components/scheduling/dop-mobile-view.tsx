@@ -5,7 +5,13 @@
 // Works with the existing DOPSchedule / task_key completion model.
 
 import { useState, useTransition } from 'react'
-import { CheckCircle2, Circle, ChevronRight, ChevronLeft, AlertTriangle } from 'lucide-react'
+import {
+  CheckCircle2,
+  Circle,
+  ChevronRight,
+  ChevronLeft,
+  AlertTriangle,
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleDOPTaskCompletion } from '@/lib/scheduling/dop-completions'

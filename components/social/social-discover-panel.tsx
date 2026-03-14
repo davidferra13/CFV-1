@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { TrendingUp, Users } from 'lucide-react'
+import { TrendingUp, Users } from '@/components/ui/icons'
 import type { SocialPostAuthor } from '@/lib/social/chef-social-actions'
 import { followChef, unfollowChef } from '@/lib/social/chef-social-actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DollarSign, Loader2, Sparkles } from 'lucide-react'
+import { DollarSign, Loader2, Sparkles } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { draftGratuityFraming, type GratuityFramingDraft } from '@/lib/ai/gratuity-framing'

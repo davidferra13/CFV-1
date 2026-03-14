@@ -6,7 +6,7 @@
 // Supports action CTAs on active steps and social sharing on milestone steps.
 
 import { toast } from 'sonner'
-import { Check, Share2 } from 'lucide-react'
+import { Check, Share2 } from '@/components/ui/icons'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
 import type { JourneyStep } from '@/lib/events/journey-steps'

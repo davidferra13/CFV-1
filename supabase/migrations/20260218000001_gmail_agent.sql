@@ -32,18 +32,22 @@ CREATE TABLE google_connections (
 
   CONSTRAINT unique_chef_google UNIQUE (chef_id)
 );
+
 -- Index for cron: find all gmail-connected chefs quickly
 CREATE INDEX idx_google_connections_gmail_active
   ON google_connections(gmail_connected) WHERE gmail_connected = true;
+
 -- ─── Gmail columns on messages ──────────────────────────────────────────────
 -- For deduplication and thread tracking
 
 ALTER TABLE messages
   ADD COLUMN IF NOT EXISTS gmail_message_id TEXT,
   ADD COLUMN IF NOT EXISTS gmail_thread_id TEXT;
+
 CREATE UNIQUE INDEX idx_messages_gmail_dedup
   ON messages(tenant_id, gmail_message_id)
   WHERE gmail_message_id IS NOT NULL;
+
 -- ─── Gmail Sync Log ─────────────────────────────────────────────────────────
 -- Audit trail: every email processed gets a log entry, regardless of classification.
 
@@ -64,11 +68,14 @@ CREATE TABLE gmail_sync_log (
 
   CONSTRAINT unique_gmail_sync UNIQUE (tenant_id, gmail_message_id)
 );
+
 CREATE INDEX idx_gmail_sync_log_tenant ON gmail_sync_log(tenant_id, synced_at DESC);
+
 -- ─── RLS Policies ───────────────────────────────────────────────────────────
 
 ALTER TABLE google_connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gmail_sync_log ENABLE ROW LEVEL SECURITY;
+
 -- google_connections: chefs can read/write only their own row
 CREATE POLICY "Chefs manage own google connection"
   ON google_connections
@@ -85,6 +92,7 @@ CREATE POLICY "Chefs manage own google connection"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- gmail_sync_log: chefs can read their own tenant logs
 CREATE POLICY "Chefs read own gmail sync log"
   ON gmail_sync_log
@@ -95,18 +103,21 @@ CREATE POLICY "Chefs read own gmail sync log"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Service role can insert/update gmail_sync_log (for cron endpoint)
 CREATE POLICY "Service role manages gmail sync log"
   ON gmail_sync_log
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 -- Service role can manage google_connections (for token refresh in cron)
 CREATE POLICY "Service role manages google connections"
   ON google_connections
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 -- ─── Updated_at trigger ─────────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION update_google_connections_updated_at()
@@ -116,6 +127,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trg_google_connections_updated_at
   BEFORE UPDATE ON google_connections
   FOR EACH ROW

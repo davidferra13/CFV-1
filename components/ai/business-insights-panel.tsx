@@ -1,7 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { BarChart3, Loader2, Sparkles, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import {
+  BarChart3,
+  Loader2,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {

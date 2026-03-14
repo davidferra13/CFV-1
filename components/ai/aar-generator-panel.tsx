@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, Loader2, Sparkles, CheckCircle, AlertCircle } from 'lucide-react'
+import { ClipboardList, Loader2, Sparkles, CheckCircle, AlertCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAARDraft, type AARDraft } from '@/lib/ai/aar-generator'

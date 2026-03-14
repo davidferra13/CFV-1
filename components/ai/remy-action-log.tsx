@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getActionLog } from '@/lib/ai/remy-local-storage'
 import type { ActionLogEntry } from '@/lib/ai/remy-types'
-import { Activity, CheckCircle, XCircle } from 'lucide-react'
+import { Activity, CheckCircle, XCircle } from '@/components/ui/icons'
 
 interface RemyActionLogProps {
   onSelectConversation: (id: string) => void

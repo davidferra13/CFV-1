@@ -21,6 +21,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- ============================================
 -- ENUM: Storage location types
 -- ============================================
@@ -39,6 +40,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- ============================================
 -- TABLE: storage_locations
 -- ============================================
@@ -56,11 +58,14 @@ CREATE TABLE storage_locations (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_storage_locations_chef ON storage_locations(chef_id, is_active);
 CREATE UNIQUE INDEX idx_storage_locations_default ON storage_locations(chef_id) WHERE is_default = true;
+
 CREATE TRIGGER trg_storage_locations_updated_at
   BEFORE UPDATE ON storage_locations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE: inventory_transactions (THE LEDGER)
 -- Append-only. Never update or delete rows.
@@ -103,8 +108,10 @@ CREATE TABLE inventory_transactions (
 
   CHECK (quantity != 0)
 );
+
 COMMENT ON TABLE inventory_transactions IS
   'Append-only inventory ledger. Every movement is a transaction. Current qty = SUM(quantity). Never delete rows.';
+
 -- Indexes for common query patterns
 CREATE INDEX idx_inv_tx_chef_ingredient ON inventory_transactions(chef_id, ingredient_id, created_at DESC);
 CREATE INDEX idx_inv_tx_chef_type ON inventory_transactions(chef_id, transaction_type, created_at DESC);
@@ -114,6 +121,7 @@ CREATE INDEX idx_inv_tx_batch ON inventory_transactions(batch_id) WHERE batch_id
 CREATE INDEX idx_inv_tx_created ON inventory_transactions(chef_id, created_at DESC);
 CREATE INDEX idx_inv_tx_po ON inventory_transactions(purchase_order_id) WHERE purchase_order_id IS NOT NULL;
 CREATE INDEX idx_inv_tx_audit ON inventory_transactions(audit_id) WHERE audit_id IS NOT NULL;
+
 -- ============================================
 -- VIEW: inventory_current_stock
 -- Derives current quantity from transaction ledger
@@ -134,6 +142,7 @@ LEFT JOIN inventory_counts ic
   ON ic.chef_id = it.chef_id
   AND ic.ingredient_id = it.ingredient_id
 GROUP BY it.chef_id, it.ingredient_id, it.unit, ic.par_level, ic.vendor_id;
+
 -- ============================================
 -- VIEW: inventory_by_location
 -- Per-location stock levels
@@ -154,6 +163,7 @@ WHERE it.location_id IS NOT NULL
 GROUP BY it.chef_id, it.location_id, sl.name, sl.location_type,
          it.ingredient_id, it.unit
 HAVING SUM(it.quantity) != 0;
+
 -- ============================================
 -- FUNCTION: get_ingredient_stock
 -- Returns current quantity for a single ingredient
@@ -166,11 +176,13 @@ CREATE OR REPLACE FUNCTION get_ingredient_stock(
   FROM inventory_transactions
   WHERE chef_id = p_chef_id AND ingredient_id = p_ingredient_id;
 $$ LANGUAGE SQL STABLE;
+
 -- ============================================
 -- RLS
 -- ============================================
 ALTER TABLE storage_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_transactions ENABLE ROW LEVEL SECURITY;
+
 -- storage_locations: chef-only CRUD
 CREATE POLICY sl_chef_select ON storage_locations FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
@@ -180,6 +192,7 @@ CREATE POLICY sl_chef_update ON storage_locations FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 CREATE POLICY sl_chef_delete ON storage_locations FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+
 -- inventory_transactions: chef-only SELECT + INSERT (NO UPDATE, NO DELETE — append-only)
 CREATE POLICY it_chef_select ON inventory_transactions FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));

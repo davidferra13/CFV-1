@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Calculator, Check, Copy, Printer, RotateCcw } from 'lucide-react'
+import { ArrowRight, Calculator, Check, Copy, Printer, RotateCcw } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

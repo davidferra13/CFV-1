@@ -6,7 +6,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { CreateEventForm } from '@/components/hub/create-event-form'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Plan a Dinner - ChefFlow' }
 

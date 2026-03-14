@@ -1,57 +1,47 @@
 #!/bin/bash
 # ============================================
-# ChefFlow Beta Rollback - Local PC
+# ChefFlow Beta Rollback Script
 # ============================================
-# Rolls back to the previous commit and redeploys.
-# With ~2 min builds on PC, redeploying is faster
-# than managing backup directories.
-#
+# Rolls back the Pi beta server to the previous build.
 # Usage: bash scripts/rollback-beta.sh
 # ============================================
 set -e
 
-SOURCE_DIR="C:/Users/david/Documents/CFv1"
-cd "$SOURCE_DIR"
-
-CURRENT_COMMIT=$(git rev-parse --short HEAD)
-PREV_COMMIT=$(git rev-parse --short HEAD~1)
+REMOTE="pi"
+SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=20"
 
 echo ""
 echo "=========================================="
 echo "  ChefFlow Beta Rollback"
 echo "=========================================="
-echo "  Current: $CURRENT_COMMIT"
-echo "  Rolling back to: $PREV_COMMIT"
-echo "=========================================="
 echo ""
 
-# Stash any uncommitted work
-STASHED=false
-if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-  echo "  Stashing uncommitted changes..."
-  git stash
-  STASHED=true
-fi
+ssh $SSH_OPTS "$REMOTE" << 'ROLLBACK'
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  cd ~/apps/chefflow-beta
 
-# Checkout previous commit
-git checkout HEAD~1
+  # Clean up any leftover staging dir from a failed deploy
+  rm -rf .next-staging 2>/dev/null || true
 
-# Deploy
-echo "  Deploying previous commit..."
-bash scripts/deploy-beta.sh
-
-# Return to original branch
-git checkout -
-
-# Restore stashed work
-if [ "$STASHED" = true ]; then
-  echo "  Restoring stashed changes..."
-  git stash pop
-fi
+  if [ -d .next.backup ] && [ -f .next.backup/BUILD_ID ]; then
+    rm -rf .next
+    mv .next.backup .next
+    echo "Rolled back to build $(cat .next/BUILD_ID)"
+    pm2 restart chefflow-beta
+    echo "Verifying..."
+    sleep 5
+    STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3100)
+    echo "Health check: HTTP $STATUS"
+  else
+    echo "ERROR: No valid backup found (missing .next.backup or BUILD_ID)"
+    echo "Cannot rollback — a fresh deploy is needed."
+    exit 1
+  fi
+ROLLBACK
 
 echo ""
 echo "=========================================="
 echo "  Rollback complete"
-echo "  Beta is running commit $PREV_COMMIT"
-echo "  Your working directory is back to normal"
+echo "  https://beta.cheflowhq.com restored"
 echo "=========================================="

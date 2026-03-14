@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Link2, Unlink, Loader2, ExternalLink } from 'lucide-react'
+import { Link2, Unlink, Loader2, ExternalLink } from '@/components/ui/icons'
 
 type OAuthProvider = 'quickbooks' | 'docusign' | 'square'
 

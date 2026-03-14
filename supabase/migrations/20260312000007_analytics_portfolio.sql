@@ -7,11 +7,13 @@
 
 ALTER TABLE chefs ADD COLUMN IF NOT EXISTS portfolio_enabled BOOLEAN DEFAULT false;
 ALTER TABLE chefs ADD COLUMN IF NOT EXISTS portfolio_layout TEXT DEFAULT 'grid' CHECK (portfolio_layout IN ('grid', 'masonry', 'carousel'));
+
 -- ============================================
 -- ALTER: Add countdown toggle to events
 -- ============================================
 
 ALTER TABLE events ADD COLUMN IF NOT EXISTS countdown_enabled BOOLEAN DEFAULT true;
+
 -- ============================================
 -- TABLE 1: BENCHMARK SNAPSHOTS
 -- ============================================
@@ -28,7 +30,9 @@ CREATE TABLE IF NOT EXISTS benchmark_snapshots (
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (chef_id, snapshot_date)
 );
+
 CREATE INDEX idx_benchmark_snapshots_chef ON benchmark_snapshots(chef_id, snapshot_date DESC);
+
 -- ============================================
 -- TABLE 2: DEMAND FORECASTS
 -- ============================================
@@ -45,10 +49,13 @@ CREATE TABLE IF NOT EXISTS demand_forecasts (
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (chef_id, month, year)
 );
+
 CREATE INDEX idx_demand_forecasts_chef ON demand_forecasts(chef_id, year, month);
+
 CREATE TRIGGER trg_demand_forecasts_updated_at
   BEFORE UPDATE ON demand_forecasts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 3: PORTFOLIO ITEMS
 -- ============================================
@@ -65,10 +72,13 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_portfolio_items_chef ON portfolio_items(chef_id, display_order);
+
 CREATE TRIGGER trg_portfolio_items_updated_at
   BEFORE UPDATE ON portfolio_items
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 4: PROFILE HIGHLIGHTS
 -- ============================================
@@ -84,10 +94,13 @@ CREATE TABLE IF NOT EXISTS profile_highlights (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_profile_highlights_chef ON profile_highlights(chef_id, display_order);
+
 CREATE TRIGGER trg_profile_highlights_updated_at
   BEFORE UPDATE ON profile_highlights
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -96,22 +109,26 @@ ALTER TABLE benchmark_snapshots  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE demand_forecasts     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE portfolio_items      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profile_highlights   ENABLE ROW LEVEL SECURITY;
+
 -- benchmark_snapshots
 CREATE POLICY bs_chef_select ON benchmark_snapshots FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bs_chef_insert ON benchmark_snapshots FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bs_chef_update ON benchmark_snapshots FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY bs_chef_delete ON benchmark_snapshots FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- demand_forecasts
 CREATE POLICY df_chef_select ON demand_forecasts FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY df_chef_insert ON demand_forecasts FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY df_chef_update ON demand_forecasts FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY df_chef_delete ON demand_forecasts FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- portfolio_items (public read for published profiles)
 CREATE POLICY pi_chef_select ON portfolio_items FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pi_public_select ON portfolio_items FOR SELECT USING (true);
 CREATE POLICY pi_chef_insert ON portfolio_items FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pi_chef_update ON portfolio_items FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY pi_chef_delete ON portfolio_items FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- profile_highlights (public read for published profiles)
 CREATE POLICY ph_chef_select ON profile_highlights FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY ph_public_select ON profile_highlights FOR SELECT USING (true);

@@ -6,10 +6,13 @@
 
 ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
+
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
+
 ALTER TABLE inquiries
   ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
+
 -- Partial indexes for fast demo data lookup (only indexes the rare TRUE case)
 CREATE INDEX IF NOT EXISTS idx_clients_is_demo ON clients (tenant_id) WHERE is_demo = TRUE;
 CREATE INDEX IF NOT EXISTS idx_events_is_demo ON events (tenant_id) WHERE is_demo = TRUE;

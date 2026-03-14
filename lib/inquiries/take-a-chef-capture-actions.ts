@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
 // ─── Schema ────────────────────────────────────────────────────────────────
 
@@ -28,7 +29,7 @@ const TakeAChefCaptureSchema = z.object({
 
   // Financial
   total_price_cents: z.number().int().nonnegative().optional().nullable(),
-  commission_percent: z.number().min(0).max(50).default(25),
+  commission_percent: z.number().min(0).max(50).default(getDefaultTakeAChefCommissionPercent()),
   log_commission: z.boolean().default(true),
 
   // Details
@@ -140,6 +141,10 @@ export async function captureTakeAChefBooking(
           serve_time: validated.serve_time,
           commission_percent: validated.commission_percent,
           additional_notes: validated.additional_notes?.trim() || null,
+          take_a_chef_finance: {
+            gross_booking_cents: validated.total_price_cents ?? null,
+            commission_percent: validated.commission_percent,
+          },
         } as unknown as import('@/types/database').Json,
         status: 'new',
         next_action_required: 'Review Take a Chef booking details',

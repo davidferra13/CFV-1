@@ -12,6 +12,7 @@ CREATE TYPE menu_approval_status AS ENUM (
   'approved',          -- Client approved
   'revision_requested' -- Client requested changes
 );
+
 -- ============================================
 -- Add approval tracking columns to events
 -- ============================================
@@ -21,8 +22,10 @@ ALTER TABLE events
   ADD COLUMN menu_sent_at         TIMESTAMPTZ,
   ADD COLUMN menu_approved_at     TIMESTAMPTZ,
   ADD COLUMN menu_revision_notes  TEXT;
+
 COMMENT ON COLUMN events.menu_approval_status IS 'Client menu approval state. Updated when chef sends menu and when client responds.';
 COMMENT ON COLUMN events.menu_revision_notes  IS 'Client notes when requesting menu revisions.';
+
 -- ============================================
 -- TABLE: Menu approval requests (history log)
 -- One row per send — supports multiple rounds of revision
@@ -45,39 +48,47 @@ CREATE TABLE menu_approval_requests (
 
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_menu_approvals_event  ON menu_approval_requests(event_id);
 CREATE INDEX idx_menu_approvals_chef   ON menu_approval_requests(chef_id, status);
 CREATE INDEX idx_menu_approvals_client ON menu_approval_requests(client_id);
+
 COMMENT ON TABLE menu_approval_requests IS 'Each row is one send-for-approval request. Multiple rounds of revision are supported.';
 COMMENT ON COLUMN menu_approval_requests.menu_snapshot IS 'JSONB array of menu items at the time of this send. Preserved for reference after changes.';
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE menu_approval_requests ENABLE ROW LEVEL SECURITY;
+
 -- Chef: full access to their own approval requests
 CREATE POLICY mar_chef_select ON menu_approval_requests
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
+
 CREATE POLICY mar_chef_insert ON menu_approval_requests
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
+
 -- Chef can update status (e.g., to re-send or cancel)
 CREATE POLICY mar_chef_update ON menu_approval_requests
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
+
 -- Client: read their own requests; update to record approval/revision response
 CREATE POLICY mar_client_select ON menu_approval_requests
   FOR SELECT USING (
     get_current_user_role() = 'client' AND
     client_id = get_current_client_id()
   );
+
 CREATE POLICY mar_client_update ON menu_approval_requests
   FOR UPDATE USING (
     get_current_user_role() = 'client' AND

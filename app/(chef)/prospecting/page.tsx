@@ -27,7 +27,7 @@ import {
   Kanban,
   MapPin,
   Upload,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
 

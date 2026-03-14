@@ -1,6 +1,6 @@
 'use client'
 
-import { TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Sparkles } from '@/components/ui/icons'
 import { type HolidayYoYRow } from '@/lib/analytics/seasonality'
 
 interface HolidayYoYTableProps {

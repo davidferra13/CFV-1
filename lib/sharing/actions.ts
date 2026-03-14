@@ -2248,6 +2248,14 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     name: string
     description: string | null
     service_style: string | null
+    dishes: {
+      id: string
+      course_number: number
+      course_name: string
+      description: string | null
+      dietary_tags: string[]
+      allergen_flags: string[]
+    }[]
   }[] = []
 
   if (visibility.show_menu) {
@@ -2257,7 +2265,38 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
       .eq('event_id', eventId)
       .order('created_at', { ascending: true })
 
-    menus = menuRows || []
+    const menuList = menuRows || []
+
+    // Fetch dishes for all menus in one query
+    const menuIds = menuList.map((m) => m.id)
+    let dishMap: Record<string, (typeof menus)[number]['dishes']> = {}
+    if (menuIds.length > 0) {
+      const { data: dishRows } = await supabase
+        .from('dishes')
+        .select(
+          'id, menu_id, course_number, course_name, description, dietary_tags, allergen_flags'
+        )
+        .in('menu_id', menuIds)
+        .order('course_number', { ascending: true })
+
+      for (const dish of dishRows || []) {
+        const mid = (dish as any).menu_id as string
+        if (!dishMap[mid]) dishMap[mid] = []
+        dishMap[mid].push({
+          id: dish.id,
+          course_number: dish.course_number,
+          course_name: dish.course_name,
+          description: dish.description,
+          dietary_tags: dish.dietary_tags || [],
+          allergen_flags: dish.allergen_flags || [],
+        })
+      }
+    }
+
+    menus = menuList.map((m) => ({
+      ...m,
+      dishes: dishMap[m.id] || [],
+    }))
   }
 
   let guestList: { full_name: string; rsvp_status: string }[] = []
@@ -3182,4 +3221,667 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
     editCutoff: editCutoff.toISOString(),
     waitlisted: shouldWaitlist,
   }
+}
+
+// ============================================================
+// GUEST EXPERIENCE IMPROVEMENTS
+// Day-of reminders, feedback, messaging, dietary confirmations,
+// document sharing, attendance reconciliation, guest social
+// ============================================================
+
+// --- Day-of Guest Reminders ---
+
+const SendDayOfRemindersSchema = z.object({
+  eventId: z.string().uuid(),
+  reminderType: z.enum(['day_before', 'day_of', 'custom']).default('day_before'),
+})
+
+export async function sendDayOfGuestReminders(input: z.infer<typeof SendDayOfRemindersSchema>) {
+  const validated = SendDayOfRemindersSchema.parse(input)
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, event_date, serve_time, arrival_time, occasion')
+    .eq('id', validated.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) throw new Error('Event not found')
+
+  const { data: share } = await (supabase as any)
+    .from('event_shares')
+    .select('id, day_of_reminders_enabled')
+    .eq('event_id', event.id)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (share && !(share as any).day_of_reminders_enabled) {
+    throw new Error('Day-of reminders are disabled for this event')
+  }
+
+  // Get confirmed/attending guests with email
+  const { data: guestsData } = await (supabase as any)
+    .from('event_guests')
+    .select('id, full_name, email, rsvp_status')
+    .eq('event_id', event.id)
+    .in('rsvp_status', ['attending'])
+    .not('email', 'is', null)
+
+  const guests = ((guestsData as any[]) || []).filter((g: any) => !!g.email)
+  let queued = 0
+
+  for (const guest of guests) {
+    const { error } = await (supabase as any).from('guest_day_of_reminders').insert({
+      tenant_id: user.tenantId!,
+      event_id: event.id,
+      guest_id: guest.id,
+      reminder_type: validated.reminderType,
+      recipient_email: guest.email,
+      status: 'pending',
+    })
+    if (!error) queued += 1
+  }
+
+  revalidatePath(`/events/${validated.eventId}`)
+
+  return {
+    success: true,
+    reminderType: validated.reminderType,
+    recipientCount: guests.length,
+    queuedCount: queued,
+  }
+}
+
+export async function getDayOfReminderStatus(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('guest_day_of_reminders')
+    .select('id, guest_id, reminder_type, status, sent_at')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  const rows = (data as any[]) || []
+  return {
+    total: rows.length,
+    sent: rows.filter((r: any) => r.status === 'sent').length,
+    pending: rows.filter((r: any) => r.status === 'pending').length,
+    failed: rows.filter((r: any) => r.status === 'failed').length,
+    rows,
+  }
+}
+
+// --- Guest Post-Event Feedback ---
+
+const SubmitGuestFeedbackSchema = z.object({
+  token: z.string().uuid(),
+  overall_rating: z.number().min(1).max(5),
+  food_rating: z.number().min(1).max(5).optional(),
+  experience_rating: z.number().min(1).max(5).optional(),
+  highlight_text: z.string().max(2000).optional(),
+  suggestion_text: z.string().max(2000).optional(),
+  testimonial_consent: z.boolean().default(false),
+})
+
+export async function getGuestFeedbackByToken(token: string) {
+  await enforcePublicActionRateLimit(`guest-feedback:${token.slice(0, 8)}`, 60, 15 * 60 * 1000)
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('guest_feedback')
+    .select(
+      `
+      id, token, event_id, guest_id, overall_rating, food_rating, experience_rating,
+      highlight_text, suggestion_text, testimonial_consent, submitted_at, sent_at,
+      event:events!guest_feedback_event_id_fkey(occasion, event_date),
+      guest:event_guests!guest_feedback_guest_id_fkey(full_name)
+    `
+    )
+    .eq('token', token)
+    .maybeSingle()
+
+  if (!data) return null
+
+  return {
+    ...(data as any),
+    eventTitle: (data as any).event?.occasion || 'Private Dinner',
+    eventDate: (data as any).event?.event_date,
+    guestName: (data as any).guest?.full_name || 'Guest',
+  }
+}
+
+export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedbackSchema>) {
+  const validated = SubmitGuestFeedbackSchema.parse(input)
+  await enforcePublicActionRateLimit(
+    `guest-feedback-submit:${validated.token.slice(0, 8)}`,
+    10,
+    60 * 60 * 1000
+  )
+  const supabase = createServerClient({ admin: true })
+
+  const { data: existing } = await (supabase as any)
+    .from('guest_feedback')
+    .select('id, submitted_at')
+    .eq('token', validated.token)
+    .maybeSingle()
+
+  if (!existing) throw new Error('Feedback link not found or expired.')
+  if ((existing as any).submitted_at) throw new Error('Feedback already submitted. Thank you!')
+
+  const { error } = await (supabase as any)
+    .from('guest_feedback')
+    .update({
+      overall_rating: validated.overall_rating,
+      food_rating: validated.food_rating,
+      experience_rating: validated.experience_rating,
+      highlight_text: validated.highlight_text || null,
+      suggestion_text: validated.suggestion_text || null,
+      testimonial_consent: validated.testimonial_consent,
+      submitted_at: new Date().toISOString(),
+    })
+    .eq('token', validated.token)
+
+  if (error) throw new Error('Failed to save feedback. Please try again.')
+
+  return { success: true }
+}
+
+export async function createGuestFeedbackForEvent(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data: guests } = await (supabase as any)
+    .from('event_guests')
+    .select('id, email, rsvp_status')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .in('rsvp_status', ['attending'])
+
+  const attendees = ((guests as any[]) || []).filter((g: any) => !!g.email)
+  let created = 0
+
+  for (const guest of attendees) {
+    const { error } = await (supabase as any).from('guest_feedback').insert({
+      tenant_id: user.tenantId!,
+      event_id: eventId,
+      guest_id: guest.id,
+      sent_at: new Date().toISOString(),
+    })
+    if (!error) created += 1
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true, created, total: attendees.length }
+}
+
+export async function getGuestFeedbackForEvent(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('guest_feedback')
+    .select(
+      `
+      id, token, guest_id, overall_rating, food_rating, experience_rating,
+      highlight_text, suggestion_text, testimonial_consent, submitted_at, sent_at,
+      guest:event_guests!guest_feedback_guest_id_fkey(full_name, email)
+    `
+    )
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: true })
+
+  return ((data as any[]) || []).map((row: any) => ({
+    ...row,
+    guestName: row.guest?.full_name || 'Guest',
+    guestEmail: row.guest?.email || null,
+  }))
+}
+
+// --- Guest-to-Chef Messaging ---
+
+const SendGuestMessageSchema = z.object({
+  eventId: z.string().uuid(),
+  secureToken: z.string().min(1),
+  message: z.string().min(1).max(2000),
+})
+
+export async function sendGuestMessage(input: z.infer<typeof SendGuestMessageSchema>) {
+  const validated = SendGuestMessageSchema.parse(input)
+  await enforcePublicActionRateLimit(
+    `guest-msg:${validated.secureToken.slice(0, 16)}`,
+    10,
+    60 * 60 * 1000
+  )
+
+  const supabase = createServerClient({ admin: true })
+
+  const { data: guest } = await (supabase as any)
+    .from('event_guests')
+    .select('id, tenant_id, event_id')
+    .eq('event_id', validated.eventId)
+    .eq('guest_token', validated.secureToken)
+    .maybeSingle()
+
+  if (!guest) throw new Error('Guest not found.')
+
+  const { error } = await (supabase as any).from('guest_messages').insert({
+    tenant_id: (guest as any).tenant_id,
+    event_id: validated.eventId,
+    guest_id: (guest as any).id,
+    guest_token: validated.secureToken,
+    message: validated.message,
+  })
+
+  if (error) throw new Error('Failed to send message. Please try again.')
+
+  // Non-blocking notification to chef
+  try {
+    const chefAuthUserId = await getChefAuthUserId((guest as any).tenant_id)
+    if (chefAuthUserId) {
+      await createNotification({
+        tenantId: (guest as any).tenant_id,
+        recipientId: chefAuthUserId,
+        category: 'client',
+        action: 'guest_dietary_alert',
+        title: 'New message from event guest',
+        body: validated.message.slice(0, 200),
+        eventId: validated.eventId,
+      })
+    }
+  } catch (err) {
+    console.error('[sendGuestMessage] Non-blocking notification failed:', err)
+  }
+
+  return { success: true }
+}
+
+export async function getGuestMessagesForEvent(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('guest_messages')
+    .select(
+      `
+      id, message, read_at, created_at,
+      guest:event_guests!guest_messages_guest_id_fkey(full_name, email)
+    `
+    )
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  return ((data as any[]) || []).map((row: any) => ({
+    id: row.id,
+    message: row.message,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+    guestName: row.guest?.full_name || 'Guest',
+    guestEmail: row.guest?.email || null,
+  }))
+}
+
+export async function markGuestMessageRead(messageId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  await (supabase as any)
+    .from('guest_messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('id', messageId)
+    .eq('tenant_id', user.tenantId!)
+
+  return { success: true }
+}
+
+// --- Dietary Confirmation Follow-up ---
+
+export async function sendDietaryConfirmations(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  // Get attending guests with dietary info
+  const { data: guests } = await (supabase as any)
+    .from('event_guests')
+    .select('id, full_name, email, dietary_restrictions, allergies')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .in('rsvp_status', ['attending'])
+    .not('email', 'is', null)
+
+  const attendees = ((guests as any[]) || []).filter((g: any) => {
+    const hasDietary = Array.isArray(g.dietary_restrictions) && g.dietary_restrictions.length > 0
+    const hasAllergies = Array.isArray(g.allergies) && g.allergies.length > 0
+    return g.email && (hasDietary || hasAllergies)
+  })
+
+  let created = 0
+  for (const guest of attendees) {
+    const dietary = [
+      ...((guest as any).dietary_restrictions || []),
+      ...((guest as any).allergies || []).map((a: string) => `Allergy: ${a}`),
+    ].join(', ')
+
+    const { error } = await (supabase as any).from('guest_dietary_confirmations').insert({
+      tenant_id: user.tenantId!,
+      event_id: eventId,
+      guest_id: guest.id,
+      dietary_summary: dietary,
+      status: 'pending',
+    })
+    if (!error) created += 1
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true, created, total: attendees.length }
+}
+
+export async function getDietaryConfirmationStatus(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('guest_dietary_confirmations')
+    .select(
+      `
+      id, dietary_summary, status, sent_at, responded_at, response_note,
+      guest:event_guests!guest_dietary_confirmations_guest_id_fkey(full_name, email)
+    `
+    )
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  return ((data as any[]) || []).map((row: any) => ({
+    ...row,
+    guestName: row.guest?.full_name || 'Guest',
+    guestEmail: row.guest?.email || null,
+  }))
+}
+
+export async function confirmGuestDietary(input: {
+  eventId: string
+  secureToken: string
+  confirmed: boolean
+  responseNote?: string
+}) {
+  await enforcePublicActionRateLimit(
+    `dietary-confirm:${input.secureToken.slice(0, 16)}`,
+    20,
+    60 * 60 * 1000
+  )
+  const supabase = createServerClient({ admin: true })
+
+  const { data: guest } = await (supabase as any)
+    .from('event_guests')
+    .select('id')
+    .eq('event_id', input.eventId)
+    .eq('guest_token', input.secureToken)
+    .maybeSingle()
+
+  if (!guest) throw new Error('Guest not found.')
+
+  const { error } = await (supabase as any)
+    .from('guest_dietary_confirmations')
+    .update({
+      status: input.confirmed ? 'confirmed' : 'updated',
+      responded_at: new Date().toISOString(),
+      response_note: input.responseNote || null,
+    })
+    .eq('guest_id', (guest as any).id)
+    .eq('event_id', input.eventId)
+
+  if (error) throw new Error('Failed to save confirmation.')
+
+  return { success: true }
+}
+
+// --- Guest Document Sharing ---
+
+const CreateGuestDocumentSchema = z.object({
+  eventId: z.string().uuid(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  documentType: z.enum([
+    'recipe_card',
+    'wine_pairing',
+    'event_photos',
+    'pre_event_info',
+    'thank_you',
+    'other',
+  ]),
+  fileUrl: z.string().optional(),
+  contentText: z.string().optional(),
+  isPreEvent: z.boolean().default(false),
+  publish: z.boolean().default(false),
+})
+
+export async function createGuestDocument(input: z.infer<typeof CreateGuestDocumentSchema>) {
+  const validated = CreateGuestDocumentSchema.parse(input)
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data, error } = await (supabase as any)
+    .from('event_guest_documents')
+    .insert({
+      tenant_id: user.tenantId!,
+      event_id: validated.eventId,
+      title: validated.title,
+      description: validated.description || null,
+      document_type: validated.documentType,
+      file_url: validated.fileUrl || null,
+      content_text: validated.contentText || null,
+      is_pre_event: validated.isPreEvent,
+      published_at: validated.publish ? new Date().toISOString() : null,
+    })
+    .select('id')
+    .single()
+
+  if (error) throw new Error('Failed to create document.')
+
+  revalidatePath(`/events/${validated.eventId}`)
+  return { success: true, id: (data as any).id }
+}
+
+export async function getGuestDocumentsForEvent(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('event_guest_documents')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  return (data as any[]) || []
+}
+
+export async function getPublishedGuestDocuments(eventId: string, guestToken: string) {
+  await enforcePublicActionRateLimit(`guest-docs:${guestToken.slice(0, 16)}`, 60, 15 * 60 * 1000)
+  const supabase = createServerClient({ admin: true })
+
+  // Verify guest token is valid for this event
+  const { data: guest } = await (supabase as any)
+    .from('event_guests')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('guest_token', guestToken)
+    .maybeSingle()
+
+  if (!guest) return []
+
+  const { data } = await (supabase as any)
+    .from('event_guest_documents')
+    .select(
+      'id, title, description, document_type, file_url, content_text, is_pre_event, published_at'
+    )
+    .eq('event_id', eventId)
+    .not('published_at', 'is', null)
+    .order('created_at', { ascending: true })
+
+  return (data as any[]) || []
+}
+
+export async function publishGuestDocument(documentId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { error } = await (supabase as any)
+    .from('event_guest_documents')
+    .update({ published_at: new Date().toISOString() })
+    .eq('id', documentId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) throw new Error('Failed to publish document.')
+  return { success: true }
+}
+
+export async function deleteGuestDocument(documentId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { error } = await (supabase as any)
+    .from('event_guest_documents')
+    .delete()
+    .eq('id', documentId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) throw new Error('Failed to delete document.')
+  return { success: true }
+}
+
+// --- Attendance Reconciliation ---
+
+const ReconcileAttendanceSchema = z.object({
+  eventId: z.string().uuid(),
+  reconciliations: z.array(
+    z.object({
+      guestId: z.string().uuid(),
+      status: z.enum(['attended', 'no_show', 'late', 'left_early']),
+    })
+  ),
+})
+
+export async function reconcileAttendance(input: z.infer<typeof ReconcileAttendanceSchema>) {
+  const validated = ReconcileAttendanceSchema.parse(input)
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  let updated = 0
+  for (const rec of validated.reconciliations) {
+    const { error } = await (supabase as any)
+      .from('event_guests')
+      .update({
+        actual_attended: rec.status,
+        reconciled_at: new Date().toISOString(),
+        reconciled_by: user.id,
+      })
+      .eq('id', rec.guestId)
+      .eq('event_id', validated.eventId)
+      .eq('tenant_id', user.tenantId!)
+
+    if (!error) updated += 1
+  }
+
+  revalidatePath(`/events/${validated.eventId}`)
+  return { success: true, updated, total: validated.reconciliations.length }
+}
+
+export async function getAttendanceReconciliation(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await (supabase as any)
+    .from('event_guests')
+    .select('id, full_name, email, rsvp_status, actual_attended, reconciled_at')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .in('rsvp_status', ['attending', 'maybe'])
+    .order('full_name', { ascending: true })
+
+  return (data as any[]) || []
+}
+
+// --- Guest About Me (Social) ---
+
+export async function updateGuestAboutMe(input: {
+  eventId: string
+  secureToken: string
+  aboutMe: string
+}) {
+  await enforcePublicActionRateLimit(
+    `guest-about:${input.secureToken.slice(0, 16)}`,
+    20,
+    60 * 60 * 1000
+  )
+  const supabase = createServerClient({ admin: true })
+
+  if (input.aboutMe.length > 500) {
+    throw new Error('About me must be 500 characters or less.')
+  }
+
+  const { error } = await (supabase as any)
+    .from('event_guests')
+    .update({ about_me: input.aboutMe || null })
+    .eq('event_id', input.eventId)
+    .eq('guest_token', input.secureToken)
+
+  if (error) throw new Error('Failed to update profile.')
+
+  return { success: true }
+}
+
+// --- Pre-Event Content ---
+
+export async function updatePreEventContent(input: {
+  eventId: string
+  content: {
+    parking_info?: string
+    dress_code?: string
+    what_to_expect?: string
+    arrival_instructions?: string
+    custom_message?: string
+  }
+}) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { error } = await (supabase as any)
+    .from('event_shares')
+    .update({ pre_event_content: input.content })
+    .eq('event_id', input.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('is_active', true)
+
+  if (error) throw new Error('Failed to update pre-event content.')
+
+  revalidatePath(`/events/${input.eventId}`)
+  return { success: true }
+}
+
+export async function getPreEventContent(eventId: string, guestToken: string) {
+  await enforcePublicActionRateLimit(`pre-event:${guestToken.slice(0, 16)}`, 60, 15 * 60 * 1000)
+  const supabase = createServerClient({ admin: true })
+
+  // Verify guest
+  const { data: guest } = await (supabase as any)
+    .from('event_guests')
+    .select('id, event_share_id')
+    .eq('event_id', eventId)
+    .eq('guest_token', guestToken)
+    .maybeSingle()
+
+  if (!guest) return null
+
+  const { data: share } = await (supabase as any)
+    .from('event_shares')
+    .select('pre_event_content')
+    .eq('id', (guest as any).event_share_id)
+    .maybeSingle()
+
+  return (share as any)?.pre_event_content || {}
 }

@@ -4,19 +4,19 @@
 
 'use server'
 
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
+import {
+  BookingServiceModeSchema,
+  ScheduleRequestSchema,
+  summarizeScheduleRequest,
+} from '@/lib/booking/schedule-schema'
+import { FOUNDER_EMAIL, resolveOwnerChefId } from '@/lib/platform/owner-account'
 import { z } from 'zod'
 
-const DEFAULT_BOOKING_CHEF_EMAIL = 'davidferra13@gmail.com'
-
-const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
-  under_500: 25000,
-  '500_1500': 100000,
-  '1500_3000': 225000,
-  '3000_5000': 400000,
-  over_5000: 600000,
-}
+const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
 const PublicInquirySchema = z.object({
   chef_slug: z.string().optional(),
@@ -31,11 +31,19 @@ const PublicInquirySchema = z.object({
   // Optional
   phone: z.string().optional().or(z.literal('')),
   budget_cents: z.number().int().nonnegative().nullable().optional(),
-  budget_range: z.enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000']).optional(),
+  budget_range: z
+    .enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000', 'not_sure'])
+    .optional(),
   allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
   favorite_ingredients_dislikes: z.string().optional().or(z.literal('')),
   allergies_food_restrictions: z.string().optional().or(z.literal('')),
   additional_notes: z.string().optional().or(z.literal('')),
+  service_mode: BookingServiceModeSchema.optional(),
+  recurring_frequency: z.enum(['weekly', 'biweekly', 'monthly']).optional(),
+  recurring_duration_weeks: z.number().int().min(1).max(52).optional(),
+  menu_recommendation_lead_days: z.number().int().min(1).max(21).optional(),
+  schedule_request_jsonb: ScheduleRequestSchema.optional(),
+  website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
 })
 
 export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
@@ -49,6 +57,21 @@ export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
  */
 export async function submitPublicInquiry(input: PublicInquiryInput) {
   const validated = PublicInquirySchema.parse(input)
+
+  if (validated.website_url?.trim()) {
+    // Honeypot filled by bots; return success to avoid retries.
+    return { success: true, inquiryCreated: false, eventCreated: false }
+  }
+
+  const hdrs = await headers()
+  const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  await checkRateLimit(`public-inquiry:ip:${ip}`, 8, 5 * 60_000)
+  await checkRateLimit(
+    `public-inquiry:email:${validated.email.toLowerCase().trim()}`,
+    4,
+    60 * 60_000
+  )
+
   const supabase = createServerClient({ admin: true })
   const allergiesList = validated.allergies_food_restrictions
     ? validated.allergies_food_restrictions
@@ -56,9 +79,29 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         .map((item) => item.trim())
         .filter(Boolean)
     : null
+  const serviceMode = validated.service_mode ?? 'one_off'
+  const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
 
   const sourceParts = [
     `Serving Time: ${validated.serve_time.trim()}`,
+    `Service Mode: ${
+      serviceMode === 'recurring'
+        ? 'Recurring'
+        : serviceMode === 'multi_day'
+          ? 'Multi-day'
+          : 'One-off'
+    }`,
+    serviceMode === 'recurring'
+      ? `Recurring Plan: ${validated.recurring_frequency ?? 'weekly'} for ${
+          validated.recurring_duration_weeks ?? 8
+        } week(s); menu recommendation lead ${validated.menu_recommendation_lead_days ?? 7} day(s).`
+      : null,
+    scheduleSummary,
+    validated.budget_cents != null
+      ? `Exact Budget: $${(validated.budget_cents / 100).toFixed(2)}`
+      : validated.budget_range
+        ? `Budget Range: ${validated.budget_range}`
+        : null,
     validated.favorite_ingredients_dislikes?.trim()
       ? `Favorites/Dislikes: ${validated.favorite_ingredients_dislikes.trim()}`
       : null,
@@ -70,17 +113,52 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       : null,
   ].filter(Boolean)
   const sourceMessage = sourceParts.join('\n')
+  const serviceExpectations = [
+    `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
+    serviceMode === 'recurring'
+      ? `Recurring ${validated.recurring_frequency ?? 'weekly'} plan for ${
+          validated.recurring_duration_weeks ?? 8
+        } week(s). Menu recommendations requested ${validated.menu_recommendation_lead_days ?? 7} day(s) ahead.`
+      : null,
+    serviceMode === 'multi_day' && scheduleSummary ? scheduleSummary : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
-  let chefQuery = supabase.from('chefs').select('id, business_name')
+  let chef: { id: string; business_name: string | null } | null = null
+  let chefError: { message?: string } | null = null
 
   if (validated.chef_slug) {
-    chefQuery = chefQuery.eq('booking_slug', validated.chef_slug)
+    const lookup = await supabase
+      .from('chefs')
+      .select('id, business_name')
+      .eq('booking_slug', validated.chef_slug)
+      .single()
+    chef = lookup.data as { id: string; business_name: string | null } | null
+    chefError = lookup.error
   } else {
-    chefQuery = chefQuery.ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
-  }
+    const ownerChefId = await resolveOwnerChefId(supabase)
+    if (ownerChefId) {
+      const lookup = await supabase
+        .from('chefs')
+        .select('id, business_name')
+        .eq('id', ownerChefId)
+        .single()
+      chef = lookup.data as { id: string; business_name: string | null } | null
+      chefError = lookup.error
+    }
 
-  const { data: chef, error: chefError } = await chefQuery.single()
+    if (!chef) {
+      const founderLookup = await supabase
+        .from('chefs')
+        .select('id, business_name')
+        .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
+        .single()
+      chef = founderLookup.data as { id: string; business_name: string | null } | null
+      chefError = founderLookup.error
+    }
+  }
 
   if (chefError || !chef) {
     throw new Error('Chef not found')
@@ -97,11 +175,18 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     source: 'website',
   })
 
-  // Derive budget in cents: explicit value > range midpoint > null
-  const budgetCents =
-    validated.budget_cents ??
-    (validated.budget_range ? (BUDGET_RANGE_MIDPOINTS[validated.budget_range] ?? null) : null) ??
-    null
+  // Only persist exact budget cents when explicitly provided.
+  const budgetCents = validated.budget_cents ?? null
+  const budgetMode: 'exact' | 'range' | 'not_sure' | 'unset' =
+    budgetCents != null
+      ? 'exact'
+      : validated.budget_range === 'not_sure'
+        ? 'not_sure'
+        : validated.budget_range
+          ? 'range'
+          : 'unset'
+  const budgetRange = validated.budget_range ?? null
+  const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
 
   // 3. Create inquiry record linked to client
   const { data: inquiry, error: inquiryError } = await supabase
@@ -116,17 +201,29 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_location: validated.address.trim(),
       confirmed_occasion: validated.occasion.trim(),
       confirmed_budget_cents: budgetCents,
-      confirmed_service_expectations: `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
+      confirmed_service_expectations: serviceExpectations,
       confirmed_dietary_restrictions: allergiesList,
       source_message: sourceMessage || null,
+      service_mode: serviceMode,
+      schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       unknown_fields: {
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),
         allergy_flag: validated.allergy_flag ?? null,
+        budget_mode: budgetMode,
         budget_range: validated.budget_range ?? null,
+        budget_exact_cents: budgetCents,
         favorite_ingredients_dislikes: validated.favorite_ingredients_dislikes?.trim() || null,
         allergies_food_restrictions: validated.allergies_food_restrictions?.trim() || null,
         additional_notes: validated.additional_notes?.trim() || null,
+        service_mode: serviceMode,
+        recurring_frequency:
+          serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : null,
+        recurring_duration_weeks:
+          serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
+        menu_recommendation_lead_days:
+          serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
+        schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       },
       status: 'new',
     })
@@ -138,6 +235,28 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     throw new Error('Failed to create inquiry')
   }
 
+  // Auto-create Dinner Circle (non-blocking)
+  let circleGroupToken: string | null = null
+  try {
+    const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+    const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
+    const circle = await createInquiryCircle({
+      inquiryId: inquiry.id,
+      tenantId,
+      clientName: validated.full_name.trim(),
+      clientEmail: validated.email.toLowerCase().trim(),
+      occasion: validated.occasion.trim(),
+    })
+    circleGroupToken = circle.groupToken
+    await postFirstCircleMessage({
+      groupId: circle.groupId,
+      inquiryId: inquiry.id,
+      tenantId,
+    })
+  } catch (circleErr) {
+    console.error('[submitPublicInquiry] Circle creation failed (non-blocking):', circleErr)
+  }
+
   // Send acknowledgment email to client (non-blocking — never fails the submission)
   try {
     const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
@@ -147,6 +266,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       chefName,
       occasion: validated.occasion.trim(),
       eventDate: validated.event_date || null,
+      circleUrl: circleGroupToken
+        ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
+        : undefined,
     })
   } catch (emailErr) {
     console.error('[submitPublicInquiry] Acknowledgment email failed (non-blocking):', emailErr)
@@ -161,12 +283,13 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       inquiry_id: inquiry.id,
       event_date: validated.event_date,
       serve_time: validated.serve_time.trim(),
+      service_mode: serviceMode,
       guest_count: validated.guest_count,
       location_address: validated.address.trim(),
       location_city: 'TBD',
       location_zip: 'TBD',
       occasion: validated.occasion.trim(),
-      quoted_price_cents: validated.budget_cents ?? null,
+      quoted_price_cents: budgetCents,
       special_requests: sourceMessage || null,
     })
     .select('id')
@@ -193,13 +316,43 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   // 7. Enqueue Remy reactive AI task — auto-score lead (non-blocking)
   try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine')
+    await evaluateAutomations(tenantId, 'inquiry_created', {
+      entityId: inquiry.id,
+      entityType: 'inquiry',
+      fields: {
+        channel: 'website',
+        client_name: validated.full_name,
+        occasion: validated.occasion || null,
+        guest_count: validated.guest_count ?? null,
+        budget_mode: budgetMode,
+        budget_known: budgetKnown,
+        budget_range: budgetRange,
+        budget_cents: budgetCents,
+        service_mode: serviceMode,
+        recurring_frequency:
+          serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : null,
+        recurring_duration_weeks:
+          serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
+      },
+    })
+  } catch (err) {
+    console.error('[submitPublicInquiry] Automation evaluation failed (non-blocking):', err)
+  }
+
+  try {
     const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
     await onInquiryCreated(tenantId, inquiry.id, client.id, {
       channel: 'website',
       clientName: validated.full_name,
       occasion: validated.occasion ?? undefined,
       budgetCents: validated.budget_cents ?? undefined,
+      budgetMode,
+      budgetRange: budgetRange ?? undefined,
       guestCount: validated.guest_count ?? undefined,
+      serviceMode,
+      recurringFrequency:
+        serviceMode === 'recurring' ? (validated.recurring_frequency ?? 'weekly') : undefined,
     })
   } catch (err) {
     console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)

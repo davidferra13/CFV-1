@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, X, AlertTriangle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Check, X, AlertTriangle, Clock, ChevronDown, ChevronUp } from '@/components/ui/icons'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { RemyTaskResult } from '@/lib/ai/remy-types'

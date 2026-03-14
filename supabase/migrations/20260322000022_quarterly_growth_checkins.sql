@@ -11,8 +11,10 @@ CREATE TABLE IF NOT EXISTS chef_growth_checkins (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(tenant_id, checkin_date)
 );
+
 -- Add tenant_id if it doesn't exist (table may have been created with chef_id instead)
 ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES chefs(id) ON DELETE CASCADE;
+
 -- Backfill tenant_id from chef_id if chef_id column exists
 DO $$
 BEGIN
@@ -20,6 +22,7 @@ BEGIN
     UPDATE chef_growth_checkins SET tenant_id = chef_id WHERE tenant_id IS NULL;
   END IF;
 END $$;
+
 -- Ensure all columns exist if table was pre-created with fewer columns
 ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS checkin_date DATE DEFAULT CURRENT_DATE;
 ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS satisfaction_score INT;
@@ -28,7 +31,9 @@ ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS draining_this_quarter 
 ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS goal_next_quarter TEXT;
 ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS track_request TEXT;
 ALTER TABLE chef_growth_checkins ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+
 ALTER TABLE chef_growth_checkins ENABLE ROW LEVEL SECURITY;
+
 -- Drop existing policy if present, then recreate
 DROP POLICY IF EXISTS "chef_checkins_own_tenant" ON chef_growth_checkins;
 CREATE POLICY "chef_checkins_own_tenant" ON chef_growth_checkins
@@ -37,5 +42,6 @@ CREATE POLICY "chef_checkins_own_tenant" ON chef_growth_checkins
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
     )
   );
+
 CREATE INDEX IF NOT EXISTS idx_growth_checkins_tenant ON chef_growth_checkins(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_growth_checkins_date ON chef_growth_checkins(tenant_id, checkin_date);

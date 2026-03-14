@@ -14,7 +14,7 @@
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
 import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
-import { readFileSync, watch, existsSync } from 'node:fs'
+import { readFileSync, watch } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
@@ -22,7 +22,6 @@ import { promisify } from 'node:util'
 const execAsync = promisify(exec)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
-const OPENCLAW_CLONE_ROOT = process.env.OPENCLAW_CLONE_DIR || join(PROJECT_ROOT, '..', 'CFv1-openclaw-clone')
 const PORT = 41937
 const PROJECT_TIMELINE_FILE = join(PROJECT_ROOT, 'docs', 'project-timeline.json')
 const PROJECT_EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json')
@@ -48,16 +47,15 @@ try {
 
 const CONFIG = {
   devPort: 3100,
-  betaPort: 3200,
-  betaLocalUrl: 'http://localhost:3200',
   betaUrl: 'https://beta.cheflowhq.com',
-  betaHealthUrl: 'http://localhost:3200/api/health',
+  betaHealthUrl: 'https://beta.cheflowhq.com/api/health',
   prodUrl: 'https://cheflowhq.com',
   prodHealthUrl: 'https://cheflowhq.com/api/health',
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+  ollamaPiUrl: process.env.OLLAMA_PI_URL || 'http://10.0.0.177:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
-  openclawOllamaUrl: process.env.OPENCLAW_OLLAMA_BASE_URL || process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-  openclawOllamaModel: process.env.OPENCLAW_OLLAMA_MODEL || 'qwen3:4b',
+  ollamaPiModel: process.env.OLLAMA_PI_MODEL || 'qwen3:8b',
+  piSsh: 'ssh pi',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
@@ -95,87 +93,12 @@ function log(source, message, type = 'info') {
 // ── File Watcher (VS Code Activity Tracking) ─────────────────────
 
 const fileActivity = []
-const openClawFileActivity = []
 const MAX_ACTIVITY = 500
 const WATCH_DIRS = ['app', 'components', 'lib', 'types', 'supabase/migrations']
-const OPENCLAW_WATCH_DIRS = ['app', 'components', 'lib', 'types', 'supabase', 'scripts', 'docs']
 const IGNORE_PATTERNS = /node_modules|\.next|\.git|\.swp$|\.tmp$|~$/
 let watchDebounce = new Map()
-let activeWatchDirs = [...WATCH_DIRS]
-let activeOpenClawWatchDirs = []
-
-function recordFileActivity(activityStore, dir, filename, eventType, source = 'vscode') {
-  const filePath = `${dir}/${filename.replace(/\\/g, '/')}`
-  const key = `${source}:${eventType}:${filePath}`
-  if (watchDebounce.has(key)) return
-  watchDebounce.set(key, true)
-  setTimeout(() => watchDebounce.delete(key), 500)
-
-  const entry = {
-    time: Date.now(),
-    type: eventType,
-    file: filePath,
-    dir: dir,
-    ext: filename.split('.').pop() || '',
-  }
-  activityStore.push(entry)
-  if (activityStore.length > MAX_ACTIVITY) activityStore.shift()
-
-  const action = eventType === 'rename' ? 'created/deleted' : 'modified'
-  const message = `${action}: ${filePath}`
-
-  if (source === 'openclaw') {
-    log('openclaw', message, 'info')
-    feedEvent('openclaw', message, 'info')
-  } else {
-    log('vscode', message, 'info')
-  }
-
-  if (filePath.endsWith('page.tsx') || filePath.endsWith('page.ts') ||
-      filePath.endsWith('route.ts') || filePath.endsWith('route.tsx')) {
-    scanCache = null
-    scanCacheTime = 0
-  }
-}
-
-function watchTree(rootPath, dirs, activityStore, source = 'vscode') {
-  const watchedDirs = []
-
-  for (const dir of dirs) {
-    const fullPath = join(rootPath, dir)
-    if (!existsSync(fullPath)) continue
-
-    try {
-      watch(fullPath, { recursive: true }, (eventType, filename) => {
-        if (!filename || IGNORE_PATTERNS.test(filename)) return
-        recordFileActivity(activityStore, dir, filename, eventType, source)
-      })
-      watchedDirs.push(dir)
-      if (source === 'openclaw') {
-        log('openclaw', `Watching clone ${dir}/`, 'info')
-      } else {
-        log('watcher', `Watching ${dir}/`, 'info')
-      }
-    } catch (err) {
-      const logSource = source === 'openclaw' ? 'openclaw' : 'watcher'
-      log(logSource, `Cannot watch ${dir}/: ${err.message}`, 'warn')
-    }
-  }
-
-  return watchedDirs
-}
 
 function initFileWatcher() {
-  activeWatchDirs = watchTree(PROJECT_ROOT, WATCH_DIRS, fileActivity, 'vscode')
-
-  if (existsSync(OPENCLAW_CLONE_ROOT)) {
-    activeOpenClawWatchDirs = watchTree(OPENCLAW_CLONE_ROOT, OPENCLAW_WATCH_DIRS, openClawFileActivity, 'openclaw')
-  } else {
-    activeOpenClawWatchDirs = []
-    log('openclaw', `Clone not found at ${OPENCLAW_CLONE_ROOT}`, 'warn')
-  }
-
-  return
   for (const dir of WATCH_DIRS) {
     const fullPath = join(PROJECT_ROOT, dir)
     try {
@@ -217,85 +140,7 @@ function initFileWatcher() {
   }
 }
 
-function buildActivitySummary(activityEntries, watchedDirs) {
-  const now = Date.now()
-  const last5min = activityEntries.filter(e => now - e.time < 5 * 60 * 1000)
-  const lastHour = activityEntries.filter(e => now - e.time < 60 * 60 * 1000)
-  const today = activityEntries.filter(e => {
-    const d = new Date(e.time)
-    const t = new Date()
-    return d.toDateString() === t.toDateString()
-  })
-
-  const byDir = {}
-  for (const e of today) {
-    if (!byDir[e.dir]) byDir[e.dir] = { count: 0, files: new Set() }
-    byDir[e.dir].count++
-    byDir[e.dir].files.add(e.file)
-  }
-
-  const seen = new Set()
-  const recent = []
-  for (let i = activityEntries.length - 1; i >= 0 && recent.length < 50; i--) {
-    const e = activityEntries[i]
-    if (!seen.has(e.file)) {
-      seen.add(e.file)
-      recent.push(e)
-    }
-  }
-
-  const fileCounts = {}
-  for (const e of today) {
-    fileCounts[e.file] = (fileCounts[e.file] || 0) + 1
-  }
-  const hotspots = Object.entries(fileCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 15)
-    .map(([file, count]) => ({ file, count }))
-
-  return {
-    counts: {
-      last5min: last5min.length,
-      lastHour: lastHour.length,
-      today: today.length,
-      total: activityEntries.length,
-    },
-    byDir: Object.fromEntries(
-      Object.entries(byDir).map(([dir, data]) => [dir, { count: data.count, uniqueFiles: data.files.size }])
-    ),
-    recent,
-    hotspots,
-    watchedDirs,
-  }
-}
-
 function getActivitySummary() {
-  return buildActivitySummary(fileActivity, activeWatchDirs.length ? activeWatchDirs : WATCH_DIRS)
-}
-
-function getOpenClawActivitySummary() {
-  const watchLogPath = join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log')
-  const activityLogPath = join(OPENCLAW_CLONE_ROOT, 'logs', 'ACTIVITY_LOG.md')
-
-  return {
-    available: existsSync(OPENCLAW_CLONE_ROOT),
-    cloneDir: OPENCLAW_CLONE_ROOT,
-    watchLog: {
-      path: watchLogPath,
-      exists: existsSync(watchLogPath),
-    },
-    activityLog: {
-      path: activityLogPath,
-      exists: existsSync(activityLogPath),
-    },
-    ...buildActivitySummary(
-      openClawFileActivity,
-      activeOpenClawWatchDirs.length ? activeOpenClawWatchDirs : OPENCLAW_WATCH_DIRS
-    ),
-  }
-}
-
-function getLegacyActivitySummary() {
   const now = Date.now()
   const last5min = fileActivity.filter(e => now - e.time < 5 * 60 * 1000)
   const lastHour = fileActivity.filter(e => now - e.time < 60 * 60 * 1000)
@@ -355,19 +200,6 @@ function getLegacyActivitySummary() {
 let devServerProcess = null
 const runningJobs = new Map()
 
-function getRunningJobsSnapshot() {
-  const jobs = {}
-  for (const [id, job] of runningJobs) {
-    jobs[id] = {
-      id: job.id,
-      status: job.status,
-      startTime: job.startTime,
-      elapsed: Date.now() - job.startTime,
-    }
-  }
-  return jobs
-}
-
 // ── Error Buffer (for aggregation — must be before feedEvent) ─────
 const errorBuffer = []
 const ERROR_BUFFER_MAX = 500
@@ -379,7 +211,6 @@ const liveFeedBuffers = {
   ollama: [],
   beta: [],
   tunnel: [],
-  openclaw: [],
   system: [],
 }
 const MAX_FEED_BUFFER = 200 // per source
@@ -454,11 +285,11 @@ function startLiveFeedTaps() {
     feedEvent('ollama', 'Could not tail Ollama logs — file may not exist', 'warn')
   }
 
-  // Tail local beta server logs
+  // Tail PM2 logs from Pi via SSH (streaming)
   try {
-    const betaLogPath = join(PROJECT_ROOT, '..', 'CFv1-beta', 'beta-server.log')
-    const betaTail = spawn('tail', ['-f', '-n', '20', betaLogPath], {
-      shell: true,
+    const betaTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
+      'pm2 logs chefflow-beta --lines 20 --raw --nostream; pm2 logs chefflow-beta --raw'], {
+      shell: false,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     betaTail.stdout.on('data', (d) => {
@@ -468,54 +299,38 @@ function startLiveFeedTaps() {
         if (clean) feedEvent('beta', clean, parseLogLevel(clean))
       }
     })
-    betaTail.stderr.on('data', () => {})
+    betaTail.stderr.on('data', (d) => {
+      const text = d.toString().trim()
+      if (text && !text.includes('Warning:')) feedEvent('beta', text, 'warn')
+    })
     betaTail.on('close', () => { delete liveFeedProcesses.betaTail })
     liveFeedProcesses.betaTail = betaTail
   } catch {
-    feedEvent('beta', 'Could not tail beta server logs', 'warn')
+    feedEvent('beta', 'Could not connect to Pi for beta logs', 'warn')
+  }
+
+  // Tail cloudflared journal from Pi via SSH
+  try {
+    const tunnelTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
+      'journalctl -u cloudflared -n 20 -f --no-pager'], {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    tunnelTail.stdout.on('data', (d) => {
+      const lines = d.toString().trim().split('\n')
+      for (const line of lines) {
+        const clean = line.trim().replace(ANSI_REGEX, '')
+        if (clean) feedEvent('tunnel', clean, parseLogLevel(clean))
+      }
+    })
+    tunnelTail.stderr.on('data', () => {})
+    tunnelTail.on('close', () => { delete liveFeedProcesses.tunnelTail })
+    liveFeedProcesses.tunnelTail = tunnelTail
+  } catch {
+    feedEvent('tunnel', 'Could not connect to Pi for tunnel logs', 'warn')
   }
 
   // System metrics — push CPU/memory every 10 seconds
-  const startPowerShellTail = (filePath, source, key, missingMessage) => {
-    if (!existsSync(filePath)) {
-      feedEvent(source, missingMessage, 'warn')
-      return
-    }
-
-    try {
-      const escaped = filePath.replace(/'/g, "''")
-      const tailProc = spawn('powershell', ['-Command', `Get-Content -Path '${escaped}' -Tail 20 -Wait`], {
-        shell: false,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      })
-      tailProc.stdout.on('data', (d) => {
-        const lines = d.toString().split('\n')
-        for (const line of lines) {
-          const clean = line.trim().replace(ANSI_REGEX, '')
-          if (clean) feedEvent(source, clean, parseLogLevel(clean))
-        }
-      })
-      tailProc.stderr.on('data', () => {})
-      tailProc.on('close', () => { delete liveFeedProcesses[key] })
-      liveFeedProcesses[key] = tailProc
-    } catch {
-      feedEvent(source, missingMessage, 'warn')
-    }
-  }
-
-  startPowerShellTail(
-    join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log'),
-    'openclaw',
-    'openclawWatchTail',
-    'OpenClaw watch log not found. Start the clone watch server to stream runtime output.'
-  )
-  startPowerShellTail(
-    join(OPENCLAW_CLONE_ROOT, 'logs', 'ACTIVITY_LOG.md'),
-    'openclaw',
-    'openclawActivityTail',
-    'OpenClaw activity log not found. If the agent writes one later, it will appear here after reconnect.'
-  )
-
   liveFeedProcesses.systemInterval = setInterval(() => {
     const mem = process.memoryUsage()
     feedEvent('system', `Mission Control heap: ${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB`, 'info')
@@ -707,11 +522,12 @@ async function checkGitStatus() {
 }
 
 async function getAllStatus() {
-  const [dev, beta, prod, ollamaPc, git] = await Promise.allSettled([
+  const [dev, beta, prod, ollamaPc, ollamaPi, git] = await Promise.allSettled([
     checkDevServer(),
     checkBetaServer(),
     checkProduction(),
     checkOllama(CONFIG.ollamaPcUrl, CONFIG.ollamaPcModel),
+    checkOllama(CONFIG.ollamaPiUrl, CONFIG.ollamaPiModel),
     checkGitStatus(),
   ])
   return {
@@ -719,9 +535,8 @@ async function getAllStatus() {
     beta: beta.status === 'fulfilled' ? beta.value : { online: false },
     prod: prod.status === 'fulfilled' ? prod.value : { online: false },
     ollamaPc: ollamaPc.status === 'fulfilled' ? ollamaPc.value : { online: false },
-    ollamaPi: { online: false },
+    ollamaPi: ollamaPi.status === 'fulfilled' ? ollamaPi.value : { online: false },
     git: git.status === 'fulfilled' ? git.value : { branch: 'unknown' },
-    jobs: getRunningJobsSnapshot(),
     timestamp: Date.now(),
   }
 }
@@ -804,26 +619,13 @@ async function stopDevServer() {
 }
 
 async function restartBeta() {
-  log('beta', 'Restarting beta server (local)...', 'info')
+  log('beta', 'Restarting beta server (PM2)...', 'info')
   try {
-    // Kill existing beta server on port 3200
-    const pid = await findPidOnPort(CONFIG.betaPort)
-    if (pid) {
-      await execAsync(`taskkill /F /PID ${pid}`, { shell: 'cmd', timeout: 5000 }).catch(() => {})
-      await new Promise(r => setTimeout(r, 2000))
-    }
-    // Start beta server
-    const betaDir = join(PROJECT_ROOT, '..', 'CFv1-beta')
-    spawn('npx', ['next', 'start', '-p', String(CONFIG.betaPort)], {
-      cwd: betaDir,
-      detached: true,
-      stdio: 'ignore',
-      env: { ...process.env, NODE_ENV: 'production', PORT: String(CONFIG.betaPort) },
-    }).unref()
-    log('beta', 'Beta server starting on port ' + CONFIG.betaPort, 'info')
-    // Wait then health check
-    await new Promise(r => setTimeout(r, 5000))
-    const check = await httpCheck(CONFIG.betaLocalUrl, 5000)
+    const { stdout } = await sshExec('pm2 restart chefflow-beta')
+    log('beta', stdout.trim() || 'PM2 restart sent', 'success')
+    // Wait a moment then health check
+    await new Promise(r => setTimeout(r, 3000))
+    const check = await httpCheck(`http://10.0.0.177:3100`, 5000)
     if (check.ok) {
       log('beta', 'Beta server is back online!', 'success')
     } else {
@@ -901,17 +703,26 @@ async function rollbackBeta() {
 }
 
 async function ollamaAction(target, action) {
-  // Pi Ollama removed - all Ollama runs on PC now
-  const label = 'Ollama'
+  const label = target === 'pc' ? 'Ollama PC' : 'Ollama Pi'
   log('ollama', `${action === 'start' ? 'Starting' : 'Stopping'} ${label}...`, 'info')
 
   try {
-    if (action === 'start') {
-      spawn('ollama', ['serve'], { cwd: PROJECT_ROOT, detached: true, stdio: 'ignore', shell: true }).unref()
-      log('ollama', 'Ollama starting...', 'success')
+    if (target === 'pc') {
+      if (action === 'start') {
+        spawn('ollama', ['serve'], { cwd: PROJECT_ROOT, detached: true, stdio: 'ignore', shell: true }).unref()
+        log('ollama', 'Ollama PC starting...', 'success')
+      } else {
+        await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
+        log('ollama', 'Ollama PC stopped', 'success')
+      }
     } else {
-      await execAsync('taskkill /IM ollama.exe /F', { shell: 'cmd' })
-      log('ollama', 'Ollama stopped', 'success')
+      if (action === 'start') {
+        // Unmask first in case it was masked, then start
+        await sshExec('sudo systemctl unmask ollama 2>/dev/null; sudo systemctl start ollama')
+      } else {
+        await sshExec('sudo systemctl stop ollama')
+      }
+      log('ollama', `${label} ${action === 'start' ? 'started' : 'stopped'}`, 'success')
     }
     return { ok: true }
   } catch (err) {
@@ -2432,36 +2243,36 @@ async function getOpenInquiries() {
   }
 }
 
-// ── Beta Server Monitoring (local PC) ───────────────────────────
+// ── Pi System Monitoring ────────────────────────────────────────
 
 async function getPiStatus() {
-  // Legacy name kept for Gustav command compatibility - now checks local beta server
   try {
-    const betaCheck = await httpCheck(CONFIG.betaLocalUrl, 5000)
-    const pid = await findPidOnPort(CONFIG.betaPort)
-    return {
-      ok: true,
-      betaStatus: betaCheck.ok ? 'online' : 'offline',
-      betaPort: CONFIG.betaPort,
-      betaPid: pid || 'not found',
-      betaLatency: betaCheck.latency,
-      message: `Beta server: ${betaCheck.ok ? 'online' : 'offline'} on port ${CONFIG.betaPort}${pid ? ` (PID ${pid})` : ''}`,
+    const { stdout } = await sshExec(
+      'echo "===UPTIME===" && uptime && echo "===DISK===" && df -h / && echo "===MEMORY===" && free -h && echo "===PM2===" && pm2 jlist 2>/dev/null && echo "===SERVICES===" && systemctl is-active ollama cloudflared 2>/dev/null',
+      20000
+    )
+    // Parse PM2 JSON
+    let pm2Info = 'unknown'
+    const pm2Match = stdout.match(/===PM2===\s*\n([\s\S]*?)(?:===|$)/)
+    if (pm2Match) {
+      try {
+        const pm2Data = JSON.parse(pm2Match[1].trim())
+        pm2Info = pm2Data.map(p => `${p.name}: ${p.pm2_env?.status || 'unknown'} (pid ${p.pid}, restarts: ${p.pm2_env?.restart_time || 0})`).join('\n')
+      } catch { pm2Info = pm2Match[1].trim() }
     }
+    return { ok: true, output: stdout, pm2: pm2Info, message: 'Pi status retrieved' }
   } catch (err) {
     return { ok: false, error: err.message }
   }
 }
 
 async function getPiLogs(param) {
-  // Legacy name kept for Gustav command compatibility - now reads local beta logs
   const lines = parseInt(param) || 50
   try {
-    const betaDir = join(PROJECT_ROOT, '..', 'CFv1-beta')
-    const logPath = join(betaDir, 'beta-server.log')
-    const { stdout } = await execAsync(`tail -${lines} "${logPath}"`, { timeout: 5000 })
-    return { ok: true, logs: stdout, message: `Last ${lines} lines of beta server logs` }
+    const { stdout } = await sshExec(`pm2 logs chefflow-beta --lines ${lines} --nostream 2>&1`, 15000)
+    return { ok: true, logs: stdout, message: `Last ${lines} lines of PM2 logs` }
   } catch (err) {
-    return { ok: false, error: `Could not read beta logs: ${err.message}` }
+    return { ok: false, error: err.message }
   }
 }
 
@@ -2881,36 +2692,46 @@ async function pollUptime() {
   const betaOk = beta.status === 'fulfilled' && beta.value.ok
   const prodOk = prod.status === 'fulfilled' && prod.value.ok
 
+  let piOk = false
+  try {
+    await sshExec('echo ok', 5000)
+    piOk = true
+  } catch { /* pi unreachable */ }
+
   uptimeHistory.beta.push({ ts, ok: betaOk })
   uptimeHistory.prod.push({ ts, ok: prodOk })
+  uptimeHistory.pi.push({ ts, ok: piOk })
 
   // Trim to 24h
-  for (const key of ['beta', 'prod']) {
+  for (const key of ['beta', 'prod', 'pi']) {
     if (uptimeHistory[key].length > UPTIME_MAX_ENTRIES) {
       uptimeHistory[key] = uptimeHistory[key].slice(-UPTIME_MAX_ENTRIES)
     }
   }
 
-  // Broadcast downtime notifications via SSE - only on state transitions
+  // Broadcast downtime notifications via SSE — only on state transitions
   if (!betaOk && prevUptimeState.beta) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
   if (betaOk && !prevUptimeState.beta) feedEvent('system', 'RECOVERY: Beta server is back UP', 'info')
   if (!prodOk && prevUptimeState.prod) feedEvent('system', 'ALERT: Production is DOWN', 'error')
   if (prodOk && !prevUptimeState.prod) feedEvent('system', 'RECOVERY: Production is back UP', 'info')
+  if (!piOk && prevUptimeState.pi) feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
+  if (piOk && !prevUptimeState.pi) feedEvent('system', 'RECOVERY: Raspberry Pi is back REACHABLE', 'info')
 
   prevUptimeState.beta = betaOk
   prevUptimeState.prod = prodOk
+  prevUptimeState.pi = piOk
 
-  // Beta auto-remediation: restart local beta server after 3 consecutive failures
+  // Beta auto-remediation: restart PM2 after 3 consecutive failures
   if (!betaOk) {
     betaConsecutiveFailures++
     if (betaConsecutiveFailures >= 3 && (ts - lastBetaRemediationTs) > BETA_REMEDIATION_COOLDOWN_MS) {
       lastBetaRemediationTs = ts
-      feedEvent('system', `AUTO-REMEDIATION: Restarting local beta server (${betaConsecutiveFailures} consecutive failures)`, 'warn')
+      feedEvent('system', `AUTO-REMEDIATION: Restarting beta PM2 (${betaConsecutiveFailures} consecutive failures)`, 'warn')
       try {
-        await restartBeta()
-        feedEvent('system', 'AUTO-REMEDIATION: Beta server restart initiated', 'info')
+        await sshExec('source /home/davidferra/.nvm/nvm.sh && pm2 restart chefflow-beta', 30000)
+        feedEvent('system', 'AUTO-REMEDIATION: PM2 restart command sent successfully', 'info')
       } catch (err) {
-        feedEvent('system', `AUTO-REMEDIATION: Beta restart failed - ${err.message}`, 'error')
+        feedEvent('system', `AUTO-REMEDIATION: PM2 restart failed — ${err.message}`, 'error')
       }
     }
   } else {
@@ -5497,19 +5318,20 @@ async function getRemyErrors() {
 
 async function getBetaDeepHealth() {
   try {
-    const betaCheck = await httpCheck(CONFIG.betaLocalUrl, 5000)
-    const tunnelCheck = await httpCheck(CONFIG.betaUrl, 10000)
-    const pid = await findPidOnPort(CONFIG.betaPort)
+    const { stdout } = await execAsync('ssh pi "pm2 jlist && echo SEPARATOR && df -h / && echo SEPARATOR && free -m && echo SEPARATOR && uptime"', { timeout: 15000 })
+    const parts = stdout.split('SEPARATOR')
+    let pm2 = []
+    try { pm2 = JSON.parse(parts[0].trim()) } catch { /* parse fail */ }
     return {
-      ok: betaCheck.ok,
-      localHealth: { ok: betaCheck.ok, status: betaCheck.status, latency: betaCheck.latency },
-      tunnelHealth: { ok: tunnelCheck.ok, status: tunnelCheck.status, latency: tunnelCheck.latency },
-      pid: pid || 'not found',
-      port: CONFIG.betaPort,
-      message: `Beta: local=${betaCheck.ok ? 'UP' : 'DOWN'} (${betaCheck.latency}ms), tunnel=${tunnelCheck.ok ? 'UP' : 'DOWN'} (${tunnelCheck.latency}ms)${pid ? `, PID ${pid}` : ''}`,
+      ok: true,
+      pm2: pm2.map(p => ({ name: p.name, status: p.pm2_env?.status, restarts: p.pm2_env?.restart_time, uptime: p.pm2_env?.pm_uptime })),
+      disk: parts[1]?.trim() || 'unavailable',
+      memory: parts[2]?.trim() || 'unavailable',
+      uptime: parts[3]?.trim() || 'unavailable',
+      message: `Beta deep health: ${pm2.length} PM2 apps, ${pm2.filter(p => p.pm2_env?.status === 'online').length} online`,
     }
   } catch (err) {
-    return { ok: false, error: err.message }
+    return { ok: false, error: `SSH failed: ${err.message}` }
   }
 }
 
@@ -5772,6 +5594,8 @@ const INSTANT_ANSWERS = [
     action: 'remy/memories' },
   { patterns: [/^(test|run) remy/i, /^remy test/i],
     action: 'remy/test' },
+  { patterns: [/^pi (status|health|vitals)/i, /^how('s| is) (the )?pi/i, /^raspberry/i],
+    action: 'pi/status' },
   { patterns: [/^schema$/i, /^tables$/i, /^database schema/i, /^db schema/i, /^row counts/i],
     action: 'db/schema' },
   { patterns: [/^branches$/i, /^branch status/i, /^what branch/i],
@@ -5933,11 +5757,13 @@ const TOOLS = {
   // DevOps — Process Control
   'dev/start':        { fn: startDevServer,                       desc: 'Start the local Next.js dev server on port 3100' },
   'dev/stop':         { fn: stopDevServer,                        desc: 'Stop the local dev server' },
-  'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server on PC (port 3200)' },
+  'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
   'beta/deploy':      { fn: () => deployBeta(),                   desc: 'Deploy current code to beta.cheflowhq.com (takes 8-10 min)' },
   'beta/rollback':    { fn: rollbackBeta,                         desc: 'Rollback beta to previous build' },
   'ollama/pc/start':  { fn: () => ollamaAction('pc', 'start'),   desc: 'Start Ollama on the PC' },
   'ollama/pc/stop':   { fn: () => ollamaAction('pc', 'stop'),    desc: 'Stop Ollama on the PC' },
+  'ollama/pi/start':  { fn: () => ollamaAction('pi', 'start'),   desc: 'Start Ollama on the Raspberry Pi' },
+  'ollama/pi/stop':   { fn: () => ollamaAction('pi', 'stop'),    desc: 'Stop Ollama on the Raspberry Pi' },
 
   // DevOps — Git & Build
   'git/push':         { fn: gitPush,                              desc: 'Push current git branch to origin' },
@@ -5960,8 +5786,8 @@ const TOOLS = {
   'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services (dev, beta, prod, Ollama, git)' },
   'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
   'health/app':       { fn: getAppHealth,                         desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running' },
-  'pi/status':        { fn: getPiStatus,                          desc: 'Get beta server status (port, PID, health check)' },
-  'pi/logs':          { fn: (param) => getPiLogs(param),          desc: 'Get recent beta server logs (use pi/logs:100 for more lines)' },
+  'pi/status':        { fn: getPiStatus,                          desc: 'Get Raspberry Pi system status (uptime, disk, memory, PM2, services)' },
+  'pi/logs':          { fn: (param) => getPiLogs(param),          desc: 'Get recent PM2 logs from Pi (use pi/logs:100 for more lines)' },
   'prod/deployments': { fn: getVercelDeployments,                 desc: 'Show recent Vercel production deployments' },
 
   // Business Data (read-only Supabase queries)
@@ -6079,7 +5905,7 @@ const TOOLS = {
   'data/event-timeline': { fn: (param) => getEventTimeline(param), desc: 'Event lifecycle timeline — all status transitions. Use data/event-timeline:event_id' },
   'remy/conversations': { fn: getRemyConversations,                desc: 'Recent Remy conversation metrics across all tenants' },
   'remy/errors':       { fn: getRemyErrors,                        desc: 'Remy error log — error metrics + abuse incidents with details' },
-  'beta/health':       { fn: getBetaDeepHealth,                    desc: 'Deep beta health — local server + Cloudflare tunnel check' },
+  'beta/health':       { fn: getBetaDeepHealth,                    desc: 'Deep beta health — PM2 apps, disk, memory, uptime (requires Pi SSH)' },
   'prod/health':       { fn: getProdHealth,                        desc: 'Production health check — status, latency, SSL' },
   'prod/analytics':    { fn: getProdAnalytics,                     desc: 'Production activity — recent main branch commits' },
   'env/validate':      { fn: validateEnv,                          desc: 'Validate all required env vars are set in .env.local' },
@@ -6094,12 +5920,8 @@ const TOOLS = {
 async function getAvailableOllamaEndpoint() {
   const pcCheck = await httpCheck(`${CONFIG.ollamaPcUrl}/api/tags`)
   if (pcCheck.ok) return { url: CONFIG.ollamaPcUrl, model: CONFIG.ollamaPcModel, source: 'PC' }
-  return null
-}
-
-async function getOpenClawOllamaEndpoint() {
-  const pcCheck = await httpCheck(`${CONFIG.openclawOllamaUrl}/api/tags`)
-  if (pcCheck.ok) return { url: CONFIG.openclawOllamaUrl, model: CONFIG.openclawOllamaModel, source: 'PC' }
+  const piCheck = await httpCheck(`${CONFIG.ollamaPiUrl}/api/tags`)
+  if (piCheck.ok) return { url: CONFIG.ollamaPiUrl, model: CONFIG.ollamaPiModel, source: 'Pi' }
   return null
 }
 
@@ -6132,6 +5954,7 @@ ${toolList}
 - Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : `**86${"'"}d**`}
 - Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : `**86${"'"}d**`}
 - Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : `**86${"'"}d**`}
+- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : `**86${"'"}d**`}
 - Git: \`${status.git.branch}\` (${status.git.clean ? 'clean — mise en place' : `${status.git.dirty} dirty files`})
 - Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
@@ -6150,7 +5973,7 @@ ${toolList}
 ## Capability Stations
 
 ### Station 1: DevOps (Process Control)
-Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC. Pipelines: ship-it, close-out.
+Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi. Pipelines: ship-it, close-out.
 
 ### Station 2: Git & Build
 Push, commit, typecheck, full build, run tests (smoke, soak, e2e). Git diff, branch status.
@@ -6190,7 +6013,7 @@ For business AI questions (client follow-ups, draft emails, recipe lookup) — b
 - **The pass** — the monitoring dashboard, where everything gets inspected
 - **Service** — a deploy cycle or work session
 - **Clean service** — successful deploy/session with zero errors (your highest compliment)
-- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Supabase, Git)
+- **The brigade** — the system architecture (Dev, Beta, Prod, Ollama, Pi, Supabase, Git)
 - **Stations** — individual systems, each one calls back
 - **Calling the pass** — status report across all stations
 - **Fire** — execute, deploy, run it
@@ -6352,45 +6175,6 @@ async function handleRequest(req, res) {
     }
   }
 
-  // Pixel Kitchen V2+ engine (external JS)
-  if (path === '/pixel-kitchen-v2.js') {
-    try {
-      const js = await readFile(join(__dirname, 'pixel-kitchen-v2.js'), 'utf-8')
-      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' })
-      return res.end(js)
-    } catch {
-      res.writeHead(500)
-      return res.end('pixel-kitchen-v2.js not found')
-    }
-  }
-
-  // Pixel Kitchen assets (sprites, UI panels, effects, palettes)
-  // Sources: Kenney (CC0), OpenGameArt (CC0/CC-BY), LPC Flames (CC-BY 3.0, Sharm)
-  if (path.startsWith('/assets/')) {
-    try {
-      const decodedPath = decodeURIComponent(path)
-      const safePath = decodedPath.replace(/\.\./g, '').replace(/\/+/g, '/') // prevent directory traversal
-      const filePath = join(__dirname, safePath)
-      const data = await readFile(filePath)
-      const ext = filePath.split('.').pop().toLowerCase()
-      const mimeTypes = {
-        png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
-        svg: 'image/svg+xml', json: 'application/json', txt: 'text/plain',
-        webp: 'image/webp', ico: 'image/x-icon',
-      }
-      const contentType = mimeTypes[ext] || 'application/octet-stream'
-      res.writeHead(200, {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=604800', // 1 week cache (assets don't change)
-        'Access-Control-Allow-Origin': '*',
-      })
-      return res.end(data)
-    } catch {
-      res.writeHead(404)
-      return res.end('Asset not found: ' + path)
-    }
-  }
-
   // SSE event stream
   if (path === '/api/events' && method === 'GET') {
     res.writeHead(200, {
@@ -6473,7 +6257,12 @@ async function handleRequest(req, res) {
   if (path === '/api/ollama/pc/stop' && method === 'POST') {
     return json(res, await ollamaAction('pc', 'stop'))
   }
-  // Pi routes removed (Mar 2026) - all Ollama runs on PC
+  if (path === '/api/ollama/pi/start' && method === 'POST') {
+    return json(res, await ollamaAction('pi', 'start'))
+  }
+  if (path === '/api/ollama/pi/stop' && method === 'POST') {
+    return json(res, await ollamaAction('pi', 'stop'))
+  }
 
   if (path === '/api/git/push' && method === 'POST') {
     return json(res, await gitPush())
@@ -6612,6 +6401,7 @@ async function handleRequest(req, res) {
         beta: { port: 443, label: 'Beta', url: 'https://beta.cheflowhq.com' },
         prod: { port: 443, label: 'Production', url: 'https://cheflowhq.com' },
         ollamaPc: { port: 11434, label: 'Ollama PC', url: 'http://localhost:11434' },
+        ollamaPi: { port: 11434, label: 'Ollama Pi', url: 'http://10.0.0.177:11434' },
       },
       quickLinks: {
         supabase: 'https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz',
@@ -6621,26 +6411,52 @@ async function handleRequest(req, res) {
         beta: 'https://beta.cheflowhq.com',
         prod: 'https://cheflowhq.com',
       },
-      beta: null,
+      pi: null,
     }
-    // Fetch local beta server info
+    // Fetch Pi system info (non-blocking — if Pi is down, we still return the rest)
     try {
-      const betaCheck = await httpCheck(CONFIG.betaLocalUrl, 5000)
-      const pid = await findPidOnPort(CONFIG.betaPort)
-      infra.beta = {
-        running: betaCheck.ok,
-        port: CONFIG.betaPort,
-        pid: pid || null,
-        latency: betaCheck.latency,
+      const { stdout } = await sshExec(
+        "echo RAM_START && free -m | grep Mem && echo SWAP_START && swapon --show 2>/dev/null | head -2 && echo UPTIME_START && uptime -p && echo SERVICES_START && echo ollama:$(systemctl is-active ollama 2>/dev/null || echo disabled) && echo cloudflared:$(systemctl is-active cloudflared 2>/dev/null) && echo ssh:$(systemctl is-active ssh 2>/dev/null) && echo zramswap:$(systemctl is-active zramswap 2>/dev/null) && echo pm2:$(pm2 pid chefflow-beta >/dev/null 2>&1 && echo active || echo inactive) && echo WATCHDOG_START && (test -e /dev/watchdog && echo active || echo inactive)",
+        10000
+      )
+      const lines = stdout.trim().split('\n')
+      const ramLine = lines.find(l => l.startsWith('Mem:'))
+      const uptimeLine = lines.find(l => l.startsWith('up '))
+      const services = {}
+      let inServices = false
+      for (const l of lines) {
+        if (l === 'SERVICES_START') { inServices = true; continue }
+        if (l === 'WATCHDOG_START') { inServices = false; continue }
+        if (inServices && l.includes(':')) {
+          const [svc, status] = l.split(':')
+          services[svc] = status
+        }
+      }
+      const watchdogLine = lines[lines.length - 1]
+      let ram = null
+      if (ramLine) {
+        const parts = ramLine.trim().split(/\s+/)
+        ram = { total: parts[1] + ' MB', used: parts[2] + ' MB', free: parts[3] + ' MB', available: parts[6] + ' MB' }
+      }
+      infra.pi = {
+        reachable: true,
+        ram,
+        uptime: uptimeLine || 'unknown',
+        services,
+        watchdog: watchdogLine === 'active' ? 'active' : 'inactive',
       }
     } catch {
-      infra.beta = { running: false, error: 'Beta server check failed' }
+      infra.pi = { reachable: false, error: 'Pi unreachable via SSH' }
     }
     return json(res, infra)
   }
 
   if (path === '/api/jobs' && method === 'GET') {
-    return json(res, getRunningJobsSnapshot())
+    const jobs = {}
+    for (const [id, job] of runningJobs) {
+      jobs[id] = { id: job.id, status: job.status, startTime: job.startTime, elapsed: Date.now() - job.startTime }
+    }
+    return json(res, jobs)
   }
 
   if (path === '/api/logs' && method === 'GET') {
@@ -6744,7 +6560,7 @@ async function handleRequest(req, res) {
 
     const endpoint = await getAvailableOllamaEndpoint()
     if (!endpoint) {
-      return json(res, { error: 'No Ollama instance available. Start Ollama first.' }, 503)
+      return json(res, { error: 'No Ollama instance available. Start Ollama on PC or Pi first.' }, 503)
     }
 
     log('chat', `Chat request via ${endpoint.source} (${endpoint.model})`, 'info')
@@ -7035,172 +6851,6 @@ async function handleRequest(req, res) {
     }
   }
 
-  // ── Pixel Kitchen Live Data ─────────────────────────────────────
-  if (path === '/api/pixel/data' && method === 'GET') {
-    try {
-      const [eventsResult, revenueResult, inquiriesResult, clientsResult, statusResult] = await Promise.allSettled([
-        getEventsByStatus(),
-        getRevenueSummary(),
-        getOpenInquiries(),
-        getClients(),
-        getAllStatus(),
-      ])
-
-      const events = eventsResult.status === 'fulfilled' && eventsResult.value.ok ? eventsResult.value : { counts: {}, total: 0 }
-      const revenue = revenueResult.status === 'fulfilled' && revenueResult.value.ok ? revenueResult.value : { summary: {} }
-      const inquiries = inquiriesResult.status === 'fulfilled' && inquiriesResult.value.ok ? inquiriesResult.value : { inquiries: [], total: 0 }
-      const clients = clientsResult.status === 'fulfilled' && clientsResult.value.ok ? clientsResult.value : { total: 0 }
-      const status = statusResult.status === 'fulfilled' ? statusResult.value : {}
-
-      // Check for overdue inquiries (SLA breach: >24h without response)
-      const overdueInquiries = (inquiries.inquiries || []).filter(inq => {
-        const received = new Date(inq.received)
-        const hoursOld = (Date.now() - received.getTime()) / (1000 * 60 * 60)
-        return hoursOld > 24 && (inq.status === 'new' || inq.status === 'open')
-      })
-
-      // Upcoming events (next 7 days)
-      const upcomingResult = await getUpcomingEvents()
-      const upcoming = upcomingResult.ok ? upcomingResult.events : []
-      const next7Days = upcoming.filter(e => {
-        const diff = (new Date(e.date) - Date.now()) / (1000 * 60 * 60 * 24)
-        return diff >= 0 && diff <= 7
-      })
-
-      // Agent states from process/service status
-      let openclawGwOnline = false
-      try {
-        const { stdout } = await execAsync(
-          'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null"',
-          { timeout: 5000 }
-        )
-        openclawGwOnline = stdout.trim() === 'active'
-      } catch { /* offline */ }
-
-      // Supabase health check
-      let supabaseOnline = false
-      try {
-        const sbResult = await supabaseQuery('chefs?select=id&limit=1')
-        supabaseOnline = Array.isArray(sbResult) || (sbResult && typeof sbResult === 'object')
-      } catch { /* offline */ }
-
-      // Production health (from getAllStatus)
-      const prodOnline = status.prod?.online || false
-      const prodLatency = status.prod?.latency || null
-
-      // Cloudflare Tunnel (check beta.cheflowhq.com)
-      let tunnelOnline = false
-      if (!global._pxTunnel || Date.now() - global._pxTunnel.ts > 120000) {
-        try {
-          const tr = await fetch('https://beta.cheflowhq.com/api/health', { signal: AbortSignal.timeout(5000) })
-          tunnelOnline = tr.ok || tr.status < 500
-          global._pxTunnel = { ts: Date.now(), online: tunnelOnline }
-        } catch {
-          global._pxTunnel = { ts: Date.now(), online: false }
-        }
-      }
-      tunnelOnline = global._pxTunnel?.online || false
-
-      const agentStates = {
-        ollama: status.ollamaPc?.online || false,
-        devServer: status.dev?.online || false,
-        betaServer: status.beta?.online || false,
-        openclawGateway: openclawGwOnline,
-      }
-
-      // Full infrastructure status
-      const infrastructure = {
-        devServer: { online: status.dev?.online || false, port: 3100, latency: status.dev?.latency || null },
-        betaServer: { online: status.beta?.online || false, port: 3200, latency: status.beta?.latency || null },
-        production: { online: prodOnline, url: 'app.cheflowhq.com', latency: prodLatency },
-        ollama: { online: status.ollamaPc?.online || false, port: 11434, models: status.ollamaPc?.models || [], modelReady: status.ollamaPc?.modelReady || false },
-        supabase: { online: supabaseOnline, url: 'luefkpakzvxcsqroxyhz.supabase.co' },
-        missionControl: { online: true, port: CONFIG.port },
-        openclawGateway: { online: openclawGwOnline, host: '10.0.0.177', port: 18789 },
-        cloudflare: { online: tunnelOnline, url: 'beta.cheflowhq.com' },
-        git: { branch: status.git?.branch || 'unknown', dirty: status.git?.dirty || 0, clean: status.git?.clean || false },
-      }
-
-      // Git activity (recent commits in last hour)
-      let recentGitActivity = 0
-      try {
-        const { stdout } = await execAsync('git log --oneline --since="1 hour ago" 2>/dev/null | wc -l', { cwd: PROJECT_ROOT, timeout: 5000 })
-        recentGitActivity = parseInt(stdout.trim()) || 0
-      } catch { /* ignore */ }
-
-      // File change rate (from activity watcher)
-      const activitySummary = getActivitySummary()
-      const recentFileChanges = (activitySummary.recent || []).length
-
-      // Staff members
-      let staffMembers = []
-      try {
-        const staffResult = await supabaseQuery('staff_members?select=id,name,role,status,phone&limit=10')
-        if (Array.isArray(staffResult)) staffMembers = staffResult
-      } catch { /* no staff data */ }
-
-      // Weather (cached 30 min)
-      if (!global._pxWeather || Date.now() - global._pxWeather.ts > 1800000) {
-        try {
-          const wr = await fetch('https://wttr.in/?format=%C|%t|%h')
-          if (wr.ok) {
-            const wt = await wr.text()
-            const parts = wt.split('|').map(s => s.trim())
-            global._pxWeather = { ts: Date.now(), data: { condition: parts[0] || '', temp: parts[1] || '', humidity: parts[2] || '' } }
-          }
-        } catch { /* weather unavailable */ }
-      }
-
-      // Ingredients stock levels
-      let ingredientStock = []
-      try {
-        const ingResult = await supabaseQuery('ingredients?select=id,name,quantity,unit,par_level&order=name&limit=20')
-        if (Array.isArray(ingResult)) ingredientStock = ingResult
-      } catch { /* no ingredients data */ }
-
-      // History snapshots (ring buffer, every 5 min, 24 snapshots = 2 hours)
-      if (!global._pxHistory) global._pxHistory = []
-      if (!global._pxHistoryTs || Date.now() - global._pxHistoryTs > 300000) {
-        global._pxHistory.push({
-          ts: Date.now(),
-          revenue: (revenue.summary || {}).totalRevenue || '$0',
-          eventsTotal: events.total || 0,
-          inquiries: inquiries.total || 0,
-          overdue: overdueInquiries.length,
-          clients: clients.total || 0,
-        })
-        if (global._pxHistory.length > 24) global._pxHistory.shift()
-        global._pxHistoryTs = Date.now()
-      }
-
-      return json(res, {
-        ok: true,
-        events: events.counts || {},
-        eventsTotal: events.total || 0,
-        revenue: revenue.summary || {},
-        inquiries: {
-          open: inquiries.total || 0,
-          overdue: overdueInquiries.length,
-          overdueList: overdueInquiries.slice(0, 5),
-        },
-        clients: { total: clients.total || 0 },
-        upcoming: next7Days.slice(0, 8),
-        agentStates,
-        activity: {
-          recentCommits: recentGitActivity,
-          recentFileChanges,
-        },
-        staff: staffMembers,
-        weather: global._pxWeather?.data || null,
-        ingredients: ingredientStock,
-        history: global._pxHistory || [],
-        infrastructure,
-      })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message }, 500)
-    }
-  }
-
   // ── Manual / Live Codebase Scan ──────────────────────────────────
   if (path === '/api/manual/scan' && method === 'GET') {
     try {
@@ -7253,1208 +6903,10 @@ async function handleRequest(req, res) {
   if (path === '/api/activity/summary' && method === 'GET') {
     return json(res, { ok: true, ...getActivitySummary() })
   }
-  if (path === '/api/openclaw/summary' && method === 'GET') {
-    return json(res, { ok: true, ...getOpenClawActivitySummary() })
-  }
-
-  // ── OpenClaw Activity Panel (comprehensive) ──────────────────
-  if (path === '/api/openclaw/activity' && method === 'GET') {
-    try {
-      const cloneAvailable = existsSync(OPENCLAW_CLONE_ROOT)
-      const result = { ok: true, cloneAvailable }
-      const gatewayPromise = execAsync(
-        'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null && echo PID:$(systemctl show openclaw-chefflow -p MainPID --value)"',
-        { timeout: 4000 }
-      ).then(({ stdout }) => {
-        const lines = stdout.trim().split('\n').filter(Boolean)
-        const pidLine = lines.find(l => l.startsWith('PID:'))
-        return {
-          online: lines[0] === 'active',
-          pid: pidLine ? pidLine.replace('PID:', '') : null,
-        }
-      }).catch((gwErr) => ({
-        online: false,
-        error: gwErr.message?.substring(0, 120) || 'SSH failed',
-      }))
-
-      const gatewayLogPromise = execAsync(
-        'ssh -o ConnectTimeout=3 pi "sudo journalctl -u openclaw-chefflow --no-pager -n 80 -o short-iso 2>/dev/null"',
-        { timeout: 5000 }
-      ).then(({ stdout }) => stdout.trim().split('\n').filter(l => l.trim()))
-        .catch(() => [])
-
-      const gitLogPromise = cloneAvailable
-        ? execAsync('git log --oneline --no-decorate -30', {
-            cwd: OPENCLAW_CLONE_ROOT,
-            timeout: 3000,
-          }).then(({ stdout }) => stdout.trim().split('\n').filter(l => l.trim()))
-          .catch(() => [])
-        : Promise.resolve([])
-
-      const devLogPromise = cloneAvailable
-        ? readFile(join(OPENCLAW_CLONE_ROOT, 'openclaw-watch.log'), 'utf-8')
-            .then((logContent) => logContent.trim().split('\n').slice(-60))
-            .catch(() => [])
-        : Promise.resolve([])
-
-      const gitDiffPromise = cloneAvailable
-        ? execAsync('git diff --stat && echo "---FULL---" && git diff', {
-            cwd: OPENCLAW_CLONE_ROOT,
-            timeout: 4000,
-            maxBuffer: 1024 * 1024,
-          }).then(({ stdout }) => {
-            const lines = stdout.trim().split('\n').filter(Boolean)
-            const trimmed = lines.slice(0, 500)
-            if (lines.length > 500) trimmed.push(`... (${lines.length - 500} more lines truncated)`)
-            return trimmed
-          }).catch(() => [])
-        : Promise.resolve([])
-
-      result.fileChanges = cloneAvailable
-        ? buildActivitySummary(
-            openClawFileActivity,
-            activeOpenClawWatchDirs.length ? activeOpenClawWatchDirs : OPENCLAW_WATCH_DIRS
-          )
-        : undefined
-
-      const [gateway, gatewayLog, gitLog, devLog, gitDiff] = await Promise.all([
-        gatewayPromise,
-        gatewayLogPromise,
-        gitLogPromise,
-        devLogPromise,
-        gitDiffPromise,
-      ])
-
-      result.gateway = gateway
-      result.gatewayLog = gatewayLog
-      result.gitLog = gitLog
-      result.devLog = devLog
-      result.gitDiff = gitDiff
-
-      return json(res, result)
-    } catch (err) {
-      return json(res, { ok: false, error: err.message }, 500)
-    }
-  }
-
-  // ── OpenClaw Chat (talk to the team directly) ──────────────────
-  if (path === '/api/openclaw/chat' && method === 'POST') {
-    const body = await parseBody(req)
-    const { message, history = [] } = body
-
-    if (!message || typeof message !== 'string') {
-      return json(res, { error: 'Message is required' }, 400)
-    }
-
-    const endpoint = await getOpenClawOllamaEndpoint()
-    if (!endpoint) {
-      return json(res, { error: 'No Ollama instance available. Start Ollama first.' }, 503)
-    }
-    const openClawMaxTokens = Number(process.env.OPENCLAW_CHAT_MAX_TOKENS || 600)
-
-    // ── OpenClaw-specific tool registry ──
-    const OC_TOOLS = {
-      'oc/roadmap': {
-        desc: 'Show the current OpenClaw roadmap',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/apps/CFv1-openclaw-sandbox/ROADMAP.md 2>/dev/null"',
-              { timeout: 8000 }
-            )
-            return stdout.trim() || '(empty)'
-          } catch {
-            // Fall back to local config copy
-            try { return await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/ROADMAP.md'), 'utf-8') } catch { return 'Could not read roadmap' }
-          }
-        },
-      },
-      'oc/progress': {
-        desc: 'Show progress log (what has been done)',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/apps/CFv1-openclaw-sandbox/PROGRESS.md 2>/dev/null"',
-              { timeout: 8000 }
-            )
-            return stdout.trim() || '(empty)'
-          } catch {
-            try { return await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/PROGRESS.md'), 'utf-8') } catch { return 'Could not read progress' }
-          }
-        },
-      },
-      'oc/gateway': {
-        desc: 'Check OpenClaw gateway service status on Pi',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'ssh -o ConnectTimeout=5 pi "systemctl is-active openclaw-chefflow 2>/dev/null && echo PID:$(systemctl show openclaw-chefflow -p MainPID --value) && echo UPTIME:$(systemctl show openclaw-chefflow -p ActiveEnterTimestamp --value)"',
-              { timeout: 8000 }
-            )
-            return stdout.trim()
-          } catch (e) { return 'Gateway offline or SSH failed: ' + (e.message || '').substring(0, 100) }
-        },
-      },
-      'oc/logs': {
-        desc: 'Show recent gateway logs (last 40 lines)',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'ssh -o ConnectTimeout=5 pi "sudo journalctl -u openclaw-chefflow --no-pager -n 40 -o short-iso 2>/dev/null"',
-              { timeout: 10000 }
-            )
-            return stdout.trim() || '(no logs)'
-          } catch { return 'Could not fetch logs' }
-        },
-      },
-      'oc/git-log': {
-        desc: 'Show recent OpenClaw commits (last 20)',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'git log --oneline --no-decorate -20',
-              { cwd: OPENCLAW_CLONE_ROOT, timeout: 5000 }
-            )
-            return stdout.trim() || '(no commits)'
-          } catch { return 'Could not read git log' }
-        },
-      },
-      'oc/git-diff': {
-        desc: 'Show uncommitted changes in OpenClaw clone',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'git diff --stat',
-              { cwd: OPENCLAW_CLONE_ROOT, timeout: 5000 }
-            )
-            return stdout.trim() || '(no uncommitted changes)'
-          } catch { return 'Could not read diff' }
-        },
-      },
-      'oc/files': {
-        desc: 'Show recent file change activity in OpenClaw clone',
-        fn: async () => {
-          const summary = getOpenClawActivitySummary()
-          return JSON.stringify(summary, null, 2)
-        },
-      },
-      'oc/restart': {
-        desc: 'Restart the OpenClaw gateway service on Pi',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'ssh -o ConnectTimeout=5 pi "sudo systemctl restart openclaw-chefflow && sleep 1 && systemctl is-active openclaw-chefflow"',
-              { timeout: 15000 }
-            )
-            return 'Restart result: ' + stdout.trim()
-          } catch (e) { return 'Restart failed: ' + (e.message || '').substring(0, 120) }
-        },
-      },
-      'oc/today': {
-        desc: 'Show today\'s activity log from OpenClaw',
-        fn: async () => {
-          try {
-            const { stdout } = await execAsync(
-              'ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/apps/CFv1-openclaw-sandbox/logs/ACTIVITY_LOG.md 2>/dev/null | tail -100"',
-              { timeout: 8000 }
-            )
-            return stdout.trim() || '(no activity log)'
-          } catch {
-            try {
-              const content = await readFile(join(OPENCLAW_CLONE_ROOT, 'logs', 'ACTIVITY_LOG.md'), 'utf-8')
-              return content.split('\n').slice(-100).join('\n')
-            } catch { return 'No activity log found' }
-          }
-        },
-      },
-    }
-
-    // Build OpenClaw system prompt
-    const toolList = Object.entries(OC_TOOLS).map(([name, { desc }]) => `  - ${name}: ${desc}`).join('\n')
-
-    // Load identity files
-    let soulContent = '', roadmapContent = '', progressContent = ''
-    try { soulContent = await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/SOUL.md'), 'utf-8') } catch {}
-    try { roadmapContent = await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/ROADMAP.md'), 'utf-8') } catch {}
-    try { progressContent = await readFile(join(PROJECT_ROOT, 'config/openclaw-deploy/PROGRESS.md'), 'utf-8') } catch {}
-
-    // Check gateway status quickly
-    let gwStatus = 'unknown'
-    try {
-      const { stdout } = await execAsync(
-        'ssh -o ConnectTimeout=3 pi "systemctl is-active openclaw-chefflow 2>/dev/null"',
-        { timeout: 5000 }
-      )
-      gwStatus = stdout.trim()
-    } catch {}
-
-    const systemPrompt = `You are the OpenClaw Development Team. The developer is talking to you through the Mission Control intercom.
-
-## Your Identity
-${soulContent.substring(0, 1500)}
-
-## Current Status
-- Gateway: ${gwStatus}
-- Clone available: ${existsSync(OPENCLAW_CLONE_ROOT) ? 'yes' : 'no'}
-
-## Current Roadmap (what you should be working on)
-${roadmapContent.substring(0, 2000)}
-
-## Progress So Far
-${progressContent.substring(0, 1500)}
-
-## Available Actions
-Execute actions by including tags in your response.
-Format: <action>action/name</action>
-
-${toolList}
-
-## Rules
-1. You ARE the team. Speak as the team, not about the team. "We're working on..." not "The team is working on..."
-2. Be direct and concise. The developer doesn't want a novel.
-3. When asked about status, progress, or roadmap, use the relevant action to fetch live data.
-4. Execute actions when relevant. Just include <action>oc/roadmap</action> etc. in your response.
-5. When asked to do something, acknowledge and explain what you'll do. You can't write code through this chat, but you can report status, show progress, restart services, and relay information.
-6. Never use em dashes. Use commas, periods, semicolons, or parentheses instead.
-7. Use markdown for formatting (tables, code blocks, bold, lists).
-8. If the developer gives you a direction or priority change, acknowledge it clearly.
-`
-
-    const trimmedHistory = history.slice(-CHAT_CONFIG.maxHistoryMessages)
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...trimmedHistory,
-      { role: 'user', content: message },
-    ]
-
-    log('openclaw-chat', `Chat request via ${endpoint.source}: ${message.slice(0, 60)}`, 'info')
-
-    res.writeHead(200, {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'X-Chat-Source': 'openclaw-' + endpoint.source,
-    })
-
-    try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), CHAT_CONFIG.timeoutMs)
-
-      const ollamaRes = await fetch(`${endpoint.url}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: endpoint.model,
-          messages,
-          stream: true,
-          think: false,
-          options: { num_predict: openClawMaxTokens },
-        }),
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeout)
-
-      if (!ollamaRes.ok) {
-        res.write(JSON.stringify({ type: 'error', error: `Ollama returned ${ollamaRes.status}` }) + '\n')
-        return res.end()
-      }
-
-      let fullResponse = ''
-      const reader = ollamaRes.body.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(l => l.trim())
-
-        for (const line of lines) {
-          try {
-            const parsed = JSON.parse(line)
-            if (parsed.message?.content) {
-              fullResponse += parsed.message.content
-              res.write(JSON.stringify({ type: 'token', content: parsed.message.content }) + '\n')
-            }
-          } catch { /* skip malformed */ }
-        }
-      }
-
-      // Parse and execute OpenClaw actions
-      const actionRegex = /<action>([^<]+)<\/action>/g
-      let match
-      const actionResults = []
-      while ((match = actionRegex.exec(fullResponse)) !== null) {
-        const actionName = match[1].split(':')[0].trim()
-        const actionParam = match[1].includes(':') ? match[1].split(':').slice(1).join(':').trim() : null
-        const tool = OC_TOOLS[actionName]
-        if (tool) {
-          try {
-            const result = await tool.fn(actionParam)
-            actionResults.push({ action: actionName, ok: true, result: { message: typeof result === 'string' ? result.substring(0, 4000) : JSON.stringify(result).substring(0, 4000) } })
-          } catch (err) {
-            actionResults.push({ action: actionName, ok: false, error: err.message })
-          }
-        } else {
-          actionResults.push({ action: actionName, ok: false, error: `Unknown action: ${actionName}` })
-        }
-      }
-
-      if (actionResults.length > 0) {
-        res.write(JSON.stringify({ type: 'action_results', results: actionResults }) + '\n')
-      }
-
-      const actions = actionResults.map(r => r.action)
-      res.write(JSON.stringify({ type: 'done', fullResponse, actions }) + '\n')
-      res.end()
-
-    } catch (err) {
-      const errMsg = err.name === 'AbortError' ? 'Request timed out' : err.message
-      log('openclaw-chat', `Chat error: ${errMsg}`, 'error')
-      try {
-        res.write(JSON.stringify({ type: 'error', error: errMsg }) + '\n')
-        res.end()
-      } catch { /* response already closed */ }
-    }
-    return
-  }
-
-  // ── Team Dashboard (ROADMAP + PROGRESS + Agent Status) ─────────
-  if (path === '/api/team/dashboard' && method === 'GET') {
-    try {
-      const result = { ok: true }
-      const OC_ROOT = '/home/openclawcf/apps/CFv1-openclaw-sandbox'
-
-      // 1. ROADMAP.md tasks
-      try {
-        const { stdout } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "sudo cat ${OC_ROOT}/ROADMAP.md 2>/dev/null"`,
-          { timeout: 8000 }
-        )
-        result.roadmap = stdout.trim()
-      } catch { result.roadmap = '' }
-
-      // 2. PROGRESS.md (last 100 lines)
-      try {
-        const { stdout } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "sudo tail -100 ${OC_ROOT}/PROGRESS.md 2>/dev/null"`,
-          { timeout: 8000 }
-        )
-        result.progress = stdout.trim()
-      } catch { result.progress = '' }
-
-      // 3. Cron jobs
-      try {
-        const { stdout } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "sudo cat /home/openclawcf/.openclaw-chefflow/cron/jobs.json 2>/dev/null"`,
-          { timeout: 8000 }
-        )
-        result.cronJobs = JSON.parse(stdout)
-      } catch { result.cronJobs = { jobs: [] } }
-
-      // 4. Agent config (model assignments)
-      try {
-        const { stdout } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "sudo python3 -c \\"import json; c=json.load(open('/home/openclawcf/.openclaw-chefflow/openclaw.json')); print(json.dumps([{'id':a['id'],'model':a.get('model',c['agents']['defaults']['model']['primary'])} for a in c['agents']['list']]))\\" 2>/dev/null"`,
-          { timeout: 8000 }
-        )
-        result.agents = JSON.parse(stdout)
-      } catch { result.agents = [] }
-
-      // 5. Recent memory (today's log)
-      try {
-        const today = new Date().toISOString().slice(0, 10)
-        const { stdout } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "sudo cat ${OC_ROOT}/memory/${today}.md 2>/dev/null || echo '(no log for today yet)'"`,
-          { timeout: 8000 }
-        )
-        result.todayLog = stdout.trim()
-      } catch { result.todayLog = '' }
-
-      // 6. Gateway status
-      try {
-        const { stdout } = await execAsync(
-          `ssh -o ConnectTimeout=5 pi "systemctl is-active openclaw-chefflow 2>/dev/null"`,
-          { timeout: 5000 }
-        )
-        result.gatewayOnline = stdout.trim() === 'active'
-      } catch { result.gatewayOnline = false }
-
-      return json(res, result)
-    } catch (err) {
-      return json(res, { ok: false, error: err.message }, 500)
-    }
-  }
 
   // ── Retroactive Activity Log (git archaeology) ─────────────────
   if (path === '/api/activity/retroactive' && method === 'GET') {
     return json(res, await getRetroactiveActivity())
-  }
-
-  // ── OpenClaw Agent Status (for Pixel Kitchen Command Center) ──
-  if (path === '/api/openclaw/status' && method === 'GET') {
-    const agents = { main: { log: [] }, build: { log: [] }, qa: { log: [] }, runner: { log: [] } }
-    let online = false
-    let lastActivity = ''
-    let jobSchedule = []
-    try {
-      // Check if gateway service is active
-      const { stdout: svcStatus } = await execAsync(
-        'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "systemctl is-active openclaw-chefflow 2>/dev/null"',
-        { timeout: 5000 }
-      )
-      online = svcStatus.trim() === 'active'
-
-      if (online) {
-        // Get recent journal lines from the OpenClaw service
-        const { stdout: journalOut } = await execAsync(
-          'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "sudo journalctl -u openclaw-chefflow.service -n 100 --no-pager --output=short-iso 2>/dev/null"',
-          { timeout: 8000 }
-        )
-        const lines = journalOut.split('\n').filter(l => l.trim())
-
-        // Extract timestamp from the most recent line for "last seen" info
-        if (lines.length > 0) {
-          const tsMatch = lines[lines.length - 1].match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/)
-          if (tsMatch) lastActivity = tsMatch[1]
-        }
-
-        // Also read jobs.json to show the schedule
-        try {
-          const { stdout: jobsJson } = await execAsync(
-            'ssh -o ConnectTimeout=3 -o StrictHostKeyChecking=no pi "sudo -u openclawcf cat /home/openclawcf/.openclaw-chefflow/cron/jobs.json 2>/dev/null"',
-            { timeout: 5000 }
-          )
-          const parsed = JSON.parse(jobsJson)
-          jobSchedule = (parsed.jobs || []).map(j => ({
-            id: j.id,
-            name: j.name,
-            schedule: j.schedule,
-            agent: j.agent,
-            channel: j.slackChannel || '',
-            enabled: j.enabled !== false
-          }))
-        } catch { /* jobs.json read failed, non-critical */ }
-
-        // Parse journal lines into agent activity
-        for (const line of lines) {
-          const content = line.replace(/^\d{4}-\d{2}-\d{2}T[\d:.-]+\s+\S+\s+openclaw\[\d+\]:\s*/, '')
-            .replace(/^\d{4}-\d{2}-\d{2}T[\d:.-]+\s*/, '')
-            .trim()
-          if (!content || content.length < 5) continue
-
-          // Skip noisy polling
-          if (content.includes('node.list') || content.includes('device.pair.list')) continue
-
-          // Heartbeat/cron activity -> main (conductor)
-          if (content.includes('[heartbeat]') || content.includes('[cron]') || content.includes('heartbeat')) {
-            if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 100))
-            continue
-          }
-
-          // Subagent orchestration -> main
-          if (content.includes('Subagent') || content.includes('subagent') || content.includes('[agent')) {
-            if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 100))
-            continue
-          }
-
-          // Tool usage -> build
-          if (content.startsWith('[tools]')) {
-            if (agents.build.log.length < 5) agents.build.log.push(content.substring(0, 100))
-            continue
-          }
-
-          // Warnings/errors -> qa
-          if (content.startsWith('[warn]') || content.includes('error') || content.includes('Error')) {
-            if (agents.qa.log.length < 5) agents.qa.log.push(content.substring(0, 100))
-            continue
-          }
-
-          // Gateway/ws/slack/health -> runner (infrastructure)
-          if (content.startsWith('[ws]') || content.startsWith('[slack]') || content.startsWith('[gateway]') ||
-              content.startsWith('[health') || content.startsWith('[browser') || content.startsWith('[canvas]') ||
-              content.includes('webchat')) {
-            if (agents.runner.log.length < 5) agents.runner.log.push(content.substring(0, 100))
-            continue
-          }
-
-          // Systemd lifecycle -> runner
-          if (content.includes('systemd') || content.includes('Started') || content.includes('Stopped') ||
-              content.includes('Deactivated') || content.includes('CPU time')) {
-            if (agents.runner.log.length < 5) agents.runner.log.push(content.substring(0, 100))
-            continue
-          }
-
-          // Work output -> main (conductor produces the bulk of work)
-          if (agents.main.log.length < 5) agents.main.log.push(content.substring(0, 100))
-        }
-
-        // Cap each agent to 5 entries, most recent first
-        for (const name of Object.keys(agents)) {
-          agents[name].log = agents[name].log.slice(-5).reverse()
-        }
-      }
-    } catch {
-      // Gateway unreachable
-    }
-
-    return json(res, { ok: true, online, agents, lastActivity, jobs: jobSchedule })
-  }
-
-  // ── Admin: All Chefs (Users Panel) ────────────────────────────
-  if (path === '/api/admin/users' && method === 'GET') {
-    try {
-      const chefsRes = await supabaseQuery('chefs', {
-        select: 'id,business_name,email,created_at',
-        order: 'created_at.desc',
-        limit: 500,
-      })
-      if (!chefsRes.ok) return json(res, chefsRes)
-      const chefs = chefsRes.data || []
-      const chefIds = chefs.map(c => c.id)
-
-      // Batch counts
-      const [eventsRes, clientsRes, ledgerRes] = await Promise.all([
-        supabaseQuery('events', { select: 'tenant_id', filters: [`tenant_id=in.(${chefIds.join(',')})`], limit: 10000 }),
-        supabaseQuery('clients', { select: 'tenant_id', filters: [`tenant_id=in.(${chefIds.join(',')})`], limit: 10000 }),
-        supabaseQuery('ledger_entries', {
-          select: 'tenant_id,amount_cents',
-          filters: [`tenant_id=in.(${chefIds.join(',')})`, 'entry_type=eq.payment'],
-          limit: 20000,
-        }),
-      ])
-
-      const eventMap = {}, clientMap = {}, gmvMap = {}
-      for (const e of (eventsRes.data || [])) eventMap[e.tenant_id] = (eventMap[e.tenant_id] || 0) + 1
-      for (const c of (clientsRes.data || [])) clientMap[c.tenant_id] = (clientMap[c.tenant_id] || 0) + 1
-      for (const l of (ledgerRes.data || [])) gmvMap[l.tenant_id] = (gmvMap[l.tenant_id] || 0) + (l.amount_cents || 0)
-
-      const enriched = chefs.map(c => ({
-        ...c,
-        eventCount: eventMap[c.id] || 0,
-        clientCount: clientMap[c.id] || 0,
-        gmvCents: gmvMap[c.id] || 0,
-      }))
-
-      return json(res, { ok: true, chefs: enriched, total: enriched.length })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message })
-    }
-  }
-
-  // ── Admin: Feature Flags ────────────────────────────────────────
-  if (path === '/api/admin/flags' && method === 'GET') {
-    try {
-      const [chefsRes, flagsRes] = await Promise.all([
-        supabaseQuery('chefs', { select: 'id,business_name', order: 'business_name.asc', limit: 500 }),
-        supabaseQuery('chef_feature_flags', { select: 'chef_id,flag_name,enabled,updated_at', limit: 10000 }),
-      ])
-      if (!chefsRes.ok) return json(res, chefsRes)
-
-      const flagsByChef = {}
-      for (const f of (flagsRes.data || [])) {
-        if (!flagsByChef[f.chef_id]) flagsByChef[f.chef_id] = {}
-        flagsByChef[f.chef_id][f.flag_name] = f.enabled
-      }
-
-      return json(res, { ok: true, chefs: chefsRes.data || [], flagsByChef, total: (chefsRes.data || []).length })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message })
-    }
-  }
-
-  // ── Admin: Toggle Feature Flag ──────────────────────────────────
-  if (path === '/api/admin/flags' && method === 'POST') {
-    try {
-      const body = await parseBody(req)
-      const { chef_id, flag_name, enabled } = body
-      if (!chef_id || !flag_name || typeof enabled !== 'boolean') {
-        return json(res, { ok: false, error: 'Missing chef_id, flag_name, or enabled' })
-      }
-      // Upsert via PostgREST
-      const url = `${CONFIG.supabaseUrl}/rest/v1/chef_feature_flags`
-      const upsertRes = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'apikey': CONFIG.supabaseServiceKey,
-          'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates',
-        },
-        body: JSON.stringify({ chef_id, flag_name, enabled, updated_at: new Date().toISOString() }),
-      })
-      if (!upsertRes.ok) {
-        const errText = await upsertRes.text()
-        return json(res, { ok: false, error: `Supabase ${upsertRes.status}: ${errText.slice(0, 300)}` })
-      }
-      return json(res, { ok: true })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message })
-    }
-  }
-
-  // ── Admin: Gmail Sync Status ────────────────────────────────────
-  if (path === '/api/admin/gmail-sync' && method === 'GET') {
-    try {
-      const [logsRes, connectionsRes] = await Promise.all([
-        supabaseQuery('gmail_sync_log', { select: 'tenant_id,synced_at,error', order: 'synced_at.desc', limit: 5000 }),
-        supabaseQuery('google_connections', {
-          select: 'chef_id,connected_email,gmail_connected,gmail_last_sync_at,gmail_sync_errors',
-          limit: 500,
-        }),
-      ])
-
-      // Aggregate sync logs by tenant
-      const syncMap = {}
-      for (const row of (logsRes.data || [])) {
-        if (!syncMap[row.tenant_id]) syncMap[row.tenant_id] = { total: 0, errors: 0, lastSync: row.synced_at }
-        syncMap[row.tenant_id].total++
-        if (row.error) syncMap[row.tenant_id].errors++
-      }
-
-      // Get chef names for all relevant tenant IDs
-      const allIds = new Set([...Object.keys(syncMap), ...(connectionsRes.data || []).map(c => c.chef_id)])
-      let chefNameMap = {}
-      if (allIds.size > 0) {
-        const namesRes = await supabaseQuery('chefs', {
-          select: 'id,business_name,email',
-          filters: [`id=in.(${[...allIds].join(',')})`],
-          limit: 500,
-        })
-        for (const c of (namesRes.data || [])) chefNameMap[c.id] = c
-      }
-
-      // Build connection-based rows (primary view)
-      const rows = (connectionsRes.data || []).map(conn => {
-        const chef = chefNameMap[conn.chef_id] || {}
-        const sync = syncMap[conn.chef_id] || {}
-        return {
-          chefId: conn.chef_id,
-          chefName: chef.business_name || chef.email || 'Unknown',
-          connectedEmail: conn.connected_email,
-          gmailConnected: conn.gmail_connected,
-          lastSyncAt: conn.gmail_last_sync_at || sync.lastSync || null,
-          totalSynced: sync.total || 0,
-          errorCount: sync.errors || 0,
-          syncErrors: conn.gmail_sync_errors || 0,
-        }
-      })
-
-      return json(res, { ok: true, connections: rows, total: rows.length })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message })
-    }
-  }
-
-  // ── Admin: System Health (aggregated) ───────────────────────────
-  if (path === '/api/admin/health' && method === 'GET') {
-    try {
-      const tables = ['chefs', 'clients', 'events', 'ledger_entries', 'inquiries', 'chat_messages']
-      const countPromises = tables.map(async (table) => {
-        const url = `${CONFIG.supabaseUrl}/rest/v1/${table}?select=id&limit=0`
-        const r = await fetch(url, {
-          method: 'HEAD',
-          headers: {
-            'apikey': CONFIG.supabaseServiceKey,
-            'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
-            'Prefer': 'count=exact',
-          },
-        })
-        const count = parseInt(r.headers.get('content-range')?.split('/')[1] || '0', 10)
-        return { table, count }
-      })
-
-      const counts = await Promise.all(countPromises)
-      const tableCounts = {}
-      for (const { table, count } of counts) tableCounts[table] = count
-
-      // Zombie events (not completed/cancelled, not updated in 30 days)
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
-      const zombieRes = await supabaseQuery('events', {
-        select: 'id',
-        filters: [
-          'status=not.in.(completed,cancelled)',
-          `updated_at=lt.${thirtyDaysAgo}`,
-        ],
-        limit: 1000,
-      })
-
-      // Orphaned clients (no tenant)
-      const orphanRes = await supabaseQuery('clients', {
-        select: 'id',
-        filters: ['tenant_id=is.null'],
-        limit: 1000,
-      })
-
-      // QOL metrics (last 30 days)
-      const qolRes = await supabaseQuery('qol_metric_events', {
-        select: 'metric_key,created_at',
-        filters: [`created_at=gte.${thirtyDaysAgo}`],
-        limit: 5000,
-      })
-      const qolCounts = {}
-      for (const row of (qolRes.data || [])) {
-        qolCounts[row.metric_key] = (qolCounts[row.metric_key] || 0) + 1
-      }
-
-      return json(res, {
-        ok: true,
-        tableCounts,
-        zombieEvents: (zombieRes.data || []).length,
-        orphanedClients: (orphanRes.data || []).length,
-        qolMetrics: qolCounts,
-      })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message })
-    }
-  }
-
-  // ── Admin: Aggregated Errors ────────────────────────────────────
-  if (path === '/api/admin/errors' && method === 'GET') {
-    try {
-      const [notifRes, gmailRes, remyRes, autoRes] = await Promise.all([
-        supabaseQuery('notification_delivery_log', {
-          select: 'id,error_message,tenant_id,sent_at',
-          filters: ['status=eq.failed'],
-          order: 'sent_at.desc',
-          limit: 100,
-        }),
-        supabaseQuery('gmail_sync_log', {
-          select: 'id,error,tenant_id,synced_at',
-          filters: ['error=not.is.null'],
-          order: 'synced_at.desc',
-          limit: 100,
-        }),
-        supabaseQuery('remy_action_audit_log', {
-          select: 'id,task_type,error_message,tenant_id,created_at',
-          filters: ['status=eq.error'],
-          order: 'created_at.desc',
-          limit: 100,
-        }),
-        supabaseQuery('automation_execution_log', {
-          select: 'id,trigger_type,last_error,tenant_id,created_at',
-          filters: ['status=eq.failed'],
-          order: 'created_at.desc',
-          limit: 100,
-        }),
-      ])
-
-      // Collect all tenant IDs for name resolution
-      const tenantIds = new Set()
-      const allErrors = []
-
-      for (const row of (notifRes.data || [])) {
-        if (row.tenant_id) tenantIds.add(row.tenant_id)
-        allErrors.push({ id: row.id, source: 'Notifications', message: row.error_message, tenant_id: row.tenant_id, created_at: row.sent_at })
-      }
-      for (const row of (gmailRes.data || [])) {
-        if (row.tenant_id) tenantIds.add(row.tenant_id)
-        allErrors.push({ id: row.id, source: 'Gmail Sync', message: row.error, tenant_id: row.tenant_id, created_at: row.synced_at })
-      }
-      for (const row of (remyRes.data || [])) {
-        if (row.tenant_id) tenantIds.add(row.tenant_id)
-        allErrors.push({ id: row.id, source: `Remy (${row.task_type || 'unknown'})`, message: row.error_message, tenant_id: row.tenant_id, created_at: row.created_at })
-      }
-      for (const row of (autoRes.data || [])) {
-        if (row.tenant_id) tenantIds.add(row.tenant_id)
-        allErrors.push({ id: row.id, source: `Automation (${row.trigger_type || 'unknown'})`, message: row.last_error, tenant_id: row.tenant_id, created_at: row.created_at })
-      }
-
-      // Resolve chef names
-      let chefMap = {}
-      if (tenantIds.size > 0) {
-        const namesRes = await supabaseQuery('chefs', {
-          select: 'id,business_name',
-          filters: [`id=in.(${[...tenantIds].join(',')})`],
-          limit: 500,
-        })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-
-      // Enrich and sort
-      for (const err of allErrors) {
-        err.chefName = chefMap[err.tenant_id] || null
-      }
-      allErrors.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-
-      // Summary counts
-      const summary = {
-        notifications: (notifRes.data || []).length,
-        gmail: (gmailRes.data || []).length,
-        remy: (remyRes.data || []).length,
-        automation: (autoRes.data || []).length,
-        total: allErrors.length,
-      }
-
-      return json(res, { ok: true, errors: allErrors.slice(0, 200), summary })
-    } catch (err) {
-      return json(res, { ok: false, error: err.message })
-    }
-  }
-
-  // ── Admin: All Events ─────────────────────────────────────────
-  if (path === '/api/admin/events' && method === 'GET') {
-    try {
-      const eventsRes = await supabaseQuery('events', {
-        select: 'id,occasion,status,event_date,guest_count,quoted_price_cents,created_at,tenant_id',
-        order: 'created_at.desc',
-        limit: 500,
-      })
-      if (!eventsRes.ok) return json(res, eventsRes)
-      const events = eventsRes.data || []
-      const tenantIds = [...new Set(events.map(e => e.tenant_id).filter(Boolean))]
-      let chefMap = {}
-      if (tenantIds.length > 0) {
-        const namesRes = await supabaseQuery('chefs', {
-          select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500,
-        })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-      const enriched = events.map(e => ({ ...e, chefName: chefMap[e.tenant_id] || null }))
-      // Status distribution
-      const statusCounts = {}
-      for (const e of events) statusCounts[e.status] = (statusCounts[e.status] || 0) + 1
-      return json(res, { ok: true, events: enriched, total: enriched.length, statusCounts })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: All Inquiries ────────────────────────────────────────
-  if (path === '/api/admin/inquiries' && method === 'GET') {
-    try {
-      const inqRes = await supabaseQuery('inquiries', {
-        select: 'id,client_name,client_email,occasion,status,event_date,guest_count,created_at,tenant_id,chef_likelihood,unknown_fields',
-        order: 'created_at.desc',
-        limit: 500,
-      })
-      if (!inqRes.ok) return json(res, inqRes)
-      const inquiries = inqRes.data || []
-      const tenantIds = [...new Set(inquiries.map(i => i.tenant_id).filter(Boolean))]
-      let chefMap = {}
-      if (tenantIds.length > 0) {
-        const namesRes = await supabaseQuery('chefs', {
-          select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500,
-        })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-      const enriched = inquiries.map(i => {
-        const uf = i.unknown_fields || {}
-        const leadScore = i.chef_likelihood ?? uf.goldmine_score ?? uf.lead_score ?? null
-        return { ...i, chefName: chefMap[i.tenant_id] || null, leadScore }
-      })
-      const statusCounts = {}
-      for (const i of inquiries) statusCounts[i.status || 'unknown'] = (statusCounts[i.status || 'unknown'] || 0) + 1
-      return json(res, { ok: true, inquiries: enriched, total: enriched.length, statusCounts })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: All Quotes ───────────────────────────────────────────
-  if (path === '/api/admin/quotes' && method === 'GET') {
-    try {
-      const quotesRes = await supabaseQuery('quotes', {
-        select: 'id,status,total_cents,created_at,event_id,tenant_id',
-        order: 'created_at.desc',
-        limit: 500,
-      })
-      if (!quotesRes.ok) return json(res, quotesRes)
-      const quotes = quotesRes.data || []
-      const tenantIds = [...new Set(quotes.map(q => q.tenant_id).filter(Boolean))]
-      const eventIds = [...new Set(quotes.map(q => q.event_id).filter(Boolean))]
-      const [chefsRes, eventsRes] = await Promise.all([
-        tenantIds.length > 0 ? supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 }) : { data: [] },
-        eventIds.length > 0 ? supabaseQuery('events', { select: 'id,occasion', filters: [`id=in.(${eventIds.join(',')})`], limit: 500 }) : { data: [] },
-      ])
-      const chefMap = {}, eventMap = {}
-      for (const c of (chefsRes.data || [])) chefMap[c.id] = c.business_name
-      for (const e of (eventsRes.data || [])) eventMap[e.id] = e.occasion
-      const enriched = quotes.map(q => ({ ...q, chefName: chefMap[q.tenant_id] || null, eventOccasion: eventMap[q.event_id] || null }))
-      const statusCounts = {}
-      for (const q of quotes) statusCounts[q.status || 'unknown'] = (statusCounts[q.status || 'unknown'] || 0) + 1
-      return json(res, { ok: true, quotes: enriched, total: enriched.length, statusCounts })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: Platform Analytics ───────────────────────────────────
-  if (path === '/api/admin/analytics' && method === 'GET') {
-    try {
-      const twelveMonthsAgo = new Date(Date.now() - 365 * 86400000).toISOString()
-      const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-
-      const [chefsRes, clientsRes, eventsCountRes, ledgerAllRes, chefsGrowthRes, clientsGrowthRes, ledgerGrowthRes] = await Promise.all([
-        supabaseQuery('chefs', { select: 'id', limit: 0, extra: '' }),
-        supabaseQuery('clients', { select: 'id', limit: 0 }),
-        supabaseQuery('events', { select: 'id', limit: 0 }),
-        supabaseQuery('ledger_entries', { select: 'amount_cents', filters: ['entry_type=eq.payment'], limit: 50000 }),
-        supabaseQuery('chefs', { select: 'created_at', filters: [`created_at=gte.${twelveMonthsAgo}`], limit: 10000 }),
-        supabaseQuery('clients', { select: 'created_at', filters: [`created_at=gte.${twelveMonthsAgo}`], limit: 50000 }),
-        supabaseQuery('ledger_entries', { select: 'amount_cents,created_at', filters: ['entry_type=eq.payment', `created_at=gte.${twelveMonthsAgo}`], limit: 50000 }),
-      ])
-
-      // Use HEAD counts for totals (cheaper)
-      const totalGMV = (ledgerAllRes.data || []).reduce((s, r) => s + (r.amount_cents || 0), 0)
-
-      // Growth by month
-      const monthlyGrowth = {}
-      for (const c of (chefsGrowthRes.data || [])) {
-        const m = c.created_at?.slice(0, 7)
-        if (m) { if (!monthlyGrowth[m]) monthlyGrowth[m] = { chefs: 0, clients: 0, gmvCents: 0 }; monthlyGrowth[m].chefs++ }
-      }
-      for (const c of (clientsGrowthRes.data || [])) {
-        const m = c.created_at?.slice(0, 7)
-        if (m) { if (!monthlyGrowth[m]) monthlyGrowth[m] = { chefs: 0, clients: 0, gmvCents: 0 }; monthlyGrowth[m].clients++ }
-      }
-      for (const l of (ledgerGrowthRes.data || [])) {
-        const m = l.created_at?.slice(0, 7)
-        if (m) { if (!monthlyGrowth[m]) monthlyGrowth[m] = { chefs: 0, clients: 0, gmvCents: 0 }; monthlyGrowth[m].gmvCents += (l.amount_cents || 0) }
-      }
-
-      // This month
-      const thisMonth = thisMonthStart.slice(0, 7)
-      const thisMonthData = monthlyGrowth[thisMonth] || { chefs: 0, clients: 0, gmvCents: 0 }
-
-      return json(res, {
-        ok: true,
-        totalChefs: (chefsGrowthRes.data || []).length + 10, // approximate (we only fetched 12mo)
-        totalClients: (clientsGrowthRes.data || []).length + 10,
-        totalEvents: (eventsCountRes.data || []).length,
-        totalGMV,
-        thisMonth: thisMonthData,
-        monthlyGrowth: Object.entries(monthlyGrowth).sort(([a], [b]) => a.localeCompare(b)).map(([month, d]) => ({ month, ...d })),
-      })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: Platform Financials ──────────────────────────────────
-  if (path === '/api/admin/financials' && method === 'GET') {
-    try {
-      const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-      const [paymentsRes, expensesRes, recentRes] = await Promise.all([
-        supabaseQuery('ledger_entries', { select: 'amount_cents,created_at', filters: ['entry_type=eq.payment'], limit: 50000 }),
-        supabaseQuery('ledger_entries', { select: 'amount_cents,created_at', filters: ['entry_type=eq.expense'], limit: 50000 }),
-        supabaseQuery('ledger_entries', {
-          select: 'id,tenant_id,event_id,entry_type,amount_cents,description,created_at',
-          order: 'created_at.desc', limit: 200,
-        }),
-      ])
-      const totalGMV = (paymentsRes.data || []).reduce((s, r) => s + (r.amount_cents || 0), 0)
-      const gmvThisMonth = (paymentsRes.data || []).filter(r => r.created_at >= thisMonthStart).reduce((s, r) => s + (r.amount_cents || 0), 0)
-      const totalExpenses = (expensesRes.data || []).reduce((s, r) => s + Math.abs(r.amount_cents || 0), 0)
-      const expensesThisMonth = (expensesRes.data || []).filter(r => r.created_at >= thisMonthStart).reduce((s, r) => s + Math.abs(r.amount_cents || 0), 0)
-
-      // Resolve chef names for recent entries
-      const tenantIds = [...new Set((recentRes.data || []).map(e => e.tenant_id).filter(Boolean))]
-      let chefMap = {}
-      if (tenantIds.length > 0) {
-        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-      const entries = (recentRes.data || []).map(e => ({ ...e, chefName: chefMap[e.tenant_id] || null }))
-
-      return json(res, { ok: true, totalGMV, gmvThisMonth, totalExpenses, expensesThisMonth, entries })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: Audit Log ────────────────────────────────────────────
-  if (path === '/api/admin/audit' && method === 'GET') {
-    try {
-      const result = await supabaseQuery('admin_audit_log', {
-        select: 'id,ts,actor_email,action_type,target_type,target_id,details',
-        order: 'ts.desc',
-        limit: 200,
-      })
-      if (!result.ok && result.error?.includes('404')) {
-        return json(res, { ok: true, entries: [], total: 0, note: 'admin_audit_log table not yet created' })
-      }
-      return json(res, { ok: true, entries: result.data || [], total: (result.data || []).length })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: Remy Activity ────────────────────────────────────────
-  if (path === '/api/admin/remy-activity' && method === 'GET') {
-    try {
-      const logsRes = await supabaseQuery('remy_action_audit_log', {
-        select: 'tenant_id,task_type,status,created_at',
-        order: 'created_at.desc',
-        limit: 5000,
-      })
-      if (!logsRes.ok) return json(res, logsRes)
-      const logs = logsRes.data || []
-
-      // Aggregate by tenant
-      const byTenant = {}
-      for (const row of logs) {
-        const tid = row.tenant_id
-        if (!byTenant[tid]) byTenant[tid] = { total: 0, success: 0, errors: 0, lastAt: null, taskTypes: {} }
-        const t = byTenant[tid]
-        t.total++
-        if (row.status === 'success') t.success++
-        if (row.status === 'error') t.errors++
-        if (!t.lastAt) t.lastAt = row.created_at
-        t.taskTypes[row.task_type] = (t.taskTypes[row.task_type] || 0) + 1
-      }
-
-      // Resolve chef names
-      const tenantIds = Object.keys(byTenant)
-      let chefMap = {}
-      if (tenantIds.length > 0) {
-        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-
-      const rows = tenantIds.map(tid => {
-        const t = byTenant[tid]
-        const topTasks = Object.entries(t.taskTypes).sort(([,a], [,b]) => b - a).slice(0, 3).map(([k]) => k)
-        return { chefId: tid, chefName: chefMap[tid] || null, total: t.total, success: t.success, errors: t.errors, lastAt: t.lastAt, topTasks }
-      }).sort((a, b) => b.total - a.total)
-
-      const summary = { total: logs.length, success: logs.filter(l => l.status === 'success').length, errors: logs.filter(l => l.status === 'error').length }
-      return json(res, { ok: true, rows, summary })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: Notifications ────────────────────────────────────────
-  if (path === '/api/admin/notifications' && method === 'GET') {
-    try {
-      const notifRes = await supabaseQuery('notifications', {
-        select: 'id,tenant_id,recipient_id,category,action,title,body,read_at,created_at',
-        order: 'created_at.desc',
-        limit: 200,
-      })
-      if (!notifRes.ok) return json(res, notifRes)
-      const notifications = notifRes.data || []
-
-      const tenantIds = [...new Set(notifications.map(n => n.tenant_id).filter(Boolean))]
-      let chefMap = {}
-      if (tenantIds.length > 0) {
-        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-
-      const enriched = notifications.map(n => ({ ...n, chefName: chefMap[n.tenant_id] || null }))
-      const categoryCounts = {}
-      for (const n of notifications) categoryCounts[n.category || 'other'] = (categoryCounts[n.category || 'other'] || 0) + 1
-      const unreadCount = notifications.filter(n => !n.read_at).length
-
-      return json(res, { ok: true, notifications: enriched, total: enriched.length, categoryCounts, unreadCount })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: Sessions ─────────────────────────────────────────────
-  if (path === '/api/admin/sessions' && method === 'GET') {
-    try {
-      const [chefsRes, rolesRes] = await Promise.all([
-        supabaseQuery('chefs', { select: 'id,business_name,email,account_status,created_at', order: 'created_at.desc', limit: 500 }),
-        supabaseQuery('user_roles', { select: 'entity_id,role', limit: 10000 }),
-      ])
-      if (!chefsRes.ok) return json(res, chefsRes)
-      const chefs = chefsRes.data || []
-      const chefIds = chefs.map(c => c.id)
-
-      // Get latest activity per chef
-      let activityMap = {}
-      if (chefIds.length > 0) {
-        const actRes = await supabaseQuery('activity_events', {
-          select: 'tenant_id,created_at',
-          filters: [`tenant_id=in.(${chefIds.join(',')})`],
-          order: 'created_at.desc',
-          limit: 5000,
-        })
-        for (const a of (actRes.data || [])) {
-          if (!activityMap[a.tenant_id]) activityMap[a.tenant_id] = { last: a.created_at, count: 0 }
-          activityMap[a.tenant_id].count++
-        }
-      }
-
-      // Role map
-      const roleMap = {}
-      for (const r of (rolesRes.data || [])) roleMap[r.entity_id] = r.role
-
-      const now = Date.now()
-      const sevenDays = 7 * 86400000
-      let activeCount = 0, inactiveCount = 0, neverCount = 0
-
-      const rows = chefs.map(c => {
-        const act = activityMap[c.id]
-        const lastActive = act?.last || null
-        const isActive = lastActive && (now - new Date(lastActive).getTime()) < sevenDays
-        if (isActive) activeCount++
-        else if (lastActive) inactiveCount++
-        else neverCount++
-        return {
-          id: c.id, business_name: c.business_name, email: c.email,
-          role: roleMap[c.id] || 'chef', account_status: c.account_status,
-          lastActive, activityCount: act?.count || 0, isActive,
-        }
-      })
-
-      return json(res, { ok: true, sessions: rows, total: rows.length, activeCount, inactiveCount, neverCount })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
-  }
-
-  // ── Admin: SLA Tracking ─────────────────────────────────────────
-  if (path === '/api/admin/sla' && method === 'GET') {
-    try {
-      const inqRes = await supabaseQuery('inquiries', {
-        select: 'id,tenant_id,created_at,status,updated_at',
-        order: 'created_at.desc',
-        limit: 2000,
-      })
-      if (!inqRes.ok) return json(res, inqRes)
-      const inquiries = inqRes.data || []
-
-      // Aggregate by tenant
-      const byTenant = {}
-      for (const inq of inquiries) {
-        const tid = inq.tenant_id
-        if (!byTenant[tid]) byTenant[tid] = { total: 0, under1h: 0, under24h: 0, over24h: 0, responseTimes: [] }
-        const t = byTenant[tid]
-        t.total++
-        if (inq.status !== 'new' && inq.updated_at && inq.created_at) {
-          const hours = (new Date(inq.updated_at) - new Date(inq.created_at)) / 3600000
-          if (hours >= 0) {
-            t.responseTimes.push(hours)
-            if (hours <= 1) t.under1h++
-            else if (hours <= 24) t.under24h++
-            else t.over24h++
-          }
-        }
-      }
-
-      const tenantIds = Object.keys(byTenant)
-      let chefMap = {}
-      if (tenantIds.length > 0) {
-        const namesRes = await supabaseQuery('chefs', { select: 'id,business_name', filters: [`id=in.(${tenantIds.join(',')})`], limit: 500 })
-        for (const c of (namesRes.data || [])) chefMap[c.id] = c.business_name
-      }
-
-      function slaGrade(avgHours) {
-        if (avgHours == null) return 'N/A'
-        if (avgHours <= 2) return 'A'
-        if (avgHours <= 6) return 'B'
-        if (avgHours <= 12) return 'C'
-        if (avgHours <= 24) return 'D'
-        return 'F'
-      }
-
-      const rows = tenantIds.map(tid => {
-        const t = byTenant[tid]
-        const avg = t.responseTimes.length > 0 ? t.responseTimes.reduce((s, v) => s + v, 0) / t.responseTimes.length : null
-        return {
-          chefId: tid, chefName: chefMap[tid] || null,
-          total: t.total, under1h: t.under1h, under24h: t.under24h, over24h: t.over24h,
-          avgHours: avg, grade: slaGrade(avg),
-        }
-      }).sort((a, b) => (a.avgHours ?? 999) - (b.avgHours ?? 999))
-
-      // Platform average
-      const allTimes = Object.values(byTenant).flatMap(t => t.responseTimes)
-      const platformAvg = allTimes.length > 0 ? allTimes.reduce((s, v) => s + v, 0) / allTimes.length : null
-
-      return json(res, { ok: true, rows, total: rows.length, platformAvgHours: platformAvg, platformGrade: slaGrade(platformAvg) })
-    } catch (err) { return json(res, { ok: false, error: err.message }) }
   }
 
   // 404

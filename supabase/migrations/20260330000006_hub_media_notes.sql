@@ -19,11 +19,14 @@ CREATE TABLE IF NOT EXISTS hub_media (
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_hub_media_group
   ON hub_media(group_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_hub_media_event
   ON hub_media(event_id)
   WHERE event_id IS NOT NULL;
+
 -- Pinned notes (sticky notes board)
 CREATE TABLE IF NOT EXISTS hub_pinned_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,31 +42,48 @@ CREATE TABLE IF NOT EXISTS hub_pinned_notes (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_hub_pinned_notes_group
   ON hub_pinned_notes(group_id, sort_order);
+
 -- Storage bucket for hub media
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('hub-media', 'hub-media', true)
 ON CONFLICT (id) DO NOTHING;
+
 -- Storage policies for hub-media bucket
-CREATE POLICY "hub_media_read_all" ON storage.objects
-  FOR SELECT USING (bucket_id = 'hub-media');
-CREATE POLICY "hub_media_upload_all" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'hub-media');
+DO $$ BEGIN
+  CREATE POLICY "hub_media_read_all" ON storage.objects
+    FOR SELECT USING (bucket_id = 'hub-media');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "hub_media_upload_all" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'hub-media');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+
 -- RLS
 ALTER TABLE hub_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_pinned_notes ENABLE ROW LEVEL SECURITY;
+
 -- Media: public read/insert
 CREATE POLICY "hub_media_select_anon" ON hub_media
   FOR SELECT USING (true);
+
 CREATE POLICY "hub_media_insert_anon" ON hub_media
   FOR INSERT WITH CHECK (true);
+
 CREATE POLICY "hub_media_manage_service" ON hub_media
   FOR ALL USING (auth.role() = 'service_role');
+
 -- Notes: public read/insert
 CREATE POLICY "hub_pinned_notes_select_anon" ON hub_pinned_notes
   FOR SELECT USING (true);
+
 CREATE POLICY "hub_pinned_notes_insert_anon" ON hub_pinned_notes
   FOR INSERT WITH CHECK (true);
+
 CREATE POLICY "hub_pinned_notes_manage_service" ON hub_pinned_notes
   FOR ALL USING (auth.role() = 'service_role');

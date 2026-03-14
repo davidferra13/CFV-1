@@ -8,8 +8,10 @@
 -- 1. Add Google Review URL to chefs
 -- ============================================
 ALTER TABLE chefs ADD COLUMN google_review_url TEXT;
+
 COMMENT ON COLUMN chefs.google_review_url IS
   'Chef Google Business review URL - clients are redirected here after leaving internal feedback';
+
 -- ============================================
 -- 2. Client Reviews Table
 -- ============================================
@@ -35,14 +37,18 @@ CREATE TABLE client_reviews (
   -- One review per event
   CONSTRAINT uq_client_reviews_event UNIQUE (event_id)
 );
+
 CREATE INDEX idx_client_reviews_tenant ON client_reviews(tenant_id);
 CREATE INDEX idx_client_reviews_client ON client_reviews(client_id);
+
 COMMENT ON TABLE client_reviews IS
   'Post-event client feedback - internal survey with optional public display consent';
+
 -- ============================================
 -- 3. RLS Policies
 -- ============================================
 ALTER TABLE client_reviews ENABLE ROW LEVEL SECURITY;
+
 -- Clients can insert their own review
 CREATE POLICY client_reviews_insert_own ON client_reviews
   FOR INSERT TO authenticated
@@ -52,6 +58,7 @@ CREATE POLICY client_reviews_insert_own ON client_reviews
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
     )
   );
+
 -- Clients can read their own reviews
 CREATE POLICY client_reviews_select_own ON client_reviews
   FOR SELECT TO authenticated
@@ -61,6 +68,7 @@ CREATE POLICY client_reviews_select_own ON client_reviews
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'client'
     )
   );
+
 -- Chefs can read all reviews for their tenant
 CREATE POLICY client_reviews_select_chef ON client_reviews
   FOR SELECT TO authenticated
@@ -70,6 +78,7 @@ CREATE POLICY client_reviews_select_chef ON client_reviews
       WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
     )
   );
+
 -- ============================================
 -- 4. Updated_at trigger
 -- ============================================

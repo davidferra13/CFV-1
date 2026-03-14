@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test'
 import { ROUTES } from '../helpers/test-utils'
-import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 function getCanonicalSiteOrigin(): string {
-  const fallback = TEST_BASE_URL
+  const fallback = 'http://localhost:3100'
   const candidate = process.env.NEXT_PUBLIC_SITE_URL || fallback
   try {
     return new URL(candidate).origin

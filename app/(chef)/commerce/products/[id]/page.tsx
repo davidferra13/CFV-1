@@ -7,7 +7,7 @@ import { getProduct } from '@/lib/commerce/product-actions'
 import { ProductForm } from '@/components/commerce/product-form'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Edit Product — ChefFlow' }
 

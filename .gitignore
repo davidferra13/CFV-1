@@ -44,9 +44,6 @@ next-env.d.ts
 # temp/debug files
 .tmp-*
 tmp_*
-tmp-*
-/tmp/
-/20??-??-??/
 
 # Supabase local development (Docker temp files)
 supabase/.temp/
@@ -159,9 +156,6 @@ null
 # Raw email exports (PII — never commit)
 /data/email-references/privatechefmanager-yhangry/
 /data/email-references/*.zip
-/data/email-references/generated/
-/data/email-references/local-generated/
-/data/access-control-reports/
 .next-dev*/
 .next-staging/
 .next-local-verify/

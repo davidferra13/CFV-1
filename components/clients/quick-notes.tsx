@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote } from 'lucide-react'
+import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote } from '@/components/ui/icons'
 import {
   addClientNote,
   updateClientNote,

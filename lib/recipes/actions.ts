@@ -194,7 +194,7 @@ export type UpdateIngredientInput = z.infer<typeof UpdateIngredientSchema>
 
 export async function createRecipe(input: CreateRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = CreateRecipeSchema.parse(input)
 
   const { data: recipe, error } = await supabase
@@ -225,7 +225,7 @@ export async function createRecipe(input: CreateRecipeInput) {
       occasion_tags: validated.occasion_tags || [],
       created_by: user.id,
       updated_by: user.id,
-    } as any)
+    })
     .select()
     .single()
 
@@ -264,6 +264,7 @@ export type RecipeListItem = {
   meal_type: string | null
   season: string[]
   occasion_tags: string[]
+  photo_url: string | null
 }
 
 export async function getRecipes(filters?: {
@@ -275,7 +276,7 @@ export async function getRecipes(filters?: {
   sort?: 'name' | 'recent' | 'most_used'
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Get recipes
   let query = supabase
@@ -348,6 +349,7 @@ export async function getRecipes(filters?: {
       meal_type: r.meal_type ?? null,
       season: r.season || [],
       occasion_tags: r.occasion_tags || [],
+      photo_url: r.photo_url ?? null,
     }
   })
 
@@ -360,7 +362,7 @@ export async function getRecipes(filters?: {
 
 export async function getRecipeById(recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: recipe, error } = await supabase
     .from('recipes')
@@ -432,7 +434,9 @@ export async function getRecipeById(recipeId: string) {
   }> = []
 
   for (const comp of linkedComponents || []) {
-    const dish = comp.dish as any
+    const dish = comp.dish as {
+      menu?: { event?: Record<string, unknown>; name?: string } | null
+    } | null
     if (!dish?.menu?.event) continue
     const menu = dish.menu
     const event = menu.event
@@ -454,7 +458,7 @@ export async function getRecipeById(recipeId: string) {
 
   // Get sub-recipes (children of this recipe)
   const { data: subRecipeRows } = await supabase
-    .from('recipe_sub_recipes' as any)
+    .from('recipe_sub_recipes')
     .select('id, quantity, unit, sort_order, notes, child_recipe_id')
     .eq('parent_recipe_id', recipeId)
     .order('sort_order', { ascending: true })
@@ -474,7 +478,7 @@ export async function getRecipeById(recipeId: string) {
     } | null
   }> = []
 
-  for (const sr of (subRecipeRows as any[]) || []) {
+  for (const sr of subRecipeRows || []) {
     const { data: childRecipe } = await supabase
       .from('recipes')
       .select('id, name, category, yield_quantity, yield_unit')
@@ -493,12 +497,12 @@ export async function getRecipeById(recipeId: string) {
 
   // Get "used in" (parent recipes that reference this one as a sub-recipe)
   const { data: usedInRows } = await supabase
-    .from('recipe_sub_recipes' as any)
+    .from('recipe_sub_recipes')
     .select('id, parent_recipe_id')
     .eq('child_recipe_id', recipeId)
 
   const usedInRecipes: Array<{ id: string; name: string; category: string }> = []
-  for (const ui of (usedInRows as any[]) || []) {
+  for (const ui of usedInRows || []) {
     const { data: parentRecipe } = await supabase
       .from('recipes')
       .select('id, name, category')
@@ -543,12 +547,14 @@ export async function getRecipeById(recipeId: string) {
 // 4. UPDATE RECIPE
 // ============================================
 
+type RecipeUpdate = Database['public']['Tables']['recipes']['Update']
+
 export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = UpdateRecipeSchema.parse(input)
 
-  const updateData: Record<string, unknown> = { updated_by: user.id }
+  const updateData: Partial<RecipeUpdate> = { updated_by: user.id }
   if (validated.name !== undefined) updateData.name = validated.name
   if (validated.category !== undefined) updateData.category = validated.category
   if (validated.method !== undefined) updateData.method = validated.method
@@ -580,7 +586,7 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .update(updateData as any)
+    .update(updateData)
     .eq('id', recipeId)
     .eq('tenant_id', user.tenantId!)
     .select()
@@ -602,7 +608,7 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
 export async function deleteRecipe(recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Unlink from any components first
   await supabase
@@ -615,14 +621,8 @@ export async function deleteRecipe(recipeId: string) {
   await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipeId)
 
   // Delete sub-recipe links (both as parent and as child)
-  await supabase
-    .from('recipe_sub_recipes' as any)
-    .delete()
-    .eq('parent_recipe_id', recipeId)
-  await supabase
-    .from('recipe_sub_recipes' as any)
-    .delete()
-    .eq('child_recipe_id', recipeId)
+  await supabase.from('recipe_sub_recipes').delete().eq('parent_recipe_id', recipeId)
+  await supabase.from('recipe_sub_recipes').delete().eq('child_recipe_id', recipeId)
 
   // Delete the recipe
   const { error } = await supabase
@@ -646,7 +646,7 @@ export async function deleteRecipe(recipeId: string) {
 
 export async function addIngredientToRecipe(recipeId: string, input: AddIngredientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = AddIngredientToRecipeSchema.parse(input)
 
   // Verify recipe belongs to tenant
@@ -704,7 +704,7 @@ export async function updateRecipeIngredient(
   input: UpdateRecipeIngredientInput
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = UpdateRecipeIngredientSchema.parse(input)
 
   // Verify tenant access through the recipe
@@ -714,7 +714,7 @@ export async function updateRecipeIngredient(
     .eq('id', recipeIngredientId)
     .single()
 
-  if (!ri || (ri.recipe as any)?.tenant_id !== user.tenantId) {
+  if (!ri || (ri.recipe as { tenant_id: string } | null)?.tenant_id !== user.tenantId) {
     throw new Error('Recipe ingredient not found')
   }
 
@@ -746,7 +746,7 @@ export async function updateRecipeIngredient(
 
 export async function removeIngredientFromRecipe(recipeIngredientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Verify tenant access through the recipe
   const { data: ri } = await supabase
@@ -755,7 +755,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
     .eq('id', recipeIngredientId)
     .single()
 
-  if (!ri || (ri.recipe as any)?.tenant_id !== user.tenantId) {
+  if (!ri || (ri.recipe as { tenant_id: string } | null)?.tenant_id !== user.tenantId) {
     throw new Error('Recipe ingredient not found')
   }
 
@@ -776,7 +776,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
 
 export async function getIngredients(filters?: { category?: string; search?: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   let query = supabase
     .from('ingredients')
@@ -821,7 +821,7 @@ export async function getIngredients(filters?: { category?: string; search?: str
 
 export async function createIngredient(input: CreateIngredientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = CreateIngredientSchema.parse(input)
 
   // Find-or-create: check for existing ingredient (case-insensitive)
@@ -870,7 +870,7 @@ export async function createIngredient(input: CreateIngredientInput) {
 
 export async function updateIngredient(ingredientId: string, input: UpdateIngredientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = UpdateIngredientSchema.parse(input)
 
   const updateData: Record<string, unknown> = { updated_by: user.id }
@@ -907,7 +907,7 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
 
 export async function linkRecipeToComponent(recipeId: string, componentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Verify recipe belongs to tenant
   const { data: recipe } = await supabase
@@ -955,7 +955,7 @@ export async function linkRecipeToComponent(recipeId: string, componentId: strin
 
 export async function unlinkRecipeFromComponent(componentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('components')
@@ -979,7 +979,7 @@ export async function unlinkRecipeFromComponent(componentId: string) {
 
 export async function getRecipesForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Event → menus → dishes → components → recipes
   const { data: menus } = await supabase
@@ -1030,7 +1030,7 @@ export async function getRecipesForEvent(eventId: string) {
 
 export async function getUnrecordedComponentsForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Event → menus → dishes → components where recipe_id IS NULL
   const { data: menus } = await supabase
@@ -1081,7 +1081,7 @@ export type RecipeDebt = {
 
 export async function getRecipeDebt(): Promise<RecipeDebt> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const now = new Date()
   const sevenDaysAgo = new Date(now)
@@ -1110,7 +1110,9 @@ export async function getRecipeDebt(): Promise<RecipeDebt> {
   let older = 0
 
   for (const comp of components || []) {
-    const dish = comp.dish as any
+    const dish = comp.dish as {
+      menu?: { event?: Record<string, unknown>; name?: string } | null
+    } | null
     const event = dish?.menu?.event
     if (!event?.event_date) continue
 
@@ -1155,7 +1157,7 @@ export type UnrecordedComponentForSprint = {
 
 export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentForSprint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: components } = await supabase
     .from('components')
@@ -1178,7 +1180,9 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
   const results: UnrecordedComponentForSprint[] = []
 
   for (const comp of components || []) {
-    const dish = comp.dish as any
+    const dish = comp.dish as {
+      menu?: { event?: Record<string, unknown>; name?: string } | null
+    } | null
     const event = dish?.menu?.event
     if (!event?.id || !event?.event_date) continue
 
@@ -1189,7 +1193,7 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
       eventId: event.id,
       eventOccasion: event.occasion ?? null,
       eventDate: event.event_date,
-      clientName: (event.client as any)?.full_name ?? null,
+      clientName: (event.client as { full_name?: string } | null)?.full_name ?? null,
     })
   }
 
@@ -1205,7 +1209,7 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
 
 export async function searchRecipes(query: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: recipes } = await supabase
     .from('recipes')
@@ -1224,7 +1228,7 @@ export async function searchRecipes(query: string) {
 // ============================================
 
 async function findOrCreateIngredient(
-  supabase: any,
+  supabase: ReturnType<typeof createServerClient>,
   tenantId: string,
   userId: string,
   name: string,
@@ -1276,7 +1280,7 @@ export async function bulkUpdateIngredientPrices(
   updates: Array<{ ingredientId: string; pricePerUnitCents: number }>
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   if (updates.length === 0) return
 
@@ -1323,7 +1327,7 @@ export type UpdateSubRecipeInput = z.infer<typeof UpdateSubRecipeSchema>
  */
 export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = AddSubRecipeSchema.parse(input)
 
   // Verify both recipes belong to tenant
@@ -1346,7 +1350,7 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
   if (!childRecipe) throw new Error('Sub-recipe not found')
 
   const { data, error } = await supabase
-    .from('recipe_sub_recipes' as any)
+    .from('recipe_sub_recipes')
     .insert({
       parent_recipe_id: parentRecipeId,
       child_recipe_id: validated.child_recipe_id,
@@ -1376,12 +1380,12 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
  */
 export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const validated = UpdateSubRecipeSchema.parse(input)
 
   // Verify tenant access: get parent recipe and check tenant
   const { data: link } = await supabase
-    .from('recipe_sub_recipes' as any)
+    .from('recipe_sub_recipes')
     .select('parent_recipe_id')
     .eq('id', subRecipeId)
     .single()
@@ -1391,7 +1395,7 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
   const { data: recipe } = await supabase
     .from('recipes')
     .select('id')
-    .eq('id', (link as any).parent_recipe_id)
+    .eq('id', link.parent_recipe_id)
     .eq('tenant_id', user.tenantId!)
     .single()
 
@@ -1404,7 +1408,7 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
   if (validated.notes !== undefined) updateData.notes = validated.notes
 
   const { error } = await supabase
-    .from('recipe_sub_recipes' as any)
+    .from('recipe_sub_recipes')
     .update(updateData)
     .eq('id', subRecipeId)
 
@@ -1413,7 +1417,7 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
     throw new Error('Failed to update sub-recipe')
   }
 
-  revalidatePath(`/recipes/${(link as any).parent_recipe_id}`)
+  revalidatePath(`/recipes/${link.parent_recipe_id}`)
   return { success: true }
 }
 
@@ -1422,11 +1426,11 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
  */
 export async function removeSubRecipe(subRecipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Verify tenant access
   const { data: link } = await supabase
-    .from('recipe_sub_recipes' as any)
+    .from('recipe_sub_recipes')
     .select('parent_recipe_id')
     .eq('id', subRecipeId)
     .single()
@@ -1436,22 +1440,57 @@ export async function removeSubRecipe(subRecipeId: string) {
   const { data: recipe } = await supabase
     .from('recipes')
     .select('id')
-    .eq('id', (link as any).parent_recipe_id)
+    .eq('id', link.parent_recipe_id)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!recipe) throw new Error('Access denied')
 
-  const { error } = await supabase
-    .from('recipe_sub_recipes' as any)
-    .delete()
-    .eq('id', subRecipeId)
+  const { error } = await supabase.from('recipe_sub_recipes').delete().eq('id', subRecipeId)
 
   if (error) {
     console.error('[removeSubRecipe] Error:', error)
     throw new Error('Failed to remove sub-recipe')
   }
 
-  revalidatePath(`/recipes/${(link as any).parent_recipe_id}`)
+  revalidatePath(`/recipes/${link.parent_recipe_id}`)
   return { success: true }
+}
+
+// ============================================
+// RECIPE QUICK CAPTURE (dashboard widget)
+// ============================================
+
+/**
+ * Create a minimal draft recipe from raw text.
+ * First line becomes the name, full text goes into notes.
+ * No AI processing, no ingredient extraction. Just a text dump.
+ */
+export async function createRecipeDraft(rawText: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const trimmed = rawText.trim()
+  if (!trimmed) throw new Error('Recipe text cannot be empty')
+
+  const lines = trimmed.split('\n')
+  const name = lines[0].slice(0, 100) || 'Untitled Recipe Draft'
+
+  const { error } = await supabase.from('recipes').insert({
+    tenant_id: user.tenantId!,
+    created_by: user.id,
+    name,
+    notes: trimmed,
+    category: 'other' as const,
+    method: '',
+  })
+
+  if (error) {
+    console.error('[createRecipeDraft] Error:', error)
+    throw new Error('Failed to save recipe draft')
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/recipes')
+  return { success: true, name }
 }

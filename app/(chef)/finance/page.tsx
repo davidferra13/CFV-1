@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
+import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
+import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 
 export const metadata: Metadata = { title: 'Finance - ChefFlow' }
 
@@ -148,6 +151,16 @@ export default async function FinancePage() {
           </p>
         </div>
       )}
+
+      {/* Financial Intelligence */}
+      <Suspense fallback={null}>
+        <FinanceHealthBar />
+      </Suspense>
+
+      {/* Pricing Intelligence */}
+      <Suspense fallback={null}>
+        <PricingIntelligenceBar />
+      </Suspense>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">

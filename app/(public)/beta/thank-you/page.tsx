@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2 } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'Welcome to the Beta | ChefFlow',

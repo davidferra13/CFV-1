@@ -18,6 +18,10 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 import { getWeatherForEvents } from '@/lib/weather/weather-actions'
+import { EventsFinancialBar } from '@/components/intelligence/events-financial-bar'
+import { GeographicBar } from '@/components/intelligence/geographic-bar'
+import { PrepEfficiencyBar } from '@/components/intelligence/prep-efficiency-bar'
+import { UntappedMarketsBar } from '@/components/intelligence/untapped-markets-bar'
 
 type EventStatus =
   | 'all'
@@ -121,11 +125,31 @@ export default async function EventsPage({
           <p className="text-stone-400 mt-1">Manage your events and proposals</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link data-info="new-event" href="/events/new">
+          <Link data-info="new-event" data-tour="create-event" href="/events/new">
             <Button>+ New Event</Button>
           </Link>
         </div>
       </div>
+
+      {/* Financial Intelligence Summary */}
+      <Suspense fallback={null}>
+        <EventsFinancialBar />
+      </Suspense>
+
+      {/* Geographic Intelligence */}
+      <Suspense fallback={null}>
+        <GeographicBar />
+      </Suspense>
+
+      {/* Prep Efficiency */}
+      <Suspense fallback={null}>
+        <PrepEfficiencyBar />
+      </Suspense>
+
+      {/* Untapped Markets */}
+      <Suspense fallback={null}>
+        <UntappedMarketsBar />
+      </Suspense>
 
       <Card className="p-4">
         <EventsViewFilterBar initialStatus={status} initialView={view} />

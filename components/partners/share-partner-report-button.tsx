@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { generatePartnerShareLink } from '@/lib/partners/actions'
-import { Share2 } from 'lucide-react'
+import { Share2 } from '@/components/ui/icons'
 
 export function SharePartnerReportButton({ partnerId }: { partnerId: string }) {
   const [copied, setCopied] = useState(false)

@@ -7,7 +7,7 @@ import {
   FileSpreadsheet,
   Sparkles,
   Upload,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type OnboardingAcceleratorProps = {

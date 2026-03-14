@@ -10,11 +10,13 @@
 // date defaults to today. These can be edited from the full Expenses page.
 
 import { useState, useRef, useTransition } from 'react'
-import { Plus, Camera, DollarSign, X, Loader2 } from 'lucide-react'
+import { Plus, Camera, DollarSign, X, Loader2 } from '@/components/ui/icons'
+import { useIsDemoMode } from '@/lib/demo-mode'
 import { toast } from 'sonner'
 import { createExpense } from '@/lib/expenses/actions'
 
 export function QuickCapture() {
+  const isDemo = useIsDemoMode()
   const [open, setOpen] = useState(false)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [amount, setAmount] = useState('')
@@ -65,6 +67,8 @@ export function QuickCapture() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') handleExpenseSubmit()
   }
+
+  if (isDemo) return null
 
   return (
     <>

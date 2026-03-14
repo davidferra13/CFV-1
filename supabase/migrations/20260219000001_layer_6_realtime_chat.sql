@@ -14,14 +14,18 @@ CREATE TYPE chat_message_type AS ENUM (
   'event_ref',      -- Reference to an event (renders as card)
   'system'          -- Auto-generated system message
 );
+
 COMMENT ON TYPE chat_message_type IS 'Content types for chat messages — extensible for Phase 2';
+
 CREATE TYPE conversation_context_type AS ENUM (
   'standalone',     -- General conversation, no specific context
   'inquiry',        -- Linked to an inquiry
   'event'           -- Linked to an event
   -- Phase 2 adds: 'chef_connection'
 );
+
 COMMENT ON TYPE conversation_context_type IS 'What entity a conversation is linked to';
+
 -- ─── Tables ─────────────────────────────────────────────────────────────
 
 -- Conversations: groups messages between participants
@@ -52,11 +56,15 @@ CREATE TABLE conversations (
     (context_type = 'event' AND event_id IS NOT NULL)
   )
 );
+
 COMMENT ON TABLE conversations IS 'Groups messages between participants. Optionally linked to an inquiry or event.';
+
 CREATE INDEX idx_conversations_tenant ON conversations(tenant_id);
 CREATE INDEX idx_conversations_tenant_last_msg ON conversations(tenant_id, last_message_at DESC NULLS LAST);
 CREATE INDEX idx_conversations_inquiry ON conversations(inquiry_id) WHERE inquiry_id IS NOT NULL;
 CREATE INDEX idx_conversations_event ON conversations(event_id) WHERE event_id IS NOT NULL;
+
+
 -- Conversation participants: join table supporting N participants (Phase 2 groups)
 CREATE TABLE conversation_participants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -75,9 +83,13 @@ CREATE TABLE conversation_participants (
   -- A user can only be in a conversation once
   UNIQUE(conversation_id, auth_user_id)
 );
+
 COMMENT ON TABLE conversation_participants IS 'Join table linking users to conversations. Supports N participants for Phase 2 groups.';
+
 CREATE INDEX idx_conv_participants_conversation ON conversation_participants(conversation_id);
 CREATE INDEX idx_conv_participants_user ON conversation_participants(auth_user_id);
+
+
 -- Chat messages: the actual messages in conversations
 CREATE TABLE chat_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -112,19 +124,24 @@ CREATE TABLE chat_messages (
   edited_at TIMESTAMPTZ,               -- NULL if never edited
   deleted_at TIMESTAMPTZ               -- Soft delete (NULL = active)
 );
+
 COMMENT ON TABLE chat_messages IS 'Chat messages within conversations. Supports text, images, links, event references, and system messages.';
+
 -- Critical index for message pagination (newest first within conversation)
 CREATE INDEX idx_chat_messages_conversation_active ON chat_messages(conversation_id, created_at DESC)
   WHERE deleted_at IS NULL;
 CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
 CREATE INDEX idx_chat_messages_referenced_event ON chat_messages(referenced_event_id)
   WHERE referenced_event_id IS NOT NULL;
+
+
 -- ─── Triggers ───────────────────────────────────────────────────────────
 
 -- Auto-update updated_at on conversations (reuses existing function from Layer 1)
 CREATE TRIGGER conversations_updated_at
 BEFORE UPDATE ON conversations
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Update conversation's denormalized last_message fields when a new message is inserted
 CREATE OR REPLACE FUNCTION update_conversation_last_message()
 RETURNS TRIGGER AS $$
@@ -151,12 +168,16 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
 COMMENT ON FUNCTION update_conversation_last_message IS 'Denormalizes last message info onto conversations table for efficient inbox queries';
+
 CREATE TRIGGER chat_messages_update_conversation
 AFTER INSERT ON chat_messages
 FOR EACH ROW
 WHEN (NEW.deleted_at IS NULL)
 EXECUTE FUNCTION update_conversation_last_message();
+
+
 -- ─── Helper Functions ───────────────────────────────────────────────────
 
 -- Check if current user is a participant in a conversation
@@ -167,7 +188,9 @@ RETURNS BOOLEAN AS $$
     WHERE conversation_id = conv_id AND auth_user_id = auth.uid()
   )
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
+
 COMMENT ON FUNCTION is_conversation_participant IS 'Returns true if the current auth user is a participant in the given conversation';
+
 -- Get unread counts for a user across all their conversations
 CREATE OR REPLACE FUNCTION get_unread_counts(p_user_id UUID)
 RETURNS TABLE(conversation_id UUID, unread_count BIGINT) AS $$
@@ -182,30 +205,38 @@ RETURNS TABLE(conversation_id UUID, unread_count BIGINT) AS $$
   WHERE cp.auth_user_id = p_user_id
   GROUP BY cp.conversation_id
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
+
 COMMENT ON FUNCTION get_unread_counts IS 'Returns unread message count per conversation for a given user';
+
 -- Get total unread count for a user (for nav badge)
 CREATE OR REPLACE FUNCTION get_total_unread_count(p_user_id UUID)
 RETURNS BIGINT AS $$
   SELECT COALESCE(SUM(unread_count), 0)
   FROM get_unread_counts(p_user_id)
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
+
 COMMENT ON FUNCTION get_total_unread_count IS 'Returns total unread messages across all conversations for nav badge';
+
+
 -- ─── Row Level Security ─────────────────────────────────────────────────
 
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
 -- CONVERSATIONS POLICIES
 
 -- Users can see conversations they participate in
 CREATE POLICY conversations_participant_select ON conversations
   FOR SELECT USING (is_conversation_participant(id));
+
 -- Chefs can create conversations in their tenant
 CREATE POLICY conversations_chef_insert ON conversations
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
+
 -- Allow updates on conversations (for trigger-based denormalized field updates)
 -- The trigger runs as SECURITY DEFINER so it bypasses RLS, but we also allow
 -- chef updates for manual operations
@@ -214,6 +245,8 @@ CREATE POLICY conversations_chef_update ON conversations
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
+
+
 -- CONVERSATION_PARTICIPANTS POLICIES
 
 -- Participants can see who else is in their conversations
@@ -221,6 +254,7 @@ CREATE POLICY conv_participants_participant_select ON conversation_participants
   FOR SELECT USING (
     is_conversation_participant(conversation_id)
   );
+
 -- Chefs can add participants to conversations in their tenant
 CREATE POLICY conv_participants_chef_insert ON conversation_participants
   FOR INSERT WITH CHECK (
@@ -230,24 +264,32 @@ CREATE POLICY conv_participants_chef_insert ON conversation_participants
         AND tenant_id = get_current_tenant_id()
     )
   );
+
 -- Users can update their own participant record (last_read_at, notifications_muted)
 CREATE POLICY conv_participants_self_update ON conversation_participants
   FOR UPDATE USING (auth_user_id = auth.uid());
+
+
 -- CHAT_MESSAGES POLICIES
 
 -- Participants can read messages in their conversations
 CREATE POLICY chat_messages_participant_select ON chat_messages
   FOR SELECT USING (is_conversation_participant(conversation_id));
+
 -- Participants can send messages into their conversations (must be themselves)
 CREATE POLICY chat_messages_participant_insert ON chat_messages
   FOR INSERT WITH CHECK (
     is_conversation_participant(conversation_id) AND
     sender_id = auth.uid()
   );
+
 -- Senders can update their own messages (for soft delete / edit)
 CREATE POLICY chat_messages_sender_update ON chat_messages
   FOR UPDATE USING (sender_id = auth.uid());
+
 -- No hard deletes on chat_messages
 CREATE POLICY chat_messages_no_delete ON chat_messages
   FOR DELETE USING (false);
--- ─── End of Layer 6 ─────────────────────────────────────────────────────;
+
+
+-- ─── End of Layer 6 ─────────────────────────────────────────────────────

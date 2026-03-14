@@ -6,7 +6,7 @@
 // Each card shows one recipient's AI-generated draft with approve/edit/skip actions.
 
 import { useState } from 'react'
-import { Check, Pencil, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Check, Pencil, X, Loader2, ChevronDown, ChevronUp } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { approveDraft, updateDraft, skipRecipient } from '@/lib/campaigns/push-dinner-actions'

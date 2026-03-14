@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { DollarSign } from 'lucide-react'
+import { DollarSign } from '@/components/ui/icons'
 import { QuickExpenseModal } from './quick-expense-modal'
 
 /**

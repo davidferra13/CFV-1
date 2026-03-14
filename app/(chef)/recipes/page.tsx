@@ -11,6 +11,8 @@ import { getActivePalette } from '@/lib/seasonal/actions'
 import { getActiveMicroWindows, getEndingMicroWindows } from '@/lib/seasonal/helpers'
 import { SeasonalBanner } from '@/components/seasonal/seasonal-banner'
 import { RecipeLibraryClient } from './recipes-client'
+import { Suspense } from 'react'
+import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'
 
 export default async function RecipesPage({
   searchParams,
@@ -40,13 +42,19 @@ export default async function RecipesPage({
   const endingMicroWindows = palette ? getEndingMicroWindows(palette) : []
 
   return (
-    <>
+    <div className="space-y-4">
       <SeasonalBanner
         palette={palette}
         activeMicroWindows={activeMicroWindows}
         endingMicroWindows={endingMicroWindows}
       />
+
+      {/* Dietary Intelligence */}
+      <Suspense fallback={null}>
+        <DietaryTrendsBar />
+      </Suspense>
+
       <RecipeLibraryClient recipes={recipes} />
-    </>
+    </div>
   )
 }

@@ -16,12 +16,15 @@ CREATE TABLE IF NOT EXISTS event_cannabis_settings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_event_cannabis_settings_tenant_event
   ON event_cannabis_settings(tenant_id, event_id);
+
 DROP TRIGGER IF EXISTS set_event_cannabis_settings_updated_at ON event_cannabis_settings;
 CREATE TRIGGER set_event_cannabis_settings_updated_at
   BEFORE UPDATE ON event_cannabis_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE OR REPLACE FUNCTION validate_event_cannabis_settings()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -49,10 +52,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_validate_event_cannabis_settings ON event_cannabis_settings;
 CREATE TRIGGER trg_validate_event_cannabis_settings
   BEFORE INSERT OR UPDATE ON event_cannabis_settings
   FOR EACH ROW EXECUTE FUNCTION validate_event_cannabis_settings();
+
 CREATE OR REPLACE FUNCTION sync_event_cannabis_settings_from_events()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -81,12 +86,14 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_sync_event_cannabis_settings_on_events ON events;
 CREATE TRIGGER trg_sync_event_cannabis_settings_on_events
   AFTER INSERT OR UPDATE OF tenant_id, cannabis_preference
   ON events
   FOR EACH ROW
   EXECUTE FUNCTION sync_event_cannabis_settings_from_events();
+
 INSERT INTO event_cannabis_settings (
   event_id,
   tenant_id,
@@ -108,7 +115,9 @@ DO UPDATE
         ELSE NULL
       END,
       updated_at = now();
+
 ALTER TABLE event_cannabis_settings ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS event_cannabis_settings_chef_select ON event_cannabis_settings;
 CREATE POLICY event_cannabis_settings_chef_select
   ON event_cannabis_settings FOR SELECT
@@ -116,6 +125,7 @@ CREATE POLICY event_cannabis_settings_chef_select
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 DROP POLICY IF EXISTS event_cannabis_settings_chef_insert ON event_cannabis_settings;
 CREATE POLICY event_cannabis_settings_chef_insert
   ON event_cannabis_settings FOR INSERT
@@ -123,6 +133,7 @@ CREATE POLICY event_cannabis_settings_chef_insert
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 DROP POLICY IF EXISTS event_cannabis_settings_chef_update ON event_cannabis_settings;
 CREATE POLICY event_cannabis_settings_chef_update
   ON event_cannabis_settings FOR UPDATE
@@ -134,6 +145,7 @@ CREATE POLICY event_cannabis_settings_chef_update
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 -- ============================================================================
 -- 2) Event-level per-course cannabis overlay
 -- ============================================================================
@@ -154,14 +166,18 @@ CREATE TABLE IF NOT EXISTS event_cannabis_course_config (
   CONSTRAINT event_cannabis_course_config_planned_mg_nonnegative
     CHECK (planned_mg_per_guest IS NULL OR planned_mg_per_guest >= 0)
 );
+
 CREATE INDEX IF NOT EXISTS idx_event_cannabis_course_config_tenant_event
   ON event_cannabis_course_config(tenant_id, event_id, course_index);
+
 CREATE INDEX IF NOT EXISTS idx_event_cannabis_course_config_event_active
   ON event_cannabis_course_config(event_id, is_active, course_index);
+
 DROP TRIGGER IF EXISTS set_event_cannabis_course_config_updated_at ON event_cannabis_course_config;
 CREATE TRIGGER set_event_cannabis_course_config_updated_at
   BEFORE UPDATE ON event_cannabis_course_config
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE OR REPLACE FUNCTION validate_event_cannabis_course_config()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -191,10 +207,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_validate_event_cannabis_course_config ON event_cannabis_course_config;
 CREATE TRIGGER trg_validate_event_cannabis_course_config
   BEFORE INSERT OR UPDATE ON event_cannabis_course_config
   FOR EACH ROW EXECUTE FUNCTION validate_event_cannabis_course_config();
+
 CREATE OR REPLACE FUNCTION sync_event_cannabis_course_config_from_events()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -249,12 +267,14 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_sync_event_cannabis_course_config_on_events ON events;
 CREATE TRIGGER trg_sync_event_cannabis_course_config_on_events
   AFTER INSERT OR UPDATE OF tenant_id, cannabis_preference, course_count, menu_id
   ON events
   FOR EACH ROW
   EXECUTE FUNCTION sync_event_cannabis_course_config_from_events();
+
 INSERT INTO event_cannabis_course_config (
   event_id,
   tenant_id,
@@ -277,6 +297,7 @@ DO UPDATE
       is_active = true,
       archived_at = NULL,
       updated_at = now();
+
 UPDATE event_cannabis_course_config cfg
 SET
   is_active = false,
@@ -286,7 +307,9 @@ FROM events e
 WHERE cfg.event_id = e.id
   AND cfg.course_index > GREATEST(COALESCE(e.course_count, 1), 1)
   AND cfg.is_active = true;
+
 ALTER TABLE event_cannabis_course_config ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS event_cannabis_course_config_chef_select ON event_cannabis_course_config;
 CREATE POLICY event_cannabis_course_config_chef_select
   ON event_cannabis_course_config FOR SELECT
@@ -294,6 +317,7 @@ CREATE POLICY event_cannabis_course_config_chef_select
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 DROP POLICY IF EXISTS event_cannabis_course_config_chef_insert ON event_cannabis_course_config;
 CREATE POLICY event_cannabis_course_config_chef_insert
   ON event_cannabis_course_config FOR INSERT
@@ -301,6 +325,7 @@ CREATE POLICY event_cannabis_course_config_chef_insert
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 DROP POLICY IF EXISTS event_cannabis_course_config_chef_update ON event_cannabis_course_config;
 CREATE POLICY event_cannabis_course_config_chef_update
   ON event_cannabis_course_config FOR UPDATE
@@ -312,16 +337,20 @@ CREATE POLICY event_cannabis_course_config_chef_update
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 -- ============================================================================
 -- 3) Snapshot JSON archival payload integration
 -- ============================================================================
 ALTER TABLE cannabis_control_packet_snapshots
   ADD COLUMN IF NOT EXISTS snapshot_json JSONB NOT NULL DEFAULT '{}'::jsonb;
+
 ALTER TABLE cannabis_control_packet_snapshots
   DROP CONSTRAINT IF EXISTS cannabis_control_packet_snapshots_snapshot_json_object;
+
 ALTER TABLE cannabis_control_packet_snapshots
   ADD CONSTRAINT cannabis_control_packet_snapshots_snapshot_json_object
   CHECK (jsonb_typeof(snapshot_json) = 'object');
+
 UPDATE cannabis_control_packet_snapshots
 SET snapshot_json = jsonb_build_object(
   'snapshot_version', version_number,
@@ -343,6 +372,7 @@ SET snapshot_json = jsonb_build_object(
 )
 WHERE snapshot_json = '{}'::jsonb
    OR snapshot_json IS NULL;
+
 CREATE OR REPLACE FUNCTION enforce_cannabis_control_packet_snapshot_immutability()
 RETURNS TRIGGER AS $$
 BEGIN

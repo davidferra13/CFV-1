@@ -1,6 +1,6 @@
 // Client Inquiry Detail — /my-inquiries/[id]
 // Read-only summary of a single inquiry for the client.
-// Budget and channel are intentionally suppressed (internal chef data).
+// Budget channel remains internal; submitted budget intent is shown to clients.
 
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -11,12 +11,26 @@ import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/
 import type { InquiryStatus } from '@/components/inquiries/inquiry-status-badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft } from '@/components/ui/icons'
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
+import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = {
   title: 'Inquiry Details - ChefFlow',
+}
+
+function getBudgetRangeLabel(rawValue: unknown): string | null {
+  if (typeof rawValue !== 'string' || !rawValue) return null
+  const labels: Record<string, string> = {
+    under_500: 'Under $500',
+    '500_1500': '$500-$1,500',
+    '1500_3000': '$1,500-$3,000',
+    '3000_5000': '$3,000-$5,000',
+    over_5000: '$5,000+',
+    not_sure: 'Not sure yet',
+  }
+  return labels[rawValue] ?? null
 }
 
 export default async function ClientInquiryDetailPage({ params }: { params: { id: string } }) {
@@ -28,6 +42,15 @@ export default async function ClientInquiryDetailPage({ params }: { params: { id
     notFound()
   }
 
+  const unknownFields =
+    inquiry.unknown_fields && typeof inquiry.unknown_fields === 'object'
+      ? (inquiry.unknown_fields as Record<string, unknown>)
+      : null
+  const submittedBudgetLabel =
+    inquiry.confirmed_budget_cents != null
+      ? formatCurrency(inquiry.confirmed_budget_cents)
+      : getBudgetRangeLabel(unknownFields?.budget_range)
+
   const summaryData: InquirySummaryData = {
     id: inquiry.id,
     status: inquiry.status as InquiryStatus,
@@ -36,7 +59,8 @@ export default async function ClientInquiryDetailPage({ params }: { params: { id
     confirmed_date: inquiry.confirmed_date,
     confirmed_guest_count: inquiry.confirmed_guest_count,
     confirmed_location: inquiry.confirmed_location,
-    confirmed_budget_cents: null, // internal — not surfaced to clients
+    confirmed_budget_cents: inquiry.confirmed_budget_cents,
+    submitted_budget_label: submittedBudgetLabel,
     confirmed_dietary_restrictions: inquiry.confirmed_dietary_restrictions,
     confirmed_service_expectations: inquiry.confirmed_service_expectations,
     source_message: inquiry.source_message,

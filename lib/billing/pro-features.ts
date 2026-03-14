@@ -172,12 +172,34 @@ export const PRO_FEATURES: ProFeature[] = [
     description: 'POS register, counter sales, product catalog, order-ahead, payment processing',
     category: 'commerce',
   },
+  // Intelligence
+  {
+    slug: 'intelligence-hub',
+    label: 'Intelligence Hub',
+    description:
+      'Seasonal forecasting, rebooking predictions, cash flow projections, smart scheduling, inquiry triage, post-event triggers, price anomaly detection, dietary trends, ingredient consolidation, network intelligence',
+    category: 'analytics',
+  },
   {
     slug: 'social-hub',
     label: 'Social Event Hub',
     description:
       'Group chat, visual themes, collaborative event planning, guest profiles, polls, pinned notes',
     category: 'clients',
+  },
+  {
+    slug: 'nutrition-analysis',
+    label: 'Nutritional Analysis',
+    description:
+      'Per-dish macro and calorie breakdown via Spoonacular, allergen tracking, chef overrides',
+    category: 'operations',
+  },
+  {
+    slug: 'meal-prep',
+    label: 'Meal Prep Operations',
+    description:
+      'Rotating menus, container tracking, delivery scheduling for weekly meal prep clients',
+    category: 'operations',
   },
 ]
 

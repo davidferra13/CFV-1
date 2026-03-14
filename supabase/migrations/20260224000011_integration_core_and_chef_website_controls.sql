@@ -31,6 +31,7 @@ BEGIN
   END IF;
 END
 $$;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'integration_auth_type') THEN
@@ -43,6 +44,7 @@ BEGIN
   END IF;
 END
 $$;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'integration_status') THEN
@@ -55,6 +57,7 @@ BEGIN
   END IF;
 END
 $$;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'integration_sync_status') THEN
@@ -68,6 +71,7 @@ BEGIN
   END IF;
 END
 $$;
+
 -- ----------------------------------------------------------------------------
 -- Profile controls on chefs table
 -- ----------------------------------------------------------------------------
@@ -77,12 +81,14 @@ ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS show_website_on_public_profile BOOLEAN NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS preferred_inquiry_destination TEXT NOT NULL DEFAULT 'both'
     CHECK (preferred_inquiry_destination IN ('website_only', 'chefflow_only', 'both'));
+
 COMMENT ON COLUMN chefs.website_url IS
   'Chef official website URL shown on profile when enabled.';
 COMMENT ON COLUMN chefs.show_website_on_public_profile IS
   'When true and website_url is set, display external website link on public chef profile.';
 COMMENT ON COLUMN chefs.preferred_inquiry_destination IS
   'Lead routing preference: website_only | chefflow_only | both.';
+
 -- ----------------------------------------------------------------------------
 -- Integration tables
 -- ----------------------------------------------------------------------------
@@ -116,14 +122,18 @@ CREATE TABLE IF NOT EXISTS integration_connections (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE UNIQUE INDEX IF NOT EXISTS uq_integration_connections_external
   ON integration_connections(tenant_id, provider, external_account_id)
   WHERE external_account_id IS NOT NULL;
+
 CREATE UNIQUE INDEX IF NOT EXISTS uq_integration_connections_provider_singleton
   ON integration_connections(tenant_id, provider)
   WHERE external_account_id IS NULL;
+
 CREATE INDEX IF NOT EXISTS idx_integration_connections_tenant
   ON integration_connections(tenant_id, provider);
+
 CREATE TABLE IF NOT EXISTS integration_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -150,11 +160,14 @@ CREATE TABLE IF NOT EXISTS integration_events (
 
   CONSTRAINT uq_integration_events_source UNIQUE (tenant_id, provider, source_event_id)
 );
+
 CREATE INDEX IF NOT EXISTS idx_integration_events_pending
   ON integration_events(status, received_at)
   WHERE status IN ('pending', 'failed');
+
 CREATE INDEX IF NOT EXISTS idx_integration_events_tenant_provider
   ON integration_events(tenant_id, provider, received_at DESC);
+
 CREATE TABLE IF NOT EXISTS integration_sync_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -174,10 +187,13 @@ CREATE TABLE IF NOT EXISTS integration_sync_jobs (
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_integration_sync_jobs_status
   ON integration_sync_jobs(status, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_integration_sync_jobs_tenant_provider
   ON integration_sync_jobs(tenant_id, provider, created_at DESC);
+
 CREATE TABLE IF NOT EXISTS integration_entity_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -200,8 +216,10 @@ CREATE TABLE IF NOT EXISTS integration_entity_links (
     external_entity_id
   )
 );
+
 CREATE INDEX IF NOT EXISTS idx_integration_entity_links_local
   ON integration_entity_links(tenant_id, local_entity_type, local_entity_id);
+
 CREATE TABLE IF NOT EXISTS integration_field_mappings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -225,8 +243,10 @@ CREATE TABLE IF NOT EXISTS integration_field_mappings (
     local_field
   )
 );
+
 CREATE INDEX IF NOT EXISTS idx_integration_field_mappings_lookup
   ON integration_field_mappings(tenant_id, provider, active);
+
 -- ----------------------------------------------------------------------------
 -- updated_at trigger helper
 -- ----------------------------------------------------------------------------
@@ -238,21 +258,25 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_integration_connections_updated_at ON integration_connections;
 CREATE TRIGGER trg_integration_connections_updated_at
   BEFORE UPDATE ON integration_connections
   FOR EACH ROW
   EXECUTE FUNCTION update_integration_updated_at_column();
+
 DROP TRIGGER IF EXISTS trg_integration_entity_links_updated_at ON integration_entity_links;
 CREATE TRIGGER trg_integration_entity_links_updated_at
   BEFORE UPDATE ON integration_entity_links
   FOR EACH ROW
   EXECUTE FUNCTION update_integration_updated_at_column();
+
 DROP TRIGGER IF EXISTS trg_integration_field_mappings_updated_at ON integration_field_mappings;
 CREATE TRIGGER trg_integration_field_mappings_updated_at
   BEFORE UPDATE ON integration_field_mappings
   FOR EACH ROW
   EXECUTE FUNCTION update_integration_updated_at_column();
+
 -- ----------------------------------------------------------------------------
 -- RLS
 -- ----------------------------------------------------------------------------
@@ -262,6 +286,7 @@ ALTER TABLE integration_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integration_sync_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integration_entity_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integration_field_mappings ENABLE ROW LEVEL SECURITY;
+
 -- integration_connections: chefs can manage own rows
 DROP POLICY IF EXISTS "Chefs manage own integration connections" ON integration_connections;
 CREATE POLICY "Chefs manage own integration connections"
@@ -279,6 +304,7 @@ CREATE POLICY "Chefs manage own integration connections"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- integration_events: chefs can read own tenant events
 DROP POLICY IF EXISTS "Chefs read own integration events" ON integration_events;
 CREATE POLICY "Chefs read own integration events"
@@ -290,6 +316,7 @@ CREATE POLICY "Chefs read own integration events"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- integration_sync_jobs: chefs can read own tenant jobs
 DROP POLICY IF EXISTS "Chefs read own integration sync jobs" ON integration_sync_jobs;
 CREATE POLICY "Chefs read own integration sync jobs"
@@ -301,6 +328,7 @@ CREATE POLICY "Chefs read own integration sync jobs"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- integration_entity_links: chefs can read own tenant links
 DROP POLICY IF EXISTS "Chefs read own integration entity links" ON integration_entity_links;
 CREATE POLICY "Chefs read own integration entity links"
@@ -312,6 +340,7 @@ CREATE POLICY "Chefs read own integration entity links"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- integration_field_mappings: chefs can manage own mappings
 DROP POLICY IF EXISTS "Chefs manage own integration mappings" ON integration_field_mappings;
 CREATE POLICY "Chefs manage own integration mappings"
@@ -329,6 +358,7 @@ CREATE POLICY "Chefs manage own integration mappings"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- service role policies
 DROP POLICY IF EXISTS "Service role manages integration connections" ON integration_connections;
 CREATE POLICY "Service role manages integration connections"
@@ -336,24 +366,28 @@ CREATE POLICY "Service role manages integration connections"
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 DROP POLICY IF EXISTS "Service role manages integration events" ON integration_events;
 CREATE POLICY "Service role manages integration events"
   ON integration_events
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 DROP POLICY IF EXISTS "Service role manages integration sync jobs" ON integration_sync_jobs;
 CREATE POLICY "Service role manages integration sync jobs"
   ON integration_sync_jobs
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 DROP POLICY IF EXISTS "Service role manages integration entity links" ON integration_entity_links;
 CREATE POLICY "Service role manages integration entity links"
   ON integration_entity_links
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 DROP POLICY IF EXISTS "Service role manages integration field mappings" ON integration_field_mappings;
 CREATE POLICY "Service role manages integration field mappings"
   ON integration_field_mappings

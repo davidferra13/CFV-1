@@ -17,15 +17,19 @@ CREATE TABLE IF NOT EXISTS favorite_chefs (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_favorite_chefs_chef ON favorite_chefs(chef_id, sort_order);
+
 CREATE TRIGGER trg_favorite_chefs_updated_at
   BEFORE UPDATE ON favorite_chefs
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE favorite_chefs ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY fc_chef_select ON favorite_chefs FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY fc_public_select ON favorite_chefs FOR SELECT

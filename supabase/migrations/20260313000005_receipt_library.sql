@@ -11,22 +11,28 @@
 
 -- 1. Make event_id optional
 ALTER TABLE receipt_photos ALTER COLUMN event_id DROP NOT NULL;
+
 -- 2. Optional client link
 ALTER TABLE receipt_photos
   ADD COLUMN client_id UUID REFERENCES clients(id) ON DELETE SET NULL;
+
 CREATE INDEX idx_receipt_photos_client_id
   ON receipt_photos(client_id);
+
 -- 3. Storage path for signed URL regeneration
 --    Format: "{tenant_id}/{event_id_or_general}/{uuid}.{ext}"
 --    Null for legacy records — those fall back to the stored photo_url
 ALTER TABLE receipt_photos
   ADD COLUMN storage_path TEXT;
+
 -- 4. Optional context note for standalone receipts
 ALTER TABLE receipt_photos
   ADD COLUMN notes TEXT;
+
 -- 5. Composite index for the receipt library page (newest first, per tenant)
 CREATE INDEX idx_receipt_photos_tenant_created
   ON receipt_photos(tenant_id, created_at DESC);
+
 COMMENT ON COLUMN receipt_photos.event_id    IS 'Optional — null for standalone receipts not tied to a specific event.';
 COMMENT ON COLUMN receipt_photos.client_id   IS 'Optional — direct client link without requiring an event.';
 COMMENT ON COLUMN receipt_photos.storage_path IS 'Raw Supabase Storage path for URL regeneration. Null on legacy records.';

@@ -19,6 +19,7 @@ ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS beta_discount_percent INTEGER DEFAULT 30,
   ADD COLUMN IF NOT EXISTS referred_by_client_id UUID REFERENCES clients(id),
   ADD COLUMN IF NOT EXISTS referred_from_group_id UUID REFERENCES hub_groups(id);
+
 COMMENT ON COLUMN clients.is_beta_tester IS
   'When true, beta discount auto-applies to all invoices. Set by admin.';
 COMMENT ON COLUMN clients.beta_discount_percent IS
@@ -27,6 +28,7 @@ COMMENT ON COLUMN clients.referred_by_client_id IS
   'The client who introduced this person to the platform (referral tracking).';
 COMMENT ON COLUMN clients.referred_from_group_id IS
   'The hub group/circle that introduced this person to the platform.';
+
 -- ============================================================
 -- 2. Beta onboarding checklist tracking
 -- ============================================================
@@ -54,8 +56,10 @@ CREATE TABLE IF NOT EXISTS beta_onboarding_checklist (
 
   UNIQUE(tenant_id, client_id)
 );
+
 COMMENT ON TABLE beta_onboarding_checklist IS
   'Tracks each beta tester client progress through the onboarding checklist. One row per client per tenant.';
+
 -- ============================================================
 -- 3. Referral tracking on hub_guest_profiles
 -- ============================================================
@@ -63,12 +67,14 @@ ALTER TABLE hub_guest_profiles
   ADD COLUMN IF NOT EXISTS referred_by_profile_id UUID REFERENCES hub_guest_profiles(id),
   ADD COLUMN IF NOT EXISTS first_group_id UUID REFERENCES hub_groups(id),
   ADD COLUMN IF NOT EXISTS upgraded_to_client_at TIMESTAMPTZ;
+
 COMMENT ON COLUMN hub_guest_profiles.referred_by_profile_id IS
   'The profile that invited this guest to their first circle.';
 COMMENT ON COLUMN hub_guest_profiles.first_group_id IS
   'The first group this guest joined (for referral attribution).';
 COMMENT ON COLUMN hub_guest_profiles.upgraded_to_client_at IS
   'When this guest profile upgraded to a full client account.';
+
 -- ============================================================
 -- 4. Beta discount ledger entry type
 -- ============================================================
@@ -79,16 +85,19 @@ COMMENT ON COLUMN hub_guest_profiles.upgraded_to_client_at IS
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS beta_discount_percent INTEGER,
   ADD COLUMN IF NOT EXISTS beta_discount_cents INTEGER;
+
 COMMENT ON COLUMN events.beta_discount_percent IS
   'Beta discount percentage applied to this event (null = no beta discount).';
 COMMENT ON COLUMN events.beta_discount_cents IS
   'Computed beta discount amount in cents for this event.';
+
 -- ============================================================
 -- 5. RLS policies
 -- ============================================================
 
 -- Beta onboarding checklist: clients can read their own, chefs can read all for their tenant
 ALTER TABLE beta_onboarding_checklist ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY beta_checklist_client_read ON beta_onboarding_checklist
   FOR SELECT USING (
     client_id IN (
@@ -96,6 +105,7 @@ CREATE POLICY beta_checklist_client_read ON beta_onboarding_checklist
       WHERE auth_user_id = auth.uid() AND role = 'client'
     )
   );
+
 CREATE POLICY beta_checklist_chef_all ON beta_onboarding_checklist
   FOR ALL USING (
     tenant_id IN (
@@ -103,14 +113,18 @@ CREATE POLICY beta_checklist_chef_all ON beta_onboarding_checklist
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- ============================================================
 -- 6. Indexes
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_clients_beta_tester
   ON clients(tenant_id) WHERE is_beta_tester = TRUE;
+
 CREATE INDEX IF NOT EXISTS idx_beta_checklist_tenant
   ON beta_onboarding_checklist(tenant_id);
+
 CREATE INDEX IF NOT EXISTS idx_beta_checklist_client
   ON beta_onboarding_checklist(client_id);
+
 CREATE INDEX IF NOT EXISTS idx_hub_profiles_first_group
   ON hub_guest_profiles(first_group_id) WHERE first_group_id IS NOT NULL;

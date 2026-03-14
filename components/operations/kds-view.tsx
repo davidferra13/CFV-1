@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CourseFireButton } from './course-fire-button'
 import { EightySixModal } from './eighty-six-modal'
-import { Clock, Utensils } from 'lucide-react'
+import { Clock, Utensils } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

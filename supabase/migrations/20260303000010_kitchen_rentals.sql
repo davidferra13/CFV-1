@@ -22,10 +22,14 @@ CREATE TABLE kitchen_rentals (
 
   created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_kitchen_rentals_chef  ON kitchen_rentals(chef_id, rental_date DESC);
 CREATE INDEX idx_kitchen_rentals_event ON kitchen_rentals(event_id);
+
 COMMENT ON TABLE kitchen_rentals IS 'Commercial kitchen rental bookings. Tracks cost and links to events for P&L purposes.';
+
 ALTER TABLE kitchen_rentals ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY kr_chef_select ON kitchen_rentals FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY kr_chef_insert ON kitchen_rentals FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY kr_chef_update ON kitchen_rentals FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

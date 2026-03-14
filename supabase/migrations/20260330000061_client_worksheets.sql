@@ -31,18 +31,23 @@ CREATE TABLE IF NOT EXISTS client_worksheets (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- Index for token lookups (public access)
 CREATE INDEX IF NOT EXISTS idx_client_worksheets_token ON client_worksheets(token);
+
 -- Index for tenant queries
 CREATE INDEX IF NOT EXISTS idx_client_worksheets_tenant ON client_worksheets(tenant_id);
+
 -- RLS
 ALTER TABLE client_worksheets ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can read/write their own worksheets
 CREATE POLICY client_worksheets_chef_all ON client_worksheets
   FOR ALL TO authenticated
   USING (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
+
 -- Public read/update by token (for the client filling it out)
 -- Note: public access is handled via API route, not RLS
 

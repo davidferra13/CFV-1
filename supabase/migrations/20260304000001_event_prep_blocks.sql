@@ -26,6 +26,7 @@ CREATE TYPE prep_block_type AS ENUM (
   'cleanup',             -- Post-event kitchen reset / car unpack
   'custom'               -- Anything else the chef needs on the calendar
 );
+
 -- ============================================
 -- TABLE: EVENT_PREP_BLOCKS
 -- ============================================
@@ -70,6 +71,7 @@ CREATE TABLE event_prep_blocks (
   created_at                 TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at                 TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- ============================================
 -- INDEXES
 -- ============================================
@@ -77,14 +79,17 @@ CREATE TABLE event_prep_blocks (
 -- Primary lookup: all blocks for a chef across a date range (year/week views)
 CREATE INDEX idx_prep_blocks_chef_date
   ON event_prep_blocks(chef_id, block_date);
+
 -- Event-specific lookup: all blocks tied to one event
 CREATE INDEX idx_prep_blocks_event
   ON event_prep_blocks(event_id)
   WHERE event_id IS NOT NULL;
+
 -- Gap detection: upcoming incomplete blocks for a chef
 CREATE INDEX idx_prep_blocks_incomplete
   ON event_prep_blocks(chef_id, block_date)
   WHERE is_completed = false;
+
 -- ============================================
 -- UPDATED_AT TRIGGER
 -- ============================================
@@ -92,31 +97,37 @@ CREATE INDEX idx_prep_blocks_incomplete
 CREATE TRIGGER trg_prep_blocks_updated_at
   BEFORE UPDATE ON event_prep_blocks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
 
 ALTER TABLE event_prep_blocks ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY epb_chef_select ON event_prep_blocks
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
+
 CREATE POLICY epb_chef_insert ON event_prep_blocks
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
+
 CREATE POLICY epb_chef_update ON event_prep_blocks
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
+
 CREATE POLICY epb_chef_delete ON event_prep_blocks
   FOR DELETE USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
+
 -- ============================================
 -- COMMENTS
 -- ============================================
@@ -125,12 +136,15 @@ COMMENT ON TABLE event_prep_blocks IS
   'Persisted prep activity time blocks. Each row is a concrete scheduled task '
   'surrounding a dinner event — grocery run, prep session, packing, etc. '
   'Engine suggestions are never auto-saved; chef must confirm them first.';
+
 COMMENT ON COLUMN event_prep_blocks.event_id IS
   'Optional. NULL for standalone blocks not tied to a specific event. '
   'ON DELETE SET NULL preserves history when the event is deleted.';
+
 COMMENT ON COLUMN event_prep_blocks.start_time IS
   'NULL means the block is date-only (not yet time-boxed). '
   'Use estimated_duration_minutes for scheduling when start_time is NULL.';
+
 COMMENT ON COLUMN event_prep_blocks.is_system_generated IS
   'True when the chef confirmed an engine-generated suggestion. '
   'False when the chef created the block manually. '

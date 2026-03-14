@@ -57,6 +57,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   '/pipeline/quotes': 'Quotes',
   '/pipeline/leads': 'Leads',
   '/clients': 'Clients',
+  '/clients/recurring': 'Recurring Board',
   '/culinary/menus': 'Menus',
   '/culinary/recipes': 'Recipes',
   '/calendar': 'Calendar',

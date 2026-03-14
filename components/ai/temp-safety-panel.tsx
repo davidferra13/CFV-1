@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Thermometer, Loader2, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Thermometer, Loader2, Sparkles, AlertTriangle, CheckCircle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { analyzeTempLog, type TempLogAnomalyResult } from '@/lib/ai/temp-log-anomaly'

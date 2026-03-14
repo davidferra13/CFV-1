@@ -1,13 +1,18 @@
 // Client Profile - Self-service profile editing
 
 import { requireClient } from '@/lib/auth/get-user'
-import { getMyProfile, getMyFunQA } from '@/lib/clients/client-profile-actions'
+import {
+  getMyProfile,
+  getMyFunQA,
+  getMyMealCollaborationData,
+} from '@/lib/clients/client-profile-actions'
 import { getClientSignalNotificationPref } from '@/lib/calendar/signal-settings-actions'
 import { ClientProfileForm } from './client-profile-form'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
 import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import type { Metadata } from 'next'
+import { MealCollaborationPanel } from './meal-collaboration-panel'
 
 export const metadata: Metadata = {
   title: 'My Profile - ChefFlow',
@@ -15,10 +20,11 @@ export const metadata: Metadata = {
 
 export default async function MyProfilePage() {
   await requireClient()
-  const [profile, funQAAnswers, signalNotifEnabled] = await Promise.all([
+  const [profile, funQAAnswers, signalNotifEnabled, mealCollab] = await Promise.all([
     getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
     getMyFunQA(),
     getClientSignalNotificationPref(),
+    getMyMealCollaborationData(),
   ])
 
   return (
@@ -31,6 +37,12 @@ export default async function MyProfilePage() {
       </div>
 
       <ClientProfileForm profile={profile} />
+
+      <MealCollaborationPanel
+        history={mealCollab.history}
+        requests={mealCollab.requests}
+        recommendations={mealCollab.recommendations}
+      />
 
       <FunQAForm initialAnswers={funQAAnswers} />
 

@@ -46,34 +46,42 @@ CREATE TABLE IF NOT EXISTS client_allergy_records (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
+
 COMMENT ON TABLE client_allergy_records IS
   'Structured per-allergen records for clients. Severity-classified, source-tracked, '
   'and confirmation-gated. AI-detected records require chef confirmation before '
   'they influence planning and document generation.';
+
 COMMENT ON COLUMN client_allergy_records.severity IS
   'preference=dislike only; intolerance=GI discomfort; allergy=immune response; '
   'anaphylaxis=life-threatening (hard block in documents)';
+
 COMMENT ON COLUMN client_allergy_records.confirmed_by_chef IS
   'false = AI suggestion or unreviewed; true = chef explicitly confirmed this record';
+
 -- ─── Indexes ────────────────────────────────────────────────────────────────
 
 -- Most common query: all allergy records for a client
 CREATE INDEX IF NOT EXISTS idx_allergy_records_client
   ON client_allergy_records(client_id, severity);
+
 -- Chef admin: all unconfirmed records across tenant
 CREATE INDEX IF NOT EXISTS idx_allergy_records_unconfirmed
   ON client_allergy_records(tenant_id, confirmed_by_chef)
   WHERE confirmed_by_chef = false;
+
 -- Safety query: anaphylaxis records that need urgent attention
 CREATE INDEX IF NOT EXISTS idx_allergy_records_critical
   ON client_allergy_records(tenant_id, severity)
   WHERE severity = 'anaphylaxis';
+
 -- ─── Unique constraint ───────────────────────────────────────────────────────
 
 -- One record per allergen per client (case-insensitive deduplication handled
 -- at application layer via LOWER() before insert)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_allergy_records_unique_allergen
   ON client_allergy_records(client_id, LOWER(allergen));
+
 -- ─── Auto-update timestamp trigger ──────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION update_allergy_record_updated_at()
@@ -83,13 +91,16 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
 DROP TRIGGER IF EXISTS allergy_record_updated_at ON client_allergy_records;
 CREATE TRIGGER allergy_record_updated_at
   BEFORE UPDATE ON client_allergy_records
   FOR EACH ROW EXECUTE FUNCTION update_allergy_record_updated_at();
+
 -- ─── RLS ────────────────────────────────────────────────────────────────────
 
 ALTER TABLE client_allergy_records ENABLE ROW LEVEL SECURITY;
+
 -- Chef can read/write all records for their tenant
 DO $$ BEGIN
   CREATE POLICY allergy_records_chef_all ON client_allergy_records
@@ -98,5 +109,6 @@ DO $$ BEGIN
       tenant_id = get_current_tenant_id()
     );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 -- Grants (service role bypass RLS automatically)
 GRANT SELECT, INSERT, UPDATE ON client_allergy_records TO authenticated;

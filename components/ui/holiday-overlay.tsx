@@ -32,8 +32,8 @@ interface ActiveConfig extends HolidayOverlayConfig {
 
 interface Particle {
   id: number
-  left: number // 0–100 (% of viewport width)
-  top: number // 0–100 (% of viewport height, used for walk rows)
+  left: number // 0-100 (% of viewport width)
+  top: number // 0-100 (% of viewport height, used for walk rows)
   delay: number // animation-delay in seconds
   size: number // font-size in px
   color: string
@@ -362,7 +362,7 @@ function AprilFoolsOverlay({ durationMs }: { durationMs: number }) {
         }}
       >
         <div style={{ color: '#cc0000', fontSize: '14px', marginBottom: '8px' }}>ERROR</div>
-        Chef not found 😱
+        Chef not found!
         <div style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>code: 404</div>
       </div>
 
@@ -385,7 +385,7 @@ function AprilFoolsOverlay({ durationMs }: { durationMs: number }) {
           animationIterationCount: '1',
         }}
       >
-        🤡
+        Gotcha!
         <div style={{ fontSize: '18px', color: '#ff4444', fontWeight: 700, marginTop: '8px' }}>
           April Fools!
         </div>

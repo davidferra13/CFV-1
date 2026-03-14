@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { listWebhookSubscriptions } from '@/lib/integrations/zapier/zapier-webhooks'
 import { ZapierSettings } from '@/components/settings/zapier-settings'
 import { requireChef } from '@/lib/auth/get-user'

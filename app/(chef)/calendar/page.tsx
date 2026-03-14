@@ -9,7 +9,10 @@ import { getWaitlistEntries } from '@/lib/availability/actions'
 import { getUnifiedCalendar } from '@/lib/calendar/actions'
 import { AvailabilityCalendarClient } from './availability-calendar-client'
 import { SeasonalPaleteSidebar } from '@/components/calendar/seasonal-palate-sidebar'
+import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
+import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
+import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
 
 export const metadata: Metadata = { title: 'Calendar — ChefFlow' }
 
@@ -96,6 +99,16 @@ export default async function CalendarPage({
           </div>
         </div>
       )}
+
+      {/* Scheduling Intelligence */}
+      <Suspense fallback={null}>
+        <SchedulingInsightsBar />
+      </Suspense>
+
+      {/* Capacity & Seasonal Forecast */}
+      <Suspense fallback={null}>
+        <CapacitySeasonalBar />
+      </Suspense>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         <div className="min-w-0">

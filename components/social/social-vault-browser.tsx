@@ -5,7 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { uploadSocialAsset, updateSocialAsset, deleteSocialAsset } from '@/lib/social/actions'
 import type { SocialMediaAsset } from '@/lib/social/types'
-import { Upload, Search, Film, Image as ImageIcon, X, Tag, Archive, Loader2 } from 'lucide-react'
+import {
+  Upload,
+  Search,
+  Film,
+  Image as ImageIcon,
+  X,
+  Tag,
+  Archive,
+  Loader2,
+} from '@/components/ui/icons'
 
 type Props = {
   assets: SocialMediaAsset[]

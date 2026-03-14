@@ -6,7 +6,7 @@ import { AnnouncementForm } from '@/components/admin/announcement-form'
 import { DirectEmailForm } from '@/components/admin/direct-email-form'
 import { BroadcastEmailForm } from '@/components/admin/broadcast-email-form'
 import { redirect } from 'next/navigation'
-import { Megaphone, Mail, Send } from 'lucide-react'
+import { Megaphone, Mail, Send } from '@/components/ui/icons'
 
 export default async function AdminCommunicationsPage() {
   try {

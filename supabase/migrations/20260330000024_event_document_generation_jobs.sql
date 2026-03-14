@@ -67,13 +67,17 @@ CREATE TABLE IF NOT EXISTS event_document_generation_jobs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_event_doc_generation_jobs_event_created
   ON event_document_generation_jobs(event_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_event_doc_generation_jobs_tenant_status_created
   ON event_document_generation_jobs(tenant_id, status, created_at DESC);
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_event_doc_generation_jobs_idempotency
   ON event_document_generation_jobs(tenant_id, event_id, requested_type, idempotency_key)
   WHERE idempotency_key IS NOT NULL;
+
 DO $$
 BEGIN
   IF EXISTS (
@@ -89,7 +93,9 @@ BEGIN
   END IF;
 END;
 $$;
+
 ALTER TABLE event_document_generation_jobs ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS event_document_generation_jobs_tenant_isolation ON event_document_generation_jobs;
 CREATE POLICY event_document_generation_jobs_tenant_isolation
   ON event_document_generation_jobs

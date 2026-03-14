@@ -1,0 +1,160 @@
+// Dashboard Schedule Cards - renders stat/list cards instead of accordions
+// Data fetching is identical to schedule-section.tsx
+
+import { requireChef } from '@/lib/auth/get-user'
+import {
+  getTodaysScheduleEnriched,
+  getAllPrepPrompts,
+  getWeekSchedule,
+} from '@/lib/scheduling/actions'
+import { getNextUpcomingEvent } from '@/lib/dashboard/actions'
+import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-digest'
+import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
+import { createServerClient } from '@/lib/supabase/server'
+import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
+import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
+import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
+import { WeekStrip } from '@/components/dashboard/week-strip'
+import { format } from 'date-fns'
+
+async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    console.error(`[Dashboard/ScheduleCards] ${label} failed:`, err)
+    return fallback
+  }
+}
+
+const emptyWeekSchedule: Awaited<ReturnType<typeof getWeekSchedule>> = {
+  weekStart: '',
+  weekEnd: '',
+  days: [],
+  warnings: [],
+}
+const emptyDOPDigest: DOPTaskDigest = {
+  tasks: [],
+  overdueCount: 0,
+  dueTodayCount: 0,
+  upcomingCount: 0,
+  totalIncomplete: 0,
+}
+
+export async function ScheduleCards() {
+  const [prepPrompts, weekSchedule, nextEvent, dopTaskDigest, dailyPlanStats] = await Promise.all([
+    safe('prepPrompts', getAllPrepPrompts, []),
+    safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
+    safe('nextEvent', getNextUpcomingEvent, null),
+    safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
+    safe('dailyPlanStats', getDailyPlanStats, null),
+  ])
+
+  // Weather fetch
+  const weatherByEventId = await safe<Record<string, InlineWeather>>(
+    'weather',
+    async () => {
+      const eventIds = new Set<string>()
+      for (const task of dopTaskDigest.tasks) eventIds.add(task.eventId)
+      if (eventIds.size === 0) return {}
+      const supabase: any = createServerClient()
+      const { data: eventCoords } = await supabase
+        .from('events')
+        .select('id, event_date, location_lat, location_lng')
+        .in('id', Array.from(eventIds))
+      if (!eventCoords || eventCoords.length === 0) return {}
+      const withCoords = eventCoords
+        .filter((e: any) => e.location_lat != null && e.location_lng != null)
+        .map((e: any) => ({
+          id: e.id,
+          lat: e.location_lat as number,
+          lng: e.location_lng as number,
+          eventDate: e.event_date,
+        }))
+      if (withCoords.length === 0) return {}
+      return getWeatherForEvents(withCoords)
+    },
+    {}
+  )
+
+  const todaysSchedule = await safe(
+    'todaysScheduleEnriched',
+    () => getTodaysScheduleEnriched(weatherByEventId),
+    null
+  )
+
+  // Build list items for today's schedule
+  const scheduleItems: ListCardItem[] = []
+  if (todaysSchedule) {
+    const e = todaysSchedule.event
+    const weather = weatherByEventId[e.id]
+    scheduleItems.push({
+      id: e.id,
+      label: `${e.serve_time || 'TBD'} - ${e.occasion || 'Event'}`,
+      sublabel: `${e.client?.full_name || 'Client'} - ${e.guest_count ?? '?'} guests${weather ? ` - ${weather.emoji} ${weather.tempMaxF}\u00B0F` : ''}`,
+      href: `/events/${e.id}`,
+      status: 'green',
+    })
+  }
+
+  // Build DOP task count
+  const taskCount = dopTaskDigest.totalIncomplete
+  const overdueCount = dopTaskDigest.overdueCount
+
+  return (
+    <>
+      {/* Today's Schedule - list card */}
+      <ListCard
+        widgetId="todays_schedule"
+        title="Today's Schedule"
+        count={scheduleItems.length}
+        items={scheduleItems}
+        href="/calendar"
+        emptyMessage={
+          nextEvent
+            ? `No events today. Next: ${nextEvent.occasion || 'Event'} on ${format(new Date(nextEvent.eventDate + 'T12:00:00'), 'MMM d')}`
+            : 'No events scheduled. A quiet day to plan ahead.'
+        }
+        emptyActionLabel="View Calendar"
+        emptyActionHref="/calendar"
+      />
+
+      {/* Week Strip - special widget */}
+      {weekSchedule.days.length > 0 && (
+        <WidgetCardShell widgetId="week_strip" title="This Week" size="md" href="/calendar/week">
+          <WeekStrip schedule={weekSchedule} />
+        </WidgetCardShell>
+      )}
+
+      {/* DOP Tasks - stat card */}
+      {taskCount > 0 && (
+        <StatCard
+          widgetId="dop_tasks"
+          title="Tasks"
+          value={String(taskCount)}
+          subtitle={`${dopTaskDigest.dueTodayCount} due today`}
+          trend={overdueCount > 0 ? `${overdueCount} overdue` : 'On track'}
+          trendDirection={overdueCount > 0 ? 'down' : 'up'}
+          href="/daily-ops"
+        />
+      )}
+
+      {/* Prep Prompts - stat card */}
+      {prepPrompts.length > 0 && (
+        <StatCard
+          widgetId="prep_prompts"
+          title="Prep"
+          value={`${prepPrompts.length}`}
+          subtitle="active prep prompts"
+          trend={
+            prepPrompts.some((p: any) => p.urgency === 'overdue')
+              ? 'Overdue items'
+              : 'All on schedule'
+          }
+          trendDirection={prepPrompts.some((p: any) => p.urgency === 'overdue') ? 'down' : 'up'}
+          href="/prep"
+        />
+      )}
+    </>
+  )
+}

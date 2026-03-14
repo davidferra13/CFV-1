@@ -97,6 +97,13 @@ export type NotificationAction =
   | 'guest_comp'
   // Menu preferences
   | 'menu_preferences_submitted'
+  | 'meal_request_scheduled_to_client'
+  | 'meal_request_declined_to_client'
+  | 'meal_request_fulfilled_to_client'
+  | 'meal_recommendation_sent_to_client'
+  | 'meal_recommendation_approved'
+  | 'meal_recommendation_revision_requested'
+  | 'client_meal_feedback_submitted'
   // Cross-boundary gap closure
   | 'menu_approved'
   | 'menu_revision_requested'
@@ -248,6 +255,41 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Cross-boundary gap closure
   menu_preferences_submitted: { category: 'event', icon: 'ClipboardCheck', toastByDefault: true },
+  meal_request_scheduled_to_client: {
+    category: 'event',
+    icon: 'CalendarCheck',
+    toastByDefault: true,
+  },
+  meal_request_declined_to_client: {
+    category: 'event',
+    icon: 'XCircle',
+    toastByDefault: true,
+  },
+  meal_request_fulfilled_to_client: {
+    category: 'event',
+    icon: 'ChefHat',
+    toastByDefault: true,
+  },
+  meal_recommendation_sent_to_client: {
+    category: 'event',
+    icon: 'FileText',
+    toastByDefault: true,
+  },
+  meal_recommendation_approved: {
+    category: 'event',
+    icon: 'CheckCircle',
+    toastByDefault: true,
+  },
+  meal_recommendation_revision_requested: {
+    category: 'event',
+    icon: 'Edit',
+    toastByDefault: true,
+  },
+  client_meal_feedback_submitted: {
+    category: 'client',
+    icon: 'MessageSquare',
+    toastByDefault: true,
+  },
   menu_approved: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
   menu_revision_requested: { category: 'event', icon: 'Edit', toastByDefault: true },
   contract_signed: { category: 'event', icon: 'FileCheck', toastByDefault: true },

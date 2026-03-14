@@ -46,17 +46,21 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 COMMENT ON FUNCTION prevent_event_price_mutation_after_acceptance IS
   'Financial integrity guard. '
   'Prevents pricing field modification after client acceptance. '
   'Complementary to the append-only ledger trigger. '
   'Fires on UPDATE OF quoted_price_cents, deposit_amount_cents, pricing_model.';
+
 -- Fire ONLY when one of the three pricing columns is explicitly updated.
 -- This avoids overhead on every event UPDATE (status changes, notes, etc.).
 CREATE TRIGGER prevent_event_price_mutation_trigger
   BEFORE UPDATE OF quoted_price_cents, deposit_amount_cents, pricing_model ON events
   FOR EACH ROW
   EXECUTE FUNCTION prevent_event_price_mutation_after_acceptance();
+
+
 -- ── 2. Event Allergies Immutability ────────────────────────────────────────
 -- The schema comment on events.allergies reads:
 --   'IMMUTABLE after event creation - safety-critical data'
@@ -85,11 +89,13 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 COMMENT ON FUNCTION prevent_event_allergy_mutation IS
   'Food safety guard. '
   'Prevents allergy field modification after client acceptance. '
   'Enforces the schema comment: IMMUTABLE after event creation (safety-critical). '
   'Fires on UPDATE OF allergies.';
+
 -- Fire ONLY when allergies column is explicitly updated.
 CREATE TRIGGER prevent_event_allergy_mutation_trigger
   BEFORE UPDATE OF allergies ON events

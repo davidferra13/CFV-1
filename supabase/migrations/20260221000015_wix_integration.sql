@@ -8,6 +8,7 @@
 -- ─── Add 'wix' to inquiry_channel enum ────────────────────────────────────
 
 ALTER TYPE inquiry_channel ADD VALUE IF NOT EXISTS 'wix';
+
 -- ─── Wix Connections ──────────────────────────────────────────────────────
 -- One row per chef — stores webhook authentication and form mapping config.
 
@@ -33,6 +34,7 @@ CREATE TABLE wix_connections (
 
   CONSTRAINT unique_chef_wix UNIQUE (chef_id)
 );
+
 -- ─── Wix Submissions ─────────────────────────────────────────────────────
 -- Raw staging table: accepts webhook payloads immediately, processes async.
 -- Mirrors gmail_sync_log pattern for audit + dedup.
@@ -74,21 +76,27 @@ CREATE TABLE wix_submissions (
   -- Idempotency: one submission per Wix ID per tenant
   CONSTRAINT unique_wix_submission UNIQUE (tenant_id, wix_submission_id)
 );
+
 -- ─── Indexes ──────────────────────────────────────────────────────────────
 
 CREATE INDEX idx_wix_submissions_tenant
   ON wix_submissions(tenant_id, created_at DESC);
+
 CREATE INDEX idx_wix_submissions_pending
   ON wix_submissions(status) WHERE status = 'pending';
+
 CREATE INDEX idx_wix_submissions_email
   ON wix_submissions(tenant_id, submitter_email)
   WHERE submitter_email IS NOT NULL;
+
 CREATE INDEX idx_wix_connections_active
   ON wix_connections(chef_id);
+
 -- ─── RLS Policies ─────────────────────────────────────────────────────────
 
 ALTER TABLE wix_connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wix_submissions ENABLE ROW LEVEL SECURITY;
+
 -- wix_connections: chefs can read/write only their own row
 CREATE POLICY "Chefs manage own wix connection"
   ON wix_connections
@@ -105,6 +113,7 @@ CREATE POLICY "Chefs manage own wix connection"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- wix_submissions: chefs can read their own tenant submissions
 CREATE POLICY "Chefs read own wix submissions"
   ON wix_submissions
@@ -115,12 +124,14 @@ CREATE POLICY "Chefs read own wix submissions"
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Service role can manage wix_connections (for webhook processing)
 CREATE POLICY "Service role manages wix connections"
   ON wix_connections
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
+
 -- Service role can manage wix_submissions (for webhook + cron processing)
 CREATE POLICY "Service role manages wix submissions"
   ON wix_submissions

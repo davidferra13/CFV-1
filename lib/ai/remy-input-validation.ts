@@ -292,17 +292,27 @@ export function checkRecipeGenerationBlock(message: string): string | null {
  */
 const OUT_OF_SCOPE_PATTERNS = [
   // Poetry, creative writing, storytelling (expanded to catch all variations)
-  /\b(write|compose|create|generate|make)\s+(me\s+|up\s+)?(a\s+)?(funny\s+)?(poem|poetry|story|song|joke|limerick|haiku|narrative|tale|story)\b/i,
-  /\b(generate|compose|write)\s+(a\s+)?(short\s+)?(story|tale|narrative)\b/i,
+  /\b(write|compose|create|generate|make)\s+(me\s+|up\s+)?(a\s+)?(funny\s+)?(poem|poetry|story|song|joke|limerick|haiku|narrative|tale|story|essay|novel|screenplay|script)\b/i,
+  /\b(generate|compose|write)\s+(a\s+)?(short\s+)?(story|tale|narrative|essay|novel)\b/i,
   // General philosophical/existential questions
   /\b(what\s+is\s+the\s+meaning|meaning\s+of)\b/i,
   /\b(why\s+do\s+we\s+exist|existential|philosophy|philosophical)\b/i,
   // Entertainment/gaming
-  /\b(tell\s+me\s+a\s+joke|play\s+a\s+game|tell\s+me\s+a\s+story)\b/i,
+  /\b(tell\s+me\s+a\s+joke|play\s+a\s+game|tell\s+me\s+a\s+story|play\s+trivia)\b/i,
   // General knowledge (unless business-related)
-  /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology)\b/i,
+  /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology|chemistry|geography)\b/i,
   // Requests for advice outside chef domain
   /\b(give\s+me\s+relationship|dating|love|life\s+advice)\b/i,
+  // Homework, coding, academic
+  /\b(solve\s+this|help\s+me\s+with\s+homework|write\s+(?:an?\s+)?(?:essay|paper|thesis|code|program|script))\b/i,
+  /\b(debug|compile|code|program|algorithm|data\s+structure)\b.*\b(help|write|fix|create)\b/i,
+  // Medical/legal beyond food domain
+  /\b(diagnose|prescription|symptoms|should\s+i\s+see\s+a\s+doctor|medical\s+advice)\b/i,
+  /\b(legal\s+advice|sue|lawsuit|legal\s+rights|am\s+i\s+liable)\b/i,
+  // Political/religious
+  /\b(who\s+should\s+i\s+vote|political\s+opinion|my\s+faith|pray|religious)\b/i,
+  // Investment/financial outside chef business
+  /\b(invest|stock|crypto|bitcoin|forex|retirement\s+fund|401k|ira)\b/i,
 ]
 
 /** The refusal message for out-of-scope requests */
@@ -342,6 +352,19 @@ const DANGEROUS_ACTION_PATTERNS = [
   // Developer/admin/root mode activation
   /\b(developer|dev|admin|root|debug)\s+mode\b/i,
   /\b(switch|enter|activate|enable|turn)\s+(on\s+)?(developer|dev|admin|root|debug)\b/i,
+  // Data exfiltration — extracting all client data or financials
+  /\b(export|dump|extract|give me)\s+(all|every)\s+(client|customer|financial|revenue|payment|ledger)\s+(data|info|records?|entries|details)\b/i,
+  // SQL/code injection attempts
+  /\b(select|insert|update|drop|alter|truncate)\s+(from|into|table|database|schema)\b/i,
+  /\b(exec|execute|eval|run)\s+(sql|query|command|code|script)\b/i,
+  // Token/API key extraction
+  /\b(api|secret|token|key|password|credential|env)\s*(key|variable|value|string)?\b.*\b(show|reveal|give|tell|print|display)\b/i,
+  /\b(show|reveal|give|tell|print|display)\b.*\b(api|secret|token|key|password|credential|env)\b/i,
+  // Pretend/roleplay as another entity
+  /\b(pretend|act|behave|roleplay|role-?play)\s+(you'?re|as|like)\s+(a|an|the)\b/i,
+  /\byou\s+are\s+now\s+(a|an|the|my)\b/i,
+  // "Forget everything" / memory manipulation
+  /\b(forget|erase|clear|reset)\s+(everything|all|your)\s*(memory|memories|knowledge|context|data)?\b/i,
 ]
 
 /** Refusal for dangerous/protected actions */
@@ -392,6 +415,15 @@ const INJECTION_PATTERNS = [
   /\b(you are|switch to|enter|activate|enable)\s+(now\s+)?(in\s+)?(developer|dev|debug|admin|root)\s+mode\b/i,
   // Context window extraction
   /\b(output|show|display|print|reveal)\s+(your\s+)?(full\s+)?(context\s+window|context|system\s+message)\b/i,
+  // Multi-step jailbreaks ("first... then...")
+  /\bfirst\s+(ignore|forget|disregard)\b/i,
+  // Base64/encoding bypass attempts
+  /\b(decode|base64|hex|encode)\s+(this|the\s+following)\b/i,
+  // Token limit probing
+  /\b(how\s+many|what\s+is\s+your)\s+(tokens?|context\s+(length|window|limit|size))\b/i,
+  // Hidden instruction via markdown/HTML
+  /<!--.*(?:ignore|system|override|instruction).*-->/i,
+  /\[hidden\]|\[system\]|\[instruction\]/i,
 ]
 
 /**

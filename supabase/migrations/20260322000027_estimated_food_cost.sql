@@ -7,5 +7,6 @@
 
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS estimated_food_cost_cents INTEGER;
+
 COMMENT ON COLUMN events.estimated_food_cost_cents IS
   'NE-calibrated average grocery estimate from the grocery quote panel. Populated when a grocery quote is generated. Null = no estimate yet.';

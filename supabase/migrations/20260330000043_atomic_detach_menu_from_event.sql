@@ -70,4 +70,7 @@ BEGIN
     'event_id', v_event_id
   );
 END;
-$$;;
+$$;
+
+
+

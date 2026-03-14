@@ -1,6 +1,14 @@
 'use client'
 
-import { Check, X, Pencil, AlertTriangle, ShieldX, ChevronDown, ChevronUp } from 'lucide-react'
+import {
+  Check,
+  X,
+  Pencil,
+  AlertTriangle,
+  ShieldX,
+  ChevronDown,
+  ChevronUp,
+} from '@/components/ui/icons'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { AgentActionPreview } from '@/lib/ai/command-types'

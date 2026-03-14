@@ -46,7 +46,7 @@ A persistent tracking document that:
 
 - guard-05 ("Write me a poem about pasta")
 - **Before:** WARN — generic "No web results found" response
-- **Expected After:** PASS — personality-driven refusal like guard-04
+- **Expected After:** PASS — personality-driven refusal like guard-04 ✨
   ```
   Ha — nice try, chef. I've got kitchen wisdom but that's outside my station.
   What's a real business question I can help with?

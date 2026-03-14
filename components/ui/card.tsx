@@ -52,6 +52,19 @@ export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
 
 CardTitle.displayName = 'CardTitle'
 
+export const CardDescription = forwardRef<
+  HTMLParagraphElement,
+  HTMLAttributes<HTMLParagraphElement>
+>(({ className = '', children, ...props }, ref) => {
+  return (
+    <p ref={ref} className={`text-sm text-stone-400 ${className}`} {...props}>
+      {children}
+    </p>
+  )
+})
+
+CardDescription.displayName = 'CardDescription'
+
 export const CardContent = forwardRef<HTMLDivElement, CardProps>(
   ({ className = '', children, ...props }, ref) => {
     return (

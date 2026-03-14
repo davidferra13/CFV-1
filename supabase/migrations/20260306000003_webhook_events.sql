@@ -33,32 +33,40 @@ CREATE TABLE webhook_events (
   payload_size_bytes  INTEGER,    -- Payload size for monitoring (full payload not stored)
   received_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 COMMENT ON TABLE webhook_events IS
   'Immutable audit trail of all incoming webhooks. '
   'Full payloads are NOT stored here — only event metadata and outcome summaries. '
   'Used for debugging, compliance, and payment dispute resolution.';
+
 COMMENT ON COLUMN webhook_events.provider_event_id IS
   'The external provider''s own event identifier. '
   'For Stripe: the event.id (e.g. evt_1234). '
   'For Wix: the wix_submission_id. '
   'Allows cross-referencing this log with the provider''s dashboard.';
+
 -- Fast lookup: all events for a given provider in time order
 CREATE INDEX idx_webhook_events_provider_received
   ON webhook_events (provider, received_at DESC);
+
 -- Fast lookup: find a specific provider event (e.g. "did we see evt_1234?")
 CREATE INDEX idx_webhook_events_provider_event_id
   ON webhook_events (provider_event_id)
   WHERE provider_event_id IS NOT NULL;
+
 -- Fast lookup: all failed events for monitoring
 CREATE INDEX idx_webhook_events_failed
   ON webhook_events (received_at DESC)
   WHERE status = 'failed';
+
 -- Chronological index for audit queries
 CREATE INDEX idx_webhook_events_received
   ON webhook_events (received_at DESC);
+
 -- RLS: System/operational table. Only accessible via service_role.
 -- Chefs and clients cannot read webhook event logs.
 ALTER TABLE webhook_events ENABLE ROW LEVEL SECURITY;
+
 -- Auto-cleanup: Keep only 90 days of webhook logs.
 -- Older records are rarely needed; Stripe dashboard covers longer history.
 -- This trigger prevents unbounded table growth.
@@ -70,9 +78,11 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
 COMMENT ON FUNCTION purge_old_webhook_events IS
   'Auto-purges webhook_events rows older than 90 days on each INSERT. '
   'Keeps the table lean without a separate cleanup cron.';
+
 CREATE TRIGGER auto_purge_webhook_events
   AFTER INSERT ON webhook_events
   FOR EACH STATEMENT

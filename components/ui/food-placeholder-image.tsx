@@ -32,7 +32,8 @@ function GradientFallback({ size, className }: { size: 'hero' | 'thumb'; classNa
       <div
         className={`w-10 h-10 rounded-md flex-shrink-0 ${className ?? ''}`}
         style={{
-          background: 'linear-gradient(135deg, #e88f47 0%, #d47530 50%, #b85d1a 100%)',
+          background:
+            'linear-gradient(135deg, rgb(var(--brand-500)) 0%, rgb(var(--brand-600)) 50%, rgb(var(--brand-700)) 100%)',
         }}
       />
     )
@@ -43,7 +44,8 @@ function GradientFallback({ size, className }: { size: 'hero' | 'thumb'; classNa
       className={`w-full rounded-xl overflow-hidden ${className ?? ''}`}
       style={{
         aspectRatio: '21/9',
-        background: 'linear-gradient(135deg, #e88f47 0%, #d47530 50%, #b85d1a 100%)',
+        background:
+          'linear-gradient(135deg, rgb(var(--brand-500)) 0%, rgb(var(--brand-600)) 50%, rgb(var(--brand-700)) 100%)',
       }}
     />
   )

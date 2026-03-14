@@ -1,0 +1,17 @@
+pid,relname,transactionid,granted,stmt,age
+1194504,null,null,t,"WITH pgrst_source AS ( SELECT ""public"".""inquiries"".*, row_to_json(""inquiries_client_1"".*)::jsonb AS ""client"" FROM ""public"".""inquiries"" LEFT JOIN LATERAL ( SELECT ""clients_1"".""id"", ""clients_1"".""full_name"", ""clients_1"".""email"", ""clients_1"".""phone"" FROM ""public"".""clients"" AS ""clients_1"" WHERE ""clients_1"".""id"" = ""public"".""inquiries"".""client_id""   LIMIT $1 OFFSET $2 ) AS ""inquiries_client_1"" ON TRUE WHERE  ""public"".""inquiries"".""tenant_id"" = $3 AND  ""public"".""inquiries"".""deleted_at"" IS NULL  ORDER BY ""public"".""inquiries"".""created_at"" DESC  LIMIT $4 OFFSET $5 )  SELECT null::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t), '[]') AS body, nullif(current_setting('response.headers', true), '') AS response_headers, nullif(current_setting('response.status', true), '') AS response_status, '' AS response_inserted FROM ( SELECT * FROM pgrst_source ) _postgrest_t",00:00:02.845727
+1194541,null,null,t,BEGIN ISOLATION LEVEL READ COMMITTED READ ONLY,00:00:02.167926
+1194517,null,null,t,"select set_config('search_path', $1, true), set_config('role', $2, true), set_config('request.jwt.claims', $3, true), set_config('request.method', $4, true), set_config('request.path', $5, true), set_config('request.headers', $6, true), set_config('request.cookies', $7, true)",00:00:02.167627
+1194531,null,null,t,"COPY (SELECT
+  pg_stat_activity.pid,
+  COALESCE(pg_class.relname, 'null') AS relname,
+  COALESCE(pg_locks.transactionid::text, 'null') AS transactionid,
+  pg_locks.granted,
+  pg_stat_activity.query AS stmt,
+  age(now(), pg_stat_activity.query_start)::text AS age
+FROM pg_stat_activity, pg_locks LEFT OUTER JOIN pg_class ON (pg_locks.relation = pg_class.oid)
+WHERE pg_stat_activity.query <> '<insufficient privilege>'
+AND pg_locks.pid = pg_stat_activity.pid
+AND pg_locks.mode = 'ExclusiveLock'
+ORDER BY query_start
+) TO STDOUT WITH CSV HEADER",00:00:00

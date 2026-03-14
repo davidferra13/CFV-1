@@ -1,6 +1,6 @@
 'use client'
 
-import { Lock, Unlock } from 'lucide-react'
+import { Lock, Unlock } from '@/components/ui/icons'
 
 type PermissionLevel = 'none' | 'portfolio_only' | 'public_with_approval' | 'public_freely'
 

@@ -23,6 +23,7 @@ CREATE TYPE chef_calendar_entry_type AS ENUM (
   'target_booking',
   'soft_preference'
 );
+
 CREATE TABLE chef_calendar_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -88,32 +89,41 @@ CREATE TABLE chef_calendar_entries (
     revenue_type IS NULL OR is_revenue_generating = true
   )
 );
+
 -- Indexes
 CREATE INDEX idx_cal_entries_chef_date
   ON chef_calendar_entries(chef_id, start_date, end_date);
+
 CREATE INDEX idx_cal_entries_chef_type
   ON chef_calendar_entries(chef_id, entry_type);
+
 CREATE INDEX idx_cal_entries_blocking
   ON chef_calendar_entries(chef_id, start_date)
   WHERE blocks_bookings = true;
+
 CREATE INDEX idx_cal_entries_public
   ON chef_calendar_entries(chef_id, start_date)
   WHERE is_public = true;
+
 CREATE INDEX idx_cal_entries_revenue
   ON chef_calendar_entries(chef_id)
   WHERE is_revenue_generating = true;
+
 -- Updated_at trigger (uses project's established update_updated_at_column function)
 CREATE TRIGGER set_updated_at_chef_calendar_entries
   BEFORE UPDATE ON chef_calendar_entries
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Row Level Security
 ALTER TABLE chef_calendar_entries ENABLE ROW LEVEL SECURITY;
+
 -- Chefs fully manage their own entries
 CREATE POLICY "chef owns calendar entries"
   ON chef_calendar_entries
   FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- Public can read entries marked is_public = true (for public chef profile)
 CREATE POLICY "public can view public calendar signals"
   ON chef_calendar_entries

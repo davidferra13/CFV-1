@@ -6,12 +6,14 @@ import { chromium } from '@playwright/test'
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs'
 import dotenv from 'dotenv'
 import { seedE2EData } from '../helpers/e2e-seed'
-import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 dotenv.config({ path: '.env.local' })
 
-const SOAK_URL = TEST_BASE_URL
-const AUTH_URL = TEST_BASE_URL
+const SOAK_URL = 'http://localhost:3200'
+// Auth against dev server (port 3100) because the E2E auth endpoint
+// returns 403 in production mode (next start). Auth tokens (Supabase JWT)
+// are valid regardless of which port issued them.
+const AUTH_URL = 'http://localhost:3100'
 
 async function loginAndSaveState(
   browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,

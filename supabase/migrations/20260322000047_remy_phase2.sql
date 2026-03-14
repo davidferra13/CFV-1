@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS chef_culinary_profiles (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(chef_id, question_key)
 );
+
 ALTER TABLE chef_culinary_profiles ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY chef_culinary_profiles_tenant ON chef_culinary_profiles
   FOR ALL USING (
     chef_id = (
@@ -31,11 +33,14 @@ CREATE POLICY chef_culinary_profiles_tenant ON chef_culinary_profiles
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE INDEX idx_chef_culinary_profiles_chef
   ON chef_culinary_profiles(chef_id);
+
 CREATE TRIGGER chef_culinary_profiles_updated_at
   BEFORE UPDATE ON chef_culinary_profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- 2. Chef Folders (organize documents via Remy)
 CREATE TABLE IF NOT EXISTS chef_folders (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,7 +52,9 @@ CREATE TABLE IF NOT EXISTS chef_folders (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 ALTER TABLE chef_folders ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY chef_folders_tenant ON chef_folders
   FOR ALL USING (
     tenant_id = (
@@ -61,16 +68,20 @@ CREATE POLICY chef_folders_tenant ON chef_folders
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE INDEX idx_chef_folders_tenant ON chef_folders(tenant_id);
 CREATE INDEX idx_chef_folders_parent ON chef_folders(parent_folder_id);
+
 CREATE TRIGGER chef_folders_updated_at
   BEFORE UPDATE ON chef_folders
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Add folder_id to existing chef_documents table
 ALTER TABLE chef_documents
   ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES chef_folders(id);
 CREATE INDEX IF NOT EXISTS idx_chef_documents_folder
   ON chef_documents(folder_id);
+
 -- 3. Chef Reminders (proactive nudges + manual reminders)
 CREATE TABLE IF NOT EXISTS chef_reminders (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -92,7 +103,9 @@ CREATE TABLE IF NOT EXISTS chef_reminders (
   related_inquiry_id  UUID REFERENCES inquiries(id),
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 ALTER TABLE chef_reminders ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY chef_reminders_tenant ON chef_reminders
   FOR ALL USING (
     tenant_id = (
@@ -106,6 +119,7 @@ CREATE POLICY chef_reminders_tenant ON chef_reminders
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE INDEX idx_chef_reminders_tenant
   ON chef_reminders(tenant_id);
 CREATE INDEX idx_chef_reminders_active

@@ -1,31 +1,32 @@
 // Why ChefFlow — Selling section
 // Confident, outward-facing. No tech internals. Closes the deal.
 
-import { Flame, Clock, TrendingUp, Heart } from 'lucide-react'
+import { Flame, Clock, TrendingUp, Heart } from '@/components/ui/icons'
 
 const REASONS = [
   {
     icon: Flame,
-    title: 'Built by a Chef',
+    title: 'Built for marketplace chefs',
     description:
-      'Built from real kitchen and client workflows. Every feature solves a daily pain point.',
+      'ChefFlow is shaped around the way private chefs actually book, prep, travel, serve, follow up, and rebook clients after a marketplace dinner.',
   },
   {
     icon: Clock,
-    title: 'Less Admin, More Cooking',
+    title: 'Keep your booking channels and stop losing everything else',
     description:
-      'Inquiries, quotes, invoices, and follow-ups stay organized so you can stay on the craft.',
+      'Your booking channels can keep bringing the lead. ChefFlow keeps the client record, service notes, reminders, and back-office work from scattering after that.',
   },
   {
     icon: TrendingUp,
-    title: 'Know Your Numbers',
-    description: 'Track event costs, revenue, and margins without living in spreadsheets.',
+    title: 'See net money, not just payouts',
+    description:
+      'Track gross booking value, platform fees, expenses, and profit without rebuilding the picture in spreadsheets after every dinner.',
   },
   {
     icon: Heart,
-    title: 'Clients Notice the Difference',
+    title: 'Turn one booking into a repeat client',
     description:
-      'Polished proposals, easy approvals, and smooth payments from first message to final service.',
+      'Follow-ups, review asks, direct booking links, and repeat-client memory help each marketplace dinner become a stronger long-term relationship.',
   },
 ]
 
@@ -34,10 +35,10 @@ export function HowItWorksSection() {
     <section className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
       <div className="mb-12 text-center">
         <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-          Why chefs choose ChefFlow.
+          Why marketplace-driven private chefs choose ChefFlow.
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-400">
-          Spend less time on admin and more time on service.
+          Keep the lead source that already works. Build the owned business layer around it.
         </p>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, Archive, Plus } from 'lucide-react'
+import { ChevronDown, ChevronUp, Archive, Plus } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import type { GoalView } from '@/lib/goals/types'

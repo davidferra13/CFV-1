@@ -6,6 +6,7 @@ DO $$ BEGIN
   CREATE TYPE reconciliation_flag_status AS ENUM ('open', 'resolved', 'ignored');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- ─── Daily Reconciliation Reports ───────────────────────────────
 -- Per-day financial snapshot: totals, cash variance, flags, ledger cross-check.
 CREATE TABLE IF NOT EXISTS daily_reconciliation_reports (
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS daily_reconciliation_reports (
 
   UNIQUE (tenant_id, report_date)
 );
+
 -- ─── Settlement Records ─────────────────────────────────────────
 -- Tracks Stripe payouts and maps them to individual payments.
 CREATE TABLE IF NOT EXISTS settlement_records (
@@ -86,6 +88,7 @@ CREATE TABLE IF NOT EXISTS settlement_records (
 
   UNIQUE (tenant_id, stripe_payout_id)
 );
+
 -- ─── Daily Tax Summary ──────────────────────────────────────────
 -- Tax collected per jurisdiction per day per tax class.
 CREATE TABLE IF NOT EXISTS daily_tax_summary (
@@ -120,15 +123,18 @@ CREATE TABLE IF NOT EXISTS daily_tax_summary (
 
   UNIQUE (tenant_id, report_date, tax_jurisdiction, tax_class)
 );
+
 -- ─── Auto-update timestamps ─────────────────────────────────────
 DROP TRIGGER IF EXISTS update_daily_reconciliation_reports_updated_at ON daily_reconciliation_reports;
 CREATE TRIGGER update_daily_reconciliation_reports_updated_at
   BEFORE UPDATE ON daily_reconciliation_reports
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ─── RLS ─────────────────────────────────────────────────────────
 ALTER TABLE daily_reconciliation_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settlement_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_tax_summary ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS daily_reconciliation_chef_all ON daily_reconciliation_reports;
 CREATE POLICY daily_reconciliation_chef_all ON daily_reconciliation_reports
   FOR ALL USING (
@@ -137,6 +143,7 @@ CREATE POLICY daily_reconciliation_chef_all ON daily_reconciliation_reports
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 DROP POLICY IF EXISTS settlement_records_chef_all ON settlement_records;
 CREATE POLICY settlement_records_chef_all ON settlement_records
   FOR ALL USING (
@@ -145,6 +152,7 @@ CREATE POLICY settlement_records_chef_all ON settlement_records
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 DROP POLICY IF EXISTS daily_tax_summary_chef_all ON daily_tax_summary;
 CREATE POLICY daily_tax_summary_chef_all ON daily_tax_summary
   FOR ALL USING (
@@ -153,6 +161,7 @@ CREATE POLICY daily_tax_summary_chef_all ON daily_tax_summary
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- ─── Indexes ─────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_daily_recon_tenant_date
   ON daily_reconciliation_reports(tenant_id, report_date DESC);

@@ -23,9 +23,8 @@ import { test, expect } from '@playwright/test'
 import * as path from 'path'
 import * as fs from 'fs'
 import { execSync } from 'child_process'
-import { TEST_API_BASE_URL } from '../helpers/runtime-base-url'
 
-const API_BASE = TEST_API_BASE_URL
+const API_BASE = 'http://localhost:3100'
 const REPORT_DIR = path.join(process.cwd(), 'data', 'stress-reports')
 const SLA = {
   successRate: 0.95, // 95%+ must succeed

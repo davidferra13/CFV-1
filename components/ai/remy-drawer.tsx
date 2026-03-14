@@ -39,7 +39,7 @@ import {
   RotateCcw,
   ThumbsUp,
   ThumbsDown,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
 import { RemyCapabilitiesPanel } from '@/components/ai/remy-capabilities-panel'
@@ -66,6 +66,7 @@ import {
 } from '@/lib/hooks/use-message-actions'
 import { useConversationManagement } from '@/lib/hooks/use-conversation-management'
 import { useRemySend } from '@/lib/hooks/use-remy-send'
+import { useKitchenMode } from '@/lib/hooks/use-kitchen-mode'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -104,6 +105,9 @@ export function RemyDrawer() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pendingImageRef = useRef<{ base64: string; intent: 'receipt' | 'dish' | 'auto' } | null>(
+    null
+  )
 
   // ─── Extracted hooks ───────────────────────────────────────────────────────
 
@@ -179,6 +183,19 @@ export function RemyDrawer() {
     abortInflight,
   } = sendHook
 
+  // Wrapper: attach pending image to handleSend calls from the input area
+  const handleSendWithImage = useCallback(
+    (text?: string) => {
+      const img = pendingImageRef.current
+      pendingImageRef.current = null
+      if (img) {
+        return handleSend(text, { imageBase64: img.base64, imageIntent: img.intent })
+      }
+      return handleSend(text)
+    },
+    [handleSend]
+  )
+
   // Voice input — merge transcript into input field
   const voiceInput = useVoiceInput(
     useCallback((text: string) => {
@@ -189,6 +206,13 @@ export function RemyDrawer() {
     }, [])
   )
   const { isListening, supportsVoice, toggleVoiceInput } = voiceInput
+
+  // Kitchen Mode — continuous listening with wake word "Hey Remy"
+  const kitchenModeHook = useKitchenMode({
+    onMessage: handleSend,
+    isLoading: loading,
+  })
+  const { kitchenMode, isCapturing, toggleKitchenMode } = kitchenModeHook
 
   // Context-aware starters
   const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
@@ -234,15 +258,21 @@ export function RemyDrawer() {
     }
   }, [open])
 
-  // Warm up the classifier model (qwen3:4b) when drawer opens
-  // This pings Ollama to load the model into VRAM with a 30-min keepalive,
-  // so the first query doesn't suffer a cold-start delay.
+  // Ollama health check — detect limited mode
+  const [ollamaOnline, setOllamaOnline] = useState(true)
   useEffect(() => {
-    if (open) {
-      fetch('/api/remy/warmup', { method: 'POST' }).catch(() => {
-        // Non-blocking — if warmup fails, the query will still work (just slower)
-      })
-    }
+    if (!open) return
+    // Warm up the classifier model (qwen3:4b) and check Ollama status
+    fetch('/api/remy/warmup', { method: 'POST' })
+      .then((res) => setOllamaOnline(res.ok))
+      .catch(() => setOllamaOnline(false))
+    // Re-check every 60 seconds while drawer is open
+    const interval = setInterval(() => {
+      fetch('/api/remy/warmup', { method: 'POST' })
+        .then((res) => setOllamaOnline(res.ok))
+        .catch(() => setOllamaOnline(false))
+    }, 60000)
+    return () => clearInterval(interval)
   }, [open])
 
   // Abort in-flight request when drawer closes
@@ -265,6 +295,29 @@ export function RemyDrawer() {
       stopSpeaking()
     }
   }, [open, stopSpeaking])
+
+  // Auto-read: speak new Remy responses when auto-read is enabled
+  const prevMessageCountRef = useRef(messages.length)
+  useEffect(() => {
+    const prevCount = prevMessageCountRef.current
+    prevMessageCountRef.current = messages.length
+
+    if (!voiceSettings.autoRead || !open) return
+    if (messages.length <= prevCount) return
+    // Only auto-read if the latest message is from Remy and we're not still streaming
+    if (loading) return
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg?.role === 'remy' && lastMsg.content) {
+      handleSpeak(lastMsg.id, lastMsg.content)
+    }
+  }, [messages.length, loading, voiceSettings.autoRead, open, handleSpeak, messages])
+
+  // Stop speaking when user sends a new message
+  useEffect(() => {
+    if (loading && speakingId) {
+      stopSpeaking()
+    }
+  }, [loading, speakingId, stopSpeaking])
 
   // Memory decay — run once per session when drawer first opens
   useEffect(() => {
@@ -439,11 +492,16 @@ export function RemyDrawer() {
       }
       reader.readAsText(file)
     } else if (file.type.startsWith('image/')) {
-      setInput(
-        (prev) =>
-          `${prev ? prev + '\n\n' : ''}[Attached image: ${file.name} (${(file.size / 1024).toFixed(1)}KB) — describe what you need to know about this image]`
-      )
-      toast.success(`Attached ${file.name}`)
+      const imgReader = new FileReader()
+      imgReader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string
+        // Strip the data:image/...;base64, prefix — Ollama wants raw base64
+        const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '')
+        pendingImageRef.current = { base64, intent: 'auto' }
+        setInput((prev) => `${prev ? prev + '\n\n' : ''}[Image attached: ${file.name}] Scan this`)
+      }
+      imgReader.readAsDataURL(file)
+      toast.success(`Attached ${file.name} — send a message to analyze it`)
     } else {
       toast.error('Unsupported file type. Try text, markdown, CSV, JSON, or image files.')
     }
@@ -588,6 +646,25 @@ export function RemyDrawer() {
                   >
                     <Settings2 className="h-4 w-4" />
                   </button>
+                  {supportsVoice && (
+                    <button
+                      type="button"
+                      onClick={toggleKitchenMode}
+                      className={`transition-colors p-1 ${
+                        kitchenMode
+                          ? 'text-green-400 animate-pulse'
+                          : 'text-white/80 hover:text-white'
+                      }`}
+                      title={
+                        kitchenMode
+                          ? 'Kitchen Mode on — say "Hey Remy"'
+                          : 'Kitchen Mode (hands-free)'
+                      }
+                      aria-label={kitchenMode ? 'Disable Kitchen Mode' : 'Enable Kitchen Mode'}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </button>
+                  )}
                   {currentConversationId && (
                     <>
                       <button
@@ -800,6 +877,32 @@ export function RemyDrawer() {
                   <span>Full</span>
                 </div>
               </div>
+
+              {/* Auto-read toggle */}
+              <div className="flex items-center justify-between pt-1 border-t border-stone-700">
+                <div>
+                  <label className="text-xs font-medium text-stone-300">Auto-read responses</label>
+                  <p className="text-[10px] text-stone-400 mt-0.5">
+                    Speak every new Remy response automatically
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateVoiceSetting('autoRead', !voiceSettings.autoRead)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                    voiceSettings.autoRead ? 'bg-brand-600' : 'bg-stone-600'
+                  }`}
+                  role="switch"
+                  aria-checked={voiceSettings.autoRead ? 'true' : 'false'}
+                  title="Toggle auto-read responses"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      voiceSettings.autoRead ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           )}
 
@@ -853,6 +956,45 @@ export function RemyDrawer() {
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Kitchen Mode indicator */}
+                {kitchenMode && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-xs text-green-200">
+                    <Mic
+                      className={`h-3.5 w-3.5 shrink-0 ${isCapturing ? 'text-green-400 animate-pulse' : 'text-green-500/60'}`}
+                    />
+                    <span>
+                      {isCapturing ? (
+                        <>
+                          <strong>Listening...</strong> speak your question
+                        </>
+                      ) : (
+                        <>
+                          <strong>Kitchen Mode</strong> — say &quot;Hey Remy&quot; to ask a question
+                        </>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={kitchenModeHook.stopKitchenMode}
+                      className="ml-auto text-green-400 hover:text-green-300 text-xs"
+                      title="Stop Kitchen Mode"
+                    >
+                      Stop
+                    </button>
+                  </div>
+                )}
+
+                {/* Limited mode banner when Ollama is offline */}
+                {!ollamaOnline && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
+                    <VolumeX className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                    <span>
+                      <strong>Limited mode</strong> — Ollama is offline. I can still answer common
+                      questions instantly, but complex queries need Ollama running.
+                    </span>
+                  </div>
+                )}
+
                 {/* Auto-project suggestion banner */}
                 {projectSuggestion && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm">
@@ -1206,7 +1348,7 @@ export function RemyDrawer() {
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
-                          handleSend()
+                          handleSendWithImage()
                         }
                       }}
                       placeholder="Ask Remy anything..."
@@ -1238,7 +1380,7 @@ export function RemyDrawer() {
                     </button>
                   )}
                   <Button
-                    onClick={() => handleSend()}
+                    onClick={() => handleSendWithImage()}
                     disabled={!input.trim() || loading}
                     variant="primary"
                     size="sm"

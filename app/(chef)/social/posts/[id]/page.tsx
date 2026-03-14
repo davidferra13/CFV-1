@@ -6,7 +6,7 @@ import { getConnectedPlatformSet } from '@/lib/social/oauth-actions'
 import { SocialPostEditor } from '@/components/social/social-post-editor'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft } from '@/components/ui/icons'
 import { format } from 'date-fns'
 
 export default async function SocialPostEditPage({ params }: { params: { id: string } }) {
@@ -38,7 +38,8 @@ export default async function SocialPostEditPage({ params }: { params: { id: str
           </Button>
         </Link>
         <div className="text-sm text-stone-500">
-          {post.post_code} · Scheduled {format(scheduleDate, 'EEE, MMM d')} at {format(scheduleDate, 'h:mm a')}
+          {post.post_code} · Scheduled {format(scheduleDate, 'EEE, MMM d')} at{' '}
+          {format(scheduleDate, 'h:mm a')}
         </div>
       </div>
 

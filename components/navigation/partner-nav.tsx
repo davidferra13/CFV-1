@@ -5,7 +5,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, MapPin, CalendarDays, User, Eye, LogOut } from 'lucide-react'
+import { LayoutDashboard, MapPin, CalendarDays, User, Eye, LogOut } from '@/components/ui/icons'
 import { signOut } from '@/lib/auth/actions'
 
 const NAV_ITEMS = [

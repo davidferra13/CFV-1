@@ -10,5 +10,6 @@
 CREATE INDEX IF NOT EXISTS idx_inquiries_client_status
   ON inquiries(client_id, status)
   WHERE client_id IS NOT NULL;
+
 COMMENT ON INDEX idx_inquiries_client_status IS
   'Supports client portal inquiry list queries filtered by client_id and status.';

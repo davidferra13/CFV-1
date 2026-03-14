@@ -27,7 +27,7 @@ import {
   Package,
   Gift,
   EyeOff,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { getNotifications } from '@/lib/notifications/actions'
 import { useNotifications } from './notification-provider'
 import type {

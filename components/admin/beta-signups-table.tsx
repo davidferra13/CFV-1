@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useMemo } from 'react'
 import { updateBetaSignupStatus, exportBetaSignupsCsv, deleteBetaSignup } from '@/lib/beta/actions'
-import { Download, Copy, Check, Search, Trash2 } from 'lucide-react'
+import { Download, Copy, Check, Search, Trash2 } from '@/components/ui/icons'
 
 interface BetaSignup {
   id: string

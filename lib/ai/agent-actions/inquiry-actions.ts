@@ -274,9 +274,12 @@ export const inquiryAgentActions: AgentActionDefinition[] = [
       if ('error' in result)
         return { success: false, message: `Conversion failed: ${result.error}` }
       const eventId = (result as { event: { id: string } }).event?.id
+      const wasSeries = Boolean((result as { series?: { id: string } }).series?.id)
       return {
         success: true,
-        message: 'Inquiry converted to draft event!',
+        message: wasSeries
+          ? 'Inquiry converted to draft multi-day series!'
+          : 'Inquiry converted to draft event!',
         redirectUrl: eventId ? `/events/${eventId}` : '/events',
       }
     },

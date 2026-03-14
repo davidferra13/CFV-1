@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Clock, Printer, Loader2, Sparkles, Users, ChefHat } from 'lucide-react'
+import { Clock, Printer, Loader2, Sparkles, Users, ChefHat } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateServiceTimeline, type ServiceTimeline } from '@/lib/ai/service-timeline'

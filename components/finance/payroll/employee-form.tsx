@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { createEmployee, updateEmployee, terminateEmployee } from '@/lib/finance/payroll-actions'
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { FILING_STATUS_LABELS, PAY_TYPE_LABELS } from '@/lib/finance/payroll-constants'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

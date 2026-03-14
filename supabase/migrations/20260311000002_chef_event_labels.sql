@@ -9,6 +9,7 @@
 -- ─── ENUM ────────────────────────────────────────────────────────────────────
 
 CREATE TYPE chef_event_label_type AS ENUM ('occasion_type', 'status_label');
+
 -- ─── chef_event_type_labels ──────────────────────────────────────────────────
 
 CREATE TABLE chef_event_type_labels (
@@ -23,7 +24,9 @@ CREATE TABLE chef_event_type_labels (
   -- One override per (tenant, default_label, label_type) combination
   UNIQUE (tenant_id, default_label, label_type)
 );
+
 ALTER TABLE chef_event_type_labels ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "tenant_isolation" ON chef_event_type_labels
   FOR ALL
   USING (
@@ -33,5 +36,6 @@ CREATE POLICY "tenant_isolation" ON chef_event_type_labels
         AND role = 'chef'
     )
   );
+
 CREATE INDEX idx_chef_event_type_labels_tenant
   ON chef_event_type_labels (tenant_id, label_type);

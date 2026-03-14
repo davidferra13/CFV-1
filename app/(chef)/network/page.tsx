@@ -50,9 +50,11 @@ import {
   Bell,
   Bookmark,
   Handshake,
-} from 'lucide-react'
+} from '@/components/ui/icons'
+import { Suspense } from 'react'
+import { NetworkReferralBar } from '@/components/intelligence/network-referral-bar'
 
-export const metadata: Metadata = { title: 'Chef Community — ChefFlow' }
+export const metadata: Metadata = { title: 'Chef Community - ChefFlow' }
 
 type Tab = 'feed' | 'channels' | 'discover' | 'connections' | 'collab'
 
@@ -127,6 +129,11 @@ export default async function NetworkPage({
           </Link>
         </div>
       </div>
+
+      {/* Referral Intelligence */}
+      <Suspense fallback={null}>
+        <NetworkReferralBar />
+      </Suspense>
 
       {/* Privacy notice */}
       {!discoverable && (

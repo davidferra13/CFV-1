@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useState, useTransition } from 'react'
-import { Camera, FileText, Film, MapPin, Pencil, Plus, Star, Trash2 } from 'lucide-react'
+import { Camera, FileText, Film, MapPin, Pencil, Plus, Star, Trash2 } from '@/components/ui/icons'
 import {
   createChefJourneyMedia,
   deleteChefJourneyMedia,

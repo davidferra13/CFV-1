@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { FormEvent, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Camera, Lightbulb, MapPin, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { BookOpen, Camera, Lightbulb, MapPin, Plus, Sparkles, Trash2 } from '@/components/ui/icons'
 import { createChefJourney, deleteChefJourney } from '@/lib/journey/actions'
 import type {
   ChefJourneyInsights,

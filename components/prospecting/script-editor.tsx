@@ -11,7 +11,7 @@ import {
 } from '@/lib/prospecting/script-actions'
 import type { CallScript } from '@/lib/prospecting/types'
 import { PROSPECT_CATEGORIES, PROSPECT_CATEGORY_LABELS } from '@/lib/prospecting/constants'
-import { Loader2, Save, Trash2, Plus } from 'lucide-react'
+import { Loader2, Save, Trash2, Plus } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 interface ScriptEditorProps {

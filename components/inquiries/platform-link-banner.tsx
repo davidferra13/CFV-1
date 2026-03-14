@@ -49,11 +49,16 @@ export function PlatformLinkBanner({
           <p className="text-sm font-medium text-stone-200 truncate">{statusMessage}</p>
         </div>
 
-        <a href={externalLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
-          <Button variant="primary" size="sm" type="button">
-            Open in {display.label}
-          </Button>
-        </a>
+        <Button
+          variant="primary"
+          size="sm"
+          href={externalLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0"
+        >
+          Open in {display.label}
+        </Button>
       </div>
 
       {externalInquiryId && (

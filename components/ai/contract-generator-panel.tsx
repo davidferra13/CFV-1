@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
+import { FileText, Download, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateContract, type GeneratedContract } from '@/lib/ai/contract-generator'

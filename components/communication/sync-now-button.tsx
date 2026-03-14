@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { triggerGmailSync } from '@/lib/gmail/actions'
 

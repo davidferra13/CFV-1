@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { submitUserFeedback, type FeedbackSentiment } from '@/lib/feedback/user-feedback-actions'
+import { useIsDemoMode } from '@/lib/demo-mode'
 
 const STORAGE_KEY = 'chefflow:feedback-nudge-done'
 
@@ -17,6 +18,7 @@ const SENTIMENTS: { emoji: string; label: string; value: FeedbackSentiment }[] =
 ]
 
 export function FeedbackNudgeModal() {
+  const isDemo = useIsDemoMode()
   const [visible, setVisible] = useState(false)
   const [selected, setSelected] = useState<FeedbackSentiment | null>(null)
   const [message, setMessage] = useState('')
@@ -63,7 +65,7 @@ export function FeedbackNudgeModal() {
     })
   }
 
-  if (!visible) return null
+  if (isDemo || !visible) return null
 
   return (
     <div

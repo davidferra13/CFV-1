@@ -7,6 +7,7 @@
 
 ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS contractor_type TEXT DEFAULT 'contractor' CHECK (contractor_type IN ('contractor', 'employee'));
 ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS ytd_payments_cents INTEGER DEFAULT 0;
+
 -- ============================================
 -- TABLE 1: STAFF AVAILABILITY
 -- ============================================
@@ -23,11 +24,14 @@ CREATE TABLE IF NOT EXISTS staff_availability (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (staff_member_id, date)
 );
+
 CREATE INDEX idx_staff_availability_chef_date ON staff_availability(chef_id, date);
 CREATE INDEX idx_staff_availability_member ON staff_availability(staff_member_id, date);
+
 CREATE TRIGGER trg_staff_availability_updated_at
   BEFORE UPDATE ON staff_availability
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 2: STAFF CLOCK ENTRIES
 -- ============================================
@@ -47,12 +51,15 @@ CREATE TABLE IF NOT EXISTS staff_clock_entries (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_staff_clock_chef ON staff_clock_entries(chef_id);
 CREATE INDEX idx_staff_clock_event ON staff_clock_entries(event_id);
 CREATE INDEX idx_staff_clock_member ON staff_clock_entries(staff_member_id);
+
 CREATE TRIGGER trg_staff_clock_updated_at
   BEFORE UPDATE ON staff_clock_entries
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- TABLE 3: STAFF PERFORMANCE SCORES
 -- ============================================
@@ -70,10 +77,13 @@ CREATE TABLE IF NOT EXISTS staff_performance_scores (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (staff_member_id, chef_id)
 );
+
 CREATE INDEX idx_staff_performance_chef ON staff_performance_scores(chef_id);
+
 CREATE TRIGGER trg_staff_performance_updated_at
   BEFORE UPDATE ON staff_performance_scores
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -81,16 +91,19 @@ CREATE TRIGGER trg_staff_performance_updated_at
 ALTER TABLE staff_availability       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_clock_entries      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_performance_scores ENABLE ROW LEVEL SECURITY;
+
 -- staff_availability
 CREATE POLICY sa_chef_select ON staff_availability FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sa_chef_insert ON staff_availability FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sa_chef_update ON staff_availability FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sa_chef_delete ON staff_availability FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- staff_clock_entries
 CREATE POLICY sce_chef_select ON staff_clock_entries FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sce_chef_insert ON staff_clock_entries FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sce_chef_update ON staff_clock_entries FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sce_chef_delete ON staff_clock_entries FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 -- staff_performance_scores
 CREATE POLICY sps_chef_select ON staff_performance_scores FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY sps_chef_insert ON staff_performance_scores FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

@@ -77,13 +77,6 @@ function findLatestOvernightReport() {
   return fs.existsSync(reportPath) ? reportPath : ''
 }
 
-function findLatestSiteAuditReport() {
-  const latestSiteAudit = findLatestDir(REPORTS_DIR, 'site-audit-')
-  if (!latestSiteAudit) return ''
-  const reportPath = path.join(latestSiteAudit, 'report.md')
-  return fs.existsSync(reportPath) ? reportPath : ''
-}
-
 function parseTopIssues(reportPath) {
   if (!reportPath || !fs.existsSync(reportPath)) return []
   const raw = readTextFileSmart(reportPath)
@@ -94,22 +87,6 @@ function parseTopIssues(reportPath) {
     issues.push({ severity: match[1], title: match[2] })
   }
   return issues
-}
-
-function parseSiteAuditFailures(reportPath) {
-  if (!reportPath || !fs.existsSync(reportPath)) return []
-  const raw = readTextFileSmart(reportPath)
-  const failures = []
-  const regex = /^### ([^\n]+)$/gm
-  let match = null
-  while ((match = regex.exec(raw)) !== null) {
-    const title = match[1].trim()
-    if (title === 'Summary' || title === 'Failures' || title === 'Skipped Dynamic Routes') {
-      continue
-    }
-    failures.push({ severity: 'FAIL', title })
-  }
-  return failures
 }
 
 function findLatestRemyArtifacts() {
@@ -167,11 +144,7 @@ function main() {
   const totalFails = laneResults.reduce((sum, x) => sum + x.fails, 0)
 
   const overnightReport = findLatestOvernightReport()
-  const siteAuditReport = findLatestSiteAuditReport()
-  const auditReport = overnightReport || siteAuditReport
-  const topIssues = overnightReport
-    ? parseTopIssues(overnightReport).slice(0, 15)
-    : parseSiteAuditFailures(siteAuditReport).slice(0, 15)
+  const topIssues = parseTopIssues(overnightReport).slice(0, 15)
   const remy = findLatestRemyArtifacts()
 
   const lines = []
@@ -196,14 +169,14 @@ function main() {
   }
   lines.push('')
 
-  lines.push('## Top Issues (Latest Audit)')
+  lines.push('## Top Issues (Overnight Audit)')
   lines.push('')
-  if (!auditReport) {
-    lines.push('- No overnight or site-audit report found.')
+  if (!overnightReport) {
+    lines.push('- No overnight report found.')
   } else if (topIssues.length === 0) {
-    lines.push(`- Report found at ${formatPath(auditReport)} but no issues were parsed.`)
+    lines.push(`- Report found at ${formatPath(overnightReport)} but no ranked issues were parsed.`)
   } else {
-    lines.push(`- Source: ${formatPath(auditReport)}`)
+    lines.push(`- Source: ${formatPath(overnightReport)}`)
     for (const issue of topIssues) {
       lines.push(`- [${issue.severity}] ${issue.title}`)
     }

@@ -17,6 +17,13 @@
 
 // PostHog event names — keep them consistent across the app
 export const ANALYTICS_EVENTS = {
+  // Marketing & funnel
+  CTA_CLICKED: 'cta_clicked',
+  SIGNUP_STARTED: 'signup_started',
+  BETA_SIGNUP_SUBMITTED: 'beta_signup_submitted',
+  CONTACT_FORM_SUBMITTED: 'contact_form_submitted',
+  NEWSLETTER_SUBSCRIBED: 'newsletter_subscribed',
+
   // Inquiries
   INQUIRY_SUBMITTED: 'inquiry_submitted',
   INQUIRY_VIEWED: 'inquiry_viewed',
@@ -46,9 +53,13 @@ export const ANALYTICS_EVENTS = {
   PAGE_VIEWED: 'page_viewed',
   FEATURE_USED: 'feature_used',
   SEARCH_PERFORMED: 'search_performed',
+
+  // Performance telemetry
+  PERF_WEB_VITAL: 'perf_web_vital',
+  PERF_ROUTE_TRANSITION: 'perf_route_transition',
 } as const
 
-type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]
 
 /**
  * Track a product analytics event.

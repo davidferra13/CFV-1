@@ -42,6 +42,7 @@ BEGIN
   END IF;
 END;
 $$;
+
 -- Unique constraint: prevent duplicate automation executions
 DO $$
 BEGIN
@@ -65,6 +66,7 @@ BEGIN
   END IF;
 END;
 $$;
+
 -- ────────────────────────────────────────────────────────────
 -- Standalone automation_execution_log table
 -- Fallback if automation_executions table doesn't exist.
@@ -88,18 +90,24 @@ CREATE TABLE IF NOT EXISTS automation_execution_log (
   completed_at     TIMESTAMPTZ,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 -- Unique idempotency enforcement
 CREATE UNIQUE INDEX IF NOT EXISTS idx_automation_exec_log_idempotency
   ON automation_execution_log(tenant_id, idempotency_key);
+
 -- Status query indexes
 CREATE INDEX IF NOT EXISTS idx_automation_exec_log_status
   ON automation_execution_log(status);
+
 CREATE INDEX IF NOT EXISTS idx_automation_exec_log_tenant
   ON automation_execution_log(tenant_id, created_at DESC);
+
 -- RLS
 ALTER TABLE automation_execution_log ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "service_role_manage_exec_log" ON automation_execution_log
   FOR ALL USING (auth.role() = 'service_role');
+
 CREATE POLICY "chefs_read_own_exec_log" ON automation_execution_log
   FOR SELECT USING (
     tenant_id = (

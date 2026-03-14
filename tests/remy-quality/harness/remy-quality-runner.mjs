@@ -12,7 +12,7 @@
  *   node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --prompt chef-001
  *
  * Prerequisites:
- *   - Test target reachable via REMY_TEST_BASE_URL / PLAYWRIGHT_BASE_URL
+ *   - Dev server running on port 3100
  *   - Ollama running with qwen3:4b + qwen3-coder:30b loaded
  *   - Agent test account exists
  */
@@ -24,11 +24,10 @@ import { createClient } from '@supabase/supabase-js'
 import { parseSSEStream } from './sse-parser.mjs'
 import { evaluateResponse } from './evaluator.mjs'
 import { generateReports, printSummary } from './report-generator.mjs'
-import { resolveTestBaseUrl } from '../../helpers/runtime-base-url.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..', '..', '..')
-const REMY_TEST_BASE_URL = resolveTestBaseUrl('REMY_TEST_BASE_URL')
+const REMY_TEST_BASE_URL = process.env.REMY_TEST_BASE_URL || 'http://127.0.0.1:3100'
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'
 const DEV_SERVER_TIMEOUT_MS = intFromEnv('REMY_DEV_SERVER_TIMEOUT_MS', 5_000)
 const OLLAMA_CHECK_TIMEOUT_MS = intFromEnv('REMY_OLLAMA_CHECK_TIMEOUT_MS', 5_000)
@@ -258,7 +257,7 @@ async function authenticate(env) {
 async function checkDevServer() {
   try {
     await fetchWithRetry(
-      'Test target check',
+      'Dev server check',
       REMY_TEST_BASE_URL,
       { redirect: 'manual' },
       { attempts: 2, timeoutMs: DEV_SERVER_TIMEOUT_MS }
@@ -414,10 +413,10 @@ async function main() {
 
   const serverOk = await checkDevServer()
   if (!serverOk) {
-    console.error(`ERROR: Test target not reachable at ${REMY_TEST_BASE_URL}.`)
+    console.error(`ERROR: Dev server not reachable at ${REMY_TEST_BASE_URL}. Start it first.`)
     process.exit(1)
   }
-  console.log(`  OK Test target reachable (${REMY_TEST_BASE_URL})`)
+  console.log(`  OK Dev server reachable (${REMY_TEST_BASE_URL})`)
 
   const ollama = await checkOllama()
   if (!ollama.running) {

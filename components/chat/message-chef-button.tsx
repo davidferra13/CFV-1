@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MessageCircle, Loader2 } from 'lucide-react'
+import { MessageCircle, Loader2 } from '@/components/ui/icons'
+import { toast } from 'sonner'
 import { clientGetOrCreateConversation } from '@/lib/chat/actions'
 
 interface MessageChefButtonProps {
@@ -36,6 +37,7 @@ export function MessageChefButton({
       router.push(`/my-chat/${result.conversation.id}`)
     } catch (err) {
       console.error('Failed to start conversation:', err)
+      toast.error('Could not open chat right now')
     } finally {
       setLoading(false)
     }

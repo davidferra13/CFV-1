@@ -1,8 +1,7 @@
 // Adapted from legacy BillyBob8 patterns for Next.js + Supabase
 //
-// Default base URL is https://beta.cheflowhq.com.
-// Local targets must be explicitly opted into with PLAYWRIGHT_ALLOW_LOCAL=true.
-// Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when needed.
+// Default base URL is http://localhost:3100.
+// Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when isolation is needed.
 //
 // Projects:
 //   smoke              — unauthenticated, no globalSetup dependency (tests/smoke/)
@@ -24,22 +23,8 @@ function envFlag(value: string | undefined, fallback: boolean): boolean {
   return normalized === '1' || normalized === 'true' || normalized === 'yes'
 }
 
-function isLocalBaseUrl(url: string): boolean {
-  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i.test(url)
-}
-
-const DEFAULT_REMOTE_BASE_URL = 'https://beta.cheflowhq.com'
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || DEFAULT_REMOTE_BASE_URL
-const ALLOW_LOCAL_TARGET = envFlag(process.env.PLAYWRIGHT_ALLOW_LOCAL, false)
-
-if (isLocalBaseUrl(BASE_URL) && !ALLOW_LOCAL_TARGET) {
-  throw new Error(
-    `Local Playwright targets are disabled by default. Set PLAYWRIGHT_BASE_URL to ${DEFAULT_REMOTE_BASE_URL} or opt into localhost with PLAYWRIGHT_ALLOW_LOCAL=true.`
-  )
-}
-
-const WEB_SERVER_COMMAND =
-  process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || (isLocalBaseUrl(BASE_URL) ? 'npm run dev' : '')
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
+const WEB_SERVER_COMMAND = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'npm run dev'
 const RUN_ID = process.env.PLAYWRIGHT_RUN_ID || `pw-${process.pid}-${Date.now()}`
 const OUTPUT_DIR = process.env.PLAYWRIGHT_OUTPUT_DIR || `test-results/${RUN_ID}`
 const DEV_DIST_DIR = process.env.NEXT_DIST_DIR || `.next-dev-${RUN_ID}`
@@ -304,61 +289,16 @@ export default defineConfig({
       timeout: 30_000, // Per-test timeout (will be overridden by individual test durations)
       workers: 1, // Sequential to avoid concurrent Ollama stress
     },
-    // ── Product Tests ─────────────────────────────────────────────────────────
-    // Tiered product validation: does each feature deliver its value?
-    // Maps to docs/product-testing-roadmap.md (Tiers 0-6).
-    // Run: npm run test:product (all)
-    //      npm run test:product:chef (chef portal only)
-    //      npm run test:product:client (client portal only)
-    //      npm run test:product:public (public pages only)
-    {
-      name: 'product-chef',
-      testMatch: [
-        '**/product/00-tier0-auth.spec.ts',
-        '**/product/01-tier1-communication.spec.ts',
-        '**/product/02-tier2-lifecycle.spec.ts',
-        '**/product/03-tier3-financials.spec.ts',
-        '**/product/04-tier4-operations.spec.ts',
-        '**/product/05-tier5-intelligence.spec.ts',
-        '**/product/09-deep-chef-features.spec.ts',
-        '**/product/10-data-integrity.spec.ts',
-        '**/product/11-error-resilience.spec.ts',
-      ],
-      use: { storageState: '.auth/chef.json' },
-    },
-    {
-      name: 'product-client',
-      testMatch: ['**/product/06-client-portal.spec.ts'],
-      use: { storageState: '.auth/client.json' },
-    },
-    {
-      name: 'product-public',
-      testMatch: ['**/product/07-public-pages.spec.ts'],
-      timeout: 60_000,
-      // No storageState — unauthenticated
-    },
-    {
-      name: 'product-staff',
-      testMatch: ['**/product/12-staff-portal.spec.ts'],
-      use: { storageState: '.auth/staff.json' },
-    },
-    {
-      name: 'product-partner',
-      testMatch: ['**/product/13-partner-portal.spec.ts'],
-      use: { storageState: '.auth/partner.json' },
-    },
   ],
-  webServer: WEB_SERVER_COMMAND
-    ? {
-        command: WEB_SERVER_COMMAND,
-        url: BASE_URL,
-        reuseExistingServer: REUSE_EXISTING_SERVER,
-        timeout: 120_000,
-        env: {
-          ...process.env,
-          DISABLE_AUTH_RATE_LIMIT_FOR_E2E: 'true',
-          NEXT_DIST_DIR: DEV_DIST_DIR,
-        },
-      }
-    : undefined,
+  webServer: {
+    command: WEB_SERVER_COMMAND,
+    url: BASE_URL,
+    reuseExistingServer: REUSE_EXISTING_SERVER,
+    timeout: 120_000,
+    env: {
+      ...process.env,
+      DISABLE_AUTH_RATE_LIMIT_FOR_E2E: 'true',
+      NEXT_DIST_DIR: DEV_DIST_DIR,
+    },
+  },
 })

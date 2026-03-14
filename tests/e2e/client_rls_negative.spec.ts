@@ -1,9 +1,8 @@
 import { test, expect } from '../helpers/fixtures'
 import { readFileSync } from 'fs'
 import { createClient } from '@supabase/supabase-js'
-import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
-const BASE_URL = TEST_BASE_URL
+const BASE_URL = 'http://localhost:3100'
 
 function requireEnv(name: string): string {
   const value = process.env[name]

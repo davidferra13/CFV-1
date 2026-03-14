@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 type Props = {
   eventId: string
@@ -20,10 +21,14 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
   const landingUrl = `${baseUrl}/g/${guestCode}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(landingUrl)}`
 
-  function handleCopy() {
-    navigator.clipboard.writeText(landingUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(landingUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Could not copy guest link')
+    }
   }
 
   return (
@@ -64,11 +69,15 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
             {copied ? 'Copied!' : 'Copy Link'}
           </Button>
 
-          <a href={`/events/${eventId}/guest-card`} target="_blank" rel="noreferrer">
-            <Button variant="ghost" className="w-full text-sm">
-              Print Table Card
-            </Button>
-          </a>
+          <Button
+            variant="ghost"
+            className="w-full text-sm"
+            href={`/events/${eventId}/guest-card`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Print Table Card
+          </Button>
 
           <a
             href={landingUrl}

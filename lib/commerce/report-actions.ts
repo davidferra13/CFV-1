@@ -55,6 +55,26 @@ export type ChannelReport = {
   percentOfTotal: number
 }
 
+export type PaymentMixRow = {
+  method: string
+  paymentCount: number
+  grossCents: number
+  tipCents: number
+  totalCents: number
+  averageTenderCents: number
+  percentOfTotal: number
+}
+
+export type PaymentMixReport = {
+  rows: PaymentMixRow[]
+  totals: {
+    paymentCount: number
+    grossCents: number
+    tipCents: number
+    totalCents: number
+  }
+}
+
 // ─── Shift Report ─────────────────────────────────────────────────
 
 /**
@@ -351,4 +371,63 @@ export async function getChannelReport(from: string, to: string): Promise<Channe
       percentOfTotal: grandTotal > 0 ? Math.round((d.revenueCents / grandTotal) * 1000) / 10 : 0,
     }))
     .sort((a, b) => b.revenueCents - a.revenueCents)
+}
+
+/**
+ * Get payment mix and tender breakdown for a date range.
+ */
+export async function getPaymentMixReport(from: string, to: string): Promise<PaymentMixReport> {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const supabase: any = createServerClient()
+
+  const { data: payments } = await (supabase
+    .from('commerce_payments')
+    .select('payment_method, amount_cents, tip_cents')
+    .eq('tenant_id', user.tenantId!)
+    .in('status', ['captured', 'settled', 'authorized'])
+    .gte('created_at', `${from}T00:00:00.000Z`)
+    .lte('created_at', `${to}T23:59:59.999Z`) as any)
+
+  const methodMap = new Map<
+    string,
+    { paymentCount: number; grossCents: number; tipCents: number }
+  >()
+  for (const payment of (payments ?? []) as any[]) {
+    const method = String(payment.payment_method ?? 'unknown')
+    const current = methodMap.get(method) ?? { paymentCount: 0, grossCents: 0, tipCents: 0 }
+    current.paymentCount += 1
+    current.grossCents += Number(payment.amount_cents ?? 0)
+    current.tipCents += Number(payment.tip_cents ?? 0)
+    methodMap.set(method, current)
+  }
+
+  const totals = Array.from(methodMap.values()).reduce<PaymentMixReport['totals']>(
+    (acc, row) => {
+      acc.paymentCount += row.paymentCount
+      acc.grossCents += row.grossCents
+      acc.tipCents += row.tipCents
+      acc.totalCents += row.grossCents + row.tipCents
+      return acc
+    },
+    { paymentCount: 0, grossCents: 0, tipCents: 0, totalCents: 0 }
+  )
+
+  const rows: PaymentMixRow[] = Array.from(methodMap.entries())
+    .map(([method, row]) => {
+      const totalCents = row.grossCents + row.tipCents
+      return {
+        method,
+        paymentCount: row.paymentCount,
+        grossCents: row.grossCents,
+        tipCents: row.tipCents,
+        totalCents,
+        averageTenderCents: row.paymentCount > 0 ? Math.round(totalCents / row.paymentCount) : 0,
+        percentOfTotal:
+          totals.totalCents > 0 ? Math.round((totalCents / totals.totalCents) * 1000) / 10 : 0,
+      }
+    })
+    .sort((a, b) => b.totalCents - a.totalCents)
+
+  return { rows, totals }
 }

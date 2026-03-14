@@ -139,12 +139,12 @@ test.describe('Settings — Advanced', () => {
   const routes = [
     '/settings/api-keys',
     '/settings/webhooks',
-    '/settings/compliance/gdpr',
+    '/settings/gdpr',
     '/settings/custom-fields',
-    '/settings/event-types',
+    '/settings/event-type-labels',
     '/settings/portfolio',
-    '/settings/highlights',
-    '/settings/billing',
+    '/settings/profile-highlights',
+    '/settings/subscription',
   ]
 
   for (const route of routes) {

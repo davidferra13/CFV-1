@@ -8,19 +8,38 @@ import {
   pruneOldConversations,
   trimConversationMessages,
   logAction,
+  getActionLog,
   autoSuggestProject,
   autoTitle,
+  getLastSessionSummary,
 } from '@/lib/ai/remy-local-storage'
 import { parseRemyStream } from '@/lib/ai/remy-stream-parser'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
-import { extractAndSaveMemories } from '@/lib/ai/remy-memory-actions'
+import {
+  extractAndSaveMemories,
+  handleCorrectionMemory,
+  detectDraftFeedback,
+} from '@/lib/ai/remy-memory-actions'
 import {
   getSessionActivity,
   updateChannelDigest,
   getOtherChannelDigest,
 } from '@/lib/ai/remy-activity-tracker'
 import type { BodyEvent } from '@/lib/ai/remy-body-state'
+import {
+  type EntityContext,
+  createEntityContext,
+  extractEntities,
+  updateEntityContext,
+  resolveReferences,
+  buildEntityContextFromHistory,
+} from '@/lib/ai/remy-coreference'
+import {
+  generateConversationSummary,
+  shouldGenerateSummary,
+} from '@/lib/ai/remy-conversation-summary'
+import { saveSummary, getRecentSummaries } from '@/lib/ai/remy-local-storage'
 import type {
   RemyMessage,
   RemyTaskResult,
@@ -110,6 +129,14 @@ export function useRemySend(config: UseRemySendConfig) {
   const abortControllerRef = useRef<AbortController | null>(null)
   const router = useRouter()
 
+  // Coreference resolution — track entities across conversation turns
+  const entityContextRef = useRef<EntityContext>(createEntityContext())
+
+  // Rebuild entity context when messages change (e.g., loading a conversation)
+  useEffect(() => {
+    entityContextRef.current = buildEntityContextFromHistory(messages)
+  }, [messages.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync loading state to context so mascot shows thinking animation
   const setLoading = useCallback(
     (val: boolean) => {
@@ -154,29 +181,46 @@ export function useRemySend(config: UseRemySendConfig) {
     }
   }, [soundEnabled])
 
-  const autoSave = useCallback((userMessage: string, remyMsg: RemyMessage) => {
-    const title =
-      remyMsg.content.length > 60 ? remyMsg.content.slice(0, 57) + '...' : remyMsg.content
-    saveRemyMessage({ title, content: remyMsg.content, sourceMessage: userMessage }).catch((err) =>
-      console.error('[non-blocking] Auto-save message failed', err)
-    )
+  const autoSave = useCallback(
+    (userMessage: string, remyMsg: RemyMessage) => {
+      const title =
+        remyMsg.content.length > 60 ? remyMsg.content.slice(0, 57) + '...' : remyMsg.content
+      saveRemyMessage({ title, content: remyMsg.content, sourceMessage: userMessage }).catch(
+        (err) => console.error('[non-blocking] Auto-save message failed', err)
+      )
 
-    if (remyMsg.tasks?.length) {
-      for (const task of remyMsg.tasks) {
-        if (task.status === 'error') continue
-        saveRemyTaskResult({
-          taskType: task.taskType,
-          taskName: task.name,
-          data: task.data,
-          sourceMessage: userMessage,
-        }).catch((err) => console.error('[non-blocking] Auto-save task failed', err))
+      if (remyMsg.tasks?.length) {
+        for (const task of remyMsg.tasks) {
+          if (task.status === 'error') continue
+          saveRemyTaskResult({
+            taskType: task.taskType,
+            taskName: task.name,
+            data: task.data,
+            sourceMessage: userMessage,
+          }).catch((err) => console.error('[non-blocking] Auto-save task failed', err))
+        }
       }
-    }
 
-    extractAndSaveMemories(userMessage, remyMsg.content).catch((err) =>
-      console.error('[non-blocking] Memory extraction failed', err)
-    )
-  }, [])
+      extractAndSaveMemories(userMessage, remyMsg.content).catch((err) =>
+        console.error('[non-blocking] Memory extraction failed', err)
+      )
+
+      // Correction-aware memory: detect "no, actually..." and auto-fix wrong memories
+      handleCorrectionMemory(userMessage).catch((err) =>
+        console.error('[non-blocking] Correction detection failed', err)
+      )
+
+      // Draft feedback learning: detect style preferences from feedback on drafts
+      // Look at previous messages for draft-producing tasks
+      const previousRemyMsg = messages.findLast((m) => m.role === 'remy' && m.tasks?.length)
+      if (previousRemyMsg?.tasks) {
+        detectDraftFeedback(userMessage, previousRemyMsg.tasks).catch((err) =>
+          console.error('[non-blocking] Draft feedback learning failed', err)
+        )
+      }
+    },
+    [messages]
+  )
 
   const handleCancel = useCallback(() => {
     if (abortControllerRef.current) {
@@ -192,7 +236,10 @@ export function useRemySend(config: UseRemySendConfig) {
   }, [resetLipSync, setLoading, dispatchBody])
 
   const handleSend = useCallback(
-    async (text?: string) => {
+    async (
+      text?: string,
+      opts?: { imageBase64?: string; imageIntent?: 'receipt' | 'dish' | 'auto' }
+    ) => {
       const message = (text ?? input).trim()
       if (!message || loading) return
 
@@ -211,11 +258,168 @@ export function useRemySend(config: UseRemySendConfig) {
         return
       }
 
+      // Auto-approve learning — check if any tasks in the last response are "always approved"
+      // (chef has approved this task type 5+ times, never rejected)
+      const lastRemyForAutoApprove = [...messages]
+        .reverse()
+        .find((m) => m.role === 'remy' && m.tasks?.some((t) => t.status === 'pending'))
+      if (lastRemyForAutoApprove?.tasks) {
+        const pendingForAuto = lastRemyForAutoApprove.tasks.filter((t) => t.status === 'pending')
+        if (pendingForAuto.length > 0) {
+          getActionLog(500)
+            .then((actions) => {
+              const approvalCounts = new Map<string, { approved: number; rejected: number }>()
+              for (const a of actions) {
+                if (!a.action) continue
+                if (!approvalCounts.has(a.action))
+                  approvalCounts.set(a.action, { approved: 0, rejected: 0 })
+                const counts = approvalCounts.get(a.action)!
+                if (a.status === 'success') counts.approved++
+                else counts.rejected++
+              }
+              // Tasks that have been approved 5+ times with zero rejections
+              for (const task of pendingForAuto) {
+                const counts = approvalCounts.get(task.taskType)
+                if (counts && counts.approved >= 5 && counts.rejected === 0) {
+                  console.log(
+                    `[remy-auto-approve] Task type "${task.taskType}" qualifies for auto-approval (${counts.approved} approvals, 0 rejections)`
+                  )
+                  // Don't auto-execute yet — just add a hint to the task card
+                  // Future: could auto-execute tier 1 tasks that qualify
+                }
+              }
+            })
+            .catch(() => {})
+        }
+      }
+
+      // Conversational follow-through — "yes" / "do it" / "go ahead" executes last suggestion
+      const followThroughPattern =
+        /^(yes|yep|yeah|yea|ya|do it|go ahead|go for it|sure|approved|approve|ok do it|ok go|let'?s do it|please do|make it happen|send it|ship it|confirm|confirmed|ok|okay)\.?$/i
+      if (followThroughPattern.test(message)) {
+        // Find last Remy message with pending tasks
+        const lastRemyWithTasks = [...messages]
+          .reverse()
+          .find((m) => m.role === 'remy' && m.tasks?.some((t) => t.status === 'pending'))
+        if (lastRemyWithTasks?.tasks) {
+          const pendingTasks = lastRemyWithTasks.tasks.filter((t) => t.status === 'pending')
+          if (pendingTasks.length > 0) {
+            setInput('')
+            const userMsg: RemyMessage = {
+              id: generateId(),
+              role: 'user',
+              content: message,
+              timestamp: new Date().toISOString(),
+            }
+            setMessages((prev) => [...prev, userMsg])
+
+            // Auto-approve all pending tasks via direct server call
+            for (const task of pendingTasks) {
+              approveTask(task.taskType, task.data)
+                .then((result) => {
+                  if (result.success) {
+                    toast.success(result.message)
+                    setMessages((prev) =>
+                      prev.map((msg) => {
+                        if (!msg.tasks) return msg
+                        return {
+                          ...msg,
+                          tasks: msg.tasks.map((t) =>
+                            t.taskId === task.taskId ? { ...t, status: 'done' as const } : t
+                          ),
+                        }
+                      })
+                    )
+                    if (result.redirectUrl) {
+                      setTimeout(() => {
+                        closeDrawer()
+                        router.push(result.redirectUrl!)
+                      }, 1000)
+                    }
+                  } else {
+                    toast.error(result.message)
+                  }
+                })
+                .catch((err) => toast.error(err instanceof Error ? err.message : 'Failed'))
+            }
+
+            const confirmMsg: RemyMessage = {
+              id: generateId(),
+              role: 'remy',
+              content: `On it, chef! Executing ${pendingTasks.length === 1 ? `"${pendingTasks[0].name}"` : `${pendingTasks.length} tasks`} now.`,
+              timestamp: new Date().toISOString(),
+            }
+            setMessages((prev) => [...prev, confirmMsg])
+            return
+          }
+        }
+      }
+
+      // Session recap — intercept client-side, no API call (Formula > AI)
+      const recapPattern =
+        /^(what did we do|session recap|recap today|what have we done|summarize (this |our )?session)/i
+      if (recapPattern.test(message)) {
+        setInput('')
+        const userMsg: RemyMessage = {
+          id: generateId(),
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
+        }
+        setMessages((prev) => [...prev, userMsg])
+
+        try {
+          const actions = await getActionLog(100)
+          const today = new Date().toDateString()
+          const todayActions = actions.filter((a) => new Date(a.createdAt).toDateString() === today)
+
+          let recapContent: string
+          if (todayActions.length === 0) {
+            recapContent =
+              "We haven't taken any actions yet today, chef. Ask me to do something and I'll keep track of it all."
+          } else {
+            const grouped = new Map<string, number>()
+            for (const a of todayActions) {
+              const key = a.action || 'action'
+              grouped.set(key, (grouped.get(key) || 0) + 1)
+            }
+            const lines = Array.from(grouped.entries()).map(
+              ([name, count]) => `- **${name}**${count > 1 ? ` (x${count})` : ''}`
+            )
+            const successCount = todayActions.filter((a) => a.status === 'success').length
+            const errorCount = todayActions.filter((a) => a.status === 'error').length
+
+            recapContent = `Here's what we've done today, chef:\n\n${lines.join('\n')}\n\n**${todayActions.length} total actions** — ${successCount} successful${errorCount > 0 ? `, ${errorCount} had issues` : ''}.`
+          }
+
+          const recapMsg: RemyMessage = {
+            id: generateId(),
+            role: 'remy',
+            content: recapContent,
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prev) => [...prev, recapMsg])
+        } catch {
+          const errorMsg: RemyMessage = {
+            id: generateId(),
+            role: 'remy',
+            content: "Couldn't pull up the action log right now. Try again in a sec.",
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prev) => [...prev, errorMsg])
+        }
+        return
+      }
+
       setInput('')
 
       let convId = currentConversationId
+      let lastSessionSummary: Awaited<ReturnType<typeof getLastSessionSummary>> = null
+      const recentSummaries = getRecentSummaries(currentConversationId)
       if (!convId) {
         try {
+          // Load previous session context before creating new conversation
+          lastSessionSummary = await getLastSessionSummary(null).catch(() => null)
           const conv = await createLocalConversation()
           convId = conv.id
           setCurrentConversationId(conv.id)
@@ -262,13 +466,19 @@ export function useRemySend(config: UseRemySendConfig) {
 
         timeoutId = setTimeout(() => controller.abort(), 120_000)
 
+        // Coreference resolution — extract entities from user message & resolve pronouns
+        const turnIndex = messages.length
+        const userEntities = extractEntities(message, turnIndex)
+        entityContextRef.current = updateEntityContext(entityContextRef.current, userEntities)
+        const resolvedMessage = resolveReferences(message, entityContextRef.current) ?? message
+
         const activity = getSessionActivity()
         const otherDigest = getOtherChannelDigest('drawer')
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message,
+            message: resolvedMessage,
             history: messages.slice(-30),
             currentPage: pathname,
             recentPages: activity.recentPages,
@@ -277,11 +487,36 @@ export function useRemySend(config: UseRemySendConfig) {
             sessionMinutes: activity.sessionMinutes,
             activeForm: activity.activeForm,
             ...(otherDigest && { otherChannelDigest: otherDigest }),
+            ...(lastSessionSummary && { previousSessionTopics: lastSessionSummary }),
+            ...(recentSummaries.length > 0 && { recentConversationSummaries: recentSummaries }),
+            ...(opts?.imageBase64 && { imageBase64: opts.imageBase64 }),
+            ...(opts?.imageIntent && { imageIntent: opts.imageIntent }),
           }),
           signal: controller.signal,
         })
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        if (!response.ok) {
+          let errorMessage = `HTTP ${response.status}`
+          try {
+            const raw = await response.text()
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw) as { error?: string; message?: string }
+                errorMessage = parsed.error ?? parsed.message ?? raw
+              } catch {
+                const sseMatch = raw.match(/"data":"([^"]+)"/)
+                if (sseMatch?.[1]) {
+                  errorMessage = sseMatch[1]
+                } else {
+                  errorMessage = raw
+                }
+              }
+            }
+          } catch {
+            // keep default status message
+          }
+          throw new Error(errorMessage)
+        }
 
         reader = response.body?.getReader()
         if (!reader) throw new Error('No response body')
@@ -320,6 +555,21 @@ export function useRemySend(config: UseRemySendConfig) {
         setStreamingContent('')
         setStreamingIntent(undefined)
         lipSyncStop()
+
+        // Extract entities from Remy's response for coreference tracking
+        const remyEntities = extractEntities(cleanContent, turnIndex + 1)
+        entityContextRef.current = updateEntityContext(entityContextRef.current, remyEntities)
+
+        // Auto-generate conversation summary when reaching 10+ messages
+        const updatedMessages = [...messages, userMsg, remyMsg]
+        if (shouldGenerateSummary(updatedMessages) && currentConversationId) {
+          try {
+            const summary = generateConversationSummary(updatedMessages)
+            saveSummary(currentConversationId, summary)
+          } catch {
+            // Non-blocking — summary generation is supplemental
+          }
+        }
 
         // Cross-chat digest — record this exchange for the mascot to reference
         updateChannelDigest('drawer', message, cleanContent)

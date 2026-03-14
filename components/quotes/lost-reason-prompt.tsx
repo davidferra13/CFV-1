@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { recordLostReason } from '@/lib/quotes/loss-analysis-actions'
-import { X } from 'lucide-react'
+import { X } from '@/components/ui/icons'
 
 interface LostReasonPromptProps {
   quoteId: string

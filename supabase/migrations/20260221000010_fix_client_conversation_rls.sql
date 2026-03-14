@@ -15,6 +15,7 @@ CREATE POLICY conversations_client_insert ON conversations
     get_current_user_role() = 'client' AND
     tenant_id = (SELECT tenant_id FROM clients WHERE id = get_current_client_id())
   );
+
 -- ── 2. Fix conversation_participants INSERT policy ──────────────────────────
 
 DROP POLICY IF EXISTS conv_participants_client_insert ON conversation_participants;

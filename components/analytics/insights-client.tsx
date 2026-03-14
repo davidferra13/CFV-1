@@ -448,7 +448,7 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
               ? formatCurrency(roi.estimatedCommissionSavedCents)
               : '—'
           }
-          sub="on direct repeat bookings (25% est.)"
+          sub={`on direct repeat bookings (${roi.defaultCommissionPercent}% est.)`}
         />
         <StatCard
           label="Avg Event Value"
@@ -528,7 +528,8 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
         <p>
           Take a Chef finds your clients. ChefFlow builds the direct relationship. Every time a
           client who first found you on Take a Chef books you directly, you save the platform
-          commission — typically 20–30% of the booking value. This panel tracks that flywheel.
+          commission. This panel estimates saved commission using your current Take a Chef default
+          rate of {roi.defaultCommissionPercent}% and tracks the actual commission expenses you log.
         </p>
       </div>
     </div>

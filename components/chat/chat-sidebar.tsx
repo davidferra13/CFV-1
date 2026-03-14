@@ -2,7 +2,15 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { ChevronRight, ChevronLeft, StickyNote, Sparkles, Pin, User, Plus } from 'lucide-react'
+import {
+  ChevronRight,
+  ChevronLeft,
+  StickyNote,
+  Sparkles,
+  Pin,
+  User,
+  Plus,
+} from '@/components/ui/icons'
 import { addClientNote } from '@/lib/notes/actions'
 import { QuickNoteForm } from '@/components/clients/quick-note-form'
 import { ChatInsightsPanel } from '@/components/chat/chat-insights-panel'

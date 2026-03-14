@@ -9,7 +9,9 @@
 -- ─── 1. Extend enum ────────────────────────────────────────────────────────
 
 ALTER TYPE chat_message_type ADD VALUE IF NOT EXISTS 'file';
+
 COMMENT ON TYPE chat_message_type IS 'Content types for chat messages: text, image, file, link, event_ref, system';
+
 -- ─── 2. Update trigger function ────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION update_conversation_last_message()
@@ -53,4 +55,5 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
 COMMENT ON FUNCTION update_conversation_last_message IS 'Denormalizes last message info onto conversations table for efficient inbox queries';

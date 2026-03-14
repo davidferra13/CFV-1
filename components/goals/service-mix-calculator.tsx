@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useRef } from 'react'
-import { Minus, Plus, Sparkles } from 'lucide-react'
+import { Minus, Plus, Sparkles } from '@/components/ui/icons'
 import type { ChefGoal, ServiceType, ServiceSlotClientMatch } from '@/lib/goals/types'
 import { computeServiceMixPlan, formatDollars } from '@/lib/goals/service-mix-utils'
 import { getClientMatchesForServiceType, autoSuggestMix } from '@/lib/goals/service-mix-actions'

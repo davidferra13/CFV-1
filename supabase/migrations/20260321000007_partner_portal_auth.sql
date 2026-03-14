@@ -17,6 +17,7 @@
 -- but Postgres 15+ (used by Supabase) supports it.
 -- IF NOT EXISTS prevents double-application errors.
 ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'partner';
+
 -- ─── Step 2: Auth + invite columns on referral_partners ──────────────────────
 ALTER TABLE referral_partners
   -- Auth linkage: NULL until the partner claims their invite
@@ -30,15 +31,20 @@ ALTER TABLE referral_partners
   ADD COLUMN IF NOT EXISTS origin_event_id   UUID REFERENCES events(id) ON DELETE SET NULL,
   -- How this partner was acquired: 'client_event_referral' | 'direct_outreach' | 'organic'
   ADD COLUMN IF NOT EXISTS acquisition_source TEXT DEFAULT 'organic';
+
 -- ─── Step 3: Indexes ──────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_referral_partners_auth_user
   ON referral_partners(auth_user_id) WHERE auth_user_id IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_referral_partners_invite_token
   ON referral_partners(invite_token) WHERE invite_token IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_referral_partners_origin_client
   ON referral_partners(origin_client_id) WHERE origin_client_id IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_referral_partners_origin_event
   ON referral_partners(origin_event_id) WHERE origin_event_id IS NOT NULL;
+
 -- ─── Step 4: RLS for partner-role users on referral_partners ─────────────────
 -- Existing chef policies remain intact. PostgreSQL ORs permissive SELECT policies,
 -- so partners see ONLY their own record; chefs see all records in their tenant.
@@ -46,10 +52,12 @@ CREATE INDEX IF NOT EXISTS idx_referral_partners_origin_event
 CREATE POLICY "partner_view_own"
   ON referral_partners FOR SELECT TO authenticated
   USING (auth_user_id = auth.uid());
+
 CREATE POLICY "partner_update_own"
   ON referral_partners FOR UPDATE TO authenticated
   USING (auth_user_id = auth.uid())
   WITH CHECK (auth_user_id = auth.uid());
+
 -- ─── Step 5: RLS for partner-role users on partner_locations ─────────────────
 CREATE POLICY "partner_view_own_locations"
   ON partner_locations FOR SELECT TO authenticated
@@ -58,6 +66,7 @@ CREATE POLICY "partner_view_own_locations"
       SELECT id FROM referral_partners WHERE auth_user_id = auth.uid()
     )
   );
+
 -- ─── Step 6: RLS for partner-role users on partner_images ────────────────────
 CREATE POLICY "partner_view_own_images"
   ON partner_images FOR SELECT TO authenticated
@@ -66,6 +75,7 @@ CREATE POLICY "partner_view_own_images"
       SELECT id FROM referral_partners WHERE auth_user_id = auth.uid()
     )
   );
+
 COMMENT ON COLUMN referral_partners.auth_user_id IS 'Supabase auth user ID — set when partner claims their invite';
 COMMENT ON COLUMN referral_partners.invite_token IS 'One-time UUID token for the partner signup link; cleared after claim';
 COMMENT ON COLUMN referral_partners.claimed_at IS 'Timestamp when the partner signed up and linked their account';

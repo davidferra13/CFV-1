@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation'
 import { getCampaignByToken } from '@/lib/campaigns/public-booking-actions'
 import { CampaignBookingForm } from '@/components/public/campaign-booking-form'
 import { format } from 'date-fns'
-import { Calendar, DollarSign, Users } from 'lucide-react'
+import { Calendar, DollarSign, Users } from '@/components/ui/icons'
 
 type Props = { params: { token: string } }
 

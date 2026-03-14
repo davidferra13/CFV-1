@@ -12,6 +12,7 @@ export function DesktopAppSettings() {
   const [autostartState, setAutostartState] = useState<AutostartState>('loading')
   const [updating, setUpdating] = useState(false)
   const [isTauri, setIsTauri] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
 
   useEffect(() => {
     // Tauri injects __TAURI_INTERNALS__ on the window object
@@ -37,6 +38,7 @@ export function DesktopAppSettings() {
   async function toggleAutostart() {
     if (updating || autostartState === 'loading' || autostartState === 'unavailable') return
     setUpdating(true)
+    setToggleError(null)
     try {
       const { enable, disable, isEnabled } = await import('@tauri-apps/plugin-autostart')
       if (autostartState === 'enabled') {
@@ -48,6 +50,7 @@ export function DesktopAppSettings() {
       setAutostartState(current ? 'enabled' : 'disabled')
     } catch (err) {
       console.error('[desktop-app] autostart toggle failed', err)
+      setToggleError('Could not update launch-at-login setting. Please try again.')
     } finally {
       setUpdating(false)
     }
@@ -111,6 +114,14 @@ export function DesktopAppSettings() {
           Right-click the tray icon to open, start a new event or inquiry, or quit.
         </p>
       </div>
+      {toggleError && (
+        <div
+          className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-300"
+          role="alert"
+        >
+          {toggleError}
+        </div>
+      )}
     </div>
   )
 }

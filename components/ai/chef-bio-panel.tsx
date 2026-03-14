@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { UserCircle, Copy, Loader2, Sparkles } from 'lucide-react'
+import { UserCircle, Copy, Loader2, Sparkles } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateChefBioDraft, type ChefBioDraft } from '@/lib/ai/chef-bio'

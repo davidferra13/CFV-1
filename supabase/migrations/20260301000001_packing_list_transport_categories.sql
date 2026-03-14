@@ -11,6 +11,7 @@ ALTER TABLE components
   ADD COLUMN IF NOT EXISTS transport_category TEXT
   CHECK (transport_category IN ('cold', 'frozen', 'room_temp', 'fragile', 'liquid'))
   DEFAULT 'room_temp';
+
 COMMENT ON COLUMN components.transport_category IS
   'Packing transport zone for make-ahead components. '
   'cold = cooler/perishable, frozen = cooler/pack-last, '

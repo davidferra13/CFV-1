@@ -15,7 +15,7 @@ import {
   validateWebsiteSignupInput,
 } from '@/lib/auth/website-signup'
 import { getInvitationByToken } from '@/lib/auth/invitations'
-import { Chrome } from 'lucide-react'
+import { Chrome } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'

@@ -9,12 +9,14 @@ ALTER TABLE equipment_items
   ADD COLUMN IF NOT EXISTS useful_life_years INTEGER CHECK (useful_life_years IS NULL OR useful_life_years > 0),
   ADD COLUMN IF NOT EXISTS salvage_value_cents INTEGER DEFAULT 0 CHECK (salvage_value_cents IS NULL OR salvage_value_cents >= 0),
   ADD COLUMN IF NOT EXISTS tax_year_placed_in_service INTEGER;
+
 COMMENT ON COLUMN equipment_items.depreciation_method IS
   'section_179 = full deduction in year of purchase. straight_line = cost/useful_life per year.';
 COMMENT ON COLUMN equipment_items.useful_life_years IS
   'IRS GDS useful life years. Required for straight_line. Defaults: knives/cookware=5, appliances=7.';
 COMMENT ON COLUMN equipment_items.tax_year_placed_in_service IS
   'Tax year placed in service. Defaults to purchase year if not specified.';
+
 -- New table: per-asset, per-year depreciation schedule
 CREATE TABLE equipment_depreciation_schedules (
   id                            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -37,13 +39,17 @@ CREATE TABLE equipment_depreciation_schedules (
 
   UNIQUE (equipment_item_id, tax_year)
 );
+
 CREATE INDEX idx_equip_deprec_chef_year ON equipment_depreciation_schedules(chef_id, tax_year);
 CREATE INDEX idx_equip_deprec_item ON equipment_depreciation_schedules(equipment_item_id);
+
 CREATE TRIGGER trg_equip_deprec_updated_at
   BEFORE UPDATE ON equipment_depreciation_schedules
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- RLS
 ALTER TABLE equipment_depreciation_schedules ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY edd_chef_select ON equipment_depreciation_schedules FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY edd_chef_insert ON equipment_depreciation_schedules FOR INSERT
@@ -52,5 +58,6 @@ CREATE POLICY edd_chef_update ON equipment_depreciation_schedules FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 CREATE POLICY edd_chef_delete ON equipment_depreciation_schedules FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+
 COMMENT ON TABLE equipment_depreciation_schedules IS
   'Per-asset, per-year depreciation records for Schedule C Line 13 / Form 4562.';

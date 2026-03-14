@@ -11,6 +11,7 @@
 // Rule: NEVER overwrite or delete an existing inquiry. Duplicates are skipped.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { collectStoredPlatformIdentityKeys, dedupeIdentityKeys } from './platform-identity'
 
 export interface PlatformDedupMatch {
   isDuplicate: boolean
@@ -33,6 +34,7 @@ export async function checkPlatformInquiryDuplicate(
   opts: {
     channel: string
     externalId?: string | null
+    externalIds?: Array<string | null | undefined>
     clientName: string
     eventDate: string | null
   }
@@ -43,33 +45,19 @@ export async function checkPlatformInquiryDuplicate(
     matchedBy: null,
   }
 
-  // Strategy 1: Match by external inquiry ID (most reliable)
-  if (opts.externalId) {
-    const { data } = await supabase
-      .from('inquiries')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .eq('external_platform', opts.channel)
-      .eq('external_inquiry_id', opts.externalId)
-      .limit(1)
-      .maybeSingle()
+  const candidateIdentityKeys = dedupeIdentityKeys([opts.externalId, ...(opts.externalIds ?? [])])
 
-    if (data) {
-      return { isDuplicate: true, existingInquiryId: data.id, matchedBy: 'external_id' }
-    }
+  // Strategy 1: Match by stored platform identity key (most reliable)
+  if (candidateIdentityKeys.length > 0) {
+    const directMatch = await findInquiryByIdentityKeys(
+      supabase,
+      tenantId,
+      opts.channel,
+      candidateIdentityKeys
+    )
 
-    // Also check external_link (some platforms store the URL there)
-    const { data: linkMatch } = await supabase
-      .from('inquiries')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .eq('channel', opts.channel)
-      .eq('external_link', opts.externalId)
-      .limit(1)
-      .maybeSingle()
-
-    if (linkMatch) {
-      return { isDuplicate: true, existingInquiryId: linkMatch.id, matchedBy: 'external_id' }
+    if (directMatch) {
+      return { isDuplicate: true, existingInquiryId: directMatch, matchedBy: 'external_id' }
     }
   }
 
@@ -87,7 +75,7 @@ export async function checkPlatformInquiryDuplicate(
       for (const row of data) {
         const { data: inquiry } = await supabase
           .from('inquiries')
-          .select('id, client_id, source_message, unknown_fields')
+          .select('id, client_id, unknown_fields')
           .eq('id', row.id)
           .single()
 
@@ -129,32 +117,20 @@ export async function findPlatformInquiryByContext(
     clientName: string | null
     eventDate: string | null
     orderId: string | null
+    externalIds?: Array<string | null | undefined>
   }
 ): Promise<string | null> {
-  // First try by Order/Quote ID (stored as external_inquiry_id)
-  if (opts.orderId) {
-    const { data } = await supabase
-      .from('inquiries')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .eq('external_platform', opts.channel)
-      .eq('external_inquiry_id', opts.orderId)
-      .limit(1)
-      .maybeSingle()
+  const candidateIdentityKeys = dedupeIdentityKeys([opts.orderId, ...(opts.externalIds ?? [])])
 
-    if (data) return data.id
-
-    // Also check external_link
-    const { data: linkMatch } = await supabase
-      .from('inquiries')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .eq('channel', opts.channel)
-      .eq('external_link', opts.orderId)
-      .limit(1)
-      .maybeSingle()
-
-    if (linkMatch) return linkMatch.id
+  // First try by platform identity key (order ID, quote ID, or link token)
+  if (candidateIdentityKeys.length > 0) {
+    const directMatch = await findInquiryByIdentityKeys(
+      supabase,
+      tenantId,
+      opts.channel,
+      candidateIdentityKeys
+    )
+    if (directMatch) return directMatch
   }
 
   // Fall back to client name + date matching
@@ -199,13 +175,105 @@ export async function findPlatformInquiryByContext(
   return null
 }
 
+async function findInquiryByIdentityKeys(
+  supabase: SupabaseClient,
+  tenantId: string,
+  channel: string,
+  identityKeys: string[]
+): Promise<string | null> {
+  for (const identityKey of identityKeys) {
+    const { data } = await supabase
+      .from('inquiries')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('external_platform', channel)
+      .eq('external_inquiry_id', identityKey)
+      .limit(1)
+      .maybeSingle()
+
+    if (data) return data.id
+
+    const { data: linkMatch } = await supabase
+      .from('inquiries')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('channel', channel)
+      .eq('external_link', identityKey)
+      .limit(1)
+      .maybeSingle()
+
+    if (linkMatch) return linkMatch.id
+  }
+
+  const { data: candidates } = await supabase
+    .from('inquiries')
+    .select('id, external_inquiry_id, external_link, unknown_fields')
+    .eq('tenant_id', tenantId)
+    .eq('channel', channel)
+    .order('created_at', { ascending: false })
+    .limit(250)
+
+  if (!candidates || candidates.length === 0) return null
+
+  const candidateKeySet = new Set(identityKeys)
+
+  for (const row of candidates) {
+    const storedKeys = collectStoredPlatformIdentityKeys(row)
+    if (storedKeys.some((storedKey) => candidateKeySet.has(storedKey))) {
+      return row.id
+    }
+  }
+
+  return null
+}
+
 // ─── Name Matching ──────────────────────────────────────────────────────
 
 /**
- * Case-insensitive name comparison with basic normalization.
- * Handles: extra spaces, different casing, minor variations.
+ * Normalize a name for comparison: lowercase, collapse whitespace, strip accents.
+ */
+function normalizeName(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // strip accents
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
+ * Case-insensitive name comparison with fuzzy matching.
+ * Handles: extra spaces, different casing, accents, first/last swap,
+ * and partial matches (one name is a subset of the other's parts).
  */
 function namesMatch(a: string, b: string): boolean {
-  const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
-  return normalize(a) === normalize(b)
+  const na = normalizeName(a)
+  const nb = normalizeName(b)
+
+  // Exact match after normalization
+  if (na === nb) return true
+
+  const partsA = na.split(' ').filter(Boolean)
+  const partsB = nb.split(' ').filter(Boolean)
+
+  // First/last name swap: "John Smith" vs "Smith John"
+  if (
+    partsA.length >= 2 &&
+    partsB.length >= 2 &&
+    partsA[0] === partsB[partsB.length - 1] &&
+    partsA[partsA.length - 1] === partsB[0]
+  ) {
+    return true
+  }
+
+  // One name contains all parts of the other (handles middle names, titles, suffixes)
+  // e.g., "Maria Garcia" matches "Maria Elena Garcia" or "Dr. Maria Garcia"
+  if (partsA.length >= 2 && partsB.length >= 2) {
+    const smaller = partsA.length <= partsB.length ? partsA : partsB
+    const larger = partsA.length <= partsB.length ? partsB : partsA
+    const allSmallerInLarger = smaller.every((part) => larger.includes(part))
+    if (allSmallerInLarger) return true
+  }
+
+  return false
 }

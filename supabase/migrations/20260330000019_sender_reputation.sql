@@ -18,11 +18,14 @@ CREATE TABLE IF NOT EXISTS email_sender_reputation (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(tenant_id, sender_domain)
 );
+
 -- Index for fast lookup during classification
 CREATE INDEX IF NOT EXISTS idx_sender_reputation_lookup
   ON email_sender_reputation (tenant_id, sender_domain);
+
 -- RLS
 ALTER TABLE email_sender_reputation ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Tenant isolation for sender reputation"
   ON email_sender_reputation
   FOR ALL

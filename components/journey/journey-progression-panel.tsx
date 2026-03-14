@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, Circle, Compass, Sparkles } from 'lucide-react'
+import { CheckCircle2, Circle, Compass, Sparkles } from '@/components/ui/icons'
 import type {
   ChefJourney,
   ChefJourneyEntry,

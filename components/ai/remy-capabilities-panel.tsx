@@ -10,7 +10,7 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 

@@ -9,7 +9,7 @@ import { format, parseISO } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { ChevronRight, Share2, FileText, Clock, Receipt } from 'lucide-react'
+import { ChevronRight, Share2, FileText, Clock, Receipt } from '@/components/ui/icons'
 
 interface Menu {
   id: string

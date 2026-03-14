@@ -25,11 +25,14 @@ CREATE TABLE IF NOT EXISTS remy_usage_metrics (
   model_version       TEXT,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- One row per tenant per date per category (for upsert)
 CREATE UNIQUE INDEX idx_remy_metrics_tenant_date_cat
   ON remy_usage_metrics(tenant_id, metric_date, feature_category);
+
 -- RLS: chefs can see their own metrics
 ALTER TABLE remy_usage_metrics ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY remy_usage_metrics_select ON remy_usage_metrics
   FOR SELECT USING (
     tenant_id IN (
@@ -37,6 +40,7 @@ CREATE POLICY remy_usage_metrics_select ON remy_usage_metrics
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_usage_metrics_insert ON remy_usage_metrics
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -44,6 +48,7 @@ CREATE POLICY remy_usage_metrics_insert ON remy_usage_metrics
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_usage_metrics_update ON remy_usage_metrics
   FOR UPDATE USING (
     tenant_id IN (
@@ -51,6 +56,7 @@ CREATE POLICY remy_usage_metrics_update ON remy_usage_metrics
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- ─── Support-Shared Conversations ──────────────────────────────────
 -- Only created when a chef explicitly taps "Send to Support" inside a conversation.
 -- This is a one-time share, not a persistent setting.
@@ -64,13 +70,17 @@ CREATE TABLE IF NOT EXISTS remy_support_shares (
   resolved_at       TIMESTAMPTZ,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX idx_remy_support_shares_tenant
   ON remy_support_shares(tenant_id, created_at DESC);
+
 CREATE INDEX idx_remy_support_shares_status
   ON remy_support_shares(status)
   WHERE status IN ('open', 'in_review');
+
 -- RLS: chefs can see and create their own support shares
 ALTER TABLE remy_support_shares ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY remy_support_shares_select ON remy_support_shares
   FOR SELECT USING (
     tenant_id IN (
@@ -78,6 +88,7 @@ CREATE POLICY remy_support_shares_select ON remy_support_shares
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_support_shares_insert ON remy_support_shares
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -85,6 +96,7 @@ CREATE POLICY remy_support_shares_insert ON remy_support_shares
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 -- Chefs can update their own support shares (e.g. add notes)
 CREATE POLICY remy_support_shares_update ON remy_support_shares
   FOR UPDATE USING (

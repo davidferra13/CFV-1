@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Plus, Trash2, Zap, Send, Loader2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Trash2, Zap, Send, Loader2, ChevronDown, ChevronRight } from '@/components/ui/icons'
 import { ZAPIER_EVENT_TYPES } from '@/lib/integrations/zapier/zapier-events'
 
 type Subscription = {

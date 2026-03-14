@@ -99,7 +99,7 @@ Variant @ 12 concurrent: Errors > 453, Success Rate < 95%
 When the test completes, you will see:
 
 1. **PowerShell Toast Notification** (Windows system popup)
-   - "Variant Test Complete!"
+   - "✨ Variant Test Complete!"
    - Details about test configuration
    - Audio notification (system ding)
 

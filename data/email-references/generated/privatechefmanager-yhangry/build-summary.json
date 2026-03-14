@@ -1,0 +1,2063 @@
+{
+  "generated_at": "2026-03-02T05:14:04.846Z",
+  "input_root": "C:\\Users\\david\\Documents\\CFv1\\data\\email-references\\privatechefmanager-yhangry\\Takeout\\Mail",
+  "totals": {
+    "records": 131,
+    "takeachef": 50,
+    "yhangry": 80,
+    "unknown": 1,
+    "dinner_opportunities": 81
+  },
+  "platforms": {
+    "takeachef": {
+      "stats": {
+        "total_messages": 50,
+        "dinner_opportunity_messages": 28,
+        "non_opportunity_messages": 22,
+        "dinner_opportunity_rate": 0.56,
+        "duplicate_key_count": 0
+      },
+      "fingerprints": {
+        "sender_domains": [
+          {
+            "value": "privatechefmanager.com",
+            "count": 50
+          }
+        ],
+        "sender_emails": [
+          {
+            "value": "info@privatechefmanager.com",
+            "count": 50
+          }
+        ],
+        "subject_patterns": [
+          {
+            "value": "you have still not answered this request!",
+            "count": 21
+          },
+          {
+            "value": "you just received a new request from sophie schiff!",
+            "count": 2
+          },
+          {
+            "value": "you just received a new request from jessica partain!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from josh van riper!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from lora knight!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from katie mccreedy!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from lisa mancini!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from adrien stevens-roberts!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from ryan martin!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from liz mantha!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from kimberly collard!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from ryan jose!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from jill kissick!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from lisa mcmullin!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from pearl boma!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from sam!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from katie robinson!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from shannon mcgrail!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from annabelle milliken!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from roberts townsend!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from lily barnaby!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from linda kaplin!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from eric smith!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from richards timothy!",
+            "count": 1
+          },
+          {
+            "value": "you just received a new request from pam!",
+            "count": 1
+          }
+        ],
+        "email_types": [
+          {
+            "value": "tac_new_inquiry",
+            "count": 28
+          },
+          {
+            "value": "tac_administrative",
+            "count": 22
+          }
+        ]
+      },
+      "keywords": {
+        "positive": [
+          {
+            "value": "com",
+            "count": 153
+          },
+          {
+            "value": "2026",
+            "count": 124
+          },
+          {
+            "value": "user",
+            "count": 102
+          },
+          {
+            "value": "request",
+            "count": 81
+          },
+          {
+            "value": "proposal",
+            "count": 80
+          },
+          {
+            "value": "https",
+            "count": 79
+          },
+          {
+            "value": "privatechefmanager",
+            "count": 75
+          },
+          {
+            "value": "chef",
+            "count": 70
+          },
+          {
+            "value": "new",
+            "count": 60
+          },
+          {
+            "value": "received",
+            "count": 56
+          },
+          {
+            "value": "usd",
+            "count": 56
+          },
+          {
+            "value": "send",
+            "count": 52
+          },
+          {
+            "value": "www",
+            "count": 51
+          },
+          {
+            "value": "login",
+            "count": 51
+          },
+          {
+            "value": "check",
+            "count": 51
+          },
+          {
+            "value": "dfprivatechef",
+            "count": 51
+          },
+          {
+            "value": "gmail",
+            "count": 50
+          },
+          {
+            "value": "expires",
+            "count": 50
+          },
+          {
+            "value": "hash",
+            "count": 50
+          },
+          {
+            "value": "eyjoyeialcvesz2dw5d4nqx3i7gmv93goii8iw5n144",
+            "count": 49
+          },
+          {
+            "value": "uri",
+            "count": 49
+          },
+          {
+            "value": "unsubscribe",
+            "count": 46
+          },
+          {
+            "value": "price",
+            "count": 40
+          },
+          {
+            "value": "not",
+            "count": 38
+          },
+          {
+            "value": "dietary",
+            "count": 36
+          },
+          {
+            "value": "restrictions",
+            "count": 36
+          },
+          {
+            "value": "aug",
+            "count": 35
+          },
+          {
+            "value": "notes",
+            "count": 34
+          },
+          {
+            "value": "dinner",
+            "count": 33
+          },
+          {
+            "value": "all",
+            "count": 32
+          },
+          {
+            "value": "details",
+            "count": 31
+          },
+          {
+            "value": "budget",
+            "count": 31
+          },
+          {
+            "value": "experience",
+            "count": 31
+          },
+          {
+            "value": "guests",
+            "count": 30
+          },
+          {
+            "value": "take",
+            "count": 30
+          },
+          {
+            "value": "location",
+            "count": 29
+          },
+          {
+            "value": "date",
+            "count": 29
+          },
+          {
+            "value": "family",
+            "count": 29
+          },
+          {
+            "value": "name",
+            "count": 29
+          },
+          {
+            "value": "file",
+            "count": 28
+          }
+        ],
+        "negative": [
+          {
+            "value": "com",
+            "count": 125
+          },
+          {
+            "value": "request",
+            "count": 83
+          },
+          {
+            "value": "2026",
+            "count": 83
+          },
+          {
+            "value": "user",
+            "count": 78
+          },
+          {
+            "value": "chef",
+            "count": 73
+          },
+          {
+            "value": "not",
+            "count": 69
+          },
+          {
+            "value": "https",
+            "count": 64
+          },
+          {
+            "value": "proposal",
+            "count": 61
+          },
+          {
+            "value": "privatechefmanager",
+            "count": 60
+          },
+          {
+            "value": "experience",
+            "count": 44
+          },
+          {
+            "value": "usd",
+            "count": 42
+          },
+          {
+            "value": "private",
+            "count": 41
+          },
+          {
+            "value": "check",
+            "count": 41
+          },
+          {
+            "value": "send",
+            "count": 40
+          },
+          {
+            "value": "cancel",
+            "count": 40
+          },
+          {
+            "value": "any",
+            "count": 40
+          },
+          {
+            "value": "www",
+            "count": 39
+          },
+          {
+            "value": "login",
+            "count": 39
+          },
+          {
+            "value": "dfprivatechef",
+            "count": 39
+          },
+          {
+            "value": "gmail",
+            "count": 39
+          },
+          {
+            "value": "expires",
+            "count": 39
+          },
+          {
+            "value": "hash",
+            "count": 39
+          },
+          {
+            "value": "eyjoyeialcvesz2dw5d4nqx3i7gmv93goii8iw5n144",
+            "count": 39
+          },
+          {
+            "value": "uri",
+            "count": 39
+          },
+          {
+            "value": "unsubscribe",
+            "count": 36
+          },
+          {
+            "value": "price",
+            "count": 29
+          },
+          {
+            "value": "dietary",
+            "count": 28
+          },
+          {
+            "value": "restrictions",
+            "count": 28
+          },
+          {
+            "value": "notes",
+            "count": 28
+          },
+          {
+            "value": "menu",
+            "count": 25
+          },
+          {
+            "value": "don",
+            "count": 24
+          },
+          {
+            "value": "now",
+            "count": 24
+          },
+          {
+            "value": "dinner",
+            "count": 24
+          },
+          {
+            "value": "aug",
+            "count": 24
+          },
+          {
+            "value": "see",
+            "count": 23
+          },
+          {
+            "value": "when",
+            "count": 23
+          },
+          {
+            "value": "take",
+            "count": 23
+          },
+          {
+            "value": "details",
+            "count": 22
+          },
+          {
+            "value": "location",
+            "count": 22
+          },
+          {
+            "value": "budget",
+            "count": 22
+          }
+        ]
+      },
+      "dedupe": {
+        "top_keys": [
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775172067&hash=R7INnViGhzhFohTR1Meri8HjlVAtaiLRgdLb7Mjbh6o~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjaE92Q1U2UWtNc05wbFFwWWlIUjNZ",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774005796&hash=5zjBuSqP0_vgKOfQFaiz-yzjTpkP63ovgkBUgHFtTms~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkNFhTN0NYM2J5bkZ4eioqKioqeVJ3RlBjTQ",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774576032&hash=nsj-RBA0am7GVA1FzKQs1-oCSNP4WiAwjJVu7mf4KL4~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlVTUlMkJRTHV3UkxxMjZmNDNuZklCYzc",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1779829296&hash=PWoEVIpHC9ne-oMlVCf5USAS_XWOPlqeVcLk8u_betc~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjV3lWTGlDTW4wWERDNXZwTFNyaW8qKioqKg",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775506085&hash=l-J6i2Fs2P9FIb4ST40GxLdiVa2cIFs5Scsm54OOOCc~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmJTJCd05jVTZCOTNidioqKioqckRLN0FEakxX",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1776908013&hash=oDDnTKnQlcGHeXAmjS4-rTSl4tBDRSwXjXXtYFY5oio~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkb0VoTDdzNWdkcGdrblU5Tnh2eWc4",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1777227445&hash=DVxYmceC4ST5puvQLOORYIGN1zGISEKNZAHvwAspAdA~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlODJBWGxmdWkwNUYlMkJJYm8zS1ZpKioqKio2",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1769016237&hash=Bi1aevjpdziO7JQKzLy3q_VgvQtEiXW_O6NDS36mB_Y~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmM240Z202eWV2NjBmOEg1SjJFN2lE",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1777235335&hash=YS9kOsF8SIiZAKG2-XWdPIUKB-s0ljvVJX6zOoLonUU~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlUHkwd3pLS1IzWURKcEl5bEgqKioqKjJoMg",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775495024&hash=svzcUZK18CJTrajR8vyqdnEyruCi_GP8YB6wqRVPXas~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmaHk5MTNwUzVOQlllRnplY1loYU96",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1779880761&hash=rxTAs6rcs9sJZ0mAPqHU4EUQ61r5VcreFtmcQcyjGs0~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlZlBmKioqKiptVENCdCoqKioqaVJNSmJOWWZHYnE",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774985027&hash=bOtsiNwE2A5iFTH4MVZo8EaRAOFul5KFmw-RDJ-qbQY~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjd1dMUWZmUjVMRk5VZzVaUlBRNkFL",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774741504&hash=FSVXSePX1OwWyN2zgOrIbT-dlb1_paZMe_8yo-3dKSE~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlR2REWENQa3pLM0VFZTIqKioqKkhFMTFRVg",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775417215&hash=qQO_wIpqywO7VPAsknMBvSgkb1BsC80s-P7VoqPC6ZI~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmdXV6WlBCUDRvSkdzc3RmM29xNmt0",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1770915325&hash=F1eP-vJbjDsB_3nMV1CtSXptB7Wg5m9xVCUm_iYDdR0~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmWGM5QWhvc3FTWENjbmQlMkI5WWFJeGg",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1767641086&hash=kqDk8gPTVcsRaM1UOr4qkBTDgHY8HDmHaRhWcKg8bWo~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlOE5TTGJTZExCT2MlMkJ6NVJTNXBrcEk",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775417400&hash=HY6mUOc-9XVV3D_lLUkwq5r4uSjPgnnBFGHq7E8InkA~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkd21uQ2EyNjd2cU5tUFdFc3V3UDdF",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1771383018&hash=RrwLQboyrBj5bpd_nOjesvmNEfBNWtkwGWZtaIAI2e8~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjVmNGZ0pOZEpZbnRYTDVEamRJRENT",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1777827102&hash=ughkNq2tp0TjAdG9kC06nPc4E7ICz5tvE1vcCt-gIrU~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmZnhEcjhZb2JKUEdGZnd2Wlk2RnJp",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1778684658&hash=WHKxz_JWFj8wUrqDZ1lCmBSAiVTNDY99edsL1CnavbQ~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmY2hDNzVHcWNTUEZPbUw1a0V1Ukpk",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1771173646&hash=nfrGm7DumHtC7sCkjEn-fxdBgjhqa8c7NjkjtwcfSjc~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkSE0xbzl5VUFNWjNqKioqKipsUWNsaGhDRg",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1778092058&hash=2WK_u_TYPk9_cUcvUGU8sduazoX0dvUXKc-BfUJMVV0~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlaUVldW9DTGRjQUFpR2JIY0RNN1NR",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1776633183&hash=nGaDKWfvglR5RLDh0AJ4QqP6n2nmNyuuhMbjgg_02OA~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjVFVjNVFDZyoqKioqR1NxbUFETWxWZzlxNw",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1778452294&hash=rUhxsC7VcAZ2rg3DIrY7HuFJNkx-hRciUZB-p0444fk~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmcmNzN1VPR3h4elB4SEV4JTJCRTl0UTM",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1776169607&hash=iV9HVBrE0Ol5VQkmW6arPHprQOOcuWXOPVkJBOKYKB4~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmTkdLWWVFTkZ4UFhpaHpuZXREYTlq",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1767292371&hash=RcNB2cwTqLX8m8lNlS0SMb6SV0v6xL8-bnXERIV659w~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkZiUyQlhTRGVoOVFrc3E2djdjN2NtMkc",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774747088&hash=0_V_tvjKfe47xxrvTtRocUjRJhF7-d4rdKQkzZir6IM~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmblJualBlZlc0eE1NMFl1SUtjTnVq",
+            "count": 1
+          },
+          {
+            "value": "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1779119145&hash=CprMcY4il7w2CM4wUWC46WTxWllFRK7LNP5dSWr9_zU~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlV2x6Y3JoWGpZTm5ZenZ1ZEh2Mmhn",
+            "count": 1
+          }
+        ],
+        "duplicated_keys": []
+      },
+      "samples": [
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "eb0de08952a1f64022cbd15dc7f5ff0f@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Jessica Partain!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775172067&hash=R7INnViGhzhFohTR1Meri8HjlVAtaiLRgdLb7Mjbh6o~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjaE92Q1U2UWtNc05wbFFwWWlIUjNZ"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "9ee5435a16a71888e4235bad03daa154@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Josh Van Riper!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774005796&hash=5zjBuSqP0_vgKOfQFaiz-yzjTpkP63ovgkBUgHFtTms~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkNFhTN0NYM2J5bkZ4eioqKioqeVJ3RlBjTQ"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "a244b5a397a9de2ad2d8927e9a59c8d2@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "e05feaa72e6de00e2d9f7a74df6f58f5@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Lora Knight!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774576032&hash=nsj-RBA0am7GVA1FzKQs1-oCSNP4WiAwjJVu7mf4KL4~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlVTUlMkJRTHV3UkxxMjZmNDNuZklCYzc"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "5c701dfc0df09d73f64fac78c7651fc1@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "926a593b92ed8233b5499cb35ff7a3fc@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "b2fa15a7f77566658c6a162b1db74221@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "6836039a4d25839dd2947d5e3a91db61@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Katie McCreedy!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1779829296&hash=PWoEVIpHC9ne-oMlVCf5USAS_XWOPlqeVcLk8u_betc~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjV3lWTGlDTW4wWERDNXZwTFNyaW8qKioqKg"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "d7c54f6c2cfd9e4c9d9ab43fd4ebe6da@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "1210f29b5690af3d76fc3155d8cca3df@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Lisa Mancini!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775506085&hash=l-J6i2Fs2P9FIb4ST40GxLdiVa2cIFs5Scsm54OOOCc~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmJTJCd05jVTZCOTNidioqKioqckRLN0FEakxX"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "dbc7f715f0a5bb522eb96cf1e139c5cb@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Adrien Stevens-Roberts!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1776908013&hash=oDDnTKnQlcGHeXAmjS4-rTSl4tBDRSwXjXXtYFY5oio~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBkb0VoTDdzNWdkcGdrblU5Tnh2eWc4"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "b65b38ec6dcb402da87d9a4cc8db8dbe@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Ryan Martin!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1777227445&hash=DVxYmceC4ST5puvQLOORYIGN1zGISEKNZAHvwAspAdA~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlODJBWGxmdWkwNUYlMkJJYm8zS1ZpKioqKio2"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "b1b78aa0f806d92162dfd0c4882884d0@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Liz Mantha!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1769016237&hash=Bi1aevjpdziO7JQKzLy3q_VgvQtEiXW_O6NDS36mB_Y~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmM240Z202eWV2NjBmOEg1SjJFN2lE"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "4b53e2f3f97c7f6aec9b490e46fcdd10@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "91968c3f523c4a61b5cef50155c990b7@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Kimberly Collard!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1777235335&hash=YS9kOsF8SIiZAKG2-XWdPIUKB-s0ljvVJX6zOoLonUU~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlUHkwd3pLS1IzWURKcEl5bEgqKioqKjJoMg"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "ba966cedbe163439618bcadd0885c99c@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Ryan Jose!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775495024&hash=svzcUZK18CJTrajR8vyqdnEyruCi_GP8YB6wqRVPXas~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmaHk5MTNwUzVOQlllRnplY1loYU96"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "31260594f5497e0d0a2b72f360435e4f@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "6e1937f1a0b785b4c3e67e6afe2e267c@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "72221398508580021eff71839943f66d@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Jill Kissick!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1779880761&hash=rxTAs6rcs9sJZ0mAPqHU4EUQ61r5VcreFtmcQcyjGs0~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlZlBmKioqKiptVENCdCoqKioqaVJNSmJOWWZHYnE"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "8e81408b7f19982fb661f6b914c7b8e5@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "c2947ddaf6232f95811899a4a700932c@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You have still not answered this request!",
+          "email_type": "tac_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "def9ab07cf8f52098da0d7826697aac0@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Lisa McMullin!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774985027&hash=bOtsiNwE2A5iFTH4MVZo8EaRAOFul5KFmw-RDJ-qbQY~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBjd1dMUWZmUjVMRk5VZzVaUlBRNkFL"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "96845c0bb31078eff6f416a004a8e37b@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Pearl Boma!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1774741504&hash=FSVXSePX1OwWyN2zgOrIbT-dlb1_paZMe_8yo-3dKSE~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBlR2REWENQa3pLM0VFZTIqKioqKkhFMTFRVg"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "847b3dac8f29d2d86754dde88a65ab40@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Sophie Schiff!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1775417215&hash=qQO_wIpqywO7VPAsknMBvSgkb1BsC80s-P7VoqPC6ZI~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmdXV6WlBCUDRvSkdzc3RmM29xNmt0"
+          ]
+        },
+        {
+          "source_file": "Private Chef manager(Take a chef).mbox",
+          "message_id": "a801604e27d16cfb2ee9c9542816f53b@privatechefmanager.com",
+          "from": "info@privatechefmanager.com",
+          "subject": "You just received a new request from Sam!",
+          "email_type": "tac_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "cta:https://www.privatechefmanager.com/en-us/user/login-check?user=dfprivatechef@gmail.com&expires=1770915325&hash=F1eP-vJbjDsB_3nMV1CtSXptB7Wg5m9xVCUm_iYDdR0~eyjoYeIAlCvesz2dw5d4nQX3i7Gmv93gOIi8Iw5N144~&uri=eEE1QWl5NkNSSG00bWtmVGJROGpwRGEyeHJMWnR1MDVDJTJCOXM3NVNRTEV3SWFrUHVIT2RZSlpuMDlEV0pmdFFrY0s0OVRZM3JPZnBGWSUyQjVDRGJ1NDA0NnNlSlZiQTBVOFhYU2lReTFnRzBmWGM5QWhvc3FTWENjbmQlMkI5WWFJeGg"
+          ]
+        }
+      ]
+    },
+    "yhangry": {
+      "stats": {
+        "total_messages": 80,
+        "dinner_opportunity_messages": 53,
+        "non_opportunity_messages": 27,
+        "dinner_opportunity_rate": 0.6625,
+        "duplicate_key_count": 11
+      },
+      "fingerprints": {
+        "sender_domains": [
+          {
+            "value": "yhangry.com",
+            "count": 76
+          },
+          {
+            "value": "email.yhangry.com",
+            "count": 4
+          }
+        ],
+        "sender_emails": [
+          {
+            "value": "chefs@yhangry.com",
+            "count": 20
+          },
+          {
+            "value": "info@yhangry.com",
+            "count": 12
+          },
+          {
+            "value": "dikshitakaushik@yhangry.com",
+            "count": 9
+          },
+          {
+            "value": "dkaushik@yhangry.com",
+            "count": 9
+          },
+          {
+            "value": "dikshitak@yhangry.com",
+            "count": 7
+          },
+          {
+            "value": "mike@yhangry.com",
+            "count": 4
+          },
+          {
+            "value": "heinin@yhangry.com",
+            "count": 4
+          },
+          {
+            "value": "dikshitakaushik@email.yhangry.com",
+            "count": 4
+          },
+          {
+            "value": "apandit@yhangry.com",
+            "count": 3
+          },
+          {
+            "value": "dikshita@yhangry.com",
+            "count": 2
+          },
+          {
+            "value": "ap@yhangry.com",
+            "count": 2
+          },
+          {
+            "value": "chamoliabhinav@yhangry.com",
+            "count": 1
+          },
+          {
+            "value": "ac@yhangry.com",
+            "count": 1
+          },
+          {
+            "value": "dk@yhangry.com",
+            "count": 1
+          },
+          {
+            "value": "abhinavchamoli@yhangry.com",
+            "count": 1
+          }
+        ],
+        "subject_patterns": [
+          {
+            "value": "new booking request - short drive from you in middlesex",
+            "count": 14
+          },
+          {
+            "value": "🆕 private chef request in {n}",
+            "count": 8
+          },
+          {
+            "value": "new booking request - short drive from you in boston",
+            "count": 7
+          },
+          {
+            "value": "starting in 45min: yhangry chef onboarding call",
+            "count": 3
+          },
+          {
+            "value": "new booking request - short drive from you in wellesley",
+            "count": 3
+          },
+          {
+            "value": "new booking request - short drive from you in manchester",
+            "count": 2
+          },
+          {
+            "value": "new booking request - short drive from you in brookline",
+            "count": 2
+          },
+          {
+            "value": "new booking request - short drive from you in concord",
+            "count": 2
+          },
+          {
+            "value": "want to feature in times magazine? submit your story by midnight",
+            "count": 2
+          },
+          {
+            "value": "new booking request - short drive from you in somerville",
+            "count": 2
+          },
+          {
+            "value": "how i made $160k+ on yhangry in a few months",
+            "count": 1
+          },
+          {
+            "value": "booking request for nov {n}, {n} in cos cob connecticut",
+            "count": 1
+          },
+          {
+            "value": "hey chef, this one’s worth opening",
+            "count": 1
+          },
+          {
+            "value": "new booking request - short drive from you in malden",
+            "count": 1
+          },
+          {
+            "value": "america's best private chefs (november edition)",
+            "count": 1
+          },
+          {
+            "value": "chef needed – dec 22nd birthday in plymouth ({n} guests)",
+            "count": 1
+          },
+          {
+            "value": "improve your chef profile to qualify for our top {n} chefs newsletter",
+            "count": 1
+          },
+          {
+            "value": "hey chef… you’ll want to see this one 👇",
+            "count": 1
+          },
+          {
+            "value": "pre-launch offer: earn ${n} for each chef you refer 💰",
+            "count": 1
+          },
+          {
+            "value": "welcome to yhangry, the go-to platform for chefs who want more 🧑‍🍳",
+            "count": 1
+          },
+          {
+            "value": "america's best private chefs (october edition) — see wh o made the cut",
+            "count": 1
+          },
+          {
+            "value": "are professional food photos worth the investment?",
+            "count": 1
+          },
+          {
+            "value": "this is the biggest mistake most chefs make 🤫",
+            "count": 1
+          },
+          {
+            "value": "chef david, can i spotlight you in the yhangry newsletter?",
+            "count": 1
+          },
+          {
+            "value": "🆕 private chef request in conway, nh",
+            "count": 1
+          }
+        ],
+        "email_types": [
+          {
+            "value": "yhangry_new_inquiry",
+            "count": 53
+          },
+          {
+            "value": "yhangry_administrative",
+            "count": 27
+          }
+        ]
+      },
+      "keywords": {
+        "positive": [
+          {
+            "value": "utm",
+            "count": 384
+          },
+          {
+            "value": "request",
+            "count": 293
+          },
+          {
+            "value": "new",
+            "count": 248
+          },
+          {
+            "value": "yhangry",
+            "count": 248
+          },
+          {
+            "value": "customer",
+            "count": 228
+          },
+          {
+            "value": "chef",
+            "count": 207
+          },
+          {
+            "value": "supply",
+            "count": 194
+          },
+          {
+            "value": "https",
+            "count": 173
+          },
+          {
+            "value": "booking",
+            "count": 166
+          },
+          {
+            "value": "com",
+            "count": 132
+          },
+          {
+            "value": "oct",
+            "count": 100
+          },
+          {
+            "value": "campaign",
+            "count": 99
+          },
+          {
+            "value": "content",
+            "count": 96
+          },
+          {
+            "value": "282025",
+            "count": 96
+          },
+          {
+            "value": "28hz",
+            "count": 95
+          },
+          {
+            "value": "medium",
+            "count": 95
+          },
+          {
+            "value": "email",
+            "count": 95
+          },
+          {
+            "value": "source",
+            "count": 95
+          },
+          {
+            "value": "client",
+            "count": 87
+          },
+          {
+            "value": "event",
+            "count": 82
+          },
+          {
+            "value": "account",
+            "count": 62
+          },
+          {
+            "value": "support",
+            "count": 62
+          },
+          {
+            "value": "login",
+            "count": 56
+          },
+          {
+            "value": "david",
+            "count": 53
+          },
+          {
+            "value": "quotes",
+            "count": 51
+          },
+          {
+            "value": "details",
+            "count": 47
+          },
+          {
+            "value": "menu",
+            "count": 46
+          },
+          {
+            "value": "let",
+            "count": 45
+          },
+          {
+            "value": "know",
+            "count": 45
+          },
+          {
+            "value": "private",
+            "count": 44
+          },
+          {
+            "value": "help",
+            "count": 42
+          },
+          {
+            "value": "kustomer",
+            "count": 42
+          },
+          {
+            "value": "any",
+            "count": 39
+          },
+          {
+            "value": "2026",
+            "count": 38
+          },
+          {
+            "value": "short",
+            "count": 37
+          },
+          {
+            "value": "drive",
+            "count": 37
+          },
+          {
+            "value": "image",
+            "count": 37
+          },
+          {
+            "value": "register",
+            "count": 37
+          },
+          {
+            "value": "call",
+            "count": 37
+          },
+          {
+            "value": "questions",
+            "count": 35
+          }
+        ],
+        "negative": [
+          {
+            "value": "utm",
+            "count": 478
+          },
+          {
+            "value": "chef",
+            "count": 336
+          },
+          {
+            "value": "yhangry",
+            "count": 215
+          },
+          {
+            "value": "https",
+            "count": 151
+          },
+          {
+            "value": "com",
+            "count": 134
+          },
+          {
+            "value": "customer",
+            "count": 134
+          },
+          {
+            "value": "email",
+            "count": 130
+          },
+          {
+            "value": "campaign",
+            "count": 122
+          },
+          {
+            "value": "content",
+            "count": 122
+          },
+          {
+            "value": "medium",
+            "count": 118
+          },
+          {
+            "value": "source",
+            "count": 117
+          },
+          {
+            "value": "supply",
+            "count": 91
+          },
+          {
+            "value": "chefs",
+            "count": 73
+          },
+          {
+            "value": "newsletter",
+            "count": 68
+          },
+          {
+            "value": "booking",
+            "count": 63
+          },
+          {
+            "value": "private",
+            "count": 57
+          },
+          {
+            "value": "top",
+            "count": 56
+          },
+          {
+            "value": "profile",
+            "count": 47
+          },
+          {
+            "value": "sign",
+            "count": 45
+          },
+          {
+            "value": "call",
+            "count": 39
+          },
+          {
+            "value": "2025",
+            "count": 36
+          },
+          {
+            "value": "unsubscribe",
+            "count": 34
+          },
+          {
+            "value": "community",
+            "count": 34
+          },
+          {
+            "value": "series",
+            "count": 34
+          },
+          {
+            "value": "onboarding",
+            "count": 33
+          },
+          {
+            "value": "menu",
+            "count": 33
+          },
+          {
+            "value": "more",
+            "count": 32
+          },
+          {
+            "value": "28oct",
+            "count": 32
+          },
+          {
+            "value": "reminder",
+            "count": 29
+          },
+          {
+            "value": "october",
+            "count": 29
+          },
+          {
+            "value": "www",
+            "count": 28
+          },
+          {
+            "value": "5bus",
+            "count": 27
+          },
+          {
+            "value": "here",
+            "count": 25
+          },
+          {
+            "value": "september",
+            "count": 25
+          },
+          {
+            "value": "mike",
+            "count": 23
+          },
+          {
+            "value": "get",
+            "count": 23
+          },
+          {
+            "value": "david",
+            "count": 22
+          },
+          {
+            "value": "menus",
+            "count": 22
+          },
+          {
+            "value": "how",
+            "count": 21
+          },
+          {
+            "value": "welcome",
+            "count": 21
+          }
+        ]
+      },
+      "dedupe": {
+        "top_keys": [
+          {
+            "value": "quote_url:https://yhangry.com/booking/chef-register",
+            "count": 5
+          },
+          {
+            "value": "quote:113605",
+            "count": 4
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/113605",
+            "count": 4
+          },
+          {
+            "value": "quote:108753",
+            "count": 3
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/108753",
+            "count": 3
+          },
+          {
+            "value": "quote:110532",
+            "count": 2
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/110532",
+            "count": 2
+          },
+          {
+            "value": "quote:110861",
+            "count": 2
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/110861",
+            "count": 2
+          },
+          {
+            "value": "quote:113074",
+            "count": 2
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/113074",
+            "count": 2
+          },
+          {
+            "value": "quote:110141",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/110141",
+            "count": 1
+          },
+          {
+            "value": "quote:94885",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/94885?utm_campaign=SUPPLY%3A+New+Request+%282025+Oct%29&utm_content=SUPPLY%3A+New+customer+request+%28HZ%29&utm_medium=email&utm_source=customer.io",
+            "count": 1
+          },
+          {
+            "value": "quote:113494",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/113494",
+            "count": 1
+          },
+          {
+            "value": "quote:102906",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/102906",
+            "count": 1
+          },
+          {
+            "value": "quote:115153",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/115153",
+            "count": 1
+          },
+          {
+            "value": "quote:92870",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/92870?utm_campaign=SUPPLY%3A+New+Client+Request+%282025+Oct%29&utm_content=SUPPLY%3A+New+customer+request+%28HZ%29&utm_medium=email&utm_source=customer.io",
+            "count": 1
+          },
+          {
+            "value": "quote:101050",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/101050",
+            "count": 1
+          },
+          {
+            "value": "quote:111266",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/111266",
+            "count": 1
+          },
+          {
+            "value": "quote:112775",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/112775",
+            "count": 1
+          },
+          {
+            "value": "quote:108062",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/108062",
+            "count": 1
+          },
+          {
+            "value": "quote:111257",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/111257",
+            "count": 1
+          },
+          {
+            "value": "quote:115162",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/115162",
+            "count": 1
+          },
+          {
+            "value": "quote:91915",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/91915?utm_campaign=SUPPLY%3A+New+Client+Request+%282025+Oct%29&utm_content=SUPPLY%3A+New+customer+request+%28HZ%29&utm_medium=email&utm_source=customer.io",
+            "count": 1
+          },
+          {
+            "value": "quote:92357",
+            "count": 1
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/92357?utm_campaign=SUPPLY%3A+New+Client+Request+%282025+Oct%29&utm_content=SUPPLY%3A+New+customer+request+%28HZ%29&utm_medium=email&utm_source=customer.io",
+            "count": 1
+          },
+          {
+            "value": "quote:91804",
+            "count": 1
+          }
+        ],
+        "duplicated_keys": [
+          {
+            "value": "quote_url:https://yhangry.com/booking/chef-register",
+            "count": 5
+          },
+          {
+            "value": "quote:113605",
+            "count": 4
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/113605",
+            "count": 4
+          },
+          {
+            "value": "quote:108753",
+            "count": 3
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/108753",
+            "count": 3
+          },
+          {
+            "value": "quote:110532",
+            "count": 2
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/110532",
+            "count": 2
+          },
+          {
+            "value": "quote:110861",
+            "count": 2
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/110861",
+            "count": 2
+          },
+          {
+            "value": "quote:113074",
+            "count": 2
+          },
+          {
+            "value": "quote_url:https://yhangry.com/booking/account/chef/quotes/113074",
+            "count": 2
+          }
+        ]
+      },
+      "samples": [
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251016150251.673cd09523fff35d@cioeu82582.yhangry.com",
+          "from": "mike@yhangry.com",
+          "subject": "How I made $160k+ on yhangry in a few months",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CAG0_ahWQ+6gNyH2eV65QWY6_3DMy1KYkpaCFdTKe0rKar2A5iw@mail.gmail.com",
+          "from": "dikshita@yhangry.com",
+          "subject": "New booking request - short drive from you in Boston",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:110141",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/110141"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251110213457.b927d1ff85df6df2@cioeu82582.yhangry.com",
+          "from": "chefs@yhangry.com",
+          "subject": "Booking request for Nov 16, 2025 in Cos cob connecticut",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:94885",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/94885?utm_campaign=SUPPLY%3A+New+Request+%282025+Oct%29&utm_content=SUPPLY%3A+New+customer+request+%28HZ%29&utm_medium=email&utm_source=customer.io"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CALnH2eepCKaW6obc6c3pDcHR9gEdb0jrAEtmd3BOjEMb0Hqrfg@mail.gmail.com",
+          "from": "dikshitakaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Manchester",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:113494",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/113494"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CANno1xpxa8T4xb5yOa2rjnnbtzttOKecktUt_X5a9e-FE8yvoQ@mail.gmail.com",
+          "from": "dkaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Middlesex",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:102906",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/102906"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251127160112.d78a60e9bb3bad42@cioeu82582.yhangry.com",
+          "from": "info@yhangry.com",
+          "subject": "Hey Chef, this one’s worth opening",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CAEYRiFRok1ECwvJb0_EV_4hLkCK4X2c6Eq4w03ygUoJdXY021Q@mail.gmail.com",
+          "from": "dikshitak@yhangry.com",
+          "subject": "New booking request - short drive from you in Malden",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:115153",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/115153"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251027161505.5c8ff3cf2d21c42a@cioeu82582.yhangry.com",
+          "from": "mike@yhangry.com",
+          "subject": "Starting in 45min: yhangry chef onboarding call",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251113174741.cb11b495b955a851@cioeu82582.yhangry.com",
+          "from": "info@yhangry.com",
+          "subject": "America's Best Private Chefs (November Edition)",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CALnH2ecvVATf+Y_F39SZ7W+F1iWaa2ZV0R9qRt56Y94-g=SGAA@mail.gmail.com",
+          "from": "dikshitakaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Brookline",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:110532",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/110532"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "70236fdf-cfd6-sl71-4a57-9247-a28f5ee8dbe4@yhangry.com",
+          "from": "chamoliabhinav@yhangry.com",
+          "subject": "Chef Needed – Dec 22nd Birthday  in Plymouth (8 Guests)",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251013162711.2be1555a9004b5d8@cioeu82582.yhangry.com",
+          "from": "heinin@yhangry.com",
+          "subject": "Improve your chef profile to qualify for our top 10 chefs newsletter",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251030154547.6c201516a8b2340b@cioeu82582.yhangry.com",
+          "from": "info@yhangry.com",
+          "subject": "Hey Chef… You’ll Want to See This One  👇",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251027182134.b8bee7c65635975c@cioeu82582.yhangry.com",
+          "from": "chefs@yhangry.com",
+          "subject": "🆕 Private chef request in 12496",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:92870",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/92870?utm_campaign=SUPPLY%3A+New+Client+Request+%282025+Oct%29&utm_content=SUPPLY%3A+New+customer+request+%28HZ%29&utm_medium=email&utm_source=customer.io"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20250930171840.139b177c9f6962e4@cioeu82582.yhangry.com",
+          "from": "info@yhangry.com",
+          "subject": "Pre-launch offer: Earn $500 for each chef you refer  💰",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20250922125646.7aba280142228a41@cioeu82582.yhangry.com",
+          "from": "chefs@yhangry.com",
+          "subject": "Welcome to yhangry, the go-to platform for chefs who want more  🧑‍🍳",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CAEYRiFQN3xiB6+vPmAdjL0WqDcf2NZdb0ONpHZMp3BmLwvMomQ@mail.gmail.com",
+          "from": "dikshitak@yhangry.com",
+          "subject": "New booking request - short drive from you in Concord",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:101050",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/101050"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CALnH2ef3Yv4eRLoiv5b-+SfV269XyG=mNMCKSkhmqg2tPbfCmw@mail.gmail.com",
+          "from": "dikshitakaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Brookline",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:110532",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/110532"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CANno1xpUD+AhvdebJqu6bMAufcFXaqSAi0YCzdNw5V0cLFgv2Q@mail.gmail.com",
+          "from": "dkaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Wellesley",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:108753",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/108753"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251015171503.8d66325c0b097a8f@cioeu82582.yhangry.com",
+          "from": "info@yhangry.com",
+          "subject": "America's Best Private Chefs (October Edition) — See Wh o Made the Cut",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CANno1xro7mtYxn392L4Ob75sGSDoKvMKPkrYg9098=OqSBJung@mail.gmail.com",
+          "from": "dkaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Boston",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:111266",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/111266"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CAEYRiFRvRH-kCQdOQEUtw=PZtpcE_T7mAk9=6jPhWo+3x5o3Qg@mail.gmail.com",
+          "from": "dikshitak@yhangry.com",
+          "subject": "New booking request - short drive from you in Middlesex",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:113605",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/113605"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "20251010150603.d19fd2db81070fe6@cioeu82582.yhangry.com",
+          "from": "chefs@yhangry.com",
+          "subject": "Are professional food photos worth the investment?",
+          "email_type": "yhangry_administrative",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CAP2RuYHrZaAj-c344PDpTh9z9E_OKkXGF5Ed=CokjVwP4kNogw@mail.gmail.com",
+          "from": "dikshitakaushik@email.yhangry.com",
+          "subject": "New booking request - short drive from you in Middlesex",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:112775",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/112775"
+          ]
+        },
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CALnH2eeXEBi4HiX=rAvrT+b9xwYQMepSy3nkUmQ4E5V5uvTUEQ@mail.gmail.com",
+          "from": "dikshitakaushik@yhangry.com",
+          "subject": "New booking request - short drive from you in Middlesex",
+          "email_type": "yhangry_new_inquiry",
+          "dinner_opportunity": true,
+          "dedupe_keys": [
+            "quote:108062",
+            "quote_url:https://yhangry.com/booking/account/chef/quotes/108062"
+          ]
+        }
+      ]
+    },
+    "unknown": {
+      "stats": {
+        "total_messages": 1,
+        "dinner_opportunity_messages": 0,
+        "non_opportunity_messages": 1,
+        "dinner_opportunity_rate": 0,
+        "duplicate_key_count": 0
+      },
+      "fingerprints": {
+        "sender_domains": [
+          {
+            "value": "gmail.com",
+            "count": 1
+          }
+        ],
+        "sender_emails": [
+          {
+            "value": "dfprivatechef@gmail.com",
+            "count": 1
+          }
+        ],
+        "subject_patterns": [
+          {
+            "value": "re: new booking request - short drive from you in middlesex",
+            "count": 1
+          }
+        ],
+        "email_types": [
+          {
+            "value": "unknown",
+            "count": 1
+          }
+        ]
+      },
+      "keywords": {
+        "positive": [],
+        "negative": [
+          {
+            "value": "yhangry",
+            "count": 4
+          },
+          {
+            "value": "com",
+            "count": 3
+          },
+          {
+            "value": "booking",
+            "count": 2
+          },
+          {
+            "value": "more",
+            "count": 2
+          },
+          {
+            "value": "event",
+            "count": 2
+          },
+          {
+            "value": "2025",
+            "count": 2
+          },
+          {
+            "value": "any",
+            "count": 2
+          },
+          {
+            "value": "https",
+            "count": 2
+          },
+          {
+            "value": "abhinav",
+            "count": 2
+          },
+          {
+            "value": "new",
+            "count": 1
+          },
+          {
+            "value": "request",
+            "count": 1
+          },
+          {
+            "value": "short",
+            "count": 1
+          },
+          {
+            "value": "drive",
+            "count": 1
+          },
+          {
+            "value": "middlesex",
+            "count": 1
+          },
+          {
+            "value": "please",
+            "count": 1
+          },
+          {
+            "value": "tell",
+            "count": 1
+          },
+          {
+            "value": "wed",
+            "count": 1
+          },
+          {
+            "value": "dec",
+            "count": 1
+          },
+          {
+            "value": "abhinavchamoli",
+            "count": 1
+          },
+          {
+            "value": "wrote",
+            "count": 1
+          },
+          {
+            "value": "david",
+            "count": 1
+          },
+          {
+            "value": "take",
+            "count": 1
+          },
+          {
+            "value": "bookings",
+            "count": 1
+          },
+          {
+            "value": "great",
+            "count": 1
+          },
+          {
+            "value": "thursday",
+            "count": 1
+          },
+          {
+            "value": "december",
+            "count": 1
+          },
+          {
+            "value": "which",
+            "count": 1
+          },
+          {
+            "value": "hasn",
+            "count": 1
+          },
+          {
+            "value": "received",
+            "count": 1
+          },
+          {
+            "value": "quotes",
+            "count": 1
+          },
+          {
+            "value": "yet",
+            "count": 1
+          },
+          {
+            "value": "shall",
+            "count": 1
+          },
+          {
+            "value": "jump",
+            "count": 1
+          },
+          {
+            "value": "call",
+            "count": 1
+          },
+          {
+            "value": "meetings",
+            "count": 1
+          },
+          {
+            "value": "eu1",
+            "count": 1
+          },
+          {
+            "value": "hubspot",
+            "count": 1
+          },
+          {
+            "value": "chamoli",
+            "count": 1
+          },
+          {
+            "value": "answer",
+            "count": 1
+          },
+          {
+            "value": "questions",
+            "count": 1
+          }
+        ]
+      },
+      "dedupe": {
+        "top_keys": [],
+        "duplicated_keys": []
+      },
+      "samples": [
+        {
+          "source_file": "Yhangry.mbox",
+          "message_id": "CAFyuo2B0NTo2xW3487j2Hsu9Qe0nTF8QMWpFqNNk1KsYLD4BOA@mail.gmail.com",
+          "from": "dfprivatechef@gmail.com",
+          "subject": "Re: New booking request - short drive from you in Middlesex",
+          "email_type": "unknown",
+          "dinner_opportunity": false,
+          "dedupe_keys": []
+        }
+      ]
+    }
+  }
+}

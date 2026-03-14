@@ -41,17 +41,22 @@ CREATE TABLE IF NOT EXISTS hub_messages (
   edited_at TIMESTAMPTZ,
   deleted_at TIMESTAMPTZ
 );
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_hub_messages_group_created
   ON hub_messages(group_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_hub_messages_author
   ON hub_messages(author_profile_id);
+
 CREATE INDEX IF NOT EXISTS idx_hub_messages_pinned
   ON hub_messages(group_id)
   WHERE is_pinned = true AND deleted_at IS NULL;
+
 CREATE INDEX IF NOT EXISTS idx_hub_messages_replies
   ON hub_messages(reply_to_message_id)
   WHERE reply_to_message_id IS NOT NULL;
+
 -- Emoji reactions
 CREATE TABLE IF NOT EXISTS hub_message_reactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -62,31 +67,42 @@ CREATE TABLE IF NOT EXISTS hub_message_reactions (
 
   UNIQUE(message_id, profile_id, emoji)
 );
+
 CREATE INDEX IF NOT EXISTS idx_hub_message_reactions_message
   ON hub_message_reactions(message_id);
+
 -- RLS
 ALTER TABLE hub_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_message_reactions ENABLE ROW LEVEL SECURITY;
+
 -- Messages: public read (link-based group access validated in app layer)
 CREATE POLICY "hub_messages_select_anon" ON hub_messages
   FOR SELECT USING (true);
+
 CREATE POLICY "hub_messages_insert_anon" ON hub_messages
   FOR INSERT WITH CHECK (true);
+
 CREATE POLICY "hub_messages_manage_service" ON hub_messages
   FOR ALL USING (auth.role() = 'service_role');
+
 -- Reactions: public read/write
 CREATE POLICY "hub_message_reactions_select_anon" ON hub_message_reactions
   FOR SELECT USING (true);
+
 CREATE POLICY "hub_message_reactions_insert_anon" ON hub_message_reactions
   FOR INSERT WITH CHECK (true);
+
 CREATE POLICY "hub_message_reactions_delete_anon" ON hub_message_reactions
   FOR DELETE USING (true);
+
 CREATE POLICY "hub_message_reactions_manage_service" ON hub_message_reactions
   FOR ALL USING (auth.role() = 'service_role');
+
 -- Denormalized last-message fields on groups for inbox sorting
 ALTER TABLE hub_groups ADD COLUMN IF NOT EXISTS last_message_at TIMESTAMPTZ;
 ALTER TABLE hub_groups ADD COLUMN IF NOT EXISTS last_message_preview TEXT;
 ALTER TABLE hub_groups ADD COLUMN IF NOT EXISTS message_count INTEGER NOT NULL DEFAULT 0;
+
 -- Function to update group last-message on new message insert
 CREATE OR REPLACE FUNCTION update_hub_group_last_message()
 RETURNS TRIGGER AS $$
@@ -100,6 +116,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trg_hub_message_update_group
   AFTER INSERT ON hub_messages
   FOR EACH ROW

@@ -15,7 +15,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getCashFlowForecast, type CashFlowForecast } from '@/lib/finance/cash-flow-actions'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type Props = {

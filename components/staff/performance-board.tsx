@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowUpDown, Trophy, TrendingUp, AlertTriangle } from 'lucide-react'
+import { ArrowUpDown, Trophy, TrendingUp, AlertTriangle } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { generateFollowUpSequence } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, MailPlus } from 'lucide-react'
+import { Loader2, MailPlus } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 interface FollowUpSequenceButtonProps {

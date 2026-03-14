@@ -5,7 +5,6 @@
 
 import { test, expect } from '../helpers/fixtures'
 import { request as playwrightRequest } from '@playwright/test'
-import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 test.describe('Events — Document Generation', () => {
   test.describe.configure({ timeout: 90_000 })
@@ -44,7 +43,7 @@ test.describe('Events — Document Generation', () => {
   test('document API rejects unauthenticated requests', async ({ seedIds }) => {
     // Use a brand-new API context with empty storage state to avoid cookie carryover.
     const api = await playwrightRequest.newContext({
-      baseURL: TEST_BASE_URL,
+      baseURL: 'http://localhost:3100',
       storageState: { cookies: [], origins: [] },
       extraHTTPHeaders: {
         cookie: '',

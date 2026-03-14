@@ -7,6 +7,7 @@ import {
   getDailySalesReport,
   getProductReport,
   getChannelReport,
+  getPaymentMixReport,
 } from '@/lib/commerce/report-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -31,12 +32,14 @@ export default async function CommerceReportsPage({
   const from =
     params.from || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const [dailyReport, productReport, channelReport, { sessions }] = await Promise.all([
-    getDailySalesReport(from, to),
-    getProductReport(from, to),
-    getChannelReport(from, to),
-    getRegisterSessionHistory({ limit: 5, status: 'closed' }),
-  ])
+  const [dailyReport, productReport, channelReport, paymentMixReport, { sessions }] =
+    await Promise.all([
+      getDailySalesReport(from, to),
+      getProductReport(from, to),
+      getChannelReport(from, to),
+      getPaymentMixReport(from, to),
+      getRegisterSessionHistory({ limit: 5, status: 'closed' }),
+    ])
 
   const totalRevenue = dailyReport.reduce((sum, d) => sum + d.netRevenueCents, 0)
   const totalSales = dailyReport.reduce((sum, d) => sum + d.salesCount, 0)
@@ -194,6 +197,56 @@ export default async function CommerceReportsPage({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Payment mix */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Mix</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {paymentMixReport.rows.length === 0 ? (
+            <p className="text-stone-500 text-sm">No payment data for this period</p>
+          ) : (
+            <div className="space-y-2">
+              {paymentMixReport.rows.map((row) => (
+                <div
+                  key={row.method}
+                  className="rounded-md border border-stone-800 bg-stone-900/40 p-3 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-stone-200 font-medium uppercase tracking-wide">
+                        {row.method}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {row.paymentCount} tender{row.paymentCount !== 1 ? 's' : ''} • avg $
+                        {(row.averageTenderCents / 100).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-stone-100 font-semibold">
+                        ${(row.totalCents / 100).toFixed(2)}
+                      </p>
+                      <p className="text-xs text-stone-500">{row.percentOfTotal}% of total</p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full rounded bg-stone-800 overflow-hidden">
+                    <div
+                      className="h-full bg-brand-500"
+                      style={{ width: `${Math.min(100, Math.max(0, row.percentOfTotal))}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="pt-2 text-xs text-stone-500">
+                Total tenders: {paymentMixReport.totals.paymentCount} • Gross $
+                {(paymentMixReport.totals.grossCents / 100).toFixed(2)} • Tips $
+                {(paymentMixReport.totals.tipCents / 100).toFixed(2)}
+              </div>
             </div>
           )}
         </CardContent>

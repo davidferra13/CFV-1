@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileText } from 'lucide-react'
+import { FileText } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'NDA & Permissions — ChefFlow' }
 

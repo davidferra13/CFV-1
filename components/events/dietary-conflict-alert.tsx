@@ -10,7 +10,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { acknowledgeDietaryConflict } from '@/lib/events/dietary-conflict-actions'
-import { AlertTriangle, AlertCircle, Info, Check } from 'lucide-react'
+import { AlertTriangle, AlertCircle, Info, Check } from '@/components/ui/icons'
 
 type Conflict = {
   id: string

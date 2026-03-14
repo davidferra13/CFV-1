@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { batchReEnrich } from '@/lib/prospecting/scrub-actions'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { Loader2, RefreshCw } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 export function BatchReEnrichButton() {

@@ -8,6 +8,7 @@ ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS gratuity_mode             TEXT NOT NULL DEFAULT 'discretionary',
   ADD COLUMN IF NOT EXISTS gratuity_service_fee_pct  NUMERIC(5,2),
   ADD COLUMN IF NOT EXISTS gratuity_display_label    TEXT;
+
 -- gratuity_mode values:
 --   'discretionary'    — client tips at their discretion (default)
 --   'auto_service_fee' — automatic % added to invoice (use gratuity_service_fee_pct)

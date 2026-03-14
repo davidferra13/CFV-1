@@ -3,7 +3,6 @@
 //        auth boundaries, SQL injection prevention, session security
 
 import { test, expect } from '../helpers/fixtures'
-import { TEST_BASE_URL } from '../helpers/runtime-base-url'
 
 // ─── HTTP Security Headers ──────────────────────────────────────────────────
 
@@ -113,7 +112,7 @@ test.describe('Security — Auth Boundaries', () => {
     const protectedEndpoints = ['/api/v1/clients', '/api/v1/events', '/api/activity/feed']
 
     for (const endpoint of protectedEndpoints) {
-      const resp = await newPage.request.get(`${TEST_BASE_URL}${endpoint}`)
+      const resp = await newPage.request.get(`http://localhost:3100${endpoint}`)
       expect(resp.status(), `${endpoint} should reject unauthenticated requests`).not.toBe(200)
     }
 
@@ -124,7 +123,7 @@ test.describe('Security — Auth Boundaries', () => {
     const context = await page.context().browser()!.newContext()
     const newPage = await context.newPage()
 
-    await newPage.goto(`${TEST_BASE_URL}/dashboard`)
+    await newPage.goto('http://localhost:3100/dashboard')
     await newPage.waitForLoadState('networkidle')
 
     // Should redirect to sign-in
@@ -182,7 +181,7 @@ test.describe('Security — Rate Limiting', () => {
 
     // Rapid sign-in attempts
     for (let i = 0; i < 5; i++) {
-      await newPage.goto(`${TEST_BASE_URL}/sign-in`)
+      await newPage.goto('http://localhost:3100/sign-in')
       await newPage.waitForLoadState('networkidle')
       const body = await newPage.locator('body').innerText()
       expect(body).not.toMatch(/500|internal server error/i)

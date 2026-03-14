@@ -29,6 +29,7 @@ BEGIN
     CREATE TYPE guest_edible_familiarity AS ENUM ('none', 'low', 'moderate', 'high');
   END IF;
 END$$;
+
 CREATE TABLE IF NOT EXISTS guest_event_profile (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -54,13 +55,17 @@ CREATE TABLE IF NOT EXISTS guest_event_profile (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT guest_event_profile_event_token_unique UNIQUE (event_id, guest_token)
 );
+
 CREATE INDEX IF NOT EXISTS idx_guest_event_profile_guest_token ON guest_event_profile(guest_token);
 CREATE INDEX IF NOT EXISTS idx_guest_event_profile_event_id ON guest_event_profile(event_id);
+
 DROP TRIGGER IF EXISTS set_guest_event_profile_updated_at ON guest_event_profile;
 CREATE TRIGGER set_guest_event_profile_updated_at
   BEFORE UPDATE ON guest_event_profile
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 ALTER TABLE guest_event_profile ENABLE ROW LEVEL SECURITY;
+
 -- Chef visibility for events they own.
 DROP POLICY IF EXISTS guest_event_profile_chef_all ON guest_event_profile;
 CREATE POLICY guest_event_profile_chef_all ON guest_event_profile
@@ -73,15 +78,19 @@ CREATE POLICY guest_event_profile_chef_all ON guest_event_profile
       WHERE e.tenant_id = ur.entity_id
     )
   );
+
 -- Public guest access is token-based at the app layer.
 -- App layer MUST always filter by exact guest_token + event_id.
 DROP POLICY IF EXISTS guest_event_profile_public_select ON guest_event_profile;
 CREATE POLICY guest_event_profile_public_select ON guest_event_profile
   FOR SELECT USING (true);
+
 DROP POLICY IF EXISTS guest_event_profile_public_insert ON guest_event_profile;
 CREATE POLICY guest_event_profile_public_insert ON guest_event_profile
   FOR INSERT WITH CHECK (true);
+
 DROP POLICY IF EXISTS guest_event_profile_public_update ON guest_event_profile;
 CREATE POLICY guest_event_profile_public_update ON guest_event_profile
   FOR UPDATE USING (true);
+
 GRANT SELECT, INSERT, UPDATE ON guest_event_profile TO anon;

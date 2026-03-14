@@ -22,6 +22,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 -- Meal type enum (single-select)
 DO $$ BEGIN
   CREATE TYPE recipe_meal_type AS ENUM (
@@ -34,11 +35,13 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
 ALTER TABLE recipes
   ADD COLUMN IF NOT EXISTS cuisine       recipe_cuisine,
   ADD COLUMN IF NOT EXISTS meal_type     recipe_meal_type,
   ADD COLUMN IF NOT EXISTS season        TEXT[] DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS occasion_tags TEXT[] DEFAULT '{}';
+
 COMMENT ON COLUMN recipes.cuisine IS 'Cuisine classification (Italian, French, etc.)';
 COMMENT ON COLUMN recipes.meal_type IS 'Meal type (breakfast, lunch, dinner, etc.)';
 COMMENT ON COLUMN recipes.season IS 'Applicable seasons (Spring, Summer, Fall, Winter, Year-Round)';

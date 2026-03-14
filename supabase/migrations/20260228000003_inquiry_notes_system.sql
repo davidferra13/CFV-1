@@ -19,6 +19,7 @@ CREATE TYPE inquiry_note_category AS ENUM (
   'staffing',
   'post_event'
 );
+
 -- ============================================================
 -- 2. TABLE: inquiry_notes
 -- ============================================================
@@ -36,14 +37,17 @@ CREATE TABLE inquiry_notes (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 -- Indexes
 CREATE INDEX idx_inquiry_notes_inquiry_id ON inquiry_notes(inquiry_id);
 CREATE INDEX idx_inquiry_notes_tenant_id  ON inquiry_notes(tenant_id);
 CREATE INDEX idx_inquiry_notes_pinned     ON inquiry_notes(inquiry_id, pinned) WHERE pinned = true;
+
 -- updated_at trigger (reuses the function already defined in earlier migrations)
 CREATE TRIGGER inquiry_notes_updated_at
   BEFORE UPDATE ON inquiry_notes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================
 -- 3. TABLE: inquiry_recipe_links
 -- ============================================================
@@ -57,27 +61,32 @@ CREATE TABLE inquiry_recipe_links (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(inquiry_id, recipe_id)
 );
+
 -- Indexes
 CREATE INDEX idx_inquiry_recipe_links_inquiry_id ON inquiry_recipe_links(inquiry_id);
 CREATE INDEX idx_inquiry_recipe_links_recipe_id  ON inquiry_recipe_links(recipe_id);
+
 -- ============================================================
 -- 4. ROW LEVEL SECURITY
 -- ============================================================
 
 ALTER TABLE inquiry_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inquiry_recipe_links ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can manage their own tenant's notes
 CREATE POLICY "chefs_manage_inquiry_notes"
   ON inquiry_notes
   FOR ALL
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+
 -- Chefs can manage their own tenant's recipe links
 CREATE POLICY "chefs_manage_inquiry_recipe_links"
   ON inquiry_recipe_links
   FOR ALL
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+
 -- ============================================================
 -- 5. STORAGE BUCKET: inquiry-note-attachments
 -- ============================================================
@@ -94,18 +103,30 @@ ON CONFLICT (id) DO UPDATE SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
+
 -- Storage RLS for inquiry-note-attachments
-CREATE POLICY "inquiry_note_attachments_insert"
-  ON storage.objects
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (bucket_id = 'inquiry-note-attachments');
-CREATE POLICY "inquiry_note_attachments_select"
-  ON storage.objects
-  FOR SELECT
-  USING (bucket_id = 'inquiry-note-attachments');
-CREATE POLICY "inquiry_note_attachments_delete"
-  ON storage.objects
-  FOR DELETE
-  TO authenticated
-  USING (bucket_id = 'inquiry-note-attachments');
+DO $$ BEGIN
+  CREATE POLICY "inquiry_note_attachments_insert"
+    ON storage.objects
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (bucket_id = 'inquiry-note-attachments');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "inquiry_note_attachments_select"
+    ON storage.objects
+    FOR SELECT
+    USING (bucket_id = 'inquiry-note-attachments');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "inquiry_note_attachments_delete"
+    ON storage.objects
+    FOR DELETE
+    TO authenticated
+    USING (bucket_id = 'inquiry-note-attachments');
+EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
+END $$;

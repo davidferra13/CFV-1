@@ -5,7 +5,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calculator, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Calculator, TrendingUp, TrendingDown, Minus } from '@/components/ui/icons'
 
 type EventVariance = {
   eventId: string

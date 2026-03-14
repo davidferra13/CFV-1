@@ -49,25 +49,33 @@ CREATE TABLE seasonal_palettes (
   CONSTRAINT seasonal_palettes_start_format CHECK (start_month_day ~ '^\d{2}-\d{2}$'),
   CONSTRAINT seasonal_palettes_end_format CHECK (end_month_day ~ '^\d{2}-\d{2}$')
 );
+
 COMMENT ON TABLE seasonal_palettes IS 'Seasonal definition engine — one palette per season per chef.';
 COMMENT ON COLUMN seasonal_palettes.micro_windows IS 'Array: [{name, ingredient, start_date (MM-DD), end_date (MM-DD), urgency (high|normal), notes}]';
 COMMENT ON COLUMN seasonal_palettes.context_profiles IS 'Array: [{name, kitchen_reality, menu_guardrails, notes}]';
 COMMENT ON COLUMN seasonal_palettes.proven_wins IS 'Array: [{dish_name, notes, recipe_id (nullable)}]';
+
 -- Indexes
 CREATE INDEX idx_seasonal_palettes_tenant ON seasonal_palettes(tenant_id);
 CREATE INDEX idx_seasonal_palettes_active ON seasonal_palettes(tenant_id, is_active) WHERE is_active = true;
 CREATE INDEX idx_seasonal_palettes_dates ON seasonal_palettes(tenant_id, start_month_day, end_month_day);
+
 -- RLS
 ALTER TABLE seasonal_palettes ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY seasonal_palettes_tenant_select ON seasonal_palettes
   FOR SELECT USING (tenant_id = get_current_tenant_id());
+
 CREATE POLICY seasonal_palettes_tenant_insert ON seasonal_palettes
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+
 CREATE POLICY seasonal_palettes_tenant_update ON seasonal_palettes
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
+
 CREATE POLICY seasonal_palettes_tenant_delete ON seasonal_palettes
   FOR DELETE USING (tenant_id = get_current_tenant_id());
+
 -- Updated_at trigger
 CREATE TRIGGER seasonal_palettes_updated_at
   BEFORE UPDATE ON seasonal_palettes

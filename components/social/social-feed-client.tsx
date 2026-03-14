@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useCallback } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw } from '@/components/ui/icons'
 import type {
   SocialPost,
   SocialChannel,

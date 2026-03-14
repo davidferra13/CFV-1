@@ -17,11 +17,15 @@ CREATE TABLE IF NOT EXISTS remy_approval_policies (
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (tenant_id, task_type)
 );
+
 CREATE INDEX idx_remy_approval_policies_tenant_task
   ON remy_approval_policies (tenant_id, task_type);
+
 CREATE INDEX idx_remy_approval_policies_tenant_enabled
   ON remy_approval_policies (tenant_id, enabled, task_type);
+
 ALTER TABLE remy_approval_policies ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY remy_approval_policies_select
   ON remy_approval_policies FOR SELECT
   USING (
@@ -31,6 +35,7 @@ CREATE POLICY remy_approval_policies_select
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_approval_policies_insert
   ON remy_approval_policies FOR INSERT
   WITH CHECK (
@@ -40,6 +45,7 @@ CREATE POLICY remy_approval_policies_insert
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_approval_policies_update
   ON remy_approval_policies FOR UPDATE
   USING (
@@ -56,6 +62,7 @@ CREATE POLICY remy_approval_policies_update
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+
 CREATE POLICY remy_approval_policies_delete
   ON remy_approval_policies FOR DELETE
   USING (

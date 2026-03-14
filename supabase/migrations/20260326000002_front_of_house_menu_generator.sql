@@ -30,8 +30,10 @@ CREATE TABLE IF NOT EXISTS menu_templates (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (tenant_id, slug)
 );
+
 CREATE INDEX IF NOT EXISTS idx_menu_templates_tenant ON menu_templates(tenant_id, type);
 CREATE INDEX IF NOT EXISTS idx_menu_templates_system ON menu_templates(is_system, type);
+
 CREATE TABLE IF NOT EXISTS front_of_house_menus (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -55,25 +57,31 @@ CREATE TABLE IF NOT EXISTS front_of_house_menus (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS idx_foh_menus_tenant ON front_of_house_menus(tenant_id, generated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_foh_menus_menu ON front_of_house_menus(menu_id, generated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_foh_menus_event ON front_of_house_menus(event_id, generated_at DESC);
+
 ALTER TABLE menu_templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE front_of_house_menus ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS mt_chef_select ON menu_templates;
 DROP POLICY IF EXISTS mt_chef_insert ON menu_templates;
 DROP POLICY IF EXISTS mt_chef_update ON menu_templates;
 DROP POLICY IF EXISTS mt_chef_delete ON menu_templates;
+
 CREATE POLICY mt_chef_select ON menu_templates
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND (tenant_id = get_current_tenant_id() OR (is_system = true AND tenant_id IS NULL))
   );
+
 CREATE POLICY mt_chef_insert ON menu_templates
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
+
 CREATE POLICY mt_chef_update ON menu_templates
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -85,25 +93,30 @@ CREATE POLICY mt_chef_update ON menu_templates
     AND tenant_id = get_current_tenant_id()
     AND is_system = false
   );
+
 CREATE POLICY mt_chef_delete ON menu_templates
   FOR DELETE USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
     AND is_system = false
   );
+
 DROP POLICY IF EXISTS foh_chef_select ON front_of_house_menus;
 DROP POLICY IF EXISTS foh_chef_insert ON front_of_house_menus;
 DROP POLICY IF EXISTS foh_chef_update ON front_of_house_menus;
 DROP POLICY IF EXISTS foh_chef_delete ON front_of_house_menus;
 DROP POLICY IF EXISTS foh_client_select ON front_of_house_menus;
+
 CREATE POLICY foh_chef_select ON front_of_house_menus
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
+
 CREATE POLICY foh_chef_insert ON front_of_house_menus
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
+
 CREATE POLICY foh_chef_update ON front_of_house_menus
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
@@ -111,10 +124,12 @@ CREATE POLICY foh_chef_update ON front_of_house_menus
   WITH CHECK (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
+
 CREATE POLICY foh_chef_delete ON front_of_house_menus
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
+
 CREATE POLICY foh_client_select ON front_of_house_menus
   FOR SELECT USING (
     get_current_user_role() = 'client'
@@ -124,14 +139,17 @@ CREATE POLICY foh_client_select ON front_of_house_menus
       WHERE client_id = get_current_client_id()
     )
   );
+
 DROP TRIGGER IF EXISTS trg_menu_templates_updated_at ON menu_templates;
 CREATE TRIGGER trg_menu_templates_updated_at
   BEFORE UPDATE ON menu_templates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 DROP TRIGGER IF EXISTS trg_foh_menus_updated_at ON front_of_house_menus;
 CREATE TRIGGER trg_foh_menus_updated_at
   BEFORE UPDATE ON front_of_house_menus
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 INSERT INTO menu_templates (
   tenant_id,
   slug,

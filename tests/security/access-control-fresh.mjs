@@ -3,7 +3,6 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
-import { TEST_API_BASE_URL } from '../helpers/runtime-base-url.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,7 +13,7 @@ const getEnv = (key) => { const match = envContent.match(new RegExp(`^${key}=(.+
 const SUPABASE_URL = getEnv('NEXT_PUBLIC_SUPABASE_URL')
 const SUPABASE_ANON_KEY = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 const PROJECT_REF = 'luefkpakzvxcsqroxyhz'
-const API_BASE = TEST_API_BASE_URL
+const API_BASE = 'http://localhost:3100'
 
 const ATTACKER = { email: 'agent@chefflow.test', password: 'AgentChefFlow!2026', chefId: '91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8' }
 const VICTIM = '15cafd7c-d9d5-489c-a333-97e89c7e2ba9'

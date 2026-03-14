@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getQuotes } from '@/lib/quotes/actions'
 import { getQuoteAcceptanceInsights } from '@/lib/analytics/quote-insights'
 import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
+import { QuoteIntelligenceBar } from '@/components/intelligence/quote-intelligence-bar'
+import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 
 export const metadata: Metadata = { title: 'Quotes - ChefFlow' }
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
@@ -125,6 +127,16 @@ export default async function QuotesPage({
           <Button>+ New Quote</Button>
         </Link>
       </div>
+
+      {/* Quote Intelligence */}
+      <Suspense fallback={null}>
+        <QuoteIntelligenceBar />
+      </Suspense>
+
+      {/* Pricing Intelligence */}
+      <Suspense fallback={null}>
+        <PricingIntelligenceBar />
+      </Suspense>
 
       {/* Quote Acceptance Insights */}
       {insights && <QuoteAcceptanceInsightsPanel data={insights} />}

@@ -85,6 +85,11 @@ export const clientAgentActions: AgentActionDefinition[] = [
     async executor(inputs) {
       const description = String(inputs.description ?? '')
       const parsed = await parseClientFromText(description)
+      const missingFields: string[] = []
+      if (!parsed.email) missingFields.push('email')
+      if (!parsed.phone) missingFields.push('phone')
+      if (!parsed.preferred_contact_method) missingFields.push('preferred_contact_method')
+      if (!parsed.address) missingFields.push('address')
 
       const fields: AgentActionPreview['fields'] = [
         { label: 'Full Name', value: parsed.full_name, editable: true },
@@ -117,24 +122,50 @@ export const clientAgentActions: AgentActionDefinition[] = [
         actionType: 'agent.create_client',
         summary: `Create client: ${parsed.full_name}${parsed.email ? ` (${parsed.email})` : ''}`,
         fields,
+        warnings:
+          missingFields.length > 0
+            ? [
+                `Missing fields to capture later: ${missingFields
+                  .map((f) => f.replace(/_/g, ' '))
+                  .join(', ')}`,
+              ]
+            : undefined,
         safety: 'reversible',
       }
 
       return {
         preview,
-        commitPayload: { ...parsed, _rawDescription: description },
+        commitPayload: { ...parsed, _rawDescription: description, _missingFields: missingFields },
       }
     },
 
     async commitAction(payload) {
+      const fullName = String(payload.full_name ?? '').trim()
+      if (!fullName) {
+        return { success: false, message: 'Failed to create client: full name is required.' }
+      }
+      const email =
+        typeof payload.email === 'string' && payload.email.trim().length > 0
+          ? payload.email.trim()
+          : undefined
+      const phone =
+        typeof payload.phone === 'string' && payload.phone.trim().length > 0
+          ? payload.phone.trim()
+          : undefined
+      const notes =
+        typeof payload.notes === 'string' && payload.notes.trim().length > 0
+          ? payload.notes.trim()
+          : undefined
+
       const result = await createClient({
-        full_name: String(payload.full_name ?? ''),
-        email: String(payload.email ?? ''),
-        phone: payload.phone ? String(payload.phone) : undefined,
+        full_name: fullName,
+        email,
+        phone,
         dietary_restrictions: payload.dietary_restrictions as string[] | undefined,
         allergies: payload.allergies as string[] | undefined,
         occupation: payload.occupation ? String(payload.occupation) : undefined,
         address: payload.address ? String(payload.address) : undefined,
+        vibe_notes: notes ? `Created by Remy intake: ${notes}` : undefined,
         preferred_contact_method: payload.preferred_contact_method as
           | 'phone'
           | 'email'
@@ -149,7 +180,7 @@ export const clientAgentActions: AgentActionDefinition[] = [
       const clientId = (result as { client: { id: string } }).client?.id
       return {
         success: true,
-        message: `Client "${payload.full_name}" created successfully!`,
+        message: `Client "${fullName}" created successfully!`,
         redirectUrl: clientId ? `/clients/${clientId}` : '/clients',
       }
     },

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { Search } from 'lucide-react'
+import { Search } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChefCard } from '@/components/network/chef-card'

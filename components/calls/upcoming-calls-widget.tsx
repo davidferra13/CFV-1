@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { format, formatDistanceToNow } from 'date-fns'
-import { Phone, Plus, ArrowRight } from 'lucide-react'
+import { Phone, Plus, ArrowRight } from '@/components/ui/icons'
 import type { ScheduledCall } from '@/lib/calls/actions'
 import { callTypeLabel } from './call-type-badge'
 

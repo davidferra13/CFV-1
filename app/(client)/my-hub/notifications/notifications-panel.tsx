@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
-import { Bell, CheckCheck, Loader2 } from 'lucide-react'
+import { Bell, CheckCheck, Loader2 } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { markMyHubNotificationsRead, type HubUnreadCount } from '@/lib/hub/notification-actions'
 

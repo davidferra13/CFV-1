@@ -5,7 +5,7 @@
 // Returns a badge with the suggested category — chef clicks to accept.
 
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2 } from '@/components/ui/icons'
 import { categorizeExpense, type CategorizationResult } from '@/lib/ai/expense-categorizer'
 import {
   EXPENSE_CATEGORY_LABELS,

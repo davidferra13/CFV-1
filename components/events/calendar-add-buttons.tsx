@@ -6,7 +6,7 @@
 //   2. "Download .ics" — triggers the API route that returns an RFC 5545 .ics file
 //      compatible with Apple Calendar, Outlook, and any other iCalendar-aware client.
 
-import { CalendarPlus } from 'lucide-react'
+import { CalendarPlus } from '@/components/ui/icons'
 
 type Props = {
   eventId: string

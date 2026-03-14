@@ -15,6 +15,7 @@ ALTER TABLE social_posts
   ADD COLUMN IF NOT EXISTS last_publish_error TEXT,
   ADD COLUMN IF NOT EXISTS publish_errors JSONB NOT NULL DEFAULT '{}'::JSONB,
   ADD COLUMN IF NOT EXISTS published_external_ids JSONB NOT NULL DEFAULT '{}'::JSONB;
+
 -- publish_errors maps platform → error string, e.g.
 --   { "instagram": "rate limit exceeded", "tiktok": "auth token expired" }
 -- published_external_ids maps platform → external post ID, e.g.
@@ -25,6 +26,7 @@ COMMENT ON COLUMN social_posts.last_publish_at IS 'Timestamp of last successful 
 COMMENT ON COLUMN social_posts.last_publish_error IS 'Human-readable last error message, shown to chef in the post editor.';
 COMMENT ON COLUMN social_posts.publish_errors IS 'Per-platform error messages from last publish attempt. Keys are SocialPlatform values.';
 COMMENT ON COLUMN social_posts.published_external_ids IS 'Per-platform external post IDs after successful publish. Keys are SocialPlatform values.';
+
 -- ============================================================
 -- 2. Index for publishing cron query performance
 -- ============================================================
@@ -34,6 +36,7 @@ COMMENT ON COLUMN social_posts.published_external_ids IS 'Per-platform external 
 CREATE INDEX IF NOT EXISTS social_posts_queued_schedule_idx
   ON social_posts (tenant_id, schedule_at ASC)
   WHERE status = 'queued' AND preflight_ready = true;
+
 -- ============================================================
 -- 3. Hashtag library table
 -- ============================================================
@@ -51,26 +54,34 @@ CREATE TABLE IF NOT EXISTS social_hashtag_sets (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS social_hashtag_sets_tenant_idx
   ON social_hashtag_sets (tenant_id, created_at DESC);
+
 -- Auto-update updated_at
 CREATE TRIGGER social_hashtag_sets_updated_at
   BEFORE UPDATE ON social_hashtag_sets
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- RLS
 ALTER TABLE social_hashtag_sets ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "chef_hashtag_sets_select"
   ON social_hashtag_sets FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 CREATE POLICY "chef_hashtag_sets_insert"
   ON social_hashtag_sets FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 CREATE POLICY "chef_hashtag_sets_update"
   ON social_hashtag_sets FOR UPDATE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 CREATE POLICY "chef_hashtag_sets_delete"
   ON social_hashtag_sets FOR DELETE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+
 -- ============================================================
 -- 4. OAuth state table (for Phase 2 platform connections)
 -- ============================================================
@@ -88,8 +99,10 @@ CREATE TABLE IF NOT EXISTS social_oauth_states (
   expires_at     TIMESTAMPTZ NOT NULL DEFAULT now() + INTERVAL '10 minutes',
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 CREATE INDEX IF NOT EXISTS social_oauth_states_state_idx
   ON social_oauth_states (state);
+
 CREATE INDEX IF NOT EXISTS social_oauth_states_expires_idx
   ON social_oauth_states (expires_at);
 -- Note: partial index with WHERE expires_at < now() is not valid in PostgreSQL

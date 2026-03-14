@@ -14,6 +14,9 @@ const ClientPreferencesSchema = z.object({
   preferred_service_style: z.string().optional(),
   budget_range_min_cents: z.number().int().nullable().optional(),
   budget_range_max_cents: z.number().int().nullable().optional(),
+  recurring_pricing_model: z.enum(['none', 'flat_rate', 'per_person']).nullable().optional(),
+  recurring_price_cents: z.number().int().nullable().optional(),
+  recurring_pricing_notes: z.string().nullable().optional(),
   cleanup_expectations: z.string().optional(),
   leftovers_preference: z.string().optional(),
 })

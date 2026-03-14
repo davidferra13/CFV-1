@@ -40,7 +40,7 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   Wifi,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 type Tab = 'caption' | 'platforms' | 'media' | 'settings'
 

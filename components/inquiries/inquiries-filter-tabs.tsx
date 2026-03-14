@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'
 
@@ -12,20 +13,34 @@ type InquiryFilter =
   | 'confirmed'
   | 'closed'
 
+type BudgetModeFilter = 'all' | 'exact' | 'range' | 'not_sure' | 'unset'
+
 export function InquiriesFilterTabs({
   initialStatus,
   initialChannel,
+  initialBudgetMode,
 }: {
   initialStatus: InquiryFilter
   initialChannel: string | null
+  initialBudgetMode: BudgetModeFilter
 }) {
+  const defaults = useMemo(
+    () => ({
+      status: initialStatus,
+      channel: initialChannel ?? '',
+      budget_mode: initialBudgetMode,
+    }),
+    [initialStatus, initialChannel, initialBudgetMode]
+  )
+
   const { state, setState } = usePersistentViewState('inquiries.filters', {
     strategy: 'url',
-    defaults: { status: initialStatus, channel: initialChannel ?? '' },
+    defaults,
   })
 
   const status = (state.status as InquiryFilter) || 'all'
   const channel = String(state.channel || '')
+  const budgetMode = (state.budget_mode as BudgetModeFilter) || 'all'
 
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -66,6 +81,47 @@ export function InquiriesFilterTabs({
         onClick={() => setState({ channel: channel === 'yhangry' ? '' : 'yhangry' })}
       >
         Yhangry
+      </Button>
+      <span className="w-px h-6 bg-stone-300 mx-1" />
+      <Button
+        type="button"
+        size="sm"
+        variant={budgetMode === 'all' ? 'primary' : 'secondary'}
+        onClick={() => setState({ budget_mode: 'all' })}
+      >
+        Budget: All
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        variant={budgetMode === 'exact' ? 'primary' : 'secondary'}
+        onClick={() => setState({ budget_mode: budgetMode === 'exact' ? 'all' : 'exact' })}
+      >
+        Exact
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        variant={budgetMode === 'range' ? 'primary' : 'secondary'}
+        onClick={() => setState({ budget_mode: budgetMode === 'range' ? 'all' : 'range' })}
+      >
+        Range
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        variant={budgetMode === 'not_sure' ? 'primary' : 'secondary'}
+        onClick={() => setState({ budget_mode: budgetMode === 'not_sure' ? 'all' : 'not_sure' })}
+      >
+        Not Sure
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        variant={budgetMode === 'unset' ? 'primary' : 'secondary'}
+        onClick={() => setState({ budget_mode: budgetMode === 'unset' ? 'all' : 'unset' })}
+      >
+        Unset
       </Button>
     </div>
   )

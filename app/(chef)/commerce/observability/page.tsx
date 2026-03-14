@@ -12,6 +12,7 @@ import {
   resolvePosAlert,
   type PosMetricSnapshotRow,
 } from '@/lib/commerce/observability-actions'
+import { POS_SLO_DEFINITIONS } from '@/lib/commerce/slo-definitions'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 
@@ -32,6 +33,32 @@ function statusBadgeVariant(status: string): 'default' | 'warning' | 'error' | '
   if (status === 'resolved') return 'success'
   if (status === 'acknowledged') return 'warning'
   return 'default'
+}
+
+function getSloTrackingValue(input: {
+  sloId: string
+  snapshots: PosMetricSnapshotRow[]
+  openAlerts: number
+}) {
+  if (input.sloId === 'capture_success') {
+    const latest = input.snapshots[0]
+    if (!latest || latest.totalSalesCount <= 0) return 'No snapshot data'
+    const successRate = Math.max(
+      0,
+      Math.min(
+        100,
+        ((latest.totalSalesCount - latest.voidedSalesCount) / latest.totalSalesCount) * 100
+      )
+    )
+    return `${successRate.toFixed(1)}% (latest snapshot)`
+  }
+
+  if (input.sloId === 'availability') {
+    if (input.snapshots.length === 0) return 'No snapshot data'
+    return `${input.openAlerts} open alerts (proxy signal)`
+  }
+
+  return 'Telemetry pending'
 }
 
 export default async function PosObservabilityPage() {
@@ -123,6 +150,35 @@ export default async function PosObservabilityPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>POS SLO Contract</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {POS_SLO_DEFINITIONS.map((slo) => (
+            <div
+              key={slo.id}
+              className="rounded-lg border border-stone-800 bg-stone-900/40 p-3 space-y-1"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-stone-100 font-medium">{slo.label}</p>
+                <Badge variant="default">{slo.objective}</Badge>
+              </div>
+              <p className="text-xs text-stone-500">Measure: {slo.measurement}</p>
+              <p className="text-xs text-stone-500">Source: {slo.source}</p>
+              <p className="text-xs text-stone-400">
+                Current signal:{' '}
+                {getSloTrackingValue({
+                  sloId: slo.id,
+                  snapshots,
+                  openAlerts: openAlerts.length,
+                })}
+              </p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

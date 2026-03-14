@@ -14,22 +14,28 @@ CREATE TABLE IF NOT EXISTS chef_breadcrumbs (
   session_id    text,                                 -- client-generated session ID (groups breadcrumbs)
   created_at    timestamptz DEFAULT now() NOT NULL
 );
+
 -- Indexes for efficient queries
 CREATE INDEX IF NOT EXISTS idx_breadcrumbs_tenant_time
   ON chef_breadcrumbs (tenant_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_breadcrumbs_session
   ON chef_breadcrumbs (tenant_id, session_id, created_at ASC);
+
 -- RLS
 ALTER TABLE chef_breadcrumbs ENABLE ROW LEVEL SECURITY;
+
 -- Chefs can read their own breadcrumbs
 CREATE POLICY breadcrumbs_chef_read ON chef_breadcrumbs
   FOR SELECT TO authenticated
   USING (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
+
 -- Insert via service role only (API route uses admin client)
 CREATE POLICY breadcrumbs_service_insert ON chef_breadcrumbs
   FOR INSERT TO service_role
   WITH CHECK (true);
+
 -- Auto-cleanup: rows older than 30 days (run via pg_cron or manual sweep)
 COMMENT ON TABLE chef_breadcrumbs IS 'Lightweight navigation breadcrumbs for chef retrace view. 30-day TTL.';

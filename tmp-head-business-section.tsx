@@ -428,7 +428,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
                 </CardTitle>
                 <Link
                   href="/events?status=completed"
-                  className="text-sm text-amber-200 hover:text-amber-900 font-medium"
+                  className="text-sm text-amber-700 hover:text-amber-900 font-medium"
                 >
                   All Events
                 </Link>
@@ -861,7 +861,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
                           })}
                         </div>
                         {inquiryBudgetNeedsAttention && (
-                          <div className="mt-3 rounded-md border border-amber-200 bg-amber-950 px-3 py-2 text-xs text-amber-200">
+                          <div className="mt-3 rounded-md border border-amber-200 bg-amber-950 px-3 py-2 text-xs text-amber-700">
                             Lead budget clarity is low. Most unknown-budget inquiries are marked as{' '}
                             <span className="font-semibold">{inquiryBudgetMainGap}</span>. Consider
                             enabling the budget qualification quick-start in{' '}
@@ -938,7 +938,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
                       <div className="mt-3 pt-3 border-t border-stone-800">
                         <Link
                           href="/loyalty"
-                          className="text-sm text-purple-600 hover:text-purple-200 flex items-center gap-1"
+                          className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
                         >
                           <Gift className="h-3.5 w-3.5" /> {loyaltyApproaching.length} near a reward
                         </Link>
@@ -1090,7 +1090,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
                           {foodCostTrend.isRising && (
                             <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-950 border border-amber-200 px-3 py-2">
                               <TrendingUp className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                              <p className="text-xs text-amber-200 font-medium">
+                              <p className="text-xs text-amber-800 font-medium">
                                 Food cost rising {foodCostTrend.risingMonthCount + 1} months in a
                                 row — review suppliers or portion sizes
                               </p>

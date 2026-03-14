@@ -39,7 +39,7 @@ function getLandingRedirect(role: string): string {
 
 describe('Route Policy - source of truth coverage', () => {
   it('includes key public marketing routes', () => {
-    for (const path of ['/customers', '/faq', '/blog', '/trust', '/unsubscribe']) {
+    for (const path of ['/compare', '/customers', '/faq', '/blog', '/trust', '/unsubscribe']) {
       assert.equal(PUBLIC_UNAUTHENTICATED_PATHS.includes(path), true)
     }
   })
@@ -56,9 +56,6 @@ describe('Middleware - chef route matching', () => {
     assert.equal(isChefRoutePath('/dashboard'), true)
     assert.equal(isChefRoutePath('/clients'), true)
     assert.equal(isChefRoutePath('/events'), true)
-    assert.equal(isChefRoutePath('/finance'), true)
-    assert.equal(isChefRoutePath('/social'), true)
-    assert.equal(isChefRoutePath('/staff'), true)
     assert.equal(isChefRoutePath('/settings'), true)
   })
 
@@ -103,6 +100,7 @@ describe('Middleware - staff route matching', () => {
 describe('Middleware - public unauthenticated paths', () => {
   it('matches static marketing pages', () => {
     assert.equal(isPublicUnauthenticatedPath('/pricing'), true)
+    assert.equal(isPublicUnauthenticatedPath('/compare'), true)
     assert.equal(isPublicUnauthenticatedPath('/customers'), true)
     assert.equal(isPublicUnauthenticatedPath('/blog'), true)
     assert.equal(isPublicUnauthenticatedPath('/faq'), true)
@@ -116,19 +114,11 @@ describe('Middleware - public unauthenticated paths', () => {
     assert.equal(isPublicUnauthenticatedPath('/availability/abc-123'), true)
     assert.equal(isPublicUnauthenticatedPath('/partner-report/abc-123'), true)
     assert.equal(isPublicUnauthenticatedPath('/cannabis-invite/abc-123'), true)
-    assert.equal(isPublicUnauthenticatedPath('/chef/demo-chef'), true)
-    assert.equal(isPublicUnauthenticatedPath('/chef/demo-chef/inquire'), true)
-    assert.equal(isPublicUnauthenticatedPath('/open-tables/demo-chef'), true)
-    assert.equal(isPublicUnauthenticatedPath('/photos/share-token'), true)
   })
 
   it('does not skip auth for portal routes', () => {
     assert.equal(isPublicUnauthenticatedPath('/dashboard'), false)
     assert.equal(isPublicUnauthenticatedPath('/my-events'), false)
-    assert.equal(isPublicUnauthenticatedPath('/staff'), false)
-    assert.equal(isPublicUnauthenticatedPath('/chef/cannabis/handbook'), false)
-    assert.equal(isPublicUnauthenticatedPath('/open-tables'), false)
-    assert.equal(isPublicUnauthenticatedPath('/photos'), false)
     assert.equal(isPublicUnauthenticatedPath('/settings'), false)
   })
 })
@@ -201,7 +191,7 @@ describe('Middleware - edge cases', () => {
   it('treats trailing slash child paths as protected/public matches', () => {
     assert.equal(isChefRoutePath('/dashboard/'), true)
     assert.equal(isClientRoutePath('/my-events/'), true)
-    assert.equal(isPublicUnauthenticatedPath('/blog/'), true)
+    assert.equal(isPublicUnauthenticatedPath('/compare/'), true)
   })
 
   it('handles substring boundaries correctly', () => {

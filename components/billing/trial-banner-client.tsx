@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, X } from 'lucide-react'
+import { AlertTriangle, X } from '@/components/ui/icons'
 
 type Props = {
   type: 'expiring' | 'expired'

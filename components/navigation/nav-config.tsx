@@ -1,56 +1,90 @@
 // Centralized navigation configuration (single source of truth)
 // Organized by what a chef actually does: Sell → Plan → Cook → Stock → Money → Grow
 // Rule: nothing hidden. If it's built, it's findable within 1-2 clicks.
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from '@/components/ui/icons'
 import {
   Activity,
   AlertTriangle,
   BarChart3,
+  BellRing,
+  BookOpen,
   Bot,
+  Broadcast,
+  Calculator,
+  CalendarCheck,
   CalendarDays,
+  Chalkboard,
+  ChatDots,
+  ChatTeardropText,
   ChefHat,
+  ChartLineUp,
   ClipboardCheck,
   Clock,
+  Coins,
   Compass,
   Contact,
+  CreditCard,
   Crosshair,
+  CurrencyCircleDollar,
   DollarSign,
+  Exam,
   FileText,
+  FlagBanner,
+  Flower,
+  Funnel,
+  Gamepad2,
   Gift,
+  HandArrowDown,
   Handshake,
-  Hash,
+  HeartHandshake,
+  IdentificationBadge,
   Image,
   Inbox,
+  Invoice,
+  Kanban,
   Landmark,
   LayoutDashboard,
   ListChecks,
+  MagnifyingGlassPlus,
   Mail,
   MapPin,
+  Megaphone,
   MessageCircle,
   MessagesSquare,
+  NotebookIcon,
+  Notepad,
   Package,
+  PenNib,
+  Percent,
   Phone,
   PieChart,
-  Percent,
   Presentation,
+  Receipt,
   RefreshCw,
+  Scales,
+  SealCheck,
   Settings,
   ShieldAlert,
-  Star,
   ShieldCheck,
   ShoppingCart,
+  Sliders,
+  Star,
   Store,
   Target,
-  Truck,
+  Timer,
+  Toolbox,
+  TreeStructure,
   TrendingUp,
+  Truck,
+  Upload,
   Users,
   UtensilsCrossed,
-  Gamepad2,
-  Palette,
-  Upload,
+  Wallet,
   Warehouse,
-  HeartHandshake,
-} from 'lucide-react'
+  WifiHigh,
+  Wrench,
+  Zap,
+} from '@/components/ui/icons'
 
 type NavItem = {
   href: string
@@ -84,29 +118,35 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // adminOnly items are always hidden for non-admins regardless of Focus Mode.
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
-  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true },
+  { href: '/briefing', label: 'Briefing', icon: ClipboardCheck, coreFeature: true },
+  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true, adminOnly: true },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
   { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
-  { href: '/inquiries', label: 'Inquiries', icon: Inbox, coreFeature: true },
+  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText, coreFeature: true },
   { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
+  { href: '/circles', label: 'Circles', icon: MessagesSquare, coreFeature: true },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
-  { href: '/events', label: 'All Events', icon: CalendarDays, coreFeature: true },
+  { href: '/events', label: 'All Events', icon: CalendarCheck, coreFeature: true },
   { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
+  { href: '/rate-card', label: 'Rate Card', icon: Coins },
   { href: '/travel', label: 'Travel', icon: MapPin },
-  { href: '/staff', label: 'Staff', icon: Users },
-  { href: '/tasks', label: 'Tasks', icon: ListChecks },
-  { href: '/stations', label: 'Stations', icon: ClipboardCheck },
+  { href: '/staff', label: 'Staff', icon: IdentificationBadge },
+  { href: '/tasks', label: 'Tasks', icon: Kanban },
+  { href: '/stations', label: 'Stations', icon: Notepad },
   { href: '/activity', label: 'Activity', icon: Activity, coreFeature: true },
   { href: '/goals', label: 'Goals', icon: Target, coreFeature: true },
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
+  { href: '/portfolio', label: 'Portfolio', icon: Image },
   { href: '/commerce', label: 'Commerce', icon: Store },
   { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
-  { href: '/commerce/table-service', label: 'Table Service', icon: MapPin },
+  { href: '/commerce/virtual-terminal', label: 'Virtual Terminal', icon: CreditCard },
+  { href: '/commerce/table-service', label: 'Table Service', icon: UtensilsCrossed },
   { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
   { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
+  { href: '/commerce/parity', label: 'Clover Parity', icon: BarChart3 },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
@@ -122,12 +162,14 @@ export const navGroups: NavGroup[] = [
         href: '/commands',
         label: 'Ask Remy',
         icon: Bot,
+        adminOnly: true,
         children: [{ href: '/remy', label: 'Conversation History' }],
       },
       {
         href: '/settings/ai-privacy',
         label: 'AI Privacy & Settings',
         icon: ShieldCheck,
+        adminOnly: true,
       },
     ],
   },
@@ -136,13 +178,13 @@ export const navGroups: NavGroup[] = [
   {
     id: 'sales',
     label: 'Sales',
-    icon: Inbox,
+    icon: Funnel,
     module: 'pipeline',
     items: [
       {
         href: '/inquiries',
         label: 'Inquiries',
-        icon: Inbox,
+        icon: ChatTeardropText,
         children: [
           { href: '/inquiries/awaiting-response', label: 'Awaiting Response' },
           { href: '/inquiries/awaiting-client-reply', label: 'Awaiting Client' },
@@ -155,7 +197,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/quotes',
         label: 'Quotes',
-        icon: FileText,
+        icon: Invoice,
         children: [
           { href: '/quotes/new', label: 'New Quote' },
           { href: '/quotes/draft', label: 'Draft' },
@@ -165,6 +207,11 @@ export const navGroups: NavGroup[] = [
           { href: '/quotes/expired', label: 'Expired' },
           { href: '/quotes/rejected', label: 'Rejected' },
         ],
+      },
+      {
+        href: '/rate-card',
+        label: 'Rate Card',
+        icon: Coins,
       },
       {
         href: '/proposals',
@@ -186,6 +233,11 @@ export const navGroups: NavGroup[] = [
           { href: '/leads/converted', label: 'Converted' },
           { href: '/leads/archived', label: 'Archived' },
         ],
+      },
+      {
+        href: '/marketplace',
+        label: 'Marketplace',
+        icon: Store,
       },
       {
         href: '/prospecting',
@@ -254,7 +306,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/clients/communication',
         label: 'Communication',
-        icon: MessageCircle,
+        icon: ChatDots,
         children: [
           { href: '/clients/communication/notes', label: 'Client Notes' },
           { href: '/clients/communication/follow-ups', label: 'Follow-Ups' },
@@ -274,7 +326,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/clients/preferences',
         label: 'Preferences & Dietary',
-        icon: ClipboardCheck,
+        icon: Sliders,
         children: [
           { href: '/clients/preferences/dietary-restrictions', label: 'Dietary Restrictions' },
           { href: '/clients/preferences/allergies', label: 'Allergies' },
@@ -285,7 +337,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/clients/insights',
         label: 'Client Insights',
-        icon: BarChart3,
+        icon: ChartLineUp,
         children: [
           { href: '/clients/insights/top-clients', label: 'Top Clients' },
           { href: '/clients/insights/most-frequent', label: 'Most Frequent' },
@@ -364,7 +416,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/aar',
         label: 'Event Reviews',
-        icon: ClipboardCheck,
+        icon: Exam,
         children: [
           { href: '/reviews', label: 'Reviews' },
           { href: '/import', label: 'Smart Import' },
@@ -391,9 +443,14 @@ export const navGroups: NavGroup[] = [
         icon: ShoppingCart,
       },
       {
+        href: '/commerce/virtual-terminal',
+        label: 'Virtual Terminal',
+        icon: CreditCard,
+      },
+      {
         href: '/commerce/table-service',
         label: 'Table Service',
-        icon: MapPin,
+        icon: UtensilsCrossed,
       },
       {
         href: '/commerce/products',
@@ -404,7 +461,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/commerce/orders',
         label: 'Order Queue',
-        icon: ClipboardCheck,
+        icon: Receipt,
       },
       {
         href: '/commerce/sales',
@@ -422,9 +479,14 @@ export const navGroups: NavGroup[] = [
         icon: AlertTriangle,
       },
       {
+        href: '/commerce/parity',
+        label: 'Clover Parity',
+        icon: BarChart3,
+      },
+      {
         href: '/commerce/reconciliation',
         label: 'Reconciliation',
-        icon: BarChart3,
+        icon: Scales,
       },
       {
         href: '/commerce/settlements',
@@ -440,7 +502,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/commerce/schedules',
         label: 'Payment Schedules',
-        icon: CalendarDays,
+        icon: CalendarCheck,
       },
     ],
   },
@@ -460,12 +522,13 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/dish-index', label: 'Dish Index' },
           { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
+          { href: '/nutrition', label: 'Nutritional Analysis' },
         ],
       },
       {
         href: '/recipes',
         label: 'Recipes',
-        icon: UtensilsCrossed,
+        icon: BookOpen,
         children: [
           { href: '/recipes/new', label: 'New Recipe' },
           { href: '/culinary/recipes', label: 'Recipe Library' },
@@ -481,22 +544,22 @@ export const navGroups: NavGroup[] = [
       {
         href: '/culinary/prep',
         label: 'Prep Workspace',
-        icon: ClipboardCheck,
+        icon: Timer,
       },
       {
         href: '/culinary/costing',
         label: 'Costing',
-        icon: DollarSign,
+        icon: Calculator,
       },
       {
         href: '/culinary-board',
         label: 'Culinary Board',
-        icon: Palette,
+        icon: Chalkboard,
       },
       {
         href: '/settings/repertoire',
         label: 'Seasonal Palettes',
-        icon: Palette,
+        icon: Flower,
       },
     ],
   },
@@ -522,7 +585,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/stations',
         label: 'Station Clipboards',
-        icon: ClipboardCheck,
+        icon: Notepad,
         children: [
           { href: '/stations/orders', label: 'Order Sheet' },
           { href: '/stations/waste', label: 'Waste Log' },
@@ -532,19 +595,26 @@ export const navGroups: NavGroup[] = [
       {
         href: '/staff',
         label: 'Staff',
-        icon: Users,
+        icon: IdentificationBadge,
         children: [
           { href: '/staff/schedule', label: 'Schedule' },
           { href: '/staff/availability', label: 'Availability' },
           { href: '/staff/clock', label: 'Clock In/Out' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
+          { href: '/staff/live', label: 'Live Activity' },
         ],
       },
       {
         href: '/queue',
         label: 'Priority Queue',
-        icon: Activity,
+        icon: Zap,
+      },
+      {
+        href: '/meal-prep',
+        label: 'Meal Prep',
+        icon: RefreshCw,
+        children: [{ href: '/meal-prep', label: 'Dashboard' }],
       },
       {
         href: '/operations/kitchen-rentals',
@@ -554,7 +624,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/operations/equipment',
         label: 'Equipment',
-        icon: Package,
+        icon: Wrench,
       },
     ],
   },
@@ -578,7 +648,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/food-cost',
         label: 'Food Cost',
-        icon: DollarSign,
+        icon: Calculator,
         children: [{ href: '/food-cost/revenue', label: 'Daily Revenue' }],
       },
     ],
@@ -599,7 +669,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/inventory/transactions',
         label: 'Transaction Ledger',
-        icon: Package,
+        icon: Receipt,
       },
       {
         href: '/inventory/locations',
@@ -615,17 +685,17 @@ export const navGroups: NavGroup[] = [
       {
         href: '/inventory/procurement',
         label: 'Procurement Hub',
-        icon: Truck,
+        icon: HandArrowDown,
       },
       {
         href: '/inventory/counts',
         label: 'Inventory Counts',
-        icon: ClipboardCheck,
+        icon: ListChecks,
       },
       {
         href: '/inventory/audits',
         label: 'Physical Audits',
-        icon: ClipboardCheck,
+        icon: MagnifyingGlassPlus,
         children: [{ href: '/inventory/audits/new', label: 'New Audit' }],
       },
       {
@@ -636,12 +706,12 @@ export const navGroups: NavGroup[] = [
       {
         href: '/inventory/vendor-invoices',
         label: 'Vendor Invoices',
-        icon: FileText,
+        icon: Invoice,
       },
       {
         href: '/inventory/food-cost',
         label: 'Food Cost Analysis',
-        icon: DollarSign,
+        icon: Calculator,
       },
       {
         href: '/inventory/staff-meals',
@@ -680,7 +750,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/expenses',
         label: 'Expenses',
-        icon: DollarSign,
+        icon: Coins,
         children: [
           { href: '/expenses/new', label: 'Add Expense' },
           { href: '/receipts', label: 'Receipt Library' },
@@ -690,7 +760,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/finance/invoices',
         label: 'Invoices',
-        icon: FileText,
+        icon: Invoice,
         children: [
           { href: '/finance/invoices/sent', label: 'Sent' },
           { href: '/finance/invoices/paid', label: 'Paid' },
@@ -701,7 +771,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/finance/payments',
         label: 'Payments',
-        icon: DollarSign,
+        icon: CurrencyCircleDollar,
         children: [
           { href: '/finance/payments/deposits', label: 'Deposits' },
           { href: '/finance/payments/installments', label: 'Installments' },
@@ -722,7 +792,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/finance/ledger',
         label: 'Ledger',
-        icon: FileText,
+        icon: NotebookIcon,
         children: [{ href: '/finance/ledger/transaction-log', label: 'Transaction Log' }],
       },
       {
@@ -758,7 +828,7 @@ export const navGroups: NavGroup[] = [
       {
         href: '/finance/contractors',
         label: '1099 Contractors',
-        icon: Users,
+        icon: IdentificationBadge,
       },
     ],
   },
@@ -767,7 +837,7 @@ export const navGroups: NavGroup[] = [
   {
     id: 'marketing',
     label: 'Marketing',
-    icon: Mail,
+    icon: Megaphone,
     module: 'more',
     items: [
       {
@@ -783,9 +853,10 @@ export const navGroups: NavGroup[] = [
       {
         href: '/social/planner',
         label: 'Content Planner',
-        icon: Mail,
+        icon: PenNib,
         children: [
           { href: '/social/vault', label: 'Media Vault' },
+          { href: '/social/compose', label: 'Post from Event' },
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],
@@ -834,6 +905,12 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/intelligence',
+        label: 'Intelligence Hub',
+        icon: Compass,
+        children: [{ href: '/intelligence', label: 'Full Dashboard' }],
+      },
+      {
         href: '/goals/setup',
         label: 'Goals',
         icon: Target,
@@ -868,17 +945,17 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/safety/backup-chef',
-        label: 'Backup Chef',
-        icon: Users,
+        label: 'Backup Coverage',
+        icon: IdentificationBadge,
       },
     ],
   },
 
-  // ─── TOOLS (utilities) ───
+  // Tools (utilities)
   {
     id: 'tools',
     label: 'Tools',
-    icon: ListChecks,
+    icon: Toolbox,
     module: 'more',
     items: [
       {
@@ -890,8 +967,70 @@ export const navGroups: NavGroup[] = [
       {
         href: '/help',
         label: 'Help Center',
-        icon: MessageCircle,
+        icon: Compass,
       },
+    ],
+  },
+  // Admin (platform controls)
+  {
+    id: 'admin',
+    label: 'Admin',
+    icon: ShieldAlert,
+    items: [
+      { href: '/admin', label: 'Overview', icon: LayoutDashboard, adminOnly: true },
+      {
+        href: '/admin/command-center',
+        label: 'Command Center',
+        icon: Broadcast,
+        adminOnly: true,
+      },
+      {
+        href: '/admin/conversations',
+        label: 'Conversations',
+        icon: ChatDots,
+        adminOnly: true,
+      },
+      { href: '/admin/social', label: 'Social Feed', icon: MessagesSquare, adminOnly: true },
+      { href: '/admin/hub', label: 'Hub Groups', icon: Users, adminOnly: true },
+      {
+        href: '/admin/notifications',
+        label: 'Notifications',
+        icon: BellRing,
+        adminOnly: true,
+      },
+      { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh, adminOnly: true },
+      { href: '/admin/users', label: 'Chefs', icon: Users, adminOnly: true },
+      { href: '/admin/clients', label: 'Clients', icon: Contact, adminOnly: true },
+      { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
+      { href: '/admin/financials', label: 'Financials', icon: DollarSign, adminOnly: true },
+      { href: '/admin/events', label: 'All Events', icon: CalendarDays, adminOnly: true },
+      { href: '/admin/audit', label: 'Audit Log', icon: NotebookIcon, adminOnly: true },
+      { href: '/admin/system', label: 'System Health', icon: ShieldCheck, adminOnly: true },
+      {
+        href: '/admin/communications',
+        label: 'Communications',
+        icon: Mail,
+        adminOnly: true,
+      },
+      { href: '/admin/flags', label: 'Feature Flags', icon: FlagBanner, adminOnly: true },
+      {
+        href: '/admin/referral-partners',
+        label: 'Referral Partners',
+        icon: Handshake,
+        adminOnly: true,
+      },
+      { href: '/admin/feedback', label: 'Feedback', icon: Star, adminOnly: true },
+      { href: '/admin/animations', label: 'Animations', icon: Activity, adminOnly: true },
+      { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck, adminOnly: true },
+      { href: '/admin/beta', label: 'Beta Signups', icon: Star, adminOnly: true },
+      {
+        href: '/admin/beta-surveys',
+        label: 'Beta Surveys',
+        icon: ClipboardCheck,
+        adminOnly: true,
+      },
+      { href: '/admin/directory', label: 'Directory', icon: TreeStructure, adminOnly: true },
+      { href: '/admin/reconciliation', label: 'Reconciliation', icon: Scales, adminOnly: true },
     ],
   },
 ]
@@ -942,7 +1081,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   },
   { href: '/settings/repertoire', label: 'Seasonal Palettes', icon: Settings, context: 'Settings' },
   { href: '/settings/journal', label: 'Chef Journal', icon: Settings, context: 'Settings' },
-  { href: '/settings/favorite-chefs', label: 'Favorite Chefs', icon: Star, context: 'Settings' },
+  {
+    href: '/settings/favorite-chefs',
+    label: 'Inspiration Board',
+    icon: Star,
+    context: 'Settings',
+  },
   { href: '/settings/profile', label: 'Network Profile', icon: Settings, context: 'Settings' },
   {
     href: '/settings/compliance',

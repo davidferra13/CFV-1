@@ -28,7 +28,16 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next-dev/types/**/*.ts"
+    ".next-dev/types/**/*.ts",
+    ".next-dev-*/types/**/*.ts",
+    ".next-local-*/types/**/*.ts",
+    ".next-verify-*/types/**/*.ts",
+    ".next-verify-verify-6376-1772674024593/types/**/*.ts",
+    ".next-dev-pw-8788-1772676977728/types/**/*.ts",
+    ".next-verify-verify-47376-1772737124159/types/**/*.ts",
+    ".next-dev-pw-4104-1772738314105/types/**/*.ts",
+    ".next-dev-pw-38848-1772738565814/types/**/*.ts",
+    ".next-verify-verify-36364-1772738832833/types/**/*.ts"
   ],
   "exclude": ["node_modules", "tests"]
 }

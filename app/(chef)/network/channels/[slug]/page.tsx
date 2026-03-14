@@ -14,7 +14,7 @@ import {
 import { createServerClient } from '@/lib/supabase/server'
 import { SocialFeedClient } from '@/components/social/social-feed-client'
 import { ChannelJoinButton } from '@/components/social/social-channel-card'
-import { ArrowLeft, Users, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Users, MessageSquare } from '@/components/ui/icons'
 
 export async function generateMetadata({
   params,

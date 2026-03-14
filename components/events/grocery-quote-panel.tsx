@@ -419,9 +419,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               <div className="flex flex-wrap gap-3">
                 {/* Instacart */}
                 {quote.instacartLink ? (
-                  <a href={quote.instacartLink} target="_blank" rel="noopener noreferrer">
-                    <Button>Open in Instacart →</Button>
-                  </a>
+                  <Button href={quote.instacartLink} target="_blank" rel="noopener noreferrer">
+                    Open in Instacart →
+                  </Button>
                 ) : (
                   <div className="rounded-md border border-stone-700 px-4 py-2.5 text-sm text-stone-500 bg-stone-800">
                     Instacart link unavailable — add INSTACART_API_KEY to enable

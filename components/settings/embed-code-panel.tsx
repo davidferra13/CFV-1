@@ -1,7 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Copy, Code2, Globe, Palette, Monitor, Smartphone, ExternalLink } from 'lucide-react'
+import {
+  Check,
+  Copy,
+  Code2,
+  Globe,
+  Palette,
+  Monitor,
+  Smartphone,
+  ExternalLink,
+} from '@/components/ui/icons'
 
 interface Props {
   chefId: string

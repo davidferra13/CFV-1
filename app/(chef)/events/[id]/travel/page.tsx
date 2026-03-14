@@ -88,15 +88,15 @@ export default async function EventTravelPage({ params }: { params: { id: string
       {/* Download PDF */}
       {plan.legs.length > 0 && (
         <div className="flex gap-2">
-          <a
+          <Button
+            variant="secondary"
+            size="sm"
             href={`/api/documents/${event.id}?type=travel`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Button variant="secondary" size="sm">
-              Print Travel Route
-            </Button>
-          </a>
+            Print Travel Route
+          </Button>
         </div>
       )}
 

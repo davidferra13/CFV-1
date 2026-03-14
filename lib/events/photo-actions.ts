@@ -245,33 +245,21 @@ export async function uploadEventPhoto(
       // Non-fatal
     }
 
+    // Circle-first: post photos notification on first photo (non-blocking)
     if (isFirstPhoto) {
       try {
-        const adminSupabase = createServerClient({ admin: true })
-
-        const [{ data: client }, { data: chef }] = await Promise.all([
-          adminSupabase
-            .from('clients')
-            .select('email, full_name')
-            .eq('id', event.client_id)
-            .single(),
-          adminSupabase.from('chefs').select('business_name').eq('id', user.tenantId!).single(),
-        ])
-
-        if (client?.email && chef) {
-          const { sendPhotosReadyEmail } = await import('@/lib/email/notifications')
-          await sendPhotosReadyEmail({
-            clientEmail: client.email,
-            clientName: client.full_name,
-            chefName: chef.business_name || 'Your Chef',
-            occasion: event.occasion || 'your event',
-            eventDate: event.event_date || '',
-            photoCount: 1,
-            eventId,
-          })
-        }
-      } catch (emailErr) {
-        console.error('[uploadEventPhoto] Photos-ready email failed (non-blocking):', emailErr)
+        const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+        await circleFirstNotify({
+          eventId,
+          tenantId: user.tenantId!,
+          notificationType: 'photos_ready',
+          body: 'Photos from your event are now available! Check them out.',
+          metadata: { event_id: eventId, photo_count: 1 },
+          actionUrl: `/my-events/${eventId}`,
+          actionLabel: 'View Photos',
+        })
+      } catch {
+        // Non-fatal
       }
     }
   }
@@ -421,6 +409,90 @@ export async function updatePhotoCaption(
   revalidatePath(`/events/${photo.event_id}`)
   revalidatePath(`/my-events/${photo.event_id}`)
   return { success: true }
+}
+
+// ─── getPortfolioPhotos ──────────────────────────────────────────────────────
+
+/**
+ * Returns all active photos across all events for the chef's portfolio.
+ * Includes event metadata (occasion, event_date) for filtering/grouping.
+ * Ordered by created_at descending (newest first).
+ */
+export type PortfolioPhoto = EventPhoto & {
+  event_occasion: string | null
+  event_date: string | null
+}
+
+export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: photos, error } = await supabase
+    .from('event_photos')
+    .select('*, events(occasion, event_date)')
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getPortfolioPhotos] Error:', error)
+    return []
+  }
+
+  if (!photos?.length) return []
+
+  // Flatten event join data
+  const flattened = photos.map((p: any) => ({
+    ...p,
+    event_occasion: p.events?.occasion ?? null,
+    event_date: p.events?.event_date ?? null,
+    events: undefined,
+  }))
+
+  // Hydrate signed URLs
+  const paths = flattened.map((p: any) => p.storage_path)
+  const { data: signedData } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
+
+  const signedMap: Record<string, string> = {}
+  for (const s of signedData ?? []) {
+    if (s.signedUrl && s.path) signedMap[s.path] = s.signedUrl
+  }
+
+  return flattened.map((p: any) => ({
+    ...p,
+    signedUrl: signedMap[p.storage_path] ?? '',
+  }))
+}
+
+// ─── getPhotoSignedUrl ───────────────────────────────────────────────────────
+
+/**
+ * Returns a signed URL for a single storage path.
+ * Chef-only. Verifies tenant ownership.
+ */
+export async function getPhotoSignedUrl(
+  storagePath: string
+): Promise<{ url: string | null; error?: string }> {
+  const user = await requireChef()
+
+  // Verify the path belongs to this tenant (path format: {tenantId}/...)
+  if (!storagePath.startsWith(`${user.tenantId}/`)) {
+    return { url: null, error: 'Unauthorized' }
+  }
+
+  const supabase: any = createServerClient()
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
+
+  if (error) {
+    console.error('[getPhotoSignedUrl] Error:', error)
+    return { url: null, error: 'Failed to generate signed URL' }
+  }
+
+  return { url: data?.signedUrl ?? null }
 }
 
 // ─── reorderEventPhotos ───────────────────────────────────────────────────────

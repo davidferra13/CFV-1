@@ -13,6 +13,7 @@ ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS deletion_reason TEXT DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS deletion_reactivation_token UUID DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN NOT NULL DEFAULT FALSE;
+
 COMMENT ON COLUMN chefs.deletion_requested_at IS
   'Timestamp when chef requested account deletion. NULL = active account.';
 COMMENT ON COLUMN chefs.deletion_scheduled_for IS
@@ -23,9 +24,11 @@ COMMENT ON COLUMN chefs.deletion_reactivation_token IS
   'One-time UUID token the chef can use to cancel deletion during the 30-day grace period.';
 COMMENT ON COLUMN chefs.is_deleted IS
   'TRUE after final purge completes. Chef row is kept for anonymized financial records. FALSE = active or pending.';
+
 CREATE INDEX IF NOT EXISTS idx_chefs_deletion_scheduled
   ON chefs(deletion_scheduled_for)
   WHERE deletion_scheduled_for IS NOT NULL AND is_deleted = FALSE;
+
 -- ─── 2. Account deletion audit table ──────────────────────────────────────────
 -- Intentionally NOT FK-linked to chefs — records must survive account deletion.
 
@@ -50,16 +53,22 @@ CREATE TABLE IF NOT EXISTS account_deletion_audit (
   performed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   performed_by TEXT NOT NULL DEFAULT 'system'
 );
+
 COMMENT ON TABLE account_deletion_audit IS
   'Permanent audit trail for account deletion lifecycle. Not FK-linked to chefs — must survive deletion.';
+
 CREATE INDEX IF NOT EXISTS idx_deletion_audit_chef
   ON account_deletion_audit(chef_id, performed_at DESC);
+
 ALTER TABLE account_deletion_audit ENABLE ROW LEVEL SECURITY;
+
 -- Service-role-only access (admin client)
 CREATE POLICY deletion_audit_service_insert ON account_deletion_audit
   FOR INSERT WITH CHECK (true);
+
 CREATE POLICY deletion_audit_service_select ON account_deletion_audit
   FOR SELECT USING (true);
+
 -- ─── 3. Expand activity domain constraint to include 'account' ────────────────
 
 ALTER TABLE chef_activity_log DROP CONSTRAINT IF EXISTS chk_activity_domain;
@@ -70,6 +79,7 @@ ALTER TABLE chef_activity_log ADD CONSTRAINT chk_activity_domain
     'staff', 'scheduling', 'document', 'marketing', 'ai', 'settings',
     'prospecting', 'account'
   ));
+
 -- ─── 4. Financial record anonymization function ───────────────────────────────
 -- Called during final purge after 30-day grace period.
 -- Preserves financial amounts, dates, and entry types for 7-year retention
@@ -130,5 +140,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
 COMMENT ON FUNCTION anonymize_financial_records IS
   'Strips PII from financial records while preserving amounts/dates for 7-year retention. Called during account purge.';

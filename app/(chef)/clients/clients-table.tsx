@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Tables } from '@/types/database'
 import { ClientHealthBadge } from '@/components/clients/health-score-badge'
 import type { ClientHealthScore } from '@/lib/clients/health-score'
+import type { ChurnRiskClient } from '@/lib/intelligence/churn-prevention-triggers'
 import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'
 import { Badge } from '@/components/ui/badge'
 import { BulkSelectTable, type BulkAction } from '@/components/ui/bulk-select-table'
@@ -26,12 +27,19 @@ const TIER_COLORS: Record<string, string> = {
   platinum: 'bg-indigo-900/40 text-indigo-300 border-indigo-600/50',
 }
 
+const CHURN_COLORS: Record<string, string> = {
+  critical: 'text-red-400',
+  high: 'text-orange-400',
+  moderate: 'text-amber-400',
+}
+
 interface ClientsTableProps {
   clients: ClientWithStats[]
   healthMap?: Map<string, ClientHealthScore>
+  churnMap?: Map<string, ChurnRiskClient>
 }
 
-export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
+export function ClientsTable({ clients, healthMap, churnMap }: ClientsTableProps) {
   const router = useRouter()
   const { state, setState } = usePersistentViewState('clients.list', {
     strategy: 'url',
@@ -185,10 +193,24 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
                 {client.full_name}
               </td>
               <td className="px-4 py-3">
-                {(() => {
-                  const h = healthMap?.get(client.id)
-                  return h ? <ClientHealthBadge score={h.score} tier={h.tier} /> : null
-                })()}
+                <div className="flex items-center gap-1.5">
+                  {(() => {
+                    const h = healthMap?.get(client.id)
+                    return h ? <ClientHealthBadge score={h.score} tier={h.tier} /> : null
+                  })()}
+                  {(() => {
+                    const churn = churnMap?.get(client.id)
+                    if (!churn || churn.riskLevel === 'low') return null
+                    return (
+                      <span
+                        className={`text-xs font-medium ${CHURN_COLORS[churn.riskLevel] || 'text-amber-400'}`}
+                        title={`Churn risk: ${churn.riskScore}/100 — ${churn.suggestedAction}`}
+                      >
+                        {churn.riskLevel === 'critical' ? '⚠' : '↓'}
+                      </span>
+                    )
+                  })()}
+                </div>
               </td>
               <td className="px-4 py-3">
                 {(client as any).loyalty_tier ? (

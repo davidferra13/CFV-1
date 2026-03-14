@@ -30,6 +30,7 @@ import { GoogleReviewUrlForm } from '@/components/settings/google-review-url-for
 import { ChefBackgroundSettings } from '@/components/settings/chef-background-settings'
 import { AvailabilitySignalToggle } from '@/components/calendar/availability-signal-toggle'
 import { DemoDataManager } from '@/components/onboarding/demo-data-manager'
+import { ReplayTourButton } from '@/components/onboarding/replay-tour-button'
 import { hasDemoData } from '@/lib/onboarding/demo-data'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
@@ -115,7 +116,7 @@ export default async function SettingsPage() {
       {/* ═══════════════════════════════════════════════════════ */}
       <SettingsGroupHeader
         label="Your Business"
-        description="Core settings for how you run your practice"
+        description="Core settings for how you run your business"
         first
       />
       <div className="space-y-3">
@@ -165,10 +166,30 @@ export default async function SettingsPage() {
           </div>
         </SettingsCategory>
 
+        {/* ── 1b. My Services ─────────────────────────────────── */}
+        <SettingsCategory
+          title="My Services"
+          description="Toggle what you offer, your policies, and how Remy communicates with clients on your behalf."
+          icon="Settings2"
+          primary
+        >
+          <Link
+            href="/settings/my-services"
+            className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Configure My Services</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Set what you offer (cleanup, tastings, bartending, etc.), your policies (cancellation,
+              travel fees, minimums), and extras. Remy uses these settings to accurately represent
+              your business.
+            </p>
+          </Link>
+        </SettingsCategory>
+
         {/* ── 2. Profile & Branding ────────────────────────────── */}
         <SettingsCategory
           title="Profile & Branding"
-          description="Manage your core chef profile, public profile presentation, and portal background."
+          description="Manage your core business profile, public profile presentation, and portal background."
           icon="Palette"
           primary
         >
@@ -179,7 +200,7 @@ export default async function SettingsPage() {
             >
               <p className="font-semibold text-brand-200">My Profile</p>
               <p className="text-sm text-brand-400 mt-1">
-                Edit your core chef profile, image, and review link in one place.
+                Edit your business profile, image, and review link in one place.
               </p>
             </Link>
 
@@ -205,10 +226,10 @@ export default async function SettingsPage() {
                 href="/settings/favorite-chefs"
                 className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
               >
-                <p className="font-medium text-stone-100">Favorite Chefs</p>
+                <p className="font-medium text-stone-100">Inspiration Board</p>
                 <p className="text-sm text-stone-500 mt-1">
-                  Celebrate the culinary heroes who inspire your craft. Share your list on social
-                  media.
+                  Capture the chefs, bakers, operators, and hospitality brands that shape your point
+                  of view.
                 </p>
               </Link>
               <Link
@@ -426,8 +447,8 @@ export default async function SettingsPage() {
             >
               <p className="font-medium text-stone-100">Chef Journal</p>
               <p className="text-sm text-stone-500 mt-1">
-                Track travel inspiration, favorite meals, lessons learned, and ideas to bring back
-                into your kitchen.
+                Track travel inspiration, service notes, favorite meals, and ideas worth bringing
+                back into your operation.
               </p>
             </Link>
           </div>
@@ -755,20 +776,25 @@ export default async function SettingsPage() {
             >
               <p className="font-medium text-stone-100">Emergency Contacts</p>
               <p className="text-sm text-stone-500 mt-1">
-                Backup contacts for event incapacitation — a sous chef, business partner, or peer
-                who can step in.
+                Backup contacts for event or service disruption — a partner, lead, or peer who can
+                step in.
               </p>
             </Link>
           </div>
         </SettingsCategory>
 
-        {/* ── 16. Sample Data ──────────────────────────────────── */}
+        {/* ── 16. Sample Data & Tour ───────────────────────────── */}
         <SettingsCategory
-          title="Sample Data"
-          description="Load or remove sample clients, events, and inquiries to explore ChefFlow."
+          title="Sample Data & Tour"
+          description="Load sample data to explore ChefFlow, or replay the guided product tour."
           icon="Database"
         >
-          <DemoDataManager hasDemoData={demoDataExists} />
+          <div className="space-y-4">
+            <DemoDataManager hasDemoData={demoDataExists} />
+            <div className="border-t border-stone-700 pt-4">
+              <ReplayTourButton />
+            </div>
+          </div>
         </SettingsCategory>
 
         {/* ── 17. API & Developer ──────────────────────────────── */}

@@ -1,13 +1,21 @@
 import { Suspense } from 'react'
-import { Bot } from 'lucide-react'
+import { Bot } from '@/components/ui/icons'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
+import { requireAdmin } from '@/lib/auth/admin'
+import { redirect } from 'next/navigation'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata = {
   title: 'Remy History',
   description: 'Everything Remy has ever created for you',
 }
 
-export default function RemyHistoryPage() {
+export default async function RemyHistoryPage() {
+  const admin = await requireAdmin()
+  if (!isFounderEmail(admin.email)) {
+    redirect('/unauthorized')
+  }
+
   return (
     <div className="container max-w-4xl py-8 space-y-6">
       {/* Header */}

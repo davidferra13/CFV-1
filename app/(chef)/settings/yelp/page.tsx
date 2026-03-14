@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { getYelpConnection, getYelpReviewCount } from '@/lib/integrations/yelp/yelp-actions'
 import { YelpSettings } from '@/components/settings/yelp-settings'
 import { requireChef } from '@/lib/auth/get-user'

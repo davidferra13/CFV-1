@@ -7,6 +7,7 @@ ALTER TABLE chef_preferences
   ADD COLUMN IF NOT EXISTS notification_quiet_hours_end TIME NULL,
   ADD COLUMN IF NOT EXISTS notification_digest_enabled BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS notification_digest_interval_minutes INTEGER NOT NULL DEFAULT 15;
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -19,6 +20,7 @@ BEGIN
       CHECK (notification_digest_interval_minutes BETWEEN 5 AND 120);
   END IF;
 END $$;
+
 COMMENT ON COLUMN chef_preferences.notification_quiet_hours_enabled IS
   'When true, non-critical in-app toasts are suppressed during configured quiet window.';
 COMMENT ON COLUMN chef_preferences.notification_quiet_hours_start IS
@@ -29,6 +31,7 @@ COMMENT ON COLUMN chef_preferences.notification_digest_enabled IS
   'When true, non-critical in-app notifications are batched into digest toasts.';
 COMMENT ON COLUMN chef_preferences.notification_digest_interval_minutes IS
   'Digest flush interval in minutes for non-critical in-app notifications.';
+
 -- 2) QOL observability event stream
 CREATE TABLE IF NOT EXISTS qol_metric_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -40,6 +43,7 @@ CREATE TABLE IF NOT EXISTS qol_metric_events (
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -61,13 +65,18 @@ BEGIN
       );
   END IF;
 END $$;
+
 CREATE INDEX IF NOT EXISTS idx_qol_metric_events_tenant_created
   ON qol_metric_events (tenant_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_qol_metric_events_metric_created
   ON qol_metric_events (metric_key, created_at DESC);
+
 ALTER TABLE qol_metric_events ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS qol_metric_events_insert_self ON qol_metric_events;
 DROP POLICY IF EXISTS qol_metric_events_select_tenant ON qol_metric_events;
+
 CREATE POLICY qol_metric_events_insert_self ON qol_metric_events
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -90,6 +99,7 @@ CREATE POLICY qol_metric_events_insert_self ON qol_metric_events
       )
     )
   );
+
 CREATE POLICY qol_metric_events_select_tenant ON qol_metric_events
   FOR SELECT TO authenticated
   USING (
@@ -111,3 +121,4 @@ CREATE POLICY qol_metric_events_select_tenant ON qol_metric_events
       )
     )
   );
+

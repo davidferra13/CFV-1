@@ -25,7 +25,7 @@ import {
   Search,
   ShoppingCart,
   Utensils,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wizard'
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import { DataControls } from '@/components/ai-privacy/data-controls'

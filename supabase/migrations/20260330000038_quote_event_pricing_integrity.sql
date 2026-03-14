@@ -168,4 +168,4 @@ BEGIN
     'converting_quote_id', CASE WHEN v_quote.event_id IS NOT NULL THEN v_quote.id ELSE NULL END
   );
 END;
-$$;;
+$$;

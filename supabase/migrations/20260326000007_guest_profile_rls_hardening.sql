@@ -7,4 +7,5 @@
 DROP POLICY IF EXISTS guest_event_profile_public_select ON guest_event_profile;
 DROP POLICY IF EXISTS guest_event_profile_public_insert ON guest_event_profile;
 DROP POLICY IF EXISTS guest_event_profile_public_update ON guest_event_profile;
+
 REVOKE SELECT, INSERT, UPDATE, DELETE ON guest_event_profile FROM anon;

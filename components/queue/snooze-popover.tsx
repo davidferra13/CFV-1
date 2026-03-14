@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Clock } from 'lucide-react'
+import { Clock } from '@/components/ui/icons'
 import { SNOOZE_OPTIONS, type SnoozeDuration } from '@/hooks/use-queue-snooze'
 
 interface SnoozePopoverProps {

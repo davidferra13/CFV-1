@@ -15,6 +15,7 @@ alter table if exists public.recipes
   add column if not exists sodium_per_serving_mg numeric(10, 2),
   add column if not exists nutrition_snapshot_json jsonb,
   add column if not exists nutrition_calculated_at timestamptz;
+
 alter table if exists public.ingredients
   add column if not exists nutrition_calories_per_100g numeric(10, 2),
   add column if not exists nutrition_protein_per_100g numeric(10, 2),

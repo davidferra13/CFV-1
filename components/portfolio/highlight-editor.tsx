@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Plus, Trash2, Edit2, X, GripVertical } from 'lucide-react'
+import { Plus, Trash2, Edit2, X, GripVertical } from '@/components/ui/icons'
 import {
   createHighlight,
   updateHighlight,

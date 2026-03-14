@@ -292,7 +292,7 @@
       "testId": "cmd-05",
       "category": "command_routing",
       "query": "What's the lifetime value of the Rothschild account?",
-      "response": "Based on the data I have, Emma Rothschild's lifetime value is **$12,150.00** 💰\n\nShe's a Platinum tier client with 950 loyalty points, and I've tracked 3 events with her so far:\n- Spring Tasting Menu (March 31) — paid | 8 guests\n- Winter Tasting Menu (February 7) — completed | 6 guests\n- Charity Gala Dinner (November 20) — completed | 50 guests\n\nShe's definitely one of your highest-value clients — that's a solid investment in building her loyalty. Want me to pull up her full event history or draft a follow-up for her?\n\nNAV_SUGGESTIONS: [{\"label\":\"Client Details\",\"href\":\"/clients/emma-rothschild\"}]",
+      "response": "Based on the data I have, Emma Rothschild's lifetime value is **$12,150.00** 💰\n\nShe's a Platinum tier client with 950 loyalty points, and I've tracked 3 events with her so far:\n- Spring Tasting Menu (March 31) — paid | 8 guests\n- Winter Tasting Menu (February 7) — completed | 6 guests\n- Charity Gala Dinner (November 20) — completed | 50 guests\n\nShe's definitely one of your highest-value clients — that's a solid investment in building her loyalty. Want me to pull up her full event history or draft a follow-up for her? ✨\n\nNAV_SUGGESTIONS: [{\"label\":\"Client Details\",\"href\":\"/clients/emma-rothschild\"}]",
       "responseTimeMs": 57151,
       "ruleScore": {
         "intentCorrect": null,
