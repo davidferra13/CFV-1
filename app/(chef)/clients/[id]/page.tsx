@@ -73,6 +73,8 @@ import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
+import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matching'
+import { PotentialDuplicatesCard } from '@/components/clients/potential-duplicates-card'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -257,6 +259,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA && clientNBA.actionType !== 'none' && <NextBestActionCard action={clientNBA} />}
+
+      {/* Potential Duplicates */}
+      <Suspense fallback={null}>
+        <DuplicatesSection clientId={client.id} clientName={client.full_name} />
+      </Suspense>
 
       {/* Relationship Intelligence */}
       <Suspense fallback={null}>
@@ -928,6 +935,17 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       )}
     </div>
   )
+}
+
+async function DuplicatesSection({
+  clientId,
+  clientName,
+}: {
+  clientId: string
+  clientName: string
+}) {
+  const matches = await findPotentialClientMatches(clientId)
+  return <PotentialDuplicatesCard clientId={clientId} clientName={clientName} matches={matches} />
 }
 
 async function ClientEventsContent({ clientId }: { clientId: string }) {
