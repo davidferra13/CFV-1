@@ -51,7 +51,16 @@ import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
 import { LeadScoreFactors } from '@/components/inquiries/lead-score-factors'
-import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
+import {
+  MarketplaceActionPanel,
+  MarketplaceFallbackBanner,
+} from '@/components/marketplace/marketplace-action-panel'
+import { MarketplaceSnapshotCard } from '@/components/marketplace/marketplace-snapshot-card'
+import {
+  getPlatformRecordByInquiry,
+  getPlatformSnapshots,
+  getPlatformPayout,
+} from '@/lib/marketplace/platform-record-readers'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
@@ -177,6 +186,16 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   if (!inquiry) {
     notFound()
   }
+
+  // Fetch platform record data (non-blocking, catches errors gracefully)
+  const isMarketplaceInquiry = !!(inquiry as any).external_platform
+  const [platformRecord, platformSnapshots, platformPayout] = isMarketplaceInquiry
+    ? await Promise.all([
+        getPlatformRecordByInquiry(params.id).catch(() => null),
+        getPlatformSnapshots(params.id).catch(() => []),
+        getPlatformPayout(params.id).catch(() => null),
+      ])
+    : [null, [], null]
 
   // Compute client engagement score (only if inquiry is linked to a registered client)
   const clientActivity = inquiry.client?.id
@@ -496,22 +515,32 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         />
       )}
 
-      {/* Platform link banner — shows "Open in {Platform}" for any platform inquiry with an external link.
-          Skipped for TAC statuses that already have their own button (new → TacAddressLead, awaiting_chef → TacStatusPrompt). */}
-      {(inquiry as any).external_link &&
+      {/* Marketplace Action Panel: shows platform status, action buttons, payout info, deep links.
+          Uses platform_records when available, falls back to legacy inquiry fields for older inquiries. */}
+      {isMarketplaceInquiry && platformRecord ? (
+        <MarketplaceActionPanel
+          record={platformRecord}
+          payout={platformPayout}
+          inquiryId={inquiry.id}
+          clientName={name}
+        />
+      ) : (inquiry as any).external_link &&
         (inquiry as any).external_platform &&
         !(
           inquiry.channel === 'take_a_chef' &&
           (inquiry.status === 'new' || inquiry.status === 'awaiting_chef')
-        ) && (
-          <PlatformLinkBanner
-            platform={(inquiry as any).external_platform}
-            externalLink={(inquiry as any).external_link}
-            externalInquiryId={(inquiry as any).external_inquiry_id ?? null}
-            clientName={name}
-            status={inquiry.status}
-          />
-        )}
+        ) ? (
+        <MarketplaceFallbackBanner
+          platform={(inquiry as any).external_platform}
+          externalLink={(inquiry as any).external_link}
+          externalInquiryId={(inquiry as any).external_inquiry_id ?? null}
+          clientName={name}
+          status={inquiry.status}
+        />
+      ) : null}
+
+      {/* Platform activity timeline (snapshots from Gmail sync + page captures) */}
+      {platformSnapshots.length > 0 && <MarketplaceSnapshotCard snapshots={platformSnapshots} />}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

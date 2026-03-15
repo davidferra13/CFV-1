@@ -44,6 +44,13 @@ import { isHireAChefEmail, parseHireAChefEmail } from './hireachef-parser'
 import { isCuisineistChefEmail, parseCuisineistChefEmail } from './cuisineistchef-parser'
 import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
 import { mergePlatformIdentityKeys } from './platform-identity'
+import {
+  ensurePlatformRecord,
+  createEmailSnapshot,
+  upsertPlatformPayout,
+  updatePlatformRecordStatus,
+  getPlatformRecordIdByInquiry,
+} from './platform-records-writer'
 import { buildSeriesSchedulePlan } from '@/lib/booking/series-planning'
 import {
   materializeSeriesEvents,
@@ -1189,6 +1196,54 @@ async function handleTacNewInquiry(
     throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
   }
 
+  // Write-through: create platform_record + email snapshot (non-blocking)
+  try {
+    const platformRecordId = await ensurePlatformRecord(supabase, {
+      tenantId,
+      inquiryId: newInquiry.id,
+      clientId,
+      platform: 'take_a_chef',
+      externalInquiryId: inquiry.ctaUriToken || null,
+      externalUriToken: inquiry.ctaUriToken || null,
+      externalUrl: inquiry.ctaLink || null,
+      requestUrl: inquiry.ctaLink || null,
+      statusOnPlatform: 'new',
+      nextActionRequired: 'Review and respond to inquiry',
+      nextActionBy: 'chef',
+      payload: {
+        partner_name: inquiry.partnerName,
+        experience_type: inquiry.experienceType,
+        price_per_person_range: inquiry.pricePerPersonRange,
+        service_mode: inquiry.serviceMode,
+      },
+    })
+
+    if (platformRecordId) {
+      await createEmailSnapshot(supabase, {
+        tenantId,
+        platformRecordId,
+        inquiryId: newInquiry.id,
+        captureType: 'new_inquiry',
+        clientName: inquiry.clientName,
+        bookingDate: inquiry.eventDate,
+        guestCount: inquiry.guestCountNumber,
+        location: inquiry.location,
+        occasion: inquiry.occasion,
+        amountCents: budgetCents,
+        summary: `New TAC inquiry from ${inquiry.clientName}`,
+        metadata: {
+          food_preferences: inquiry.foodPreferences,
+          meal_type: inquiry.mealType,
+          dietary_restrictions: inquiry.dietaryRestrictions,
+          lead_score: tacLeadScore.lead_score,
+          lead_tier: tacLeadScore.lead_tier,
+        },
+      })
+    }
+  } catch (prErr) {
+    console.error('[TakeAChef] platform_records write-through failed (non-fatal):', prErr)
+  }
+
   // Log in sync log
   await logSyncEntry(supabase, tenantId, email, {
     classification: 'inquiry',
@@ -1697,6 +1752,76 @@ async function handleTacBookingConfirmed(
     console.error('[TakeAChef] Booking notification failed (non-fatal):', notifErr)
   }
 
+  // Write-through: update platform_record status + create booking snapshot (non-blocking)
+  if (inquiryId) {
+    try {
+      const recordId = await updatePlatformRecordStatus(supabase, {
+        tenantId,
+        inquiryId,
+        statusOnPlatform: 'booked',
+        nextActionRequired: 'Prepare for event',
+        nextActionBy: 'chef',
+        clientId: existingInquiry?.client_id || null,
+      })
+
+      // If no record existed yet (inquiry was created before write-through), create one
+      const platformRecordId =
+        recordId ||
+        (await ensurePlatformRecord(supabase, {
+          tenantId,
+          inquiryId,
+          clientId: existingInquiry?.client_id || null,
+          platform: 'take_a_chef',
+          externalInquiryId: booking.orderId || booking.ctaUriToken || null,
+          externalUriToken: booking.ctaUriToken || null,
+          externalUrl: booking.ctaLink || null,
+          statusOnPlatform: 'booked',
+          nextActionRequired: 'Prepare for event',
+          nextActionBy: 'chef',
+        }))
+
+      if (platformRecordId) {
+        await createEmailSnapshot(supabase, {
+          tenantId,
+          platformRecordId,
+          inquiryId,
+          captureType: 'booking_confirmed',
+          clientName: booking.clientName,
+          bookingDate: booking.primaryServiceDate,
+          location: booking.address,
+          amountCents: booking.amountCents,
+          summary: `TAC booking confirmed: ${booking.clientName}, Order #${booking.orderId || 'unknown'}`,
+          metadata: {
+            order_id: booking.orderId,
+            service_dates: booking.serviceDates,
+            request_type: booking.requestType,
+            service_mode: booking.serviceMode,
+          },
+        })
+
+        // Create payout record from booking amount
+        if (booking.amountCents) {
+          const commissionPct = getDefaultTakeAChefCommissionPercent(email.date ?? null)
+          const commissionCents = Math.round(booking.amountCents * (commissionPct / 100))
+          await upsertPlatformPayout(supabase, {
+            tenantId,
+            platformRecordId,
+            inquiryId,
+            platform: 'take_a_chef',
+            grossBookingCents: booking.amountCents,
+            commissionPercent: commissionPct,
+            commissionAmountCents: commissionCents,
+            netPayoutCents: booking.amountCents - commissionCents,
+            payoutStatus: 'pending',
+            source: 'booking_email',
+          })
+        }
+      }
+    } catch (prErr) {
+      console.error('[TakeAChef] platform_records booking write-through failed (non-fatal):', prErr)
+    }
+  }
+
   await logSyncEntry(supabase, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
@@ -1797,6 +1922,39 @@ async function handleTacCustomerInfo(
     } catch (notifErr) {
       console.error('[TakeAChef] Customer info notification failed (non-fatal):', notifErr)
     }
+
+    // Write-through: contact reveal snapshot (non-blocking)
+    try {
+      const platformRecordId = await getPlatformRecordIdByInquiry(supabase, tenantId, inquiryId)
+      if (platformRecordId) {
+        await updatePlatformRecordStatus(supabase, {
+          tenantId,
+          inquiryId,
+          statusOnPlatform: 'contact_revealed',
+          clientId: inquiry?.client_id || null,
+        })
+
+        await createEmailSnapshot(supabase, {
+          tenantId,
+          platformRecordId,
+          inquiryId,
+          captureType: 'customer_info',
+          clientName: info.guestName,
+          email: info.email,
+          phone: info.phoneNumber,
+          summary: `TAC contact revealed: ${info.guestName}`,
+          metadata: {
+            phone: info.phoneNumber,
+            email: info.email,
+          },
+        })
+      }
+    } catch (prErr) {
+      console.error(
+        '[TakeAChef] platform_records customer_info write-through failed (non-fatal):',
+        prErr
+      )
+    }
   }
 
   await logSyncEntry(supabase, tenantId, email, {
@@ -1895,6 +2053,57 @@ async function handleTacPayment(
     }
   } catch (notifErr) {
     console.error('[TakeAChef] Payment notification failed (non-fatal):', notifErr)
+  }
+
+  // Write-through: upsert payout on platform_payouts (non-blocking)
+  if (matchedInquiryId && payment) {
+    try {
+      const platformRecordId = await getPlatformRecordIdByInquiry(
+        supabase,
+        tenantId,
+        matchedInquiryId
+      )
+      if (platformRecordId) {
+        await upsertPlatformPayout(supabase, {
+          tenantId,
+          platformRecordId,
+          inquiryId: matchedInquiryId,
+          platform: 'take_a_chef',
+          grossBookingCents: payment.grossAmountCents,
+          commissionPercent: payment.commissionPercent,
+          commissionAmountCents: payment.commissionCents,
+          netPayoutCents: payment.netPayoutCents,
+          payoutStatus: 'paid',
+          payoutArrivalDate: payment.payoutDate,
+          source: 'payment_email',
+        })
+
+        await updatePlatformRecordStatus(supabase, {
+          tenantId,
+          inquiryId: matchedInquiryId,
+          statusOnPlatform: 'paid',
+        })
+
+        await createEmailSnapshot(supabase, {
+          tenantId,
+          platformRecordId,
+          inquiryId: matchedInquiryId,
+          captureType: 'payment',
+          amountCents: payment.netPayoutCents,
+          summary: `TAC payout: $${((payment.netPayoutCents || 0) / 100).toFixed(2)} net (Order #${payment.orderId || 'unknown'})`,
+          metadata: {
+            order_id: payment.orderId,
+            gross_cents: payment.grossAmountCents,
+            commission_cents: payment.commissionCents,
+            commission_percent: payment.commissionPercent,
+            payout_method: payment.payoutMethod,
+            currency: payment.currency,
+          },
+        })
+      }
+    } catch (prErr) {
+      console.error('[TakeAChef] platform_payouts write-through failed (non-fatal):', prErr)
+    }
   }
 
   await logSyncEntry(supabase, tenantId, email, {
@@ -2616,6 +2825,46 @@ async function handleGenericNewLead(
     throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
   }
 
+  // Write-through: create platform_record + email snapshot (non-blocking)
+  try {
+    const platformRecordId = await ensurePlatformRecord(supabase, {
+      tenantId,
+      inquiryId: newInquiry.id,
+      clientId,
+      platform: channelValue,
+      externalInquiryId: fields.externalId || null,
+      externalUrl: fields.ctaLink || null,
+      requestUrl: fields.ctaLink || null,
+      statusOnPlatform: 'new',
+      nextActionRequired: `Review and respond to ${displayName} inquiry`,
+      nextActionBy: 'chef',
+      payload: leadData,
+    })
+
+    if (platformRecordId) {
+      await createEmailSnapshot(supabase, {
+        tenantId,
+        platformRecordId,
+        inquiryId: newInquiry.id,
+        captureType: 'new_inquiry',
+        clientName: fields.clientName !== 'Unknown' ? fields.clientName : null,
+        bookingDate: fields.eventDate,
+        guestCount: fields.guestCount,
+        location: fields.location,
+        occasion: fields.occasion,
+        amountCents: fields.budgetCents,
+        summary: `New ${displayName} inquiry from ${fields.clientName}`,
+        metadata: {
+          dietary_restrictions: fields.dietaryRestrictions,
+          lead_score: platformLeadScore.lead_score,
+          lead_tier: platformLeadScore.lead_tier,
+        },
+      })
+    }
+  } catch (prErr) {
+    console.error(`[${displayName}] platform_records write-through failed (non-fatal):`, prErr)
+  }
+
   // Log in sync log
   await logSyncEntry(supabase, tenantId, email, {
     classification: 'inquiry',
@@ -2799,6 +3048,48 @@ async function handleGenericBookingConfirmed(
       }
     } catch (notifErr) {
       console.error(`[${displayName}] Booking notification failed (non-fatal):`, notifErr)
+    }
+
+    // Write-through: update platform_record + create booking snapshot (non-blocking)
+    try {
+      const recordId = await updatePlatformRecordStatus(supabase, {
+        tenantId,
+        inquiryId,
+        statusOnPlatform: 'booked',
+        nextActionRequired: 'Prepare for event',
+        nextActionBy: 'chef',
+      })
+
+      const platformRecordId =
+        recordId ||
+        (await ensurePlatformRecord(supabase, {
+          tenantId,
+          inquiryId,
+          platform: channelValue,
+          externalUrl: fields.ctaLink || null,
+          statusOnPlatform: 'booked',
+          nextActionRequired: 'Prepare for event',
+          nextActionBy: 'chef',
+        }))
+
+      if (platformRecordId) {
+        await createEmailSnapshot(supabase, {
+          tenantId,
+          platformRecordId,
+          inquiryId,
+          captureType: 'booking_confirmed',
+          clientName: fields.clientName !== 'Unknown' ? fields.clientName : null,
+          bookingDate: fields.eventDate,
+          location: fields.location,
+          amountCents: fields.budgetCents,
+          summary: `${displayName} booking confirmed: ${fields.clientName}`,
+        })
+      }
+    } catch (prErr) {
+      console.error(
+        `[${displayName}] platform_records booking write-through failed (non-fatal):`,
+        prErr
+      )
     }
   }
 
