@@ -495,6 +495,7 @@ The market is real, it's active, it's growing, and it's underserved.
 - "Running your own business can at times be a dark and lonely path." -- Chef Michael Wards
 - "The business piece tends to be the weakest area for most personal chefs." -- Monica Thomas
 - "I spend more time on invoices, proposals, grocery lists, and backend work than I do cooking." -- Traqly blog, citing chef interviews
+- Chefs spend "frustrating time sitting in front of a computer attempting to set up their businesses using multiple software applications." -- APPCA
 
 **On pricing and money:**
 
@@ -502,6 +503,7 @@ The market is real, it's active, it's growing, and it's underserved.
 - "Price creep is the silent margin killer." -- Carl Jacobs, Apicbase CEO
 - "Production costs have risen... raising prices cannot be the only solution." -- Carl Jacobs, Apicbase CEO
 - "One of the biggest mistakes personal chefs make is charging by the hour instead of by the service." -- Virginia Stockwell
+- "There is a difference between an employee mindset and an entrepreneurial mindset. If you're continuing to believe that charging by the hour is the way to go, you may be stuck in employee mindset." -- Virginia Stockwell
 
 **On the industry crisis:**
 
@@ -515,6 +517,16 @@ The market is real, it's active, it's growing, and it's underserved.
 - "Only 25% of people actually write up reviews." -- meez blog (on building reputation)
 - "No one marketing act will create a full roster of clients." -- Food Business Pros
 - "Word-of-mouth is gold." -- Multiple chef sources
+- "A website is passive... basically what you have is a digital business card." -- Chef Shelley, on why websites alone don't generate clients
+- Traditional advertising yields about 1 client for every $1,000 spent. -- Entrepreneurial Chef
+- Some clients were "embarrassed to admit that they were using a cheffing service, so not a lot of referrals." -- Chef community discussion
+
+**On fear and self-promotion:**
+
+- "You're kind of afraid to talk to people about your services." -- Chef Shelley
+- "When the time comes to start talking to people, you just freeze." -- Chef Shelley
+- "They throw spaghetti at the wall, hoping it sticks." -- Chef Shelley, on failed marketing approaches
+- "They don't really have any idea of what's working and not working." -- Chef Shelley, on lack of data-driven decisions
 
 **On client work:**
 
@@ -602,7 +614,11 @@ The market is real, it's active, it's growing, and it's underserved.
 **On cook session chaos:**
 
 - "Filthy kitchens, aggressive dogs, injuries, smoke alarms, inadequate cookware, burnt food, missing ingredients." -- Virginia Stockwell, on what goes wrong
+- "You're stuck with using pans that look like they've had since college. Or possibly worse, there's only one stockpot." -- Virginia Stockwell, on client kitchen equipment
+- On missing ingredients: "This is going to happen a lot... This is going to happen on a regular basis." -- Virginia Stockwell
+- "As a personal chef, you have to be able to deal with whatever comes your way, whether that's a dog or kid running through the kitchen, having five things cooking at once, or people asking a whole bunch of questions." -- meez blog
 - "Assuming clients want fancy food is a mistake. They want comfort food, done well." -- Virginia Stockwell
+- "You have to let go of some of your ego to be successful." -- meez blog, on chef bias toward elevated dishes vs. what clients actually want
 - When burned potatoes failed presentation, reframing them as "oven-roasted potato coins" transformed client perception. -- Maddy (Substack), on recovery from mistakes
 
 **On team vs. solo:**
