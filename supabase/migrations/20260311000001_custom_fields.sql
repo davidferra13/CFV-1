@@ -37,6 +37,7 @@ CREATE TABLE custom_field_definitions (
 ALTER TABLE custom_field_definitions ENABLE ROW LEVEL SECURITY;
 
 -- Standard tenant-isolation policy: chef can only see/modify their own definitions
+DROP POLICY IF EXISTS "tenant_isolation" ON custom_field_definitions;
 CREATE POLICY "tenant_isolation" ON custom_field_definitions
   FOR ALL
   USING (
@@ -72,6 +73,7 @@ CREATE TABLE custom_field_values (
 
 ALTER TABLE custom_field_values ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "tenant_isolation" ON custom_field_values;
 CREATE POLICY "tenant_isolation" ON custom_field_values
   FOR ALL
   USING (

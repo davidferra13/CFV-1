@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS chef_budgets (
   UNIQUE (chef_id, month, category)
 );
 ALTER TABLE chef_budgets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "chef_budgets_tenant_isolation" ON chef_budgets;
 CREATE POLICY "chef_budgets_tenant_isolation"
   ON chef_budgets FOR ALL
   USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS event_equipment_rentals (
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE event_equipment_rentals ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "event_equipment_rentals_tenant_isolation" ON event_equipment_rentals;
 CREATE POLICY "event_equipment_rentals_tenant_isolation"
   ON event_equipment_rentals FOR ALL
   USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))

@@ -26,6 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_breadcrumbs_session
 ALTER TABLE chef_breadcrumbs ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read their own breadcrumbs
+DROP POLICY IF EXISTS breadcrumbs_chef_read ON chef_breadcrumbs;
 CREATE POLICY breadcrumbs_chef_read ON chef_breadcrumbs
   FOR SELECT TO authenticated
   USING (tenant_id IN (
@@ -33,6 +34,7 @@ CREATE POLICY breadcrumbs_chef_read ON chef_breadcrumbs
   ));
 
 -- Insert via service role only (API route uses admin client)
+DROP POLICY IF EXISTS breadcrumbs_service_insert ON chef_breadcrumbs;
 CREATE POLICY breadcrumbs_service_insert ON chef_breadcrumbs
   FOR INSERT TO service_role
   WITH CHECK (true);

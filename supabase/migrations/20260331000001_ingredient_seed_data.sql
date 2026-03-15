@@ -50,6 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_system_ingredients_name_trgm
   ON system_ingredients USING gin (name extensions.gin_trgm_ops);
 -- RLS: everyone can read system ingredients, nobody can write (admin via service role)
 ALTER TABLE system_ingredients ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "system_ingredients_read_all" ON system_ingredients;
 CREATE POLICY "system_ingredients_read_all"
   ON system_ingredients FOR SELECT
   USING (true);

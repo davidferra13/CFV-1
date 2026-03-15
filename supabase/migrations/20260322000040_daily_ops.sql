@@ -48,6 +48,7 @@ CREATE INDEX idx_daily_plan_dismissals_chef_date ON daily_plan_dismissals(chef_i
 ALTER TABLE daily_plan_drafts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_plan_dismissals ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef manages own drafts" ON daily_plan_drafts;
 CREATE POLICY "Chef manages own drafts" ON daily_plan_drafts
   FOR ALL USING (
     chef_id IN (
@@ -55,6 +56,7 @@ CREATE POLICY "Chef manages own drafts" ON daily_plan_drafts
     )
   );
 
+DROP POLICY IF EXISTS "Chef manages own dismissals" ON daily_plan_dismissals;
 CREATE POLICY "Chef manages own dismissals" ON daily_plan_dismissals
   FOR ALL USING (
     chef_id IN (

@@ -108,24 +108,28 @@ ALTER TABLE event_staff_assignments ENABLE ROW LEVEL SECURITY;
 
 -- ---- staff_members: chef-only ----
 
+DROP POLICY IF EXISTS sm_chef_select ON staff_members;
 CREATE POLICY sm_chef_select ON staff_members
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS sm_chef_insert ON staff_members;
 CREATE POLICY sm_chef_insert ON staff_members
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS sm_chef_update ON staff_members;
 CREATE POLICY sm_chef_update ON staff_members
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS sm_chef_delete ON staff_members;
 CREATE POLICY sm_chef_delete ON staff_members
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
@@ -134,24 +138,28 @@ CREATE POLICY sm_chef_delete ON staff_members
 
 -- ---- event_staff_assignments: chef-only ----
 
+DROP POLICY IF EXISTS esa_chef_select ON event_staff_assignments;
 CREATE POLICY esa_chef_select ON event_staff_assignments
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS esa_chef_insert ON event_staff_assignments;
 CREATE POLICY esa_chef_insert ON event_staff_assignments
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS esa_chef_update ON event_staff_assignments;
 CREATE POLICY esa_chef_update ON event_staff_assignments
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS esa_chef_delete ON event_staff_assignments;
 CREATE POLICY esa_chef_delete ON event_staff_assignments
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

@@ -20,6 +20,7 @@ CREATE INDEX idx_vendor_event_assignments_event ON vendor_event_assignments(even
 CREATE INDEX idx_vendor_event_assignments_vendor ON vendor_event_assignments(vendor_id);
 -- RLS
 ALTER TABLE vendor_event_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS vea_chef_all ON vendor_event_assignments;
 CREATE POLICY vea_chef_all ON vendor_event_assignments
   FOR ALL
   USING (tenant_id = get_current_tenant_id())

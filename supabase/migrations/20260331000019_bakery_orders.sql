@@ -41,6 +41,7 @@ CREATE INDEX idx_bakery_orders_tenant_status ON bakery_orders(tenant_id, status)
 -- RLS
 ALTER TABLE bakery_orders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own bakery orders" ON bakery_orders;
 CREATE POLICY "Chefs can manage their own bakery orders"
   ON bakery_orders
   FOR ALL

@@ -32,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_waitlist_entries_date ON waitlist_entries(chef_id
 COMMENT ON TABLE waitlist_entries IS 'Walk-in waitlist queue. Tracks position, estimated wait, and status through seating.';
 ALTER TABLE waitlist_entries ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS waitlist_entries_chef_policy ON waitlist_entries;
   CREATE POLICY waitlist_entries_chef_policy ON waitlist_entries
     USING (chef_id = (
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

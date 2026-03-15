@@ -191,9 +191,11 @@ CREATE INDEX idx_clients_loyalty_points ON clients(tenant_id, loyalty_points);
 -- loyalty_transactions: append-only, tenant-isolated
 ALTER TABLE loyalty_transactions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_transactions ON loyalty_transactions;
 CREATE POLICY tenant_isolation_select_loyalty_transactions ON loyalty_transactions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_transactions ON loyalty_transactions;
 CREATE POLICY tenant_isolation_insert_loyalty_transactions ON loyalty_transactions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
@@ -202,12 +204,15 @@ CREATE POLICY tenant_isolation_insert_loyalty_transactions ON loyalty_transactio
 -- loyalty_rewards: full CRUD, tenant-isolated
 ALTER TABLE loyalty_rewards ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY tenant_isolation_select_loyalty_rewards ON loyalty_rewards
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY tenant_isolation_insert_loyalty_rewards ON loyalty_rewards
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY tenant_isolation_update_loyalty_rewards ON loyalty_rewards
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
@@ -216,18 +221,22 @@ CREATE POLICY tenant_isolation_update_loyalty_rewards ON loyalty_rewards
 -- loyalty_config: read/write, tenant-isolated
 ALTER TABLE loyalty_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_config ON loyalty_config;
 CREATE POLICY tenant_isolation_select_loyalty_config ON loyalty_config
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_config ON loyalty_config;
 CREATE POLICY tenant_isolation_insert_loyalty_config ON loyalty_config
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_loyalty_config ON loyalty_config;
 CREATE POLICY tenant_isolation_update_loyalty_config ON loyalty_config
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client-side read access to loyalty_transactions (own records only)
+DROP POLICY IF EXISTS client_read_own_loyalty_transactions ON loyalty_transactions;
 CREATE POLICY client_read_own_loyalty_transactions ON loyalty_transactions
   FOR SELECT
   USING (
@@ -238,6 +247,7 @@ CREATE POLICY client_read_own_loyalty_transactions ON loyalty_transactions
   );
 
 -- Client-side read access to loyalty_rewards (active only)
+DROP POLICY IF EXISTS client_read_active_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY client_read_active_loyalty_rewards ON loyalty_rewards
   FOR SELECT
   USING (

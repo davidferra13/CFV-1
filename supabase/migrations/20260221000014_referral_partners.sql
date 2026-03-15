@@ -190,24 +190,28 @@ COMMENT ON COLUMN chefs.tagline IS 'Short subtitle shown on public profile hero 
 
 ALTER TABLE referral_partners ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS referral_partners_chef_select ON referral_partners;
 CREATE POLICY referral_partners_chef_select ON referral_partners
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS referral_partners_chef_insert ON referral_partners;
 CREATE POLICY referral_partners_chef_insert ON referral_partners
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS referral_partners_chef_update ON referral_partners;
 CREATE POLICY referral_partners_chef_update ON referral_partners
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS referral_partners_chef_delete ON referral_partners;
 CREATE POLICY referral_partners_chef_delete ON referral_partners
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
@@ -218,24 +222,28 @@ CREATE POLICY referral_partners_chef_delete ON referral_partners
 
 ALTER TABLE partner_locations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS partner_locations_chef_select ON partner_locations;
 CREATE POLICY partner_locations_chef_select ON partner_locations
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS partner_locations_chef_insert ON partner_locations;
 CREATE POLICY partner_locations_chef_insert ON partner_locations
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS partner_locations_chef_update ON partner_locations;
 CREATE POLICY partner_locations_chef_update ON partner_locations
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS partner_locations_chef_delete ON partner_locations;
 CREATE POLICY partner_locations_chef_delete ON partner_locations
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
@@ -246,24 +254,28 @@ CREATE POLICY partner_locations_chef_delete ON partner_locations
 
 ALTER TABLE partner_images ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS partner_images_chef_select ON partner_images;
 CREATE POLICY partner_images_chef_select ON partner_images
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS partner_images_chef_insert ON partner_images;
 CREATE POLICY partner_images_chef_insert ON partner_images
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS partner_images_chef_update ON partner_images;
 CREATE POLICY partner_images_chef_update ON partner_images
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS partner_images_chef_delete ON partner_images;
 CREATE POLICY partner_images_chef_delete ON partner_images
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

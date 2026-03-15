@@ -40,6 +40,7 @@ CREATE INDEX idx_signal_notif_chef
 -- RLS
 ALTER TABLE availability_signal_notification_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef owns signal notification log" ON availability_signal_notification_log;
 CREATE POLICY "chef owns signal notification log"
   ON availability_signal_notification_log
   FOR ALL

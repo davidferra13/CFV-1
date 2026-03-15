@@ -21,6 +21,7 @@ CREATE INDEX IF NOT EXISTS idx_tasting_menus_chef_id ON tasting_menus(chef_id);
 
 ALTER TABLE tasting_menus ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own tasting menus" ON tasting_menus;
 CREATE POLICY "Chefs manage own tasting menus"
   ON tasting_menus FOR ALL
   USING (chef_id = auth.uid()
@@ -64,6 +65,7 @@ CREATE INDEX IF NOT EXISTS idx_tasting_menu_courses_recipe_id ON tasting_menu_co
 
 ALTER TABLE tasting_menu_courses ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own tasting menu courses" ON tasting_menu_courses;
 CREATE POLICY "Chefs manage own tasting menu courses"
   ON tasting_menu_courses FOR ALL
   USING (EXISTS (

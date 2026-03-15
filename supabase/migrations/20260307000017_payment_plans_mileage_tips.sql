@@ -25,6 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_ppi_due_date ON payment_plan_installments(due_dat
 
 ALTER TABLE payment_plan_installments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own installments" ON payment_plan_installments;
 CREATE POLICY "Chefs manage own installments"
   ON payment_plan_installments
   FOR ALL
@@ -68,7 +69,8 @@ EXCEPTION WHEN OTHERS THEN NULL; END $$;
 ALTER TABLE mileage_logs ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
-  CREATE POLICY "Chefs manage own mileage"
+  DROP POLICY IF EXISTS "Chefs manage own mileage" ON mileage_logs;
+CREATE POLICY "Chefs manage own mileage"
     ON mileage_logs
     FOR ALL
     TO authenticated
@@ -99,6 +101,7 @@ CREATE INDEX IF NOT EXISTS idx_tips_year   ON event_tips(tenant_id, received_at)
 
 ALTER TABLE event_tips ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own tips" ON event_tips;
 CREATE POLICY "Chefs manage own tips"
   ON event_tips
   FOR ALL

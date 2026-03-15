@@ -21,6 +21,7 @@ CREATE INDEX idx_shopping_lists_status ON shopping_lists(chef_id, status);
 CREATE INDEX idx_shopping_lists_event_id ON shopping_lists(event_id) WHERE event_id IS NOT NULL;
 -- RLS
 ALTER TABLE shopping_lists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their own shopping lists" ON shopping_lists;
 CREATE POLICY "Chefs can manage their own shopping lists"
   ON shopping_lists
   FOR ALL

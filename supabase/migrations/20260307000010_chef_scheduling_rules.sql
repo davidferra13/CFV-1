@@ -43,6 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_chef_scheduling_rules_tenant ON chef_scheduling_r
 -- RLS
 ALTER TABLE chef_scheduling_rules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef can manage own scheduling rules" ON chef_scheduling_rules;
 CREATE POLICY "Chef can manage own scheduling rules"
   ON chef_scheduling_rules
   FOR ALL

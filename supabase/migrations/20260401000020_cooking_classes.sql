@@ -53,6 +53,7 @@ COMMENT ON TABLE class_registrations IS 'Registration records for cooking classe
 ALTER TABLE cooking_classes ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS cooking_classes_chef_policy ON cooking_classes;
   CREATE POLICY cooking_classes_chef_policy ON cooking_classes
     USING (tenant_id = (
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -64,6 +65,7 @@ END $$;
 ALTER TABLE class_registrations ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS class_registrations_chef_policy ON class_registrations;
   CREATE POLICY class_registrations_chef_policy ON class_registrations
     USING (tenant_id = (
       SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

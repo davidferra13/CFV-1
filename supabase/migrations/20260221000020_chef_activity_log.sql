@@ -50,6 +50,7 @@ CREATE INDEX idx_chef_activity_entity
 ALTER TABLE chef_activity_log ENABLE ROW LEVEL SECURITY;
 
 -- Chef can read their own activity
+DROP POLICY IF EXISTS chef_activity_log_select ON chef_activity_log;
 CREATE POLICY chef_activity_log_select ON chef_activity_log
   FOR SELECT USING (
     tenant_id IN (
@@ -59,6 +60,7 @@ CREATE POLICY chef_activity_log_select ON chef_activity_log
   );
 
 -- Insert via admin client only (server actions use admin client)
+DROP POLICY IF EXISTS chef_activity_log_insert ON chef_activity_log;
 CREATE POLICY chef_activity_log_insert ON chef_activity_log
   FOR INSERT WITH CHECK (true);
 

@@ -21,7 +21,8 @@ create table if not exists insurance_claims (
 
 alter table insurance_claims enable row level security;
 
+DROP POLICY IF EXISTS "chef_own_claims" ON insurance_claims;
 create policy "chef_own_claims" on insurance_claims
   for all using (chef_id = auth.uid());
 
-create index idx_claims_chef on insurance_claims(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_claims_chef on insurance_claims(chef_id, status);

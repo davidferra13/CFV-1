@@ -38,6 +38,7 @@ CREATE INDEX idx_client_connections_b ON client_connections(tenant_id, client_b_
 ALTER TABLE client_connections ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can see connections for their own tenancy
+DROP POLICY IF EXISTS client_connections_select ON client_connections;
 CREATE POLICY client_connections_select ON client_connections
   FOR SELECT USING (
     tenant_id IN (
@@ -47,6 +48,7 @@ CREATE POLICY client_connections_select ON client_connections
   );
 
 -- Chefs can create connections within their tenancy
+DROP POLICY IF EXISTS client_connections_insert ON client_connections;
 CREATE POLICY client_connections_insert ON client_connections
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -56,6 +58,7 @@ CREATE POLICY client_connections_insert ON client_connections
   );
 
 -- Chefs can update connections within their tenancy
+DROP POLICY IF EXISTS client_connections_update ON client_connections;
 CREATE POLICY client_connections_update ON client_connections
   FOR UPDATE USING (
     tenant_id IN (
@@ -65,6 +68,7 @@ CREATE POLICY client_connections_update ON client_connections
   );
 
 -- Chefs can delete connections within their tenancy
+DROP POLICY IF EXISTS client_connections_delete ON client_connections;
 CREATE POLICY client_connections_delete ON client_connections
   FOR DELETE USING (
     tenant_id IN (

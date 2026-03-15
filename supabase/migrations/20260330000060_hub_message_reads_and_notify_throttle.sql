@@ -19,6 +19,7 @@ CREATE INDEX idx_hub_message_reads_profile ON hub_message_reads(profile_id);
 ALTER TABLE hub_message_reads ENABLE ROW LEVEL SECURITY;
 
 -- Members can view reads for messages in their groups
+DROP POLICY IF EXISTS hub_message_reads_select ON hub_message_reads;
 CREATE POLICY hub_message_reads_select ON hub_message_reads
   FOR SELECT USING (
     EXISTS (
@@ -31,6 +32,7 @@ CREATE POLICY hub_message_reads_select ON hub_message_reads
   );
 
 -- Members can insert their own reads
+DROP POLICY IF EXISTS hub_message_reads_insert ON hub_message_reads;
 CREATE POLICY hub_message_reads_insert ON hub_message_reads
   FOR INSERT WITH CHECK (
     EXISTS (

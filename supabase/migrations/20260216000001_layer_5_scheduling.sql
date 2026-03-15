@@ -70,6 +70,7 @@ ALTER TABLE events ADD COLUMN travel_time_minutes INTEGER DEFAULT 30;
 ALTER TABLE chef_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read/write their own preferences
+DROP POLICY IF EXISTS "chef_preferences_select_own" ON chef_preferences;
 CREATE POLICY "chef_preferences_select_own" ON chef_preferences
   FOR SELECT USING (
     tenant_id = (
@@ -80,6 +81,7 @@ CREATE POLICY "chef_preferences_select_own" ON chef_preferences
     )
   );
 
+DROP POLICY IF EXISTS "chef_preferences_insert_own" ON chef_preferences;
 CREATE POLICY "chef_preferences_insert_own" ON chef_preferences
   FOR INSERT WITH CHECK (
     tenant_id = (
@@ -90,6 +92,7 @@ CREATE POLICY "chef_preferences_insert_own" ON chef_preferences
     )
   );
 
+DROP POLICY IF EXISTS "chef_preferences_update_own" ON chef_preferences;
 CREATE POLICY "chef_preferences_update_own" ON chef_preferences
   FOR UPDATE USING (
     tenant_id = (

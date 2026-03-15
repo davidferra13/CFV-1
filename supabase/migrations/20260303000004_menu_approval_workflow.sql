@@ -63,12 +63,14 @@ COMMENT ON COLUMN menu_approval_requests.menu_snapshot IS 'JSONB array of menu i
 ALTER TABLE menu_approval_requests ENABLE ROW LEVEL SECURITY;
 
 -- Chef: full access to their own approval requests
+DROP POLICY IF EXISTS mar_chef_select ON menu_approval_requests;
 CREATE POLICY mar_chef_select ON menu_approval_requests
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS mar_chef_insert ON menu_approval_requests;
 CREATE POLICY mar_chef_insert ON menu_approval_requests
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
@@ -76,6 +78,7 @@ CREATE POLICY mar_chef_insert ON menu_approval_requests
   );
 
 -- Chef can update status (e.g., to re-send or cancel)
+DROP POLICY IF EXISTS mar_chef_update ON menu_approval_requests;
 CREATE POLICY mar_chef_update ON menu_approval_requests
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
@@ -83,12 +86,14 @@ CREATE POLICY mar_chef_update ON menu_approval_requests
   );
 
 -- Client: read their own requests; update to record approval/revision response
+DROP POLICY IF EXISTS mar_client_select ON menu_approval_requests;
 CREATE POLICY mar_client_select ON menu_approval_requests
   FOR SELECT USING (
     get_current_user_role() = 'client' AND
     client_id = get_current_client_id()
   );
 
+DROP POLICY IF EXISTS mar_client_update ON menu_approval_requests;
 CREATE POLICY mar_client_update ON menu_approval_requests
   FOR UPDATE USING (
     get_current_user_role() = 'client' AND

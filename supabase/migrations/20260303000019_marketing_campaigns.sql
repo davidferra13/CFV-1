@@ -96,12 +96,20 @@ COMMENT ON COLUMN clients.marketing_unsubscribed IS 'Client has opted out of mar
 ALTER TABLE marketing_campaigns  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_recipients  ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS mc_chef_select ON marketing_campaigns;
 CREATE POLICY mc_chef_select ON marketing_campaigns FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mc_chef_insert ON marketing_campaigns;
 CREATE POLICY mc_chef_insert ON marketing_campaigns FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mc_chef_update ON marketing_campaigns;
 CREATE POLICY mc_chef_update ON marketing_campaigns FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mc_chef_delete ON marketing_campaigns;
 CREATE POLICY mc_chef_delete ON marketing_campaigns FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS cr_chef_select ON campaign_recipients;
 CREATE POLICY cr_chef_select ON campaign_recipients FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cr_chef_insert ON campaign_recipients;
 CREATE POLICY cr_chef_insert ON campaign_recipients FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cr_chef_update ON campaign_recipients;
 CREATE POLICY cr_chef_update ON campaign_recipients FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cr_chef_delete ON campaign_recipients;
 CREATE POLICY cr_chef_delete ON campaign_recipients FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

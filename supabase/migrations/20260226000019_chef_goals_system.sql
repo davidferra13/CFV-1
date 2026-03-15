@@ -123,25 +123,33 @@ ALTER TABLE goal_snapshots          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE goal_client_suggestions ENABLE ROW LEVEL SECURITY;
 
 -- chef_goals: tenant-scoped select/insert/update (no delete — use archived status)
+DROP POLICY IF EXISTS chef_goals_select ON chef_goals;
 CREATE POLICY chef_goals_select ON chef_goals
   FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS chef_goals_insert ON chef_goals;
 CREATE POLICY chef_goals_insert ON chef_goals
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS chef_goals_update ON chef_goals;
 CREATE POLICY chef_goals_update ON chef_goals
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- goal_snapshots: append-only (no update/delete from client)
+DROP POLICY IF EXISTS goal_snapshots_select ON goal_snapshots;
 CREATE POLICY goal_snapshots_select ON goal_snapshots
   FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS goal_snapshots_insert ON goal_snapshots;
 CREATE POLICY goal_snapshots_insert ON goal_snapshots
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- goal_client_suggestions: tenant-scoped select/insert/update
+DROP POLICY IF EXISTS goal_client_suggestions_select ON goal_client_suggestions;
 CREATE POLICY goal_client_suggestions_select ON goal_client_suggestions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS goal_client_suggestions_insert ON goal_client_suggestions;
 CREATE POLICY goal_client_suggestions_insert ON goal_client_suggestions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS goal_client_suggestions_update ON goal_client_suggestions;
 CREATE POLICY goal_client_suggestions_update ON goal_client_suggestions
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());

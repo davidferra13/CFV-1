@@ -20,6 +20,7 @@ create table if not exists subcontract_agreements (
   updated_at timestamptz not null default now()
 );
 alter table subcontract_agreements enable row level security;
+DROP POLICY IF EXISTS "hiring_chef_agreements" ON subcontract_agreements;
 create policy "hiring_chef_agreements" on subcontract_agreements for all using (hiring_chef_id = auth.uid());
-create index idx_subcontracts_chef on subcontract_agreements(hiring_chef_id, status);
-create index idx_subcontracts_event on subcontract_agreements(event_id);
+CREATE INDEX IF NOT EXISTS idx_subcontracts_chef on subcontract_agreements(hiring_chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_subcontracts_event on subcontract_agreements(event_id);

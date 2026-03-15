@@ -26,6 +26,7 @@ CREATE INDEX idx_display_case_items_tenant_active ON display_case_items(tenant_i
 
 ALTER TABLE display_case_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own display case items" ON display_case_items;
 CREATE POLICY "Chefs can manage their own display case items"
   ON display_case_items
   FOR ALL
@@ -68,6 +69,7 @@ CREATE INDEX idx_bakery_par_stock_tenant_active ON bakery_par_stock(tenant_id) W
 
 ALTER TABLE bakery_par_stock ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own par stock" ON bakery_par_stock;
 CREATE POLICY "Chefs can manage their own par stock"
   ON bakery_par_stock
   FOR ALL
@@ -113,6 +115,7 @@ CREATE INDEX idx_bakery_production_log_tenant_date ON bakery_production_log(tena
 
 ALTER TABLE bakery_production_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own production log" ON bakery_production_log;
 CREATE POLICY "Chefs can manage their own production log"
   ON bakery_production_log
   FOR ALL

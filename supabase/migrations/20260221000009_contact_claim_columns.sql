@@ -17,6 +17,7 @@ CREATE INDEX idx_contact_submissions_unclaimed
   WHERE claimed_by_chef_id IS NULL;
 
 -- Chefs can UPDATE to claim (only setting their own chef_id)
+DROP POLICY IF EXISTS contact_submissions_chef_update ON contact_submissions;
 CREATE POLICY contact_submissions_chef_update ON contact_submissions
   FOR UPDATE
   USING (

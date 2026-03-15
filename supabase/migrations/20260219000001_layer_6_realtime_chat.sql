@@ -227,10 +227,12 @@ ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 -- CONVERSATIONS POLICIES
 
 -- Users can see conversations they participate in
+DROP POLICY IF EXISTS conversations_participant_select ON conversations;
 CREATE POLICY conversations_participant_select ON conversations
   FOR SELECT USING (is_conversation_participant(id));
 
 -- Chefs can create conversations in their tenant
+DROP POLICY IF EXISTS conversations_chef_insert ON conversations;
 CREATE POLICY conversations_chef_insert ON conversations
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
@@ -240,6 +242,7 @@ CREATE POLICY conversations_chef_insert ON conversations
 -- Allow updates on conversations (for trigger-based denormalized field updates)
 -- The trigger runs as SECURITY DEFINER so it bypasses RLS, but we also allow
 -- chef updates for manual operations
+DROP POLICY IF EXISTS conversations_chef_update ON conversations;
 CREATE POLICY conversations_chef_update ON conversations
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
@@ -250,12 +253,14 @@ CREATE POLICY conversations_chef_update ON conversations
 -- CONVERSATION_PARTICIPANTS POLICIES
 
 -- Participants can see who else is in their conversations
+DROP POLICY IF EXISTS conv_participants_participant_select ON conversation_participants;
 CREATE POLICY conv_participants_participant_select ON conversation_participants
   FOR SELECT USING (
     is_conversation_participant(conversation_id)
   );
 
 -- Chefs can add participants to conversations in their tenant
+DROP POLICY IF EXISTS conv_participants_chef_insert ON conversation_participants;
 CREATE POLICY conv_participants_chef_insert ON conversation_participants
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -266,6 +271,7 @@ CREATE POLICY conv_participants_chef_insert ON conversation_participants
   );
 
 -- Users can update their own participant record (last_read_at, notifications_muted)
+DROP POLICY IF EXISTS conv_participants_self_update ON conversation_participants;
 CREATE POLICY conv_participants_self_update ON conversation_participants
   FOR UPDATE USING (auth_user_id = auth.uid());
 
@@ -273,10 +279,12 @@ CREATE POLICY conv_participants_self_update ON conversation_participants
 -- CHAT_MESSAGES POLICIES
 
 -- Participants can read messages in their conversations
+DROP POLICY IF EXISTS chat_messages_participant_select ON chat_messages;
 CREATE POLICY chat_messages_participant_select ON chat_messages
   FOR SELECT USING (is_conversation_participant(conversation_id));
 
 -- Participants can send messages into their conversations (must be themselves)
+DROP POLICY IF EXISTS chat_messages_participant_insert ON chat_messages;
 CREATE POLICY chat_messages_participant_insert ON chat_messages
   FOR INSERT WITH CHECK (
     is_conversation_participant(conversation_id) AND
@@ -284,10 +292,12 @@ CREATE POLICY chat_messages_participant_insert ON chat_messages
   );
 
 -- Senders can update their own messages (for soft delete / edit)
+DROP POLICY IF EXISTS chat_messages_sender_update ON chat_messages;
 CREATE POLICY chat_messages_sender_update ON chat_messages
   FOR UPDATE USING (sender_id = auth.uid());
 
 -- No hard deletes on chat_messages
+DROP POLICY IF EXISTS chat_messages_no_delete ON chat_messages;
 CREATE POLICY chat_messages_no_delete ON chat_messages
   FOR DELETE USING (false);
 

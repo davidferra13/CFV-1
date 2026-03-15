@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own purchase orders" ON purchase_orders;
 CREATE POLICY "Chefs manage their own purchase orders"
   ON purchase_orders FOR ALL
   USING (chef_id = auth.uid())
@@ -57,6 +58,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own PO items" ON purchase_order_items;
 CREATE POLICY "Chefs manage their own PO items"
   ON purchase_order_items FOR ALL
   USING (chef_id = auth.uid())
@@ -80,6 +82,7 @@ CREATE TABLE IF NOT EXISTS daily_checklist_completions (
   UNIQUE (chef_id, checklist_date, checklist_type, item_key)
 );
 ALTER TABLE daily_checklist_completions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own checklist completions" ON daily_checklist_completions;
 CREATE POLICY "Chefs manage their own checklist completions"
   ON daily_checklist_completions FOR ALL
   USING (chef_id = auth.uid())
@@ -102,6 +105,7 @@ CREATE TABLE IF NOT EXISTS daily_checklist_custom_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE daily_checklist_custom_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own custom checklist items" ON daily_checklist_custom_items;
 CREATE POLICY "Chefs manage their own custom checklist items"
   ON daily_checklist_custom_items FOR ALL
   USING (chef_id = auth.uid())

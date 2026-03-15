@@ -890,12 +890,15 @@ ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE after_action_reviews ENABLE ROW LEVEL SECURITY;
 
 -- EVENTS policies
+DROP POLICY IF EXISTS events_tenant_isolation_select ON events;
 CREATE POLICY events_tenant_isolation_select ON events
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS events_tenant_isolation_insert ON events;
 CREATE POLICY events_tenant_isolation_insert ON events
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS events_tenant_isolation_update ON events;
 CREATE POLICY events_tenant_isolation_update ON events
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
@@ -903,21 +906,26 @@ CREATE POLICY events_tenant_isolation_update ON events
 -- No DELETE policy - events are never hard-deleted
 
 -- EVENT_STATE_TRANSITIONS policies
+DROP POLICY IF EXISTS event_transitions_tenant_isolation_select ON event_state_transitions;
 CREATE POLICY event_transitions_tenant_isolation_select ON event_state_transitions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS event_transitions_tenant_isolation_insert ON event_state_transitions;
 CREATE POLICY event_transitions_tenant_isolation_insert ON event_state_transitions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- No UPDATE/DELETE policies - immutable audit records
 
 -- QUOTES policies
+DROP POLICY IF EXISTS quotes_tenant_isolation_select ON quotes;
 CREATE POLICY quotes_tenant_isolation_select ON quotes
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS quotes_tenant_isolation_insert ON quotes;
 CREATE POLICY quotes_tenant_isolation_insert ON quotes
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS quotes_tenant_isolation_update ON quotes;
 CREATE POLICY quotes_tenant_isolation_update ON quotes
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
@@ -925,24 +933,29 @@ CREATE POLICY quotes_tenant_isolation_update ON quotes
 -- No DELETE policy - quotes are never hard-deleted
 
 -- QUOTE_STATE_TRANSITIONS policies
+DROP POLICY IF EXISTS quote_transitions_tenant_isolation_select ON quote_state_transitions;
 CREATE POLICY quote_transitions_tenant_isolation_select ON quote_state_transitions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS quote_transitions_tenant_isolation_insert ON quote_state_transitions;
 CREATE POLICY quote_transitions_tenant_isolation_insert ON quote_state_transitions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- No UPDATE/DELETE policies - immutable audit records
 
 -- LEDGER_ENTRIES policies
+DROP POLICY IF EXISTS ledger_entries_tenant_isolation_select ON ledger_entries;
 CREATE POLICY ledger_entries_tenant_isolation_select ON ledger_entries
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS ledger_entries_tenant_isolation_insert ON ledger_entries;
 CREATE POLICY ledger_entries_tenant_isolation_insert ON ledger_entries
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- No UPDATE/DELETE policies - append-only ledger
 
 -- Client portal: clients can view their own ledger entries
+DROP POLICY IF EXISTS ledger_entries_client_can_view_own ON ledger_entries;
 CREATE POLICY ledger_entries_client_can_view_own ON ledger_entries
   FOR SELECT USING (
     get_current_user_role() = 'client' AND client_id IN (
@@ -951,12 +964,15 @@ CREATE POLICY ledger_entries_client_can_view_own ON ledger_entries
   );
 
 -- EXPENSES policies
+DROP POLICY IF EXISTS expenses_tenant_isolation_select ON expenses;
 CREATE POLICY expenses_tenant_isolation_select ON expenses
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS expenses_tenant_isolation_insert ON expenses;
 CREATE POLICY expenses_tenant_isolation_insert ON expenses
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS expenses_tenant_isolation_update ON expenses;
 CREATE POLICY expenses_tenant_isolation_update ON expenses
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
@@ -964,12 +980,15 @@ CREATE POLICY expenses_tenant_isolation_update ON expenses
 -- No DELETE policy - expenses are never hard-deleted
 
 -- AFTER_ACTION_REVIEWS policies
+DROP POLICY IF EXISTS aar_tenant_isolation_select ON after_action_reviews;
 CREATE POLICY aar_tenant_isolation_select ON after_action_reviews
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS aar_tenant_isolation_insert ON after_action_reviews;
 CREATE POLICY aar_tenant_isolation_insert ON after_action_reviews
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS aar_tenant_isolation_update ON after_action_reviews;
 CREATE POLICY aar_tenant_isolation_update ON after_action_reviews
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());

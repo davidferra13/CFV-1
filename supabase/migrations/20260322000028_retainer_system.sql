@@ -126,6 +126,7 @@ ALTER TABLE retainers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE retainer_periods ENABLE ROW LEVEL SECURITY;
 
 -- Chef policies
+DROP POLICY IF EXISTS retainers_chef_all ON retainers;
 CREATE POLICY retainers_chef_all ON retainers
   FOR ALL USING (
     EXISTS (
@@ -136,6 +137,7 @@ CREATE POLICY retainers_chef_all ON retainers
     )
   );
 
+DROP POLICY IF EXISTS retainer_periods_chef_all ON retainer_periods;
 CREATE POLICY retainer_periods_chef_all ON retainer_periods
   FOR ALL USING (
     EXISTS (
@@ -147,6 +149,7 @@ CREATE POLICY retainer_periods_chef_all ON retainer_periods
   );
 
 -- Client policies (read their own retainers)
+DROP POLICY IF EXISTS retainers_client_select ON retainers;
 CREATE POLICY retainers_client_select ON retainers
   FOR SELECT USING (
     EXISTS (
@@ -156,6 +159,7 @@ CREATE POLICY retainers_client_select ON retainers
     )
   );
 
+DROP POLICY IF EXISTS retainer_periods_client_select ON retainer_periods;
 CREATE POLICY retainer_periods_client_select ON retainer_periods
   FOR SELECT USING (
     EXISTS (

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS chef_culinary_profiles (
 
 ALTER TABLE chef_culinary_profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_culinary_profiles_tenant ON chef_culinary_profiles;
 CREATE POLICY chef_culinary_profiles_tenant ON chef_culinary_profiles
   FOR ALL USING (
     chef_id = (
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS chef_folders (
 
 ALTER TABLE chef_folders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_folders_tenant ON chef_folders;
 CREATE POLICY chef_folders_tenant ON chef_folders
   FOR ALL USING (
     tenant_id = (
@@ -106,6 +108,7 @@ CREATE TABLE IF NOT EXISTS chef_reminders (
 
 ALTER TABLE chef_reminders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_reminders_tenant ON chef_reminders;
 CREATE POLICY chef_reminders_tenant ON chef_reminders
   FOR ALL USING (
     tenant_id = (

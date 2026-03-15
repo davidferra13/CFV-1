@@ -27,7 +27,8 @@ CREATE INDEX IF NOT EXISTS idx_feedback_requests_tenant ON feedback_requests(ten
 CREATE INDEX IF NOT EXISTS idx_feedback_requests_entity ON feedback_requests(entity_type, entity_id);
 ALTER TABLE feedback_requests ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
-  CREATE POLICY "Chefs can manage their feedback requests"
+  DROP POLICY IF EXISTS "Chefs can manage their feedback requests" ON feedback_requests;
+CREATE POLICY "Chefs can manage their feedback requests"
     ON feedback_requests FOR ALL
     USING (tenant_id = auth.uid())
     WITH CHECK (tenant_id = auth.uid());
@@ -49,7 +50,8 @@ CREATE INDEX IF NOT EXISTS idx_feedback_responses_tenant ON feedback_responses(t
 CREATE INDEX IF NOT EXISTS idx_feedback_responses_request ON feedback_responses(request_id);
 ALTER TABLE feedback_responses ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
-  CREATE POLICY "Chefs can view their feedback responses"
+  DROP POLICY IF EXISTS "Chefs can view their feedback responses" ON feedback_responses;
+CREATE POLICY "Chefs can view their feedback responses"
     ON feedback_responses FOR SELECT
     USING (tenant_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

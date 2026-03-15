@@ -53,19 +53,23 @@ CREATE TRIGGER css_updated_at
 ALTER TABLE client_satisfaction_surveys ENABLE ROW LEVEL SECURITY;
 
 -- Chef sees their own surveys
+DROP POLICY IF EXISTS "chef_css_select" ON client_satisfaction_surveys;
 CREATE POLICY "chef_css_select"
   ON client_satisfaction_surveys FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS "chef_css_insert" ON client_satisfaction_surveys;
 CREATE POLICY "chef_css_insert"
   ON client_satisfaction_surveys FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS "chef_css_update" ON client_satisfaction_surveys;
 CREATE POLICY "chef_css_update"
   ON client_satisfaction_surveys FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- Public token-based access (used by client survey page — service role writes the response)
+DROP POLICY IF EXISTS "public_css_token_select" ON client_satisfaction_surveys;
 CREATE POLICY "public_css_token_select"
   ON client_satisfaction_surveys FOR SELECT
   USING (auth.role() = 'anon');

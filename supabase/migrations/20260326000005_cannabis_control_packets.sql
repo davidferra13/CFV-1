@@ -443,6 +443,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
   CREATE POLICY ccp_storage_chef_insert
   ON storage.objects FOR INSERT
   TO authenticated
@@ -459,6 +460,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
   CREATE POLICY ccp_storage_chef_select
   ON storage.objects FOR SELECT
   TO authenticated
@@ -475,6 +477,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
   CREATE POLICY ccp_storage_chef_delete
   ON storage.objects FOR DELETE
   TO authenticated

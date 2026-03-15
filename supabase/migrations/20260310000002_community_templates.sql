@@ -23,6 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_community_templates_published ON community_templa
 ALTER TABLE community_templates ENABLE ROW LEVEL SECURITY;
 
 -- Published templates are visible to all authenticated chefs
+DROP POLICY IF EXISTS "Published templates visible to all chefs" ON community_templates;
 CREATE POLICY "Published templates visible to all chefs" ON community_templates
   FOR SELECT USING (
     is_published = true OR author_tenant_id = (
@@ -30,6 +31,7 @@ CREATE POLICY "Published templates visible to all chefs" ON community_templates
     )
   );
 
+DROP POLICY IF EXISTS "Chef manages own templates" ON community_templates;
 CREATE POLICY "Chef manages own templates" ON community_templates
   FOR ALL USING (author_tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

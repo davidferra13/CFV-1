@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS zapier_webhook_subscriptions (
 
 ALTER TABLE zapier_webhook_subscriptions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own zapier subscriptions" ON zapier_webhook_subscriptions;
 CREATE POLICY "Chefs manage own zapier subscriptions"
   ON zapier_webhook_subscriptions
   FOR ALL
@@ -88,6 +89,7 @@ CREATE TABLE IF NOT EXISTS zapier_webhook_deliveries (
 
 ALTER TABLE zapier_webhook_deliveries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs view own zapier deliveries" ON zapier_webhook_deliveries;
 CREATE POLICY "Chefs view own zapier deliveries"
   ON zapier_webhook_deliveries
   FOR SELECT

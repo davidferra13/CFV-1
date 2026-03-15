@@ -594,20 +594,24 @@ ALTER TABLE ingredients ENABLE ROW LEVEL SECURITY;
 -- RLS: menus (chef isolation + client portal)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_menus ON menus;
 CREATE POLICY tenant_isolation_select_menus ON menus
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_menus ON menus;
 CREATE POLICY tenant_isolation_insert_menus ON menus
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_menus ON menus;
 CREATE POLICY tenant_isolation_update_menus ON menus
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client can view menus for their own events
+DROP POLICY IF EXISTS client_can_view_own_event_menu ON menus;
 CREATE POLICY client_can_view_own_event_menu ON menus
   FOR SELECT
   USING (
@@ -623,10 +627,12 @@ CREATE POLICY client_can_view_own_event_menu ON menus
 -- RLS: menu_state_transitions (chef isolation, immutable)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_menu_transitions ON menu_state_transitions;
 CREATE POLICY tenant_isolation_select_menu_transitions ON menu_state_transitions
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_menu_transitions ON menu_state_transitions;
 CREATE POLICY tenant_isolation_insert_menu_transitions ON menu_state_transitions
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
@@ -635,20 +641,24 @@ CREATE POLICY tenant_isolation_insert_menu_transitions ON menu_state_transitions
 -- RLS: dishes (chef isolation + client portal)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_dishes ON dishes;
 CREATE POLICY tenant_isolation_select_dishes ON dishes
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_dishes ON dishes;
 CREATE POLICY tenant_isolation_insert_dishes ON dishes
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_dishes ON dishes;
 CREATE POLICY tenant_isolation_update_dishes ON dishes
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client can view dishes in their event menus
+DROP POLICY IF EXISTS client_can_view_menu_dishes ON dishes;
 CREATE POLICY client_can_view_menu_dishes ON dishes
   FOR SELECT
   USING (
@@ -666,20 +676,24 @@ CREATE POLICY client_can_view_menu_dishes ON dishes
 -- RLS: components (chef isolation + client portal)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_components ON components;
 CREATE POLICY tenant_isolation_select_components ON components
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_components ON components;
 CREATE POLICY tenant_isolation_insert_components ON components
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_components ON components;
 CREATE POLICY tenant_isolation_update_components ON components
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client can view components in their event menu dishes
+DROP POLICY IF EXISTS client_can_view_dish_components ON components;
 CREATE POLICY client_can_view_dish_components ON components
   FOR SELECT
   USING (
@@ -699,14 +713,17 @@ CREATE POLICY client_can_view_dish_components ON components
 -- RLS: recipes (chef isolation, soft-delete pattern)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_recipes ON recipes;
 CREATE POLICY tenant_isolation_select_recipes ON recipes
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_recipes ON recipes;
 CREATE POLICY tenant_isolation_insert_recipes ON recipes
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_recipes ON recipes;
 CREATE POLICY tenant_isolation_update_recipes ON recipes
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
@@ -716,6 +733,7 @@ CREATE POLICY tenant_isolation_update_recipes ON recipes
 -- RLS: recipe_ingredients (inherit from recipe)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_recipe_ingredients ON recipe_ingredients;
 CREATE POLICY tenant_isolation_select_recipe_ingredients ON recipe_ingredients
   FOR SELECT
   USING (
@@ -724,6 +742,7 @@ CREATE POLICY tenant_isolation_select_recipe_ingredients ON recipe_ingredients
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_insert_recipe_ingredients ON recipe_ingredients;
 CREATE POLICY tenant_isolation_insert_recipe_ingredients ON recipe_ingredients
   FOR INSERT
   WITH CHECK (
@@ -732,6 +751,7 @@ CREATE POLICY tenant_isolation_insert_recipe_ingredients ON recipe_ingredients
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_update_recipe_ingredients ON recipe_ingredients;
 CREATE POLICY tenant_isolation_update_recipe_ingredients ON recipe_ingredients
   FOR UPDATE
   USING (
@@ -749,14 +769,17 @@ CREATE POLICY tenant_isolation_update_recipe_ingredients ON recipe_ingredients
 -- RLS: ingredients (chef isolation, soft-delete pattern)
 -- =====================================================================================
 
+DROP POLICY IF EXISTS tenant_isolation_select_ingredients ON ingredients;
 CREATE POLICY tenant_isolation_select_ingredients ON ingredients
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_ingredients ON ingredients;
 CREATE POLICY tenant_isolation_insert_ingredients ON ingredients
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_ingredients ON ingredients;
 CREATE POLICY tenant_isolation_update_ingredients ON ingredients
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())

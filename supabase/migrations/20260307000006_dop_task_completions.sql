@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS dop_task_completions (
 -- RLS
 ALTER TABLE dop_task_completions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage their own DOP completions" ON dop_task_completions;
 CREATE POLICY "Chefs manage their own DOP completions"
   ON dop_task_completions
   FOR ALL

@@ -62,13 +62,21 @@ ALTER TABLE ab_tests            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_performance ENABLE ROW LEVEL SECURITY;
 
 -- ab_tests
+DROP POLICY IF EXISTS abt_chef_select ON ab_tests;
 CREATE POLICY abt_chef_select ON ab_tests FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS abt_chef_insert ON ab_tests;
 CREATE POLICY abt_chef_insert ON ab_tests FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS abt_chef_update ON ab_tests;
 CREATE POLICY abt_chef_update ON ab_tests FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS abt_chef_delete ON ab_tests;
 CREATE POLICY abt_chef_delete ON ab_tests FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- content_performance
+DROP POLICY IF EXISTS cperf_chef_select ON content_performance;
 CREATE POLICY cperf_chef_select ON content_performance FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cperf_chef_insert ON content_performance;
 CREATE POLICY cperf_chef_insert ON content_performance FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cperf_chef_update ON content_performance;
 CREATE POLICY cperf_chef_update ON content_performance FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cperf_chef_delete ON content_performance;
 CREATE POLICY cperf_chef_delete ON content_performance FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

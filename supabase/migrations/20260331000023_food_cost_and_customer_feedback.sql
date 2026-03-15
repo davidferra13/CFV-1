@@ -30,6 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_feedback_requests_entity ON feedback_requests(ent
 
 ALTER TABLE feedback_requests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their feedback requests" ON feedback_requests;
 CREATE POLICY "Chefs can manage their feedback requests"
   ON feedback_requests FOR ALL
   USING (tenant_id = auth.uid())
@@ -54,6 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_feedback_responses_request ON feedback_responses(
 
 ALTER TABLE feedback_responses ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can view their feedback responses" ON feedback_responses;
 CREATE POLICY "Chefs can view their feedback responses"
   ON feedback_responses FOR SELECT
   USING (tenant_id = auth.uid());

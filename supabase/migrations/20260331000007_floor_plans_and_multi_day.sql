@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS event_floor_plans (
 CREATE INDEX IF NOT EXISTS idx_event_floor_plans_event_id ON event_floor_plans(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_floor_plans_chef_id ON event_floor_plans(chef_id);
 ALTER TABLE event_floor_plans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage own floor plans" ON event_floor_plans;
 CREATE POLICY "Chefs manage own floor plans"
   ON event_floor_plans
   FOR ALL

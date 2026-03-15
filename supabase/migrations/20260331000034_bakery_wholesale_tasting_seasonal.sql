@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS wholesale_accounts (
 );
 ALTER TABLE wholesale_accounts ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "wholesale_accounts_tenant_isolation" ON wholesale_accounts;
   CREATE POLICY "wholesale_accounts_tenant_isolation" ON wholesale_accounts
     FOR ALL USING (
       tenant_id IN (
@@ -53,6 +54,7 @@ CREATE TABLE IF NOT EXISTS wholesale_orders (
 );
 ALTER TABLE wholesale_orders ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "wholesale_orders_tenant_isolation" ON wholesale_orders;
   CREATE POLICY "wholesale_orders_tenant_isolation" ON wholesale_orders
     FOR ALL USING (
       tenant_id IN (
@@ -89,6 +91,7 @@ CREATE TABLE IF NOT EXISTS bakery_tastings (
 );
 ALTER TABLE bakery_tastings ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "bakery_tastings_tenant_isolation" ON bakery_tastings;
   CREATE POLICY "bakery_tastings_tenant_isolation" ON bakery_tastings
     FOR ALL USING (
       tenant_id IN (
@@ -120,6 +123,7 @@ CREATE TABLE IF NOT EXISTS bakery_seasonal_items (
 );
 ALTER TABLE bakery_seasonal_items ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "bakery_seasonal_items_tenant_isolation" ON bakery_seasonal_items;
   CREATE POLICY "bakery_seasonal_items_tenant_isolation" ON bakery_seasonal_items
     FOR ALL USING (
       tenant_id IN (

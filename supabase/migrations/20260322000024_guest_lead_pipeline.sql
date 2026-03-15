@@ -46,18 +46,21 @@ CREATE INDEX IF NOT EXISTS idx_guest_leads_email ON guest_leads(tenant_id, email
 ALTER TABLE guest_leads ENABLE ROW LEVEL SECURITY;
 
 -- Chef reads their own leads
+DROP POLICY IF EXISTS "chef_read_own_guest_leads" ON guest_leads;
 CREATE POLICY "chef_read_own_guest_leads" ON guest_leads
   FOR SELECT USING (
     tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
 
 -- Chef updates their own leads
+DROP POLICY IF EXISTS "chef_update_own_guest_leads" ON guest_leads;
 CREATE POLICY "chef_update_own_guest_leads" ON guest_leads
   FOR UPDATE USING (
     tenant_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
 
 -- Public insert — guests submit interest without authentication
+DROP POLICY IF EXISTS "public_insert_guest_leads" ON guest_leads;
 CREATE POLICY "public_insert_guest_leads" ON guest_leads
   FOR INSERT WITH CHECK (true);
 

@@ -35,6 +35,7 @@ CREATE INDEX idx_chef_network_posts_created
 
 ALTER TABLE chef_network_posts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_network_posts_select_visible ON chef_network_posts;
 CREATE POLICY chef_network_posts_select_visible ON chef_network_posts
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND (
@@ -43,6 +44,7 @@ CREATE POLICY chef_network_posts_select_visible ON chef_network_posts
     )
   );
 
+DROP POLICY IF EXISTS chef_network_posts_insert_own ON chef_network_posts;
 CREATE POLICY chef_network_posts_insert_own ON chef_network_posts
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'

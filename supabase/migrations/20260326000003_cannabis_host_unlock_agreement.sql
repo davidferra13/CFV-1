@@ -21,12 +21,14 @@ CREATE TABLE IF NOT EXISTS cannabis_host_agreements (
 ALTER TABLE cannabis_host_agreements ENABLE ROW LEVEL SECURITY;
 
 -- Hosts can read only their own signed agreement rows.
+DROP POLICY IF EXISTS "cannabis_host_agreements_read_own" ON cannabis_host_agreements;
 CREATE POLICY "cannabis_host_agreements_read_own"
   ON cannabis_host_agreements
   FOR SELECT
   USING (host_user_id = auth.uid());
 
 -- Hosts can insert only their own signature row.
+DROP POLICY IF EXISTS "cannabis_host_agreements_insert_own" ON cannabis_host_agreements;
 CREATE POLICY "cannabis_host_agreements_insert_own"
   ON cannabis_host_agreements
   FOR INSERT

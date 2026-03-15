@@ -104,6 +104,7 @@ COMMENT ON FUNCTION are_chefs_connected IS 'Returns true if two chefs have an ac
 ALTER TABLE chef_connections ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can see connections they are part of (either side)
+DROP POLICY IF EXISTS chef_connections_select_own ON chef_connections;
 CREATE POLICY chef_connections_select_own ON chef_connections
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND (
@@ -113,6 +114,7 @@ CREATE POLICY chef_connections_select_own ON chef_connections
   );
 
 -- Chefs can create connection requests (as requester only)
+DROP POLICY IF EXISTS chef_connections_insert_own ON chef_connections;
 CREATE POLICY chef_connections_insert_own ON chef_connections
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
@@ -120,6 +122,7 @@ CREATE POLICY chef_connections_insert_own ON chef_connections
   );
 
 -- Chefs can update connections they are part of (accept/decline/remove)
+DROP POLICY IF EXISTS chef_connections_update_own ON chef_connections;
 CREATE POLICY chef_connections_update_own ON chef_connections
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND (
@@ -135,6 +138,7 @@ COMMENT ON POLICY chef_connections_update_own ON chef_connections IS 'Chefs can 
 -- ─── Cross-tenant discovery policy on chefs ───
 -- Allows chefs to see limited profile info of OTHER discoverable chefs
 -- (The existing chefs_select policy only allows self-read)
+DROP POLICY IF EXISTS chefs_network_discovery ON chefs;
 CREATE POLICY chefs_network_discovery ON chefs
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
@@ -149,6 +153,7 @@ COMMENT ON POLICY chefs_network_discovery ON chefs IS 'Chefs can see profiles of
 
 -- ─── Cross-tenant discovery on chef_preferences ──
 -- Allows chefs to read preferences of discoverable chefs (for location info in search)
+DROP POLICY IF EXISTS chef_preferences_network_check ON chef_preferences;
 CREATE POLICY chef_preferences_network_check ON chef_preferences
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND

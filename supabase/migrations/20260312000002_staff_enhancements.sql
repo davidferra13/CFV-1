@@ -93,19 +93,31 @@ ALTER TABLE staff_clock_entries      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_performance_scores ENABLE ROW LEVEL SECURITY;
 
 -- staff_availability
+DROP POLICY IF EXISTS sa_chef_select ON staff_availability;
 CREATE POLICY sa_chef_select ON staff_availability FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sa_chef_insert ON staff_availability;
 CREATE POLICY sa_chef_insert ON staff_availability FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sa_chef_update ON staff_availability;
 CREATE POLICY sa_chef_update ON staff_availability FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sa_chef_delete ON staff_availability;
 CREATE POLICY sa_chef_delete ON staff_availability FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- staff_clock_entries
+DROP POLICY IF EXISTS sce_chef_select ON staff_clock_entries;
 CREATE POLICY sce_chef_select ON staff_clock_entries FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sce_chef_insert ON staff_clock_entries;
 CREATE POLICY sce_chef_insert ON staff_clock_entries FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sce_chef_update ON staff_clock_entries;
 CREATE POLICY sce_chef_update ON staff_clock_entries FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sce_chef_delete ON staff_clock_entries;
 CREATE POLICY sce_chef_delete ON staff_clock_entries FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- staff_performance_scores
+DROP POLICY IF EXISTS sps_chef_select ON staff_performance_scores;
 CREATE POLICY sps_chef_select ON staff_performance_scores FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sps_chef_insert ON staff_performance_scores;
 CREATE POLICY sps_chef_insert ON staff_performance_scores FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sps_chef_update ON staff_performance_scores;
 CREATE POLICY sps_chef_update ON staff_performance_scores FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sps_chef_delete ON staff_performance_scores;
 CREATE POLICY sps_chef_delete ON staff_performance_scores FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

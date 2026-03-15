@@ -66,10 +66,12 @@ CREATE INDEX IF NOT EXISTS idx_stripe_transfers_status ON stripe_transfers(statu
 -- RLS
 ALTER TABLE stripe_transfers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can view own transfers" ON stripe_transfers;
 CREATE POLICY "Chefs can view own transfers"
   ON stripe_transfers FOR SELECT
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Service role full access on stripe_transfers" ON stripe_transfers;
 CREATE POLICY "Service role full access on stripe_transfers"
   ON stripe_transfers FOR ALL
   USING (auth.role() = 'service_role');
@@ -120,6 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_platform_fee_ledger_event ON platform_fee_ledger(
 -- RLS: service role only (admin visibility, chefs don't see platform fee internals)
 ALTER TABLE platform_fee_ledger ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Service role full access on platform_fee_ledger" ON platform_fee_ledger;
 CREATE POLICY "Service role full access on platform_fee_ledger"
   ON platform_fee_ledger FOR ALL
   USING (auth.role() = 'service_role');

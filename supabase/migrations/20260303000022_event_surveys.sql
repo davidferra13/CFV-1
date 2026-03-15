@@ -62,6 +62,7 @@ CREATE INDEX IF NOT EXISTS idx_event_surveys_token     ON event_surveys(token);
 ALTER TABLE event_surveys ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read surveys for their own tenant
+DROP POLICY IF EXISTS event_surveys_chef_read ON event_surveys;
 CREATE POLICY event_surveys_chef_read ON event_surveys
   FOR SELECT TO authenticated
   USING (

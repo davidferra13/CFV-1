@@ -48,6 +48,7 @@ CREATE INDEX idx_client_notes_pinned
 
 ALTER TABLE client_notes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS client_notes_chef_all ON client_notes;
 CREATE POLICY client_notes_chef_all ON client_notes
   FOR ALL USING (
     get_current_user_role() = 'chef' AND

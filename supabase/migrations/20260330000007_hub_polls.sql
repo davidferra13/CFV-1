@@ -63,34 +63,44 @@ ALTER TABLE hub_poll_options ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_poll_votes ENABLE ROW LEVEL SECURITY;
 
 -- Polls: public read
+DROP POLICY IF EXISTS "hub_polls_select_anon" ON hub_polls;
 CREATE POLICY "hub_polls_select_anon" ON hub_polls
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_polls_insert_anon" ON hub_polls;
 CREATE POLICY "hub_polls_insert_anon" ON hub_polls
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_polls_manage_service" ON hub_polls;
 CREATE POLICY "hub_polls_manage_service" ON hub_polls
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Options: public read
+DROP POLICY IF EXISTS "hub_poll_options_select_anon" ON hub_poll_options;
 CREATE POLICY "hub_poll_options_select_anon" ON hub_poll_options
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_poll_options_insert_anon" ON hub_poll_options;
 CREATE POLICY "hub_poll_options_insert_anon" ON hub_poll_options
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_poll_options_manage_service" ON hub_poll_options;
 CREATE POLICY "hub_poll_options_manage_service" ON hub_poll_options
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Votes: public read/insert/delete (change vote)
+DROP POLICY IF EXISTS "hub_poll_votes_select_anon" ON hub_poll_votes;
 CREATE POLICY "hub_poll_votes_select_anon" ON hub_poll_votes
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_poll_votes_insert_anon" ON hub_poll_votes;
 CREATE POLICY "hub_poll_votes_insert_anon" ON hub_poll_votes
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_poll_votes_delete_anon" ON hub_poll_votes;
 CREATE POLICY "hub_poll_votes_delete_anon" ON hub_poll_votes
   FOR DELETE USING (true);
 
+DROP POLICY IF EXISTS "hub_poll_votes_manage_service" ON hub_poll_votes;
 CREATE POLICY "hub_poll_votes_manage_service" ON hub_poll_votes
   FOR ALL USING (auth.role() = 'service_role');

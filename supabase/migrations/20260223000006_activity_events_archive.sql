@@ -20,6 +20,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_archive_tenant_created
 
 ALTER TABLE activity_events_archive ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs read own tenant archived activity" ON activity_events_archive;
 CREATE POLICY "Chefs read own tenant archived activity"
   ON activity_events_archive
   FOR SELECT
@@ -30,6 +31,7 @@ CREATE POLICY "Chefs read own tenant archived activity"
     )
   );
 
+DROP POLICY IF EXISTS "Service role manages archived activity" ON activity_events_archive;
 CREATE POLICY "Service role manages archived activity"
   ON activity_events_archive
   FOR ALL

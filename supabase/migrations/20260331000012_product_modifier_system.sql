@@ -17,12 +17,16 @@ CREATE TABLE IF NOT EXISTS product_modifier_groups (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE product_modifier_groups ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "modifier_groups_tenant_isolation" ON product_modifier_groups;
 CREATE POLICY "modifier_groups_tenant_isolation" ON product_modifier_groups
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifier_groups_insert" ON product_modifier_groups;
 CREATE POLICY "modifier_groups_insert" ON product_modifier_groups
   FOR INSERT WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifier_groups_update" ON product_modifier_groups;
 CREATE POLICY "modifier_groups_update" ON product_modifier_groups
   FOR UPDATE USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifier_groups_delete" ON product_modifier_groups;
 CREATE POLICY "modifier_groups_delete" ON product_modifier_groups
   FOR DELETE USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE INDEX idx_modifier_groups_chef ON product_modifier_groups(chef_id);
@@ -40,12 +44,16 @@ CREATE TABLE IF NOT EXISTS product_modifiers (
   created_at             TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE product_modifiers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "modifiers_tenant_isolation" ON product_modifiers;
 CREATE POLICY "modifiers_tenant_isolation" ON product_modifiers
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifiers_insert" ON product_modifiers;
 CREATE POLICY "modifiers_insert" ON product_modifiers
   FOR INSERT WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifiers_update" ON product_modifiers;
 CREATE POLICY "modifiers_update" ON product_modifiers
   FOR UPDATE USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifiers_delete" ON product_modifiers;
 CREATE POLICY "modifiers_delete" ON product_modifiers
   FOR DELETE USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE INDEX idx_modifiers_group ON product_modifiers(group_id);
@@ -61,10 +69,13 @@ CREATE TABLE IF NOT EXISTS product_modifier_assignments (
   UNIQUE (product_id, modifier_group_id)
 );
 ALTER TABLE product_modifier_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "modifier_assignments_tenant_isolation" ON product_modifier_assignments;
 CREATE POLICY "modifier_assignments_tenant_isolation" ON product_modifier_assignments
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifier_assignments_insert" ON product_modifier_assignments;
 CREATE POLICY "modifier_assignments_insert" ON product_modifier_assignments
   FOR INSERT WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "modifier_assignments_delete" ON product_modifier_assignments;
 CREATE POLICY "modifier_assignments_delete" ON product_modifier_assignments
   FOR DELETE USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 CREATE INDEX idx_modifier_assignments_product ON product_modifier_assignments(product_id);

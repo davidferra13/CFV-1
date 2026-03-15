@@ -29,14 +29,17 @@ CREATE INDEX IF NOT EXISTS idx_guest_testimonials_tenant ON guest_testimonials(t
 ALTER TABLE guest_testimonials ENABLE ROW LEVEL SECURITY;
 
 -- Public: anyone can insert (from recap page)
+DROP POLICY IF EXISTS guest_testimonials_public_insert ON guest_testimonials;
 CREATE POLICY guest_testimonials_public_insert ON guest_testimonials
   FOR INSERT WITH CHECK (true);
 
 -- Public: only approved testimonials visible
+DROP POLICY IF EXISTS guest_testimonials_public_read ON guest_testimonials;
 CREATE POLICY guest_testimonials_public_read ON guest_testimonials
   FOR SELECT USING (is_approved = true);
 
 -- Chef: full access to own tenant
+DROP POLICY IF EXISTS guest_testimonials_chef_all ON guest_testimonials;
 CREATE POLICY guest_testimonials_chef_all ON guest_testimonials
   FOR ALL USING (
     tenant_id IN (

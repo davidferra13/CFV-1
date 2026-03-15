@@ -43,6 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_prospects_geo ON prospects(latitude, longitude) W
 -- 8. RLS for outreach log
 ALTER TABLE prospect_outreach_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef can manage own outreach log" ON prospect_outreach_log;
 CREATE POLICY "Chef can manage own outreach log"
   ON prospect_outreach_log
   FOR ALL

@@ -117,24 +117,28 @@ ALTER TABLE booking_date_overrides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE booking_daily_caps ENABLE ROW LEVEL SECURITY;
 
 -- Chef can manage own event types
+DROP POLICY IF EXISTS "Chef manages own event types" ON booking_event_types;
 CREATE POLICY "Chef manages own event types"
   ON booking_event_types FOR ALL
   USING (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'))
   WITH CHECK (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'));
 
 -- Chef can manage own availability rules
+DROP POLICY IF EXISTS "Chef manages own availability rules" ON booking_availability_rules;
 CREATE POLICY "Chef manages own availability rules"
   ON booking_availability_rules FOR ALL
   USING (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'))
   WITH CHECK (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'));
 
 -- Chef can manage own date overrides
+DROP POLICY IF EXISTS "Chef manages own date overrides" ON booking_date_overrides;
 CREATE POLICY "Chef manages own date overrides"
   ON booking_date_overrides FOR ALL
   USING (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'))
   WITH CHECK (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'));
 
 -- Chef can manage own daily caps
+DROP POLICY IF EXISTS "Chef manages own daily caps" ON booking_daily_caps;
 CREATE POLICY "Chef manages own daily caps"
   ON booking_daily_caps FOR ALL
   USING (chef_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'))

@@ -26,18 +26,22 @@ create index if not exists idx_chef_seasonal_availability_dates
 -- RLS
 alter table chef_seasonal_availability enable row level security;
 
+DROP POLICY IF EXISTS "Chefs can view own seasonal availability" ON chef_seasonal_availability;
 create policy "Chefs can view own seasonal availability"
   on chef_seasonal_availability for select
-  using (chef_id = (select id from chefs where user_id = auth.uid()));
+  using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
 
+DROP POLICY IF EXISTS "Chefs can insert own seasonal availability" ON chef_seasonal_availability;
 create policy "Chefs can insert own seasonal availability"
   on chef_seasonal_availability for insert
-  with check (chef_id = (select id from chefs where user_id = auth.uid()));
+  with check (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
 
+DROP POLICY IF EXISTS "Chefs can update own seasonal availability" ON chef_seasonal_availability;
 create policy "Chefs can update own seasonal availability"
   on chef_seasonal_availability for update
-  using (chef_id = (select id from chefs where user_id = auth.uid()));
+  using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
 
+DROP POLICY IF EXISTS "Chefs can delete own seasonal availability" ON chef_seasonal_availability;
 create policy "Chefs can delete own seasonal availability"
   on chef_seasonal_availability for delete
-  using (chef_id = (select id from chefs where user_id = auth.uid()));
+  using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));

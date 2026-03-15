@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS ai_preferences (
 -- RLS
 ALTER TABLE ai_preferences ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS ai_preferences_select ON ai_preferences;
 CREATE POLICY ai_preferences_select ON ai_preferences
   FOR SELECT USING (
     tenant_id IN (
@@ -39,6 +40,7 @@ CREATE POLICY ai_preferences_select ON ai_preferences
     )
   );
 
+DROP POLICY IF EXISTS ai_preferences_insert ON ai_preferences;
 CREATE POLICY ai_preferences_insert ON ai_preferences
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -47,6 +49,7 @@ CREATE POLICY ai_preferences_insert ON ai_preferences
     )
   );
 
+DROP POLICY IF EXISTS ai_preferences_update ON ai_preferences;
 CREATE POLICY ai_preferences_update ON ai_preferences
   FOR UPDATE USING (
     tenant_id IN (

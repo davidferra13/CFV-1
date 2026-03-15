@@ -32,11 +32,13 @@ CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_endpoint ON webhook_deliveries
 ALTER TABLE webhook_endpoints ENABLE ROW LEVEL SECURITY;
 ALTER TABLE webhook_deliveries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef owns webhook endpoints" ON webhook_endpoints;
 CREATE POLICY "Chef owns webhook endpoints" ON webhook_endpoints
   FOR ALL USING (tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
   ));
 
+DROP POLICY IF EXISTS "Chef owns webhook deliveries" ON webhook_deliveries;
 CREATE POLICY "Chef owns webhook deliveries" ON webhook_deliveries
   FOR ALL USING (tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

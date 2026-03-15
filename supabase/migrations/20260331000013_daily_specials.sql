@@ -30,12 +30,16 @@ CREATE INDEX IF NOT EXISTS idx_daily_specials_chef_date ON daily_specials(chef_i
 CREATE INDEX IF NOT EXISTS idx_daily_specials_chef_recurring ON daily_specials(chef_id, is_recurring) WHERE is_recurring = true;
 -- RLS
 ALTER TABLE daily_specials ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS daily_specials_tenant_select ON daily_specials;
 CREATE POLICY daily_specials_tenant_select ON daily_specials
   FOR SELECT USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS daily_specials_tenant_insert ON daily_specials;
 CREATE POLICY daily_specials_tenant_insert ON daily_specials
   FOR INSERT WITH CHECK (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS daily_specials_tenant_update ON daily_specials;
 CREATE POLICY daily_specials_tenant_update ON daily_specials
   FOR UPDATE USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS daily_specials_tenant_delete ON daily_specials;
 CREATE POLICY daily_specials_tenant_delete ON daily_specials
   FOR DELETE USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 -- Updated_at trigger

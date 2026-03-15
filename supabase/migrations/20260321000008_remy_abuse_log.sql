@@ -29,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_remy_abuse_log_user
 -- RLS
 ALTER TABLE remy_abuse_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs see own tenant abuse log" ON remy_abuse_log;
 CREATE POLICY "Chefs see own tenant abuse log"
   ON remy_abuse_log FOR SELECT
   USING (
@@ -36,6 +37,7 @@ CREATE POLICY "Chefs see own tenant abuse log"
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS "System inserts abuse log" ON remy_abuse_log;
 CREATE POLICY "System inserts abuse log"
   ON remy_abuse_log FOR INSERT
   WITH CHECK (true);

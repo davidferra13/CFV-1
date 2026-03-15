@@ -33,6 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_households_tenant
 -- RLS
 ALTER TABLE households ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS households_chef_select ON households;
 CREATE POLICY households_chef_select ON households
   FOR SELECT USING (
     tenant_id IN (
@@ -41,6 +42,7 @@ CREATE POLICY households_chef_select ON households
     )
   );
 
+DROP POLICY IF EXISTS households_chef_insert ON households;
 CREATE POLICY households_chef_insert ON households
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -49,6 +51,7 @@ CREATE POLICY households_chef_insert ON households
     )
   );
 
+DROP POLICY IF EXISTS households_chef_update ON households;
 CREATE POLICY households_chef_update ON households
   FOR UPDATE USING (
     tenant_id IN (
@@ -57,6 +60,7 @@ CREATE POLICY households_chef_update ON households
     )
   );
 
+DROP POLICY IF EXISTS households_chef_delete ON households;
 CREATE POLICY households_chef_delete ON households
   FOR DELETE USING (
     tenant_id IN (
@@ -91,6 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_household_members_client
 -- RLS (via household tenant)
 ALTER TABLE household_members ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS household_members_chef_select ON household_members;
 CREATE POLICY household_members_chef_select ON household_members
   FOR SELECT USING (
     household_id IN (
@@ -102,6 +107,7 @@ CREATE POLICY household_members_chef_select ON household_members
     )
   );
 
+DROP POLICY IF EXISTS household_members_chef_insert ON household_members;
 CREATE POLICY household_members_chef_insert ON household_members
   FOR INSERT WITH CHECK (
     household_id IN (
@@ -113,6 +119,7 @@ CREATE POLICY household_members_chef_insert ON household_members
     )
   );
 
+DROP POLICY IF EXISTS household_members_chef_update ON household_members;
 CREATE POLICY household_members_chef_update ON household_members
   FOR UPDATE USING (
     household_id IN (
@@ -124,6 +131,7 @@ CREATE POLICY household_members_chef_update ON household_members
     )
   );
 
+DROP POLICY IF EXISTS household_members_chef_delete ON household_members;
 CREATE POLICY household_members_chef_delete ON household_members
   FOR DELETE USING (
     household_id IN (

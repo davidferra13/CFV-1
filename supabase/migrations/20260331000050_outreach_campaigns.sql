@@ -30,6 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_outreach_campaigns_status ON outreach_campaigns(c
 CREATE INDEX IF NOT EXISTS idx_outreach_campaigns_instantly ON outreach_campaigns(instantly_campaign_id) WHERE instantly_campaign_id IS NOT NULL;
 
 ALTER TABLE outreach_campaigns ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage own outreach campaigns" ON outreach_campaigns;
 CREATE POLICY "Chefs manage own outreach campaigns"
   ON outreach_campaigns FOR ALL
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))

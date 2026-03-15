@@ -27,21 +27,24 @@ ON CONFLICT (id) DO NOTHING;
 
 -- RLS for storage: authenticated users can upload; public read
 DO $$ BEGIN
-  CREATE POLICY "chef_social_media_upload"
+  DROP POLICY IF EXISTS "chef_social_media_upload" ON storage.objects;
+CREATE POLICY "chef_social_media_upload"
     ON storage.objects FOR INSERT TO authenticated
     WITH CHECK (bucket_id = 'chef-social-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "chef_social_media_read"
+  DROP POLICY IF EXISTS "chef_social_media_read" ON storage.objects;
+CREATE POLICY "chef_social_media_read"
     ON storage.objects FOR SELECT TO public
     USING (bucket_id = 'chef-social-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "chef_social_media_delete_own"
+  DROP POLICY IF EXISTS "chef_social_media_delete_own" ON storage.objects;
+CREATE POLICY "chef_social_media_delete_own"
     ON storage.objects FOR DELETE TO authenticated
     USING (bucket_id = 'chef-social-media' AND auth.uid()::text = (storage.foldername(name))[1]);
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;

@@ -20,6 +20,7 @@ CREATE INDEX prospect_stage_history_chef_idx
 
 ALTER TABLE prospect_stage_history ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "stage_history_select" ON prospect_stage_history;
 CREATE POLICY "stage_history_select" ON prospect_stage_history
   FOR SELECT USING (
     chef_id IN (
@@ -28,6 +29,7 @@ CREATE POLICY "stage_history_select" ON prospect_stage_history
     )
   );
 
+DROP POLICY IF EXISTS "stage_history_insert" ON prospect_stage_history;
 CREATE POLICY "stage_history_insert" ON prospect_stage_history
   FOR INSERT WITH CHECK (
     chef_id IN (

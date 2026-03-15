@@ -33,6 +33,7 @@ CREATE UNIQUE INDEX idx_remy_metrics_tenant_date_cat
 -- RLS: chefs can see their own metrics
 ALTER TABLE remy_usage_metrics ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_usage_metrics_select ON remy_usage_metrics;
 CREATE POLICY remy_usage_metrics_select ON remy_usage_metrics
   FOR SELECT USING (
     tenant_id IN (
@@ -41,6 +42,7 @@ CREATE POLICY remy_usage_metrics_select ON remy_usage_metrics
     )
   );
 
+DROP POLICY IF EXISTS remy_usage_metrics_insert ON remy_usage_metrics;
 CREATE POLICY remy_usage_metrics_insert ON remy_usage_metrics
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -49,6 +51,7 @@ CREATE POLICY remy_usage_metrics_insert ON remy_usage_metrics
     )
   );
 
+DROP POLICY IF EXISTS remy_usage_metrics_update ON remy_usage_metrics;
 CREATE POLICY remy_usage_metrics_update ON remy_usage_metrics
   FOR UPDATE USING (
     tenant_id IN (
@@ -81,6 +84,7 @@ CREATE INDEX idx_remy_support_shares_status
 -- RLS: chefs can see and create their own support shares
 ALTER TABLE remy_support_shares ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_support_shares_select ON remy_support_shares;
 CREATE POLICY remy_support_shares_select ON remy_support_shares
   FOR SELECT USING (
     tenant_id IN (
@@ -89,6 +93,7 @@ CREATE POLICY remy_support_shares_select ON remy_support_shares
     )
   );
 
+DROP POLICY IF EXISTS remy_support_shares_insert ON remy_support_shares;
 CREATE POLICY remy_support_shares_insert ON remy_support_shares
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -98,6 +103,7 @@ CREATE POLICY remy_support_shares_insert ON remy_support_shares
   );
 
 -- Chefs can update their own support shares (e.g. add notes)
+DROP POLICY IF EXISTS remy_support_shares_update ON remy_support_shares;
 CREATE POLICY remy_support_shares_update ON remy_support_shares
   FOR UPDATE USING (
     tenant_id IN (

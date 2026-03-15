@@ -17,10 +17,11 @@ create table if not exists email_sequences (
   created_at    timestamptz not null default now()
 );
 
-create index idx_email_sequences_chef_id on email_sequences(chef_id);
+CREATE INDEX IF NOT EXISTS idx_email_sequences_chef_id on email_sequences(chef_id);
 
 alter table email_sequences enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own sequences" ON email_sequences;
 create policy "Chefs manage own sequences"
   on email_sequences for all
   using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef' limit 1))
@@ -40,10 +41,11 @@ create table if not exists email_sequence_steps (
   unique (sequence_id, step_number)
 );
 
-create index idx_email_sequence_steps_sequence_id on email_sequence_steps(sequence_id);
+CREATE INDEX IF NOT EXISTS idx_email_sequence_steps_sequence_id on email_sequence_steps(sequence_id);
 
 alter table email_sequence_steps enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own sequence steps" ON email_sequence_steps;
 create policy "Chefs manage own sequence steps"
   on email_sequence_steps for all
   using (
@@ -75,14 +77,15 @@ create table if not exists email_sequence_enrollments (
   completed_at  timestamptz
 );
 
-create index idx_email_sequence_enrollments_chef_id on email_sequence_enrollments(chef_id);
-create index idx_email_sequence_enrollments_sequence_id on email_sequence_enrollments(sequence_id);
-create index idx_email_sequence_enrollments_status on email_sequence_enrollments(status);
-create index idx_email_sequence_enrollments_next_send on email_sequence_enrollments(next_send_at)
+CREATE INDEX IF NOT EXISTS idx_email_sequence_enrollments_chef_id on email_sequence_enrollments(chef_id);
+CREATE INDEX IF NOT EXISTS idx_email_sequence_enrollments_sequence_id on email_sequence_enrollments(sequence_id);
+CREATE INDEX IF NOT EXISTS idx_email_sequence_enrollments_status on email_sequence_enrollments(status);
+CREATE INDEX IF NOT EXISTS idx_email_sequence_enrollments_next_send on email_sequence_enrollments(next_send_at)
   where status = 'active';
 
 alter table email_sequence_enrollments enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own enrollments" ON email_sequence_enrollments;
 create policy "Chefs manage own enrollments"
   on email_sequence_enrollments for all
   using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef' limit 1))

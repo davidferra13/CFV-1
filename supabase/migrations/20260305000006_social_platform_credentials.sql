@@ -81,6 +81,7 @@ CREATE TRIGGER social_platform_credentials_updated_at
 
 ALTER TABLE social_platform_credentials ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_social_credentials_select" ON social_platform_credentials;
 CREATE POLICY "chef_social_credentials_select"
   ON social_platform_credentials FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());

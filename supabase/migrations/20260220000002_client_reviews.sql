@@ -50,6 +50,7 @@ COMMENT ON TABLE client_reviews IS
 ALTER TABLE client_reviews ENABLE ROW LEVEL SECURITY;
 
 -- Clients can insert their own review
+DROP POLICY IF EXISTS client_reviews_insert_own ON client_reviews;
 CREATE POLICY client_reviews_insert_own ON client_reviews
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -60,6 +61,7 @@ CREATE POLICY client_reviews_insert_own ON client_reviews
   );
 
 -- Clients can read their own reviews
+DROP POLICY IF EXISTS client_reviews_select_own ON client_reviews;
 CREATE POLICY client_reviews_select_own ON client_reviews
   FOR SELECT TO authenticated
   USING (
@@ -70,6 +72,7 @@ CREATE POLICY client_reviews_select_own ON client_reviews
   );
 
 -- Chefs can read all reviews for their tenant
+DROP POLICY IF EXISTS client_reviews_select_chef ON client_reviews;
 CREATE POLICY client_reviews_select_chef ON client_reviews
   FOR SELECT TO authenticated
   USING (

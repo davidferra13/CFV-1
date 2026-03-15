@@ -129,12 +129,14 @@ CREATE TRIGGER chef_journal_recipe_links_updated_at
 ALTER TABLE chef_journal_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chef_journal_recipe_links ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_journal_media_select_own ON chef_journal_media;
 CREATE POLICY chef_journal_media_select_own ON chef_journal_media
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journal_media_insert_own ON chef_journal_media;
 CREATE POLICY chef_journal_media_insert_own ON chef_journal_media
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -142,6 +144,7 @@ CREATE POLICY chef_journal_media_insert_own ON chef_journal_media
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS chef_journal_media_update_own ON chef_journal_media;
 CREATE POLICY chef_journal_media_update_own ON chef_journal_media
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -152,18 +155,21 @@ CREATE POLICY chef_journal_media_update_own ON chef_journal_media
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journal_media_delete_own ON chef_journal_media;
 CREATE POLICY chef_journal_media_delete_own ON chef_journal_media
   FOR DELETE USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journal_recipe_links_select_own ON chef_journal_recipe_links;
 CREATE POLICY chef_journal_recipe_links_select_own ON chef_journal_recipe_links
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journal_recipe_links_insert_own ON chef_journal_recipe_links;
 CREATE POLICY chef_journal_recipe_links_insert_own ON chef_journal_recipe_links
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -171,6 +177,7 @@ CREATE POLICY chef_journal_recipe_links_insert_own ON chef_journal_recipe_links
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS chef_journal_recipe_links_update_own ON chef_journal_recipe_links;
 CREATE POLICY chef_journal_recipe_links_update_own ON chef_journal_recipe_links
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -181,6 +188,7 @@ CREATE POLICY chef_journal_recipe_links_update_own ON chef_journal_recipe_links
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journal_recipe_links_delete_own ON chef_journal_recipe_links;
 CREATE POLICY chef_journal_recipe_links_delete_own ON chef_journal_recipe_links
   FOR DELETE USING (
     get_current_user_role() = 'chef'

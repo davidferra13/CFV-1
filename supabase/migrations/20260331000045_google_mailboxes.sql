@@ -58,6 +58,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_google_mailboxes_active_email
 
 ALTER TABLE google_mailboxes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own google mailboxes" ON google_mailboxes;
 CREATE POLICY "Chefs manage own google mailboxes"
   ON google_mailboxes
   FOR ALL
@@ -74,6 +75,7 @@ CREATE POLICY "Chefs manage own google mailboxes"
     )
   );
 
+DROP POLICY IF EXISTS "Service role manages google mailboxes" ON google_mailboxes;
 CREATE POLICY "Service role manages google mailboxes"
   ON google_mailboxes
   FOR ALL

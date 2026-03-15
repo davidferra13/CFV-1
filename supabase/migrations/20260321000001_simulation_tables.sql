@@ -27,6 +27,7 @@ CREATE INDEX simulation_runs_tenant_idx ON simulation_runs (tenant_id, started_a
 
 ALTER TABLE simulation_runs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "simulation_runs_chef_rls" ON simulation_runs;
 CREATE POLICY "simulation_runs_chef_rls" ON simulation_runs
   FOR ALL
   USING (
@@ -57,6 +58,7 @@ CREATE INDEX simulation_results_tenant_idx ON simulation_results (tenant_id, mod
 
 ALTER TABLE simulation_results ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "simulation_results_chef_rls" ON simulation_results;
 CREATE POLICY "simulation_results_chef_rls" ON simulation_results
   FOR ALL
   USING (
@@ -83,6 +85,7 @@ CREATE INDEX fine_tuning_examples_tenant_idx ON fine_tuning_examples (tenant_id,
 
 ALTER TABLE fine_tuning_examples ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "fine_tuning_examples_chef_rls" ON fine_tuning_examples;
 CREATE POLICY "fine_tuning_examples_chef_rls" ON fine_tuning_examples
   FOR ALL
   USING (

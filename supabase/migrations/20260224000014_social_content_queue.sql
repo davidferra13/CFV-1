@@ -142,12 +142,14 @@ CREATE TRIGGER social_posts_updated_at
 ALTER TABLE social_queue_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE social_posts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS social_queue_settings_select_own ON social_queue_settings;
 CREATE POLICY social_queue_settings_select_own ON social_queue_settings
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_queue_settings_insert_own ON social_queue_settings;
 CREATE POLICY social_queue_settings_insert_own ON social_queue_settings
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -155,6 +157,7 @@ CREATE POLICY social_queue_settings_insert_own ON social_queue_settings
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS social_queue_settings_update_own ON social_queue_settings;
 CREATE POLICY social_queue_settings_update_own ON social_queue_settings
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -165,12 +168,14 @@ CREATE POLICY social_queue_settings_update_own ON social_queue_settings
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_posts_select_own ON social_posts;
 CREATE POLICY social_posts_select_own ON social_posts
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_posts_insert_own ON social_posts;
 CREATE POLICY social_posts_insert_own ON social_posts
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -178,6 +183,7 @@ CREATE POLICY social_posts_insert_own ON social_posts
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS social_posts_update_own ON social_posts;
 CREATE POLICY social_posts_update_own ON social_posts
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -188,6 +194,7 @@ CREATE POLICY social_posts_update_own ON social_posts
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_posts_delete_own ON social_posts;
 CREATE POLICY social_posts_delete_own ON social_posts
   FOR DELETE USING (
     get_current_user_role() = 'chef'

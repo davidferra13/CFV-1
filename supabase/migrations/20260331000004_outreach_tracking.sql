@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS client_outreach_log (
 CREATE INDEX idx_outreach_log_tenant_client ON client_outreach_log(tenant_id, client_id);
 CREATE INDEX idx_outreach_log_sent_at ON client_outreach_log(sent_at DESC);
 ALTER TABLE client_outreach_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their outreach log" ON client_outreach_log;
 CREATE POLICY "Chefs can manage their outreach log"
   ON client_outreach_log
   FOR ALL
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS referral_request_log (
 CREATE INDEX idx_referral_req_tenant_client ON referral_request_log(tenant_id, client_id);
 CREATE INDEX idx_referral_req_sent_at ON referral_request_log(sent_at DESC);
 ALTER TABLE referral_request_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their referral request log" ON referral_request_log;
 CREATE POLICY "Chefs can manage their referral request log"
   ON referral_request_log
   FOR ALL

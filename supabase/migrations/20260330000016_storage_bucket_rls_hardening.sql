@@ -19,6 +19,7 @@ END $$;
 
 -- Authenticated users can read hub media (group membership checked at app layer)
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "hub_media_read_auth" ON storage.objects;
   CREATE POLICY "hub_media_read_auth" ON storage.objects
     FOR SELECT TO authenticated
     USING (bucket_id = 'hub-media');
@@ -27,6 +28,7 @@ END $$;
 
 -- Authenticated users can upload hub media (group membership checked at app layer)
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "hub_media_upload_auth" ON storage.objects;
   CREATE POLICY "hub_media_upload_auth" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (bucket_id = 'hub-media');
@@ -35,6 +37,7 @@ END $$;
 
 -- Authenticated users can delete their own uploads (first path segment = auth UID)
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "hub_media_delete_own" ON storage.objects;
   CREATE POLICY "hub_media_delete_own" ON storage.objects
     FOR DELETE TO authenticated
     USING (bucket_id = 'hub-media');
@@ -57,6 +60,7 @@ END $$;
 
 -- Upload: authenticated, first path segment must be caller's tenant ID
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "inquiry_note_attachments_upload_scoped" ON storage.objects;
   CREATE POLICY "inquiry_note_attachments_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -71,6 +75,7 @@ END $$;
 
 -- Read: authenticated, tenant-scoped
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "inquiry_note_attachments_read_scoped" ON storage.objects;
   CREATE POLICY "inquiry_note_attachments_read_scoped" ON storage.objects
     FOR SELECT TO authenticated
     USING (
@@ -85,6 +90,7 @@ END $$;
 
 -- Delete: authenticated, tenant-scoped
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "inquiry_note_attachments_delete_scoped" ON storage.objects;
   CREATE POLICY "inquiry_note_attachments_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (
@@ -114,6 +120,7 @@ END $$;
 
 -- Upload: tenant-scoped (first path segment = tenant_id)
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_social_media_upload_scoped" ON storage.objects;
   CREATE POLICY "chef_social_media_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -128,6 +135,7 @@ END $$;
 
 -- Delete: tenant-scoped (matches how the app writes paths: tenantId/filename)
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_social_media_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_social_media_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (
@@ -145,6 +153,7 @@ END $$;
 -- ============================================================
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_logos_upload_scoped" ON storage.objects;
   CREATE POLICY "chef_logos_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -158,6 +167,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_logos_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_logos_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (
@@ -175,6 +185,7 @@ END $$;
 -- ============================================================
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_profile_images_upload_scoped" ON storage.objects;
   CREATE POLICY "chef_profile_images_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -188,6 +199,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_profile_images_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_profile_images_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (
@@ -205,6 +217,7 @@ END $$;
 -- ============================================================
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_portal_backgrounds_upload_scoped" ON storage.objects;
   CREATE POLICY "chef_portal_backgrounds_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -218,6 +231,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_portal_backgrounds_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_portal_backgrounds_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (
@@ -235,6 +249,7 @@ END $$;
 -- ============================================================
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_journal_media_upload_scoped" ON storage.objects;
   CREATE POLICY "chef_journal_media_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -248,6 +263,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "chef_journal_media_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_journal_media_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (
@@ -265,6 +281,7 @@ END $$;
 -- ============================================================
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "social_media_vault_upload_scoped" ON storage.objects;
   CREATE POLICY "social_media_vault_upload_scoped" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -278,6 +295,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "social_media_vault_delete_scoped" ON storage.objects;
   CREATE POLICY "social_media_vault_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
     USING (

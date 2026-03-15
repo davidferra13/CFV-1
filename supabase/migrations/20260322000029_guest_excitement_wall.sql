@@ -24,14 +24,17 @@ CREATE INDEX IF NOT EXISTS idx_guest_messages_tenant ON guest_messages(tenant_id
 ALTER TABLE guest_messages ENABLE ROW LEVEL SECURITY;
 
 -- Public: anyone can read visible messages for an event (share page is public)
+DROP POLICY IF EXISTS guest_messages_public_read ON guest_messages;
 CREATE POLICY guest_messages_public_read ON guest_messages
   FOR SELECT USING (is_visible = true);
 
 -- Public: anyone can insert (guest submitting from share page — validated by server action)
+DROP POLICY IF EXISTS guest_messages_public_insert ON guest_messages;
 CREATE POLICY guest_messages_public_insert ON guest_messages
   FOR INSERT WITH CHECK (true);
 
 -- Chef: can read ALL messages (including hidden) for own tenant
+DROP POLICY IF EXISTS guest_messages_chef_read_all ON guest_messages;
 CREATE POLICY guest_messages_chef_read_all ON guest_messages
   FOR SELECT USING (
     tenant_id IN (
@@ -41,6 +44,7 @@ CREATE POLICY guest_messages_chef_read_all ON guest_messages
   );
 
 -- Chef: can update (moderate) own tenant messages
+DROP POLICY IF EXISTS guest_messages_chef_update ON guest_messages;
 CREATE POLICY guest_messages_chef_update ON guest_messages
   FOR UPDATE USING (
     tenant_id IN (
@@ -50,6 +54,7 @@ CREATE POLICY guest_messages_chef_update ON guest_messages
   );
 
 -- Chef: can delete own tenant messages
+DROP POLICY IF EXISTS guest_messages_chef_delete ON guest_messages;
 CREATE POLICY guest_messages_chef_delete ON guest_messages
   FOR DELETE USING (
     tenant_id IN (
@@ -76,12 +81,15 @@ CREATE INDEX IF NOT EXISTS idx_guest_photos_tenant ON guest_photos(tenant_id);
 
 ALTER TABLE guest_photos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS guest_photos_public_read ON guest_photos;
 CREATE POLICY guest_photos_public_read ON guest_photos
   FOR SELECT USING (is_visible = true);
 
+DROP POLICY IF EXISTS guest_photos_public_insert ON guest_photos;
 CREATE POLICY guest_photos_public_insert ON guest_photos
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS guest_photos_chef_read_all ON guest_photos;
 CREATE POLICY guest_photos_chef_read_all ON guest_photos
   FOR SELECT USING (
     tenant_id IN (
@@ -90,6 +98,7 @@ CREATE POLICY guest_photos_chef_read_all ON guest_photos
     )
   );
 
+DROP POLICY IF EXISTS guest_photos_chef_update ON guest_photos;
 CREATE POLICY guest_photos_chef_update ON guest_photos
   FOR UPDATE USING (
     tenant_id IN (
@@ -98,6 +107,7 @@ CREATE POLICY guest_photos_chef_update ON guest_photos
     )
   );
 
+DROP POLICY IF EXISTS guest_photos_chef_delete ON guest_photos;
 CREATE POLICY guest_photos_chef_delete ON guest_photos
   FOR DELETE USING (
     tenant_id IN (

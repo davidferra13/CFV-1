@@ -75,24 +75,28 @@ ALTER TABLE waitlist_entries         ENABLE ROW LEVEL SECURITY;
 
 -- ---- availability blocks: chef-only ----
 
+DROP POLICY IF EXISTS avail_chef_select ON chef_availability_blocks;
 CREATE POLICY avail_chef_select ON chef_availability_blocks
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS avail_chef_insert ON chef_availability_blocks;
 CREATE POLICY avail_chef_insert ON chef_availability_blocks
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS avail_chef_update ON chef_availability_blocks;
 CREATE POLICY avail_chef_update ON chef_availability_blocks
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS avail_chef_delete ON chef_availability_blocks;
 CREATE POLICY avail_chef_delete ON chef_availability_blocks
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
@@ -101,24 +105,28 @@ CREATE POLICY avail_chef_delete ON chef_availability_blocks
 
 -- ---- waitlist: chef-only ----
 
+DROP POLICY IF EXISTS wl_chef_select ON waitlist_entries;
 CREATE POLICY wl_chef_select ON waitlist_entries
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS wl_chef_insert ON waitlist_entries;
 CREATE POLICY wl_chef_insert ON waitlist_entries
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS wl_chef_update ON waitlist_entries;
 CREATE POLICY wl_chef_update ON waitlist_entries
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS wl_chef_delete ON waitlist_entries;
 CREATE POLICY wl_chef_delete ON waitlist_entries
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

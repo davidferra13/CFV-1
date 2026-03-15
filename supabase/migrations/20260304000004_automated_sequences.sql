@@ -102,16 +102,21 @@ ALTER TABLE sequence_steps        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sequence_enrollments  ENABLE ROW LEVEL SECURITY;
 
 -- Automated sequences
+DROP POLICY IF EXISTS as_chef_select ON automated_sequences;
 CREATE POLICY as_chef_select ON automated_sequences FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS as_chef_insert ON automated_sequences;
 CREATE POLICY as_chef_insert ON automated_sequences FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS as_chef_update ON automated_sequences;
 CREATE POLICY as_chef_update ON automated_sequences FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS as_chef_delete ON automated_sequences;
 CREATE POLICY as_chef_delete ON automated_sequences FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- Sequence steps (owned by chef via parent sequence)
+DROP POLICY IF EXISTS ss_chef_select ON sequence_steps;
 CREATE POLICY ss_chef_select ON sequence_steps FOR SELECT
   USING (
     EXISTS (
@@ -120,6 +125,7 @@ CREATE POLICY ss_chef_select ON sequence_steps FOR SELECT
         AND get_current_user_role() = 'chef'
     )
   );
+DROP POLICY IF EXISTS ss_chef_insert ON sequence_steps;
 CREATE POLICY ss_chef_insert ON sequence_steps FOR INSERT
   WITH CHECK (
     EXISTS (
@@ -128,6 +134,7 @@ CREATE POLICY ss_chef_insert ON sequence_steps FOR INSERT
         AND get_current_user_role() = 'chef'
     )
   );
+DROP POLICY IF EXISTS ss_chef_update ON sequence_steps;
 CREATE POLICY ss_chef_update ON sequence_steps FOR UPDATE
   USING (
     EXISTS (
@@ -136,6 +143,7 @@ CREATE POLICY ss_chef_update ON sequence_steps FOR UPDATE
         AND get_current_user_role() = 'chef'
     )
   );
+DROP POLICY IF EXISTS ss_chef_delete ON sequence_steps;
 CREATE POLICY ss_chef_delete ON sequence_steps FOR DELETE
   USING (
     EXISTS (
@@ -146,9 +154,12 @@ CREATE POLICY ss_chef_delete ON sequence_steps FOR DELETE
   );
 
 -- Sequence enrollments
+DROP POLICY IF EXISTS se_chef_select ON sequence_enrollments;
 CREATE POLICY se_chef_select ON sequence_enrollments FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS se_chef_insert ON sequence_enrollments;
 CREATE POLICY se_chef_insert ON sequence_enrollments FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS se_chef_update ON sequence_enrollments;
 CREATE POLICY se_chef_update ON sequence_enrollments FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

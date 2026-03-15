@@ -103,6 +103,7 @@ ALTER TABLE client_allergy_records ENABLE ROW LEVEL SECURITY;
 
 -- Chef can read/write all records for their tenant
 DO $$ BEGIN
+  DROP POLICY IF EXISTS allergy_records_chef_all ON client_allergy_records;
   CREATE POLICY allergy_records_chef_all ON client_allergy_records
     FOR ALL USING (
       get_current_user_role() = 'chef' AND

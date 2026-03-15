@@ -53,12 +53,14 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies for hub-media bucket
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "hub_media_read_all" ON storage.objects;
   CREATE POLICY "hub_media_read_all" ON storage.objects
     FOR SELECT USING (bucket_id = 'hub-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "hub_media_upload_all" ON storage.objects;
   CREATE POLICY "hub_media_upload_all" ON storage.objects
     FOR INSERT WITH CHECK (bucket_id = 'hub-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
@@ -69,21 +71,27 @@ ALTER TABLE hub_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_pinned_notes ENABLE ROW LEVEL SECURITY;
 
 -- Media: public read/insert
+DROP POLICY IF EXISTS "hub_media_select_anon" ON hub_media;
 CREATE POLICY "hub_media_select_anon" ON hub_media
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_media_insert_anon" ON hub_media;
 CREATE POLICY "hub_media_insert_anon" ON hub_media
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_media_manage_service" ON hub_media;
 CREATE POLICY "hub_media_manage_service" ON hub_media
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Notes: public read/insert
+DROP POLICY IF EXISTS "hub_pinned_notes_select_anon" ON hub_pinned_notes;
 CREATE POLICY "hub_pinned_notes_select_anon" ON hub_pinned_notes
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_pinned_notes_insert_anon" ON hub_pinned_notes;
 CREATE POLICY "hub_pinned_notes_insert_anon" ON hub_pinned_notes
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_pinned_notes_manage_service" ON hub_pinned_notes;
 CREATE POLICY "hub_pinned_notes_manage_service" ON hub_pinned_notes
   FOR ALL USING (auth.role() = 'service_role');

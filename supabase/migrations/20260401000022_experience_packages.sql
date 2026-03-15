@@ -33,23 +33,28 @@ CREATE INDEX IF NOT EXISTS idx_experience_packages_menu ON experience_packages(m
 ALTER TABLE experience_packages ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can manage their own packages
+DROP POLICY IF EXISTS "experience_packages_chef_select" ON experience_packages;
 CREATE POLICY "experience_packages_chef_select"
   ON experience_packages FOR SELECT
   USING (tenant_id = (SELECT ur.entity_id FROM user_roles ur WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef' LIMIT 1));
 
+DROP POLICY IF EXISTS "experience_packages_chef_insert" ON experience_packages;
 CREATE POLICY "experience_packages_chef_insert"
   ON experience_packages FOR INSERT
   WITH CHECK (tenant_id = (SELECT ur.entity_id FROM user_roles ur WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef' LIMIT 1));
 
+DROP POLICY IF EXISTS "experience_packages_chef_update" ON experience_packages;
 CREATE POLICY "experience_packages_chef_update"
   ON experience_packages FOR UPDATE
   USING (tenant_id = (SELECT ur.entity_id FROM user_roles ur WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef' LIMIT 1));
 
+DROP POLICY IF EXISTS "experience_packages_chef_delete" ON experience_packages;
 CREATE POLICY "experience_packages_chef_delete"
   ON experience_packages FOR DELETE
   USING (tenant_id = (SELECT ur.entity_id FROM user_roles ur WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef' LIMIT 1));
 
 -- Public read for active packages (used by public-facing package listings)
+DROP POLICY IF EXISTS "experience_packages_public_read" ON experience_packages;
 CREATE POLICY "experience_packages_public_read"
   ON experience_packages FOR SELECT
   USING (is_active = true);

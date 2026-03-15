@@ -373,6 +373,7 @@ ALTER TABLE response_templates ENABLE ROW LEVEL SECURITY;
 -- ============================================
 
 -- Chefs can read their own inquiries
+DROP POLICY IF EXISTS inquiries_chef_select ON inquiries;
 CREATE POLICY inquiries_chef_select ON inquiries
   FOR SELECT
   USING (
@@ -381,6 +382,7 @@ CREATE POLICY inquiries_chef_select ON inquiries
   );
 
 -- Chefs can create inquiries
+DROP POLICY IF EXISTS inquiries_chef_insert ON inquiries;
 CREATE POLICY inquiries_chef_insert ON inquiries
   FOR INSERT
   WITH CHECK (
@@ -389,6 +391,7 @@ CREATE POLICY inquiries_chef_insert ON inquiries
   );
 
 -- Chefs can update their inquiries
+DROP POLICY IF EXISTS inquiries_chef_update ON inquiries;
 CREATE POLICY inquiries_chef_update ON inquiries
   FOR UPDATE
   USING (
@@ -397,6 +400,7 @@ CREATE POLICY inquiries_chef_update ON inquiries
   );
 
 -- Chefs can delete their inquiries (prefer status transition to 'declined' or 'expired')
+DROP POLICY IF EXISTS inquiries_chef_delete ON inquiries;
 CREATE POLICY inquiries_chef_delete ON inquiries
   FOR DELETE
   USING (
@@ -405,6 +409,7 @@ CREATE POLICY inquiries_chef_delete ON inquiries
   );
 
 -- Clients can read inquiries linked to them
+DROP POLICY IF EXISTS inquiries_client_select ON inquiries;
 CREATE POLICY inquiries_client_select ON inquiries
   FOR SELECT
   USING (
@@ -420,6 +425,7 @@ COMMENT ON POLICY inquiries_client_select ON inquiries IS 'Clients see only inqu
 -- ============================================
 
 -- Chefs can read transitions for their inquiries
+DROP POLICY IF EXISTS inquiry_transitions_chef_select ON inquiry_state_transitions;
 CREATE POLICY inquiry_transitions_chef_select ON inquiry_state_transitions
   FOR SELECT
   USING (
@@ -428,6 +434,7 @@ CREATE POLICY inquiry_transitions_chef_select ON inquiry_state_transitions
   );
 
 -- Clients can read transitions for their inquiries
+DROP POLICY IF EXISTS inquiry_transitions_client_select ON inquiry_state_transitions;
 CREATE POLICY inquiry_transitions_client_select ON inquiry_state_transitions
   FOR SELECT
   USING (
@@ -438,6 +445,7 @@ CREATE POLICY inquiry_transitions_client_select ON inquiry_state_transitions
   );
 
 -- Only chef who owns the inquiry can insert state transitions
+DROP POLICY IF EXISTS inquiry_transitions_insert ON inquiry_state_transitions;
 CREATE POLICY inquiry_transitions_insert ON inquiry_state_transitions
   FOR INSERT
   WITH CHECK (
@@ -455,6 +463,7 @@ COMMENT ON POLICY inquiry_transitions_insert ON inquiry_state_transitions IS 'On
 -- ============================================
 
 -- Chefs can read their messages
+DROP POLICY IF EXISTS messages_chef_select ON messages;
 CREATE POLICY messages_chef_select ON messages
   FOR SELECT
   USING (
@@ -463,6 +472,7 @@ CREATE POLICY messages_chef_select ON messages
   );
 
 -- Chefs can create messages
+DROP POLICY IF EXISTS messages_chef_insert ON messages;
 CREATE POLICY messages_chef_insert ON messages
   FOR INSERT
   WITH CHECK (
@@ -471,6 +481,7 @@ CREATE POLICY messages_chef_insert ON messages
   );
 
 -- Chefs can update messages (only drafts via app logic - sent messages immutable in practice)
+DROP POLICY IF EXISTS messages_chef_update ON messages;
 CREATE POLICY messages_chef_update ON messages
   FOR UPDATE
   USING (
@@ -483,6 +494,7 @@ CREATE POLICY messages_chef_update ON messages
 -- Deletion only occurs via CASCADE when parent records (inquiries, events, clients) are deleted.
 
 -- Clients can read messages related to them
+DROP POLICY IF EXISTS messages_client_select ON messages;
 CREATE POLICY messages_client_select ON messages
   FOR SELECT
   USING (
@@ -498,6 +510,7 @@ COMMENT ON POLICY messages_client_select ON messages IS 'Clients see messages re
 -- ============================================
 
 -- Chefs can manage their templates
+DROP POLICY IF EXISTS templates_chef_all ON response_templates;
 CREATE POLICY templates_chef_all ON response_templates
   FOR ALL
   USING (

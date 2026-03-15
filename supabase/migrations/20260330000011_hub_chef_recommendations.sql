@@ -19,6 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_hub_chef_recs_from ON hub_chef_recommendations(fr
 
 ALTER TABLE hub_chef_recommendations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "service_role_all" ON hub_chef_recommendations;
 CREATE POLICY "service_role_all" ON hub_chef_recommendations
   FOR ALL USING (true) WITH CHECK (true);
 

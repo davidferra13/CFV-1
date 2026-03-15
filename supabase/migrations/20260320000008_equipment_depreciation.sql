@@ -50,12 +50,16 @@ CREATE TRIGGER trg_equip_deprec_updated_at
 -- RLS
 ALTER TABLE equipment_depreciation_schedules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS edd_chef_select ON equipment_depreciation_schedules;
 CREATE POLICY edd_chef_select ON equipment_depreciation_schedules FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS edd_chef_insert ON equipment_depreciation_schedules;
 CREATE POLICY edd_chef_insert ON equipment_depreciation_schedules FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS edd_chef_update ON equipment_depreciation_schedules;
 CREATE POLICY edd_chef_update ON equipment_depreciation_schedules FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS edd_chef_delete ON equipment_depreciation_schedules;
 CREATE POLICY edd_chef_delete ON equipment_depreciation_schedules FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 

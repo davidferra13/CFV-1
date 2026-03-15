@@ -25,6 +25,7 @@ CREATE INDEX idx_receipt_photos_tenant_id ON receipt_photos(tenant_id);
 
 ALTER TABLE receipt_photos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own receipt photos" ON receipt_photos;
 CREATE POLICY "Chefs manage own receipt photos"
   ON receipt_photos
   FOR ALL
@@ -61,6 +62,7 @@ CREATE INDEX idx_receipt_extractions_tenant_id ON receipt_extractions(tenant_id)
 
 ALTER TABLE receipt_extractions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own receipt extractions" ON receipt_extractions;
 CREATE POLICY "Chefs manage own receipt extractions"
   ON receipt_extractions
   FOR ALL
@@ -94,6 +96,7 @@ CREATE INDEX idx_receipt_line_items_tenant_id     ON receipt_line_items(tenant_i
 
 ALTER TABLE receipt_line_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own receipt line items" ON receipt_line_items;
 CREATE POLICY "Chefs manage own receipt line items"
   ON receipt_line_items
   FOR ALL

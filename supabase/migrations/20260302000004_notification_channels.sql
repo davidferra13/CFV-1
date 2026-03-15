@@ -52,15 +52,19 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Users manage their own subscriptions
+DROP POLICY IF EXISTS push_subs_self_select ON push_subscriptions;
 CREATE POLICY push_subs_self_select ON push_subscriptions
   FOR SELECT USING (auth_user_id = auth.uid());
 
+DROP POLICY IF EXISTS push_subs_self_insert ON push_subscriptions;
 CREATE POLICY push_subs_self_insert ON push_subscriptions
   FOR INSERT WITH CHECK (auth_user_id = auth.uid());
 
+DROP POLICY IF EXISTS push_subs_self_update ON push_subscriptions;
 CREATE POLICY push_subs_self_update ON push_subscriptions
   FOR UPDATE USING (auth_user_id = auth.uid());
 
+DROP POLICY IF EXISTS push_subs_self_delete ON push_subscriptions;
 CREATE POLICY push_subs_self_delete ON push_subscriptions
   FOR DELETE USING (auth_user_id = auth.uid());
 
@@ -83,6 +87,7 @@ CREATE INDEX idx_sms_send_log_tenant_action ON sms_send_log(tenant_id, action, s
 ALTER TABLE sms_send_log ENABLE ROW LEVEL SECURITY;
 
 -- Service role only; never exposed to client sessions
+DROP POLICY IF EXISTS sms_send_log_service_only ON sms_send_log;
 CREATE POLICY sms_send_log_service_only ON sms_send_log
   FOR ALL USING (false);
 

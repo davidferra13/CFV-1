@@ -23,24 +23,28 @@ CREATE INDEX idx_quick_requests_client ON client_quick_requests(client_id);
 -- RLS
 ALTER TABLE client_quick_requests ENABLE ROW LEVEL SECURITY;
 -- Chefs can see all requests for their tenant
+DROP POLICY IF EXISTS "Chefs see own tenant requests" ON client_quick_requests;
 CREATE POLICY "Chefs see own tenant requests"
   ON client_quick_requests FOR SELECT
   USING (tenant_id = auth.uid() OR tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 -- Chefs can update requests (confirm, decline, convert)
+DROP POLICY IF EXISTS "Chefs update own tenant requests" ON client_quick_requests;
 CREATE POLICY "Chefs update own tenant requests"
   ON client_quick_requests FOR UPDATE
   USING (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 -- Clients can see their own requests
+DROP POLICY IF EXISTS "Clients see own requests" ON client_quick_requests;
 CREATE POLICY "Clients see own requests"
   ON client_quick_requests FOR SELECT
   USING (client_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client'
   ));
 -- Clients can create requests
+DROP POLICY IF EXISTS "Clients create own requests" ON client_quick_requests;
 CREATE POLICY "Clients create own requests"
   ON client_quick_requests FOR INSERT
   WITH CHECK (client_id IN (

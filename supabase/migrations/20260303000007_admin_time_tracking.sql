@@ -41,24 +41,28 @@ COMMENT ON COLUMN admin_time_logs.event_id IS 'Optional. If set, this admin time
 
 ALTER TABLE admin_time_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS atl_chef_select ON admin_time_logs;
 CREATE POLICY atl_chef_select ON admin_time_logs
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS atl_chef_insert ON admin_time_logs;
 CREATE POLICY atl_chef_insert ON admin_time_logs
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS atl_chef_update ON admin_time_logs;
 CREATE POLICY atl_chef_update ON admin_time_logs
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS atl_chef_delete ON admin_time_logs;
 CREATE POLICY atl_chef_delete ON admin_time_logs
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS chef_automation_settings (
 ALTER TABLE chef_automation_settings ENABLE ROW LEVEL SECURITY;
 
 -- Chefs read and write their own settings row
+DROP POLICY IF EXISTS "chef_automation_settings_chef_rw" ON chef_automation_settings;
 CREATE POLICY "chef_automation_settings_chef_rw"
   ON chef_automation_settings
   FOR ALL
@@ -68,6 +69,7 @@ CREATE POLICY "chef_automation_settings_chef_rw"
   );
 
 -- Service role (crons, webhooks) can read all settings
+DROP POLICY IF EXISTS "chef_automation_settings_service_all" ON chef_automation_settings;
 CREATE POLICY "chef_automation_settings_service_all"
   ON chef_automation_settings
   FOR ALL

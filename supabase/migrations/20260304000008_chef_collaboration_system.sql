@@ -130,6 +130,7 @@ CREATE INDEX idx_recipe_shares_pending
 ALTER TABLE event_collaborators ENABLE ROW LEVEL SECURITY;
 
 -- Event owner can fully manage all collaborators on their events
+DROP POLICY IF EXISTS "event_owner_manages_collaborators" ON event_collaborators;
 CREATE POLICY "event_owner_manages_collaborators"
   ON event_collaborators
   FOR ALL
@@ -141,6 +142,7 @@ CREATE POLICY "event_owner_manages_collaborators"
   );
 
 -- Collaborating chef can read and update their own row (accept/decline)
+DROP POLICY IF EXISTS "collaborator_manages_own_row" ON event_collaborators;
 CREATE POLICY "collaborator_manages_own_row"
   ON event_collaborators
   FOR ALL
@@ -151,6 +153,7 @@ CREATE POLICY "collaborator_manages_own_row"
 -- ─── RLS Policies — events (expand access to collaborators) ──
 
 -- Collaborating chefs can SELECT events they've accepted
+DROP POLICY IF EXISTS "collaborators_can_view_events" ON events;
 CREATE POLICY "collaborators_can_view_events"
   ON events
   FOR SELECT
@@ -167,6 +170,7 @@ CREATE POLICY "collaborators_can_view_events"
 ALTER TABLE recipe_shares ENABLE ROW LEVEL SECURITY;
 
 -- Sending chef can manage their outgoing shares
+DROP POLICY IF EXISTS "from_chef_manages_recipe_shares" ON recipe_shares;
 CREATE POLICY "from_chef_manages_recipe_shares"
   ON recipe_shares
   FOR ALL
@@ -175,6 +179,7 @@ CREATE POLICY "from_chef_manages_recipe_shares"
   );
 
 -- Receiving chef can read and update (accept/decline) their incoming shares
+DROP POLICY IF EXISTS "to_chef_manages_recipe_shares" ON recipe_shares;
 CREATE POLICY "to_chef_manages_recipe_shares"
   ON recipe_shares
   FOR ALL

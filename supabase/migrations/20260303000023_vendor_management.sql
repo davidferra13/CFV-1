@@ -85,27 +85,35 @@ ALTER TABLE vendors            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendor_price_points ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_chef_select ON vendors;
   CREATE POLICY vendor_chef_select ON vendors FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_chef_insert ON vendors;
   CREATE POLICY vendor_chef_insert ON vendors FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_chef_update ON vendors;
   CREATE POLICY vendor_chef_update ON vendors FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_chef_delete ON vendors;
   CREATE POLICY vendor_chef_delete ON vendors FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpp_chef_select ON vendor_price_points;
   CREATE POLICY vpp_chef_select ON vendor_price_points FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpp_chef_insert ON vendor_price_points;
   CREATE POLICY vpp_chef_insert ON vendor_price_points FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpp_chef_update ON vendor_price_points;
   CREATE POLICY vpp_chef_update ON vendor_price_points FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpp_chef_delete ON vendor_price_points;
   CREATE POLICY vpp_chef_delete ON vendor_price_points FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

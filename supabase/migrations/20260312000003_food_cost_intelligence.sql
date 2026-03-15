@@ -100,33 +100,49 @@ ALTER TABLE vendor_invoices       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendor_invoice_items  ENABLE ROW LEVEL SECURITY;
 
 -- inventory_counts
+DROP POLICY IF EXISTS ic_chef_select ON inventory_counts;
 CREATE POLICY ic_chef_select ON inventory_counts FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ic_chef_insert ON inventory_counts;
 CREATE POLICY ic_chef_insert ON inventory_counts FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ic_chef_update ON inventory_counts;
 CREATE POLICY ic_chef_update ON inventory_counts FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ic_chef_delete ON inventory_counts;
 CREATE POLICY ic_chef_delete ON inventory_counts FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- waste_logs
+DROP POLICY IF EXISTS wl_chef_select ON waste_logs;
 CREATE POLICY wl_chef_select ON waste_logs FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS wl_chef_insert ON waste_logs;
 CREATE POLICY wl_chef_insert ON waste_logs FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS wl_chef_update ON waste_logs;
 CREATE POLICY wl_chef_update ON waste_logs FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS wl_chef_delete ON waste_logs;
 CREATE POLICY wl_chef_delete ON waste_logs FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- vendor_invoices
+DROP POLICY IF EXISTS vi_chef_select ON vendor_invoices;
 CREATE POLICY vi_chef_select ON vendor_invoices FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS vi_chef_insert ON vendor_invoices;
 CREATE POLICY vi_chef_insert ON vendor_invoices FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS vi_chef_update ON vendor_invoices;
 CREATE POLICY vi_chef_update ON vendor_invoices FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS vi_chef_delete ON vendor_invoices;
 CREATE POLICY vi_chef_delete ON vendor_invoices FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- vendor_invoice_items (via parent join)
+DROP POLICY IF EXISTS vii_chef_select ON vendor_invoice_items;
 CREATE POLICY vii_chef_select ON vendor_invoice_items FOR SELECT USING (
   EXISTS (SELECT 1 FROM vendor_invoices vi WHERE vi.id = vendor_invoice_id AND vi.chef_id = get_current_tenant_id() AND get_current_user_role() = 'chef')
 );
+DROP POLICY IF EXISTS vii_chef_insert ON vendor_invoice_items;
 CREATE POLICY vii_chef_insert ON vendor_invoice_items FOR INSERT WITH CHECK (
   EXISTS (SELECT 1 FROM vendor_invoices vi WHERE vi.id = vendor_invoice_id AND vi.chef_id = get_current_tenant_id() AND get_current_user_role() = 'chef')
 );
+DROP POLICY IF EXISTS vii_chef_update ON vendor_invoice_items;
 CREATE POLICY vii_chef_update ON vendor_invoice_items FOR UPDATE USING (
   EXISTS (SELECT 1 FROM vendor_invoices vi WHERE vi.id = vendor_invoice_id AND vi.chef_id = get_current_tenant_id() AND get_current_user_role() = 'chef')
 );
+DROP POLICY IF EXISTS vii_chef_delete ON vendor_invoice_items;
 CREATE POLICY vii_chef_delete ON vendor_invoice_items FOR DELETE USING (
   EXISTS (SELECT 1 FROM vendor_invoices vi WHERE vi.id = vendor_invoice_id AND vi.chef_id = get_current_tenant_id() AND get_current_user_role() = 'chef')
 );

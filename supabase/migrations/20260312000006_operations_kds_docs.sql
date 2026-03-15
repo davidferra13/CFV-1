@@ -69,13 +69,21 @@ ALTER TABLE service_courses    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE document_comments  ENABLE ROW LEVEL SECURITY;
 
 -- service_courses
+DROP POLICY IF EXISTS sc_chef_select ON service_courses;
 CREATE POLICY sc_chef_select ON service_courses FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sc_chef_insert ON service_courses;
 CREATE POLICY sc_chef_insert ON service_courses FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sc_chef_update ON service_courses;
 CREATE POLICY sc_chef_update ON service_courses FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sc_chef_delete ON service_courses;
 CREATE POLICY sc_chef_delete ON service_courses FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- document_comments
+DROP POLICY IF EXISTS dc_chef_select ON document_comments;
 CREATE POLICY dc_chef_select ON document_comments FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS dc_chef_insert ON document_comments;
 CREATE POLICY dc_chef_insert ON document_comments FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS dc_chef_update ON document_comments;
 CREATE POLICY dc_chef_update ON document_comments FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS dc_chef_delete ON document_comments;
 CREATE POLICY dc_chef_delete ON document_comments FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

@@ -30,13 +30,18 @@ CREATE TRIGGER trg_favorite_chefs_updated_at
 
 ALTER TABLE favorite_chefs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS fc_chef_select ON favorite_chefs;
 CREATE POLICY fc_chef_select ON favorite_chefs FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS fc_public_select ON favorite_chefs;
 CREATE POLICY fc_public_select ON favorite_chefs FOR SELECT
   USING (true);
+DROP POLICY IF EXISTS fc_chef_insert ON favorite_chefs;
 CREATE POLICY fc_chef_insert ON favorite_chefs FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS fc_chef_update ON favorite_chefs;
 CREATE POLICY fc_chef_update ON favorite_chefs FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS fc_chef_delete ON favorite_chefs;
 CREATE POLICY fc_chef_delete ON favorite_chefs FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

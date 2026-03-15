@@ -18,6 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_client_tags_tag     ON client_tags(tenant_id, tag
 
 ALTER TABLE client_tags ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own client tags" ON client_tags;
 CREATE POLICY "Chefs manage own client tags"
   ON client_tags
   FOR ALL

@@ -48,6 +48,7 @@ BEGIN
       AND tablename = 'chef_profiles'
       AND policyname = 'chef_profiles_chef_select'
   ) THEN
+    DROP POLICY IF EXISTS chef_profiles_chef_select ON chef_profiles;
     CREATE POLICY chef_profiles_chef_select
       ON chef_profiles
       FOR SELECT
@@ -63,6 +64,7 @@ BEGIN
       AND tablename = 'chef_profiles'
       AND policyname = 'chef_profiles_chef_insert'
   ) THEN
+    DROP POLICY IF EXISTS chef_profiles_chef_insert ON chef_profiles;
     CREATE POLICY chef_profiles_chef_insert
       ON chef_profiles
       FOR INSERT
@@ -78,6 +80,7 @@ BEGIN
       AND tablename = 'chef_profiles'
       AND policyname = 'chef_profiles_chef_update'
   ) THEN
+    DROP POLICY IF EXISTS chef_profiles_chef_update ON chef_profiles;
     CREATE POLICY chef_profiles_chef_update
       ON chef_profiles
       FOR UPDATE
@@ -133,6 +136,7 @@ BEGIN
       AND tablename = 'tenant_settings'
       AND policyname = 'tenant_settings_chef_select'
   ) THEN
+    DROP POLICY IF EXISTS tenant_settings_chef_select ON tenant_settings;
     CREATE POLICY tenant_settings_chef_select
       ON tenant_settings
       FOR SELECT
@@ -148,6 +152,7 @@ BEGIN
       AND tablename = 'tenant_settings'
       AND policyname = 'tenant_settings_chef_insert'
   ) THEN
+    DROP POLICY IF EXISTS tenant_settings_chef_insert ON tenant_settings;
     CREATE POLICY tenant_settings_chef_insert
       ON tenant_settings
       FOR INSERT
@@ -163,6 +168,7 @@ BEGIN
       AND tablename = 'tenant_settings'
       AND policyname = 'tenant_settings_chef_update'
   ) THEN
+    DROP POLICY IF EXISTS tenant_settings_chef_update ON tenant_settings;
     CREATE POLICY tenant_settings_chef_update
       ON tenant_settings
       FOR UPDATE
@@ -250,6 +256,7 @@ BEGIN
       AND tablename = 'chef_team_members'
       AND policyname = 'chef_team_members_chef_all'
   ) THEN
+    DROP POLICY IF EXISTS chef_team_members_chef_all ON chef_team_members;
     CREATE POLICY chef_team_members_chef_all
       ON chef_team_members
       FOR ALL
@@ -309,6 +316,7 @@ BEGIN
       AND tablename = 'time_blocks'
       AND policyname = 'time_blocks_chef_all'
   ) THEN
+    DROP POLICY IF EXISTS time_blocks_chef_all ON time_blocks;
     CREATE POLICY time_blocks_chef_all
       ON time_blocks
       FOR ALL
@@ -410,6 +418,7 @@ BEGIN
       AND tablename = 'event_contract_versions'
       AND policyname = 'event_contract_versions_chef_all'
   ) THEN
+    DROP POLICY IF EXISTS event_contract_versions_chef_all ON event_contract_versions;
     CREATE POLICY event_contract_versions_chef_all
       ON event_contract_versions
       FOR ALL
@@ -429,6 +438,7 @@ BEGIN
       AND tablename = 'event_contract_versions'
       AND policyname = 'event_contract_versions_client_select'
   ) THEN
+    DROP POLICY IF EXISTS event_contract_versions_client_select ON event_contract_versions;
     CREATE POLICY event_contract_versions_client_select
       ON event_contract_versions
       FOR SELECT
@@ -449,6 +459,7 @@ BEGIN
       AND tablename = 'event_contract_signers'
       AND policyname = 'event_contract_signers_chef_all'
   ) THEN
+    DROP POLICY IF EXISTS event_contract_signers_chef_all ON event_contract_signers;
     CREATE POLICY event_contract_signers_chef_all
       ON event_contract_signers
       FOR ALL
@@ -468,6 +479,7 @@ BEGIN
       AND tablename = 'event_contract_signers'
       AND policyname = 'event_contract_signers_client_select'
   ) THEN
+    DROP POLICY IF EXISTS event_contract_signers_client_select ON event_contract_signers;
     CREATE POLICY event_contract_signers_client_select
       ON event_contract_signers
       FOR SELECT
@@ -488,6 +500,7 @@ BEGIN
       AND tablename = 'event_contract_signers'
       AND policyname = 'event_contract_signers_client_update'
   ) THEN
+    DROP POLICY IF EXISTS event_contract_signers_client_update ON event_contract_signers;
     CREATE POLICY event_contract_signers_client_update
       ON event_contract_signers
       FOR UPDATE

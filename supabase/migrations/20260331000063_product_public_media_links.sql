@@ -69,14 +69,14 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_product_public_media_links_updated_at
   ON public.product_public_media_links;
-DROP TRIGGER IF EXISTS trg_product_public_media_links_updated_at ON public;
+DROP TRIGGER IF EXISTS trg_product_public_media_links_updated_at ON product_public_media_links;
 CREATE TRIGGER trg_product_public_media_links_updated_at
   BEFORE UPDATE ON public.product_public_media_links
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 DROP TRIGGER IF EXISTS trg_product_public_media_links_integrity
   ON public.product_public_media_links;
-DROP TRIGGER IF EXISTS trg_product_public_media_links_integrity ON public;
+DROP TRIGGER IF EXISTS trg_product_public_media_links_integrity ON product_public_media_links;
 CREATE TRIGGER trg_product_public_media_links_integrity
   BEFORE INSERT OR UPDATE ON public.product_public_media_links
   FOR EACH ROW

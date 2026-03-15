@@ -82,6 +82,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS event_documents_chef_upload ON storage.objects;
   CREATE POLICY event_documents_chef_upload
     ON storage.objects FOR INSERT
     TO authenticated
@@ -102,6 +103,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS event_documents_chef_read ON storage.objects;
   CREATE POLICY event_documents_chef_read
     ON storage.objects FOR SELECT
     TO authenticated
@@ -122,6 +124,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS event_documents_chef_delete ON storage.objects;
   CREATE POLICY event_documents_chef_delete
     ON storage.objects FOR DELETE
     TO authenticated

@@ -88,12 +88,14 @@ CREATE TRIGGER social_media_assets_updated_at
 ALTER TABLE social_media_assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE social_post_assets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS social_media_assets_select_own ON social_media_assets;
 CREATE POLICY social_media_assets_select_own ON social_media_assets
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_media_assets_insert_own ON social_media_assets;
 CREATE POLICY social_media_assets_insert_own ON social_media_assets
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -101,6 +103,7 @@ CREATE POLICY social_media_assets_insert_own ON social_media_assets
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS social_media_assets_update_own ON social_media_assets;
 CREATE POLICY social_media_assets_update_own ON social_media_assets
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -111,18 +114,21 @@ CREATE POLICY social_media_assets_update_own ON social_media_assets
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_media_assets_delete_own ON social_media_assets;
 CREATE POLICY social_media_assets_delete_own ON social_media_assets
   FOR DELETE USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_post_assets_select_own ON social_post_assets;
 CREATE POLICY social_post_assets_select_own ON social_post_assets
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_post_assets_insert_own ON social_post_assets;
 CREATE POLICY social_post_assets_insert_own ON social_post_assets
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -130,6 +136,7 @@ CREATE POLICY social_post_assets_insert_own ON social_post_assets
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS social_post_assets_update_own ON social_post_assets;
 CREATE POLICY social_post_assets_update_own ON social_post_assets
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -140,6 +147,7 @@ CREATE POLICY social_post_assets_update_own ON social_post_assets
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS social_post_assets_delete_own ON social_post_assets;
 CREATE POLICY social_post_assets_delete_own ON social_post_assets
   FOR DELETE USING (
     get_current_user_role() = 'chef'

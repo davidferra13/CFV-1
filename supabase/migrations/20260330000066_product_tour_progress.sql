@@ -37,6 +37,7 @@ COMMENT ON COLUMN product_tour_progress.completed_steps IS
 -- RLS
 ALTER TABLE product_tour_progress ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS tour_progress_own ON product_tour_progress;
 CREATE POLICY tour_progress_own ON product_tour_progress
   FOR ALL USING (auth_user_id = auth.uid());
 

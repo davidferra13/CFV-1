@@ -82,36 +82,48 @@ CREATE TRIGGER trg_event_sales_tax_updated_at
 -- RLS: sales_tax_settings
 ALTER TABLE sales_tax_settings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS sts_chef_select ON sales_tax_settings;
 CREATE POLICY sts_chef_select ON sales_tax_settings FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sts_chef_insert ON sales_tax_settings;
 CREATE POLICY sts_chef_insert ON sales_tax_settings FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sts_chef_update ON sales_tax_settings;
 CREATE POLICY sts_chef_update ON sales_tax_settings FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sts_chef_delete ON sales_tax_settings;
 CREATE POLICY sts_chef_delete ON sales_tax_settings FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- RLS: event_sales_tax
 ALTER TABLE event_sales_tax ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS est_chef_select ON event_sales_tax;
 CREATE POLICY est_chef_select ON event_sales_tax FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS est_chef_insert ON event_sales_tax;
 CREATE POLICY est_chef_insert ON event_sales_tax FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS est_chef_update ON event_sales_tax;
 CREATE POLICY est_chef_update ON event_sales_tax FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS est_chef_delete ON event_sales_tax;
 CREATE POLICY est_chef_delete ON event_sales_tax FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- RLS: sales_tax_remittances
 ALTER TABLE sales_tax_remittances ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS str_chef_select ON sales_tax_remittances;
 CREATE POLICY str_chef_select ON sales_tax_remittances FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS str_chef_insert ON sales_tax_remittances;
 CREATE POLICY str_chef_insert ON sales_tax_remittances FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS str_chef_update ON sales_tax_remittances;
 CREATE POLICY str_chef_update ON sales_tax_remittances FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS str_chef_delete ON sales_tax_remittances;
 CREATE POLICY str_chef_delete ON sales_tax_remittances FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 

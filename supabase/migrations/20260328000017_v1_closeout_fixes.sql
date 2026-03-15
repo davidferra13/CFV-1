@@ -26,6 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_quote_selected_addons_tenant ON quote_selected_ad
 -- RLS: chef can manage their own quote addons
 ALTER TABLE quote_selected_addons ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage their own quote addons" ON quote_selected_addons;
 CREATE POLICY "Chefs manage their own quote addons"
   ON quote_selected_addons FOR ALL
   USING (

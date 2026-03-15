@@ -201,12 +201,14 @@ ALTER TABLE chef_journeys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chef_journey_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chef_journey_ideas ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_journeys_select_own ON chef_journeys;
 CREATE POLICY chef_journeys_select_own ON chef_journeys
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journeys_insert_own ON chef_journeys;
 CREATE POLICY chef_journeys_insert_own ON chef_journeys
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -214,6 +216,7 @@ CREATE POLICY chef_journeys_insert_own ON chef_journeys
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS chef_journeys_update_own ON chef_journeys;
 CREATE POLICY chef_journeys_update_own ON chef_journeys
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -224,18 +227,21 @@ CREATE POLICY chef_journeys_update_own ON chef_journeys
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journeys_delete_own ON chef_journeys;
 CREATE POLICY chef_journeys_delete_own ON chef_journeys
   FOR DELETE USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journey_entries_select_own ON chef_journey_entries;
 CREATE POLICY chef_journey_entries_select_own ON chef_journey_entries
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journey_entries_insert_own ON chef_journey_entries;
 CREATE POLICY chef_journey_entries_insert_own ON chef_journey_entries
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -243,6 +249,7 @@ CREATE POLICY chef_journey_entries_insert_own ON chef_journey_entries
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS chef_journey_entries_update_own ON chef_journey_entries;
 CREATE POLICY chef_journey_entries_update_own ON chef_journey_entries
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -253,18 +260,21 @@ CREATE POLICY chef_journey_entries_update_own ON chef_journey_entries
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journey_entries_delete_own ON chef_journey_entries;
 CREATE POLICY chef_journey_entries_delete_own ON chef_journey_entries
   FOR DELETE USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journey_ideas_select_own ON chef_journey_ideas;
 CREATE POLICY chef_journey_ideas_select_own ON chef_journey_ideas
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journey_ideas_insert_own ON chef_journey_ideas;
 CREATE POLICY chef_journey_ideas_insert_own ON chef_journey_ideas
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -272,6 +282,7 @@ CREATE POLICY chef_journey_ideas_insert_own ON chef_journey_ideas
     AND created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS chef_journey_ideas_update_own ON chef_journey_ideas;
 CREATE POLICY chef_journey_ideas_update_own ON chef_journey_ideas
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -282,6 +293,7 @@ CREATE POLICY chef_journey_ideas_update_own ON chef_journey_ideas
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_journey_ideas_delete_own ON chef_journey_ideas;
 CREATE POLICY chef_journey_ideas_delete_own ON chef_journey_ideas
   FOR DELETE USING (
     get_current_user_role() = 'chef'

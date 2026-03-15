@@ -31,9 +31,13 @@ CREATE TRIGGER trg_inventory_lots_updated_at
   BEFORE UPDATE ON inventory_lots
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ALTER TABLE inventory_lots ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS il_select ON inventory_lots;
 CREATE POLICY il_select ON inventory_lots FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS il_insert ON inventory_lots;
 CREATE POLICY il_insert ON inventory_lots FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS il_update ON inventory_lots;
 CREATE POLICY il_update ON inventory_lots FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS il_delete ON inventory_lots;
 CREATE POLICY il_delete ON inventory_lots FOR DELETE USING (tenant_id = get_current_tenant_id());
 COMMENT ON TABLE inventory_lots IS 'Tracks individual ingredient lots for FIFO rotation and shelf-life management.';
 -- Default shelf life settings per ingredient
@@ -47,9 +51,13 @@ CREATE TABLE ingredient_shelf_life_defaults (
   UNIQUE (tenant_id, ingredient_name)
 );
 ALTER TABLE ingredient_shelf_life_defaults ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS isld_select ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_select ON ingredient_shelf_life_defaults FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS isld_insert ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_insert ON ingredient_shelf_life_defaults FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS isld_update ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_update ON ingredient_shelf_life_defaults FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS isld_delete ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_delete ON ingredient_shelf_life_defaults FOR DELETE USING (tenant_id = get_current_tenant_id());
 COMMENT ON TABLE ingredient_shelf_life_defaults IS 'Default shelf life settings per ingredient for automatic expiry calculation.';
 -- ============================================
@@ -74,9 +82,13 @@ CREATE TRIGGER trg_business_locations_updated_at
   BEFORE UPDATE ON business_locations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ALTER TABLE business_locations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS bl_select ON business_locations;
 CREATE POLICY bl_select ON business_locations FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bl_insert ON business_locations;
 CREATE POLICY bl_insert ON business_locations FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bl_update ON business_locations;
 CREATE POLICY bl_update ON business_locations FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bl_delete ON business_locations;
 CREATE POLICY bl_delete ON business_locations FOR DELETE USING (tenant_id = get_current_tenant_id());
 COMMENT ON TABLE business_locations IS 'Physical business locations for multi-location operations.';
 -- ============================================

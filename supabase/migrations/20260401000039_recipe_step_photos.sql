@@ -11,5 +11,6 @@ create table if not exists recipe_step_photos (
   updated_at timestamptz not null default now()
 );
 alter table recipe_step_photos enable row level security;
+DROP POLICY IF EXISTS "chef_own_recipe_step_photos" ON recipe_step_photos;
 create policy "chef_own_recipe_step_photos" on recipe_step_photos for all using (chef_id = auth.uid());
-create index idx_recipe_step_photos_recipe on recipe_step_photos(recipe_id, step_number);
+CREATE INDEX IF NOT EXISTS idx_recipe_step_photos_recipe on recipe_step_photos(recipe_id, step_number);

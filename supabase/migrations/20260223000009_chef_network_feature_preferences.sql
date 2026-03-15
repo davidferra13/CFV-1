@@ -54,24 +54,28 @@ CREATE TRIGGER chef_network_feature_preferences_updated_at
 
 ALTER TABLE chef_network_feature_preferences ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_network_feature_preferences_select_own ON chef_network_feature_preferences;
 CREATE POLICY chef_network_feature_preferences_select_own ON chef_network_feature_preferences
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_network_feature_preferences_insert_own ON chef_network_feature_preferences;
 CREATE POLICY chef_network_feature_preferences_insert_own ON chef_network_feature_preferences
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_network_feature_preferences_update_own ON chef_network_feature_preferences;
 CREATE POLICY chef_network_feature_preferences_update_own ON chef_network_feature_preferences
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS chef_network_feature_preferences_delete_own ON chef_network_feature_preferences;
 CREATE POLICY chef_network_feature_preferences_delete_own ON chef_network_feature_preferences
   FOR DELETE USING (
     get_current_user_role() = 'chef'

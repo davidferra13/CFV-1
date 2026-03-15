@@ -203,36 +203,49 @@ ALTER TABLE prospect_notes          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prospect_call_scripts   ENABLE ROW LEVEL SECURITY;
 
 -- prospect_scrub_sessions
+DROP POLICY IF EXISTS pss_chef_select ON prospect_scrub_sessions;
 CREATE POLICY pss_chef_select ON prospect_scrub_sessions FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pss_chef_insert ON prospect_scrub_sessions;
 CREATE POLICY pss_chef_insert ON prospect_scrub_sessions FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pss_chef_update ON prospect_scrub_sessions;
 CREATE POLICY pss_chef_update ON prospect_scrub_sessions FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- prospects
+DROP POLICY IF EXISTS p_chef_select ON prospects;
 CREATE POLICY p_chef_select ON prospects FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS p_chef_insert ON prospects;
 CREATE POLICY p_chef_insert ON prospects FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS p_chef_update ON prospects;
 CREATE POLICY p_chef_update ON prospects FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS p_chef_delete ON prospects;
 CREATE POLICY p_chef_delete ON prospects FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- prospect_notes
+DROP POLICY IF EXISTS pn_chef_select ON prospect_notes;
 CREATE POLICY pn_chef_select ON prospect_notes FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pn_chef_insert ON prospect_notes;
 CREATE POLICY pn_chef_insert ON prospect_notes FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- prospect_call_scripts
+DROP POLICY IF EXISTS pcs_chef_select ON prospect_call_scripts;
 CREATE POLICY pcs_chef_select ON prospect_call_scripts FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pcs_chef_insert ON prospect_call_scripts;
 CREATE POLICY pcs_chef_insert ON prospect_call_scripts FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pcs_chef_update ON prospect_call_scripts;
 CREATE POLICY pcs_chef_update ON prospect_call_scripts FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pcs_chef_delete ON prospect_call_scripts;
 CREATE POLICY pcs_chef_delete ON prospect_call_scripts FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 

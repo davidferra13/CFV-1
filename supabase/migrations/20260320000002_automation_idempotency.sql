@@ -105,9 +105,11 @@ CREATE INDEX IF NOT EXISTS idx_automation_exec_log_tenant
 -- RLS
 ALTER TABLE automation_execution_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "service_role_manage_exec_log" ON automation_execution_log;
 CREATE POLICY "service_role_manage_exec_log" ON automation_execution_log
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "chefs_read_own_exec_log" ON automation_execution_log;
 CREATE POLICY "chefs_read_own_exec_log" ON automation_execution_log
   FOR SELECT USING (
     tenant_id = (

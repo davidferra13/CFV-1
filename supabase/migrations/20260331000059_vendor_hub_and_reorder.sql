@@ -33,6 +33,7 @@ COMMENT ON TABLE vendor_preferred_ingredients IS 'Maps each ingredient to its pr
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_vpi_updated_at') THEN
+    DROP TRIGGER IF EXISTS trg_vpi_updated_at ON vendor_preferred_ingredients;
     CREATE TRIGGER trg_vpi_updated_at BEFORE UPDATE ON vendor_preferred_ingredients
       FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
   END IF;
@@ -41,21 +42,25 @@ END $$;
 ALTER TABLE vendor_preferred_ingredients ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_select ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_select ON vendor_preferred_ingredients
     FOR SELECT USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_insert ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_insert ON vendor_preferred_ingredients
     FOR INSERT WITH CHECK (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_update ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_update ON vendor_preferred_ingredients
     FOR UPDATE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_delete ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_delete ON vendor_preferred_ingredients
     FOR DELETE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -85,6 +90,7 @@ COMMENT ON TABLE reorder_settings IS 'Per-ingredient reorder configuration: par 
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_reorder_settings_updated_at') THEN
+    DROP TRIGGER IF EXISTS trg_reorder_settings_updated_at ON reorder_settings;
     CREATE TRIGGER trg_reorder_settings_updated_at BEFORE UPDATE ON reorder_settings
       FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
   END IF;
@@ -93,21 +99,25 @@ END $$;
 ALTER TABLE reorder_settings ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_select ON reorder_settings;
   CREATE POLICY rs_chef_select ON reorder_settings
     FOR SELECT USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_insert ON reorder_settings;
   CREATE POLICY rs_chef_insert ON reorder_settings
     FOR INSERT WITH CHECK (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_update ON reorder_settings;
   CREATE POLICY rs_chef_update ON reorder_settings
     FOR UPDATE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_delete ON reorder_settings;
   CREATE POLICY rs_chef_delete ON reorder_settings
     FOR DELETE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

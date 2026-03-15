@@ -66,6 +66,7 @@ CREATE UNIQUE INDEX idx_remy_memories_dedup
 -- RLS
 ALTER TABLE remy_memories ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_memories_select ON remy_memories;
 CREATE POLICY remy_memories_select ON remy_memories
   FOR SELECT USING (
     tenant_id IN (
@@ -74,6 +75,7 @@ CREATE POLICY remy_memories_select ON remy_memories
     )
   );
 
+DROP POLICY IF EXISTS remy_memories_insert ON remy_memories;
 CREATE POLICY remy_memories_insert ON remy_memories
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -82,6 +84,7 @@ CREATE POLICY remy_memories_insert ON remy_memories
     )
   );
 
+DROP POLICY IF EXISTS remy_memories_update ON remy_memories;
 CREATE POLICY remy_memories_update ON remy_memories
   FOR UPDATE USING (
     tenant_id IN (

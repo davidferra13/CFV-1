@@ -19,6 +19,7 @@ CREATE INDEX chef_todos_chef_order_idx ON chef_todos (chef_id, completed, sort_o
 
 ALTER TABLE chef_todos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_todos_select" ON chef_todos;
 CREATE POLICY "chef_todos_select" ON chef_todos
   FOR SELECT USING (
     chef_id IN (
@@ -27,6 +28,7 @@ CREATE POLICY "chef_todos_select" ON chef_todos
     )
   );
 
+DROP POLICY IF EXISTS "chef_todos_insert" ON chef_todos;
 CREATE POLICY "chef_todos_insert" ON chef_todos
   FOR INSERT WITH CHECK (
     chef_id IN (
@@ -35,6 +37,7 @@ CREATE POLICY "chef_todos_insert" ON chef_todos
     )
   );
 
+DROP POLICY IF EXISTS "chef_todos_update" ON chef_todos;
 CREATE POLICY "chef_todos_update" ON chef_todos
   FOR UPDATE USING (
     chef_id IN (
@@ -43,6 +46,7 @@ CREATE POLICY "chef_todos_update" ON chef_todos
     )
   );
 
+DROP POLICY IF EXISTS "chef_todos_delete" ON chef_todos;
 CREATE POLICY "chef_todos_delete" ON chef_todos
   FOR DELETE USING (
     chef_id IN (

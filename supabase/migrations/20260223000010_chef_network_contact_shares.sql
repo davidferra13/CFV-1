@@ -46,6 +46,7 @@ CREATE INDEX idx_chef_network_contact_shares_status
 
 ALTER TABLE chef_network_contact_shares ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_network_contact_shares_select_participants ON chef_network_contact_shares;
 CREATE POLICY chef_network_contact_shares_select_participants ON chef_network_contact_shares
   FOR SELECT USING (
     get_current_user_role() = 'chef'
@@ -55,6 +56,7 @@ CREATE POLICY chef_network_contact_shares_select_participants ON chef_network_co
     )
   );
 
+DROP POLICY IF EXISTS chef_network_contact_shares_insert_sender_connected ON chef_network_contact_shares;
 CREATE POLICY chef_network_contact_shares_insert_sender_connected ON chef_network_contact_shares
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
@@ -62,6 +64,7 @@ CREATE POLICY chef_network_contact_shares_insert_sender_connected ON chef_networ
     AND are_chefs_connected(sender_chef_id, recipient_chef_id)
   );
 
+DROP POLICY IF EXISTS chef_network_contact_shares_update_participants ON chef_network_contact_shares;
 CREATE POLICY chef_network_contact_shares_update_participants ON chef_network_contact_shares
   FOR UPDATE USING (
     get_current_user_role() = 'chef'

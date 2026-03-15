@@ -24,15 +24,19 @@ CREATE INDEX idx_meal_prep_batch_log_recipe
   WHERE recipe_id IS NOT NULL;
 -- RLS
 ALTER TABLE meal_prep_batch_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef sees own batch logs" ON meal_prep_batch_log;
 CREATE POLICY "Chef sees own batch logs"
   ON meal_prep_batch_log FOR SELECT
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef inserts own batch logs" ON meal_prep_batch_log;
 CREATE POLICY "Chef inserts own batch logs"
   ON meal_prep_batch_log FOR INSERT
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef updates own batch logs" ON meal_prep_batch_log;
 CREATE POLICY "Chef updates own batch logs"
   ON meal_prep_batch_log FOR UPDATE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef deletes own batch logs" ON meal_prep_batch_log;
 CREATE POLICY "Chef deletes own batch logs"
   ON meal_prep_batch_log FOR DELETE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

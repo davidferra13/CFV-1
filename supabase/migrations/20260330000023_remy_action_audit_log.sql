@@ -30,6 +30,7 @@ CREATE INDEX idx_remy_action_audit_log_tenant_task_type
 
 ALTER TABLE remy_action_audit_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_action_audit_log_select ON remy_action_audit_log;
 CREATE POLICY remy_action_audit_log_select
   ON remy_action_audit_log FOR SELECT
   USING (
@@ -40,6 +41,7 @@ CREATE POLICY remy_action_audit_log_select
     )
   );
 
+DROP POLICY IF EXISTS remy_action_audit_log_insert ON remy_action_audit_log;
 CREATE POLICY remy_action_audit_log_insert
   ON remy_action_audit_log FOR INSERT
   WITH CHECK (
@@ -50,6 +52,7 @@ CREATE POLICY remy_action_audit_log_insert
     )
   );
 
+DROP POLICY IF EXISTS remy_action_audit_log_update ON remy_action_audit_log;
 CREATE POLICY remy_action_audit_log_update
   ON remy_action_audit_log FOR UPDATE
   USING (

@@ -85,12 +85,20 @@ COMMENT ON COLUMN served_dish_history.client_reaction IS 'Chef-assessed reaction
 ALTER TABLE recurring_services  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE served_dish_history ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS rs_chef_select ON recurring_services;
 CREATE POLICY rs_chef_select ON recurring_services FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rs_chef_insert ON recurring_services;
 CREATE POLICY rs_chef_insert ON recurring_services FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rs_chef_update ON recurring_services;
 CREATE POLICY rs_chef_update ON recurring_services FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rs_chef_delete ON recurring_services;
 CREATE POLICY rs_chef_delete ON recurring_services FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS sdh_chef_select ON served_dish_history;
 CREATE POLICY sdh_chef_select ON served_dish_history FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sdh_chef_insert ON served_dish_history;
 CREATE POLICY sdh_chef_insert ON served_dish_history FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sdh_chef_update ON served_dish_history;
 CREATE POLICY sdh_chef_update ON served_dish_history FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sdh_chef_delete ON served_dish_history;
 CREATE POLICY sdh_chef_delete ON served_dish_history FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

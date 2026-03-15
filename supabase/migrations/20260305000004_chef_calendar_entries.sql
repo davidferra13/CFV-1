@@ -118,6 +118,7 @@ CREATE TRIGGER set_updated_at_chef_calendar_entries
 ALTER TABLE chef_calendar_entries ENABLE ROW LEVEL SECURITY;
 
 -- Chefs fully manage their own entries
+DROP POLICY IF EXISTS "chef owns calendar entries" ON chef_calendar_entries;
 CREATE POLICY "chef owns calendar entries"
   ON chef_calendar_entries
   FOR ALL
@@ -125,6 +126,7 @@ CREATE POLICY "chef owns calendar entries"
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- Public can read entries marked is_public = true (for public chef profile)
+DROP POLICY IF EXISTS "public can view public calendar signals" ON chef_calendar_entries;
 CREATE POLICY "public can view public calendar signals"
   ON chef_calendar_entries
   FOR SELECT

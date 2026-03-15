@@ -63,9 +63,11 @@ CREATE INDEX IF NOT EXISTS idx_deletion_audit_chef
 ALTER TABLE account_deletion_audit ENABLE ROW LEVEL SECURITY;
 
 -- Service-role-only access (admin client)
+DROP POLICY IF EXISTS deletion_audit_service_insert ON account_deletion_audit;
 CREATE POLICY deletion_audit_service_insert ON account_deletion_audit
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS deletion_audit_service_select ON account_deletion_audit;
 CREATE POLICY deletion_audit_service_select ON account_deletion_audit
   FOR SELECT USING (true);
 

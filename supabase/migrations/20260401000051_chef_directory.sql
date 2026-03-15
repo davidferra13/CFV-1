@@ -25,19 +25,21 @@ create table if not exists chef_directory_listings (
 
 alter table chef_directory_listings enable row level security;
 
+DROP POLICY IF EXISTS "chef_own_listing" ON chef_directory_listings;
 create policy "chef_own_listing" on chef_directory_listings
   for all using (chef_id = auth.uid());
 
+DROP POLICY IF EXISTS "public_read_published" ON chef_directory_listings;
 create policy "public_read_published" on chef_directory_listings
   for select using (is_published = true);
 
-create unique index idx_directory_chef
+CREATE UNIQUE INDEX IF NOT EXISTS idx_directory_chef
   on chef_directory_listings(chef_id);
 
-create index idx_directory_location
+CREATE INDEX IF NOT EXISTS idx_directory_location
   on chef_directory_listings(state, city)
   where is_published = true;
 
-create index idx_directory_cuisines
+CREATE INDEX IF NOT EXISTS idx_directory_cuisines
   on chef_directory_listings using gin(cuisines)
   where is_published = true;

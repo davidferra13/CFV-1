@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS event_equipment_checklist (
 );
 -- RLS
 ALTER TABLE event_equipment_checklist ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef owns equipment checklist" ON event_equipment_checklist;
 CREATE POLICY "Chef owns equipment checklist"
   ON event_equipment_checklist
   FOR ALL
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS event_station_assignments (
 );
 -- RLS
 ALTER TABLE event_station_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef owns station assignments" ON event_station_assignments;
 CREATE POLICY "Chef owns station assignments"
   ON event_station_assignments
   FOR ALL

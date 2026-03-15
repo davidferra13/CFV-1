@@ -28,11 +28,13 @@ CREATE INDEX IF NOT EXISTS idx_dlq_last_failed ON dead_letter_queue(last_failed_
 
 ALTER TABLE dead_letter_queue ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chefs_read_own_dlq" ON dead_letter_queue;
 CREATE POLICY "chefs_read_own_dlq" ON dead_letter_queue
   FOR SELECT USING (
     tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "service_role_manage_dlq" ON dead_letter_queue;
 CREATE POLICY "service_role_manage_dlq" ON dead_letter_queue
   FOR ALL USING (auth.role() = 'service_role');
 
@@ -56,9 +58,11 @@ CREATE INDEX IF NOT EXISTS idx_job_retry_log_next_retry ON job_retry_log(next_re
 
 ALTER TABLE job_retry_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "service_role_manage_retry_log" ON job_retry_log;
 CREATE POLICY "service_role_manage_retry_log" ON job_retry_log
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "chefs_read_own_retry_log" ON job_retry_log;
 CREATE POLICY "chefs_read_own_retry_log" ON job_retry_log
   FOR SELECT USING (
     tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid())

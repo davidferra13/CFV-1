@@ -58,6 +58,7 @@ CREATE INDEX IF NOT EXISTS idx_event_surveys_token     ON event_surveys(token);
 ALTER TABLE event_surveys ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS event_surveys_chef_read ON event_surveys;
   CREATE POLICY event_surveys_chef_read ON event_surveys
     FOR SELECT TO authenticated
     USING (
@@ -109,7 +110,8 @@ SET
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 DO $$ BEGIN
-  CREATE POLICY "dish_photos_chef_upload"
+  DROP POLICY IF EXISTS "dish_photos_chef_upload" ON storage.objects;
+CREATE POLICY "dish_photos_chef_upload"
   ON storage.objects FOR INSERT
   TO authenticated
   WITH CHECK (
@@ -121,7 +123,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "dish_photos_chef_update"
+  DROP POLICY IF EXISTS "dish_photos_chef_update" ON storage.objects;
+CREATE POLICY "dish_photos_chef_update"
   ON storage.objects FOR UPDATE
   TO authenticated
   USING (
@@ -133,7 +136,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "dish_photos_chef_delete"
+  DROP POLICY IF EXISTS "dish_photos_chef_delete" ON storage.objects;
+CREATE POLICY "dish_photos_chef_delete"
   ON storage.objects FOR DELETE
   TO authenticated
   USING (
@@ -145,7 +149,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "dish_photos_public_read"
+  DROP POLICY IF EXISTS "dish_photos_public_read" ON storage.objects;
+CREATE POLICY "dish_photos_public_read"
   ON storage.objects FOR SELECT
   TO public
   USING (bucket_id = 'dish-photos');

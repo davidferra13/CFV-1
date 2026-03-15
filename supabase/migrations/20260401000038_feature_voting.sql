@@ -41,12 +41,14 @@ alter table feature_requests enable row level security;
 alter table feature_votes enable row level security;
 
 -- feature_requests: readable by all authenticated users
+DROP POLICY IF EXISTS "feature_requests_select" ON feature_requests;
 create policy "feature_requests_select"
   on feature_requests for select
   to authenticated
   using (true);
 
 -- feature_requests: insertable by all authenticated users (submit requests)
+DROP POLICY IF EXISTS "feature_requests_insert" ON feature_requests;
 create policy "feature_requests_insert"
   on feature_requests for insert
   to authenticated
@@ -56,6 +58,7 @@ create policy "feature_requests_insert"
 -- Admin updates go through createServerClient({ admin: true }) so no RLS policy needed for update.
 
 -- feature_votes: insertable by the voting chef
+DROP POLICY IF EXISTS "feature_votes_insert" ON feature_votes;
 create policy "feature_votes_insert"
   on feature_votes for insert
   to authenticated
@@ -66,6 +69,7 @@ create policy "feature_votes_insert"
   ));
 
 -- feature_votes: deletable by the voting chef
+DROP POLICY IF EXISTS "feature_votes_delete" ON feature_votes;
 create policy "feature_votes_delete"
   on feature_votes for delete
   to authenticated
@@ -76,6 +80,7 @@ create policy "feature_votes_delete"
   ));
 
 -- feature_votes: readable by all authenticated users (to show vote counts)
+DROP POLICY IF EXISTS "feature_votes_select" ON feature_votes;
 create policy "feature_votes_select"
   on feature_votes for select
   to authenticated
@@ -90,6 +95,7 @@ begin
 end;
 $$ language plpgsql;
 
+DROP TRIGGER IF EXISTS trg_feature_requests_updated_at ON feature_requests;
 create trigger trg_feature_requests_updated_at
   before update on feature_requests
   for each row

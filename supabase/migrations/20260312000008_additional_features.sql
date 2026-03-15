@@ -69,19 +69,31 @@ ALTER TABLE dietary_conflict_alerts   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_preference_patterns ENABLE ROW LEVEL SECURITY;
 
 -- chef_daily_briefings
+DROP POLICY IF EXISTS cdb_chef_select ON chef_daily_briefings;
 CREATE POLICY cdb_chef_select ON chef_daily_briefings FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cdb_chef_insert ON chef_daily_briefings;
 CREATE POLICY cdb_chef_insert ON chef_daily_briefings FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cdb_chef_update ON chef_daily_briefings;
 CREATE POLICY cdb_chef_update ON chef_daily_briefings FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cdb_chef_delete ON chef_daily_briefings;
 CREATE POLICY cdb_chef_delete ON chef_daily_briefings FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- dietary_conflict_alerts
+DROP POLICY IF EXISTS dca_chef_select ON dietary_conflict_alerts;
 CREATE POLICY dca_chef_select ON dietary_conflict_alerts FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS dca_chef_insert ON dietary_conflict_alerts;
 CREATE POLICY dca_chef_insert ON dietary_conflict_alerts FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS dca_chef_update ON dietary_conflict_alerts;
 CREATE POLICY dca_chef_update ON dietary_conflict_alerts FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS dca_chef_delete ON dietary_conflict_alerts;
 CREATE POLICY dca_chef_delete ON dietary_conflict_alerts FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- client_preference_patterns
+DROP POLICY IF EXISTS cpp_chef_select ON client_preference_patterns;
 CREATE POLICY cpp_chef_select ON client_preference_patterns FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cpp_chef_insert ON client_preference_patterns;
 CREATE POLICY cpp_chef_insert ON client_preference_patterns FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cpp_chef_update ON client_preference_patterns;
 CREATE POLICY cpp_chef_update ON client_preference_patterns FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cpp_chef_delete ON client_preference_patterns;
 CREATE POLICY cpp_chef_delete ON client_preference_patterns FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

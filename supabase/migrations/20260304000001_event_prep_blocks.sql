@@ -104,24 +104,28 @@ CREATE TRIGGER trg_prep_blocks_updated_at
 
 ALTER TABLE event_prep_blocks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS epb_chef_select ON event_prep_blocks;
 CREATE POLICY epb_chef_select ON event_prep_blocks
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS epb_chef_insert ON event_prep_blocks;
 CREATE POLICY epb_chef_insert ON event_prep_blocks
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS epb_chef_update ON event_prep_blocks;
 CREATE POLICY epb_chef_update ON event_prep_blocks
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
     AND chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS epb_chef_delete ON event_prep_blocks;
 CREATE POLICY epb_chef_delete ON event_prep_blocks
   FOR DELETE USING (
     get_current_user_role() = 'chef'

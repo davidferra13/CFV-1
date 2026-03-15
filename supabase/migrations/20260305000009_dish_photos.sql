@@ -51,6 +51,7 @@ SET
 -- ────────────────────────────────────────────────────────────────────────────────
 
 -- Chefs: upload objects to their tenant prefix
+DROP POLICY IF EXISTS "dish_photos_chef_upload" ON storage.objects;
 CREATE POLICY "dish_photos_chef_upload"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -61,6 +62,7 @@ WITH CHECK (
 );
 
 -- Chefs: replace objects in their tenant prefix (upsert path)
+DROP POLICY IF EXISTS "dish_photos_chef_update" ON storage.objects;
 CREATE POLICY "dish_photos_chef_update"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -71,6 +73,7 @@ USING (
 );
 
 -- Chefs: delete objects in their tenant prefix
+DROP POLICY IF EXISTS "dish_photos_chef_delete" ON storage.objects;
 CREATE POLICY "dish_photos_chef_delete"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -82,6 +85,7 @@ USING (
 
 -- Everyone (including unauthenticated): read all dish photos
 -- Public bucket = portfolio images safe to share publicly
+DROP POLICY IF EXISTS "dish_photos_public_read" ON storage.objects;
 CREATE POLICY "dish_photos_public_read"
 ON storage.objects FOR SELECT
 TO public

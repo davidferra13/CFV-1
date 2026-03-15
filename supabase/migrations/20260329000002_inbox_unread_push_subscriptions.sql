@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS conversation_thread_reads (
 );
 
 ALTER TABLE conversation_thread_reads ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage own thread reads" ON conversation_thread_reads;
 CREATE POLICY "Chefs manage own thread reads"
   ON conversation_thread_reads FOR ALL
   USING (tenant_id IN (SELECT id FROM chefs WHERE id = tenant_id));

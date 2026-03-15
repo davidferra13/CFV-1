@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS truck_preorders (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE truck_preorders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own truck preorders" ON truck_preorders;
 CREATE POLICY "Chefs manage their own truck preorders"
   ON truck_preorders
   FOR ALL
@@ -28,12 +29,16 @@ CREATE POLICY "Chefs manage their own truck preorders"
   WITH CHECK (tenant_id = auth.uid());
 CREATE INDEX IF NOT EXISTS idx_truck_preorders_tenant_date ON truck_preorders(tenant_id, pickup_date);
 CREATE INDEX IF NOT EXISTS idx_truck_preorders_schedule ON truck_preorders(schedule_id);
-ALTER TABLE truck_preorders
-  ADD CONSTRAINT truck_preorders_status_check
-  CHECK (status IN ('pending', 'confirmed', 'ready', 'picked_up', 'cancelled', 'no_show'));
-ALTER TABLE truck_preorders
-  ADD CONSTRAINT truck_preorders_payment_status_check
-  CHECK (payment_status IN ('unpaid', 'paid', 'refunded'));
+DO $$ BEGIN
+  ALTER TABLE truck_preorders ADD CONSTRAINT truck_preorders_status_check
+    CHECK (status IN ('pending', 'confirmed', 'ready', 'picked_up', 'cancelled', 'no_show'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER TABLE truck_preorders ADD CONSTRAINT truck_preorders_payment_status_check
+    CHECK (payment_status IN ('unpaid', 'paid', 'refunded'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 COMMENT ON TABLE truck_preorders IS 'Food truck pre-orders - customers order ahead for pickup at a scheduled stop';
 COMMENT ON COLUMN truck_preorders.items IS 'JSONB array of {name, quantity, price_cents, notes}';
 COMMENT ON COLUMN truck_preorders.total_cents IS 'Total in cents (minor units)';

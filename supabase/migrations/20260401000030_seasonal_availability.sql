@@ -26,6 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_seasonal_availability_chef_dates
 -- RLS
 ALTER TABLE seasonal_availability_periods ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own seasonal periods" ON seasonal_availability_periods;
 CREATE POLICY "Chefs manage own seasonal periods"
   ON seasonal_availability_periods
   FOR ALL

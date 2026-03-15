@@ -26,6 +26,7 @@ CREATE INDEX grocery_price_quotes_event_idx
 -- RLS
 ALTER TABLE grocery_price_quotes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_own_quotes" ON grocery_price_quotes;
 CREATE POLICY "chef_own_quotes"
   ON grocery_price_quotes
   FOR ALL
@@ -59,6 +60,7 @@ CREATE INDEX grocery_price_quote_items_quote_idx
 -- RLS — accessible via quote's tenant_id
 ALTER TABLE grocery_price_quote_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_own_quote_items" ON grocery_price_quote_items;
 CREATE POLICY "chef_own_quote_items"
   ON grocery_price_quote_items
   FOR ALL

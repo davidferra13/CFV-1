@@ -84,6 +84,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_documents_chef_upload ON storage.objects;
   CREATE POLICY vendor_documents_chef_upload ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (
@@ -103,6 +104,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_documents_chef_read ON storage.objects;
   CREATE POLICY vendor_documents_chef_read ON storage.objects
     FOR SELECT TO authenticated
     USING (
@@ -122,6 +124,7 @@ DO $$ BEGIN
 EXCEPTION WHEN insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vendor_documents_chef_delete ON storage.objects;
   CREATE POLICY vendor_documents_chef_delete ON storage.objects
     FOR DELETE TO authenticated
     USING (

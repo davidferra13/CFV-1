@@ -175,6 +175,7 @@ ALTER TABLE dish_variations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dish_feedback ENABLE ROW LEVEL SECURITY;
 
 -- Upload jobs: chef full CRUD
+DROP POLICY IF EXISTS "chef_upload_jobs_all" ON menu_upload_jobs;
 CREATE POLICY "chef_upload_jobs_all" ON menu_upload_jobs
   FOR ALL USING (
     tenant_id IN (
@@ -183,6 +184,7 @@ CREATE POLICY "chef_upload_jobs_all" ON menu_upload_jobs
   );
 
 -- Dish index: chef full CRUD
+DROP POLICY IF EXISTS "chef_dish_index_all" ON dish_index;
 CREATE POLICY "chef_dish_index_all" ON dish_index
   FOR ALL USING (
     tenant_id IN (
@@ -191,6 +193,7 @@ CREATE POLICY "chef_dish_index_all" ON dish_index
   );
 
 -- Dish appearances: chef full CRUD
+DROP POLICY IF EXISTS "chef_dish_appearances_all" ON dish_appearances;
 CREATE POLICY "chef_dish_appearances_all" ON dish_appearances
   FOR ALL USING (
     tenant_id IN (
@@ -199,6 +202,7 @@ CREATE POLICY "chef_dish_appearances_all" ON dish_appearances
   );
 
 -- Dish variations: chef full CRUD
+DROP POLICY IF EXISTS "chef_dish_variations_all" ON dish_variations;
 CREATE POLICY "chef_dish_variations_all" ON dish_variations
   FOR ALL USING (
     tenant_id IN (
@@ -207,6 +211,7 @@ CREATE POLICY "chef_dish_variations_all" ON dish_variations
   );
 
 -- Dish feedback: chef full CRUD
+DROP POLICY IF EXISTS "chef_dish_feedback_all" ON dish_feedback;
 CREATE POLICY "chef_dish_feedback_all" ON dish_feedback
   FOR ALL USING (
     tenant_id IN (

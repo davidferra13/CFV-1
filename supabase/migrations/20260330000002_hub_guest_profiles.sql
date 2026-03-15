@@ -84,26 +84,32 @@ ALTER TABLE hub_guest_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_guest_event_history ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: public read for profile data (link-based access, no auth required)
+DROP POLICY IF EXISTS "hub_guest_profiles_select_anon" ON hub_guest_profiles;
 CREATE POLICY "hub_guest_profiles_select_anon" ON hub_guest_profiles
   FOR SELECT USING (true);
 
 -- Profiles: anon can insert (joining a group for the first time)
+DROP POLICY IF EXISTS "hub_guest_profiles_insert_anon" ON hub_guest_profiles;
 CREATE POLICY "hub_guest_profiles_insert_anon" ON hub_guest_profiles
   FOR INSERT WITH CHECK (true);
 
 -- Profiles: service role can do everything
+DROP POLICY IF EXISTS "hub_guest_profiles_manage_service" ON hub_guest_profiles;
 CREATE POLICY "hub_guest_profiles_manage_service" ON hub_guest_profiles
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Event history: readable by profile owner (via service role in app layer)
+DROP POLICY IF EXISTS "hub_guest_event_history_select_anon" ON hub_guest_event_history;
 CREATE POLICY "hub_guest_event_history_select_anon" ON hub_guest_event_history
   FOR SELECT USING (true);
 
 -- Event history: service role manages
+DROP POLICY IF EXISTS "hub_guest_event_history_manage_service" ON hub_guest_event_history;
 CREATE POLICY "hub_guest_event_history_manage_service" ON hub_guest_event_history
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Chefs can read event history for their tenant
+DROP POLICY IF EXISTS "hub_guest_event_history_chef_read" ON hub_guest_event_history;
 CREATE POLICY "hub_guest_event_history_chef_read" ON hub_guest_event_history
   FOR SELECT USING (
     tenant_id IN (

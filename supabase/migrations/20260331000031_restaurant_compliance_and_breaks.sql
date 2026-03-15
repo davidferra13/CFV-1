@@ -82,35 +82,43 @@ ALTER TABLE compliance_temp_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE compliance_cleaning_logs ENABLE ROW LEVEL SECURITY;
 -- Temperature logs
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ctl_chef_select ON compliance_temp_logs;
   CREATE POLICY ctl_chef_select ON compliance_temp_logs
     FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ctl_chef_insert ON compliance_temp_logs;
   CREATE POLICY ctl_chef_insert ON compliance_temp_logs
     FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ctl_chef_update ON compliance_temp_logs;
   CREATE POLICY ctl_chef_update ON compliance_temp_logs
     FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ctl_chef_delete ON compliance_temp_logs;
   CREATE POLICY ctl_chef_delete ON compliance_temp_logs
     FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- Cleaning logs
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccl_chef_select ON compliance_cleaning_logs;
   CREATE POLICY ccl_chef_select ON compliance_cleaning_logs
     FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccl_chef_insert ON compliance_cleaning_logs;
   CREATE POLICY ccl_chef_insert ON compliance_cleaning_logs
     FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccl_chef_update ON compliance_cleaning_logs;
   CREATE POLICY ccl_chef_update ON compliance_cleaning_logs
     FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS ccl_chef_delete ON compliance_cleaning_logs;
   CREATE POLICY ccl_chef_delete ON compliance_cleaning_logs
     FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

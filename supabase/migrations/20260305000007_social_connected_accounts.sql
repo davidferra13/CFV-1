@@ -98,6 +98,7 @@ CREATE TRIGGER social_connected_accounts_updated_at
 
 ALTER TABLE social_connected_accounts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_sca_select" ON social_connected_accounts;
 CREATE POLICY "chef_sca_select"
   ON social_connected_accounts FOR SELECT
   USING (

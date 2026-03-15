@@ -126,7 +126,8 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 DO $$ BEGIN
-  CREATE POLICY "document_intelligence_upload_scoped"
+  DROP POLICY IF EXISTS "document_intelligence_upload_scoped" ON storage.objects;
+CREATE POLICY "document_intelligence_upload_scoped"
     ON storage.objects FOR INSERT
     TO authenticated
     WITH CHECK (
@@ -141,7 +142,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "document_intelligence_read_scoped"
+  DROP POLICY IF EXISTS "document_intelligence_read_scoped" ON storage.objects;
+CREATE POLICY "document_intelligence_read_scoped"
     ON storage.objects FOR SELECT
     TO authenticated
     USING (
@@ -156,7 +158,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "document_intelligence_delete_scoped"
+  DROP POLICY IF EXISTS "document_intelligence_delete_scoped" ON storage.objects;
+CREATE POLICY "document_intelligence_delete_scoped"
     ON storage.objects FOR DELETE
     TO authenticated
     USING (

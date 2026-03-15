@@ -124,6 +124,7 @@ CREATE TRIGGER travel_leg_updated_at
 ALTER TABLE event_travel_legs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE travel_leg_ingredients ENABLE ROW LEVEL SECURITY;
 -- Chefs can manage their own legs
+DROP POLICY IF EXISTS "chefs_manage_own_travel_legs" ON event_travel_legs;
 CREATE POLICY "chefs_manage_own_travel_legs"
   ON event_travel_legs
   FOR ALL
@@ -142,6 +143,7 @@ CREATE POLICY "chefs_manage_own_travel_legs"
     )
   );
 -- Chefs can manage travel_leg_ingredients via leg ownership
+DROP POLICY IF EXISTS "chefs_manage_own_travel_leg_ingredients" ON travel_leg_ingredients;
 CREATE POLICY "chefs_manage_own_travel_leg_ingredients"
   ON travel_leg_ingredients
   FOR ALL

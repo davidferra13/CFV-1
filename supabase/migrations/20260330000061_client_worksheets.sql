@@ -42,6 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_client_worksheets_tenant ON client_worksheets(ten
 ALTER TABLE client_worksheets ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read/write their own worksheets
+DROP POLICY IF EXISTS client_worksheets_chef_all ON client_worksheets;
 CREATE POLICY client_worksheets_chef_all ON client_worksheets
   FOR ALL TO authenticated
   USING (tenant_id IN (

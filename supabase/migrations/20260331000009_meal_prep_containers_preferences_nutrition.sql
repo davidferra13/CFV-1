@@ -28,15 +28,19 @@ CREATE TABLE IF NOT EXISTS container_inventory (
 CREATE INDEX idx_container_inventory_chef
   ON container_inventory(chef_id);
 ALTER TABLE container_inventory ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef sees own container inventory" ON container_inventory;
 CREATE POLICY "Chef sees own container inventory"
   ON container_inventory FOR SELECT
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef inserts own container inventory" ON container_inventory;
 CREATE POLICY "Chef inserts own container inventory"
   ON container_inventory FOR INSERT
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef updates own container inventory" ON container_inventory;
 CREATE POLICY "Chef updates own container inventory"
   ON container_inventory FOR UPDATE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef deletes own container inventory" ON container_inventory;
 CREATE POLICY "Chef deletes own container inventory"
   ON container_inventory FOR DELETE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
@@ -65,9 +69,11 @@ CREATE INDEX idx_container_transactions_type
 CREATE INDEX idx_container_transactions_client
   ON container_transactions(client_id);
 ALTER TABLE container_transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef sees own container transactions" ON container_transactions;
 CREATE POLICY "Chef sees own container transactions"
   ON container_transactions FOR SELECT
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef inserts own container transactions" ON container_transactions;
 CREATE POLICY "Chef inserts own container transactions"
   ON container_transactions FOR INSERT
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
@@ -119,15 +125,19 @@ CREATE INDEX idx_client_meal_prep_preferences_chef
 CREATE INDEX idx_client_meal_prep_preferences_client
   ON client_meal_prep_preferences(client_id);
 ALTER TABLE client_meal_prep_preferences ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef sees own client preferences" ON client_meal_prep_preferences;
 CREATE POLICY "Chef sees own client preferences"
   ON client_meal_prep_preferences FOR SELECT
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef inserts own client preferences" ON client_meal_prep_preferences;
 CREATE POLICY "Chef inserts own client preferences"
   ON client_meal_prep_preferences FOR INSERT
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef updates own client preferences" ON client_meal_prep_preferences;
 CREATE POLICY "Chef updates own client preferences"
   ON client_meal_prep_preferences FOR UPDATE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef deletes own client preferences" ON client_meal_prep_preferences;
 CREATE POLICY "Chef deletes own client preferences"
   ON client_meal_prep_preferences FOR DELETE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
@@ -159,15 +169,19 @@ CREATE INDEX idx_recipe_nutrition_chef
 CREATE INDEX idx_recipe_nutrition_recipe
   ON recipe_nutrition(recipe_id);
 ALTER TABLE recipe_nutrition ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef sees own recipe nutrition" ON recipe_nutrition;
 CREATE POLICY "Chef sees own recipe nutrition"
   ON recipe_nutrition FOR SELECT
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef inserts own recipe nutrition" ON recipe_nutrition;
 CREATE POLICY "Chef inserts own recipe nutrition"
   ON recipe_nutrition FOR INSERT
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef updates own recipe nutrition" ON recipe_nutrition;
 CREATE POLICY "Chef updates own recipe nutrition"
   ON recipe_nutrition FOR UPDATE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef deletes own recipe nutrition" ON recipe_nutrition;
 CREATE POLICY "Chef deletes own recipe nutrition"
   ON recipe_nutrition FOR DELETE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

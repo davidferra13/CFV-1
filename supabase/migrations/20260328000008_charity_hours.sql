@@ -61,24 +61,28 @@ CREATE TRIGGER set_charity_hours_updated_at
 
 ALTER TABLE charity_hours ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS ch_chef_select ON charity_hours;
 CREATE POLICY ch_chef_select ON charity_hours
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ch_chef_insert ON charity_hours;
 CREATE POLICY ch_chef_insert ON charity_hours
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ch_chef_update ON charity_hours;
 CREATE POLICY ch_chef_update ON charity_hours
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ch_chef_delete ON charity_hours;
 CREATE POLICY ch_chef_delete ON charity_hours
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

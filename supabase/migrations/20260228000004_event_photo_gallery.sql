@@ -89,16 +89,19 @@ CREATE TRIGGER event_photos_updated_at
 ALTER TABLE event_photos ENABLE ROW LEVEL SECURITY;
 
 -- Chefs: full read access to their tenant
+DROP POLICY IF EXISTS event_photos_chef_select ON event_photos;
 CREATE POLICY event_photos_chef_select ON event_photos
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 -- Chefs: insert photos in their tenant
+DROP POLICY IF EXISTS event_photos_chef_insert ON event_photos;
 CREATE POLICY event_photos_chef_insert ON event_photos
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Chefs: update caption, display_order, deleted_at in their tenant
+DROP POLICY IF EXISTS event_photos_chef_update ON event_photos;
 CREATE POLICY event_photos_chef_update ON event_photos
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
@@ -106,6 +109,7 @@ CREATE POLICY event_photos_chef_update ON event_photos
 
 -- Clients: read active photos for their own events only
 -- Join: event_photos.event_id → events.id → events.client_id = get_current_client_id()
+DROP POLICY IF EXISTS event_photos_client_select ON event_photos;
 CREATE POLICY event_photos_client_select ON event_photos
   FOR SELECT
   USING (

@@ -43,11 +43,13 @@ COMMENT ON COLUMN quotes.chef_message IS 'Personal message from the chef display
 
 ALTER TABLE proposal_sections ENABLE ROW LEVEL SECURITY;
 -- Chef: full CRUD on their own sections
+DROP POLICY IF EXISTS ps_chef_all ON proposal_sections;
 CREATE POLICY ps_chef_all ON proposal_sections
   FOR ALL TO authenticated
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 -- Service role: full access (for public proposal page via admin client)
+DROP POLICY IF EXISTS ps_service_all ON proposal_sections;
 CREATE POLICY ps_service_all ON proposal_sections
   FOR ALL TO service_role
   USING (true) WITH CHECK (true);

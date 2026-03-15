@@ -74,6 +74,7 @@ ALTER TABLE inquiry_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inquiry_recipe_links ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can manage their own tenant's notes
+DROP POLICY IF EXISTS "chefs_manage_inquiry_notes" ON inquiry_notes;
 CREATE POLICY "chefs_manage_inquiry_notes"
   ON inquiry_notes
   FOR ALL
@@ -81,6 +82,7 @@ CREATE POLICY "chefs_manage_inquiry_notes"
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
 -- Chefs can manage their own tenant's recipe links
+DROP POLICY IF EXISTS "chefs_manage_inquiry_recipe_links" ON inquiry_recipe_links;
 CREATE POLICY "chefs_manage_inquiry_recipe_links"
   ON inquiry_recipe_links
   FOR ALL
@@ -106,7 +108,8 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Storage RLS for inquiry-note-attachments
 DO $$ BEGIN
-  CREATE POLICY "inquiry_note_attachments_insert"
+  DROP POLICY IF EXISTS "inquiry_note_attachments_insert" ON storage.objects;
+CREATE POLICY "inquiry_note_attachments_insert"
     ON storage.objects
     FOR INSERT
     TO authenticated
@@ -115,7 +118,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "inquiry_note_attachments_select"
+  DROP POLICY IF EXISTS "inquiry_note_attachments_select" ON storage.objects;
+CREATE POLICY "inquiry_note_attachments_select"
     ON storage.objects
     FOR SELECT
     USING (bucket_id = 'inquiry-note-attachments');
@@ -123,7 +127,8 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "inquiry_note_attachments_delete"
+  DROP POLICY IF EXISTS "inquiry_note_attachments_delete" ON storage.objects;
+CREATE POLICY "inquiry_note_attachments_delete"
     ON storage.objects
     FOR DELETE
     TO authenticated

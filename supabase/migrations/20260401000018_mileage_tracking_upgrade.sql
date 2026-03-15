@@ -27,7 +27,16 @@ ALTER TABLE mileage_logs ADD COLUMN IF NOT EXISTS
   notes TEXT;
 
 -- Update default IRS rate for new rows (72.5 rounded to nearest integer)
-ALTER TABLE mileage_logs ALTER COLUMN irs_rate_cents SET DEFAULT 73;
+-- Column name is irs_rate_cents_per_mile (from original tax_workflow migration)
+DO $$ BEGIN
+  ALTER TABLE mileage_logs ALTER COLUMN irs_rate_cents_per_mile SET DEFAULT 73;
+EXCEPTION WHEN undefined_column THEN
+  -- Column might be named irs_rate_cents in some environments
+  BEGIN
+    ALTER TABLE mileage_logs ALTER COLUMN irs_rate_cents SET DEFAULT 73;
+  EXCEPTION WHEN undefined_column THEN NULL;
+  END;
+END $$;
 
 -- Add updated_at column for edit tracking
 ALTER TABLE mileage_logs ADD COLUMN IF NOT EXISTS

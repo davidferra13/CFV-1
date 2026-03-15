@@ -44,14 +44,18 @@ CREATE TRIGGER trg_chef_service_types_updated_at
 
 ALTER TABLE chef_service_types ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS cst_select ON chef_service_types;
 CREATE POLICY cst_select ON chef_service_types FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS cst_insert ON chef_service_types;
 CREATE POLICY cst_insert ON chef_service_types FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS cst_update ON chef_service_types;
 CREATE POLICY cst_update ON chef_service_types FOR UPDATE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS cst_delete ON chef_service_types;
 CREATE POLICY cst_delete ON chef_service_types FOR DELETE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());

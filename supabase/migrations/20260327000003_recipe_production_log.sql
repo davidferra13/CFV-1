@@ -30,6 +30,7 @@ CREATE INDEX idx_prod_log_expiry ON recipe_production_log(tenant_id, discard_at)
 -- RLS
 ALTER TABLE recipe_production_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef can manage own production logs" ON recipe_production_log;
 CREATE POLICY "Chef can manage own production logs"
   ON recipe_production_log
   FOR ALL

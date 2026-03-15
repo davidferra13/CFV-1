@@ -49,16 +49,19 @@ CREATE INDEX IF NOT EXISTS idx_referral_partners_origin_event
 -- Existing chef policies remain intact. PostgreSQL ORs permissive SELECT policies,
 -- so partners see ONLY their own record; chefs see all records in their tenant.
 
+DROP POLICY IF EXISTS "partner_view_own" ON referral_partners;
 CREATE POLICY "partner_view_own"
   ON referral_partners FOR SELECT TO authenticated
   USING (auth_user_id = auth.uid());
 
+DROP POLICY IF EXISTS "partner_update_own" ON referral_partners;
 CREATE POLICY "partner_update_own"
   ON referral_partners FOR UPDATE TO authenticated
   USING (auth_user_id = auth.uid())
   WITH CHECK (auth_user_id = auth.uid());
 
 -- ─── Step 5: RLS for partner-role users on partner_locations ─────────────────
+DROP POLICY IF EXISTS "partner_view_own_locations" ON partner_locations;
 CREATE POLICY "partner_view_own_locations"
   ON partner_locations FOR SELECT TO authenticated
   USING (
@@ -68,6 +71,7 @@ CREATE POLICY "partner_view_own_locations"
   );
 
 -- ─── Step 6: RLS for partner-role users on partner_images ────────────────────
+DROP POLICY IF EXISTS "partner_view_own_images" ON partner_images;
 CREATE POLICY "partner_view_own_images"
   ON partner_images FOR SELECT TO authenticated
   USING (

@@ -83,12 +83,20 @@ CREATE TRIGGER trg_tax_settings_updated_at
 ALTER TABLE mileage_logs  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tax_settings  ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS ml_chef_select ON mileage_logs;
 CREATE POLICY ml_chef_select ON mileage_logs FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ml_chef_insert ON mileage_logs;
 CREATE POLICY ml_chef_insert ON mileage_logs FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ml_chef_update ON mileage_logs;
 CREATE POLICY ml_chef_update ON mileage_logs FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ml_chef_delete ON mileage_logs;
 CREATE POLICY ml_chef_delete ON mileage_logs FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS ts_chef_select ON tax_settings;
 CREATE POLICY ts_chef_select ON tax_settings FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ts_chef_insert ON tax_settings;
 CREATE POLICY ts_chef_insert ON tax_settings FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ts_chef_update ON tax_settings;
 CREATE POLICY ts_chef_update ON tax_settings FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ts_chef_delete ON tax_settings;
 CREATE POLICY ts_chef_delete ON tax_settings FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

@@ -510,34 +510,49 @@ ALTER TABLE chef_social_hashtags       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chef_post_hashtags         ENABLE ROW LEVEL SECURITY;
 
 -- Public posts readable by authenticated users
+DROP POLICY IF EXISTS "csp_posts_read" ON chef_social_posts;
 CREATE POLICY "csp_posts_read" ON chef_social_posts
   FOR SELECT TO authenticated USING (visibility = 'public');
 
 -- Follows: all authenticated can see
+DROP POLICY IF EXISTS "csp_follows_read" ON chef_follows;
 CREATE POLICY "csp_follows_read" ON chef_follows
   FOR SELECT TO authenticated USING (TRUE);
 
 -- Channels: public channels readable
+DROP POLICY IF EXISTS "csp_channels_read" ON chef_social_channels;
 CREATE POLICY "csp_channels_read" ON chef_social_channels
   FOR SELECT TO authenticated USING (visibility = 'public');
 
 -- Reactions/comments/saves: readable
+DROP POLICY IF EXISTS "csp_reactions_read" ON chef_post_reactions;
 CREATE POLICY "csp_reactions_read"     ON chef_post_reactions    FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_comments_read" ON chef_post_comments;
 CREATE POLICY "csp_comments_read"      ON chef_post_comments     FOR SELECT TO authenticated USING (NOT is_deleted);
+DROP POLICY IF EXISTS "csp_comment_rxn_read" ON chef_comment_reactions;
 CREATE POLICY "csp_comment_rxn_read"   ON chef_comment_reactions FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_saves_read" ON chef_post_saves;
 CREATE POLICY "csp_saves_read"         ON chef_post_saves        FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_memberships_read" ON chef_channel_memberships;
 CREATE POLICY "csp_memberships_read"   ON chef_channel_memberships FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_hashtags_read" ON chef_social_hashtags;
 CREATE POLICY "csp_hashtags_read"      ON chef_social_hashtags   FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_post_hashtags_read" ON chef_post_hashtags;
 CREATE POLICY "csp_post_hashtags_read" ON chef_post_hashtags     FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_mentions_read" ON chef_post_mentions;
 CREATE POLICY "csp_mentions_read"      ON chef_post_mentions     FOR SELECT TO authenticated USING (TRUE);
 
 -- Stories: non-expired readable
+DROP POLICY IF EXISTS "csp_stories_read" ON chef_stories;
 CREATE POLICY "csp_stories_read" ON chef_stories
   FOR SELECT TO authenticated USING (expires_at > NOW());
+DROP POLICY IF EXISTS "csp_story_views_read" ON chef_story_views;
 CREATE POLICY "csp_story_views_read"    ON chef_story_views    FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_story_reactions_read" ON chef_story_reactions;
 CREATE POLICY "csp_story_reactions_read" ON chef_story_reactions FOR SELECT TO authenticated USING (TRUE);
 
 -- Notifications: only own
+DROP POLICY IF EXISTS "csp_notifs_self" ON chef_social_notifications;
 CREATE POLICY "csp_notifs_self" ON chef_social_notifications
   FOR SELECT TO authenticated USING (TRUE);
 

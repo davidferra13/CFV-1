@@ -31,6 +31,7 @@ CREATE INDEX idx_sms_messages_created ON sms_messages(tenant_id, created_at DESC
 CREATE INDEX idx_sms_messages_entity ON sms_messages(entity_type, entity_id) WHERE entity_id IS NOT NULL;
 -- RLS
 ALTER TABLE sms_messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their own SMS messages" ON sms_messages;
 CREATE POLICY "Chefs can manage their own SMS messages"
   ON sms_messages FOR ALL
   USING (tenant_id = auth.uid())

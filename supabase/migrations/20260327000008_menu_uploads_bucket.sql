@@ -24,7 +24,8 @@ ON CONFLICT (id) DO NOTHING;
 
 -- RLS: chefs can upload to their own tenant folder
 DO $$ BEGIN
-  CREATE POLICY "Chefs can upload menu files"
+  DROP POLICY IF EXISTS "Chefs can upload menu files" ON storage.objects;
+CREATE POLICY "Chefs can upload menu files"
     ON storage.objects FOR INSERT
     TO authenticated
     WITH CHECK (
@@ -40,7 +41,8 @@ END $$;
 
 -- RLS: chefs can read their own uploads
 DO $$ BEGIN
-  CREATE POLICY "Chefs can read own menu files"
+  DROP POLICY IF EXISTS "Chefs can read own menu files" ON storage.objects;
+CREATE POLICY "Chefs can read own menu files"
     ON storage.objects FOR SELECT
     TO authenticated
     USING (

@@ -156,48 +156,64 @@ CREATE TRIGGER trg_payroll_941_updated_at
 -- RLS: employees
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS emp_chef_select ON employees;
 CREATE POLICY emp_chef_select ON employees FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS emp_chef_insert ON employees;
 CREATE POLICY emp_chef_insert ON employees FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS emp_chef_update ON employees;
 CREATE POLICY emp_chef_update ON employees FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS emp_chef_delete ON employees;
 CREATE POLICY emp_chef_delete ON employees FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- RLS: payroll_records
 ALTER TABLE payroll_records ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS pr_chef_select ON payroll_records;
 CREATE POLICY pr_chef_select ON payroll_records FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pr_chef_insert ON payroll_records;
 CREATE POLICY pr_chef_insert ON payroll_records FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pr_chef_update ON payroll_records;
 CREATE POLICY pr_chef_update ON payroll_records FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pr_chef_delete ON payroll_records;
 CREATE POLICY pr_chef_delete ON payroll_records FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- RLS: payroll_941_summaries
 ALTER TABLE payroll_941_summaries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS p941_chef_select ON payroll_941_summaries;
 CREATE POLICY p941_chef_select ON payroll_941_summaries FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS p941_chef_insert ON payroll_941_summaries;
 CREATE POLICY p941_chef_insert ON payroll_941_summaries FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS p941_chef_update ON payroll_941_summaries;
 CREATE POLICY p941_chef_update ON payroll_941_summaries FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS p941_chef_delete ON payroll_941_summaries;
 CREATE POLICY p941_chef_delete ON payroll_941_summaries FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- RLS: payroll_w2_summaries
 ALTER TABLE payroll_w2_summaries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS w2_chef_select ON payroll_w2_summaries;
 CREATE POLICY w2_chef_select ON payroll_w2_summaries FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS w2_chef_insert ON payroll_w2_summaries;
 CREATE POLICY w2_chef_insert ON payroll_w2_summaries FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS w2_chef_update ON payroll_w2_summaries;
 CREATE POLICY w2_chef_update ON payroll_w2_summaries FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS w2_chef_delete ON payroll_w2_summaries;
 CREATE POLICY w2_chef_delete ON payroll_w2_summaries FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 

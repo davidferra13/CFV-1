@@ -51,6 +51,7 @@ CREATE INDEX idx_remy_artifacts_pinned
 ALTER TABLE remy_artifacts ENABLE ROW LEVEL SECURITY;
 
 -- Chef can see their own artifacts
+DROP POLICY IF EXISTS remy_artifacts_select ON remy_artifacts;
 CREATE POLICY remy_artifacts_select ON remy_artifacts
   FOR SELECT USING (
     tenant_id IN (
@@ -60,6 +61,7 @@ CREATE POLICY remy_artifacts_select ON remy_artifacts
   );
 
 -- Chef can insert their own artifacts
+DROP POLICY IF EXISTS remy_artifacts_insert ON remy_artifacts;
 CREATE POLICY remy_artifacts_insert ON remy_artifacts
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -69,6 +71,7 @@ CREATE POLICY remy_artifacts_insert ON remy_artifacts
   );
 
 -- Chef can update their own artifacts (pin/unpin, edit title)
+DROP POLICY IF EXISTS remy_artifacts_update ON remy_artifacts;
 CREATE POLICY remy_artifacts_update ON remy_artifacts
   FOR UPDATE USING (
     tenant_id IN (
@@ -78,6 +81,7 @@ CREATE POLICY remy_artifacts_update ON remy_artifacts
   );
 
 -- Chef can delete their own artifacts
+DROP POLICY IF EXISTS remy_artifacts_delete ON remy_artifacts;
 CREATE POLICY remy_artifacts_delete ON remy_artifacts
   FOR DELETE USING (
     tenant_id IN (

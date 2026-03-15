@@ -184,17 +184,23 @@ ALTER TABLE storage_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_transactions ENABLE ROW LEVEL SECURITY;
 
 -- storage_locations: chef-only CRUD
+DROP POLICY IF EXISTS sl_chef_select ON storage_locations;
 CREATE POLICY sl_chef_select ON storage_locations FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sl_chef_insert ON storage_locations;
 CREATE POLICY sl_chef_insert ON storage_locations FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sl_chef_update ON storage_locations;
 CREATE POLICY sl_chef_update ON storage_locations FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sl_chef_delete ON storage_locations;
 CREATE POLICY sl_chef_delete ON storage_locations FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 
 -- inventory_transactions: chef-only SELECT + INSERT (NO UPDATE, NO DELETE — append-only)
+DROP POLICY IF EXISTS it_chef_select ON inventory_transactions;
 CREATE POLICY it_chef_select ON inventory_transactions FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS it_chef_insert ON inventory_transactions;
 CREATE POLICY it_chef_insert ON inventory_transactions FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));

@@ -45,24 +45,32 @@ CREATE TRIGGER trg_health_premium_updated_at
 -- RLS: retirement_contributions
 ALTER TABLE retirement_contributions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS rc_chef_select ON retirement_contributions;
 CREATE POLICY rc_chef_select ON retirement_contributions FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rc_chef_insert ON retirement_contributions;
 CREATE POLICY rc_chef_insert ON retirement_contributions FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rc_chef_update ON retirement_contributions;
 CREATE POLICY rc_chef_update ON retirement_contributions FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rc_chef_delete ON retirement_contributions;
 CREATE POLICY rc_chef_delete ON retirement_contributions FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- RLS: health_insurance_premiums
 ALTER TABLE health_insurance_premiums ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS hip_chef_select ON health_insurance_premiums;
 CREATE POLICY hip_chef_select ON health_insurance_premiums FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS hip_chef_insert ON health_insurance_premiums;
 CREATE POLICY hip_chef_insert ON health_insurance_premiums FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS hip_chef_update ON health_insurance_premiums;
 CREATE POLICY hip_chef_update ON health_insurance_premiums FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS hip_chef_delete ON health_insurance_premiums;
 CREATE POLICY hip_chef_delete ON health_insurance_premiums FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 

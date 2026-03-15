@@ -26,6 +26,7 @@ CREATE INDEX idx_delivery_log_tenant_channel ON notification_delivery_log(tenant
 ALTER TABLE notification_delivery_log ENABLE ROW LEVEL SECURITY;
 
 -- Chef can read their own tenant's delivery log (for transparency in settings)
+DROP POLICY IF EXISTS delivery_log_chef_select ON notification_delivery_log;
 CREATE POLICY delivery_log_chef_select ON notification_delivery_log
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
@@ -34,14 +35,17 @@ CREATE POLICY delivery_log_chef_select ON notification_delivery_log
 
 -- Inserts go through service role (channel-router.ts uses admin client)
 -- The insert policy here permits chef-scoped inserts if needed
+DROP POLICY IF EXISTS delivery_log_service_insert ON notification_delivery_log;
 CREATE POLICY delivery_log_service_insert ON notification_delivery_log
   FOR INSERT WITH CHECK (
     tenant_id = get_current_tenant_id()
   );
 
 -- No updates, no hard deletes
+DROP POLICY IF EXISTS delivery_log_no_update ON notification_delivery_log;
 CREATE POLICY delivery_log_no_update ON notification_delivery_log
   FOR UPDATE USING (false);
 
+DROP POLICY IF EXISTS delivery_log_no_delete ON notification_delivery_log;
 CREATE POLICY delivery_log_no_delete ON notification_delivery_log
   FOR DELETE USING (false);

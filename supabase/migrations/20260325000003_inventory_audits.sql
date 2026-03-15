@@ -97,28 +97,35 @@ ALTER TABLE inventory_audits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_audit_items ENABLE ROW LEVEL SECURITY;
 
 -- inventory_audits: chef-only CRUD
+DROP POLICY IF EXISTS ia_chef_select ON inventory_audits;
 CREATE POLICY ia_chef_select ON inventory_audits FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS ia_chef_insert ON inventory_audits;
 CREATE POLICY ia_chef_insert ON inventory_audits FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS ia_chef_update ON inventory_audits;
 CREATE POLICY ia_chef_update ON inventory_audits FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS ia_chef_delete ON inventory_audits;
 CREATE POLICY ia_chef_delete ON inventory_audits FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 
 -- inventory_audit_items: via parent audit join
+DROP POLICY IF EXISTS iai_chef_select ON inventory_audit_items;
 CREATE POLICY iai_chef_select ON inventory_audit_items FOR SELECT
   USING (EXISTS (
     SELECT 1 FROM inventory_audits ia
     WHERE ia.id = audit_id
     AND ia.chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid)
   ));
+DROP POLICY IF EXISTS iai_chef_insert ON inventory_audit_items;
 CREATE POLICY iai_chef_insert ON inventory_audit_items FOR INSERT
   WITH CHECK (EXISTS (
     SELECT 1 FROM inventory_audits ia
     WHERE ia.id = audit_id
     AND ia.chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid)
   ));
+DROP POLICY IF EXISTS iai_chef_update ON inventory_audit_items;
 CREATE POLICY iai_chef_update ON inventory_audit_items FOR UPDATE
   USING (EXISTS (
     SELECT 1 FROM inventory_audits ia

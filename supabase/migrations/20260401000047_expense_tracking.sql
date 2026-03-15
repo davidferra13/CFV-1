@@ -1,28 +1,19 @@
 -- Feature 3.12: Comprehensive expense tracking beyond food
--- Tracks mileage, equipment, supplies, insurance, subscriptions, and more
+-- Adds missing columns to existing expenses table (from Layer 3).
+-- Original table uses tenant_id, not chef_id.
 
-create table if not exists expenses (
-  id uuid primary key default gen_random_uuid(),
-  chef_id uuid not null references chefs(id) on delete cascade,
-  category text not null check (category in ('food', 'equipment', 'supplies', 'mileage', 'insurance', 'subscriptions', 'marketing', 'rent', 'utilities', 'professional_services', 'training', 'other')),
-  description text not null,
-  amount_cents integer not null,
-  date date not null default current_date,
-  event_id uuid references events(id),
-  vendor text,
-  is_recurring boolean default false,
-  recurrence_interval text check (recurrence_interval in ('weekly', 'monthly', 'quarterly', 'annually')),
-  receipt_url text,
-  tax_deductible boolean default true,
-  notes text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+-- Add missing columns idempotently
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS vendor TEXT;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS recurrence_interval TEXT;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS tax_deductible BOOLEAN DEFAULT true;
 
-alter table expenses enable row level security;
+-- Indexes (use tenant_id since that's what the original table has)
+CREATE INDEX IF NOT EXISTS idx_expenses_tenant_date ON expenses(tenant_id, expense_date DESC);
+CREATE INDEX IF NOT EXISTS idx_expenses_category2 ON expenses(tenant_id, category);
+CREATE INDEX IF NOT EXISTS idx_expenses_event ON expenses(event_id);
 
-create policy "chef_own_expenses" on expenses for all using (chef_id = auth.uid());
-
-create index idx_expenses_chef_date on expenses(chef_id, date desc);
-create index idx_expenses_category on expenses(chef_id, category);
-create index idx_expenses_event on expenses(event_id);
+-- RLS policy using tenant_id (matching original table schema)
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "chef_own_expenses" ON expenses;
+CREATE POLICY "chef_own_expenses" ON expenses FOR ALL USING (tenant_id = auth.uid());

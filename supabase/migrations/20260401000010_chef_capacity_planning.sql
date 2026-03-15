@@ -49,17 +49,21 @@ CREATE TRIGGER trg_capacity_settings_updated_at
 ALTER TABLE chef_capacity_settings ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS capacity_settings_chef_select ON chef_capacity_settings;
   CREATE POLICY capacity_settings_chef_select ON chef_capacity_settings FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS capacity_settings_chef_insert ON chef_capacity_settings;
   CREATE POLICY capacity_settings_chef_insert ON chef_capacity_settings FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS capacity_settings_chef_update ON chef_capacity_settings;
   CREATE POLICY capacity_settings_chef_update ON chef_capacity_settings FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS capacity_settings_chef_delete ON chef_capacity_settings;
   CREATE POLICY capacity_settings_chef_delete ON chef_capacity_settings FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

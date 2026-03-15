@@ -28,24 +28,28 @@ CREATE INDEX idx_permits_tenant_status ON permits (tenant_id, status);
 
 ALTER TABLE permits ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can view own permits" ON permits;
 CREATE POLICY "Chefs can view own permits"
   ON permits FOR SELECT
   USING (tenant_id = auth.uid() OR tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can insert own permits" ON permits;
 CREATE POLICY "Chefs can insert own permits"
   ON permits FOR INSERT
   WITH CHECK (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can update own permits" ON permits;
 CREATE POLICY "Chefs can update own permits"
   ON permits FOR UPDATE
   USING (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can delete own permits" ON permits;
 CREATE POLICY "Chefs can delete own permits"
   ON permits FOR DELETE
   USING (tenant_id IN (
@@ -78,24 +82,28 @@ CREATE INDEX idx_vehicle_maintenance_tenant_date ON vehicle_maintenance (tenant_
 
 ALTER TABLE vehicle_maintenance ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can view own vehicle maintenance" ON vehicle_maintenance;
 CREATE POLICY "Chefs can view own vehicle maintenance"
   ON vehicle_maintenance FOR SELECT
   USING (tenant_id = auth.uid() OR tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can insert own vehicle maintenance" ON vehicle_maintenance;
 CREATE POLICY "Chefs can insert own vehicle maintenance"
   ON vehicle_maintenance FOR INSERT
   WITH CHECK (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can update own vehicle maintenance" ON vehicle_maintenance;
 CREATE POLICY "Chefs can update own vehicle maintenance"
   ON vehicle_maintenance FOR UPDATE
   USING (tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can delete own vehicle maintenance" ON vehicle_maintenance;
 CREATE POLICY "Chefs can delete own vehicle maintenance"
   ON vehicle_maintenance FOR DELETE
   USING (tenant_id IN (

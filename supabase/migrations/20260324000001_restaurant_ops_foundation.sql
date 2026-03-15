@@ -38,6 +38,7 @@ CREATE TRIGGER trg_task_templates_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE task_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS task_templates_chef_policy ON task_templates;
 CREATE POLICY task_templates_chef_policy ON task_templates
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -77,6 +78,7 @@ CREATE TRIGGER trg_tasks_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS tasks_chef_policy ON tasks;
 CREATE POLICY tasks_chef_policy ON tasks
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -99,6 +101,7 @@ CREATE INDEX idx_task_completion_log_chef ON task_completion_log(chef_id, comple
 COMMENT ON TABLE task_completion_log IS 'Append-only record of every task completion. Never deleted. Historical accountability.';
 
 ALTER TABLE task_completion_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS task_completion_log_chef_policy ON task_completion_log;
 CREATE POLICY task_completion_log_chef_policy ON task_completion_log
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -131,6 +134,7 @@ CREATE TRIGGER trg_stations_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE stations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS stations_chef_policy ON stations;
 CREATE POLICY stations_chef_policy ON stations
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -157,6 +161,7 @@ CREATE INDEX idx_station_menu_items_station ON station_menu_items(station_id);
 COMMENT ON TABLE station_menu_items IS 'Menu items assigned to a station. E.g., grill station owns "Grilled Chicken Sandwich."';
 
 ALTER TABLE station_menu_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS station_menu_items_chef_policy ON station_menu_items;
 CREATE POLICY station_menu_items_chef_policy ON station_menu_items
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -188,6 +193,7 @@ CREATE TRIGGER trg_station_components_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE station_components ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS station_components_chef_policy ON station_components;
 CREATE POLICY station_components_chef_policy ON station_components
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -227,6 +233,7 @@ CREATE INDEX idx_clipboard_entries_86 ON clipboard_entries(chef_id, is_86d) WHER
 COMMENT ON TABLE clipboard_entries IS 'Daily station clipboard: par, on-hand, made, need-to-make, need-to-order, waste, 86 status. One row per component per station per day.';
 
 ALTER TABLE clipboard_entries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS clipboard_entries_chef_policy ON clipboard_entries;
 CREATE POLICY clipboard_entries_chef_policy ON clipboard_entries
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -256,6 +263,7 @@ CREATE INDEX idx_shift_logs_chef ON shift_logs(chef_id, check_in_at);
 COMMENT ON TABLE shift_logs IS 'Shift check-in/check-out records with frozen clipboard snapshot at check-out.';
 
 ALTER TABLE shift_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS shift_logs_chef_policy ON shift_logs;
 CREATE POLICY shift_logs_chef_policy ON shift_logs
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -285,6 +293,7 @@ CREATE INDEX idx_order_requests_station ON order_requests(station_id, status);
 COMMENT ON TABLE order_requests IS 'Per-station order needs. Roll up into unified order sheet for the purchaser.';
 
 ALTER TABLE order_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS order_requests_chef_policy ON order_requests;
 CREATE POLICY order_requests_chef_policy ON order_requests
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -311,6 +320,7 @@ CREATE INDEX idx_waste_log_station ON waste_log(station_id, created_at);
 COMMENT ON TABLE waste_log IS 'Append-only waste/spoilage log. Never deleted. Feeds into food cost accuracy.';
 
 ALTER TABLE waste_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS waste_log_chef_policy ON waste_log;
 CREATE POLICY waste_log_chef_policy ON waste_log
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -337,6 +347,7 @@ CREATE INDEX idx_ops_log_action ON ops_log(chef_id, action_type, created_at);
 COMMENT ON TABLE ops_log IS 'Append-only master log: every check-in, check-out, prep, stock update, order, delivery, waste, 86. Never deleted.';
 
 ALTER TABLE ops_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS ops_log_chef_policy ON ops_log;
 CREATE POLICY ops_log_chef_policy ON ops_log
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -378,6 +389,7 @@ END $$;
 ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'vendors' AND policyname = 'vendors_chef_policy') THEN
+    DROP POLICY IF EXISTS vendors_chef_policy ON vendors;
     CREATE POLICY vendors_chef_policy ON vendors USING (chef_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1));
   END IF;
 END $$;
@@ -407,6 +419,7 @@ CREATE INDEX idx_vendor_items_ingredient ON vendor_items(ingredient_id) WHERE in
 COMMENT ON TABLE vendor_items IS 'Per-vendor pricing for ingredients. One-time mapping: vendor catalog item → your ingredient.';
 
 ALTER TABLE vendor_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS vendor_items_chef_policy ON vendor_items;
 CREATE POLICY vendor_items_chef_policy ON vendor_items
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -433,6 +446,7 @@ COMMENT ON TABLE vendor_invoices IS 'Purchase invoices from vendors. Each has li
 ALTER TABLE vendor_invoices ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'vendor_invoices' AND policyname = 'vendor_invoices_chef_policy') THEN
+    DROP POLICY IF EXISTS vendor_invoices_chef_policy ON vendor_invoices;
     CREATE POLICY vendor_invoices_chef_policy ON vendor_invoices USING (chef_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1));
   END IF;
 END $$;
@@ -456,6 +470,7 @@ CREATE INDEX idx_vendor_invoice_line_items_chef ON vendor_invoice_line_items(che
 COMMENT ON TABLE vendor_invoice_line_items IS 'Line items on vendor invoices. Quantity × unit price = total.';
 
 ALTER TABLE vendor_invoice_line_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS vendor_invoice_line_items_chef_policy ON vendor_invoice_line_items;
 CREATE POLICY vendor_invoice_line_items_chef_policy ON vendor_invoice_line_items
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -486,6 +501,7 @@ CREATE TRIGGER trg_daily_revenue_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE daily_revenue ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS daily_revenue_chef_policy ON daily_revenue;
 CREATE POLICY daily_revenue_chef_policy ON daily_revenue
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -523,6 +539,7 @@ CREATE TRIGGER trg_guests_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS guests_chef_policy ON guests;
 CREATE POLICY guests_chef_policy ON guests
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -546,6 +563,7 @@ CREATE INDEX idx_guest_tags_chef ON guest_tags(chef_id, tag);
 COMMENT ON TABLE guest_tags IS 'Color-coded tags: VIP, regular, problem, comp_pending, custom text.';
 
 ALTER TABLE guest_tags ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS guest_tags_chef_policy ON guest_tags;
 CREATE POLICY guest_tags_chef_policy ON guest_tags
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -570,6 +588,7 @@ CREATE INDEX idx_guest_comps_chef ON guest_comps(chef_id, redeemed);
 COMMENT ON TABLE guest_comps IS 'Comp promises: "free app next visit." Visible at check-in, one-click redeem.';
 
 ALTER TABLE guest_comps ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS guest_comps_chef_policy ON guest_comps;
 CREATE POLICY guest_comps_chef_policy ON guest_comps
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -594,6 +613,7 @@ CREATE INDEX idx_guest_visits_chef ON guest_visits(chef_id, visit_date);
 COMMENT ON TABLE guest_visits IS 'Per-visit log: date, party size, spend, server, notes. Full history on guest profile.';
 
 ALTER TABLE guest_visits ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS guest_visits_chef_policy ON guest_visits;
 CREATE POLICY guest_visits_chef_policy ON guest_visits
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
@@ -627,6 +647,7 @@ CREATE TRIGGER trg_guest_reservations_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 ALTER TABLE guest_reservations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS guest_reservations_chef_policy ON guest_reservations;
 CREATE POLICY guest_reservations_chef_policy ON guest_reservations
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

@@ -50,10 +50,12 @@ create index if not exists idx_stocktake_items_tenant
 -- RLS
 alter table stocktakes enable row level security;
 alter table stocktake_items enable row level security;
+DROP POLICY IF EXISTS "Chefs see own stocktakes" ON stocktakes;
 create policy "Chefs see own stocktakes"
   on stocktakes for all
   using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
+DROP POLICY IF EXISTS "Chefs see own stocktake items" ON stocktake_items;
 create policy "Chefs see own stocktake items"
   on stocktake_items for all
   using (tenant_id = auth.uid())
@@ -66,6 +68,7 @@ begin
   return new;
 end;
 $$ language plpgsql;
+DROP TRIGGER IF EXISTS trg_stocktakes_updated_at ON stocktakes;
 create trigger trg_stocktakes_updated_at
   before update on stocktakes
   for each row execute function update_stocktakes_updated_at();

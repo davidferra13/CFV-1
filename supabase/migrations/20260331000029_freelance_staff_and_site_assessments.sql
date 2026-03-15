@@ -75,6 +75,7 @@ COMMENT ON TABLE event_site_assessments IS 'Structured venue evaluation for firs
 -- ============================================
 
 ALTER TABLE event_site_assessments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS site_assessments_chef_all ON event_site_assessments;
 CREATE POLICY site_assessments_chef_all ON event_site_assessments
   FOR ALL
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))

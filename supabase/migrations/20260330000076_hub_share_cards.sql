@@ -39,10 +39,12 @@ CREATE INDEX idx_hub_share_cards_group_id ON hub_share_cards(group_id);
 -- RLS
 ALTER TABLE hub_share_cards ENABLE ROW LEVEL SECURITY;
 -- Anyone can read active share cards (public link access)
+DROP POLICY IF EXISTS "hub_share_cards_select_public" ON hub_share_cards;
 CREATE POLICY "hub_share_cards_select_public"
   ON hub_share_cards FOR SELECT
   USING (is_active = true);
 -- Service role handles all writes
+DROP POLICY IF EXISTS "hub_share_cards_service_all" ON hub_share_cards;
 CREATE POLICY "hub_share_cards_service_all"
   ON hub_share_cards FOR ALL
   USING (true)

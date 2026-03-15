@@ -91,28 +91,36 @@ ALTER TABLE staff_meals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff_meal_items ENABLE ROW LEVEL SECURITY;
 
 -- inventory_batches: chef-only
+DROP POLICY IF EXISTS ib_chef_select ON inventory_batches;
 CREATE POLICY ib_chef_select ON inventory_batches FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS ib_chef_insert ON inventory_batches;
 CREATE POLICY ib_chef_insert ON inventory_batches FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS ib_chef_update ON inventory_batches;
 CREATE POLICY ib_chef_update ON inventory_batches FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 
 -- staff_meals: chef-only
+DROP POLICY IF EXISTS sm_chef_select ON staff_meals;
 CREATE POLICY sm_chef_select ON staff_meals FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sm_chef_insert ON staff_meals;
 CREATE POLICY sm_chef_insert ON staff_meals FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sm_chef_update ON staff_meals;
 CREATE POLICY sm_chef_update ON staff_meals FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 
 -- staff_meal_items: via parent join
+DROP POLICY IF EXISTS smi_chef_select ON staff_meal_items;
 CREATE POLICY smi_chef_select ON staff_meal_items FOR SELECT
   USING (EXISTS (
     SELECT 1 FROM staff_meals sm
     WHERE sm.id = staff_meal_id
     AND sm.chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid)
   ));
+DROP POLICY IF EXISTS smi_chef_insert ON staff_meal_items;
 CREATE POLICY smi_chef_insert ON staff_meal_items FOR INSERT
   WITH CHECK (EXISTS (
     SELECT 1 FROM staff_meals sm

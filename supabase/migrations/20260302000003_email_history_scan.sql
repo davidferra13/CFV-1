@@ -58,6 +58,7 @@ CREATE INDEX IF NOT EXISTS idx_historical_findings_received
 
 ALTER TABLE gmail_historical_findings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "historical_findings_select_own" ON gmail_historical_findings;
 CREATE POLICY "historical_findings_select_own" ON gmail_historical_findings
   FOR SELECT USING (
     tenant_id = (
@@ -67,6 +68,7 @@ CREATE POLICY "historical_findings_select_own" ON gmail_historical_findings
     )
   );
 
+DROP POLICY IF EXISTS "historical_findings_update_own" ON gmail_historical_findings;
 CREATE POLICY "historical_findings_update_own" ON gmail_historical_findings
   FOR UPDATE USING (
     tenant_id = (
@@ -77,5 +79,6 @@ CREATE POLICY "historical_findings_update_own" ON gmail_historical_findings
   );
 
 -- Service role has full access (for cron job processing)
+DROP POLICY IF EXISTS "historical_findings_service_all" ON gmail_historical_findings;
 CREATE POLICY "historical_findings_service_all" ON gmail_historical_findings
   FOR ALL USING (auth.role() = 'service_role');

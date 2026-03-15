@@ -45,6 +45,7 @@ COMMENT ON TABLE chef_feedback IS
 ALTER TABLE chef_feedback ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read all feedback for their tenant
+DROP POLICY IF EXISTS chef_feedback_select_chef ON chef_feedback;
 CREATE POLICY chef_feedback_select_chef ON chef_feedback
   FOR SELECT TO authenticated
   USING (
@@ -55,6 +56,7 @@ CREATE POLICY chef_feedback_select_chef ON chef_feedback
   );
 
 -- Chefs can insert feedback for their tenant
+DROP POLICY IF EXISTS chef_feedback_insert_chef ON chef_feedback;
 CREATE POLICY chef_feedback_insert_chef ON chef_feedback
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -65,6 +67,7 @@ CREATE POLICY chef_feedback_insert_chef ON chef_feedback
   );
 
 -- Chefs can update their own feedback
+DROP POLICY IF EXISTS chef_feedback_update_chef ON chef_feedback;
 CREATE POLICY chef_feedback_update_chef ON chef_feedback
   FOR UPDATE TO authenticated
   USING (

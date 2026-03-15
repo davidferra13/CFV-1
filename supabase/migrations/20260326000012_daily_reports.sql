@@ -15,15 +15,18 @@ CREATE TABLE IF NOT EXISTS daily_reports (
 ALTER TABLE daily_reports ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read their own reports
+DROP POLICY IF EXISTS "Chefs read own daily reports" ON daily_reports;
 CREATE POLICY "Chefs read own daily reports"
   ON daily_reports FOR SELECT
   USING (tenant_id = auth.uid());
 
 -- Service role inserts (cron job)
+DROP POLICY IF EXISTS "Service role inserts daily reports" ON daily_reports;
 CREATE POLICY "Service role inserts daily reports"
   ON daily_reports FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Service role updates daily reports" ON daily_reports;
 CREATE POLICY "Service role updates daily reports"
   ON daily_reports FOR UPDATE
   USING (true);

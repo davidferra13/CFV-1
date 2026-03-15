@@ -9,6 +9,7 @@
 ALTER TABLE hub_availability ENABLE ROW LEVEL SECURITY;
 
 -- Group members can view availability polls for their groups
+DROP POLICY IF EXISTS hub_availability_member_select ON hub_availability;
 CREATE POLICY hub_availability_member_select ON hub_availability
   FOR SELECT
   USING (
@@ -20,6 +21,7 @@ CREATE POLICY hub_availability_member_select ON hub_availability
   );
 
 -- Only the creator can insert availability polls
+DROP POLICY IF EXISTS hub_availability_member_insert ON hub_availability;
 CREATE POLICY hub_availability_member_insert ON hub_availability
   FOR INSERT
   WITH CHECK (
@@ -30,6 +32,7 @@ CREATE POLICY hub_availability_member_insert ON hub_availability
   );
 
 -- Only the creator can update (close) their polls
+DROP POLICY IF EXISTS hub_availability_creator_update ON hub_availability;
 CREATE POLICY hub_availability_creator_update ON hub_availability
   FOR UPDATE
   USING (
@@ -40,6 +43,7 @@ CREATE POLICY hub_availability_creator_update ON hub_availability
   );
 
 -- Only the creator can delete their polls
+DROP POLICY IF EXISTS hub_availability_creator_delete ON hub_availability;
 CREATE POLICY hub_availability_creator_delete ON hub_availability
   FOR DELETE
   USING (
@@ -55,6 +59,7 @@ CREATE POLICY hub_availability_creator_delete ON hub_availability
 ALTER TABLE hub_availability_responses ENABLE ROW LEVEL SECURITY;
 
 -- Group members can view all responses for polls in their groups
+DROP POLICY IF EXISTS hub_availability_responses_member_select ON hub_availability_responses;
 CREATE POLICY hub_availability_responses_member_select ON hub_availability_responses
   FOR SELECT
   USING (
@@ -67,6 +72,7 @@ CREATE POLICY hub_availability_responses_member_select ON hub_availability_respo
   );
 
 -- Members can insert their own responses
+DROP POLICY IF EXISTS hub_availability_responses_member_insert ON hub_availability_responses;
 CREATE POLICY hub_availability_responses_member_insert ON hub_availability_responses
   FOR INSERT
   WITH CHECK (
@@ -77,6 +83,7 @@ CREATE POLICY hub_availability_responses_member_insert ON hub_availability_respo
   );
 
 -- Members can update their own responses
+DROP POLICY IF EXISTS hub_availability_responses_member_update ON hub_availability_responses;
 CREATE POLICY hub_availability_responses_member_update ON hub_availability_responses
   FOR UPDATE
   USING (
@@ -87,6 +94,7 @@ CREATE POLICY hub_availability_responses_member_update ON hub_availability_respo
   );
 
 -- Members can delete their own responses
+DROP POLICY IF EXISTS hub_availability_responses_member_delete ON hub_availability_responses;
 CREATE POLICY hub_availability_responses_member_delete ON hub_availability_responses
   FOR DELETE
   USING (

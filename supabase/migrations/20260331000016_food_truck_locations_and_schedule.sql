@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS truck_locations (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE truck_locations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own truck locations" ON truck_locations;
 CREATE POLICY "Chefs manage their own truck locations"
   ON truck_locations
   FOR ALL
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS truck_schedule (
   UNIQUE (tenant_id, date, location_id)
 );
 ALTER TABLE truck_schedule ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs manage their own truck schedule" ON truck_schedule;
 CREATE POLICY "Chefs manage their own truck schedule"
   ON truck_schedule
   FOR ALL

@@ -28,10 +28,12 @@ create index if not exists idx_gift_certificates_tenant_status on gift_certifica
 alter table gift_certificates enable row level security;
 
 -- Tenant isolation: chefs see only their own certificates
+DROP POLICY IF EXISTS "gift_certificates_tenant_isolation" ON gift_certificates;
 create policy "gift_certificates_tenant_isolation" on gift_certificates
   for all using (tenant_id = auth.uid());
 
 -- Public lookup policy: anyone can look up a certificate by code (read-only, no tenant filter)
 -- This is safe because the lookup only reveals balance/status, not purchaser PII
+DROP POLICY IF EXISTS "gift_certificates_public_lookup" ON gift_certificates;
 create policy "gift_certificates_public_lookup" on gift_certificates
   for select using (true);

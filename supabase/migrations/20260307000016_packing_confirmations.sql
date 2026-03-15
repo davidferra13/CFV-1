@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS packing_confirmations (
 -- Chefs manage their own confirmations
 ALTER TABLE packing_confirmations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own packing confirmations" ON packing_confirmations;
 CREATE POLICY "Chefs manage own packing confirmations"
   ON packing_confirmations
   FOR ALL

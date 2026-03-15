@@ -21,11 +21,13 @@ CREATE TABLE user_feedback (
 ALTER TABLE user_feedback ENABLE ROW LEVEL SECURITY;
 
 -- Only the service role (admin client) can read feedback
+DROP POLICY IF EXISTS "service_role_read_feedback" ON user_feedback;
 CREATE POLICY "service_role_read_feedback"
   ON user_feedback FOR SELECT
   USING (auth.role() = 'service_role');
 
 -- Anyone — authenticated or not — can insert via the server action
+DROP POLICY IF EXISTS "anyone_insert_feedback" ON user_feedback;
 CREATE POLICY "anyone_insert_feedback"
   ON user_feedback FOR INSERT
   WITH CHECK (true);

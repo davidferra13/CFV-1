@@ -16,9 +16,11 @@ create table if not exists community_profiles (
   updated_at timestamptz not null default now()
 );
 alter table community_profiles enable row level security;
+DROP POLICY IF EXISTS "chef_own_community_profile" ON community_profiles;
 create policy "chef_own_community_profile" on community_profiles for all using (chef_id = auth.uid());
+DROP POLICY IF EXISTS "public_read_visible_profiles" ON community_profiles;
 create policy "public_read_visible_profiles" on community_profiles for select using (is_visible = true);
-create unique index idx_community_profile_chef on community_profiles(chef_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_community_profile_chef on community_profiles(chef_id);
 
 create table if not exists community_benchmarks (
   id uuid primary key default gen_random_uuid(),
@@ -29,8 +31,9 @@ create table if not exists community_benchmarks (
   created_at timestamptz not null default now()
 );
 alter table community_benchmarks enable row level security;
+DROP POLICY IF EXISTS "chef_own_benchmarks" ON community_benchmarks;
 create policy "chef_own_benchmarks" on community_benchmarks for all using (chef_id = auth.uid());
-create index idx_benchmarks_metric on community_benchmarks(metric_type, period);
+CREATE INDEX IF NOT EXISTS idx_benchmarks_metric on community_benchmarks(metric_type, period);
 
 create table if not exists community_messages (
   id uuid primary key default gen_random_uuid(),
@@ -42,6 +45,8 @@ create table if not exists community_messages (
   created_at timestamptz not null default now()
 );
 alter table community_messages enable row level security;
+DROP POLICY IF EXISTS "sender_messages" ON community_messages;
 create policy "sender_messages" on community_messages for all using (sender_id = auth.uid());
+DROP POLICY IF EXISTS "recipient_read_messages" ON community_messages;
 create policy "recipient_read_messages" on community_messages for select using (recipient_id = auth.uid());
-create index idx_messages_recipient on community_messages(recipient_id, created_at desc);
+CREATE INDEX IF NOT EXISTS idx_messages_recipient on community_messages(recipient_id, created_at desc);

@@ -47,6 +47,7 @@ CREATE TRIGGER set_kds_tickets_updated_at
   EXECUTE FUNCTION update_updated_at();
 -- RLS
 ALTER TABLE kds_tickets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS kds_tickets_tenant_isolation ON kds_tickets;
 CREATE POLICY kds_tickets_tenant_isolation ON kds_tickets
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

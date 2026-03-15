@@ -42,6 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_client_kitchen_inventory_category ON client_kitch
 -- RLS
 ALTER TABLE client_kitchen_inventory ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "tenant_isolation" ON client_kitchen_inventory;
 CREATE POLICY "tenant_isolation" ON client_kitchen_inventory
   FOR ALL USING (
     tenant_id IN (
@@ -70,6 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_chef_equipment_master_category ON chef_equipment_
 -- RLS
 ALTER TABLE chef_equipment_master ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "tenant_isolation" ON chef_equipment_master;
 CREATE POLICY "tenant_isolation" ON chef_equipment_master
   FOR ALL USING (
     tenant_id IN (

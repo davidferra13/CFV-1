@@ -23,6 +23,7 @@ CREATE TABLE cannabis_tier_users (
 ALTER TABLE cannabis_tier_users ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own row (needed for hasCannabisAccess check)
+DROP POLICY IF EXISTS "cannabis_tier_users_read_own" ON cannabis_tier_users;
 CREATE POLICY "cannabis_tier_users_read_own"
   ON cannabis_tier_users FOR SELECT
   USING (auth_user_id = auth.uid());
@@ -57,11 +58,13 @@ CREATE TABLE cannabis_tier_invitations (
 ALTER TABLE cannabis_tier_invitations ENABLE ROW LEVEL SECURITY;
 
 -- Inviting user can read invites they sent (to see "pending approval" status)
+DROP POLICY IF EXISTS "cannabis_invitations_read_own" ON cannabis_tier_invitations;
 CREATE POLICY "cannabis_invitations_read_own"
   ON cannabis_tier_invitations FOR SELECT
   USING (invited_by_auth_user_id = auth.uid());
 
 -- Inviting user can insert their own invites
+DROP POLICY IF EXISTS "cannabis_invitations_insert_own" ON cannabis_tier_invitations;
 CREATE POLICY "cannabis_invitations_insert_own"
   ON cannabis_tier_invitations FOR INSERT
   WITH CHECK (invited_by_auth_user_id = auth.uid());
@@ -101,6 +104,7 @@ CREATE TABLE cannabis_event_details (
 ALTER TABLE cannabis_event_details ENABLE ROW LEVEL SECURITY;
 
 -- Tenant-scoped: chef can CRUD their own cannabis event details
+DROP POLICY IF EXISTS "cannabis_event_details_tenant_access" ON cannabis_event_details;
 CREATE POLICY "cannabis_event_details_tenant_access"
   ON cannabis_event_details FOR ALL
   USING (

@@ -48,7 +48,8 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 DO $$ BEGIN
-  CREATE POLICY "chef_documents_upload_scoped"
+  DROP POLICY IF EXISTS "chef_documents_upload_scoped" ON storage.objects;
+CREATE POLICY "chef_documents_upload_scoped"
     ON storage.objects FOR INSERT
     TO authenticated
     WITH CHECK (
@@ -62,7 +63,8 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
-  CREATE POLICY "chef_documents_read_scoped"
+  DROP POLICY IF EXISTS "chef_documents_read_scoped" ON storage.objects;
+CREATE POLICY "chef_documents_read_scoped"
     ON storage.objects FOR SELECT
     TO authenticated
     USING (
@@ -76,7 +78,8 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 DO $$ BEGIN
-  CREATE POLICY "chef_documents_delete_scoped"
+  DROP POLICY IF EXISTS "chef_documents_delete_scoped" ON storage.objects;
+CREATE POLICY "chef_documents_delete_scoped"
     ON storage.objects FOR DELETE
     TO authenticated
     USING (

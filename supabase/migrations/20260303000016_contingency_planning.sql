@@ -70,12 +70,20 @@ CREATE TRIGGER trg_contingency_updated_at
 ALTER TABLE chef_emergency_contacts  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_contingency_notes  ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS ec_chef_select ON chef_emergency_contacts;
 CREATE POLICY ec_chef_select ON chef_emergency_contacts FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ec_chef_insert ON chef_emergency_contacts;
 CREATE POLICY ec_chef_insert ON chef_emergency_contacts FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ec_chef_update ON chef_emergency_contacts;
 CREATE POLICY ec_chef_update ON chef_emergency_contacts FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ec_chef_delete ON chef_emergency_contacts;
 CREATE POLICY ec_chef_delete ON chef_emergency_contacts FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS cn_chef_select ON event_contingency_notes;
 CREATE POLICY cn_chef_select ON event_contingency_notes FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cn_chef_insert ON event_contingency_notes;
 CREATE POLICY cn_chef_insert ON event_contingency_notes FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cn_chef_update ON event_contingency_notes;
 CREATE POLICY cn_chef_update ON event_contingency_notes FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cn_chef_delete ON event_contingency_notes;
 CREATE POLICY cn_chef_delete ON event_contingency_notes FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

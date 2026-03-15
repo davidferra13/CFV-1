@@ -105,33 +105,42 @@ ALTER TABLE hub_group_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_group_events ENABLE ROW LEVEL SECURITY;
 
 -- Groups: public read (link-based access)
+DROP POLICY IF EXISTS "hub_groups_select_anon" ON hub_groups;
 CREATE POLICY "hub_groups_select_anon" ON hub_groups
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_groups_insert_anon" ON hub_groups;
 CREATE POLICY "hub_groups_insert_anon" ON hub_groups
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_groups_manage_service" ON hub_groups;
 CREATE POLICY "hub_groups_manage_service" ON hub_groups
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Members: public read
+DROP POLICY IF EXISTS "hub_group_members_select_anon" ON hub_group_members;
 CREATE POLICY "hub_group_members_select_anon" ON hub_group_members
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_group_members_insert_anon" ON hub_group_members;
 CREATE POLICY "hub_group_members_insert_anon" ON hub_group_members
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_group_members_manage_service" ON hub_group_members;
 CREATE POLICY "hub_group_members_manage_service" ON hub_group_members
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Group events: public read
+DROP POLICY IF EXISTS "hub_group_events_select_anon" ON hub_group_events;
 CREATE POLICY "hub_group_events_select_anon" ON hub_group_events
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_group_events_manage_service" ON hub_group_events;
 CREATE POLICY "hub_group_events_manage_service" ON hub_group_events
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Chefs can read groups for their tenant
+DROP POLICY IF EXISTS "hub_groups_chef_read" ON hub_groups;
 CREATE POLICY "hub_groups_chef_read" ON hub_groups
   FOR SELECT USING (
     tenant_id IN (

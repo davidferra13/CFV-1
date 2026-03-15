@@ -97,15 +97,24 @@ ALTER TABLE professional_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE learning_goals            ENABLE ROW LEVEL SECURITY;
 
 -- Chef full access
+DROP POLICY IF EXISTS pa_chef_select ON professional_achievements;
 CREATE POLICY pa_chef_select ON professional_achievements FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pa_chef_insert ON professional_achievements;
 CREATE POLICY pa_chef_insert ON professional_achievements FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pa_chef_update ON professional_achievements;
 CREATE POLICY pa_chef_update ON professional_achievements FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pa_chef_delete ON professional_achievements;
 CREATE POLICY pa_chef_delete ON professional_achievements FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- Public achievements visible to anyone (for public profile page)
+DROP POLICY IF EXISTS pa_public_select ON professional_achievements;
 CREATE POLICY pa_public_select ON professional_achievements FOR SELECT USING (is_public = true);
 
+DROP POLICY IF EXISTS lg_chef_select ON learning_goals;
 CREATE POLICY lg_chef_select ON learning_goals FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS lg_chef_insert ON learning_goals;
 CREATE POLICY lg_chef_insert ON learning_goals FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS lg_chef_update ON learning_goals;
 CREATE POLICY lg_chef_update ON learning_goals FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS lg_chef_delete ON learning_goals;
 CREATE POLICY lg_chef_delete ON learning_goals FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

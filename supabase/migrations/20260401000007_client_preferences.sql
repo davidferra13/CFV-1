@@ -1,6 +1,10 @@
 -- Client Preference History
 -- Tracks liked/disliked dishes, ingredients, cuisines, and techniques per client.
 -- Builds a cumulative taste profile over time (SevenRooms pattern).
+--
+-- NOTE: client_preferences table already exists from migration 20260330000052
+-- (dashboard widget preferences). This migration adds taste-tracking columns
+-- to the same table.
 
 -- Create the rating enum
 DO $$ BEGIN
@@ -14,46 +18,38 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
-CREATE TABLE IF NOT EXISTS client_preferences (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
-  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  item_type client_preference_item_type NOT NULL,
-  item_name TEXT NOT NULL,
-  item_id UUID,  -- optional FK to recipes/ingredients if applicable
-  rating client_preference_rating NOT NULL DEFAULT 'neutral',
-  notes TEXT,
-  event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  observed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+-- Add taste-tracking columns to existing table (idempotent)
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS item_type client_preference_item_type;
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS item_name TEXT;
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS item_id UUID;
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS rating client_preference_rating DEFAULT 'neutral';
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS event_id UUID REFERENCES events(id) ON DELETE SET NULL;
+ALTER TABLE client_preferences ADD COLUMN IF NOT EXISTS observed_at TIMESTAMPTZ DEFAULT now();
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_client_preferences_tenant ON client_preferences(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_client_preferences_client ON client_preferences(client_id);
 CREATE INDEX IF NOT EXISTS idx_client_preferences_item_type ON client_preferences(item_type);
 CREATE INDEX IF NOT EXISTS idx_client_preferences_rating ON client_preferences(rating);
 CREATE INDEX IF NOT EXISTS idx_client_preferences_client_type ON client_preferences(client_id, item_type);
 
--- RLS
-ALTER TABLE client_preferences ENABLE ROW LEVEL SECURITY;
-
--- Chef can read their own tenant's preferences
+-- RLS (table already has RLS enabled from earlier migration)
+-- Add chef-scoped policies for the taste-tracking use case
+DROP POLICY IF EXISTS "chef_read_own_preferences" ON client_preferences;
 CREATE POLICY "chef_read_own_preferences"
   ON client_preferences FOR SELECT
   USING (tenant_id = auth.uid());
 
--- Chef can insert preferences for their own tenant
+DROP POLICY IF EXISTS "chef_insert_own_preferences" ON client_preferences;
 CREATE POLICY "chef_insert_own_preferences"
   ON client_preferences FOR INSERT
   WITH CHECK (tenant_id = auth.uid());
 
--- Chef can update their own tenant's preferences
+DROP POLICY IF EXISTS "chef_update_own_preferences" ON client_preferences;
 CREATE POLICY "chef_update_own_preferences"
   ON client_preferences FOR UPDATE
   USING (tenant_id = auth.uid());
 
--- Chef can delete their own tenant's preferences
+DROP POLICY IF EXISTS "chef_delete_own_preferences" ON client_preferences;
 CREATE POLICY "chef_delete_own_preferences"
   ON client_preferences FOR DELETE
   USING (tenant_id = auth.uid());

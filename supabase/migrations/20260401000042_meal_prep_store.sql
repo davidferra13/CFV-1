@@ -18,7 +18,9 @@ create table if not exists meal_prep_items (
   updated_at timestamptz not null default now()
 );
 alter table meal_prep_items enable row level security;
+DROP POLICY IF EXISTS "chef_own_meal_prep_items" ON meal_prep_items;
 create policy "chef_own_meal_prep_items" on meal_prep_items for all using (chef_id = auth.uid());
+DROP POLICY IF EXISTS "public_read_meal_prep_items" ON meal_prep_items;
 create policy "public_read_meal_prep_items" on meal_prep_items for select using (is_available = true);
 
 create table if not exists meal_prep_orders (
@@ -38,9 +40,10 @@ create table if not exists meal_prep_orders (
   updated_at timestamptz not null default now()
 );
 alter table meal_prep_orders enable row level security;
+DROP POLICY IF EXISTS "chef_own_meal_prep_orders" ON meal_prep_orders;
 create policy "chef_own_meal_prep_orders" on meal_prep_orders for all using (chef_id = auth.uid());
-create index idx_meal_prep_orders_chef on meal_prep_orders(chef_id, status);
-create index idx_meal_prep_orders_date on meal_prep_orders(fulfillment_date);
+CREATE INDEX IF NOT EXISTS idx_meal_prep_orders_chef on meal_prep_orders(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_meal_prep_orders_date on meal_prep_orders(fulfillment_date);
 
 -- Ordering windows
 create table if not exists meal_prep_windows (
@@ -53,4 +56,5 @@ create table if not exists meal_prep_windows (
   created_at timestamptz not null default now()
 );
 alter table meal_prep_windows enable row level security;
+DROP POLICY IF EXISTS "chef_own_meal_prep_windows" ON meal_prep_windows;
 create policy "chef_own_meal_prep_windows" on meal_prep_windows for all using (chef_id = auth.uid());

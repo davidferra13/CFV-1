@@ -15,11 +15,13 @@ CREATE TABLE contact_submissions (
 -- RLS: admin/service role can read; anon can insert
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS contact_submissions_anon_insert ON contact_submissions;
 CREATE POLICY contact_submissions_anon_insert ON contact_submissions
   FOR INSERT
   WITH CHECK (true);
 
 -- Chef can read contact submissions (platform admin)
+DROP POLICY IF EXISTS contact_submissions_chef_select ON contact_submissions;
 CREATE POLICY contact_submissions_chef_select ON contact_submissions
   FOR SELECT
   USING (

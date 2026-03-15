@@ -52,21 +52,25 @@ CREATE TRIGGER trg_vendor_deliveries_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 -- RLS
 ALTER TABLE event_vendor_deliveries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS evd_chef_select ON event_vendor_deliveries;
 CREATE POLICY evd_chef_select ON event_vendor_deliveries
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
+DROP POLICY IF EXISTS evd_chef_insert ON event_vendor_deliveries;
 CREATE POLICY evd_chef_insert ON event_vendor_deliveries
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
+DROP POLICY IF EXISTS evd_chef_update ON event_vendor_deliveries;
 CREATE POLICY evd_chef_update ON event_vendor_deliveries
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
+DROP POLICY IF EXISTS evd_chef_delete ON event_vendor_deliveries;
 CREATE POLICY evd_chef_delete ON event_vendor_deliveries
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND

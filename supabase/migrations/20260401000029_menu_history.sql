@@ -21,12 +21,13 @@ comment on table menu_service_history is 'Tracks menus served to each client wit
 comment on column menu_service_history.dishes_served is 'Array of {name, category, liked, disliked, notes}';
 
 -- Index for efficient lookups by chef + client + date
-create index idx_menu_history_chef_client_date
+CREATE INDEX IF NOT EXISTS idx_menu_history_chef_client_date
   on menu_service_history (chef_id, client_id, served_date);
 
 -- RLS: chefs see only their own history
 alter table menu_service_history enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own menu history" ON menu_service_history;
 create policy "Chefs manage own menu history"
   on menu_service_history
   for all

@@ -125,24 +125,28 @@ ALTER TABLE event_contracts    ENABLE ROW LEVEL SECURITY;
 
 -- ---- contract_templates: chef-only ----
 
+DROP POLICY IF EXISTS ct_chef_select ON contract_templates;
 CREATE POLICY ct_chef_select ON contract_templates
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ct_chef_insert ON contract_templates;
 CREATE POLICY ct_chef_insert ON contract_templates
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ct_chef_update ON contract_templates;
 CREATE POLICY ct_chef_update ON contract_templates
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ct_chef_delete ON contract_templates;
 CREATE POLICY ct_chef_delete ON contract_templates
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
@@ -151,18 +155,21 @@ CREATE POLICY ct_chef_delete ON contract_templates
 
 -- ---- event_contracts: chef full access ----
 
+DROP POLICY IF EXISTS ec_chef_select ON event_contracts;
 CREATE POLICY ec_chef_select ON event_contracts
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ec_chef_insert ON event_contracts;
 CREATE POLICY ec_chef_insert ON event_contracts
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
     chef_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ec_chef_update ON event_contracts;
 CREATE POLICY ec_chef_update ON event_contracts
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND
@@ -170,6 +177,7 @@ CREATE POLICY ec_chef_update ON event_contracts
   );
 
 -- Chef cannot hard-delete a signed contract
+DROP POLICY IF EXISTS ec_chef_delete ON event_contracts;
 CREATE POLICY ec_chef_delete ON event_contracts
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND
@@ -179,6 +187,7 @@ CREATE POLICY ec_chef_delete ON event_contracts
 
 -- ---- event_contracts: client can view and sign their own ----
 
+DROP POLICY IF EXISTS ec_client_select ON event_contracts;
 CREATE POLICY ec_client_select ON event_contracts
   FOR SELECT USING (
     get_current_user_role() = 'client' AND
@@ -186,6 +195,7 @@ CREATE POLICY ec_client_select ON event_contracts
   );
 
 -- Client can only update to mark viewed or sign (status, viewed_at, signed_at, signature fields)
+DROP POLICY IF EXISTS ec_client_update ON event_contracts;
 CREATE POLICY ec_client_update ON event_contracts
   FOR UPDATE USING (
     get_current_user_role() = 'client' AND

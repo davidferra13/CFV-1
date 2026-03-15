@@ -39,7 +39,8 @@ CREATE INDEX IF NOT EXISTS idx_bakery_orders_tenant_status ON bakery_orders(tena
 -- RLS
 ALTER TABLE bakery_orders ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
-  CREATE POLICY "Chefs can manage their own bakery orders"
+  DROP POLICY IF EXISTS "Chefs can manage their own bakery orders" ON bakery_orders;
+CREATE POLICY "Chefs can manage their own bakery orders"
     ON bakery_orders
     FOR ALL
     USING (tenant_id = auth.uid() OR EXISTS (

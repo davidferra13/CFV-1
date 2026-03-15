@@ -97,34 +97,42 @@ ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
 
 -- purchase_orders: chef-only CRUD
+DROP POLICY IF EXISTS po_chef_select ON purchase_orders;
 CREATE POLICY po_chef_select ON purchase_orders FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS po_chef_insert ON purchase_orders;
 CREATE POLICY po_chef_insert ON purchase_orders FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS po_chef_update ON purchase_orders;
 CREATE POLICY po_chef_update ON purchase_orders FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS po_chef_delete ON purchase_orders;
 CREATE POLICY po_chef_delete ON purchase_orders FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 
 -- purchase_order_items: via parent PO join
+DROP POLICY IF EXISTS poi_chef_select ON purchase_order_items;
 CREATE POLICY poi_chef_select ON purchase_order_items FOR SELECT
   USING (EXISTS (
     SELECT 1 FROM purchase_orders po
     WHERE po.id = purchase_order_id
     AND po.chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid)
   ));
+DROP POLICY IF EXISTS poi_chef_insert ON purchase_order_items;
 CREATE POLICY poi_chef_insert ON purchase_order_items FOR INSERT
   WITH CHECK (EXISTS (
     SELECT 1 FROM purchase_orders po
     WHERE po.id = purchase_order_id
     AND po.chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid)
   ));
+DROP POLICY IF EXISTS poi_chef_update ON purchase_order_items;
 CREATE POLICY poi_chef_update ON purchase_order_items FOR UPDATE
   USING (EXISTS (
     SELECT 1 FROM purchase_orders po
     WHERE po.id = purchase_order_id
     AND po.chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid)
   ));
+DROP POLICY IF EXISTS poi_chef_delete ON purchase_order_items;
 CREATE POLICY poi_chef_delete ON purchase_order_items FOR DELETE
   USING (EXISTS (
     SELECT 1 FROM purchase_orders po

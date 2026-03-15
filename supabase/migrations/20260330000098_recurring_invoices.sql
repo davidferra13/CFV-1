@@ -55,7 +55,11 @@ COMMENT ON TABLE recurring_invoice_history IS 'Individual invoice instances gene
 -- ============================================
 
 ALTER TABLE recurring_invoice_history ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS rih_chef_select ON recurring_invoice_history;
 CREATE POLICY rih_chef_select ON recurring_invoice_history FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rih_chef_insert ON recurring_invoice_history;
 CREATE POLICY rih_chef_insert ON recurring_invoice_history FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rih_chef_update ON recurring_invoice_history;
 CREATE POLICY rih_chef_update ON recurring_invoice_history FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS rih_chef_delete ON recurring_invoice_history;
 CREATE POLICY rih_chef_delete ON recurring_invoice_history FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

@@ -19,21 +19,24 @@ EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
 -- Re-add with expanded values
-ALTER TABLE chef_certifications ADD CONSTRAINT chef_certifications_cert_type_check
-  CHECK (cert_type IN (
-    'servsafe',
-    'food_handler',
-    'servsafe_manager',
-    'allergen_awareness',
-    'business_license',
-    'health_permit',
-    'liability_insurance',
-    'workers_comp',
-    'auto_insurance',
-    'llc',
-    'cottage_food',
-    'other'
-  ));
+DO $$ BEGIN
+  ALTER TABLE chef_certifications ADD CONSTRAINT chef_certifications_cert_type_check
+    CHECK (cert_type IN (
+      'servsafe',
+      'food_handler',
+      'servsafe_manager',
+      'allergen_awareness',
+      'business_license',
+      'health_permit',
+      'liability_insurance',
+      'workers_comp',
+      'auto_insurance',
+      'llc',
+      'cottage_food',
+      'other'
+    ));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ─── Expand status to include 'expiring_soon' and 'pending_renewal' ─────────
 
@@ -50,8 +53,11 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
-ALTER TABLE chef_certifications ADD CONSTRAINT chef_certifications_status_check
-  CHECK (status IN ('active', 'expiring_soon', 'expired', 'pending_renewal'));
+DO $$ BEGIN
+  ALTER TABLE chef_certifications ADD CONSTRAINT chef_certifications_status_check
+    CHECK (status IN ('active', 'expiring_soon', 'expired', 'pending_renewal'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ─── Add missing columns (idempotent) ───────────────────────────────────────
 

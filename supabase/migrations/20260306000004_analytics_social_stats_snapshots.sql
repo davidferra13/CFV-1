@@ -40,6 +40,7 @@ CREATE INDEX IF NOT EXISTS sss_chef_platform_date_idx
 
 ALTER TABLE social_stats_snapshots ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_sss_select" ON social_stats_snapshots;
 CREATE POLICY "chef_sss_select"
   ON social_stats_snapshots FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

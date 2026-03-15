@@ -104,6 +104,7 @@ CREATE TRIGGER readiness_gate_updated_at
 
 ALTER TABLE event_readiness_gates ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS readiness_gates_chef_all ON event_readiness_gates;
 CREATE POLICY readiness_gates_chef_all ON event_readiness_gates
   FOR ALL USING (
     get_current_user_role() = 'chef' AND

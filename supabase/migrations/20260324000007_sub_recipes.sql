@@ -53,6 +53,7 @@ CREATE TRIGGER update_recipe_sub_recipes_updated_at
 
 ALTER TABLE recipe_sub_recipes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes
   FOR SELECT
   USING (
@@ -68,6 +69,7 @@ CREATE POLICY tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes
   FOR INSERT
   WITH CHECK (
@@ -78,6 +80,7 @@ CREATE POLICY tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes
   FOR UPDATE
   USING (
@@ -95,6 +98,7 @@ CREATE POLICY tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes
   FOR DELETE
   USING (

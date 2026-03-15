@@ -24,6 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_hub_guest_friends_status ON hub_guest_friends(sta
 -- RLS: public access via admin client (server actions use admin client)
 ALTER TABLE hub_guest_friends ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "service_role_all" ON hub_guest_friends;
 CREATE POLICY "service_role_all" ON hub_guest_friends
   FOR ALL USING (true) WITH CHECK (true);
 

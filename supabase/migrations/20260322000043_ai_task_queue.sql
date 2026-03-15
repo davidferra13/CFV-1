@@ -108,6 +108,7 @@ CREATE INDEX idx_ai_queue_failed
 ALTER TABLE ai_task_queue ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can see their own tasks
+DROP POLICY IF EXISTS ai_queue_chef_read ON ai_task_queue;
 CREATE POLICY ai_queue_chef_read ON ai_task_queue
   FOR SELECT USING (
     tenant_id = (
@@ -117,6 +118,7 @@ CREATE POLICY ai_queue_chef_read ON ai_task_queue
   );
 
 -- Chefs can approve/reject their own tasks
+DROP POLICY IF EXISTS ai_queue_chef_update ON ai_task_queue;
 CREATE POLICY ai_queue_chef_update ON ai_task_queue
   FOR UPDATE USING (
     tenant_id = (
@@ -132,6 +134,7 @@ CREATE POLICY ai_queue_chef_update ON ai_task_queue
   );
 
 -- Service role can do everything (worker runs as service role)
+DROP POLICY IF EXISTS ai_queue_service_role ON ai_task_queue;
 CREATE POLICY ai_queue_service_role ON ai_task_queue
   FOR ALL USING (auth.role() = 'service_role');
 

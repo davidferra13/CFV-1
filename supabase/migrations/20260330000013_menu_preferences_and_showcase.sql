@@ -57,26 +57,31 @@ CREATE INDEX idx_menus_showcase ON menus(tenant_id) WHERE is_showcase = true;
 ALTER TABLE menu_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read preferences for events on their tenant
+DROP POLICY IF EXISTS chef_read_menu_preferences ON menu_preferences;
 CREATE POLICY chef_read_menu_preferences ON menu_preferences
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 -- Chefs can update (mark as viewed)
+DROP POLICY IF EXISTS chef_update_menu_preferences ON menu_preferences;
 CREATE POLICY chef_update_menu_preferences ON menu_preferences
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id());
 
 -- Clients can insert their own preferences
+DROP POLICY IF EXISTS client_insert_menu_preferences ON menu_preferences;
 CREATE POLICY client_insert_menu_preferences ON menu_preferences
   FOR INSERT
   WITH CHECK (client_id = auth.uid());
 
 -- Clients can read their own preferences
+DROP POLICY IF EXISTS client_read_menu_preferences ON menu_preferences;
 CREATE POLICY client_read_menu_preferences ON menu_preferences
   FOR SELECT
   USING (client_id = auth.uid());
 
 -- Clients can update their own preferences (re-submit)
+DROP POLICY IF EXISTS client_update_menu_preferences ON menu_preferences;
 CREATE POLICY client_update_menu_preferences ON menu_preferences
   FOR UPDATE
   USING (client_id = auth.uid());
@@ -88,6 +93,7 @@ CREATE POLICY client_update_menu_preferences ON menu_preferences
 -- Clients need to see showcase menus for chefs they have events with.
 -- This policy allows clients to SELECT showcase menus where the tenant_id
 -- matches a chef they have an event with.
+DROP POLICY IF EXISTS client_view_showcase_menus ON menus;
 CREATE POLICY client_view_showcase_menus ON menus
   FOR SELECT
   USING (
@@ -103,6 +109,7 @@ CREATE POLICY client_view_showcase_menus ON menus
   );
 
 -- Also let clients see dishes on showcase menus
+DROP POLICY IF EXISTS client_view_showcase_dishes ON dishes;
 CREATE POLICY client_view_showcase_dishes ON dishes
   FOR SELECT
   USING (

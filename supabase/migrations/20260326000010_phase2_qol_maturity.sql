@@ -100,6 +100,7 @@ CREATE POLICY qol_metric_events_insert_self ON qol_metric_events
     )
   );
 
+DROP POLICY IF EXISTS qol_metric_events_select_tenant ON qol_metric_events;
 CREATE POLICY qol_metric_events_select_tenant ON qol_metric_events
   FOR SELECT TO authenticated
   USING (

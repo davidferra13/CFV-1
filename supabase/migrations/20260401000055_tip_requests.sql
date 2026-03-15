@@ -33,6 +33,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_tip_requests_active_event
 ALTER TABLE tip_requests ENABLE ROW LEVEL SECURITY;
 
 -- Chef can manage their own tip requests
+DROP POLICY IF EXISTS "tip_requests_chef_manage" ON tip_requests;
 CREATE POLICY "tip_requests_chef_manage"
   ON tip_requests
   FOR ALL
@@ -41,6 +42,7 @@ CREATE POLICY "tip_requests_chef_manage"
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 
 -- Public read access by token (for the client tip page, no auth needed)
+DROP POLICY IF EXISTS "tip_requests_public_read_by_token" ON tip_requests;
 CREATE POLICY "tip_requests_public_read_by_token"
   ON tip_requests
   FOR SELECT
@@ -48,6 +50,7 @@ CREATE POLICY "tip_requests_public_read_by_token"
   USING (true);
 
 -- Public update by token (client submitting tip)
+DROP POLICY IF EXISTS "tip_requests_public_update_by_token" ON tip_requests;
 CREATE POLICY "tip_requests_public_update_by_token"
   ON tip_requests
   FOR UPDATE

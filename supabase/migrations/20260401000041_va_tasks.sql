@@ -16,6 +16,7 @@ create table if not exists va_tasks (
   updated_at timestamptz not null default now()
 );
 alter table va_tasks enable row level security;
+DROP POLICY IF EXISTS "chef_own_va_tasks" ON va_tasks;
 create policy "chef_own_va_tasks" on va_tasks for all using (chef_id = auth.uid());
-create index idx_va_tasks_chef_status on va_tasks(chef_id, status);
-create index idx_va_tasks_due_date on va_tasks(due_date);
+CREATE INDEX IF NOT EXISTS idx_va_tasks_chef_status on va_tasks(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_va_tasks_due_date on va_tasks(due_date);

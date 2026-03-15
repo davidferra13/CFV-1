@@ -62,6 +62,7 @@ ALTER TABLE client_intake_shares ENABLE ROW LEVEL SECURITY;
 
 -- Chef can manage their own forms
 DO $$ BEGIN
+DROP POLICY IF EXISTS intake_forms_chef_all ON client_intake_forms;
 CREATE POLICY intake_forms_chef_all ON client_intake_forms
   FOR ALL USING (
     tenant_id IN (
@@ -74,6 +75,7 @@ END $$;
 
 -- Chef can manage their own responses
 DO $$ BEGIN
+DROP POLICY IF EXISTS intake_responses_chef_all ON client_intake_responses;
 CREATE POLICY intake_responses_chef_all ON client_intake_responses
   FOR ALL USING (
     tenant_id IN (
@@ -86,6 +88,7 @@ END $$;
 
 -- Public can INSERT responses (via share token validation in server action)
 DO $$ BEGIN
+DROP POLICY IF EXISTS intake_responses_public_insert ON client_intake_responses;
 CREATE POLICY intake_responses_public_insert ON client_intake_responses
   FOR INSERT WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -93,6 +96,7 @@ END $$;
 
 -- Chef can manage their own shares
 DO $$ BEGIN
+DROP POLICY IF EXISTS intake_shares_chef_all ON client_intake_shares;
 CREATE POLICY intake_shares_chef_all ON client_intake_shares
   FOR ALL USING (
     tenant_id IN (
@@ -105,6 +109,7 @@ END $$;
 
 -- Public can read shares by token (for loading the form)
 DO $$ BEGIN
+DROP POLICY IF EXISTS intake_shares_public_select ON client_intake_shares;
 CREATE POLICY intake_shares_public_select ON client_intake_shares
   FOR SELECT USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -112,6 +117,7 @@ END $$;
 
 -- Public can read forms (needed to render the form on the public page)
 DO $$ BEGIN
+DROP POLICY IF EXISTS intake_forms_public_select ON client_intake_forms;
 CREATE POLICY intake_forms_public_select ON client_intake_forms
   FOR SELECT USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL;

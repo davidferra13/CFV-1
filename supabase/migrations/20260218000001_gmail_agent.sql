@@ -77,6 +77,7 @@ ALTER TABLE google_connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gmail_sync_log ENABLE ROW LEVEL SECURITY;
 
 -- google_connections: chefs can read/write only their own row
+DROP POLICY IF EXISTS "Chefs manage own google connection" ON google_connections;
 CREATE POLICY "Chefs manage own google connection"
   ON google_connections
   FOR ALL
@@ -94,6 +95,7 @@ CREATE POLICY "Chefs manage own google connection"
   );
 
 -- gmail_sync_log: chefs can read their own tenant logs
+DROP POLICY IF EXISTS "Chefs read own gmail sync log" ON gmail_sync_log;
 CREATE POLICY "Chefs read own gmail sync log"
   ON gmail_sync_log
   FOR SELECT
@@ -105,6 +107,7 @@ CREATE POLICY "Chefs read own gmail sync log"
   );
 
 -- Service role can insert/update gmail_sync_log (for cron endpoint)
+DROP POLICY IF EXISTS "Service role manages gmail sync log" ON gmail_sync_log;
 CREATE POLICY "Service role manages gmail sync log"
   ON gmail_sync_log
   FOR ALL
@@ -112,6 +115,7 @@ CREATE POLICY "Service role manages gmail sync log"
   WITH CHECK (auth.role() = 'service_role');
 
 -- Service role can manage google_connections (for token refresh in cron)
+DROP POLICY IF EXISTS "Service role manages google connections" ON google_connections;
 CREATE POLICY "Service role manages google connections"
   ON google_connections
   FOR ALL

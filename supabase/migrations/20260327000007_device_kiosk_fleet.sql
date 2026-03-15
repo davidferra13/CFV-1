@@ -126,24 +126,28 @@ ALTER TABLE device_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE device_events ENABLE ROW LEVEL SECURITY;
 
 -- Devices: chef can CRUD their own tenant's devices
+DROP POLICY IF EXISTS devices_chef_select ON devices;
 CREATE POLICY devices_chef_select ON devices
   FOR SELECT USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS devices_chef_insert ON devices;
 CREATE POLICY devices_chef_insert ON devices
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS devices_chef_update ON devices;
 CREATE POLICY devices_chef_update ON devices
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS devices_chef_delete ON devices;
 CREATE POLICY devices_chef_delete ON devices
   FOR DELETE USING (
     get_current_user_role() = 'chef'
@@ -151,6 +155,7 @@ CREATE POLICY devices_chef_delete ON devices
   );
 
 -- Device sessions: chef can read their own tenant's sessions
+DROP POLICY IF EXISTS device_sessions_chef_select ON device_sessions;
 CREATE POLICY device_sessions_chef_select ON device_sessions
   FOR SELECT USING (
     get_current_user_role() = 'chef'
@@ -158,6 +163,7 @@ CREATE POLICY device_sessions_chef_select ON device_sessions
   );
 
 -- Device events: chef can read their own tenant's events
+DROP POLICY IF EXISTS device_events_chef_select ON device_events;
 CREATE POLICY device_events_chef_select ON device_events
   FOR SELECT USING (
     get_current_user_role() = 'chef'

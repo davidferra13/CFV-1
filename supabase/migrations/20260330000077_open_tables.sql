@@ -45,8 +45,10 @@ CREATE TABLE IF NOT EXISTS open_table_consents (
 CREATE INDEX IF NOT EXISTS idx_ot_consents_group ON open_table_consents(group_id);
 CREATE INDEX IF NOT EXISTS idx_ot_consents_profile ON open_table_consents(profile_id);
 ALTER TABLE open_table_consents ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ot_consents_service_all" ON open_table_consents;
 CREATE POLICY "ot_consents_service_all" ON open_table_consents
   FOR ALL USING (auth.role() = 'service_role');
+DROP POLICY IF EXISTS "ot_consents_select_public" ON open_table_consents;
 CREATE POLICY "ot_consents_select_public" ON open_table_consents
   FOR SELECT USING (true);
 COMMENT ON TABLE open_table_consents IS 'Unanimous consent for Open Tables. Table cannot go visible until all members consent.';
@@ -77,8 +79,10 @@ CREATE INDEX IF NOT EXISTS idx_ot_requests_status ON open_table_requests(status)
 CREATE INDEX IF NOT EXISTS idx_ot_requests_tenant ON open_table_requests(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_ot_requests_requester ON open_table_requests(requester_profile_id);
 ALTER TABLE open_table_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ot_requests_service_all" ON open_table_requests;
 CREATE POLICY "ot_requests_service_all" ON open_table_requests
   FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "ot_requests_chef_read" ON open_table_requests;
 CREATE POLICY "ot_requests_chef_read" ON open_table_requests
   FOR SELECT USING (
     tenant_id IN (

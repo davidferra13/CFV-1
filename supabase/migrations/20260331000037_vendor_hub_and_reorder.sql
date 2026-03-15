@@ -34,18 +34,22 @@ DO $$ BEGIN
 END $$;
 ALTER TABLE vendor_preferred_ingredients ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_select ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_select ON vendor_preferred_ingredients
     FOR SELECT USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_insert ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_insert ON vendor_preferred_ingredients
     FOR INSERT WITH CHECK (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_update ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_update ON vendor_preferred_ingredients
     FOR UPDATE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS vpi_chef_delete ON vendor_preferred_ingredients;
   CREATE POLICY vpi_chef_delete ON vendor_preferred_ingredients
     FOR DELETE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -77,18 +81,22 @@ DO $$ BEGIN
 END $$;
 ALTER TABLE reorder_settings ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_select ON reorder_settings;
   CREATE POLICY rs_chef_select ON reorder_settings
     FOR SELECT USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_insert ON reorder_settings;
   CREATE POLICY rs_chef_insert ON reorder_settings
     FOR INSERT WITH CHECK (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_update ON reorder_settings;
   CREATE POLICY rs_chef_update ON reorder_settings
     FOR UPDATE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS rs_chef_delete ON reorder_settings;
   CREATE POLICY rs_chef_delete ON reorder_settings
     FOR DELETE USING (chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

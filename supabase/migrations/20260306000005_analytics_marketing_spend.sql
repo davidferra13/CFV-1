@@ -32,6 +32,7 @@ CREATE TRIGGER msl_updated_at
 
 ALTER TABLE marketing_spend_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_msl_all" ON marketing_spend_log;
 CREATE POLICY "chef_msl_all"
   ON marketing_spend_log FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())
@@ -62,6 +63,7 @@ CREATE INDEX IF NOT EXISTS cb_chef_date_idx ON competitor_benchmarks (chef_id, r
 
 ALTER TABLE competitor_benchmarks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_cb_all" ON competitor_benchmarks;
 CREATE POLICY "chef_cb_all"
   ON competitor_benchmarks FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())
@@ -98,6 +100,7 @@ CREATE INDEX IF NOT EXISTS wss_chef_month_idx ON website_stats_snapshots (chef_i
 
 ALTER TABLE website_stats_snapshots ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_wss_all" ON website_stats_snapshots;
 CREATE POLICY "chef_wss_all"
   ON website_stats_snapshots FOR ALL
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id())

@@ -26,6 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_sender_reputation_lookup
 -- RLS
 ALTER TABLE email_sender_reputation ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant isolation for sender reputation" ON email_sender_reputation;
 CREATE POLICY "Tenant isolation for sender reputation"
   ON email_sender_reputation
   FOR ALL

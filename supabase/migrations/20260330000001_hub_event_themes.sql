@@ -31,10 +31,12 @@ CREATE TABLE IF NOT EXISTS event_themes (
 ALTER TABLE event_themes ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read themes (public catalog)
+DROP POLICY IF EXISTS "event_themes_select_all" ON event_themes;
 CREATE POLICY "event_themes_select_all" ON event_themes
   FOR SELECT USING (true);
 
 -- Only service role can insert/update (admin seeding)
+DROP POLICY IF EXISTS "event_themes_manage_service" ON event_themes;
 CREATE POLICY "event_themes_manage_service" ON event_themes
   FOR ALL USING (auth.role() = 'service_role');
 

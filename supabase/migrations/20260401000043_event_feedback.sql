@@ -17,6 +17,7 @@ create table if not exists event_feedback (
   created_at timestamptz not null default now()
 );
 alter table event_feedback enable row level security;
+DROP POLICY IF EXISTS "chef_own_event_feedback" ON event_feedback;
 create policy "chef_own_event_feedback" on event_feedback for all using (chef_id = auth.uid());
-create unique index idx_event_feedback_unique on event_feedback(event_id, client_id);
-create index idx_event_feedback_chef on event_feedback(chef_id, submitted_at desc);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_event_feedback_unique on event_feedback(event_id, client_id);
+CREATE INDEX IF NOT EXISTS idx_event_feedback_chef on event_feedback(chef_id, submitted_at desc);

@@ -98,6 +98,7 @@ COMMENT ON COLUMN events.beta_discount_cents IS
 -- Beta onboarding checklist: clients can read their own, chefs can read all for their tenant
 ALTER TABLE beta_onboarding_checklist ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS beta_checklist_client_read ON beta_onboarding_checklist;
 CREATE POLICY beta_checklist_client_read ON beta_onboarding_checklist
   FOR SELECT USING (
     client_id IN (
@@ -106,6 +107,7 @@ CREATE POLICY beta_checklist_client_read ON beta_onboarding_checklist
     )
   );
 
+DROP POLICY IF EXISTS beta_checklist_chef_all ON beta_onboarding_checklist;
 CREATE POLICY beta_checklist_chef_all ON beta_onboarding_checklist
   FOR ALL USING (
     tenant_id IN (

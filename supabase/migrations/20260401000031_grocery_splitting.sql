@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS grocery_trips (
 
 ALTER TABLE grocery_trips ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_own_trips" ON grocery_trips;
 CREATE POLICY "chef_own_trips"
   ON grocery_trips FOR ALL
   USING (chef_id = auth.uid())
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS grocery_trip_items (
 
 ALTER TABLE grocery_trip_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_own_trip_items" ON grocery_trip_items;
 CREATE POLICY "chef_own_trip_items"
   ON grocery_trip_items FOR ALL
   USING (
@@ -78,6 +80,7 @@ CREATE TABLE IF NOT EXISTS grocery_trip_splits (
 
 ALTER TABLE grocery_trip_splits ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_own_trip_splits" ON grocery_trip_splits;
 CREATE POLICY "chef_own_trip_splits"
   ON grocery_trip_splits FOR ALL
   USING (

@@ -17,6 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON chef_api_keys(key_hash);
 
 ALTER TABLE chef_api_keys ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef owns api keys" ON chef_api_keys;
 CREATE POLICY "Chef owns api keys" ON chef_api_keys
   FOR ALL USING (tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

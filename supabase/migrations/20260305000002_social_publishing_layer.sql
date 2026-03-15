@@ -66,18 +66,22 @@ CREATE TRIGGER social_hashtag_sets_updated_at
 -- RLS
 ALTER TABLE social_hashtag_sets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_hashtag_sets_select" ON social_hashtag_sets;
 CREATE POLICY "chef_hashtag_sets_select"
   ON social_hashtag_sets FOR SELECT
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS "chef_hashtag_sets_insert" ON social_hashtag_sets;
 CREATE POLICY "chef_hashtag_sets_insert"
   ON social_hashtag_sets FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS "chef_hashtag_sets_update" ON social_hashtag_sets;
 CREATE POLICY "chef_hashtag_sets_update"
   ON social_hashtag_sets FOR UPDATE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS "chef_hashtag_sets_delete" ON social_hashtag_sets;
 CREATE POLICY "chef_hashtag_sets_delete"
   ON social_hashtag_sets FOR DELETE
   USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());

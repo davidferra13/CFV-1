@@ -83,16 +83,19 @@ ALTER TABLE proposal_tokens             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quote_addons                ENABLE ROW LEVEL SECURITY;
 ALTER TABLE proposal_addon_selections   ENABLE ROW LEVEL SECURITY;
 -- proposal_tokens: chef can manage, public can read by token (via admin client)
+DROP POLICY IF EXISTS pt_chef_all ON proposal_tokens;
 CREATE POLICY pt_chef_all ON proposal_tokens
   FOR ALL TO authenticated
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 -- quote_addons: chef manages
+DROP POLICY IF EXISTS qa_chef_all ON quote_addons;
 CREATE POLICY qa_chef_all ON quote_addons
   FOR ALL TO authenticated
   USING (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()))
   WITH CHECK (tenant_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 -- proposal_addon_selections: read-only for chef (via parent join), inserts via admin client
+DROP POLICY IF EXISTS pas_chef_select ON proposal_addon_selections;
 CREATE POLICY pas_chef_select ON proposal_addon_selections
   FOR SELECT TO authenticated
   USING (
@@ -103,13 +106,16 @@ CREATE POLICY pas_chef_select ON proposal_addon_selections
     )
   );
 -- Allow inserts via admin client only (public proposal flow)
+DROP POLICY IF EXISTS pas_service_insert ON proposal_addon_selections;
 CREATE POLICY pas_service_insert ON proposal_addon_selections
   FOR INSERT TO service_role
   WITH CHECK (true);
 -- proposal_tokens: allow service_role full access (for public proposal page)
+DROP POLICY IF EXISTS pt_service_all ON proposal_tokens;
 CREATE POLICY pt_service_all ON proposal_tokens
   FOR ALL TO service_role
   USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS qa_service_select ON quote_addons;
 CREATE POLICY qa_service_select ON quote_addons
   FOR SELECT TO service_role
   USING (true);

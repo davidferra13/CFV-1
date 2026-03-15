@@ -72,6 +72,7 @@ CREATE INDEX idx_chat_insights_client
 ALTER TABLE chat_insights ENABLE ROW LEVEL SECURITY;
 
 -- Only chefs can see/manage insights (they are internal intelligence)
+DROP POLICY IF EXISTS chat_insights_chef_all ON chat_insights;
 CREATE POLICY chat_insights_chef_all ON chat_insights
   FOR ALL USING (
     get_current_user_role() = 'chef' AND

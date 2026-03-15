@@ -85,21 +85,27 @@ ALTER TABLE campaign_templates   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE direct_outreach_log  ENABLE ROW LEVEL SECURITY;
 
 -- Campaign templates: chef sees own templates + system templates
+DROP POLICY IF EXISTS ct_chef_select ON campaign_templates;
 CREATE POLICY ct_chef_select ON campaign_templates FOR SELECT
   USING (get_current_user_role() = 'chef' AND (is_system = true OR chef_id = get_current_tenant_id()));
 
+DROP POLICY IF EXISTS ct_chef_insert ON campaign_templates;
 CREATE POLICY ct_chef_insert ON campaign_templates FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id() AND is_system = false);
 
+DROP POLICY IF EXISTS ct_chef_update ON campaign_templates;
 CREATE POLICY ct_chef_update ON campaign_templates FOR UPDATE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id() AND is_system = false);
 
+DROP POLICY IF EXISTS ct_chef_delete ON campaign_templates;
 CREATE POLICY ct_chef_delete ON campaign_templates FOR DELETE
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id() AND is_system = false);
 
 -- Direct outreach log: chef sees own entries
+DROP POLICY IF EXISTS dol_chef_select ON direct_outreach_log;
 CREATE POLICY dol_chef_select ON direct_outreach_log FOR SELECT
   USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS dol_chef_insert ON direct_outreach_log;
 CREATE POLICY dol_chef_insert ON direct_outreach_log FOR INSERT
   WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

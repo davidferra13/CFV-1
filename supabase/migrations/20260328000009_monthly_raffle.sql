@@ -108,25 +108,31 @@ ALTER TABLE raffle_rounds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE raffle_entries ENABLE ROW LEVEL SECURITY;
 
 -- Chef: full access to own tenant's rounds
+DROP POLICY IF EXISTS tenant_select_raffle_rounds ON raffle_rounds;
 CREATE POLICY tenant_select_raffle_rounds ON raffle_rounds
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_insert_raffle_rounds ON raffle_rounds;
 CREATE POLICY tenant_insert_raffle_rounds ON raffle_rounds
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_update_raffle_rounds ON raffle_rounds;
 CREATE POLICY tenant_update_raffle_rounds ON raffle_rounds
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Chef: full access to own tenant's entries
+DROP POLICY IF EXISTS tenant_select_raffle_entries ON raffle_entries;
 CREATE POLICY tenant_select_raffle_entries ON raffle_entries
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_insert_raffle_entries ON raffle_entries;
 CREATE POLICY tenant_insert_raffle_entries ON raffle_entries
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client: read own entries
+DROP POLICY IF EXISTS client_read_own_raffle_entries ON raffle_entries;
 CREATE POLICY client_read_own_raffle_entries ON raffle_entries
   FOR SELECT
   USING (
@@ -137,6 +143,7 @@ CREATE POLICY client_read_own_raffle_entries ON raffle_entries
   );
 
 -- Client: read active/completed rounds for their tenant
+DROP POLICY IF EXISTS client_read_raffle_rounds ON raffle_rounds;
 CREATE POLICY client_read_raffle_rounds ON raffle_rounds
   FOR SELECT
   USING (
@@ -148,6 +155,7 @@ CREATE POLICY client_read_raffle_rounds ON raffle_rounds
   );
 
 -- Client: insert own entries
+DROP POLICY IF EXISTS client_insert_raffle_entries ON raffle_entries;
 CREATE POLICY client_insert_raffle_entries ON raffle_entries
   FOR INSERT
   WITH CHECK (

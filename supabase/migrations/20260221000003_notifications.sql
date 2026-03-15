@@ -98,10 +98,12 @@ ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
 -- NOTIFICATIONS POLICIES
 
 -- Recipients can read their own notifications
+DROP POLICY IF EXISTS notifications_recipient_select ON notifications;
 CREATE POLICY notifications_recipient_select ON notifications
   FOR SELECT USING (recipient_id = auth.uid());
 
 -- Chefs can also read all notifications in their tenant (for admin/audit)
+DROP POLICY IF EXISTS notifications_chef_tenant_select ON notifications;
 CREATE POLICY notifications_chef_tenant_select ON notifications
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
@@ -109,16 +111,19 @@ CREATE POLICY notifications_chef_tenant_select ON notifications
   );
 
 -- Server actions insert via service role, but allow chef insert for their tenant
+DROP POLICY IF EXISTS notifications_insert ON notifications;
 CREATE POLICY notifications_insert ON notifications
   FOR INSERT WITH CHECK (
     tenant_id = get_current_tenant_id()
   );
 
 -- Recipients can update their own notifications (mark read, archive)
+DROP POLICY IF EXISTS notifications_recipient_update ON notifications;
 CREATE POLICY notifications_recipient_update ON notifications
   FOR UPDATE USING (recipient_id = auth.uid());
 
 -- No hard deletes
+DROP POLICY IF EXISTS notifications_no_delete ON notifications;
 CREATE POLICY notifications_no_delete ON notifications
   FOR DELETE USING (false);
 
@@ -126,18 +131,22 @@ CREATE POLICY notifications_no_delete ON notifications
 -- NOTIFICATION_PREFERENCES POLICIES
 
 -- Users can read their own preferences
+DROP POLICY IF EXISTS notification_prefs_self_select ON notification_preferences;
 CREATE POLICY notification_prefs_self_select ON notification_preferences
   FOR SELECT USING (auth_user_id = auth.uid());
 
 -- Users can insert their own preferences
+DROP POLICY IF EXISTS notification_prefs_self_insert ON notification_preferences;
 CREATE POLICY notification_prefs_self_insert ON notification_preferences
   FOR INSERT WITH CHECK (auth_user_id = auth.uid());
 
 -- Users can update their own preferences
+DROP POLICY IF EXISTS notification_prefs_self_update ON notification_preferences;
 CREATE POLICY notification_prefs_self_update ON notification_preferences
   FOR UPDATE USING (auth_user_id = auth.uid());
 
 -- No hard deletes on preferences
+DROP POLICY IF EXISTS notification_prefs_no_delete ON notification_preferences;
 CREATE POLICY notification_prefs_no_delete ON notification_preferences
   FOR DELETE USING (false);
 

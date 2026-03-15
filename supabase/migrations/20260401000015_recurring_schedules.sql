@@ -27,24 +27,28 @@ CREATE INDEX IF NOT EXISTS idx_recurring_schedules_tenant_client_active
 -- RLS
 ALTER TABLE recurring_schedules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can view own recurring schedules" ON recurring_schedules;
 CREATE POLICY "Chefs can view own recurring schedules"
   ON recurring_schedules FOR SELECT
   USING (tenant_id = auth.uid() OR tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Chefs can insert own recurring schedules" ON recurring_schedules;
 CREATE POLICY "Chefs can insert own recurring schedules"
   ON recurring_schedules FOR INSERT
   WITH CHECK (tenant_id = auth.uid() OR tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Chefs can update own recurring schedules" ON recurring_schedules;
 CREATE POLICY "Chefs can update own recurring schedules"
   ON recurring_schedules FOR UPDATE
   USING (tenant_id = auth.uid() OR tenant_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Chefs can delete own recurring schedules" ON recurring_schedules;
 CREATE POLICY "Chefs can delete own recurring schedules"
   ON recurring_schedules FOR DELETE
   USING (tenant_id = auth.uid() OR tenant_id IN (

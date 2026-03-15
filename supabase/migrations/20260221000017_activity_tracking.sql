@@ -48,6 +48,7 @@ CREATE INDEX idx_activity_type
 ALTER TABLE activity_events ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read activity for their tenant
+DROP POLICY IF EXISTS "Chefs read own tenant activity" ON activity_events;
 CREATE POLICY "Chefs read own tenant activity"
   ON activity_events
   FOR SELECT
@@ -59,6 +60,7 @@ CREATE POLICY "Chefs read own tenant activity"
   );
 
 -- Clients can insert their own activity (for portal tracking)
+DROP POLICY IF EXISTS "Clients insert own activity" ON activity_events;
 CREATE POLICY "Clients insert own activity"
   ON activity_events
   FOR INSERT
@@ -68,6 +70,7 @@ CREATE POLICY "Clients insert own activity"
   );
 
 -- Service role can manage all activity (for server-side tracking + cleanup)
+DROP POLICY IF EXISTS "Service role manages activity" ON activity_events;
 CREATE POLICY "Service role manages activity"
   ON activity_events
   FOR ALL

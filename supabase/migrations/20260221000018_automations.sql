@@ -96,6 +96,7 @@ ALTER TABLE automation_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE automation_executions ENABLE ROW LEVEL SECURITY;
 
 -- Chefs manage their own automation rules
+DROP POLICY IF EXISTS "Chefs manage own automation rules" ON automation_rules;
 CREATE POLICY "Chefs manage own automation rules"
   ON automation_rules
   FOR ALL
@@ -113,6 +114,7 @@ CREATE POLICY "Chefs manage own automation rules"
   );
 
 -- Chefs read their own execution logs
+DROP POLICY IF EXISTS "Chefs read own automation executions" ON automation_executions;
 CREATE POLICY "Chefs read own automation executions"
   ON automation_executions
   FOR SELECT
@@ -124,12 +126,14 @@ CREATE POLICY "Chefs read own automation executions"
   );
 
 -- Service role manages everything (for cron + webhook processing)
+DROP POLICY IF EXISTS "Service role manages automation rules" ON automation_rules;
 CREATE POLICY "Service role manages automation rules"
   ON automation_rules
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role manages automation executions" ON automation_executions;
 CREATE POLICY "Service role manages automation executions"
   ON automation_executions
   FOR ALL

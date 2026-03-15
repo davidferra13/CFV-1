@@ -76,12 +76,14 @@ CREATE POLICY mt_chef_select ON menu_templates
     AND (tenant_id = get_current_tenant_id() OR (is_system = true AND tenant_id IS NULL))
   );
 
+DROP POLICY IF EXISTS mt_chef_insert ON menu_templates;
 CREATE POLICY mt_chef_insert ON menu_templates
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS mt_chef_update ON menu_templates;
 CREATE POLICY mt_chef_update ON menu_templates
   FOR UPDATE USING (
     get_current_user_role() = 'chef'
@@ -94,6 +96,7 @@ CREATE POLICY mt_chef_update ON menu_templates
     AND is_system = false
   );
 
+DROP POLICY IF EXISTS mt_chef_delete ON menu_templates;
 CREATE POLICY mt_chef_delete ON menu_templates
   FOR DELETE USING (
     get_current_user_role() = 'chef'
@@ -112,11 +115,13 @@ CREATE POLICY foh_chef_select ON front_of_house_menus
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS foh_chef_insert ON front_of_house_menus;
 CREATE POLICY foh_chef_insert ON front_of_house_menus
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS foh_chef_update ON front_of_house_menus;
 CREATE POLICY foh_chef_update ON front_of_house_menus
   FOR UPDATE USING (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
@@ -125,11 +130,13 @@ CREATE POLICY foh_chef_update ON front_of_house_menus
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS foh_chef_delete ON front_of_house_menus;
 CREATE POLICY foh_chef_delete ON front_of_house_menus
   FOR DELETE USING (
     get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS foh_client_select ON front_of_house_menus;
 CREATE POLICY foh_client_select ON front_of_house_menus
   FOR SELECT USING (
     get_current_user_role() = 'client'

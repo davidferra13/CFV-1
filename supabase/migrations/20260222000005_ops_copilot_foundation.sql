@@ -79,6 +79,7 @@ ALTER TABLE copilot_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_actions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_run_errors ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own copilot runs" ON copilot_runs;
 CREATE POLICY "Chefs manage own copilot runs"
   ON copilot_runs
   FOR ALL
@@ -95,6 +96,7 @@ CREATE POLICY "Chefs manage own copilot runs"
     )
   );
 
+DROP POLICY IF EXISTS "Chefs manage own copilot recommendations" ON copilot_recommendations;
 CREATE POLICY "Chefs manage own copilot recommendations"
   ON copilot_recommendations
   FOR ALL
@@ -111,6 +113,7 @@ CREATE POLICY "Chefs manage own copilot recommendations"
     )
   );
 
+DROP POLICY IF EXISTS "Chefs manage own copilot actions" ON copilot_actions;
 CREATE POLICY "Chefs manage own copilot actions"
   ON copilot_actions
   FOR ALL
@@ -127,6 +130,7 @@ CREATE POLICY "Chefs manage own copilot actions"
     )
   );
 
+DROP POLICY IF EXISTS "Chefs read own copilot run errors" ON copilot_run_errors;
 CREATE POLICY "Chefs read own copilot run errors"
   ON copilot_run_errors
   FOR SELECT
@@ -137,24 +141,28 @@ CREATE POLICY "Chefs read own copilot run errors"
     )
   );
 
+DROP POLICY IF EXISTS "Service role manages copilot runs" ON copilot_runs;
 CREATE POLICY "Service role manages copilot runs"
   ON copilot_runs
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role manages copilot recommendations" ON copilot_recommendations;
 CREATE POLICY "Service role manages copilot recommendations"
   ON copilot_recommendations
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role manages copilot actions" ON copilot_actions;
 CREATE POLICY "Service role manages copilot actions"
   ON copilot_actions
   FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role manages copilot run errors" ON copilot_run_errors;
 CREATE POLICY "Service role manages copilot run errors"
   ON copilot_run_errors
   FOR ALL

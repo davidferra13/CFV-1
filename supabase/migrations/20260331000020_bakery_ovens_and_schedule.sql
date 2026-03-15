@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS bakery_ovens (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE bakery_ovens ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "bakery_ovens_tenant_isolation" ON bakery_ovens;
 CREATE POLICY "bakery_ovens_tenant_isolation" ON bakery_ovens
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS bake_schedule (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE bake_schedule ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "bake_schedule_tenant_isolation" ON bake_schedule;
 CREATE POLICY "bake_schedule_tenant_isolation" ON bake_schedule
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
@@ -59,6 +61,7 @@ CREATE TABLE IF NOT EXISTS bakery_yield_records (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE bakery_yield_records ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "bakery_yield_records_tenant_isolation" ON bakery_yield_records;
 CREATE POLICY "bakery_yield_records_tenant_isolation" ON bakery_yield_records
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());

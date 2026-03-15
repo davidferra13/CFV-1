@@ -47,6 +47,7 @@ CREATE INDEX IF NOT EXISTS idx_guest_feedback_guest ON guest_feedback(guest_id);
 
 ALTER TABLE guest_feedback ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS guest_feedback_chef_read ON guest_feedback;
 CREATE POLICY guest_feedback_chef_read ON guest_feedback
   FOR SELECT TO authenticated
   USING (
@@ -87,6 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_guest_messages_unread ON guest_messages(event_id)
 
 ALTER TABLE guest_messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS guest_messages_chef_all ON guest_messages;
 CREATE POLICY guest_messages_chef_all ON guest_messages
   FOR ALL TO authenticated
   USING (
@@ -98,6 +100,7 @@ CREATE POLICY guest_messages_chef_all ON guest_messages
   );
 
 -- Public inserts handled via admin client with token validation.
+DROP POLICY IF EXISTS guest_messages_public_insert ON guest_messages;
 CREATE POLICY guest_messages_public_insert ON guest_messages
   FOR INSERT WITH CHECK (true);
 
@@ -128,6 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_guest_day_of_reminders_status ON guest_day_of_rem
 
 ALTER TABLE guest_day_of_reminders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS guest_day_of_reminders_chef_all ON guest_day_of_reminders;
 CREATE POLICY guest_day_of_reminders_chef_all ON guest_day_of_reminders
   FOR ALL TO authenticated
   USING (
@@ -165,6 +169,7 @@ CREATE INDEX IF NOT EXISTS idx_guest_dietary_confirmations_status ON guest_dieta
 
 ALTER TABLE guest_dietary_confirmations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS guest_dietary_confirmations_chef_all ON guest_dietary_confirmations;
 CREATE POLICY guest_dietary_confirmations_chef_all ON guest_dietary_confirmations
   FOR ALL TO authenticated
   USING (
@@ -213,6 +218,7 @@ CREATE TRIGGER set_event_guest_documents_updated_at
 
 ALTER TABLE event_guest_documents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS event_guest_documents_chef_all ON event_guest_documents;
 CREATE POLICY event_guest_documents_chef_all ON event_guest_documents
   FOR ALL TO authenticated
   USING (
@@ -224,6 +230,7 @@ CREATE POLICY event_guest_documents_chef_all ON event_guest_documents
   );
 
 -- Public read for token-validated access (app layer enforces token check)
+DROP POLICY IF EXISTS event_guest_documents_public_read ON event_guest_documents;
 CREATE POLICY event_guest_documents_public_read ON event_guest_documents
   FOR SELECT USING (true);
 

@@ -73,6 +73,7 @@ CREATE TRIGGER trg_loyalty_reward_redemptions_updated_at
 ALTER TABLE loyalty_reward_redemptions ENABLE ROW LEVEL SECURITY;
 
 -- Chef: full access to their tenant's records
+DROP POLICY IF EXISTS "lrr_chef_all" ON loyalty_reward_redemptions;
 CREATE POLICY "lrr_chef_all" ON loyalty_reward_redemptions
   FOR ALL TO authenticated
   USING (
@@ -89,6 +90,7 @@ CREATE POLICY "lrr_chef_all" ON loyalty_reward_redemptions
   );
 
 -- Client: read own redemption records
+DROP POLICY IF EXISTS "lrr_client_select" ON loyalty_reward_redemptions;
 CREATE POLICY "lrr_client_select" ON loyalty_reward_redemptions
   FOR SELECT TO authenticated
   USING (

@@ -27,6 +27,7 @@ CREATE TABLE chef_event_type_labels (
 
 ALTER TABLE chef_event_type_labels ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "tenant_isolation" ON chef_event_type_labels;
 CREATE POLICY "tenant_isolation" ON chef_event_type_labels
   FOR ALL
   USING (

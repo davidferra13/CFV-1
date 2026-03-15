@@ -19,6 +19,7 @@ CREATE INDEX idx_packing_templates_chef_id ON packing_templates(chef_id);
 CREATE INDEX idx_packing_templates_event_type ON packing_templates(chef_id, event_type) WHERE event_type IS NOT NULL;
 -- RLS
 ALTER TABLE packing_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their own packing templates" ON packing_templates;
 CREATE POLICY "Chefs can manage their own packing templates"
   ON packing_templates
   FOR ALL

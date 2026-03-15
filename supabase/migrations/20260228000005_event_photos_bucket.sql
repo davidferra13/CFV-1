@@ -43,7 +43,8 @@ SET
 
 -- Chefs: upload objects where segment 1 matches their tenant
 DO $$ BEGIN
-  CREATE POLICY "event_photos_chef_upload"
+  DROP POLICY IF EXISTS "event_photos_chef_upload" ON storage.objects;
+CREATE POLICY "event_photos_chef_upload"
   ON storage.objects FOR INSERT
   TO authenticated
   WITH CHECK (
@@ -56,7 +57,8 @@ END $$;
 
 -- Chefs: read objects in their tenant prefix (needed for signed URL generation)
 DO $$ BEGIN
-  CREATE POLICY "event_photos_chef_select"
+  DROP POLICY IF EXISTS "event_photos_chef_select" ON storage.objects;
+CREATE POLICY "event_photos_chef_select"
   ON storage.objects FOR SELECT
   TO authenticated
   USING (
@@ -70,7 +72,8 @@ END $$;
 -- Chefs: delete objects in their tenant prefix
 -- (Hard delete in storage is triggered by server action after soft-deleting in DB)
 DO $$ BEGIN
-  CREATE POLICY "event_photos_chef_delete"
+  DROP POLICY IF EXISTS "event_photos_chef_delete" ON storage.objects;
+CREATE POLICY "event_photos_chef_delete"
   ON storage.objects FOR DELETE
   TO authenticated
   USING (
@@ -85,7 +88,8 @@ END $$;
 -- segment 2 = event_id; verified via events.client_id join.
 -- Path construction is always server-controlled so the UUID cast is safe.
 DO $$ BEGIN
-  CREATE POLICY "event_photos_client_select"
+  DROP POLICY IF EXISTS "event_photos_client_select" ON storage.objects;
+CREATE POLICY "event_photos_client_select"
   ON storage.objects FOR SELECT
   TO authenticated
   USING (

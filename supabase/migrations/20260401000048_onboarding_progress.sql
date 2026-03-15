@@ -8,5 +8,6 @@ create table if not exists onboarding_progress (
   created_at timestamptz not null default now()
 );
 alter table onboarding_progress enable row level security;
+DROP POLICY IF EXISTS "chef_own_onboarding" ON onboarding_progress;
 create policy "chef_own_onboarding" on onboarding_progress for all using (chef_id = auth.uid());
-create unique index idx_onboarding_chef_step on onboarding_progress(chef_id, step_key);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_onboarding_chef_step on onboarding_progress(chef_id, step_key);

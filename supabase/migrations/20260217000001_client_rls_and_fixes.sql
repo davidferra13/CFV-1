@@ -6,6 +6,7 @@
 -- 1. Client SELECT policy for events
 -- Clients can read events where they are the client_id
 -- ============================================
+DROP POLICY IF EXISTS events_client_can_view_own ON events;
 CREATE POLICY events_client_can_view_own ON events
   FOR SELECT USING (
     get_current_user_role() = 'client' AND client_id = get_current_client_id()
@@ -15,6 +16,7 @@ CREATE POLICY events_client_can_view_own ON events
 -- 2. Client SELECT policy for quotes
 -- Clients can read quotes where they are the client_id
 -- ============================================
+DROP POLICY IF EXISTS quotes_client_can_view_own ON quotes;
 CREATE POLICY quotes_client_can_view_own ON quotes
   FOR SELECT USING (
     get_current_user_role() = 'client' AND client_id = get_current_client_id()

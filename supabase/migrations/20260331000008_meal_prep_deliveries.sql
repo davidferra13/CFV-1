@@ -74,15 +74,19 @@ CREATE INDEX idx_meal_prep_deliveries_client
   ON meal_prep_deliveries(client_id);
 -- RLS
 ALTER TABLE meal_prep_deliveries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chef sees own deliveries" ON meal_prep_deliveries;
 CREATE POLICY "Chef sees own deliveries"
   ON meal_prep_deliveries FOR SELECT
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef inserts own deliveries" ON meal_prep_deliveries;
 CREATE POLICY "Chef inserts own deliveries"
   ON meal_prep_deliveries FOR INSERT
   WITH CHECK (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef updates own deliveries" ON meal_prep_deliveries;
 CREATE POLICY "Chef updates own deliveries"
   ON meal_prep_deliveries FOR UPDATE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS "Chef deletes own deliveries" ON meal_prep_deliveries;
 CREATE POLICY "Chef deletes own deliveries"
   ON meal_prep_deliveries FOR DELETE
   USING (chef_id IN (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));

@@ -85,12 +85,20 @@ COMMENT ON TABLE equipment_rentals IS 'Tracks rented equipment costs, optionally
 ALTER TABLE equipment_items   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipment_rentals ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS eq_chef_select ON equipment_items;
 CREATE POLICY eq_chef_select ON equipment_items FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS eq_chef_insert ON equipment_items;
 CREATE POLICY eq_chef_insert ON equipment_items FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS eq_chef_update ON equipment_items;
 CREATE POLICY eq_chef_update ON equipment_items FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS eq_chef_delete ON equipment_items;
 CREATE POLICY eq_chef_delete ON equipment_items FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS er_chef_select ON equipment_rentals;
 CREATE POLICY er_chef_select ON equipment_rentals FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS er_chef_insert ON equipment_rentals;
 CREATE POLICY er_chef_insert ON equipment_rentals FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS er_chef_update ON equipment_rentals;
 CREATE POLICY er_chef_update ON equipment_rentals FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS er_chef_delete ON equipment_rentals;
 CREATE POLICY er_chef_delete ON equipment_rentals FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

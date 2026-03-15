@@ -124,6 +124,7 @@ GROUP BY eg.event_id, eg.tenant_id;
 ALTER TABLE event_shares ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can do everything for their tenant
+DROP POLICY IF EXISTS event_shares_chef_all ON event_shares;
 CREATE POLICY event_shares_chef_all ON event_shares
   FOR ALL
   USING (
@@ -134,6 +135,7 @@ CREATE POLICY event_shares_chef_all ON event_shares
   );
 
 -- Clients can SELECT and INSERT for their own events
+DROP POLICY IF EXISTS event_shares_client_select ON event_shares;
 CREATE POLICY event_shares_client_select ON event_shares
   FOR SELECT
   USING (
@@ -143,6 +145,7 @@ CREATE POLICY event_shares_client_select ON event_shares
     )
   );
 
+DROP POLICY IF EXISTS event_shares_client_insert ON event_shares;
 CREATE POLICY event_shares_client_insert ON event_shares
   FOR INSERT
   WITH CHECK (
@@ -153,6 +156,7 @@ CREATE POLICY event_shares_client_insert ON event_shares
   );
 
 -- Clients can update their own shares (e.g., revoke)
+DROP POLICY IF EXISTS event_shares_client_update ON event_shares;
 CREATE POLICY event_shares_client_update ON event_shares
   FOR UPDATE
   USING (
@@ -163,6 +167,7 @@ CREATE POLICY event_shares_client_update ON event_shares
   );
 
 -- Public can SELECT by valid token (for guest access)
+DROP POLICY IF EXISTS event_shares_public_select_by_token ON event_shares;
 CREATE POLICY event_shares_public_select_by_token ON event_shares
   FOR SELECT
   USING (true);
@@ -174,6 +179,7 @@ CREATE POLICY event_shares_public_select_by_token ON event_shares
 ALTER TABLE event_guests ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read all guests for their tenant
+DROP POLICY IF EXISTS event_guests_chef_all ON event_guests;
 CREATE POLICY event_guests_chef_all ON event_guests
   FOR ALL
   USING (
@@ -184,6 +190,7 @@ CREATE POLICY event_guests_chef_all ON event_guests
   );
 
 -- Clients can read guests for events they own
+DROP POLICY IF EXISTS event_guests_client_select ON event_guests;
 CREATE POLICY event_guests_client_select ON event_guests
   FOR SELECT
   USING (
@@ -195,18 +202,21 @@ CREATE POLICY event_guests_client_select ON event_guests
   );
 
 -- Public can INSERT (submit RSVP) -- validated at app layer via share token
+DROP POLICY IF EXISTS event_guests_public_insert ON event_guests;
 CREATE POLICY event_guests_public_insert ON event_guests
   FOR INSERT
   WITH CHECK (true);
   -- App layer validates share token before allowing insert
 
 -- Public can SELECT their own guest record by guest_token
+DROP POLICY IF EXISTS event_guests_public_select_by_token ON event_guests;
 CREATE POLICY event_guests_public_select_by_token ON event_guests
   FOR SELECT
   USING (true);
   -- App layer MUST filter by specific guest_token
 
 -- Public can UPDATE their own RSVP by guest_token
+DROP POLICY IF EXISTS event_guests_public_update_by_token ON event_guests;
 CREATE POLICY event_guests_public_update_by_token ON event_guests
   FOR UPDATE
   USING (true);

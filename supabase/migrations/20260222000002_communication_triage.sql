@@ -185,6 +185,7 @@ ALTER TABLE communication_classification_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE communication_action_log ENABLE ROW LEVEL SECURITY;
 
 -- Chef tenant-scoped access
+DROP POLICY IF EXISTS communication_threads_chef_all ON conversation_threads;
 CREATE POLICY communication_threads_chef_all ON conversation_threads
 FOR ALL
 USING (
@@ -200,6 +201,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS communication_events_chef_all ON communication_events;
 CREATE POLICY communication_events_chef_all ON communication_events
 FOR ALL
 USING (
@@ -215,6 +217,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS suggested_links_chef_all ON suggested_links;
 CREATE POLICY suggested_links_chef_all ON suggested_links
 FOR ALL
 USING (
@@ -230,6 +233,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS follow_up_timers_chef_all ON follow_up_timers;
 CREATE POLICY follow_up_timers_chef_all ON follow_up_timers
 FOR ALL
 USING (
@@ -245,6 +249,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS communication_rules_chef_all ON communication_classification_rules;
 CREATE POLICY communication_rules_chef_all ON communication_classification_rules
 FOR ALL
 USING (
@@ -260,6 +265,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS communication_action_log_chef_select ON communication_action_log;
 CREATE POLICY communication_action_log_chef_select ON communication_action_log
 FOR SELECT
 USING (
@@ -269,6 +275,7 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS communication_action_log_chef_insert ON communication_action_log;
 CREATE POLICY communication_action_log_chef_insert ON communication_action_log
 FOR INSERT
 WITH CHECK (
@@ -279,26 +286,32 @@ WITH CHECK (
 );
 
 -- Service role management for webhook/import pipelines
+DROP POLICY IF EXISTS communication_threads_service_all ON conversation_threads;
 CREATE POLICY communication_threads_service_all ON conversation_threads
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS communication_events_service_all ON communication_events;
 CREATE POLICY communication_events_service_all ON communication_events
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS suggested_links_service_all ON suggested_links;
 CREATE POLICY suggested_links_service_all ON suggested_links
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS follow_up_timers_service_all ON follow_up_timers;
 CREATE POLICY follow_up_timers_service_all ON follow_up_timers
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS communication_rules_service_all ON communication_classification_rules;
 CREATE POLICY communication_rules_service_all ON communication_classification_rules
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS communication_action_log_service_all ON communication_action_log;
 CREATE POLICY communication_action_log_service_all ON communication_action_log
 FOR ALL USING (auth.role() = 'service_role')
 WITH CHECK (auth.role() = 'service_role');

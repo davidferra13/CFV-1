@@ -292,37 +292,61 @@ ALTER TABLE menu_nutrition       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE follow_up_sends      ENABLE ROW LEVEL SECURITY;
 
 -- client_proposals: chef CRUD + public read via token
+DROP POLICY IF EXISTS cp_chef_select ON client_proposals;
 CREATE POLICY cp_chef_select ON client_proposals FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cp_chef_insert ON client_proposals;
 CREATE POLICY cp_chef_insert ON client_proposals FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cp_chef_update ON client_proposals;
 CREATE POLICY cp_chef_update ON client_proposals FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cp_chef_delete ON client_proposals;
 CREATE POLICY cp_chef_delete ON client_proposals FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- staff_event_tokens: chef CRUD
+DROP POLICY IF EXISTS set_chef_select ON staff_event_tokens;
 CREATE POLICY set_chef_select ON staff_event_tokens FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS set_chef_insert ON staff_event_tokens;
 CREATE POLICY set_chef_insert ON staff_event_tokens FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS set_chef_update ON staff_event_tokens;
 CREATE POLICY set_chef_update ON staff_event_tokens FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS set_chef_delete ON staff_event_tokens;
 CREATE POLICY set_chef_delete ON staff_event_tokens FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- meal_prep_programs: chef CRUD
+DROP POLICY IF EXISTS mpp_chef_select ON meal_prep_programs;
 CREATE POLICY mpp_chef_select ON meal_prep_programs FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mpp_chef_insert ON meal_prep_programs;
 CREATE POLICY mpp_chef_insert ON meal_prep_programs FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mpp_chef_update ON meal_prep_programs;
 CREATE POLICY mpp_chef_update ON meal_prep_programs FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mpp_chef_delete ON meal_prep_programs;
 CREATE POLICY mpp_chef_delete ON meal_prep_programs FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- meal_prep_weeks: chef CRUD (via parent tenant join)
+DROP POLICY IF EXISTS mpw_chef_select ON meal_prep_weeks;
 CREATE POLICY mpw_chef_select ON meal_prep_weeks FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mpw_chef_insert ON meal_prep_weeks;
 CREATE POLICY mpw_chef_insert ON meal_prep_weeks FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mpw_chef_update ON meal_prep_weeks;
 CREATE POLICY mpw_chef_update ON meal_prep_weeks FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mpw_chef_delete ON meal_prep_weeks;
 CREATE POLICY mpw_chef_delete ON meal_prep_weeks FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- menu_nutrition: chef CRUD
+DROP POLICY IF EXISTS mn_chef_select ON menu_nutrition;
 CREATE POLICY mn_chef_select ON menu_nutrition FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mn_chef_insert ON menu_nutrition;
 CREATE POLICY mn_chef_insert ON menu_nutrition FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mn_chef_update ON menu_nutrition;
 CREATE POLICY mn_chef_update ON menu_nutrition FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS mn_chef_delete ON menu_nutrition;
 CREATE POLICY mn_chef_delete ON menu_nutrition FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- follow_up_sends: chef CRUD
+DROP POLICY IF EXISTS fus_chef_select ON follow_up_sends;
 CREATE POLICY fus_chef_select ON follow_up_sends FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS fus_chef_insert ON follow_up_sends;
 CREATE POLICY fus_chef_insert ON follow_up_sends FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS fus_chef_update ON follow_up_sends;
 CREATE POLICY fus_chef_update ON follow_up_sends FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS fus_chef_delete ON follow_up_sends;
 CREATE POLICY fus_chef_delete ON follow_up_sends FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());

@@ -53,12 +53,14 @@ create index if not exists idx_event_templates_tenant on event_templates(tenant_
 -- RLS
 alter table event_templates enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own templates" ON event_templates;
 create policy "Chefs manage own templates"
   on event_templates for all
   using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
 
 -- Updated_at trigger
+DROP TRIGGER IF EXISTS set_event_templates_updated_at ON event_templates;
 create trigger set_event_templates_updated_at
   before update on event_templates
   for each row

@@ -78,6 +78,7 @@ CREATE TABLE scheduled_calls (
 
 ALTER TABLE scheduled_calls ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chefs_own_calls" ON scheduled_calls;
 CREATE POLICY "chefs_own_calls"
   ON scheduled_calls
   FOR ALL

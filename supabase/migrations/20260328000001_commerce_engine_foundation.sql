@@ -664,63 +664,77 @@ ALTER TABLE commerce_refunds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commerce_payment_schedules ENABLE ROW LEVEL SECURITY;
 
 -- Chef policies (full CRUD for tenant's data)
+DROP POLICY IF EXISTS "chef_product_projections" ON product_projections;
 CREATE POLICY "chef_product_projections" ON product_projections
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_sales" ON sales;
 CREATE POLICY "chef_sales" ON sales
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_sale_items" ON sale_items;
 CREATE POLICY "chef_sale_items" ON sale_items
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_commerce_payments" ON commerce_payments;
 CREATE POLICY "chef_commerce_payments" ON commerce_payments
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_commerce_refunds" ON commerce_refunds;
 CREATE POLICY "chef_commerce_refunds" ON commerce_refunds
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_commerce_schedules" ON commerce_payment_schedules;
 CREATE POLICY "chef_commerce_schedules" ON commerce_payment_schedules
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
 -- Client policies (read own sales and payments)
+DROP POLICY IF EXISTS "client_sales_read" ON sales;
 CREATE POLICY "client_sales_read" ON sales
   FOR SELECT USING (
     client_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client')
   );
 
+DROP POLICY IF EXISTS "client_commerce_payments_read" ON commerce_payments;
 CREATE POLICY "client_commerce_payments_read" ON commerce_payments
   FOR SELECT USING (
     client_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client')
   );
 
 -- Service role policies (for webhooks/background jobs)
+DROP POLICY IF EXISTS "service_product_projections" ON product_projections;
 CREATE POLICY "service_product_projections" ON product_projections
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_sales" ON sales;
 CREATE POLICY "service_sales" ON sales
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_sale_items" ON sale_items;
 CREATE POLICY "service_sale_items" ON sale_items
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_commerce_payments" ON commerce_payments;
 CREATE POLICY "service_commerce_payments" ON commerce_payments
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_commerce_refunds" ON commerce_refunds;
 CREATE POLICY "service_commerce_refunds" ON commerce_refunds
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_commerce_schedules" ON commerce_payment_schedules;
 CREATE POLICY "service_commerce_schedules" ON commerce_payment_schedules
   FOR ALL USING (auth.role() = 'service_role');
 

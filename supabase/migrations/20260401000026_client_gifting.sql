@@ -19,13 +19,14 @@ create table if not exists client_gift_log (
 
 alter table client_gift_log enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own gift log" ON client_gift_log;
 create policy "Chefs manage own gift log"
   on client_gift_log for all
   using (chef_id = auth.uid())
   with check (chef_id = auth.uid());
 
-create index idx_client_gift_log_chef on client_gift_log(chef_id);
-create index idx_client_gift_log_client on client_gift_log(client_id);
+CREATE INDEX IF NOT EXISTS idx_client_gift_log_chef on client_gift_log(chef_id);
+CREATE INDEX IF NOT EXISTS idx_client_gift_log_client on client_gift_log(client_id);
 
 -- ─── Follow-Up Rules ─────────────────────────────────────────────────────────
 
@@ -45,9 +46,10 @@ create table if not exists client_followup_rules (
 
 alter table client_followup_rules enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage own followup rules" ON client_followup_rules;
 create policy "Chefs manage own followup rules"
   on client_followup_rules for all
   using (chef_id = auth.uid())
   with check (chef_id = auth.uid());
 
-create index idx_client_followup_rules_chef on client_followup_rules(chef_id);
+CREATE INDEX IF NOT EXISTS idx_client_followup_rules_chef on client_followup_rules(chef_id);

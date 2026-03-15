@@ -135,12 +135,15 @@ CREATE TRIGGER client_photos_updated_at
 -- RLS
 ALTER TABLE client_photos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS client_photos_chef_select ON client_photos;
 CREATE POLICY client_photos_chef_select ON client_photos
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS client_photos_chef_insert ON client_photos;
 CREATE POLICY client_photos_chef_insert ON client_photos
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS client_photos_chef_update ON client_photos;
 CREATE POLICY client_photos_chef_update ON client_photos
   FOR UPDATE
   USING (tenant_id = get_current_tenant_id())
@@ -160,6 +163,7 @@ VALUES (
 
 -- Storage RLS: path = {tenant_id}/{client_id}/{photo_id}.{ext}
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "client_photos_chef_upload" ON storage.objects;
   CREATE POLICY "client_photos_chef_upload" ON storage.objects FOR INSERT TO authenticated
     WITH CHECK (
       bucket_id = 'client-photos'
@@ -170,6 +174,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "client_photos_chef_read" ON storage.objects;
   CREATE POLICY "client_photos_chef_read" ON storage.objects FOR SELECT TO authenticated
     USING (
       bucket_id = 'client-photos'
@@ -180,6 +185,7 @@ EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS "client_photos_chef_remove" ON storage.objects;
   CREATE POLICY "client_photos_chef_remove" ON storage.objects FOR DELETE TO authenticated
     USING (
       bucket_id = 'client-photos'

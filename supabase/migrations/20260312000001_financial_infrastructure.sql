@@ -170,37 +170,61 @@ ALTER TABLE recurring_invoices        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_disputes          ENABLE ROW LEVEL SECURITY;
 
 -- bank_connections
+DROP POLICY IF EXISTS bc_chef_select ON bank_connections;
 CREATE POLICY bc_chef_select ON bank_connections FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bc_chef_insert ON bank_connections;
 CREATE POLICY bc_chef_insert ON bank_connections FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bc_chef_update ON bank_connections;
 CREATE POLICY bc_chef_update ON bank_connections FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bc_chef_delete ON bank_connections;
 CREATE POLICY bc_chef_delete ON bank_connections FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- bank_transactions
+DROP POLICY IF EXISTS bt_chef_select ON bank_transactions;
 CREATE POLICY bt_chef_select ON bank_transactions FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bt_chef_insert ON bank_transactions;
 CREATE POLICY bt_chef_insert ON bank_transactions FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bt_chef_update ON bank_transactions;
 CREATE POLICY bt_chef_update ON bank_transactions FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bt_chef_delete ON bank_transactions;
 CREATE POLICY bt_chef_delete ON bank_transactions FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- tax_quarterly_estimates
+DROP POLICY IF EXISTS tqe_chef_select ON tax_quarterly_estimates;
 CREATE POLICY tqe_chef_select ON tax_quarterly_estimates FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS tqe_chef_insert ON tax_quarterly_estimates;
 CREATE POLICY tqe_chef_insert ON tax_quarterly_estimates FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS tqe_chef_update ON tax_quarterly_estimates;
 CREATE POLICY tqe_chef_update ON tax_quarterly_estimates FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS tqe_chef_delete ON tax_quarterly_estimates;
 CREATE POLICY tqe_chef_delete ON tax_quarterly_estimates FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- contractor_payments
+DROP POLICY IF EXISTS cp_chef_select ON contractor_payments;
 CREATE POLICY cp_chef_select ON contractor_payments FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cp_chef_insert ON contractor_payments;
 CREATE POLICY cp_chef_insert ON contractor_payments FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cp_chef_update ON contractor_payments;
 CREATE POLICY cp_chef_update ON contractor_payments FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cp_chef_delete ON contractor_payments;
 CREATE POLICY cp_chef_delete ON contractor_payments FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- recurring_invoices
+DROP POLICY IF EXISTS ri_chef_select ON recurring_invoices;
 CREATE POLICY ri_chef_select ON recurring_invoices FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ri_chef_insert ON recurring_invoices;
 CREATE POLICY ri_chef_insert ON recurring_invoices FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ri_chef_update ON recurring_invoices;
 CREATE POLICY ri_chef_update ON recurring_invoices FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ri_chef_delete ON recurring_invoices;
 CREATE POLICY ri_chef_delete ON recurring_invoices FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- payment_disputes
+DROP POLICY IF EXISTS pd_chef_select ON payment_disputes;
 CREATE POLICY pd_chef_select ON payment_disputes FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pd_chef_insert ON payment_disputes;
 CREATE POLICY pd_chef_insert ON payment_disputes FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pd_chef_update ON payment_disputes;
 CREATE POLICY pd_chef_update ON payment_disputes FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pd_chef_delete ON payment_disputes;
 CREATE POLICY pd_chef_delete ON payment_disputes FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

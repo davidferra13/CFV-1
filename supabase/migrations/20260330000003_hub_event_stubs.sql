@@ -44,18 +44,22 @@ CREATE INDEX IF NOT EXISTS idx_event_stubs_adopted_tenant
 ALTER TABLE event_stubs ENABLE ROW LEVEL SECURITY;
 
 -- Public can read stubs (link-based access via app layer)
+DROP POLICY IF EXISTS "event_stubs_select_anon" ON event_stubs;
 CREATE POLICY "event_stubs_select_anon" ON event_stubs
   FOR SELECT USING (true);
 
 -- Public can create stubs (client-initiated)
+DROP POLICY IF EXISTS "event_stubs_insert_anon" ON event_stubs;
 CREATE POLICY "event_stubs_insert_anon" ON event_stubs
   FOR INSERT WITH CHECK (true);
 
 -- Service role manages
+DROP POLICY IF EXISTS "event_stubs_manage_service" ON event_stubs;
 CREATE POLICY "event_stubs_manage_service" ON event_stubs
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Chefs can read stubs adopted by them
+DROP POLICY IF EXISTS "event_stubs_chef_read" ON event_stubs;
 CREATE POLICY "event_stubs_chef_read" ON event_stubs
   FOR SELECT USING (
     adopted_tenant_id IN (

@@ -43,6 +43,7 @@ ALTER TABLE chef_preferred_stores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE store_item_assignments ENABLE ROW LEVEL SECURITY;
 
 -- Chef can manage their own stores
+DROP POLICY IF EXISTS "chef_preferred_stores_select" ON chef_preferred_stores;
 CREATE POLICY "chef_preferred_stores_select"
   ON chef_preferred_stores FOR SELECT
   USING (chef_id IN (
@@ -50,6 +51,7 @@ CREATE POLICY "chef_preferred_stores_select"
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "chef_preferred_stores_insert" ON chef_preferred_stores;
 CREATE POLICY "chef_preferred_stores_insert"
   ON chef_preferred_stores FOR INSERT
   WITH CHECK (chef_id IN (
@@ -57,6 +59,7 @@ CREATE POLICY "chef_preferred_stores_insert"
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "chef_preferred_stores_update" ON chef_preferred_stores;
 CREATE POLICY "chef_preferred_stores_update"
   ON chef_preferred_stores FOR UPDATE
   USING (chef_id IN (
@@ -64,6 +67,7 @@ CREATE POLICY "chef_preferred_stores_update"
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "chef_preferred_stores_delete" ON chef_preferred_stores;
 CREATE POLICY "chef_preferred_stores_delete"
   ON chef_preferred_stores FOR DELETE
   USING (chef_id IN (
@@ -72,6 +76,7 @@ CREATE POLICY "chef_preferred_stores_delete"
   ));
 
 -- Chef can manage their own item assignments
+DROP POLICY IF EXISTS "store_item_assignments_select" ON store_item_assignments;
 CREATE POLICY "store_item_assignments_select"
   ON store_item_assignments FOR SELECT
   USING (chef_id IN (
@@ -79,6 +84,7 @@ CREATE POLICY "store_item_assignments_select"
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "store_item_assignments_insert" ON store_item_assignments;
 CREATE POLICY "store_item_assignments_insert"
   ON store_item_assignments FOR INSERT
   WITH CHECK (chef_id IN (
@@ -86,6 +92,7 @@ CREATE POLICY "store_item_assignments_insert"
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "store_item_assignments_update" ON store_item_assignments;
 CREATE POLICY "store_item_assignments_update"
   ON store_item_assignments FOR UPDATE
   USING (chef_id IN (
@@ -93,6 +100,7 @@ CREATE POLICY "store_item_assignments_update"
     WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "store_item_assignments_delete" ON store_item_assignments;
 CREATE POLICY "store_item_assignments_delete"
   ON store_item_assignments FOR DELETE
   USING (chef_id IN (

@@ -26,6 +26,7 @@ CREATE INDEX idx_remy_approval_policies_tenant_enabled
 
 ALTER TABLE remy_approval_policies ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_approval_policies_select ON remy_approval_policies;
 CREATE POLICY remy_approval_policies_select
   ON remy_approval_policies FOR SELECT
   USING (
@@ -36,6 +37,7 @@ CREATE POLICY remy_approval_policies_select
     )
   );
 
+DROP POLICY IF EXISTS remy_approval_policies_insert ON remy_approval_policies;
 CREATE POLICY remy_approval_policies_insert
   ON remy_approval_policies FOR INSERT
   WITH CHECK (
@@ -46,6 +48,7 @@ CREATE POLICY remy_approval_policies_insert
     )
   );
 
+DROP POLICY IF EXISTS remy_approval_policies_update ON remy_approval_policies;
 CREATE POLICY remy_approval_policies_update
   ON remy_approval_policies FOR UPDATE
   USING (
@@ -63,6 +66,7 @@ CREATE POLICY remy_approval_policies_update
     )
   );
 
+DROP POLICY IF EXISTS remy_approval_policies_delete ON remy_approval_policies;
 CREATE POLICY remy_approval_policies_delete
   ON remy_approval_policies FOR DELETE
   USING (

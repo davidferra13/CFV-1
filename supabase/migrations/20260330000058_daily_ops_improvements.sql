@@ -23,6 +23,7 @@ CREATE INDEX idx_handoff_notes_pinned ON shift_handoff_notes(chef_id, pinned) WH
 
 ALTER TABLE shift_handoff_notes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant isolation for shift_handoff_notes" ON shift_handoff_notes;
 CREATE POLICY "Tenant isolation for shift_handoff_notes"
   ON shift_handoff_notes
   FOR ALL
@@ -60,6 +61,7 @@ CREATE INDEX idx_prep_timeline_event ON prep_timeline(event_id) WHERE event_id I
 
 ALTER TABLE prep_timeline ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tenant isolation for prep_timeline" ON prep_timeline;
 CREATE POLICY "Tenant isolation for prep_timeline"
   ON prep_timeline
   FOR ALL

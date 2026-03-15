@@ -24,7 +24,8 @@ CREATE INDEX IF NOT EXISTS idx_display_case_items_tenant ON display_case_items(t
 CREATE INDEX IF NOT EXISTS idx_display_case_items_tenant_active ON display_case_items(tenant_id) WHERE is_active = true;
 ALTER TABLE display_case_items ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
-  CREATE POLICY "Chefs can manage their own display case items"
+  DROP POLICY IF EXISTS "Chefs can manage their own display case items" ON display_case_items;
+CREATE POLICY "Chefs can manage their own display case items"
     ON display_case_items
     FOR ALL
     USING (tenant_id = auth.uid() OR EXISTS (
@@ -64,7 +65,8 @@ CREATE INDEX IF NOT EXISTS idx_bakery_par_stock_tenant ON bakery_par_stock(tenan
 CREATE INDEX IF NOT EXISTS idx_bakery_par_stock_tenant_active ON bakery_par_stock(tenant_id) WHERE is_active = true;
 ALTER TABLE bakery_par_stock ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
-  CREATE POLICY "Chefs can manage their own par stock"
+  DROP POLICY IF EXISTS "Chefs can manage their own par stock" ON bakery_par_stock;
+CREATE POLICY "Chefs can manage their own par stock"
     ON bakery_par_stock
     FOR ALL
     USING (tenant_id = auth.uid() OR EXISTS (
@@ -107,7 +109,8 @@ CREATE TABLE IF NOT EXISTS bakery_production_log (
 CREATE INDEX IF NOT EXISTS idx_bakery_production_log_tenant_date ON bakery_production_log(tenant_id, production_date);
 ALTER TABLE bakery_production_log ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
-  CREATE POLICY "Chefs can manage their own production log"
+  DROP POLICY IF EXISTS "Chefs can manage their own production log" ON bakery_production_log;
+CREATE POLICY "Chefs can manage their own production log"
     ON bakery_production_log
     FOR ALL
     USING (tenant_id = auth.uid() OR EXISTS (

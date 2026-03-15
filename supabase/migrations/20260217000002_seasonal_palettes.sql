@@ -63,16 +63,20 @@ CREATE INDEX idx_seasonal_palettes_dates ON seasonal_palettes(tenant_id, start_m
 -- RLS
 ALTER TABLE seasonal_palettes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS seasonal_palettes_tenant_select ON seasonal_palettes;
 CREATE POLICY seasonal_palettes_tenant_select ON seasonal_palettes
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS seasonal_palettes_tenant_insert ON seasonal_palettes;
 CREATE POLICY seasonal_palettes_tenant_insert ON seasonal_palettes
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS seasonal_palettes_tenant_update ON seasonal_palettes;
 CREATE POLICY seasonal_palettes_tenant_update ON seasonal_palettes
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS seasonal_palettes_tenant_delete ON seasonal_palettes;
 CREATE POLICY seasonal_palettes_tenant_delete ON seasonal_palettes
   FOR DELETE USING (tenant_id = get_current_tenant_id());
 

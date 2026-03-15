@@ -3,10 +3,10 @@
 -- Additive only. No existing tables modified.
 
 -- ENUM: Waitlist entry status
-DO $$ BEGIN DO $$ BEGIN
+DO $$ BEGIN
   CREATE TYPE waitlist_status AS ENUM ('waiting', 'notified', 'seated', 'cancelled', 'no_show');
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+END $$;
 
 -- Table: Waitlist Entries
 CREATE TABLE IF NOT EXISTS waitlist_entries (

@@ -41,6 +41,7 @@ CREATE TRIGGER set_plating_guides_updated_at
 -- =============================================================================
 
 ALTER TABLE plating_guides ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS chef_manages_own_plating_guides ON plating_guides;
 CREATE POLICY chef_manages_own_plating_guides ON plating_guides
   FOR ALL
   USING (chef_id = get_current_tenant_id())

@@ -15,11 +15,13 @@ DO $$ BEGIN
   END IF;
 END $$;
 -- RLS: Allow staff to see their own record
+DROP POLICY IF EXISTS sm_staff_select_own ON staff_members;
 CREATE POLICY sm_staff_select_own ON staff_members
   FOR SELECT USING (
     auth_user_id = auth.uid()
   );
 -- RLS: Allow staff to see their own event assignments
+DROP POLICY IF EXISTS esa_staff_select_own ON event_staff_assignments;
 CREATE POLICY esa_staff_select_own ON event_staff_assignments
   FOR SELECT USING (
     staff_member_id IN (

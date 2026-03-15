@@ -15,9 +15,10 @@ create table if not exists tip_entries (
   notes text null,
   created_at timestamptz not null default now()
 );
-create index idx_tip_entries_tenant_date on tip_entries(tenant_id, shift_date);
-create index idx_tip_entries_staff on tip_entries(tenant_id, staff_member_id);
+CREATE INDEX IF NOT EXISTS idx_tip_entries_tenant_date on tip_entries(tenant_id, shift_date);
+CREATE INDEX IF NOT EXISTS idx_tip_entries_staff on tip_entries(tenant_id, staff_member_id);
 alter table tip_entries enable row level security;
+DROP POLICY IF EXISTS "tip_entries_tenant_isolation" ON tip_entries;
 create policy "tip_entries_tenant_isolation" on tip_entries
   for all using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
@@ -32,8 +33,9 @@ create table if not exists tip_pool_configs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-create index idx_tip_pool_configs_tenant on tip_pool_configs(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_tip_pool_configs_tenant on tip_pool_configs(tenant_id);
 alter table tip_pool_configs enable row level security;
+DROP POLICY IF EXISTS "tip_pool_configs_tenant_isolation" ON tip_pool_configs;
 create policy "tip_pool_configs_tenant_isolation" on tip_pool_configs
   for all using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());
@@ -49,9 +51,10 @@ create table if not exists tip_distributions (
   method_used text not null,
   created_at timestamptz not null default now()
 );
-create index idx_tip_distributions_tenant_date on tip_distributions(tenant_id, distribution_date);
-create index idx_tip_distributions_staff on tip_distributions(tenant_id, staff_member_id);
+CREATE INDEX IF NOT EXISTS idx_tip_distributions_tenant_date on tip_distributions(tenant_id, distribution_date);
+CREATE INDEX IF NOT EXISTS idx_tip_distributions_staff on tip_distributions(tenant_id, staff_member_id);
 alter table tip_distributions enable row level security;
+DROP POLICY IF EXISTS "tip_distributions_tenant_isolation" ON tip_distributions;
 create policy "tip_distributions_tenant_isolation" on tip_distributions
   for all using (tenant_id = auth.uid())
   with check (tenant_id = auth.uid());

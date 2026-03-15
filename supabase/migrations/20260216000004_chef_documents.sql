@@ -27,6 +27,7 @@ CREATE TABLE chef_documents (
 -- RLS
 ALTER TABLE chef_documents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_documents_tenant_isolation ON chef_documents;
 CREATE POLICY chef_documents_tenant_isolation ON chef_documents
   FOR ALL
   USING (tenant_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'))

@@ -133,6 +133,7 @@ ALTER TABLE travel_leg_ingredients ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can manage their own legs
 -- Uses get_current_user_role() / get_current_tenant_id() helpers (established project pattern)
+DROP POLICY IF EXISTS "chefs_manage_own_travel_legs" ON event_travel_legs;
 CREATE POLICY "chefs_manage_own_travel_legs"
   ON event_travel_legs
   FOR ALL
@@ -140,6 +141,7 @@ CREATE POLICY "chefs_manage_own_travel_legs"
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- Chefs can manage travel_leg_ingredients via leg ownership (tenant-scoped join)
+DROP POLICY IF EXISTS "chefs_manage_own_travel_leg_ingredients" ON travel_leg_ingredients;
 CREATE POLICY "chefs_manage_own_travel_leg_ingredients"
   ON travel_leg_ingredients
   FOR ALL

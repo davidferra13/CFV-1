@@ -60,18 +60,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_cancellation_policies_one_default
 ALTER TABLE cancellation_policies ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
+  DROP POLICY IF EXISTS cp_chef_select ON cancellation_policies;
   CREATE POLICY cp_chef_select ON cancellation_policies FOR SELECT
     USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS cp_chef_insert ON cancellation_policies;
   CREATE POLICY cp_chef_insert ON cancellation_policies FOR INSERT
     WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS cp_chef_update ON cancellation_policies;
   CREATE POLICY cp_chef_update ON cancellation_policies FOR UPDATE
     USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
+  DROP POLICY IF EXISTS cp_chef_delete ON cancellation_policies;
   CREATE POLICY cp_chef_delete ON cancellation_policies FOR DELETE
     USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

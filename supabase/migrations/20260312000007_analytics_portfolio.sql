@@ -111,27 +111,45 @@ ALTER TABLE portfolio_items      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profile_highlights   ENABLE ROW LEVEL SECURITY;
 
 -- benchmark_snapshots
+DROP POLICY IF EXISTS bs_chef_select ON benchmark_snapshots;
 CREATE POLICY bs_chef_select ON benchmark_snapshots FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bs_chef_insert ON benchmark_snapshots;
 CREATE POLICY bs_chef_insert ON benchmark_snapshots FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bs_chef_update ON benchmark_snapshots;
 CREATE POLICY bs_chef_update ON benchmark_snapshots FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bs_chef_delete ON benchmark_snapshots;
 CREATE POLICY bs_chef_delete ON benchmark_snapshots FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- demand_forecasts
+DROP POLICY IF EXISTS df_chef_select ON demand_forecasts;
 CREATE POLICY df_chef_select ON demand_forecasts FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS df_chef_insert ON demand_forecasts;
 CREATE POLICY df_chef_insert ON demand_forecasts FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS df_chef_update ON demand_forecasts;
 CREATE POLICY df_chef_update ON demand_forecasts FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS df_chef_delete ON demand_forecasts;
 CREATE POLICY df_chef_delete ON demand_forecasts FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- portfolio_items (public read for published profiles)
+DROP POLICY IF EXISTS pi_chef_select ON portfolio_items;
 CREATE POLICY pi_chef_select ON portfolio_items FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pi_public_select ON portfolio_items;
 CREATE POLICY pi_public_select ON portfolio_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS pi_chef_insert ON portfolio_items;
 CREATE POLICY pi_chef_insert ON portfolio_items FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pi_chef_update ON portfolio_items;
 CREATE POLICY pi_chef_update ON portfolio_items FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS pi_chef_delete ON portfolio_items;
 CREATE POLICY pi_chef_delete ON portfolio_items FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- profile_highlights (public read for published profiles)
+DROP POLICY IF EXISTS ph_chef_select ON profile_highlights;
 CREATE POLICY ph_chef_select ON profile_highlights FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ph_public_select ON profile_highlights;
 CREATE POLICY ph_public_select ON profile_highlights FOR SELECT USING (true);
+DROP POLICY IF EXISTS ph_chef_insert ON profile_highlights;
 CREATE POLICY ph_chef_insert ON profile_highlights FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ph_chef_update ON profile_highlights;
 CREATE POLICY ph_chef_update ON profile_highlights FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ph_chef_delete ON profile_highlights;
 CREATE POLICY ph_chef_delete ON profile_highlights FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

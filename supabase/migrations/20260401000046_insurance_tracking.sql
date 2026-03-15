@@ -18,6 +18,7 @@ create table if not exists insurance_policies (
 
 alter table insurance_policies enable row level security;
 
+DROP POLICY IF EXISTS "chef_own_insurance" ON insurance_policies;
 create policy "chef_own_insurance" on insurance_policies for all using (chef_id = auth.uid());
 
-create index idx_insurance_chef on insurance_policies(chef_id, end_date);
+CREATE INDEX IF NOT EXISTS idx_insurance_chef on insurance_policies(chef_id, end_date);

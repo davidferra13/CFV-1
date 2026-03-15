@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS event_equipment_assignments (
 CREATE INDEX idx_eq_assign_event ON event_equipment_assignments(event_id);
 CREATE INDEX idx_eq_assign_chef  ON event_equipment_assignments(chef_id, event_id);
 ALTER TABLE event_equipment_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS eq_assign_chef_all ON event_equipment_assignments;
 CREATE POLICY eq_assign_chef_all ON event_equipment_assignments
   FOR ALL USING (
     get_current_user_role() = 'chef'
@@ -57,6 +58,7 @@ ALTER TABLE front_of_house_menus
 CREATE INDEX IF NOT EXISTS idx_foh_share_token
   ON front_of_house_menus(share_token) WHERE share_token IS NOT NULL;
 -- Public access policy for shared menus (no auth required, token-based)
+DROP POLICY IF EXISTS foh_public_share ON front_of_house_menus;
 CREATE POLICY foh_public_share ON front_of_house_menus
   FOR SELECT USING (
     share_token IS NOT NULL
@@ -93,6 +95,7 @@ CREATE TABLE IF NOT EXISTS event_leftover_details (
 CREATE INDEX idx_leftover_event ON event_leftover_details(event_id);
 CREATE INDEX idx_leftover_chef  ON event_leftover_details(chef_id, captured_at DESC);
 ALTER TABLE event_leftover_details ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS leftover_chef_all ON event_leftover_details;
 CREATE POLICY leftover_chef_all ON event_leftover_details
   FOR ALL USING (
     get_current_user_role() = 'chef'

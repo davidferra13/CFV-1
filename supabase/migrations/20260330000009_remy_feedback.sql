@@ -40,10 +40,12 @@ CREATE INDEX idx_remy_feedback_rating
 -- RLS: chefs can only see/create their own feedback
 ALTER TABLE remy_feedback ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can insert their own feedback" ON remy_feedback;
 CREATE POLICY "Chefs can insert their own feedback"
   ON remy_feedback FOR INSERT
   WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
+DROP POLICY IF EXISTS "Chefs can view their own feedback" ON remy_feedback;
 CREATE POLICY "Chefs can view their own feedback"
   ON remy_feedback FOR SELECT
   USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);

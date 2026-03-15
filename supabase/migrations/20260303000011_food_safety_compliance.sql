@@ -93,12 +93,20 @@ COMMENT ON COLUMN event_temp_logs.is_safe IS 'Chef-assessed: was the temperature
 ALTER TABLE chef_certifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_temp_logs     ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS cert_chef_select ON chef_certifications;
 CREATE POLICY cert_chef_select ON chef_certifications FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cert_chef_insert ON chef_certifications;
 CREATE POLICY cert_chef_insert ON chef_certifications FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cert_chef_update ON chef_certifications;
 CREATE POLICY cert_chef_update ON chef_certifications FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS cert_chef_delete ON chef_certifications;
 CREATE POLICY cert_chef_delete ON chef_certifications FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tl_chef_select ON event_temp_logs;
 CREATE POLICY tl_chef_select ON event_temp_logs FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS tl_chef_insert ON event_temp_logs;
 CREATE POLICY tl_chef_insert ON event_temp_logs FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS tl_chef_update ON event_temp_logs;
 CREATE POLICY tl_chef_update ON event_temp_logs FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS tl_chef_delete ON event_temp_logs;
 CREATE POLICY tl_chef_delete ON event_temp_logs FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

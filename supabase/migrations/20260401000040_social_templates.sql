@@ -13,5 +13,6 @@ create table if not exists social_templates (
   updated_at timestamptz not null default now()
 );
 alter table social_templates enable row level security;
+DROP POLICY IF EXISTS "chef_own_social_templates" ON social_templates;
 create policy "chef_own_social_templates" on social_templates for all using (chef_id = auth.uid());
-create index idx_social_templates_chef on social_templates(chef_id, platform);
+CREATE INDEX IF NOT EXISTS idx_social_templates_chef on social_templates(chef_id, platform);

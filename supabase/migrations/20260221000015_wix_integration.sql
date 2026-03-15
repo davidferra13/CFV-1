@@ -98,6 +98,7 @@ ALTER TABLE wix_connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wix_submissions ENABLE ROW LEVEL SECURITY;
 
 -- wix_connections: chefs can read/write only their own row
+DROP POLICY IF EXISTS "Chefs manage own wix connection" ON wix_connections;
 CREATE POLICY "Chefs manage own wix connection"
   ON wix_connections
   FOR ALL
@@ -115,6 +116,7 @@ CREATE POLICY "Chefs manage own wix connection"
   );
 
 -- wix_submissions: chefs can read their own tenant submissions
+DROP POLICY IF EXISTS "Chefs read own wix submissions" ON wix_submissions;
 CREATE POLICY "Chefs read own wix submissions"
   ON wix_submissions
   FOR SELECT
@@ -126,6 +128,7 @@ CREATE POLICY "Chefs read own wix submissions"
   );
 
 -- Service role can manage wix_connections (for webhook processing)
+DROP POLICY IF EXISTS "Service role manages wix connections" ON wix_connections;
 CREATE POLICY "Service role manages wix connections"
   ON wix_connections
   FOR ALL
@@ -133,6 +136,7 @@ CREATE POLICY "Service role manages wix connections"
   WITH CHECK (auth.role() = 'service_role');
 
 -- Service role can manage wix_submissions (for webhook + cron processing)
+DROP POLICY IF EXISTS "Service role manages wix submissions" ON wix_submissions;
 CREATE POLICY "Service role manages wix submissions"
   ON wix_submissions
   FOR ALL

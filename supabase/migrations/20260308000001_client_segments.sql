@@ -14,6 +14,7 @@ CREATE INDEX IF NOT EXISTS idx_client_segments_tenant ON client_segments(tenant_
 
 ALTER TABLE client_segments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef owns segments" ON client_segments;
 CREATE POLICY "Chef owns segments" ON client_segments
   FOR ALL USING (tenant_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

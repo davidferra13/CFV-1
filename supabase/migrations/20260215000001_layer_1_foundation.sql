@@ -392,11 +392,13 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 -- ============================================
 
 -- Chefs can read their own record only
+DROP POLICY IF EXISTS chefs_select ON chefs;
 CREATE POLICY chefs_select ON chefs
   FOR SELECT
   USING (auth.uid() = auth_user_id);
 
 -- Chefs can update their own record only
+DROP POLICY IF EXISTS chefs_update ON chefs;
 CREATE POLICY chefs_update ON chefs
   FOR UPDATE
   USING (auth.uid() = auth_user_id);
@@ -409,6 +411,7 @@ COMMENT ON POLICY chefs_update ON chefs IS 'Chefs can only update their own prof
 -- ============================================
 
 -- Chefs can read their own clients only
+DROP POLICY IF EXISTS clients_chef_select ON clients;
 CREATE POLICY clients_chef_select ON clients
   FOR SELECT
   USING (
@@ -417,6 +420,7 @@ CREATE POLICY clients_chef_select ON clients
   );
 
 -- Chefs can insert clients into their tenant
+DROP POLICY IF EXISTS clients_chef_insert ON clients;
 CREATE POLICY clients_chef_insert ON clients
   FOR INSERT
   WITH CHECK (
@@ -425,6 +429,7 @@ CREATE POLICY clients_chef_insert ON clients
   );
 
 -- Chefs can update their clients
+DROP POLICY IF EXISTS clients_chef_update ON clients;
 CREATE POLICY clients_chef_update ON clients
   FOR UPDATE
   USING (
@@ -433,6 +438,7 @@ CREATE POLICY clients_chef_update ON clients
   );
 
 -- Clients can read their own record
+DROP POLICY IF EXISTS clients_self_select ON clients;
 CREATE POLICY clients_self_select ON clients
   FOR SELECT
   USING (
@@ -441,6 +447,7 @@ CREATE POLICY clients_self_select ON clients
   );
 
 -- Clients can update their own record (limited fields via app logic)
+DROP POLICY IF EXISTS clients_self_update ON clients;
 CREATE POLICY clients_self_update ON clients
   FOR UPDATE
   USING (
@@ -460,6 +467,7 @@ COMMENT ON POLICY clients_self_select ON clients IS 'Clients see only their own 
 -- ============================================
 
 -- Users can read their own role
+DROP POLICY IF EXISTS user_roles_self_select ON user_roles;
 CREATE POLICY user_roles_self_select ON user_roles
   FOR SELECT
   USING (auth.uid() = auth_user_id);
@@ -474,6 +482,7 @@ COMMENT ON POLICY user_roles_self_select ON user_roles IS 'Users can see their o
 -- ============================================
 
 -- Chefs can manage invitations for their tenant
+DROP POLICY IF EXISTS invitations_chef_all ON client_invitations;
 CREATE POLICY invitations_chef_all ON client_invitations
   FOR ALL
   USING (
@@ -486,6 +495,7 @@ CREATE POLICY invitations_chef_all ON client_invitations
 -- always query with a specific token value in the WHERE clause to prevent enumeration.
 -- Example: SELECT * FROM client_invitations WHERE token = 'xyz123abc...'
 -- DO NOT query without filtering by token - this would expose all valid invitations.
+DROP POLICY IF EXISTS invitations_public_select_by_token ON client_invitations;
 CREATE POLICY invitations_public_select_by_token ON client_invitations
   FOR SELECT
   USING (
@@ -502,6 +512,7 @@ COMMENT ON POLICY invitations_public_select_by_token ON client_invitations IS 'P
 -- ============================================
 
 -- Chefs can read audit logs for their tenant
+DROP POLICY IF EXISTS audit_log_chef_select ON audit_log;
 CREATE POLICY audit_log_chef_select ON audit_log
   FOR SELECT
   USING (

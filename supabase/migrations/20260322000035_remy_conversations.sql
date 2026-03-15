@@ -19,6 +19,7 @@ CREATE INDEX idx_remy_conversations_tenant_recent
 -- RLS
 ALTER TABLE remy_conversations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_conversations_select ON remy_conversations;
 CREATE POLICY remy_conversations_select ON remy_conversations
   FOR SELECT USING (
     tenant_id IN (
@@ -27,6 +28,7 @@ CREATE POLICY remy_conversations_select ON remy_conversations
     )
   );
 
+DROP POLICY IF EXISTS remy_conversations_insert ON remy_conversations;
 CREATE POLICY remy_conversations_insert ON remy_conversations
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -35,6 +37,7 @@ CREATE POLICY remy_conversations_insert ON remy_conversations
     )
   );
 
+DROP POLICY IF EXISTS remy_conversations_update ON remy_conversations;
 CREATE POLICY remy_conversations_update ON remy_conversations
   FOR UPDATE USING (
     tenant_id IN (
@@ -43,6 +46,7 @@ CREATE POLICY remy_conversations_update ON remy_conversations
     )
   );
 
+DROP POLICY IF EXISTS remy_conversations_delete ON remy_conversations;
 CREATE POLICY remy_conversations_delete ON remy_conversations
   FOR DELETE USING (
     tenant_id IN (
@@ -80,6 +84,7 @@ CREATE INDEX idx_remy_messages_tenant
 -- RLS
 ALTER TABLE remy_messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS remy_messages_select ON remy_messages;
 CREATE POLICY remy_messages_select ON remy_messages
   FOR SELECT USING (
     tenant_id IN (
@@ -88,6 +93,7 @@ CREATE POLICY remy_messages_select ON remy_messages
     )
   );
 
+DROP POLICY IF EXISTS remy_messages_insert ON remy_messages;
 CREATE POLICY remy_messages_insert ON remy_messages
   FOR INSERT WITH CHECK (
     tenant_id IN (

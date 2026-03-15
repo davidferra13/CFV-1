@@ -75,6 +75,7 @@ CREATE INDEX idx_menu_modifications_tenant ON menu_modifications(tenant_id);
 
 ALTER TABLE menu_modifications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own menu modifications" ON menu_modifications;
 CREATE POLICY "Chefs manage own menu modifications"
   ON menu_modifications
   FOR ALL
@@ -104,6 +105,7 @@ CREATE INDEX idx_ingredient_price_history_tenant ON ingredient_price_history(ten
 
 ALTER TABLE ingredient_price_history ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own ingredient price history" ON ingredient_price_history;
 CREATE POLICY "Chefs manage own ingredient price history"
   ON ingredient_price_history
   FOR ALL
@@ -131,6 +133,7 @@ CREATE INDEX idx_unused_ingredients_tenant ON unused_ingredients(tenant_id);
 
 ALTER TABLE unused_ingredients ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own unused ingredients" ON unused_ingredients;
 CREATE POLICY "Chefs manage own unused ingredients"
   ON unused_ingredients
   FOR ALL
@@ -158,6 +161,7 @@ CREATE INDEX idx_shopping_substitutions_tenant ON shopping_substitutions(tenant_
 
 ALTER TABLE shopping_substitutions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own shopping substitutions" ON shopping_substitutions;
 CREATE POLICY "Chefs manage own shopping substitutions"
   ON shopping_substitutions
   FOR ALL
