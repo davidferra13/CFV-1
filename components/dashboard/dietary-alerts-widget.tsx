@@ -1,79 +1,109 @@
-// Dietary & Allergy Alert Summary Widget
-import Link from 'next/link'
-import { Card } from '@/components/ui/card'
-import { format } from 'date-fns'
-import type { DietaryAlertItem } from '@/lib/dashboard/widget-actions'
+'use client'
 
-interface Props {
-  alerts: DietaryAlertItem[]
+import { useState, useEffect, useTransition } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { getDietaryAlerts, getAlertStats } from '@/lib/clients/dietary-alert-actions'
+import type { DietaryAlert, AlertStats } from '@/lib/clients/dietary-alert-actions'
+import { AlertTriangle } from 'lucide-react'
+
+const severityBadge = {
+  critical: 'error' as const,
+  warning: 'warning' as const,
+  info: 'info' as const,
 }
 
-export function DietaryAlertsWidget({ alerts }: Props) {
-  if (alerts.length === 0) return null
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
+}
 
-  const totalAllergies = alerts.reduce((sum, a) => sum + a.allergies.length, 0)
-  const totalRestrictions = alerts.reduce((sum, a) => sum + a.restrictions.length, 0)
+export function DietaryAlertsWidget() {
+  const [stats, setStats] = useState<AlertStats | null>(null)
+  const [criticalAlerts, setCriticalAlerts] = useState<DietaryAlert[]>([])
+  const [error, setError] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    startTransition(async () => {
+      try {
+        const [alertStats, alerts] = await Promise.all([getAlertStats(), getDietaryAlerts(true)])
+        setStats(alertStats)
+        // Show latest 3 critical alerts
+        setCriticalAlerts(alerts.filter((a) => a.severity === 'critical').slice(0, 3))
+      } catch {
+        setError(true)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (error) {
+    return (
+      <div className="p-4 rounded-lg border border-stone-200 bg-white">
+        <p className="text-sm text-stone-400">Could not load dietary alerts</p>
+      </div>
+    )
+  }
+
+  if (!stats && isPending) {
+    return (
+      <div className="p-4 rounded-lg border border-stone-200 bg-white">
+        <p className="text-sm text-stone-400">Loading alerts...</p>
+      </div>
+    )
+  }
+
+  if (!stats) return null
 
   return (
-    <Card className="p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-red-500 text-lg" aria-hidden="true">
-          !
-        </span>
-        <div>
-          <h3 className="text-sm font-semibold text-stone-100">Dietary & Allergy Alerts</h3>
-          <p className="text-xs text-stone-500">
-            {alerts.length} upcoming event{alerts.length !== 1 ? 's' : ''} with dietary needs
-          </p>
+    <div className="p-4 rounded-lg border border-stone-200 bg-white">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <h4 className="font-medium text-sm">Dietary Alerts</h4>
         </div>
+        {stats.unacknowledged > 0 && <Badge variant="error">{stats.unacknowledged}</Badge>}
       </div>
 
-      {(totalAllergies > 0 || totalRestrictions > 0) && (
-        <div className="flex gap-2 mb-3">
-          {totalAllergies > 0 && (
-            <span className="rounded-full border border-red-700 bg-red-950 px-2 py-0.5 text-xs text-red-300">
-              {totalAllergies} allerg{totalAllergies === 1 ? 'y' : 'ies'}
-            </span>
-          )}
-          {totalRestrictions > 0 && (
-            <span className="rounded-full border border-amber-700 bg-amber-950 px-2 py-0.5 text-xs text-amber-300">
-              {totalRestrictions} restriction{totalRestrictions === 1 ? '' : 's'}
-            </span>
-          )}
-        </div>
-      )}
+      {stats.unacknowledged === 0 ? (
+        <p className="text-xs text-stone-400">No new dietary alerts</p>
+      ) : (
+        <>
+          {/* Summary counts */}
+          <div className="flex gap-3 mb-3 text-xs text-stone-500">
+            {stats.critical > 0 && <span className="text-red-600">{stats.critical} critical</span>}
+            {stats.warning > 0 && <span className="text-amber-600">{stats.warning} warning</span>}
+            {stats.info > 0 && <span className="text-blue-600">{stats.info} info</span>}
+          </div>
 
-      <div className="space-y-2">
-        {alerts.map((a) => (
-          <Link
-            key={a.eventId}
-            href={`/events/${a.eventId}`}
-            className="block rounded-md px-2 py-2 hover:bg-stone-800 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-stone-100 truncate">{a.occasion}</p>
-              <span className="text-xs text-stone-500 shrink-0 ml-2">
-                {format(new Date(a.eventDate + 'T00:00:00'), 'MMM d')}
-              </span>
+          {/* Latest critical alerts */}
+          {criticalAlerts.length > 0 && (
+            <div className="space-y-1.5">
+              {criticalAlerts.map((alert) => (
+                <div key={alert.id} className="flex items-center gap-2 text-xs">
+                  <Badge
+                    variant={
+                      severityBadge[alert.severity as keyof typeof severityBadge] || 'default'
+                    }
+                  >
+                    {alert.severity}
+                  </Badge>
+                  <span className="truncate flex-1 text-stone-700">
+                    {alert.client_name}: {alert.field_name}
+                  </span>
+                  <span className="text-stone-400 shrink-0">{timeAgo(alert.created_at)}</span>
+                </div>
+              ))}
             </div>
-            <p className="text-xs text-stone-500 mt-0.5">
-              {a.clientName}
-              {a.guestCount > 0 ? ` · ${a.guestCount} guests` : ''}
-            </p>
-            {a.allergies.length > 0 && (
-              <p className="text-xs text-red-400 mt-1">Allergies: {a.allergies.join(', ')}</p>
-            )}
-            {a.restrictions.length > 0 && (
-              <p className="text-xs text-amber-400 mt-0.5">
-                Restrictions: {a.restrictions.join(', ')}
-              </p>
-            )}
-            {a.dietaryNotes && (
-              <p className="text-xs text-stone-400 mt-0.5 truncate">Notes: {a.dietaryNotes}</p>
-            )}
-          </Link>
-        ))}
-      </div>
-    </Card>
+          )}
+        </>
+      )}
+    </div>
   )
 }
