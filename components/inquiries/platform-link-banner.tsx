@@ -18,6 +18,9 @@ const PLATFORM_DISPLAY: Record<string, { label: string; badge: string }> = {
   gigsalad: { label: 'GigSalad', badge: 'GigSalad' },
   google_business: { label: 'Google Business', badge: 'Google' },
   wix_forms: { label: 'Wix', badge: 'Wix' },
+  privatechefmanager: { label: 'PrivateChefManager', badge: 'PCM' },
+  hireachef: { label: 'HireAChef', badge: 'HireAChef' },
+  cuisineistchef: { label: 'CuisineistChef', badge: 'Cuisineist' },
 }
 
 interface PlatformLinkBannerProps {

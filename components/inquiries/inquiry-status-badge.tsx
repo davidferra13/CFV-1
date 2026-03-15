@@ -54,6 +54,9 @@ const CHANNEL_CONFIG: Record<
   outbound_prospecting: { label: 'Outbound', variant: 'warning' },
   kiosk: { label: 'Kiosk', variant: 'default' },
   campaign_response: { label: 'Campaign', variant: 'warning' },
+  privatechefmanager: { label: 'PCM', variant: 'info' },
+  hireachef: { label: 'HireAChef', variant: 'info' },
+  cuisineistchef: { label: 'Cuisineist', variant: 'info' },
 }
 
 export function InquiryChannelBadge({ channel }: { channel: string }) {
