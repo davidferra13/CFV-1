@@ -35,6 +35,15 @@ const MIME_TO_EXT: Record<string, string> = {
 
 // ─── Type ─────────────────────────────────────────────────────────────────────
 
+export type PhotoType =
+  | 'plating'
+  | 'setup'
+  | 'process'
+  | 'ingredients'
+  | 'ambiance'
+  | 'team'
+  | 'other'
+
 export type EventPhoto = {
   id: string
   event_id: string
@@ -49,6 +58,11 @@ export type EventPhoto = {
   created_at: string
   updated_at: string
   deleted_at: string | null
+  photo_type: PhotoType | null
+  is_portfolio: boolean
+  is_public: boolean
+  thumbnail_path: string | null
+  taken_at: string | null
   // Populated on-demand, never stored in DB
   signedUrl: string
 }
@@ -421,6 +435,7 @@ export async function updatePhotoCaption(
 export type PortfolioPhoto = EventPhoto & {
   event_occasion: string | null
   event_date: string | null
+  event_name: string | null
 }
 
 export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
@@ -429,7 +444,7 @@ export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
 
   const { data: photos, error } = await supabase
     .from('event_photos')
-    .select('*, events(occasion, event_date)')
+    .select('*, events(occasion, event_date, name)')
     .eq('tenant_id', user.tenantId!)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -446,6 +461,7 @@ export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
     ...p,
     event_occasion: p.events?.occasion ?? null,
     event_date: p.events?.event_date ?? null,
+    event_name: p.events?.name ?? null,
     events: undefined,
   }))
 
@@ -541,4 +557,156 @@ export async function reorderEventPhotos(
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
   return { success: true }
+}
+
+// ── updatePhotoDetails ──────────────────────────────────────────────────────
+
+/**
+ * Chef only. Update caption, photo_type, is_portfolio, is_public, taken_at for a photo.
+ */
+export async function updatePhotoDetails(
+  photoId: string,
+  data: {
+    caption?: string
+    photo_type?: PhotoType | null
+    is_portfolio?: boolean
+    is_public?: boolean
+    taken_at?: string | null
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const updatePayload: Record<string, unknown> = {}
+  if (data.caption !== undefined) updatePayload.caption = data.caption.trim() || null
+  if (data.photo_type !== undefined) updatePayload.photo_type = data.photo_type
+  if (data.is_portfolio !== undefined) updatePayload.is_portfolio = data.is_portfolio
+  if (data.is_public !== undefined) updatePayload.is_public = data.is_public
+  if (data.taken_at !== undefined) updatePayload.taken_at = data.taken_at
+
+  if (Object.keys(updatePayload).length === 0) {
+    return { success: true }
+  }
+
+  const { data: photo, error } = await supabase
+    .from('event_photos')
+    .update(updatePayload)
+    .eq('id', photoId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
+    .select('event_id')
+    .single()
+
+  if (error || !photo) {
+    console.error('[updatePhotoDetails] Error:', error)
+    return { success: false, error: 'Failed to update photo details' }
+  }
+
+  revalidatePath(`/events/${photo.event_id}`)
+  revalidatePath(`/my-events/${photo.event_id}`)
+  revalidatePath('/portfolio')
+  return { success: true }
+}
+
+// ── togglePortfolio ─────────────────────────────────────────────────────────
+
+/**
+ * Chef only. Toggle the is_portfolio flag on a photo.
+ */
+export async function togglePortfolio(
+  photoId: string
+): Promise<{ success: boolean; is_portfolio?: boolean; error?: string }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Fetch current state
+  const { data: photo } = await supabase
+    .from('event_photos')
+    .select('is_portfolio, event_id')
+    .eq('id', photoId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
+    .single()
+
+  if (!photo) return { success: false, error: 'Photo not found' }
+
+  const newValue = !photo.is_portfolio
+
+  const { error } = await supabase
+    .from('event_photos')
+    .update({ is_portfolio: newValue })
+    .eq('id', photoId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[togglePortfolio] Error:', error)
+    return { success: false, error: 'Failed to toggle portfolio flag' }
+  }
+
+  revalidatePath(`/events/${photo.event_id}`)
+  revalidatePath('/portfolio')
+  return { success: true, is_portfolio: newValue }
+}
+
+// ── getPublicPortfolio ──────────────────────────────────────────────────────
+
+/**
+ * Public query. Returns all public portfolio photos for a chef.
+ * No auth required (for chef website/embedding).
+ */
+export type PublicPortfolioPhoto = {
+  id: string
+  storage_path: string
+  caption: string | null
+  photo_type: PhotoType | null
+  display_order: number
+  taken_at: string | null
+  created_at: string
+  event_occasion: string | null
+  event_date: string | null
+  signedUrl: string
+}
+
+export async function getPublicPortfolio(chefId: string): Promise<PublicPortfolioPhoto[]> {
+  const supabase: any = createServerClient()
+
+  const { data: photos, error } = await supabase
+    .from('event_photos')
+    .select(
+      'id, storage_path, caption, photo_type, display_order, taken_at, created_at, events(occasion, event_date)'
+    )
+    .eq('tenant_id', chefId)
+    .eq('is_public', true)
+    .eq('is_portfolio', true)
+    .is('deleted_at', null)
+    .order('display_order', { ascending: true })
+
+  if (error || !photos?.length) {
+    if (error) console.error('[getPublicPortfolio] Error:', error)
+    return []
+  }
+
+  // Hydrate signed URLs
+  const paths = photos.map((p: any) => p.storage_path)
+  const { data: signedData } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
+
+  const signedMap: Record<string, string> = {}
+  for (const s of signedData ?? []) {
+    if (s.signedUrl && s.path) signedMap[s.path] = s.signedUrl
+  }
+
+  return photos.map((p: any) => ({
+    id: p.id,
+    storage_path: p.storage_path,
+    caption: p.caption,
+    photo_type: p.photo_type,
+    display_order: p.display_order,
+    taken_at: p.taken_at,
+    created_at: p.created_at,
+    event_occasion: p.events?.occasion ?? null,
+    event_date: p.events?.event_date ?? null,
+    signedUrl: signedMap[p.storage_path] ?? '',
+  }))
 }

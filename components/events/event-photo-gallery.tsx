@@ -13,9 +13,31 @@ import {
   uploadEventPhoto,
   deleteEventPhoto,
   updatePhotoCaption,
+  updatePhotoDetails,
+  togglePortfolio,
   reorderEventPhotos,
 } from '@/lib/events/photo-actions'
-import type { EventPhoto } from '@/lib/events/photo-actions'
+import type { EventPhoto, PhotoType } from '@/lib/events/photo-actions'
+
+const PHOTO_TYPE_LABELS: Record<string, string> = {
+  plating: 'Plating',
+  setup: 'Setup',
+  process: 'Process',
+  ingredients: 'Ingredients',
+  ambiance: 'Ambiance',
+  team: 'Team',
+  other: 'Other',
+}
+
+const PHOTO_TYPE_COLORS: Record<string, string> = {
+  plating: 'bg-amber-600/80',
+  setup: 'bg-blue-600/80',
+  process: 'bg-purple-600/80',
+  ingredients: 'bg-green-600/80',
+  ambiance: 'bg-pink-600/80',
+  team: 'bg-cyan-600/80',
+  other: 'bg-stone-600/80',
+}
 
 const MAX_PHOTOS = 50
 
@@ -30,6 +52,8 @@ type PhotoCardProps = {
   onMoveUp: () => void
   onMoveDown: () => void
   onPreview: () => void
+  onTogglePortfolio: () => void
+  onPhotoTypeChange: (type: PhotoType | null) => void
 }
 
 function PhotoCard({
@@ -41,6 +65,8 @@ function PhotoCard({
   onMoveUp,
   onMoveDown,
   onPreview,
+  onTogglePortfolio,
+  onPhotoTypeChange,
 }: PhotoCardProps) {
   const [caption, setCaption] = useState(photo.caption ?? '')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -122,15 +148,46 @@ function PhotoCard({
             </svg>
           </button>
         </div>
-        {/* File size badge — top-right */}
-        <div className="absolute top-1.5 right-1.5">
+        {/* Photo type badge — top-right */}
+        <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-1">
+          {photo.photo_type && (
+            <span
+              className={`text-xs text-white px-1.5 py-0.5 rounded ${PHOTO_TYPE_COLORS[photo.photo_type] ?? 'bg-stone-600/80'}`}
+            >
+              {PHOTO_TYPE_LABELS[photo.photo_type] ?? photo.photo_type}
+            </span>
+          )}
           <span className="text-xs bg-black/50 text-white px-1.5 py-0.5 rounded">
             {fileSizeLabel}
           </span>
         </div>
+        {/* Portfolio star — bottom-right overlay */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onTogglePortfolio()
+          }}
+          title={photo.is_portfolio ? 'Remove from portfolio' : 'Add to portfolio'}
+          className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition"
+        >
+          <svg
+            className={`w-4 h-4 ${photo.is_portfolio ? 'text-amber-400 fill-amber-400' : 'text-white/70'}`}
+            fill={photo.is_portfolio ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+            />
+          </svg>
+        </button>
       </div>
 
-      {/* Caption & actions */}
+      {/* Caption, type selector & actions */}
       <div className="p-2.5 flex flex-col gap-2">
         <input
           type="text"
@@ -141,6 +198,20 @@ function PhotoCard({
           maxLength={200}
           className="w-full text-xs text-stone-300 placeholder:text-stone-400 bg-stone-800 border border-stone-700 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
         />
+        <select
+          value={photo.photo_type ?? ''}
+          onChange={(e) => onPhotoTypeChange((e.target.value || null) as PhotoType | null)}
+          aria-label="Photo type"
+          title="Photo type"
+          className="w-full text-xs text-stone-300 bg-stone-800 border border-stone-700 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-400"
+        >
+          <option value="">No type</option>
+          {Object.entries(PHOTO_TYPE_LABELS).map(([val, label]) => (
+            <option key={val} value={val}>
+              {label}
+            </option>
+          ))}
+        </select>
         <div className="flex items-center justify-between gap-1">
           <span className="text-xs text-stone-400 truncate" title={photo.filename_original}>
             {photo.filename_original || 'photo'}
@@ -305,6 +376,48 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
     }
   }
 
+  // ── Toggle portfolio ──
+
+  function handleTogglePortfolio(photoId: string) {
+    const previous = [...photos]
+    setPhotos((prev) =>
+      prev.map((p) => (p.id === photoId ? { ...p, is_portfolio: !p.is_portfolio } : p))
+    )
+    startTransition(async () => {
+      try {
+        const result = await togglePortfolio(photoId)
+        if (!result.success) {
+          setPhotos(previous)
+          toast.error(result.error ?? 'Failed to update portfolio flag')
+        } else {
+          toast.success(result.is_portfolio ? 'Added to portfolio' : 'Removed from portfolio')
+        }
+      } catch {
+        setPhotos(previous)
+        toast.error('Failed to update portfolio flag')
+      }
+    })
+  }
+
+  // ── Photo type change ──
+
+  function handlePhotoTypeChange(photoId: string, type: PhotoType | null) {
+    const previous = [...photos]
+    setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, photo_type: type } : p)))
+    startTransition(async () => {
+      try {
+        const result = await updatePhotoDetails(photoId, { photo_type: type })
+        if (!result.success) {
+          setPhotos(previous)
+          toast.error(result.error ?? 'Failed to update photo type')
+        }
+      } catch {
+        setPhotos(previous)
+        toast.error('Failed to update photo type')
+      }
+    })
+  }
+
   // ── Reorder (swap adjacent) ──
 
   async function handleMove(index: number, direction: 'up' | 'down') {
@@ -454,6 +567,8 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
                 onMoveUp={() => handleMove(index, 'up')}
                 onMoveDown={() => handleMove(index, 'down')}
                 onPreview={() => setPreviewIndex(index)}
+                onTogglePortfolio={() => handleTogglePortfolio(photo.id)}
+                onPhotoTypeChange={(type) => handlePhotoTypeChange(photo.id, type)}
               />
             ))}
           </div>
