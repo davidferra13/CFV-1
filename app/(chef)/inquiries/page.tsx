@@ -42,6 +42,7 @@ import { getPlatformAnalytics } from '@/lib/inquiries/platform-analytics'
 import { PlatformAnalyticsCard } from '@/components/inquiries/platform-analytics-card'
 import { getPlatformCPL } from '@/lib/inquiries/platform-cpl'
 import { PlatformSpendForm } from '@/components/inquiries/platform-spend-form'
+import { getPlatformSLAStats } from '@/lib/analytics/platform-sla'
 import { getPlatformRawFeed } from '@/lib/inquiries/platform-raw-feed'
 import { PlatformRawFeedTab } from '@/components/inquiries/platform-raw-feed-tab'
 import { safeFetch } from '@/lib/utils/safe-fetch'
@@ -237,13 +238,21 @@ function InquiryRow({
 }
 
 async function PlatformAnalyticsSection() {
-  const [analytics, cplData] = await Promise.all([
+  const [analytics, cplData, slaRaw] = await Promise.all([
     getPlatformAnalytics(),
     getPlatformCPL().catch(() => []),
+    getPlatformSLAStats().catch(() => []),
   ])
+  const slaStats = slaRaw.map((s) => ({
+    channelKey: s.channelKey,
+    channel: s.channel,
+    avgResponseHours: s.avgResponseHours,
+    slaHitRate: s.slaHitRate,
+    targetHours: s.targetHours,
+  }))
   return (
     <div className="space-y-2">
-      <PlatformAnalyticsCard analytics={analytics} cplData={cplData} />
+      <PlatformAnalyticsCard analytics={analytics} cplData={cplData} slaStats={slaStats} />
       <PlatformSpendForm />
     </div>
   )

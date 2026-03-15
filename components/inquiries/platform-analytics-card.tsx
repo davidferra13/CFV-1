@@ -40,6 +40,7 @@ export function PlatformAnalyticsCard({
           <span>{analytics.totalInquiries} total</span>
           <span>{analytics.overallConversionRate}% conversion</span>
           {cplData && cplData.length > 0 && <span className="text-stone-500">CPL</span>}
+          {slaStats && slaStats.length > 0 && <span className="text-stone-500">Avg / SLA</span>}
           {analytics.bestPlatform && (
             <span className="text-emerald-400">Best: {analytics.bestPlatform}</span>
           )}
