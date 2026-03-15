@@ -40,6 +40,8 @@ import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-b
 import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
 import { getPlatformAnalytics } from '@/lib/inquiries/platform-analytics'
 import { PlatformAnalyticsCard } from '@/components/inquiries/platform-analytics-card'
+import { getPlatformCPL } from '@/lib/inquiries/platform-cpl'
+import { PlatformSpendForm } from '@/components/inquiries/platform-spend-form'
 import { getPlatformRawFeed } from '@/lib/inquiries/platform-raw-feed'
 import { PlatformRawFeedTab } from '@/components/inquiries/platform-raw-feed-tab'
 import { safeFetch } from '@/lib/utils/safe-fetch'
@@ -235,8 +237,16 @@ function InquiryRow({
 }
 
 async function PlatformAnalyticsSection() {
-  const analytics = await getPlatformAnalytics()
-  return <PlatformAnalyticsCard analytics={analytics} />
+  const [analytics, cplData] = await Promise.all([
+    getPlatformAnalytics(),
+    getPlatformCPL().catch(() => []),
+  ])
+  return (
+    <div className="space-y-2">
+      <PlatformAnalyticsCard analytics={analytics} cplData={cplData} />
+      <PlatformSpendForm />
+    </div>
+  )
 }
 
 async function PlatformRawFeedSection() {

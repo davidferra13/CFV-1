@@ -2,11 +2,32 @@
 
 import type { PlatformAnalytics } from '@/lib/inquiries/platform-analytics'
 
-interface PlatformAnalyticsCardProps {
-  analytics: PlatformAnalytics
+interface CPLEntry {
+  channelKey: string
+  channel: string
+  cplCents: number | null
+  cpcCents: number | null
 }
 
-export function PlatformAnalyticsCard({ analytics }: PlatformAnalyticsCardProps) {
+interface SLAStatEntry {
+  channelKey: string
+  channel?: string // display name for matching
+  avgResponseHours: number | null
+  slaHitRate: number
+  targetHours: number
+}
+
+interface PlatformAnalyticsCardProps {
+  analytics: PlatformAnalytics
+  cplData?: CPLEntry[]
+  slaStats?: SLAStatEntry[]
+}
+
+export function PlatformAnalyticsCard({
+  analytics,
+  cplData,
+  slaStats,
+}: PlatformAnalyticsCardProps) {
   if (analytics.platforms.length < 2) return null
 
   const maxTotal = Math.max(...analytics.platforms.map((p) => p.total))
@@ -18,6 +39,7 @@ export function PlatformAnalyticsCard({ analytics }: PlatformAnalyticsCardProps)
         <div className="flex items-center gap-3 text-xs text-stone-400">
           <span>{analytics.totalInquiries} total</span>
           <span>{analytics.overallConversionRate}% conversion</span>
+          {cplData && cplData.length > 0 && <span className="text-stone-500">CPL</span>}
           {analytics.bestPlatform && (
             <span className="text-emerald-400">Best: {analytics.bestPlatform}</span>
           )}
@@ -56,6 +78,51 @@ export function PlatformAnalyticsCard({ analytics }: PlatformAnalyticsCardProps)
                   {platform.avgLeadScore}
                 </span>
               )}
+              {cplData &&
+                cplData.length > 0 &&
+                (() => {
+                  const match = cplData.find(
+                    (c) => c.channel === platform.channel || c.channelKey === platform.channel
+                  )
+                  return (
+                    <span className="text-xs text-stone-500 w-12 text-right">
+                      {match?.cplCents != null ? `$${(match.cplCents / 100).toFixed(2)}` : '-'}
+                    </span>
+                  )
+                })()}
+              {slaStats &&
+                slaStats.length > 0 &&
+                (() => {
+                  const match = slaStats.find(
+                    (s) => s.channel === platform.channel || s.channelKey === platform.channel
+                  )
+                  return (
+                    <>
+                      <span
+                        className="text-xs text-stone-500 w-10 text-right"
+                        title="Avg response time"
+                      >
+                        {match?.avgResponseHours != null
+                          ? `${match.avgResponseHours.toFixed(1)}h`
+                          : '-'}
+                      </span>
+                      <span
+                        className={`text-xs w-10 text-right ${
+                          match
+                            ? match.slaHitRate >= 80
+                              ? 'text-emerald-400'
+                              : match.slaHitRate >= 50
+                                ? 'text-amber-400'
+                                : 'text-red-400'
+                            : 'text-stone-500'
+                        }`}
+                        title="SLA hit rate"
+                      >
+                        {match ? `${match.slaHitRate}%` : '-'}
+                      </span>
+                    </>
+                  )
+                })()}
             </div>
           </div>
         ))}
