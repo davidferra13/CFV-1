@@ -1,7 +1,7 @@
 'use server'
 
-import { requireChef } from '@/lib/auth/auth-utils'
-import { createClient } from '@/lib/supabase/server'
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 export interface PlatformCPLData {
@@ -56,7 +56,7 @@ export async function recordPlatformSpend(
   const data = parsed.data
 
   try {
-    const supabase = await createClient()
+    const supabase = createServerClient()
     const { error } = await supabase.from('marketing_spend_log').insert({
       chef_id: user.tenantId!,
       spend_date: data.spendDate,
@@ -83,7 +83,7 @@ export async function getPlatformCPL(): Promise<PlatformCPLData[]> {
   const tenantId = user.tenantId!
 
   try {
-    const supabase = await createClient()
+    const supabase = createServerClient()
 
     // Query 1: Spend by channel
     const { data: spendRows, error: spendErr } = await supabase

@@ -1,7 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/auth-utils'
+import { createServerClient } from '@/lib/supabase/server'
+import { requireChef } from '@/lib/auth/get-user'
 
 export interface RawFeedItem {
   id: string
@@ -59,7 +59,7 @@ function detectPlatform(fromAddress: string): string | null {
 export async function getPlatformRawFeed(limit = 50): Promise<RawFeedItem[]> {
   try {
     const user = await requireChef()
-    const supabase = await createClient()
+    const supabase = createServerClient()
 
     // Fetch more rows than needed since we filter in JS
     const fetchLimit = limit * 3

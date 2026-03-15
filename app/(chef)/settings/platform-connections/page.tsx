@@ -1,6 +1,6 @@
 import { getPlatformConnectionStatuses } from '@/lib/integrations/platform-connections'
 import { PlatformConnectionCard } from '@/components/settings/platform-connection-card'
-import { requireChef } from '@/lib/auth/auth-utils'
+import { requireChef } from '@/lib/auth/get-user'
 
 export default async function PlatformConnectionsPage() {
   await requireChef()
