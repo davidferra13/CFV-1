@@ -1,4 +1,3 @@
-Initialising login role...
 export type Json =
   | string
   | number
@@ -6112,9 +6111,12 @@ export type Database = {
           price_range: string | null
           review_count: number | null
           searchable_text: unknown
+          service_area_lat: number | null
           service_area_city: string | null
+          service_area_lng: number | null
           service_area_radius_miles: number | null
           service_area_state: string | null
+          service_area_zip: string | null
           service_types: string[] | null
           updated_at: string
         }
@@ -6135,9 +6137,12 @@ export type Database = {
           price_range?: string | null
           review_count?: number | null
           searchable_text?: unknown
+          service_area_lat?: number | null
           service_area_city?: string | null
+          service_area_lng?: number | null
           service_area_radius_miles?: number | null
           service_area_state?: string | null
+          service_area_zip?: string | null
           service_types?: string[] | null
           updated_at?: string
         }
@@ -6158,9 +6163,12 @@ export type Database = {
           price_range?: string | null
           review_count?: number | null
           searchable_text?: unknown
+          service_area_lat?: number | null
           service_area_city?: string | null
+          service_area_lng?: number | null
           service_area_radius_miles?: number | null
           service_area_state?: string | null
+          service_area_zip?: string | null
           service_types?: string[] | null
           updated_at?: string
         }
@@ -46361,5 +46369,3 @@ export const Constants = {
     },
   },
 } as const
-A new version of Supabase CLI is available: v2.78.1 (currently installed v2.76.11)
-We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

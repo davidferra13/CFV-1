@@ -8,7 +8,12 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { randomBytes } from 'crypto'
+import {
+  generateClientPortalTokenValue,
+  getClientPortalTokenExpiry,
+  hashClientPortalToken,
+  isClientPortalTokenExpired,
+} from './token'
 
 export type ClientPortalData = {
   clientId: string
@@ -42,9 +47,47 @@ export type ClientPortalData = {
   }>
 }
 
+export type ClientPortalTokenState = {
+  token: string | null
+  createdAt: string | null
+  expiresAt: string | null
+  lastUsedAt: string | null
+  hasActiveLink: boolean
+}
+
+type ClientPortalLookupRow = {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  portal_access_token: string | null
+  portal_access_token_hash: string | null
+  portal_token_created_at: string | null
+  portal_token_expires_at: string | null
+  portal_token_last_used_at?: string | null
+  portal_token_revoked_at: string | null
+}
+
+function resolvePortalTokenExpiry(
+  row: Partial<ClientPortalLookupRow> | null | undefined
+): string | null {
+  if (!row) return null
+  if (row.portal_token_expires_at) return row.portal_token_expires_at
+  if (!row.portal_token_created_at) return null
+  return getClientPortalTokenExpiry(new Date(row.portal_token_created_at)).toISOString()
+}
+
+function hasActivePortalLink(row: Partial<ClientPortalLookupRow> | null | undefined): boolean {
+  if (!row) return false
+  if (row.portal_token_revoked_at) return false
+  if (!(row.portal_access_token_hash || row.portal_access_token)) return false
+  return !isClientPortalTokenExpired(resolvePortalTokenExpiry(row))
+}
+
 // ─── Chef action: generate or rotate portal token ─────────────────────────────
 
-export async function generateClientPortalToken(clientId: string): Promise<string> {
+export async function generateClientPortalToken(
+  clientId: string
+): Promise<{ token: string; expiresAt: string }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
@@ -58,19 +101,24 @@ export async function generateClientPortalToken(clientId: string): Promise<strin
 
   if (!client) throw new Error('Client not found')
 
-  const token = randomBytes(32).toString('hex')
+  const token = generateClientPortalTokenValue()
+  const expiresAt = getClientPortalTokenExpiry().toISOString()
 
   await supabase
     .from('clients')
     .update({
-      portal_access_token: token,
+      portal_access_token: null,
+      portal_access_token_hash: hashClientPortalToken(token),
       portal_token_created_at: new Date().toISOString(),
+      portal_token_expires_at: expiresAt,
+      portal_token_last_used_at: null,
+      portal_token_revoked_at: null,
     })
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
 
   revalidatePath(`/clients/${clientId}`)
-  return token
+  return { token, expiresAt }
 }
 
 // ─── Chef action: revoke portal token ─────────────────────────────────────────
@@ -83,7 +131,11 @@ export async function revokeClientPortalToken(clientId: string): Promise<void> {
     .from('clients')
     .update({
       portal_access_token: null,
+      portal_access_token_hash: null,
       portal_token_created_at: null,
+      portal_token_expires_at: null,
+      portal_token_last_used_at: null,
+      portal_token_revoked_at: new Date().toISOString(),
     })
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
@@ -97,15 +149,59 @@ export async function revokeClientPortalToken(clientId: string): Promise<void> {
 export async function getClientPortalData(token: string): Promise<ClientPortalData | null> {
   // Use admin client for public read (no user session)
   const supabase: any = createServerClient({ admin: true })
+  const normalizedToken = token.trim()
+  if (!normalizedToken) return null
+  const tokenHash = hashClientPortalToken(normalizedToken)
 
-  // Look up client by token
-  const { data: client } = await supabase
+  // Prefer hashed token lookup; fall back to legacy raw token rows during migration.
+  const selectColumns =
+    'id, first_name, last_name, portal_access_token, portal_access_token_hash, portal_token_created_at, portal_token_expires_at, portal_token_revoked_at'
+
+  const { data: hashedClient } = await supabase
     .from('clients')
-    .select('id, first_name, last_name, portal_access_token')
-    .eq('portal_access_token', token)
-    .single()
+    .select(selectColumns)
+    .eq('portal_access_token_hash', tokenHash)
+    .maybeSingle()
 
-  if (!client) return null
+  let client = (hashedClient ?? null) as ClientPortalLookupRow | null
+  let matchedLegacyToken = false
+
+  if (!client) {
+    const { data: legacyClient } = await supabase
+      .from('clients')
+      .select(selectColumns)
+      .eq('portal_access_token', normalizedToken)
+      .maybeSingle()
+
+    client = (legacyClient ?? null) as ClientPortalLookupRow | null
+    matchedLegacyToken = !!client
+  }
+
+  if (!client || !hasActivePortalLink(client)) return null
+
+  const nowIso = new Date().toISOString()
+  const expiresAt = resolvePortalTokenExpiry(client)
+  if (!expiresAt) return null
+
+  if (matchedLegacyToken) {
+    await supabase
+      .from('clients')
+      .update({
+        portal_access_token: null,
+        portal_access_token_hash: tokenHash,
+        portal_token_expires_at: expiresAt,
+        portal_token_last_used_at: nowIso,
+        portal_token_revoked_at: null,
+      })
+      .eq('id', client.id)
+  } else {
+    await supabase
+      .from('clients')
+      .update({
+        portal_token_last_used_at: nowIso,
+      })
+      .eq('id', client.id)
+  }
 
   const clientId = client.id
   const clientName =
@@ -186,21 +282,27 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
 
 // ─── Chef: get portal token for a client (for display on client detail) ───────
 
-export async function getClientPortalToken(
-  clientId: string
-): Promise<{ token: string | null; createdAt: string | null }> {
+export async function getClientPortalToken(clientId: string): Promise<ClientPortalTokenState> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('clients')
-    .select('portal_access_token, portal_token_created_at')
+    .select(
+      'portal_access_token, portal_access_token_hash, portal_token_created_at, portal_token_expires_at, portal_token_last_used_at, portal_token_revoked_at'
+    )
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
+  const row = (data ?? null) as Partial<ClientPortalLookupRow> | null
+  const expiresAt = resolvePortalTokenExpiry(row)
+
   return {
-    token: data?.portal_access_token ?? null,
-    createdAt: data?.portal_token_created_at ?? null,
+    token: row?.portal_access_token ?? null,
+    createdAt: row?.portal_token_created_at ?? null,
+    expiresAt,
+    lastUsedAt: row?.portal_token_last_used_at ?? null,
+    hasActiveLink: hasActivePortalLink(row),
   }
 }

@@ -31,6 +31,7 @@ import {
   type PrepTimeOfDay,
 } from '@/lib/menus/constants'
 import type { getMenuById } from '@/lib/menus/actions'
+import { getNextCourseNumber } from '@/lib/menus/course-utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -751,7 +752,9 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
   // Force re-render after dish deletions
   const [, forceRefresh] = useState(0)
 
-  const nextCourseNumber = (menu.dishes?.length ?? 0) + 1
+  const nextCourseNumber = getNextCourseNumber(
+    (menu.dishes ?? []).map((dish) => dish.course_number)
+  )
 
   const handleAddCourse = (e: React.FormEvent) => {
     e.preventDefault()

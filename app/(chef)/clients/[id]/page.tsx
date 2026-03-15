@@ -149,7 +149,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientTags(params.id).catch(() => []),
     getAllUsedTags().catch(() => []),
     getClientNextBestAction(params.id).catch(() => null),
-    getClientPortalToken(params.id).catch(() => ({ token: null, createdAt: null })),
+    getClientPortalToken(params.id).catch(() => ({
+      token: null,
+      createdAt: null,
+      expiresAt: null,
+      lastUsedAt: null,
+      hasActiveLink: false,
+    })),
     getClientPhotos(params.id).catch(() => []),
   ])
 
@@ -219,6 +225,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               clientId={client.id}
               initialToken={portalTokenData.token}
               initialCreatedAt={portalTokenData.createdAt}
+              initialExpiresAt={portalTokenData.expiresAt}
+              initialHasActiveLink={portalTokenData.hasActiveLink}
+              initialLastUsedAt={portalTokenData.lastUsedAt}
             />
           </div>
         </div>

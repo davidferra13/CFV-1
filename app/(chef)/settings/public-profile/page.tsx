@@ -1,8 +1,10 @@
 // Public Profile Settings — Set slug, tagline, manage showcase partners
 
 import { requireChef } from '@/lib/auth/get-user'
+import { getMyDiscoveryProfile } from '@/lib/discovery/actions'
 import { getChefSlug } from '@/lib/profile/actions'
 import { getPartners } from '@/lib/partners/actions'
+import { DiscoveryProfileSettings } from '@/components/settings/discovery-profile-settings'
 import { PublicProfileSettings } from '@/components/settings/public-profile-settings'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -10,10 +12,14 @@ import { Button } from '@/components/ui/button'
 export default async function PublicProfileSettingsPage() {
   await requireChef()
 
-  const [profile, partners] = await Promise.all([getChefSlug(), getPartners()])
+  const [profile, partners, discoveryProfile] = await Promise.all([
+    getChefSlug(),
+    getPartners(),
+    getMyDiscoveryProfile(),
+  ])
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Public Profile</h1>
@@ -42,6 +48,8 @@ export default async function PublicProfileSettingsPage() {
           showcase_order: p.showcase_order ?? 0,
         }))}
       />
+
+      <DiscoveryProfileSettings profile={discoveryProfile} />
     </div>
   )
 }

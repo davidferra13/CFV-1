@@ -1,3 +1,0 @@
-event_id,event_date,item_id,item_name,qty_out,condition_out,assigned_vehicle,checked_out_by,qty_in,condition_in,missing_or_damaged,checked_in_by,notes
-EVT-001,2026-03-20,INV-001,Mini tongs,40,good,Vehicle 1,AB,40,good,no,CD,Sample row
-

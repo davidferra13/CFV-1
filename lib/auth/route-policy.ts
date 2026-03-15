@@ -44,6 +44,7 @@ export const STAFF_PROTECTED_PATHS = [
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/pricing',
   '/compare',
+  '/marketplace-chefs',
   '/customers',
   '/faq',
   '/blog',

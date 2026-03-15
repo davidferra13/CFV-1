@@ -1,18 +1,56 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { getDiscoverableChefs } from '@/lib/directory/actions'
-import type { DirectoryChef, DirectoryPartner } from '@/lib/directory/actions'
+import {
+  DISCOVERY_SERVICE_TYPE_OPTIONS,
+  getDiscoveryCuisineLabel,
+  getDiscoveryPriceRangeLabel,
+  getDiscoveryServiceTypeLabel,
+} from '@/lib/discovery/constants'
+import {
+  getDiscoveryAvailabilityLabel,
+  getDiscoveryGuestCountLabel,
+  getDiscoveryLocationLabel,
+} from '@/lib/discovery/profile'
+import {
+  getDiscoverableChefs,
+  type DirectoryChef,
+  type DirectoryPartner,
+} from '@/lib/directory/actions'
+import {
+  DIRECTORY_SORT_OPTIONS,
+  PARTNER_TYPE_LABELS,
+  buildCuisineFacets,
+  buildPartnerTypeFacets,
+  buildServiceTypeFacets,
+  buildStateFacets,
+  filterDirectoryChefs,
+  getChefCoverage,
+  normalizeDirectoryValue,
+  parseDirectoryBooleanParam,
+  parseDirectorySortMode,
+  sanitizeDirectoryQuery,
+  sortDirectoryChefs,
+} from '@/lib/directory/utils'
+import {
+  filterChefsByResolvedLocation,
+  resolveStateOnlyLocationQuery,
+} from '@/lib/directory/location-search'
+import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
 import { ChefHero } from './_components/chef-hero'
 import { DirectoryFiltersForm } from './_components/directory-filters-form'
 import { DirectoryResultsTracker } from './_components/directory-results-tracker'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const MAX_QUERY_LENGTH = 80
+const ZERO_RESULT_SUGGESTIONS = DISCOVERY_SERVICE_TYPE_OPTIONS.filter((option) =>
+  ['private_dinner', 'catering', 'meal_prep'].includes(option.value)
+)
 
 export const metadata: Metadata = {
   title: 'Hire a Private Chef Near You - ChefFlow Chef Directory',
   description:
-    'Search vetted private chefs by location and partner venues, compare profiles, and send an inquiry in minutes.',
+    'Search vetted private chefs by cuisine, service type, location, and availability, then send an inquiry in minutes.',
   keywords: [
     'hire private chef',
     'private chef near me',
@@ -20,11 +58,12 @@ export const metadata: Metadata = {
     'private dinner party chef',
     'book a private chef',
     'private chef directory',
+    'meal prep chef',
     'catering chef',
   ],
   openGraph: {
     title: 'Hire a Private Chef | ChefFlow',
-    description: 'Browse vetted private chefs and send an inquiry in minutes.',
+    description: 'Browse vetted chefs by cuisine, service type, and availability.',
     url: `${APP_URL}/chefs`,
     type: 'website',
   },
@@ -33,196 +72,36 @@ export const metadata: Metadata = {
   },
 }
 
-const MAX_QUERY_LENGTH = 80
-
-const PARTNER_TYPE_LABELS: Record<string, string> = {
-  airbnb_host: 'Airbnb',
-  business: 'Hotel & Lodging',
-  venue: 'Venue',
-  platform: 'Platform',
-  individual: 'Partner',
-  other: 'Partner',
-}
-
-type SortMode = 'featured' | 'alpha' | 'partners'
-
 type PageProps = {
   searchParams?: {
     q?: string | string[]
+    location?: string | string[]
+    locationSource?: string | string[]
     state?: string | string[]
+    cuisine?: string | string[]
+    serviceType?: string | string[]
+    priceRange?: string | string[]
     partnerType?: string | string[]
+    accepting?: string | string[]
     sort?: string | string[]
   }
 }
 
-type FacetOption = {
-  value: string
-  label: string
-  count: number
-}
-
-const SORT_OPTIONS: Array<{ value: SortMode; label: string }> = [
-  { value: 'featured', label: 'Featured first' },
-  { value: 'partners', label: 'Most partner venues' },
-  { value: 'alpha', label: 'Name A-Z' },
-]
+type DirectoryLocationSource = 'manual' | 'current' | 'approximate'
 
 function firstParam(value?: string | string[]): string {
   if (Array.isArray(value)) return value[0] ?? ''
   return value ?? ''
 }
 
-function normalize(value: string | null | undefined): string {
-  return (value ?? '').trim().toLowerCase()
-}
-
-function sanitizeQuery(value: string): string {
-  return value.trim().slice(0, MAX_QUERY_LENGTH)
-}
-
-function parseSortMode(value: string): SortMode {
-  if (value === 'alpha' || value === 'partners' || value === 'featured') return value
-  return 'featured'
-}
-
-function buildStateFacets(chefs: DirectoryChef[]): FacetOption[] {
-  const stateMap = new Map<string, { label: string; chefs: Set<string> }>()
-
-  for (const chef of chefs) {
-    const seenByChef = new Set<string>()
-
-    for (const partner of chef.partners) {
-      for (const location of partner.partner_locations) {
-        const rawState = location.state?.trim()
-        if (!rawState) continue
-
-        const key = normalize(rawState)
-        if (seenByChef.has(key)) continue
-
-        seenByChef.add(key)
-
-        if (!stateMap.has(key)) {
-          stateMap.set(key, { label: rawState, chefs: new Set<string>() })
-        }
-
-        stateMap.get(key)?.chefs.add(chef.id)
-      }
-    }
-  }
-
-  return Array.from(stateMap.entries())
-    .map(([value, { label, chefs: stateChefs }]) => ({
-      value,
-      label,
-      count: stateChefs.size,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-}
-
-function buildPartnerTypeFacets(chefs: DirectoryChef[]): FacetOption[] {
-  const partnerTypeMap = new Map<string, Set<string>>()
-
-  for (const chef of chefs) {
-    const seenByChef = new Set<string>()
-
-    for (const partner of chef.partners) {
-      const key = normalize(partner.partner_type)
-      if (!key || seenByChef.has(key)) continue
-
-      seenByChef.add(key)
-      if (!partnerTypeMap.has(key)) {
-        partnerTypeMap.set(key, new Set<string>())
-      }
-      partnerTypeMap.get(key)?.add(chef.id)
-    }
-  }
-
-  return Array.from(partnerTypeMap.entries())
-    .map(([value, chefIds]) => ({
-      value,
-      label: PARTNER_TYPE_LABELS[value] ?? 'Partner',
-      count: chefIds.size,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-}
-
-function buildSearchHaystack(chef: DirectoryChef): string {
-  const partnerText = chef.partners.flatMap((partner) => [
-    partner.name,
-    partner.description,
-    ...partner.partner_locations.flatMap((location) => [
-      location.name,
-      location.city,
-      location.state,
-    ]),
-  ])
-
-  return [chef.display_name, chef.tagline, chef.bio, ...partnerText]
-    .filter((value): value is string => Boolean(value))
-    .join(' ')
-    .toLowerCase()
-}
-
-function hasStateCoverage(chef: DirectoryChef, stateFilter: string): boolean {
-  if (!stateFilter) return true
-
-  return chef.partners.some((partner) =>
-    partner.partner_locations.some((location) => normalize(location.state) === stateFilter)
-  )
-}
-
-function hasPartnerType(chef: DirectoryChef, partnerTypeFilter: string): boolean {
-  if (!partnerTypeFilter) return true
-
-  return chef.partners.some((partner) => normalize(partner.partner_type) === partnerTypeFilter)
-}
-
-function sortChefs(chefs: DirectoryChef[], sortMode: SortMode): DirectoryChef[] {
-  const sorted = [...chefs]
-
-  if (sortMode === 'alpha') {
-    sorted.sort((a, b) => a.display_name.localeCompare(b.display_name))
-    return sorted
-  }
-
-  if (sortMode === 'partners') {
-    sorted.sort((a, b) => {
-      const byPartnerCount = b.partners.length - a.partners.length
-      if (byPartnerCount !== 0) return byPartnerCount
-      return a.display_name.localeCompare(b.display_name)
-    })
-    return sorted
-  }
-
-  sorted.sort((a, b) => {
-    if (a.is_founder !== b.is_founder) return a.is_founder ? -1 : 1
-
-    const byPartnerCount = b.partners.length - a.partners.length
-    if (byPartnerCount !== 0) return byPartnerCount
-
-    return a.display_name.localeCompare(b.display_name)
-  })
-
-  return sorted
-}
-
-function getChefCoverage(chef: DirectoryChef): string[] {
-  const uniqueCoverage = new Set<string>()
-
-  for (const partner of chef.partners) {
-    for (const location of partner.partner_locations) {
-      const cityState = [location.city, location.state].filter(Boolean).join(', ').trim()
-      if (cityState) uniqueCoverage.add(cityState)
-    }
-  }
-
-  return Array.from(uniqueCoverage)
+function parseDirectoryLocationSource(value: string): DirectoryLocationSource {
+  if (value === 'current' || value === 'approximate') return value
+  return 'manual'
 }
 
 function PartnerPill({ partner }: { partner: DirectoryPartner }) {
-  const locations = partner.partner_locations
-  const cityState =
-    locations.length > 0 ? [locations[0].city, locations[0].state].filter(Boolean).join(', ') : null
+  const firstLocation = partner.partner_locations[0]
+  const cityState = [firstLocation?.city, firstLocation?.state].filter(Boolean).join(', ')
 
   return (
     <div className="flex items-center gap-2.5 rounded-lg bg-stone-800 px-3 py-2">
@@ -261,9 +140,17 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
         {cityState && <p className="text-[11px] text-stone-300 truncate">{cityState}</p>}
       </div>
       <span className="flex-shrink-0 rounded-full bg-stone-700/70 px-2 py-0.5 text-[10px] font-medium text-stone-300">
-        {PARTNER_TYPE_LABELS[partner.partner_type] || 'Partner'}
+        {PARTNER_TYPE_LABELS[normalizeDirectoryValue(partner.partner_type)] || 'Partner'}
       </span>
     </div>
+  )
+}
+
+function DiscoveryChip({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-stone-700 bg-stone-950 px-2.5 py-1 text-[11px] font-medium text-stone-300">
+      {label}
+    </span>
   )
 }
 
@@ -272,14 +159,30 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
   const visiblePartners = chef.partners.slice(0, 3)
   const extraCount = chef.partners.length - visiblePartners.length
   const coverage = getChefCoverage(chef)
+  const heroImage = chef.discovery.hero_image_url || chef.profile_image_url
+  const availabilityLabel = getDiscoveryAvailabilityLabel(chef.discovery)
+  const guestCountLabel = getDiscoveryGuestCountLabel(chef.discovery)
+  const locationLabel = getDiscoveryLocationLabel(chef.discovery)
+  const primaryCuisines = chef.discovery.cuisine_types.slice(0, 2).map(getDiscoveryCuisineLabel)
+  const primaryServices = chef.discovery.service_types.slice(0, 2).map(getDiscoveryServiceTypeLabel)
+  const priceRangeLabel = chef.discovery.price_range
+    ? getDiscoveryPriceRangeLabel(chef.discovery.price_range)
+    : null
+  const distanceLabel =
+    typeof chef.distance_miles === 'number' ? `${chef.distance_miles} mi away` : null
+  const summary = chef.discovery.highlight_text || chef.bio
+  const primaryHref = chef.discovery.accepting_inquiries
+    ? `/chef/${chef.slug}/inquire`
+    : `/chef/${chef.slug}`
+  const primaryLabel = chef.discovery.accepting_inquiries ? 'Inquire' : 'View profile'
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 shadow-[0_2px_20px_rgb(0,0,0,0.06)] ring-1 ring-stone-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)] hover:ring-brand-600">
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 to-brand-50">
-        {chef.profile_image_url ? (
+        {heroImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={chef.profile_image_url}
+            src={heroImage}
             alt={chef.display_name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -291,7 +194,32 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
           </div>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/35 to-transparent" />
+
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold backdrop-blur-sm ${
+                chef.discovery.accepting_inquiries
+                  ? 'bg-emerald-900/85 text-emerald-300'
+                  : 'bg-amber-950/90 text-amber-300'
+              }`}
+            >
+              {availabilityLabel}
+            </span>
+            {chef.discovery.review_count > 0 && chef.discovery.avg_rating != null && (
+              <span className="rounded-full bg-stone-900/90 px-3 py-1 text-[11px] font-semibold text-stone-200 backdrop-blur-sm">
+                {chef.discovery.avg_rating.toFixed(1)} stars - {chef.discovery.review_count} reviews
+              </span>
+            )}
+          </div>
+
+          {chef.is_founder && (
+            <div className="rounded-full bg-stone-900/90 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-brand-400 shadow-sm">
+              Featured
+            </div>
+          )}
+        </div>
 
         <div className="absolute inset-x-0 bottom-0 p-5">
           <h2 className="text-xl font-bold text-white drop-shadow-sm">{chef.display_name}</h2>
@@ -299,22 +227,56 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
             <p className="mt-0.5 text-sm text-white/85 truncate drop-shadow-sm">{chef.tagline}</p>
           )}
         </div>
-
-        {chef.is_founder && (
-          <div className="absolute top-4 right-4 rounded-full bg-stone-900/90 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-brand-400 shadow-sm">
-            Featured
-          </div>
-        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        {chef.bio && (
-          <p className="text-sm leading-relaxed text-stone-300 line-clamp-2">{chef.bio}</p>
+        {summary && (
+          <p className="text-sm leading-relaxed text-stone-300 line-clamp-3">{summary}</p>
+        )}
+
+        {(primaryCuisines.length > 0 || primaryServices.length > 0) && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {primaryCuisines.map((label) => (
+              <DiscoveryChip key={`cuisine-${label}`} label={label} />
+            ))}
+            {primaryServices.map((label) => (
+              <DiscoveryChip key={`service-${label}`} label={label} />
+            ))}
+          </div>
+        )}
+
+        {(locationLabel || guestCountLabel || priceRangeLabel || distanceLabel) && (
+          <div className="mt-4 grid gap-2 text-xs text-stone-400 sm:grid-cols-2">
+            {locationLabel && (
+              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
+                <p className="font-medium text-stone-200">Service area</p>
+                <p className="mt-1">{locationLabel}</p>
+              </div>
+            )}
+            {distanceLabel && (
+              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
+                <p className="font-medium text-stone-200">Distance</p>
+                <p className="mt-1">{distanceLabel}</p>
+              </div>
+            )}
+            {guestCountLabel && (
+              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
+                <p className="font-medium text-stone-200">Guest range</p>
+                <p className="mt-1">{guestCountLabel}</p>
+              </div>
+            )}
+            {priceRangeLabel && (
+              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
+                <p className="font-medium text-stone-200">Positioning</p>
+                <p className="mt-1">{priceRangeLabel}</p>
+              </div>
+            )}
+          </div>
         )}
 
         {coverage.length > 0 && (
-          <p className="mt-2 text-xs text-stone-400">
-            Serves {coverage.slice(0, 2).join(' - ')}
+          <p className="mt-3 text-xs text-stone-500">
+            Serves {coverage.slice(0, 2).join(', ')}
             {coverage.length > 2 ? ` +${coverage.length - 2} more` : ''}
           </p>
         )}
@@ -341,20 +303,27 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
 
         <div className="mt-5 flex gap-3">
           <TrackedLink
-            href={`/chef/${chef.slug}/inquire`}
-            analyticsName="directory_inquire"
-            analyticsProps={{ chef_slug: chef.slug }}
+            href={primaryHref}
+            analyticsName={
+              chef.discovery.accepting_inquiries ? 'directory_inquire' : 'directory_view_profile'
+            }
+            analyticsProps={{
+              chef_slug: chef.slug,
+              accepting_inquiries: chef.discovery.accepting_inquiries,
+            }}
             className="flex-1 rounded-xl bg-brand-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md active:scale-[0.98]"
           >
-            Inquire
+            {primaryLabel}
           </TrackedLink>
           <TrackedLink
-            href={`/chef/${chef.slug}`}
-            analyticsName="directory_profile_view"
+            href={chef.discovery.accepting_inquiries ? `/chef/${chef.slug}` : '/contact'}
+            analyticsName={
+              chef.discovery.accepting_inquiries ? 'directory_profile_view' : 'directory_contact'
+            }
             analyticsProps={{ chef_slug: chef.slug }}
             className="rounded-xl border border-stone-700 px-4 py-3 text-center text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100 hover:border-stone-600"
           >
-            Profile
+            {chef.discovery.accepting_inquiries ? 'Profile' : 'Contact'}
           </TrackedLink>
         </div>
       </div>
@@ -365,42 +334,112 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
 export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   const allChefs = await getDiscoverableChefs()
   const stateFacets = buildStateFacets(allChefs)
+  const cuisineFacets = buildCuisineFacets(allChefs)
+  const serviceTypeFacets = buildServiceTypeFacets(allChefs)
   const partnerTypeFacets = buildPartnerTypeFacets(allChefs)
 
-  const query = sanitizeQuery(firstParam(searchParams?.q))
-  const requestedState = normalize(firstParam(searchParams?.state))
-  const requestedPartnerType = normalize(firstParam(searchParams?.partnerType))
-  const sortMode = parseSortMode(firstParam(searchParams?.sort))
+  const query = sanitizeDirectoryQuery(firstParam(searchParams?.q), MAX_QUERY_LENGTH)
+  const requestedLocation = sanitizeDirectoryQuery(
+    firstParam(searchParams?.location),
+    MAX_QUERY_LENGTH
+  )
+  const initialLocationSource = requestedLocation
+    ? parseDirectoryLocationSource(firstParam(searchParams?.locationSource))
+    : 'manual'
+  const requestedState = normalizeDirectoryValue(firstParam(searchParams?.state))
+  const requestedCuisine = normalizeDirectoryValue(firstParam(searchParams?.cuisine))
+  const requestedServiceType = normalizeDirectoryValue(firstParam(searchParams?.serviceType))
+  const requestedPriceRange = normalizeDirectoryValue(firstParam(searchParams?.priceRange))
+  const requestedPartnerType = normalizeDirectoryValue(firstParam(searchParams?.partnerType))
+  const acceptingOnly = parseDirectoryBooleanParam(firstParam(searchParams?.accepting))
+  const sortMode = parseDirectorySortMode(firstParam(searchParams?.sort))
 
-  const stateFilter = stateFacets.some((option) => option.value === requestedState)
+  const legacyStateFilter = stateFacets.some((option) => option.value === requestedState)
     ? requestedState
+    : ''
+  const cuisineFilter = cuisineFacets.some((option) => option.value === requestedCuisine)
+    ? requestedCuisine
+    : ''
+  const serviceTypeFilter = serviceTypeFacets.some(
+    (option) => option.value === requestedServiceType
+  )
+    ? requestedServiceType
     : ''
   const partnerTypeFilter = partnerTypeFacets.some(
     (option) => option.value === requestedPartnerType
   )
     ? requestedPartnerType
     : ''
+  const allowedPriceRanges = new Set(['budget', 'mid', 'premium', 'luxury'])
+  const priceRangeFilter = allowedPriceRanges.has(requestedPriceRange) ? requestedPriceRange : ''
 
-  const filteredChefs = allChefs.filter((chef) => {
-    if (query && !buildSearchHaystack(chef).includes(query.toLowerCase())) return false
-    if (!hasStateCoverage(chef, stateFilter)) return false
-    if (!hasPartnerType(chef, partnerTypeFilter)) return false
-    return true
+  const legacyStateLabel =
+    stateFacets.find((option) => option.value === legacyStateFilter)?.label ?? null
+  const locationInputValue = requestedLocation || legacyStateLabel || ''
+  const stateOnlyLocation = locationInputValue
+    ? resolveStateOnlyLocationQuery(locationInputValue)
+    : null
+
+  let resolvedLocation = null
+  let locationError: string | null = null
+  let locationFilteredChefs = allChefs
+
+  if (requestedLocation && !stateOnlyLocation) {
+    resolvedLocation = await resolvePublicLocationQuery(requestedLocation)
+    if (resolvedLocation) {
+      locationFilteredChefs = await filterChefsByResolvedLocation(allChefs, resolvedLocation)
+    } else {
+      locationError = 'We could not place that location. Try a ZIP code or city, state.'
+    }
+  }
+
+  const stateFilter = requestedLocation
+    ? stateOnlyLocation
+      ? normalizeDirectoryValue(stateOnlyLocation.name)
+      : ''
+    : legacyStateFilter
+
+  const filteredChefs = filterDirectoryChefs(locationFilteredChefs, {
+    query,
+    stateFilter,
+    cuisineFilter,
+    serviceTypeFilter,
+    priceRangeFilter,
+    partnerTypeFilter,
+    acceptingOnly,
   })
+  const chefs = sortDirectoryChefs(filteredChefs, sortMode)
 
-  const chefs = sortChefs(filteredChefs, sortMode)
-
-  const selectedStateLabel =
-    stateFacets.find((option) => option.value === stateFilter)?.label ?? null
+  const selectedCuisineLabel =
+    cuisineFacets.find((option) => option.value === cuisineFilter)?.label ?? null
+  const selectedServiceTypeLabel =
+    serviceTypeFacets.find((option) => option.value === serviceTypeFilter)?.label ?? null
+  const selectedPriceRangeLabel = priceRangeFilter
+    ? getDiscoveryPriceRangeLabel(priceRangeFilter)
+    : null
   const selectedPartnerTypeLabel =
     partnerTypeFacets.find((option) => option.value === partnerTypeFilter)?.label ?? null
   const selectedSortLabel =
-    SORT_OPTIONS.find((option) => option.value === sortMode)?.label ?? 'Featured first'
+    DIRECTORY_SORT_OPTIONS.find((option) => option.value === sortMode)?.label ?? 'Featured first'
+  const activeLocationLabel = requestedLocation
+    ? (stateOnlyLocation?.name ?? resolvedLocation?.displayLabel ?? null)
+    : legacyStateLabel
+  const effectiveLocationSource = activeLocationLabel ? initialLocationSource : 'manual'
 
   const activeFilters: string[] = []
   if (query) activeFilters.push(`Query: "${query}"`)
-  if (selectedStateLabel) activeFilters.push(`State: ${selectedStateLabel}`)
-  if (selectedPartnerTypeLabel) activeFilters.push(`Partner Type: ${selectedPartnerTypeLabel}`)
+  if (activeLocationLabel) {
+    activeFilters.push(
+      `Location: ${activeLocationLabel}${
+        effectiveLocationSource === 'approximate' ? ' (approximate)' : ''
+      }`
+    )
+  }
+  if (selectedCuisineLabel) activeFilters.push(`Cuisine: ${selectedCuisineLabel}`)
+  if (selectedServiceTypeLabel) activeFilters.push(`Service: ${selectedServiceTypeLabel}`)
+  if (selectedPriceRangeLabel) activeFilters.push(`Price: ${selectedPriceRangeLabel}`)
+  if (selectedPartnerTypeLabel) activeFilters.push(`Partner type: ${selectedPartnerTypeLabel}`)
+  if (acceptingOnly) activeFilters.push('Accepting inquiries only')
   if (sortMode !== 'featured') activeFilters.push(`Sort: ${selectedSortLabel}`)
 
   const directoryStructuredData = {
@@ -416,7 +455,11 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
         '@type': 'Person',
         name: chef.display_name,
         url: `${APP_URL}/chef/${chef.slug}`,
-        description: chef.tagline || chef.bio || 'Private chef listed on ChefFlow',
+        description:
+          chef.discovery.highlight_text ||
+          chef.tagline ||
+          chef.bio ||
+          'Private chef listed on ChefFlow',
         areaServed: getChefCoverage(chef)
           .slice(0, 3)
           .map((coverage) => ({
@@ -435,8 +478,13 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
       />
       <DirectoryResultsTracker
         query={query}
-        stateFilter={stateFilter}
+        locationFilter={activeLocationLabel || ''}
+        locationSource={effectiveLocationSource}
+        cuisineFilter={cuisineFilter}
+        serviceTypeFilter={serviceTypeFilter}
+        priceRangeFilter={priceRangeFilter}
         partnerTypeFilter={partnerTypeFilter}
+        acceptingOnly={acceptingOnly}
         sortMode={sortMode}
         resultCount={chefs.length}
         totalCount={allChefs.length}
@@ -447,11 +495,17 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
         <div className="rounded-2xl border border-stone-700 bg-stone-900/95 p-4 shadow-lg backdrop-blur-sm sm:p-6">
           <DirectoryFiltersForm
             query={query}
-            stateFilter={stateFilter}
+            locationFilter={locationInputValue}
+            locationSource={initialLocationSource}
+            cuisineFilter={cuisineFilter}
+            serviceTypeFilter={serviceTypeFilter}
+            priceRangeFilter={priceRangeFilter}
             partnerTypeFilter={partnerTypeFilter}
+            acceptingOnly={acceptingOnly}
             sortMode={sortMode}
             maxQueryLength={MAX_QUERY_LENGTH}
-            stateOptions={stateFacets}
+            cuisineOptions={cuisineFacets}
+            serviceTypeOptions={serviceTypeFacets}
             partnerTypeOptions={partnerTypeFacets}
           />
         </div>
@@ -475,16 +529,24 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
               ))}
             </div>
           )}
+          {locationError && (
+            <p className="mt-3 rounded-xl border border-amber-700/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+              {locationError}
+            </p>
+          )}
         </div>
 
         {chefs.length === 0 ? (
           <div className="text-center py-24">
             <h2 className="text-xl font-semibold text-stone-300">
-              No chefs match these filters yet
+              {allChefs.length === 0
+                ? 'The directory is opening city by city'
+                : 'No chefs match these filters yet'}
             </h2>
             <p className="mt-2 text-stone-500 max-w-md mx-auto">
-              Try broadening your location or partner-type filters, or reset everything and start
-              over.
+              {allChefs.length === 0
+                ? 'Tell us what you are planning and ChefFlow can help source the right chef while the public directory expands.'
+                : 'Try a broader occasion, reset the filters, or jump into a high-intent category below.'}
             </p>
             <div className="mt-6 flex items-center justify-center gap-4">
               <Link
@@ -500,6 +562,17 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
                 Contact ChefFlow
               </Link>
             </div>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              {ZERO_RESULT_SUGGESTIONS.map((option) => (
+                <Link
+                  key={option.value}
+                  href={`/chefs?serviceType=${option.value}`}
+                  className="rounded-full border border-stone-600 bg-stone-900 px-4 py-2 text-sm text-stone-300 transition-colors hover:border-brand-500 hover:text-stone-100"
+                >
+                  {option.label}
+                </Link>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -513,7 +586,8 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
           <div className="mx-auto max-w-lg rounded-2xl border border-stone-700 bg-stone-900 p-6 shadow-sm">
             <p className="text-sm font-semibold text-stone-200">Every chef on ChefFlow is vetted</p>
             <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
-              We only list experienced chefs with strong service standards.
+              We only list experienced chefs with clear service positioning and reviewable
+              availability.
             </p>
           </div>
         </div>

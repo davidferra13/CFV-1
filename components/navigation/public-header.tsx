@@ -6,11 +6,14 @@ import { useEffect, useState } from 'react'
 import { Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Home' },
-  { href: '/chefs', label: 'Explore' },
+  { href: '/chefs', label: 'Search chefs' },
+  { href: '/marketplace-chefs', label: 'For chefs' },
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/compare', label: 'Compare' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ]
@@ -46,6 +49,7 @@ export function PublicHeader() {
           <div className="hidden items-center gap-1 md:flex">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
+
               return (
                 <TrackedLink
                   key={item.href}
@@ -75,23 +79,36 @@ export function PublicHeader() {
             Sign In
           </TrackedLink>
           <TrackedLink
-            href={PRIMARY_SIGNUP_HREF}
+            href={buildMarketingSignupHref({
+              sourcePage: 'header',
+              sourceCta: 'operator_signup',
+            })}
             analyticsName="header_signup"
             analyticsProps={{ section: 'public_header' }}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
           >
-            {isBeta ? 'Join Beta' : 'Sign up'}
+            {isBeta ? 'Start operating' : 'Operator sign up'}
           </TrackedLink>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen((open) => !open)}
-          className="rounded-lg p-2 text-muted-soft hover:bg-stone-700 md:hidden"
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <TrackedLink
+            href="/marketplace-chefs"
+            analyticsName="header_mobile_for_chefs"
+            analyticsProps={{ section: 'public_header_mobile' }}
+            className="inline-flex h-9 items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-200"
+          >
+            For chefs
+          </TrackedLink>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="rounded-lg p-2 text-muted-soft hover:bg-stone-700"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </nav>
 
       {mobileMenuOpen && (
@@ -99,6 +116,7 @@ export function PublicHeader() {
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6 lg:px-8">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
+
               return (
                 <TrackedLink
                   key={item.href}
@@ -126,13 +144,16 @@ export function PublicHeader() {
               Sign In
             </TrackedLink>
             <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
+              href={buildMarketingSignupHref({
+                sourcePage: 'header_mobile',
+                sourceCta: 'operator_signup',
+              })}
               className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               analyticsName="header_mobile_signup"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              {isBeta ? 'Join Beta' : 'Sign up'}
+              {isBeta ? 'Start operating' : 'Operator sign up'}
             </TrackedLink>
           </div>
         </div>

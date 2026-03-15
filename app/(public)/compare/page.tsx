@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -114,7 +115,10 @@ export default function CompareIndexPage() {
               Read FAQ
             </TrackedLink>
             <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
+              href={buildMarketingSignupHref({
+                sourcePage: 'compare_index',
+                sourceCta: 'bottom_primary',
+              })}
               analyticsName="compare_index_primary_cta"
               analyticsProps={{ launch_mode: LAUNCH_MODE, section: 'compare_bottom' }}
               className="inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"

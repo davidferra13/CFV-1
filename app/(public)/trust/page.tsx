@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -78,6 +80,7 @@ export default function TrustPage() {
 
   return (
     <div>
+      <PublicPageView pageName="trust" properties={{ section: 'public_growth' }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(trustStructuredData) }}
@@ -161,7 +164,10 @@ export default function TrustPage() {
               : 'Start a trial and validate inquiry, event, and payout workflows end-to-end.'}
           </p>
           <TrackedLink
-            href={PRIMARY_SIGNUP_HREF}
+            href={buildMarketingSignupHref({
+              sourcePage: 'trust',
+              sourceCta: 'bottom_primary',
+            })}
             analyticsName="trust_primary_cta"
             analyticsProps={{ launch_mode: LAUNCH_MODE }}
             className="mt-8 inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"

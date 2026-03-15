@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { CUSTOMER_STORIES, getCustomerStory } from '@/lib/marketing/customer-stories'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -61,6 +63,10 @@ export default function CustomerStoryPage({ params }: Props) {
 
   return (
     <article>
+      <PublicPageView
+        pageName="customer_story"
+        properties={{ section: 'public_growth', story_slug: story.slug }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(storyStructuredData) }}
@@ -159,7 +165,10 @@ export default function CustomerStoryPage({ params }: Props) {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
+              href={buildMarketingSignupHref({
+                sourcePage: `customer_story_${story.slug}`,
+                sourceCta: 'bottom_primary',
+              })}
               analyticsName="customer_story_primary_cta"
               analyticsProps={{ story_slug: story.slug }}
               className="inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"

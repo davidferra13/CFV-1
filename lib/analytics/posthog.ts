@@ -19,10 +19,12 @@
 export const ANALYTICS_EVENTS = {
   // Marketing & funnel
   CTA_CLICKED: 'cta_clicked',
+  AUDIENCE_SELECTED: 'audience_selected',
   SIGNUP_STARTED: 'signup_started',
   BETA_SIGNUP_SUBMITTED: 'beta_signup_submitted',
   CONTACT_FORM_SUBMITTED: 'contact_form_submitted',
   NEWSLETTER_SUBSCRIBED: 'newsletter_subscribed',
+  HOME_SEARCH_SUBMITTED: 'home_search_submitted',
 
   // Inquiries
   INQUIRY_SUBMITTED: 'inquiry_submitted',

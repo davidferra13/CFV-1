@@ -1,5 +1,0 @@
-item,category,authority,jurisdiction,issue_date,expiry_date,renewal_lead_days,owner,status,notes
-Business License,license,Local Business Office,City Name,2026-01-01,2027-01-01,45,Owner,active,Sample row
-Food Permit,permit,Health Department,County Name,2026-01-01,2027-01-01,60,Ops Lead,active,Sample row
-General Liability,insurance,Carrier Name,State Name,2026-01-01,2027-01-01,30,Owner,active,Sample row
-

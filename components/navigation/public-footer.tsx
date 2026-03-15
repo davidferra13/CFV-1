@@ -1,17 +1,22 @@
 import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
-import { PLATFORM_SHORT_DESCRIPTION } from '@/lib/marketing/platform-positioning'
+import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
+import {
+  PLATFORM_AUDIENCE_LABEL,
+  PLATFORM_SHORT_DESCRIPTION,
+} from '@/lib/marketing/platform-positioning'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const FOOTER_LINKS = {
   discover: [
     { href: '/', label: 'Home' },
-    { href: '/chefs', label: 'Explore' },
+    { href: '/chefs', label: 'Search chefs' },
     { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
   ],
   forOperators: [
+    { href: '/marketplace-chefs', label: 'For chefs' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/compare', label: 'Compare Plans' },
     { href: '/partner-signup', label: 'Become a Partner' },
@@ -39,8 +44,9 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            Discover private chefs, caterers, restaurants, food trucks, and bakeries near you.
-            Connect directly with providers and explore what to eat.
+            Built for {PLATFORM_AUDIENCE_LABEL}. Consumers can search chefs and chef-led dining
+            quickly, while operators run client memory, service ops, follow-up, and margins in one
+            workspace.
           </p>
         </div>
 
@@ -61,7 +67,7 @@ export function PublicFooter() {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-stone-100">For Operators</p>
+          <p className="text-sm font-semibold text-stone-100">For operators</p>
           <ul className="mt-4 space-y-2">
             {FOOTER_LINKS.forOperators.map((link) => (
               <li key={link.href}>
@@ -75,10 +81,13 @@ export function PublicFooter() {
             ))}
             <li>
               <Link
-                href={PRIMARY_SIGNUP_HREF}
+                href={buildMarketingSignupHref({
+                  sourcePage: 'footer',
+                  sourceCta: 'operator_signup',
+                })}
                 className="text-sm text-brand-400 transition-colors hover:text-brand-300"
               >
-                {isBeta ? 'Join the Beta' : 'List Your Business'}
+                {isBeta ? 'Request operator access' : 'Operator sign up'}
               </Link>
             </li>
           </ul>
@@ -101,7 +110,7 @@ export function PublicFooter() {
         <div>
           <p className="text-sm font-semibold text-stone-100">Stay Updated</p>
           <p className="mb-3 mt-4 text-sm text-stone-400">
-            Tips and guides for finding great food experiences.
+            Short guides for modern food-business operations.
           </p>
           <NewsletterSignup />
 

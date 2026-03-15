@@ -1,11 +1,21 @@
-// Public Profile Preview — inline render of the /chef/[slug] page content.
+// Public Profile Preview - inline render of the /chef/[slug] page content.
 // We render inline (not via iframe) because next.config.js sets X-Frame-Options: DENY
 // globally, which would cause any same-origin iframe to be blocked by the browser.
-// This component mirrors the exact markup of app/(public)/chef/[slug]/page.tsx.
 
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
+import {
+  getDiscoveryCuisineLabel,
+  getDiscoveryPriceRangeLabel,
+  getDiscoveryServiceTypeLabel,
+} from '@/lib/discovery/constants'
+import {
+  getDiscoveryAvailabilityLabel,
+  getDiscoveryGuestCountLabel,
+  getDiscoveryLeadTimeLabel,
+  getDiscoveryLocationLabel,
+} from '@/lib/discovery/profile'
 
 type PublicProfileData = {
   chef: {
@@ -20,6 +30,22 @@ type PublicProfileData = {
     portal_primary_color: string | null
     portal_background_color: string | null
     portal_background_image_url: string | null
+    public_slug: string | null
+    inquiry_slug: string | null
+    discovery: {
+      cuisine_types: string[]
+      service_types: string[]
+      price_range: string | null
+      accepting_inquiries: boolean
+      next_available_date: string | null
+      lead_time_days: number | null
+      service_area_city: string | null
+      service_area_state: string | null
+      service_area_radius_miles: number | null
+      min_guest_count: number | null
+      max_guest_count: number | null
+      highlight_text: string | null
+    }
   }
   partners: any[]
 } | null
@@ -28,6 +54,14 @@ type Props = {
   slug: string | null
   publicProfileData: PublicProfileData
   deviceFrame: 'desktop' | 'mobile'
+}
+
+function DetailChip({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-stone-700 bg-stone-900/80 px-3 py-1.5 text-xs font-medium text-stone-200">
+      {label}
+    </span>
+  )
 }
 
 export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: Props) {
@@ -52,7 +86,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
           href="/settings/my-profile"
           className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline"
         >
-          Go to My Profile →
+          Go to My Profile
         </Link>
       </div>
     )
@@ -72,6 +106,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
   const backgroundImageUrl = chef.portal_background_image_url
   const hasWebsiteLink = Boolean(chef.website_url && chef.show_website_on_public_profile)
   const preferWebsite = chef.preferred_inquiry_destination === 'website_only'
+  const publicSlug = chef.public_slug || slug
 
   const pageBackgroundStyle: CSSProperties = backgroundImageUrl
     ? {
@@ -83,6 +118,13 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
     : { backgroundColor }
 
   const isMobile = deviceFrame === 'mobile'
+  const discovery = chef.discovery
+  const locationLabel = getDiscoveryLocationLabel(discovery as any)
+  const guestCountLabel = getDiscoveryGuestCountLabel(discovery as any)
+  const leadTimeLabel = getDiscoveryLeadTimeLabel(discovery as any)
+  const priceRangeLabel = discovery.price_range
+    ? getDiscoveryPriceRangeLabel(discovery.price_range)
+    : null
 
   return (
     <div className={isMobile ? 'flex justify-center' : undefined}>
@@ -93,9 +135,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
         ].join(' ')}
         style={{ maxHeight: '680px' }}
       >
-        {/* Mirrors app/(public)/chef/[slug]/page.tsx exactly */}
         <div className="min-h-screen" style={pageBackgroundStyle}>
-          {/* Hero Section */}
           <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
             <div className="max-w-4xl mx-auto px-6 text-center">
               {chef.logo_url && (
@@ -124,29 +164,90 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
                 </div>
               )}
 
+              <div className="mb-4 flex flex-wrap justify-center gap-2">
+                <DetailChip label={getDiscoveryAvailabilityLabel(discovery as any)} />
+                {priceRangeLabel && <DetailChip label={priceRangeLabel} />}
+              </div>
+
               <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
 
               {chef.tagline && (
-                <p className="text-lg md:text-xl text-stone-400 mt-3 max-w-2xl mx-auto">
+                <p className="text-lg md:text-xl text-stone-300 mt-3 max-w-2xl mx-auto">
                   {chef.tagline}
                 </p>
               )}
 
-              {chef.bio && (
-                <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed">{chef.bio}</p>
+              {discovery.highlight_text && (
+                <p className="mt-4 max-w-3xl mx-auto text-sm uppercase tracking-[0.18em] text-brand-300">
+                  {discovery.highlight_text}
+                </p>
               )}
+
+              {chef.bio && (
+                <p className="text-stone-300 mt-6 max-w-xl mx-auto leading-relaxed">{chef.bio}</p>
+              )}
+
+              <div className="mt-6 flex flex-wrap justify-center gap-2">
+                {discovery.cuisine_types.slice(0, 4).map((value) => (
+                  <DetailChip key={`cuisine-${value}`} label={getDiscoveryCuisineLabel(value)} />
+                ))}
+                {discovery.service_types.slice(0, 4).map((value) => (
+                  <DetailChip
+                    key={`service-${value}`}
+                    label={getDiscoveryServiceTypeLabel(value)}
+                  />
+                ))}
+              </div>
             </div>
           </section>
 
-          {/* Partner Showcase */}
+          {!discovery.accepting_inquiries && (
+            <section className="px-6 pt-8">
+              <div className="mx-auto max-w-4xl rounded-2xl border border-amber-800 bg-amber-950/70 p-5 text-amber-200">
+                <p className="text-sm font-semibold uppercase tracking-wide">Availability notice</p>
+                <p className="mt-2 text-sm">Public inquiries are currently paused for this chef.</p>
+              </div>
+            </section>
+          )}
+
+          {(locationLabel || guestCountLabel || leadTimeLabel || priceRangeLabel) && (
+            <section className="py-12 px-6 bg-stone-900/70">
+              <div className="max-w-5xl mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {locationLabel && (
+                  <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                    <p className="text-sm font-semibold text-stone-100">Service area</p>
+                    <p className="mt-2 text-sm text-stone-300">{locationLabel}</p>
+                  </div>
+                )}
+                {guestCountLabel && (
+                  <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                    <p className="text-sm font-semibold text-stone-100">Guest range</p>
+                    <p className="mt-2 text-sm text-stone-300">{guestCountLabel}</p>
+                  </div>
+                )}
+                {leadTimeLabel && (
+                  <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                    <p className="text-sm font-semibold text-stone-100">Lead time</p>
+                    <p className="mt-2 text-sm text-stone-300">{leadTimeLabel}</p>
+                  </div>
+                )}
+                {priceRangeLabel && (
+                  <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                    <p className="text-sm font-semibold text-stone-100">Positioning</p>
+                    <p className="mt-2 text-sm text-stone-300">{priceRangeLabel}</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {partners.length > 0 && (
             <section className="py-16 px-6 bg-stone-900/70">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl font-bold text-stone-100">Where I Cook</h2>
-                  <p className="text-stone-400 mt-3 max-w-xl mx-auto">
-                    Book one of these amazing venues and enjoy a private dining experience with a
-                    personal chef
+                  <p className="text-stone-300 mt-3 max-w-xl mx-auto">
+                    Venues where {chef.display_name} is available for service.
                   </p>
                 </div>
                 <PartnerShowcase partners={partners as any} chefName={chef.display_name} />
@@ -154,25 +255,25 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
             </section>
           )}
 
-          {/* CTA Section */}
           <section className="py-16 px-6 bg-stone-900/75">
             <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-2xl font-bold text-stone-100">Ready to Book?</h2>
-              <p className="text-stone-400 mt-3">
-                Choose a venue above and hire {chef.display_name} for an unforgettable dining
-                experience. Or tell us about your event and we&apos;ll be in touch.
+              <h2 className="text-2xl font-bold text-stone-100">Ready to plan?</h2>
+              <p className="text-stone-300 mt-3">
+                Choose a venue above or direct clients to your inquiry form.
               </p>
-              {(!preferWebsite || !hasWebsiteLink) && slug && (
-                <a
-                  href={`/chef/${slug}/inquire`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-6 px-8 py-3 text-white rounded-lg font-medium transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Inquire About an Event
-                </a>
-              )}
+              {discovery.accepting_inquiries &&
+                (!preferWebsite || !hasWebsiteLink) &&
+                publicSlug && (
+                  <a
+                    href={`/chef/${publicSlug}/inquire`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-6 px-8 py-3 text-white rounded-lg font-medium transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Start inquiry
+                  </a>
+                )}
               {hasWebsiteLink && (
                 <a
                   href={chef.website_url!}
@@ -185,28 +286,8 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
                     backgroundColor: 'rgba(255,255,255,0.9)',
                   }}
                 >
-                  Visit Official Website
+                  Visit website
                 </a>
-              )}
-              <div className="mt-4">
-                <a
-                  href="/auth/client-signup"
-                  className="text-sm font-medium hover:opacity-80"
-                  style={{ color: primaryColor }}
-                >
-                  Create client account
-                </a>
-              </div>
-              {slug && (
-                <div className="mt-2">
-                  <a
-                    href={`/chef/${slug}/partner-signup`}
-                    className="text-sm font-medium hover:opacity-80"
-                    style={{ color: primaryColor }}
-                  >
-                    Create partner profile
-                  </a>
-                </div>
               )}
             </div>
           </section>

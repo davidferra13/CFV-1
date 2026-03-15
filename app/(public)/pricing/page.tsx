@@ -6,8 +6,9 @@ import {
   Sparkles,
   XCircle,
 } from '@/components/ui/icons'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   FUNCTION_BUCKETS,
@@ -19,6 +20,7 @@ import {
   type ComparisonCellState,
   type PricingPlanId,
 } from '@/lib/billing/pricing-catalog'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const PLAN_COLUMNS: PricingPlanId[] = ['free', 'pro', 'scale']
 
@@ -90,6 +92,7 @@ export default function PricingPage() {
 
   return (
     <div>
+      <PublicPageView pageName="pricing" properties={{ section: 'public_growth' }} />
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[780px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
         <div className="pointer-events-none absolute -right-16 top-8 h-[260px] w-[260px] rounded-full bg-brand-800/25 blur-[70px]" />
@@ -180,7 +183,14 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <TrackedLink
-                  href={isBeta ? '/beta' : plan.ctaHref}
+                  href={
+                    isBeta || plan.ctaHref === '/auth/signup'
+                      ? buildMarketingSignupHref({
+                          sourcePage: 'pricing',
+                          sourceCta: `${plan.id}_plan`,
+                        })
+                      : plan.ctaHref
+                  }
                   analyticsName={`pricing_plan_${plan.id}_cta`}
                   analyticsProps={{ section: 'pricing_plans' }}
                   className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
@@ -389,7 +399,10 @@ export default function PricingPage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
+              href={buildMarketingSignupHref({
+                sourcePage: 'pricing',
+                sourceCta: 'bottom_primary',
+              })}
               analyticsName="pricing_bottom_start_free"
               analyticsProps={{ section: 'pricing_bottom_cta' }}
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"

@@ -1,15 +1,27 @@
 // Public Chef Profile & Partner Showcase
-// No authentication required — accessible to anyone with the URL
+// No authentication required - accessible to anyone with the URL
 // Shows chef bio, partner venues with seasonal photos, and booking links
 
-import { getPublicChefProfile } from '@/lib/profile/actions'
-import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
-import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { TrackedLink } from '@/components/analytics/tracked-link'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
 import { ReviewShowcase } from '@/components/public/review-showcase'
+import {
+  getDiscoveryCuisineLabel,
+  getDiscoveryPriceRangeLabel,
+  getDiscoveryServiceTypeLabel,
+} from '@/lib/discovery/constants'
+import {
+  getDiscoveryAvailabilityLabel,
+  getDiscoveryGuestCountLabel,
+  getDiscoveryLeadTimeLabel,
+  getDiscoveryLocationLabel,
+} from '@/lib/discovery/profile'
+import { getOptimizedAvatar, getOptimizedImageUrl } from '@/lib/images/cloudinary'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
-import { getOptimizedImageUrl, getOptimizedAvatar } from '@/lib/images/cloudinary'
+import { getPublicChefProfile } from '@/lib/profile/actions'
+import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 
 type Props = { params: { slug: string } }
 
@@ -18,13 +30,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: 'Chef Not Found' }
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
-  const title = `${data.chef.display_name} — Private Chef | Book Now`
+  const publicSlug = data.chef.public_slug || params.slug
+  const title = `${data.chef.display_name} - Private Chef | ChefFlow`
   const description =
+    data.chef.discovery.highlight_text ||
     data.chef.tagline ||
     data.chef.bio ||
     `Book ${data.chef.display_name}. View profile details, reviews, and availability on ChefFlow.`
-  const profileUrl = `${BASE_URL}/chef/${params.slug}`
-  const imageUrl = (data.chef as any).profile_image_url as string | undefined
+  const profileUrl = `${BASE_URL}/chef/${publicSlug}`
+  const imageUrl = data.chef.discovery.hero_image_url || data.chef.profile_image_url || undefined
 
   return {
     title,
@@ -49,10 +63,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-/**
- * JSON-LD AggregateRating for SEO — enables star ratings in Google search results.
- * Only rendered when the chef has at least 1 review with a rating.
- */
 function AggregateRatingJsonLd({
   chefName,
   averageRating,
@@ -88,18 +98,25 @@ function AggregateRatingJsonLd({
   )
 }
 
+function DetailChip({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-stone-700 bg-stone-900/80 px-3 py-1.5 text-xs font-medium text-stone-200">
+      {label}
+    </span>
+  )
+}
+
 export default async function ChefProfilePage({ params }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
 
   const { chef, partners } = data
+  const publicSlug = chef.public_slug || params.slug
+  const inquirySlug = chef.inquiry_slug || publicSlug
 
-  // Load reviews + availability in parallel
   const [reviewFeed, availabilitySignals] = await Promise.all([
     getPublicChefReviewFeed(chef.id),
-    (chef as any).show_availability_signals
-      ? getPublicAvailabilitySignals(chef.id)
-      : Promise.resolve([]),
+    chef.show_availability_signals ? getPublicAvailabilitySignals(chef.id) : Promise.resolve([]),
   ])
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -122,23 +139,33 @@ export default async function ChefProfilePage({ params }: Props) {
       }
     : { backgroundColor }
 
+  const discovery = chef.discovery
+  const availabilityLabel = getDiscoveryAvailabilityLabel(discovery)
+  const locationLabel = getDiscoveryLocationLabel(discovery)
+  const guestCountLabel = getDiscoveryGuestCountLabel(discovery)
+  const leadTimeLabel = getDiscoveryLeadTimeLabel(discovery)
+  const priceRangeLabel = discovery.price_range
+    ? getDiscoveryPriceRangeLabel(discovery.price_range)
+    : null
+  const cuisineLabels = discovery.cuisine_types.slice(0, 6).map(getDiscoveryCuisineLabel)
+  const serviceLabels = discovery.service_types.slice(0, 6).map(getDiscoveryServiceTypeLabel)
+
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
       <AggregateRatingJsonLd
         chefName={chef.display_name}
         averageRating={reviewFeed.stats.averageRating}
         totalReviews={reviewFeed.stats.totalReviews}
-        profileUrl={`${BASE_URL}/chef/${params.slug}`}
+        profileUrl={`${BASE_URL}/chef/${publicSlug}`}
       />
 
-      {/* Hero Section */}
       <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          {(chef as any).logo_url && (
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          {chef.logo_url && (
             <div className="flex justify-center mb-6">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={getOptimizedImageUrl((chef as any).logo_url, {
+                src={getOptimizedImageUrl(chef.logo_url, {
                   width: 440,
                   height: 128,
                   fit: 'fit',
@@ -164,6 +191,16 @@ export default async function ChefProfilePage({ params }: Props) {
             </div>
           )}
 
+          <div className="mb-4 flex flex-wrap justify-center gap-2">
+            <DetailChip label={availabilityLabel} />
+            {discovery.review_count > 0 && discovery.avg_rating != null && (
+              <DetailChip
+                label={`${discovery.avg_rating.toFixed(1)} stars · ${discovery.review_count} reviews`}
+              />
+            )}
+            {priceRangeLabel && <DetailChip label={priceRangeLabel} />}
+          </div>
+
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
 
           {chef.tagline && (
@@ -172,13 +209,89 @@ export default async function ChefProfilePage({ params }: Props) {
             </p>
           )}
 
+          {discovery.highlight_text && discovery.highlight_text !== chef.tagline && (
+            <p className="mt-4 max-w-3xl mx-auto text-sm uppercase tracking-[0.18em] text-brand-300">
+              {discovery.highlight_text}
+            </p>
+          )}
+
           {chef.bio && (
-            <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed">{chef.bio}</p>
+            <p className="text-stone-300 mt-6 max-w-2xl mx-auto leading-relaxed">{chef.bio}</p>
+          )}
+
+          {(cuisineLabels.length > 0 || serviceLabels.length > 0) && (
+            <div className="mt-8 flex flex-wrap justify-center gap-2">
+              {cuisineLabels.map((label) => (
+                <DetailChip key={`cuisine-${label}`} label={label} />
+              ))}
+              {serviceLabels.map((label) => (
+                <DetailChip key={`service-${label}`} label={label} />
+              ))}
+            </div>
           )}
         </div>
       </section>
 
-      {/* Partner Showcase */}
+      {!discovery.accepting_inquiries && (
+        <section className="px-6 pt-8">
+          <div className="mx-auto max-w-4xl rounded-2xl border border-amber-800 bg-amber-950/70 p-5 text-amber-200">
+            <p className="text-sm font-semibold uppercase tracking-wide">Availability notice</p>
+            <p className="mt-2 text-sm">
+              {chef.display_name} is not currently accepting new public inquiries.
+              {discovery.next_available_date
+                ? ` Next opening: ${new Date(
+                    `${discovery.next_available_date}T00:00:00`
+                  ).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}.`
+                : ' Check back soon for updated availability.'}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {(locationLabel || guestCountLabel || leadTimeLabel || priceRangeLabel) && (
+        <section className="py-12 px-6 bg-stone-900/70">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold text-stone-100">Chef Snapshot</h2>
+              <p className="mt-3 max-w-2xl mx-auto text-stone-300">
+                Practical details for planning the right fit before you reach out.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {locationLabel && (
+                <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                  <p className="text-sm font-semibold text-stone-100">Service area</p>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-300">{locationLabel}</p>
+                </div>
+              )}
+              {guestCountLabel && (
+                <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                  <p className="text-sm font-semibold text-stone-100">Guest range</p>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-300">{guestCountLabel}</p>
+                </div>
+              )}
+              {leadTimeLabel && (
+                <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                  <p className="text-sm font-semibold text-stone-100">Lead time</p>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-300">{leadTimeLabel}</p>
+                </div>
+              )}
+              {priceRangeLabel && (
+                <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
+                  <p className="text-sm font-semibold text-stone-100">Positioning</p>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-300">{priceRangeLabel}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {partners.length > 0 && (
         <section className="py-16 px-6 bg-stone-900/70">
           <div className="max-w-6xl mx-auto">
@@ -194,7 +307,6 @@ export default async function ChefProfilePage({ params }: Props) {
         </section>
       )}
 
-      {/* Reviews */}
       {reviewFeed.reviews.length > 0 && (
         <section className="py-16 px-6 bg-stone-900/70">
           <div className="max-w-5xl mx-auto">
@@ -210,7 +322,6 @@ export default async function ChefProfilePage({ params }: Props) {
         </section>
       )}
 
-      {/* Available Dates */}
       {availabilitySignals.length > 0 && (
         <section className="py-12 px-6 bg-stone-900/70">
           <div className="max-w-2xl mx-auto">
@@ -222,7 +333,7 @@ export default async function ChefProfilePage({ params }: Props) {
             </div>
             <div className="space-y-3">
               {availabilitySignals.map((signal) => {
-                const dateLabel = new Date(signal.start_date + 'T00:00:00').toLocaleDateString(
+                const dateLabel = new Date(`${signal.start_date}T00:00:00`).toLocaleDateString(
                   'en-US',
                   {
                     weekday: 'long',
@@ -242,13 +353,15 @@ export default async function ChefProfilePage({ params }: Props) {
                         <p className="text-sm text-stone-300 mt-0.5">{signal.public_note}</p>
                       )}
                     </div>
-                    <a
-                      href={`/chef/${params.slug}/inquire?date=${signal.start_date}`}
+                    <TrackedLink
+                      href={`/chef/${publicSlug}/inquire?date=${signal.start_date}`}
+                      analyticsName="public_profile_availability_inquire"
+                      analyticsProps={{ chef_slug: publicSlug, date: signal.start_date }}
                       className="flex-shrink-0 ml-4 px-4 py-2 text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-90"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      Inquire →
-                    </a>
+                      Inquire
+                    </TrackedLink>
                   </div>
                 )
               })}
@@ -257,29 +370,32 @@ export default async function ChefProfilePage({ params }: Props) {
         </section>
       )}
 
-      {/* CTA Section */}
       <section className="py-16 px-6 bg-stone-900/75">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-stone-100">Ready to book?</h2>
+          <h2 className="text-2xl font-bold text-stone-100">Ready to plan?</h2>
           <p className="text-stone-300 mt-3">
             {partners.length > 0
-              ? `Choose a venue above or send a custom inquiry below.`
+              ? 'Choose a venue above or send a custom inquiry below.'
               : `Tell us about your event and ${chef.display_name} will be in touch.`}
           </p>
 
           <div className="mt-6 flex flex-col items-center gap-3">
             <div className="flex w-full max-w-md gap-3">
-              {(!preferWebsite || !hasWebsiteLink) && (
-                <a
-                  href={`/chef/${params.slug}/inquire`}
+              {discovery.accepting_inquiries && (!preferWebsite || !hasWebsiteLink) && (
+                <TrackedLink
+                  href={`/chef/${publicSlug}/inquire`}
+                  analyticsName="public_profile_start_inquiry"
+                  analyticsProps={{ chef_slug: publicSlug, inquiry_slug: inquirySlug }}
                   className="inline-block flex-1 px-6 py-3 text-white rounded-lg font-medium text-center transition-opacity hover:opacity-90"
                   style={{ backgroundColor: primaryColor }}
                 >
                   Start inquiry
-                </a>
+                </TrackedLink>
               )}
-              <a
-                href={`/chef/${params.slug}/gift-cards`}
+              <TrackedLink
+                href={`/chef/${publicSlug}/gift-cards`}
+                analyticsName="public_profile_gift_cards"
+                analyticsProps={{ chef_slug: publicSlug }}
                 className="inline-block flex-1 px-6 py-3 rounded-lg font-medium text-center border transition-colors"
                 style={{
                   borderColor: primaryColor,
@@ -288,11 +404,13 @@ export default async function ChefProfilePage({ params }: Props) {
                 }}
               >
                 Gift cards
-              </a>
+              </TrackedLink>
             </div>
             {hasWebsiteLink && (
-              <a
+              <TrackedLink
                 href={chef.website_url!}
+                analyticsName="public_profile_website"
+                analyticsProps={{ chef_slug: publicSlug }}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block w-full max-w-md px-8 py-3 rounded-lg font-medium border transition-colors text-center"
@@ -303,38 +421,47 @@ export default async function ChefProfilePage({ params }: Props) {
                 }}
               >
                 Visit website
-              </a>
+              </TrackedLink>
             )}
-            {preferWebsite && hasWebsiteLink && !preferChefFlow && (
-              <p className="text-xs text-stone-500">
-                Want to use ChefFlow instead?{' '}
-                <a
-                  href={`/chef/${params.slug}/inquire`}
-                  className="font-medium underline"
-                  style={{ color: primaryColor }}
-                >
-                  Send inquiry here
-                </a>
-              </p>
-            )}
+            {preferWebsite &&
+              hasWebsiteLink &&
+              !preferChefFlow &&
+              discovery.accepting_inquiries && (
+                <p className="text-xs text-stone-500">
+                  Want to use ChefFlow instead?{' '}
+                  <TrackedLink
+                    href={`/chef/${publicSlug}/inquire`}
+                    analyticsName="public_profile_secondary_inquiry"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    className="font-medium underline"
+                    style={{ color: primaryColor }}
+                  >
+                    Send inquiry here
+                  </TrackedLink>
+                </p>
+              )}
           </div>
 
           <div className="mt-6 flex items-center justify-center gap-4 text-sm">
-            <a
+            <TrackedLink
               href="/auth/client-signup"
+              analyticsName="public_profile_client_account"
+              analyticsProps={{ chef_slug: publicSlug }}
               className="font-medium hover:opacity-80"
               style={{ color: primaryColor }}
             >
               Client account
-            </a>
+            </TrackedLink>
             <span className="text-stone-300">&middot;</span>
-            <a
-              href={`/chef/${params.slug}/partner-signup`}
+            <TrackedLink
+              href={`/chef/${publicSlug}/partner-signup`}
+              analyticsName="public_profile_partner_signup"
+              analyticsProps={{ chef_slug: publicSlug }}
               className="font-medium hover:opacity-80"
               style={{ color: primaryColor }}
             >
               Partner signup
-            </a>
+            </TrackedLink>
           </div>
         </div>
       </section>

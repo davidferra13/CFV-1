@@ -1,3 +1,0 @@
-change_id,sop_name,previous_version,new_version,change_type,change_summary,reason,effective_date,training_required,owner,approved_by,status,notes
-SOP-001,Food Safety SOP,1.0.0,1.1.0,minor,Updated transport temp check timing,Reduce event-day variance,2026-03-15,yes,Ops Lead,Owner,planned,Sample row
-

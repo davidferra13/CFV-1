@@ -14,6 +14,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { getDuplicateCourseError } from '@/lib/menus/course-utils'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
@@ -854,6 +855,18 @@ export async function addDishToMenu(input: CreateDishInput) {
     throw new UnknownAppError('Cannot add dishes to a locked menu')
   }
 
+  const { data: existingDish } = await supabase
+    .from('dishes')
+    .select('id')
+    .eq('menu_id', validated.menu_id)
+    .eq('tenant_id', user.tenantId!)
+    .eq('course_number', validated.course_number)
+    .maybeSingle()
+
+  if (existingDish) {
+    throw new UnknownAppError(getDuplicateCourseError(validated.course_number))
+  }
+
   const { data: dish, error } = await supabase
     .from('dishes')
     .insert({
@@ -879,6 +892,9 @@ export async function addDishToMenu(input: CreateDishInput) {
 
   if (error) {
     console.error('[addDishToMenu] Error:', error)
+    if (error.code === '23505') {
+      throw new UnknownAppError(getDuplicateCourseError(validated.course_number))
+    }
     throw new UnknownAppError('Failed to add dish')
   }
 

@@ -3,12 +3,14 @@
 'use client'
 
 import { AnchorHTMLAttributes, ButtonHTMLAttributes, forwardRef } from 'react'
+import { clampTooltipText } from '@/lib/ui/tooltip'
 
 type ButtonBaseProps = {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   disabled?: boolean
+  tooltip?: string
 }
 
 type NativeButtonProps = ButtonBaseProps &
@@ -34,6 +36,8 @@ export const Button = forwardRef<any, ButtonProps>(
       className = '',
       disabled,
       href,
+      title,
+      tooltip,
       ...props
     },
     ref
@@ -59,12 +63,14 @@ export const Button = forwardRef<any, ButtonProps>(
     }
 
     const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`
+    const tooltipText = clampTooltipText(tooltip ?? title)
+    const tooltipProps = tooltipText ? ({ 'data-tooltip': tooltipText } as const) : undefined
 
     // If href provided, render an anchor so we can use it for in-page anchors and links.
     if (href) {
       return (
         // cast props to any to avoid passing button-only props to <a>
-        <a ref={ref} className={classes} href={href} {...(props as any)}>
+        <a ref={ref} className={classes} href={href} {...tooltipProps} {...(props as any)}>
           {loading && (
             <svg
               className="animate-spin -ml-1 mr-1.5 h-4 w-4"
@@ -93,7 +99,13 @@ export const Button = forwardRef<any, ButtonProps>(
     }
 
     return (
-      <button ref={ref} className={classes} disabled={disabled || loading} {...(props as any)}>
+      <button
+        ref={ref}
+        className={classes}
+        disabled={disabled || loading}
+        {...tooltipProps}
+        {...(props as any)}
+      >
         {loading && (
           <svg
             className="animate-spin -ml-1 mr-1.5 h-4 w-4"

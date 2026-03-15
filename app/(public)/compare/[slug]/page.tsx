@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { COMPARE_PAGES, getComparePage } from '@/lib/marketing/compare-pages'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -188,7 +189,10 @@ export default function CompareDetailPage({ params }: Props) {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
+              href={buildMarketingSignupHref({
+                sourcePage: `compare_${page.slug}`,
+                sourceCta: 'bottom_primary',
+              })}
               analyticsName="compare_detail_primary_cta"
               analyticsProps={{ launch_mode: LAUNCH_MODE, compare_slug: page.slug }}
               className="inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"

@@ -136,7 +136,8 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
   const [returningClient, setReturningClient] = useState(false)
   const [lookupDone, setLookupDone] = useState(false)
 
-  // Client lookup on email blur - pre-fill returning client preferences
+  // Returning-client lookup on email blur.
+  // For privacy, this no longer pre-fills stored client details.
   const handleEmailBlur = async () => {
     const email = formData.email.trim()
     if (!email || lookupDone) return
@@ -147,20 +148,8 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         body: JSON.stringify({ email, chefSlug }),
       })
       const data = await res.json()
-      if (data.found && data.prefill) {
+      if (data.found) {
         setReturningClient(true)
-        setFormData((prev) => ({
-          ...prev,
-          full_name: prev.full_name || data.prefill.full_name,
-          phone: prev.phone || data.prefill.phone,
-          allergies_food_restrictions:
-            prev.allergies_food_restrictions ||
-            data.prefill.allergies ||
-            data.prefill.dietary_restrictions,
-          allergy_flag:
-            prev.allergy_flag ||
-            (data.prefill.allergies || data.prefill.dietary_restrictions ? 'yes' : ''),
-        }))
       }
       setLookupDone(true)
     } catch {
@@ -350,6 +339,11 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
+    if (name === 'email') {
+      setLookupDone(false)
+      setReturningClient(false)
+    }
+
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
@@ -497,7 +491,8 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           />
           {returningClient && (
             <p className="text-xs text-emerald-500 -mt-3">
-              Welcome back! We pre-filled your details from your last booking.
+              Welcome back. We recognized your email, but for privacy you will need to re-enter your
+              details.
             </p>
           )}
 

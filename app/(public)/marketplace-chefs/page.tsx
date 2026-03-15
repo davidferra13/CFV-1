@@ -9,19 +9,20 @@ import {
 } from '@/components/ui/icons'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'ChefFlow for Marketplace-Driven Private Chefs',
+  title: 'ChefFlow for Private Chefs and Operators',
   description:
-    'A private sales page for chefs who rely on booking platforms and need an owned system for client memory, service ops, margins, and repeat business.',
-  robots: { index: false, follow: false },
+    'Keep referrals and marketplace demand flowing while ChefFlow runs client memory, service execution, margins, and repeat business.',
+  robots: { index: true, follow: true },
   openGraph: {
-    title: 'ChefFlow for Marketplace-Driven Private Chefs',
+    title: 'ChefFlow for Private Chefs and Operators',
     description:
-      'Keep the booking platform for demand. Use ChefFlow for the business layer behind every client, event, and repeat booking.',
+      'Keep referrals and marketplace demand for reach. Use ChefFlow for the business layer behind every client, event, and repeat booking.',
     url: `${BASE_URL}/marketplace-chefs`,
     siteName: 'ChefFlow',
     type: 'website',
@@ -108,34 +109,37 @@ export default function MarketplaceChefsPage() {
 
   return (
     <div className="overflow-x-clip">
-      <PublicPageView pageName="marketplace_chefs" properties={{ section: 'private_sales' }} />
+      <PublicPageView pageName="marketplace_chefs" properties={{ section: 'operator_growth' }} />
 
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[760px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[90px]" />
         <div className="pointer-events-none absolute right-0 top-10 h-[260px] w-[260px] rounded-full bg-brand-800/20 blur-[70px]" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col px-4 pb-16 pt-20 sm:px-6 md:pb-20 md:pt-24 lg:px-8">
           <p className="inline-flex w-fit rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-            Private Sales Page
+            For chefs and operators
           </p>
           <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-start">
             <div>
               <h1 className="max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
-                Keep the marketplace. Build an owned private-chef business behind it.
+                Run the business behind every booking.
               </h1>
               <p className="mt-6 max-w-3xl text-[1.05rem] leading-8 text-stone-300 md:text-lg">
-                ChefFlow is built for private chefs whose demand starts on booking platforms but
-                whose real business needs to live somewhere else. Keep the marketplace for reach.
-                Use ChefFlow for the client record, the event operation, the margin view, and the
-                repeat-booking system.
+                ChefFlow is built for private chefs whose demand may start in marketplaces,
+                referrals, venues, or repeat households, but whose real business needs to live in an
+                owned system. Keep the lead sources that already work. Use ChefFlow for client
+                memory, event execution, margin visibility, and repeat-booking infrastructure.
               </p>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-400">
-                Independent platform designed to complement your current booking channels, not claim
-                affiliation with them.
+                Independent operator platform designed to complement your current lead sources, not
+                replace them with another inbox.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <TrackedLink
-                  href={PRIMARY_SIGNUP_HREF}
+                  href={buildMarketingSignupHref({
+                    sourcePage: 'marketplace_chefs',
+                    sourceCta: 'hero_primary',
+                  })}
                   analyticsName="marketplace_chefs_primary_cta"
                   analyticsProps={{ section: 'hero' }}
                   className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
@@ -300,7 +304,10 @@ export default function MarketplaceChefsPage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
-              href={PRIMARY_SIGNUP_HREF}
+              href={buildMarketingSignupHref({
+                sourcePage: 'marketplace_chefs',
+                sourceCta: 'final_primary',
+              })}
               analyticsName="marketplace_chefs_bottom_primary_cta"
               analyticsProps={{ section: 'final_cta', launch_mode: LAUNCH_MODE }}
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"

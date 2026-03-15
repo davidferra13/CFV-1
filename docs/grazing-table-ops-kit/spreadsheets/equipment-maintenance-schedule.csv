@@ -1,4 +1,0 @@
-item_id,item_name,maintenance_type,frequency,last_completed,next_due,owner,status,notes
-EQ-001,Cooler A,deep_clean,monthly,2026-03-01,2026-04-01,Ops Lead,scheduled,Sample row
-EQ-002,Serving Stand Set,inspection,monthly,2026-03-01,2026-04-01,Ops Lead,scheduled,Sample row
-

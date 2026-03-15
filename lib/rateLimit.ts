@@ -52,28 +52,37 @@ function checkMemoryRateLimit(key: string, max: number, windowMs: number): void 
   entry.count++
 }
 
-// Singleton Redis client — only instantiated if env vars are present
-let redisRatelimit: Ratelimit | null = null
+const redisRatelimits = new Map<string, Ratelimit>()
+
+export function hasRedisRateLimitBackend(): boolean {
+  return !!process.env.UPSTASH_REDIS_REST_URL && !!process.env.UPSTASH_REDIS_REST_TOKEN
+}
+
+function getRedisPolicyKey(max: number, windowSeconds: number): string {
+  return `${max}:${windowSeconds}`
+}
 
 function getRedisRatelimit(max: number, windowSeconds: number): Ratelimit | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (!hasRedisRateLimitBackend()) {
     return null
   }
 
-  // One limiter per (max, window) combination; for simplicity we recreate if needed.
-  // In practice this module is loaded once per server process.
-  if (!redisRatelimit) {
-    redisRatelimit = new Ratelimit({
+  const policyKey = getRedisPolicyKey(max, windowSeconds)
+  let limiter = redisRatelimits.get(policyKey)
+
+  if (!limiter) {
+    limiter = new Ratelimit({
       redis: new Redis({
         url: process.env.UPSTASH_REDIS_REST_URL,
         token: process.env.UPSTASH_REDIS_REST_TOKEN,
       }),
       limiter: Ratelimit.slidingWindow(max, `${windowSeconds} s`),
-      prefix: 'cf:rl', // chefflow rate limit namespace
+      prefix: `cf:rl:${policyKey}`,
     })
+    redisRatelimits.set(policyKey, limiter)
   }
 
-  return redisRatelimit
+  return limiter
 }
 
 /**
@@ -102,4 +111,18 @@ export async function checkRateLimit(
     // In-memory fallback
     checkMemoryRateLimit(key, max, windowMs)
   }
+}
+
+export function __resetRateLimitStateForTests(): void {
+  memoryMap.clear()
+  lastCleanup = Date.now()
+  redisRatelimits.clear()
+}
+
+export function __getCachedRedisPolicyCountForTests(): number {
+  return redisRatelimits.size
+}
+
+export function __primeRedisPolicyForTests(max: number, windowSeconds: number): void {
+  getRedisRatelimit(max, windowSeconds)
 }

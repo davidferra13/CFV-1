@@ -16,6 +16,7 @@ import {
   type AssemblySource,
   type AssemblyDish,
 } from '@/lib/menus/menu-intelligence-actions'
+import { getNextCourseNumber } from '@/lib/menus/course-utils'
 import { searchRecipes } from '@/lib/recipes/actions'
 import { useRouter } from 'next/navigation'
 
@@ -87,9 +88,7 @@ export function MenuAssemblyBrowser({
             {activeTab === 'past_menus' && (
               <SourceBrowser menuId={menuId} type="past_menu" existingCourses={existingCourses} />
             )}
-            {activeTab === 'recipes' && (
-              <RecipeBrowser menuId={menuId} existingCourses={existingCourses} />
-            )}
+            {activeTab === 'recipes' && <RecipeBrowser menuId={menuId} />}
             {activeTab === 'quick_add' && (
               <QuickAddPanel menuId={menuId} existingCourses={existingCourses} />
             )}
@@ -274,18 +273,21 @@ function DishRow({
 }) {
   const [isAdding, startAddTransition] = useTransition()
   const [added, setAdded] = useState(false)
-  const [showCourseSelect, setShowCourseSelect] = useState(false)
   const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
+  const targetCourseNumber = getNextCourseNumber(
+    existingCourses.map((course) => course.courseNumber)
+  )
 
   const handleAdd = (courseNumber: number, courseName: string) => {
     startAddTransition(async () => {
       try {
         await addDishFromSource(menuId, dish.id, courseNumber, courseName)
         setAdded(true)
-        setShowCourseSelect(false)
+        setError(null)
         router.refresh()
-      } catch {
-        // Error handled by the server action
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to add course from source')
       }
     })
   }
@@ -307,6 +309,7 @@ function DishRow({
           </p>
           <div className="flex gap-1.5 mt-0.5">
             <span className="text-xs text-stone-500">{dish.courseName}</span>
+            <span className="text-xs text-stone-500">Copies as Course {targetCourseNumber}</span>
             {dish.componentCount > 0 && (
               <span className="text-xs text-stone-500">
                 {dish.componentCount} component{dish.componentCount !== 1 ? 's' : ''}
@@ -323,18 +326,7 @@ function DishRow({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => {
-            if (existingCourses.length <= 1) {
-              // Only one course (or none), add directly
-              const course = existingCourses[0] || {
-                courseNumber: dish.courseNumber,
-                courseName: dish.courseName,
-              }
-              handleAdd(course.courseNumber, course.courseName)
-            } else {
-              setShowCourseSelect(!showCourseSelect)
-            }
-          }}
+          onClick={() => handleAdd(targetCourseNumber, dish.courseName)}
           disabled={isAdding}
           className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
         >
@@ -342,33 +334,7 @@ function DishRow({
         </Button>
       </div>
 
-      {showCourseSelect && (
-        <div className="ml-4 mt-1 mb-2 space-y-1">
-          <p className="text-xs text-stone-500 mb-1">Add to which course?</p>
-          {existingCourses.map((c) => (
-            <button
-              key={c.courseNumber}
-              onClick={() => handleAdd(c.courseNumber, c.courseName)}
-              disabled={isAdding}
-              className="block w-full text-left px-2 py-1 text-xs text-stone-300 hover:bg-stone-700 rounded transition-colors"
-            >
-              Course {c.courseNumber}: {c.courseName}
-            </button>
-          ))}
-          <button
-            onClick={() =>
-              handleAdd(
-                (existingCourses[existingCourses.length - 1]?.courseNumber || 0) + 1,
-                dish.courseName
-              )
-            }
-            disabled={isAdding}
-            className="block w-full text-left px-2 py-1 text-xs text-violet-400 hover:bg-stone-700 rounded transition-colors"
-          >
-            + New course: {dish.courseName}
-          </button>
-        </div>
-      )}
+      {error && <p className="px-2 pb-1 text-xs text-red-400">{error}</p>}
     </div>
   )
 }
@@ -377,13 +343,7 @@ function DishRow({
 // Recipe Browser
 // ============================================
 
-function RecipeBrowser({
-  menuId,
-  existingCourses,
-}: {
-  menuId: string
-  existingCourses: Array<{ courseNumber: number; courseName: string }>
-}) {
+function RecipeBrowser({ menuId }: { menuId: string }) {
   const [search, setSearch] = useState('')
   const [recipes, setRecipes] = useState<Array<{ id: string; name: string; category: string }>>([])
   const [isPending, startTransition] = useTransition()
@@ -547,24 +507,25 @@ function QuickAddPanel({
   existingCourses: Array<{ courseNumber: number; courseName: string }>
 }) {
   const [dishName, setDishName] = useState('')
-  const [courseName, setCourseName] = useState(existingCourses[0]?.courseName || 'Main Course')
-  const [courseNumber, setCourseNumber] = useState(existingCourses[0]?.courseNumber || 1)
-  const [isNewCourse, setIsNewCourse] = useState(existingCourses.length === 0)
+  const [courseName, setCourseName] = useState(existingCourses.length === 0 ? 'Main Course' : '')
   const [isAdding, startTransition] = useTransition()
   const [lastAdded, setLastAdded] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const nextCourseNumber = getNextCourseNumber(existingCourses.map((course) => course.courseNumber))
 
   const handleAdd = () => {
     if (!dishName.trim()) return
 
     startTransition(async () => {
       try {
-        await quickAddDish(menuId, dishName.trim(), courseNumber, courseName)
+        await quickAddDish(menuId, dishName.trim(), nextCourseNumber, courseName.trim())
         setLastAdded(dishName.trim())
         setDishName('')
+        setError(null)
         router.refresh()
-      } catch {
-        // Error handled by server action
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to add course')
       }
     })
   }
@@ -586,54 +547,18 @@ function QuickAddPanel({
       </div>
 
       <div>
-        <label className="text-xs text-stone-400 block mb-1">Course</label>
-        {existingCourses.length > 0 && (
-          <div className="space-y-1 mb-2">
-            {existingCourses.map((c) => (
-              <button
-                key={c.courseNumber}
-                onClick={() => {
-                  setCourseNumber(c.courseNumber)
-                  setCourseName(c.courseName)
-                  setIsNewCourse(false)
-                }}
-                className={`block w-full text-left px-2 py-1.5 text-xs rounded transition-colors ${
-                  !isNewCourse && courseNumber === c.courseNumber
-                    ? 'bg-violet-900/30 text-violet-300 border border-violet-600'
-                    : 'text-stone-300 hover:bg-stone-700 border border-transparent'
-                }`}
-              >
-                Course {c.courseNumber}: {c.courseName}
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                setIsNewCourse(true)
-                setCourseNumber(
-                  (existingCourses[existingCourses.length - 1]?.courseNumber || 0) + 1
-                )
-                setCourseName('')
-              }}
-              className={`block w-full text-left px-2 py-1.5 text-xs rounded transition-colors ${
-                isNewCourse
-                  ? 'bg-violet-900/30 text-violet-300 border border-violet-600'
-                  : 'text-violet-400 hover:bg-stone-700 border border-transparent'
-              }`}
-            >
-              + New course
-            </button>
-          </div>
-        )}
-
-        {isNewCourse && (
-          <input
-            type="text"
-            placeholder="e.g. Appetizer, Main Course, Dessert"
-            value={courseName}
-            onChange={(e) => setCourseName(e.target.value)}
-            className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-sm text-stone-200 placeholder-stone-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
-          />
-        )}
+        <label className="text-xs text-stone-400 block mb-1">New Course</label>
+        <div className="mb-2 rounded border border-stone-700 bg-stone-800/60 px-3 py-2 text-xs text-stone-400">
+          This creates Course {nextCourseNumber}. Use the Recipes tab to add components to an
+          existing course.
+        </div>
+        <input
+          type="text"
+          placeholder="e.g. Appetizer, Main Course, Dessert"
+          value={courseName}
+          onChange={(e) => setCourseName(e.target.value)}
+          className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-sm text-stone-200 placeholder-stone-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+        />
       </div>
 
       <Button
@@ -643,8 +568,9 @@ function QuickAddPanel({
         disabled={isAdding || !dishName.trim() || !courseName.trim()}
         className="w-full"
       >
-        {isAdding ? 'Adding...' : 'Add Dish'}
+        {isAdding ? 'Adding...' : `Add Course ${nextCourseNumber}`}
       </Button>
+      {error && <p className="text-xs text-red-400">{error}</p>}
 
       {lastAdded && <p className="text-xs text-green-400">✓ Added "{lastAdded}"</p>}
     </div>

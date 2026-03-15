@@ -5,6 +5,17 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import {
+  directoryListingToDiscoveryProfile,
+  legacyChefToDiscoveryProfile,
+  marketplaceRowToDiscoveryProfile,
+  mergeDiscoveryProfile,
+} from '@/lib/discovery/profile'
+import {
+  findChefByPublicSlug,
+  getPublicChefPathSlug,
+  getPublicInquirySlug,
+} from '@/lib/profile/public-chef'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
@@ -32,6 +43,10 @@ const BACKGROUND_IMAGE_MIME_TO_EXT: Record<string, string> = {
   'image/heic': 'heic',
   'image/heif': 'heif',
   'image/webp': 'webp',
+}
+
+function isRelationMissingError(error: any) {
+  return error?.code === '42P01' || error?.code === '42703'
 }
 
 function extractPortalBackgroundPath(url: string | null | undefined): string | null {
@@ -90,72 +105,169 @@ async function ensureChefPortalBackgroundsBucket(supabase: any) {
 export async function getPublicChefProfile(slug: string) {
   const supabase: any = createServerClient({ admin: true })
 
-  // Find chef by slug
-  let { data: chef, error: chefError } = await supabase
-    .from('chefs')
-    .select(
-      'id, business_name, display_name, bio, profile_image_url, logo_url, tagline, website_url, show_website_on_public_profile, preferred_inquiry_destination, portal_primary_color, portal_background_color, portal_background_image_url'
-    )
-    .eq('slug', slug)
-    .single()
+  let chefLookup = await findChefByPublicSlug<any>(
+    supabase,
+    slug,
+    [
+      'id',
+      'slug',
+      'booking_slug',
+      'booking_enabled',
+      'business_name',
+      'display_name',
+      'bio',
+      'profile_image_url',
+      'logo_url',
+      'tagline',
+      'website_url',
+      'show_website_on_public_profile',
+      'preferred_inquiry_destination',
+      'portal_primary_color',
+      'portal_background_color',
+      'portal_background_image_url',
+      'show_availability_signals',
+    ].join(', ')
+  )
 
   // Backward compatibility before website controls migration is applied.
-  if (chefError?.code === '42703') {
-    const fallback = await supabase
-      .from('chefs')
-      .select(
-        'id, business_name, display_name, bio, profile_image_url, tagline, portal_primary_color, portal_background_color, portal_background_image_url'
-      )
-      .eq('slug', slug)
-      .single()
-    chef = fallback.data
-    chefError = fallback.error
+  if (chefLookup.error?.code === '42703') {
+    chefLookup = await findChefByPublicSlug<any>(
+      supabase,
+      slug,
+      [
+        'id',
+        'slug',
+        'booking_slug',
+        'booking_enabled',
+        'business_name',
+        'display_name',
+        'bio',
+        'profile_image_url',
+        'tagline',
+        'portal_primary_color',
+        'portal_background_color',
+        'portal_background_image_url',
+      ].join(', ')
+    )
   }
 
-  if (chefError || !chef) return null
+  const chef = chefLookup.data
+  if (chefLookup.error || !chef) return null
 
-  // Get showcase-visible partners with locations and images
-  const { data: partners } = await supabase
-    .from('referral_partners')
-    .select(
+  const [partnersResult, marketplaceResult, listingResult] = await Promise.all([
+    supabase
+      .from('referral_partners')
+      .select(
+        `
+        id, name, partner_type, booking_url, description, cover_image_url, showcase_order,
+        partner_locations(id, name, address, city, state, zip, booking_url, description, max_guest_count, is_active),
+        partner_images(id, image_url, caption, season, display_order, location_id)
       `
-      id, name, partner_type, booking_url, description, cover_image_url, showcase_order,
-      partner_locations(id, name, city, state, booking_url, description, max_guest_count, is_active),
-      partner_images(id, image_url, caption, season, display_order, location_id)
-    `
-    )
-    .eq('tenant_id', chef.id)
-    .eq('is_showcase_visible', true)
-    .eq('status', 'active')
-    .order('showcase_order', { ascending: true })
+      )
+      .eq('tenant_id', chef.id)
+      .eq('is_showcase_visible', true)
+      .eq('status', 'active')
+      .order('showcase_order', { ascending: true }),
+    (supabase as any)
+      .from('chef_marketplace_profiles')
+      .select(
+        [
+          'chef_id',
+          'cuisine_types',
+          'service_types',
+          'price_range',
+          'min_guest_count',
+          'max_guest_count',
+          'service_area_city',
+          'service_area_state',
+          'service_area_zip',
+          'service_area_lat',
+          'service_area_lng',
+          'service_area_radius_miles',
+          'avg_rating',
+          'review_count',
+          'accepting_inquiries',
+          'next_available_date',
+          'lead_time_days',
+          'hero_image_url',
+          'highlight_text',
+        ].join(', ')
+      )
+      .eq('chef_id', chef.id)
+      .maybeSingle(),
+    (supabase as any)
+      .from('chef_directory_listings')
+      .select(
+        [
+          'chef_id',
+          'cuisines',
+          'service_types',
+          'city',
+          'state',
+          'zip_code',
+          'service_radius_miles',
+          'min_price_cents',
+          'max_price_cents',
+          'profile_photo_url',
+          'rating_avg',
+          'review_count',
+        ].join(', ')
+      )
+      .eq('chef_id', chef.id)
+      .maybeSingle(),
+  ])
 
-  // Filter active locations, sort images
-  const showcasePartners = (partners || []).map((p: any) => ({
-    ...p,
-    partner_locations: (p.partner_locations || []).filter(
-      (l: { is_active: boolean }) => l.is_active
+  const showcasePartners = (partnersResult.data || []).map((partner: any) => ({
+    ...partner,
+    partner_locations: (partner.partner_locations || []).filter(
+      (location: { is_active: boolean }) => location.is_active
     ),
-    partner_images: (p.partner_images || []).sort(
+    partner_images: (partner.partner_images || []).sort(
       (a: { display_order: number | null }, b: { display_order: number | null }) =>
         (a.display_order ?? 0) - (b.display_order ?? 0)
     ),
   }))
 
+  if (marketplaceResult.error && !isRelationMissingError(marketplaceResult.error)) {
+    console.error(
+      '[getPublicChefProfile] marketplace profile fetch error:',
+      marketplaceResult.error
+    )
+  }
+  if (listingResult.error && !isRelationMissingError(listingResult.error)) {
+    console.error('[getPublicChefProfile] directory listing fetch error:', listingResult.error)
+  }
+
+  const discovery = mergeDiscoveryProfile(
+    legacyChefToDiscoveryProfile(chef),
+    directoryListingToDiscoveryProfile(listingResult.data),
+    marketplaceRowToDiscoveryProfile(marketplaceResult.data)
+  )
+  const publicSlug = getPublicChefPathSlug(chef)
+  const inquirySlug = getPublicInquirySlug(chef)
+
   return {
     chef: {
       id: chef.id,
+      slug: chef.slug ?? null,
+      booking_slug: chef.booking_slug ?? null,
+      public_slug: publicSlug,
+      inquiry_slug: inquirySlug,
+      booking_enabled: chef.booking_enabled ?? false,
       display_name: chef.display_name || chef.business_name,
       business_name: chef.business_name,
       bio: chef.bio,
-      profile_image_url: chef.profile_image_url,
+      profile_image_url: chef.profile_image_url ?? discovery.hero_image_url,
       logo_url: chef.logo_url ?? null,
-      tagline: chef.tagline,
+      tagline: chef.tagline ?? discovery.highlight_text,
       website_url: chef.website_url,
       show_website_on_public_profile: chef.show_website_on_public_profile ?? true,
       preferred_inquiry_destination: chef.preferred_inquiry_destination ?? 'both',
       portal_primary_color: chef.portal_primary_color,
       portal_background_color: chef.portal_background_color,
       portal_background_image_url: chef.portal_background_image_url,
+      show_availability_signals: chef.show_availability_signals ?? false,
+      discovery,
     },
     partners: showcasePartners,
   }
@@ -228,7 +340,7 @@ export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPort
 
   const { data: currentChef } = await supabase
     .from('chefs')
-    .select('slug')
+    .select('slug, booking_slug')
     .eq('id', user.entityId)
     .single()
 
@@ -266,6 +378,10 @@ export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPort
     revalidatePath(`/chef/${currentChef.slug}`)
     revalidatePath(`/chef/${currentChef.slug}/inquire`)
   }
+  if (currentChef?.booking_slug && currentChef.booking_slug !== currentChef?.slug) {
+    revalidatePath(`/chef/${currentChef.booking_slug}`)
+    revalidatePath(`/chef/${currentChef.booking_slug}/inquire`)
+  }
 
   return { success: true }
 }
@@ -290,7 +406,7 @@ export async function uploadChefPortalBackgroundImage(
 
   const { data: currentChef } = await supabase
     .from('chefs')
-    .select('slug, portal_background_image_url')
+    .select('slug, booking_slug, portal_background_image_url')
     .eq('id', user.entityId)
     .single()
 
@@ -349,6 +465,10 @@ export async function uploadChefPortalBackgroundImage(
   if (currentChef?.slug) {
     revalidatePath(`/chef/${currentChef.slug}`)
     revalidatePath(`/chef/${currentChef.slug}/inquire`)
+  }
+  if (currentChef?.booking_slug && currentChef.booking_slug !== currentChef?.slug) {
+    revalidatePath(`/chef/${currentChef.booking_slug}`)
+    revalidatePath(`/chef/${currentChef.booking_slug}/inquire`)
   }
 
   return { success: true, url: publicUrl }

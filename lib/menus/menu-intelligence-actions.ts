@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
+import { getDuplicateCourseError } from '@/lib/menus/course-utils'
 
 // ============================================
 // TYPES
@@ -1265,17 +1266,17 @@ export async function addDishFromSource(
   const sourceGuestCount = sourceMenu?.target_guest_count || 0
   const targetGuestCount = targetMenu.target_guest_count || 0
 
-  // Determine sort_order (append to end of target course)
-  const { data: existingDishes } = await supabase
+  const { data: existingDish } = await supabase
     .from('dishes')
-    .select('sort_order')
+    .select('id')
     .eq('menu_id', targetMenuId)
     .eq('tenant_id', user.tenantId!)
     .eq('course_number', targetCourseNumber)
-    .order('sort_order', { ascending: false })
-    .limit(1)
+    .maybeSingle()
 
-  const nextSortOrder = existingDishes?.length ? (existingDishes[0].sort_order || 0) + 1 : 0
+  if (existingDish) {
+    throw new UnknownAppError(getDuplicateCourseError(targetCourseNumber))
+  }
 
   // Deep copy the dish
   const { data: newDish, error: dishErr } = await supabase
@@ -1294,7 +1295,7 @@ export async function addDishFromSource(
       plating_instructions: sourceDish.plating_instructions ?? null,
       beverage_pairing: sourceDish.beverage_pairing ?? null,
       beverage_pairing_notes: sourceDish.beverage_pairing_notes ?? null,
-      sort_order: nextSortOrder,
+      sort_order: targetCourseNumber,
       created_by: user.id,
       updated_by: user.id,
     } as any)
@@ -1303,6 +1304,9 @@ export async function addDishFromSource(
 
   if (dishErr || !newDish) {
     console.error('[addDishFromSource] Dish copy error:', dishErr)
+    if (dishErr?.code === '23505') {
+      throw new UnknownAppError(getDuplicateCourseError(targetCourseNumber))
+    }
     throw new UnknownAppError('Failed to copy dish')
   }
 
@@ -1505,17 +1509,17 @@ export async function quickAddDish(
   if (!menu) throw new UnknownAppError('Menu not found')
   if (menu.status === 'locked') throw new UnknownAppError('Cannot add dishes to a locked menu')
 
-  // Determine sort order
-  const { data: existingDishes } = await supabase
+  const { data: existingDish } = await supabase
     .from('dishes')
-    .select('sort_order')
+    .select('id')
     .eq('menu_id', targetMenuId)
     .eq('tenant_id', user.tenantId!)
     .eq('course_number', courseNumber)
-    .order('sort_order', { ascending: false })
-    .limit(1)
+    .maybeSingle()
 
-  const nextSortOrder = existingDishes?.length ? (existingDishes[0].sort_order || 0) + 1 : 0
+  if (existingDish) {
+    throw new UnknownAppError(getDuplicateCourseError(courseNumber))
+  }
 
   const { data: dish, error } = await supabase
     .from('dishes')
@@ -1525,7 +1529,7 @@ export async function quickAddDish(
       course_name: courseName,
       course_number: courseNumber,
       name: dishName,
-      sort_order: nextSortOrder,
+      sort_order: courseNumber,
       dietary_tags: [],
       allergen_flags: [],
       created_by: user.id,
@@ -1536,6 +1540,9 @@ export async function quickAddDish(
 
   if (error || !dish) {
     console.error('[quickAddDish] Error:', error)
+    if (error?.code === '23505') {
+      throw new UnknownAppError(getDuplicateCourseError(courseNumber))
+    }
     throw new UnknownAppError('Failed to add dish')
   }
 

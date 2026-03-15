@@ -6,6 +6,7 @@
 
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { findChefByPublicSlug } from '@/lib/profile/public-chef'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import {
@@ -130,12 +131,12 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   let chefError: { message?: string } | null = null
 
   if (validated.chef_slug) {
-    const lookup = await supabase
-      .from('chefs')
-      .select('id, business_name')
-      .eq('booking_slug', validated.chef_slug)
-      .single()
-    chef = lookup.data as { id: string; business_name: string | null } | null
+    const lookup = await findChefByPublicSlug<{ id: string; business_name: string | null }>(
+      supabase,
+      validated.chef_slug,
+      'id, business_name'
+    )
+    chef = lookup.data
     chefError = lookup.error
   } else {
     const ownerChefId = await resolveOwnerChefId(supabase)
@@ -166,6 +167,19 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   const tenantId = chef.id as string
   const chefName = (chef.business_name as string | null) || 'Your Chef'
+
+  const { data: discoveryProfile, error: discoveryError } = await (supabase as any)
+    .from('chef_marketplace_profiles')
+    .select('accepting_inquiries')
+    .eq('chef_id', tenantId)
+    .maybeSingle()
+
+  if (discoveryError && discoveryError.code !== '42P01') {
+    console.error('[submitPublicInquiry] discovery profile lookup error:', discoveryError)
+  }
+  if (discoveryProfile && discoveryProfile.accepting_inquiries === false) {
+    throw new Error('This chef is not currently accepting new inquiries.')
+  }
 
   // 2. Create or find existing client
   const client = await createClientFromLead(tenantId, {

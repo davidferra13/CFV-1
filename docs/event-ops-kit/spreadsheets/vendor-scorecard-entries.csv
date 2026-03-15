@@ -1,5 +1,0 @@
-date,vendor_id,vendor_name,category,quality_score,on_time_score,price_score,communication_score,issue_count,notes
-2026-03-01,VEN-001,Artisan Cheese House,cheese,5,4,4,5,0,Sample row
-2026-03-05,VEN-001,Artisan Cheese House,cheese,4,5,4,4,0,Sample row
-2026-03-06,VEN-002,Farm Fruit Supply,produce,3,3,4,3,1,Late delivery sample row
-

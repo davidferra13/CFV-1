@@ -2,22 +2,31 @@
 
 import { useEffect, useRef } from 'react'
 import { ANALYTICS_EVENTS, trackEvent, trackPageView } from '@/lib/analytics/posthog'
-
-type SortMode = 'featured' | 'alpha' | 'partners'
+import type { DirectorySortMode } from '@/lib/directory/utils'
 
 type DirectoryResultsTrackerProps = {
   query: string
-  stateFilter: string
+  locationFilter: string
+  locationSource: 'manual' | 'current' | 'approximate'
+  cuisineFilter: string
+  serviceTypeFilter: string
+  priceRangeFilter: string
   partnerTypeFilter: string
-  sortMode: SortMode
+  acceptingOnly: boolean
+  sortMode: DirectorySortMode
   resultCount: number
   totalCount: number
 }
 
 export function DirectoryResultsTracker({
   query,
-  stateFilter,
+  locationFilter,
+  locationSource,
+  cuisineFilter,
+  serviceTypeFilter,
+  priceRangeFilter,
   partnerTypeFilter,
+  acceptingOnly,
   sortMode,
   resultCount,
   totalCount,
@@ -26,12 +35,24 @@ export function DirectoryResultsTracker({
 
   useEffect(() => {
     const hasActiveFilters = Boolean(
-      query || stateFilter || partnerTypeFilter || sortMode !== 'featured'
+      query ||
+      locationFilter ||
+      cuisineFilter ||
+      serviceTypeFilter ||
+      priceRangeFilter ||
+      partnerTypeFilter ||
+      acceptingOnly ||
+      sortMode !== 'featured'
     )
     const trackingKey = [
       query,
-      stateFilter,
+      locationFilter,
+      locationSource,
+      cuisineFilter,
+      serviceTypeFilter,
+      priceRangeFilter,
       partnerTypeFilter,
+      acceptingOnly,
       sortMode,
       resultCount,
       totalCount,
@@ -44,8 +65,13 @@ export function DirectoryResultsTracker({
     trackPageView('chef_directory', {
       has_active_filters: hasActiveFilters,
       query_length: query.length,
-      state_filter: stateFilter || 'none',
+      location_filter: locationFilter || 'none',
+      location_source: locationFilter ? locationSource : 'none',
+      cuisine_filter: cuisineFilter || 'none',
+      service_type_filter: serviceTypeFilter || 'none',
+      price_range_filter: priceRangeFilter || 'none',
       partner_type_filter: partnerTypeFilter || 'none',
+      accepting_only: acceptingOnly,
       sort_mode: sortMode,
       result_count: resultCount,
       total_count: totalCount,
@@ -56,8 +82,13 @@ export function DirectoryResultsTracker({
       trackEvent(ANALYTICS_EVENTS.FEATURE_USED, {
         feature: 'chef_directory_filtered_results_viewed',
         query_length: query.length,
-        state_filter: stateFilter || 'none',
+        location_filter: locationFilter || 'none',
+        location_source: locationFilter ? locationSource : 'none',
+        cuisine_filter: cuisineFilter || 'none',
+        service_type_filter: serviceTypeFilter || 'none',
+        price_range_filter: priceRangeFilter || 'none',
         partner_type_filter: partnerTypeFilter || 'none',
+        accepting_only: acceptingOnly,
         sort_mode: sortMode,
         result_count: resultCount,
       })
@@ -67,12 +98,29 @@ export function DirectoryResultsTracker({
       trackEvent(ANALYTICS_EVENTS.FEATURE_USED, {
         feature: 'chef_directory_zero_results',
         query_length: query.length,
-        state_filter: stateFilter || 'none',
+        location_filter: locationFilter || 'none',
+        location_source: locationFilter ? locationSource : 'none',
+        cuisine_filter: cuisineFilter || 'none',
+        service_type_filter: serviceTypeFilter || 'none',
+        price_range_filter: priceRangeFilter || 'none',
         partner_type_filter: partnerTypeFilter || 'none',
+        accepting_only: acceptingOnly,
         sort_mode: sortMode,
       })
     }
-  }, [query, resultCount, sortMode, stateFilter, partnerTypeFilter, totalCount])
+  }, [
+    acceptingOnly,
+    cuisineFilter,
+    partnerTypeFilter,
+    priceRangeFilter,
+    query,
+    resultCount,
+    serviceTypeFilter,
+    sortMode,
+    locationFilter,
+    locationSource,
+    totalCount,
+  ])
 
   return null
 }

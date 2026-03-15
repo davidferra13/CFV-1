@@ -5,6 +5,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { hasProAccess } from '@/lib/billing/tier'
 import { ProFeatureRequiredError } from '@/lib/billing/errors'
 import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
+import { validateWebhookUrl } from '@/lib/security/url-validation'
 
 // Zapier REST Hook subscription endpoints.
 // POST = subscribe (Zapier calls this when a Zap is turned on)
@@ -99,17 +100,6 @@ function normalizeEventTypes(input: unknown): string[] {
   return ['inquiry.created']
 }
 
-function validateTargetUrl(url: string) {
-  try {
-    const parsed = new URL(url)
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new Error('Webhook URL must use HTTP(S)')
-    }
-  } catch {
-    throw new HttpError(400, 'Invalid webhook URL')
-  }
-}
-
 async function readJsonBody(req: NextRequest): Promise<Record<string, unknown>> {
   try {
     const parsed = await req.json()
@@ -130,7 +120,12 @@ export async function POST(req: NextRequest) {
     }
 
     const targetUrl = targetUrlCandidate.trim()
-    validateTargetUrl(targetUrl)
+    try {
+      validateWebhookUrl(targetUrl)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid webhook URL'
+      throw new HttpError(400, message)
+    }
 
     const eventTypes = normalizeEventTypes(body.event_types ?? body.eventTypes ?? body)
 

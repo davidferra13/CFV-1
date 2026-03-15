@@ -4,6 +4,7 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { isRedirectError } from 'next/dist/client/components/redirect'
+import { PublicPageView } from '@/components/analytics/public-page-view'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
@@ -21,6 +22,8 @@ function RoleSelectionContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const signupRef = searchParams?.get('ref')?.trim().toLowerCase() || undefined
+  const sourcePage = searchParams?.get('source_page')?.trim() || undefined
+  const sourceCta = searchParams?.get('source_cta')?.trim() || undefined
   const [loading, setLoading] = useState<'chef' | 'client' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,6 +48,14 @@ function RoleSelectionContent() {
 
   return (
     <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+      <PublicPageView
+        pageName="role_selection"
+        properties={{
+          ...(signupRef ? { signup_ref: signupRef } : {}),
+          ...(sourcePage ? { source_page: sourcePage } : {}),
+          ...(sourceCta ? { source_cta: sourceCta } : {}),
+        }}
+      />
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">One Last Step</h1>
