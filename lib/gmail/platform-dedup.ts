@@ -12,6 +12,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { collectStoredPlatformIdentityKeys, dedupeIdentityKeys } from './platform-identity'
+import { namesMatch } from '@/lib/utils/name-matching'
 
 export interface PlatformDedupMatch {
   isDuplicate: boolean
@@ -46,6 +47,19 @@ export async function checkPlatformInquiryDuplicate(
   }
 
   const candidateIdentityKeys = dedupeIdentityKeys([opts.externalId, ...(opts.externalIds ?? [])])
+
+  // Layer 0: Check platform_records table first (canonical source after write-through)
+  if (candidateIdentityKeys.length > 0) {
+    const prMatch = await findInquiryViaPlatformRecords(
+      supabase,
+      tenantId,
+      opts.channel,
+      candidateIdentityKeys
+    )
+    if (prMatch) {
+      return { isDuplicate: true, existingInquiryId: prMatch, matchedBy: 'external_id' }
+    }
+  }
 
   // Strategy 1: Match by stored platform identity key (most reliable)
   if (candidateIdentityKeys.length > 0) {
@@ -121,6 +135,17 @@ export async function findPlatformInquiryByContext(
   }
 ): Promise<string | null> {
   const candidateIdentityKeys = dedupeIdentityKeys([opts.orderId, ...(opts.externalIds ?? [])])
+
+  // Layer 0: Check platform_records table first (canonical source after write-through)
+  if (candidateIdentityKeys.length > 0) {
+    const prMatch = await findInquiryViaPlatformRecords(
+      supabase,
+      tenantId,
+      opts.channel,
+      candidateIdentityKeys
+    )
+    if (prMatch) return prMatch
+  }
 
   // First try by platform identity key (order ID, quote ID, or link token)
   if (candidateIdentityKeys.length > 0) {
@@ -227,53 +252,44 @@ async function findInquiryByIdentityKeys(
   return null
 }
 
-// ─── Name Matching ──────────────────────────────────────────────────────
+// ─── Layer 0: platform_records lookup ────────────────────────────────────
 
 /**
- * Normalize a name for comparison: lowercase, collapse whitespace, strip accents.
+ * Check platform_records for an existing inquiry by external_inquiry_id or external_uri_token.
+ * This is the fastest and most reliable dedup path since platform_records has unique indexes
+ * on (tenant_id, platform, external_inquiry_id) and (tenant_id, platform, external_uri_token).
  */
-function normalizeName(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // strip accents
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim()
-}
+async function findInquiryViaPlatformRecords(
+  supabase: SupabaseClient,
+  tenantId: string,
+  channel: string,
+  identityKeys: string[]
+): Promise<string | null> {
+  for (const key of identityKeys) {
+    // Try external_inquiry_id first
+    const { data: byId } = await supabase
+      .from('platform_records')
+      .select('inquiry_id')
+      .eq('tenant_id', tenantId)
+      .eq('platform', channel)
+      .eq('external_inquiry_id', key)
+      .limit(1)
+      .maybeSingle()
 
-/**
- * Case-insensitive name comparison with fuzzy matching.
- * Handles: extra spaces, different casing, accents, first/last swap,
- * and partial matches (one name is a subset of the other's parts).
- */
-function namesMatch(a: string, b: string): boolean {
-  const na = normalizeName(a)
-  const nb = normalizeName(b)
+    if (byId?.inquiry_id) return byId.inquiry_id
 
-  // Exact match after normalization
-  if (na === nb) return true
+    // Try external_uri_token
+    const { data: byToken } = await supabase
+      .from('platform_records')
+      .select('inquiry_id')
+      .eq('tenant_id', tenantId)
+      .eq('platform', channel)
+      .eq('external_uri_token', key)
+      .limit(1)
+      .maybeSingle()
 
-  const partsA = na.split(' ').filter(Boolean)
-  const partsB = nb.split(' ').filter(Boolean)
-
-  // First/last name swap: "John Smith" vs "Smith John"
-  if (
-    partsA.length >= 2 &&
-    partsB.length >= 2 &&
-    partsA[0] === partsB[partsB.length - 1] &&
-    partsA[partsA.length - 1] === partsB[0]
-  ) {
-    return true
+    if (byToken?.inquiry_id) return byToken.inquiry_id
   }
 
-  // One name contains all parts of the other (handles middle names, titles, suffixes)
-  // e.g., "Maria Garcia" matches "Maria Elena Garcia" or "Dr. Maria Garcia"
-  if (partsA.length >= 2 && partsB.length >= 2) {
-    const smaller = partsA.length <= partsB.length ? partsA : partsB
-    const larger = partsA.length <= partsB.length ? partsB : partsA
-    const allSmallerInLarger = smaller.every((part) => larger.includes(part))
-    if (allSmallerInLarger) return true
-  }
-
-  return false
+  return null
 }
