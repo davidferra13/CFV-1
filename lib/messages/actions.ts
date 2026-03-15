@@ -98,23 +98,9 @@ export async function createMessage(input: CreateMessageInput) {
   if (validated.client_id) revalidatePath(`/clients/${validated.client_id}`)
 
   // Reset follow-up timer on outbound messages linked to an inquiry (non-blocking)
+  // Read status first, then build one atomic UPDATE with status-aware timer
   if (validated.direction === 'outbound' && validated.inquiry_id) {
     try {
-      const followUpDue = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-      const updatePayload: Record<string, string | null> = {
-        follow_up_due_at: followUpDue,
-        next_action_by: 'client',
-        next_action_required: 'Waiting for client response',
-        last_response_at: new Date().toISOString(),
-      }
-
-      await supabase
-        .from('inquiries')
-        .update(updatePayload)
-        .eq('id', validated.inquiry_id)
-        .eq('tenant_id', user.tenantId!)
-
-      // If inquiry is new or awaiting_chef, advance to awaiting_client
       const { data: inq } = await supabase
         .from('inquiries')
         .select('status')
@@ -122,12 +108,39 @@ export async function createMessage(input: CreateMessageInput) {
         .eq('tenant_id', user.tenantId!)
         .single()
 
-      if (inq && (inq.status === 'new' || inq.status === 'awaiting_chef')) {
-        await supabase
-          .from('inquiries')
-          .update({ status: 'awaiting_client' })
-          .eq('id', validated.inquiry_id)
-          .eq('tenant_id', user.tenantId!)
+      if (inq) {
+        // Use status-appropriate timer (same durations as transitionInquiry)
+        const followUpMap: Record<string, number | null> = {
+          new: 48 * 60 * 60 * 1000, // 48h (will advance to awaiting_client)
+          awaiting_client: 48 * 60 * 60 * 1000, // 48h
+          awaiting_chef: 48 * 60 * 60 * 1000, // 48h (will advance to awaiting_client)
+          quoted: 72 * 60 * 60 * 1000, // 72h (preserve longer window)
+        }
+        const followUpMs = followUpMap[inq.status]
+
+        // Skip timer reset for terminal statuses
+        if (followUpMs != null) {
+          const updatePayload: Record<string, string | null> = {
+            follow_up_due_at: new Date(Date.now() + followUpMs).toISOString(),
+            next_action_by: 'client',
+            next_action_required:
+              inq.status === 'quoted'
+                ? 'Waiting for client to accept quote'
+                : 'Waiting for client response',
+            last_response_at: new Date().toISOString(),
+          }
+
+          // Advance new/awaiting_chef to awaiting_client in the same UPDATE
+          if (inq.status === 'new' || inq.status === 'awaiting_chef') {
+            ;(updatePayload as Record<string, string | null>).status = 'awaiting_client'
+          }
+
+          await supabase
+            .from('inquiries')
+            .update(updatePayload)
+            .eq('id', validated.inquiry_id)
+            .eq('tenant_id', user.tenantId!)
+        }
       }
     } catch (err) {
       console.error('[createMessage] Failed to reset follow-up timer (non-blocking):', err)

@@ -285,7 +285,7 @@ async function InquiryList({
 
   const leadScoreMap = new Map<string, LeadScoreData>()
   const completenessMap = new Map<string, CompletenessScore>()
-  for (const inquiry of allInquiries) {
+  for (const inquiry of inquiries) {
     if (OPEN_STATUSES.has(inquiry.status)) {
       // Read stored GOLDMINE score from unknown_fields (set by Gmail sync)
       const uf = (inquiry as any).unknown_fields as Record<string, unknown> | null
