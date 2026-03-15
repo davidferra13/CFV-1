@@ -48,6 +48,9 @@ import {
   startEventDocumentGenerationJob,
 } from '@/lib/documents/generation-jobs-actions'
 import { isTransientError, pushToDLQ, withRetry } from '@/lib/resilience/retry'
+import { generateAllergyCard } from '@/lib/documents/generate-allergy-card'
+import { generateServingLabels } from '@/lib/documents/generate-serving-labels'
+import type { LabelOptions } from '@/lib/documents/generate-serving-labels'
 
 const SNAPSHOT_BUCKET = 'event-documents'
 const SNAPSHOT_MIN_INTERVAL_MS = 10 * 60 * 1000
@@ -303,6 +306,52 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 
     if (!count || count === 0) {
       return NextResponse.json({ error: 'Event not found or access denied' }, { status: 404 })
+    }
+
+    // Allergy card is a standalone landscape PDF, handled separately from the standard pipeline
+    const rawType = request.nextUrl.searchParams.get('type')
+    if (rawType === 'allergy-card') {
+      const pdfBuffer = await generateAllergyCard(eventId)
+      const allergyDateSuffix = format(new Date(), 'yyyy-MM-dd')
+      const bytes = new Uint8Array(pdfBuffer)
+      return new NextResponse(bytes, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="allergy-card-${allergyDateSuffix}.pdf"`,
+          'Cache-Control': 'no-store',
+        },
+      })
+    }
+
+    // Serving labels use their own jsPDF layout (grid of labels), handled separately
+    if (rawType === 'labels') {
+      const sp = request.nextUrl.searchParams
+      const labelSizeParam = sp.get('labelSize') || '2x3'
+      const validSizes = ['2x3', '2x4', '3x5'] as const
+      const labelSize = validSizes.includes(labelSizeParam as any)
+        ? (labelSizeParam as LabelOptions['labelSize'])
+        : '2x3'
+
+      const labelOptions: Partial<LabelOptions> = {
+        labelSize,
+        includeReheating: sp.get('includeReheating') !== 'false',
+        includeAllergens: sp.get('includeAllergens') !== 'false',
+        prepDate: sp.get('prepDate') || undefined,
+        shelfLifeDays: sp.get('shelfLifeDays') ? parseInt(sp.get('shelfLifeDays')!, 10) : undefined,
+      }
+
+      const pdfBuffer = await generateServingLabels(eventId, labelOptions)
+      const labelsDateSuffix = format(new Date(), 'yyyy-MM-dd')
+      const bytes = new Uint8Array(pdfBuffer)
+      return new NextResponse(bytes, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="serving-labels-${labelsDateSuffix}.pdf"`,
+          'Cache-Control': 'no-store',
+        },
+      })
     }
 
     const parsedRequest = parseDocumentRequestQuery(request.nextUrl.searchParams)

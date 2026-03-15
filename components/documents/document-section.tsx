@@ -12,6 +12,7 @@ import {
   TEMPLATE_SLUG_BY_DOC_TYPE,
   type OperationalDocumentType,
 } from '@/lib/documents/template-catalog'
+import { ServingLabelsDialog } from '@/components/events/serving-labels-dialog'
 
 const CONTRACT_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -354,6 +355,33 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             >
               ↗
             </a>
+          </div>
+        </div>
+      </Card>
+
+      {/* Serving Labels — printable food labels for containers/packaging */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-1">Serving Labels</h2>
+        <p className="text-stone-500 text-sm mb-4">
+          Generate printable food labels with dish names, allergen warnings, dietary badges, dates,
+          and reheating instructions. Print on letter paper, cut along marks.
+        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <ReadinessIndicator
+              ready={readiness.prepSheet.ready}
+              missing={readiness.prepSheet.missing}
+            />
+            <p className="text-xs text-stone-400 mt-1">Requires menu with dishes and components</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {readiness.prepSheet.ready ? (
+              <ServingLabelsDialog eventId={eventId} />
+            ) : (
+              <Button variant="secondary" size="sm" disabled>
+                Print Serving Labels
+              </Button>
+            )}
           </div>
         </div>
       </Card>
