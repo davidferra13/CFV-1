@@ -496,6 +496,9 @@ The market is real, it's active, it's growing, and it's underserved.
 - "The business piece tends to be the weakest area for most personal chefs." -- Monica Thomas
 - "I spend more time on invoices, proposals, grocery lists, and backend work than I do cooking." -- Traqly blog, citing chef interviews
 - Chefs spend "frustrating time sitting in front of a computer attempting to set up their businesses using multiple software applications." -- APPCA
+- "You've got to be really disciplined and organised, the minute you're not on top of what you need to do it can all collapse." -- Private chef (Countertalk)
+- "If you drop the ball it's all on you." -- Private chef (Countertalk)
+- "Professional systems separate successful personal chefs from those who burn out in year one. You're not just a cook, you're running a business that requires organization." -- Meals Hero
 
 **On pricing and money:**
 
@@ -504,6 +507,8 @@ The market is real, it's active, it's growing, and it's underserved.
 - "Production costs have risen... raising prices cannot be the only solution." -- Carl Jacobs, Apicbase CEO
 - "One of the biggest mistakes personal chefs make is charging by the hour instead of by the service." -- Virginia Stockwell
 - "There is a difference between an employee mindset and an entrepreneurial mindset. If you're continuing to believe that charging by the hour is the way to go, you may be stuck in employee mindset." -- Virginia Stockwell
+- "Pricing is a huge roadblock for a lot of people who start becoming a personal chef." -- Chef Shelley
+- "I made the mistake of charging by the hour. At that time, it probably took about five hours to complete a cook session. Now, I can whip through a cook session in about 2.5 hours." -- Virginia Stockwell, on why hourly pricing punishes efficiency
 
 **On the industry crisis:**
 
@@ -554,6 +559,9 @@ The market is real, it's active, it's growing, and it's underserved.
 - "I've been in a room with the entire family and nonexistent. I've been in a room where it's the middle of a screaming match. And they're like, 'What's for dinner tonight?'" -- Anonymous chef (SF Standard)
 - "Some people leave a trail of garbage everywhere they go. Those kinds of people take up so much of my time." -- Anonymous chef (Vice)
 - "I have a fine line. We are not the help. You're paying me for a service." -- Robert Hernandez (SF Standard)
+- "Clients can be super picky, and they can change their minds a lot. You have to meticulously keep track of all those changes." -- Private chef (Countertalk)
+- "You have to be on 24/7. You have to perform, and you're not just a chef, some houses, you're the chef, the butler, the barista, the bartender, the driver, you name it." -- Anonymous chef (SF Standard)
+- "I didn't have enough money to change my ticket home. I didn't have anywhere to stay." -- Gabriel Cole, private chef (SF Standard), on being stranded by a client
 
 **On unpredictable hours and relationship strain:**
 
@@ -569,6 +577,12 @@ The market is real, it's active, it's growing, and it's underserved.
 - "I'm pretty sure I'm done though, even for the month-long gigs because the last one I did, it felt like it took a year off of my life." -- u/Crack-tus (Reddit)
 - "The money was insane for a chef but it meant changing plans on a dime. The thrill of being on private jets and luxury homes really wears off quicker than you'd think." -- u/Crack-tus (Reddit)
 - "The worst thing is boredom and lack of colleagues." -- u/Abigail716 (Reddit)
+- "It is so common to work for a 12-hour shift and never sit down, never eat anything, and barely get a chance to use the restroom." -- u/BakerBettie (Reddit, via Bored Panda)
+- "A lot of the time you're on jobs alone, without a team, and without anyone teaching you. I really miss the friendships that you build in kitchens." -- Private chef (Countertalk)
+
+**On food waste in wealthy households:**
+
+- "Sometimes it got eaten, sometimes it didn't. The level of waste in the private world is pretty extravagant." -- Anonymous chef (SF Standard)
 
 **On payment chasing:**
 
