@@ -172,6 +172,27 @@
 
 ---
 
+## Thread 7: "For those of you who cater - has it been worth it?" (9 upvotes, 13 comments, 4mo ago)
+
+### Catering Margins & Revenue
+
+- jbooth1962: "I grew my catering business from zero to 1.5 million in 7 years, right out of my cafe space. Eventually adding 700 square feet. Challenging for sure, but the margins are WAY better with catering."
+- Brunoise6: "The same $15 plate per person is now $30 plus whatever extras you want to up charge." Catering margins significantly better than dine-in.
+- Grim_Times2020: "It's not unrealistic to see a few SKUs actually have over 50% profitability with full COGS & CA labor added in." Detailed pricing strategy: set serving sizes (trays for 50), bulk ordering leverage, structured upselling (chips + salsa = $175 for $25 raw cost = 18% food cost).
+- polythenesammie: Makes money from "non refundable room rental, the triple markup food and cash bar."
+
+### Catering Pain Points
+
+- pickadillyprincess: "You will get a lot of last minute orders... People planning an event that needs catering should have enough time to coordinate catering in advance. Last minute work is stressful."
+- LordFardbottom: "Catering requires specific SOPs, delivery infrastructure or banquet rooms, and equipment (larger ovens and kettles, hot holding)."
+- Brunoise6: "The trick is just be really selective at first. Either set a minimum or just sus clients out. Don't just take every offer thrown at you."
+
+### Side-Gig / Weekend Chef Validation
+
+- gancoskhan (charcuterie thread, 1.6K upvotes): "Been in construction the last few years since chef'n doesn't pay well in my area. But these weekend gigs have reignited the passion." ($700 charcuterie board for mansion retreat, $100-200 raw cost + 8h labor)
+
+---
+
 ## ChefFlow Product Implications
 
 ### Problems ChefFlow Can Solve (validated by Reddit data)
