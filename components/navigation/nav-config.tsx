@@ -218,6 +218,7 @@ export const navGroups: NavGroup[] = [
         label: 'Proposals',
         icon: Presentation,
         children: [
+          { href: '/proposals/builder', label: 'Proposal Builder' },
           { href: '/proposals/templates', label: 'Templates' },
           { href: '/proposals/addons', label: 'Add-Ons' },
         ],
@@ -422,6 +423,15 @@ export const navGroups: NavGroup[] = [
           { href: '/import', label: 'Smart Import' },
         ],
       },
+      {
+        href: '/feedback',
+        label: 'Client Feedback',
+        icon: Star,
+        children: [
+          { href: '/feedback/dashboard', label: 'Feedback Dashboard' },
+          { href: '/feedback/requests', label: 'Send Requests' },
+        ],
+      },
     ],
   },
 
@@ -533,6 +543,7 @@ export const navGroups: NavGroup[] = [
           { href: '/recipes/new', label: 'New Recipe' },
           { href: '/culinary/recipes', label: 'Recipe Library' },
           { href: '/culinary/components', label: 'Components' },
+          { href: '/recipes/photos', label: 'Step Photos' },
         ],
       },
       {
@@ -580,7 +591,10 @@ export const navGroups: NavGroup[] = [
         href: '/tasks',
         label: 'Tasks',
         icon: ListChecks,
-        children: [{ href: '/tasks/templates', label: 'Task Templates' }],
+        children: [
+          { href: '/tasks/templates', label: 'Task Templates' },
+          { href: '/tasks/va', label: 'VA Tasks' },
+        ],
       },
       {
         href: '/stations',
@@ -600,6 +614,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/schedule', label: 'Schedule' },
           { href: '/staff/availability', label: 'Availability' },
           { href: '/staff/clock', label: 'Clock In/Out' },
+          { href: '/staff/payroll', label: 'Payroll Summary' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
           { href: '/staff/live', label: 'Live Activity' },
@@ -807,6 +822,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/reporting/profit-by-event', label: 'Profit by Event' },
           { href: '/finance/reporting/profit-loss', label: 'Profit & Loss' },
           { href: '/finance/reporting/year-to-date-summary', label: 'Year-to-Date Summary' },
+          { href: '/finance/reporting/yoy-comparison', label: 'Year-over-Year' },
         ],
       },
       {
@@ -857,6 +873,8 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/social/vault', label: 'Media Vault' },
           { href: '/social/compose', label: 'Post from Event' },
+          { href: '/social/templates', label: 'Social Templates' },
+          { href: '/social/calendar', label: 'Content Calendar' },
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],
@@ -944,9 +962,61 @@ export const navGroups: NavGroup[] = [
         children: [{ href: '/safety/incidents/new', label: 'Report Incident' }],
       },
       {
+        href: '/safety/claims',
+        label: 'Insurance Claims',
+        icon: ShieldAlert,
+        children: [
+          { href: '/safety/claims/new', label: 'New Claim' },
+          { href: '/safety/claims/documents', label: 'Claim Documents' },
+        ],
+      },
+      {
         href: '/safety/backup-chef',
         label: 'Backup Coverage',
         icon: IdentificationBadge,
+      },
+    ],
+  },
+
+  // ─── COMMUNITY (chef-to-chef) ───
+  {
+    id: 'community',
+    label: 'Community',
+    icon: Users,
+    module: 'more',
+    items: [
+      {
+        href: '/community',
+        label: 'Community Hub',
+        icon: Users,
+        children: [
+          { href: '/community/benchmarks', label: 'Benchmarks' },
+          { href: '/community/messages', label: 'Peer Messages' },
+        ],
+      },
+      {
+        href: '/community/directory',
+        label: 'Chef Directory',
+        icon: TreeStructure,
+        children: [{ href: '/community/directory/my-listing', label: 'My Listing' }],
+      },
+      {
+        href: '/community/mentorship',
+        label: 'Mentorship',
+        icon: HeartHandshake,
+        children: [
+          { href: '/community/mentorship/find', label: 'Find a Mentor' },
+          { href: '/community/mentorship/dashboard', label: 'My Connections' },
+        ],
+      },
+      {
+        href: '/community/subcontracting',
+        label: 'Subcontracting',
+        icon: Handshake,
+        children: [
+          { href: '/community/subcontracting/roster', label: 'Subcontractor Roster' },
+          { href: '/community/subcontracting/new', label: 'New Agreement' },
+        ],
       },
     ],
   },
@@ -963,6 +1033,16 @@ export const navGroups: NavGroup[] = [
         label: 'Inbox Tools',
         icon: MessageCircle,
         children: [{ href: '/inbox/triage', label: 'Sort Messages' }],
+      },
+      {
+        href: '/import',
+        label: 'Data Import',
+        icon: Upload,
+        children: [
+          { href: '/import/csv', label: 'CSV Import' },
+          { href: '/import/mxp', label: 'MasterCook Import' },
+          { href: '/import/history', label: 'Import History' },
+        ],
       },
       {
         href: '/help',
