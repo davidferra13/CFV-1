@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
 import type { RecipeListItem } from '@/lib/recipes/actions'
 import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
@@ -65,6 +66,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const searchParams = useSearchParams() ?? new URLSearchParams()
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
+  const [importOpen, setImportOpen] = useState(false)
 
   const currentCategory = searchParams.get('category') || ''
   const currentCuisine = searchParams.get('cuisine') || ''
@@ -106,6 +108,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
           <Link href="/recipes/ingredients">
             <Button variant="secondary">Ingredients</Button>
           </Link>
+          <Button variant="secondary" onClick={() => setImportOpen(true)}>
+            Import from URL
+          </Button>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
           </Link>
@@ -355,6 +360,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
           ))}
         </div>
       ) : null}
+
+      {/* Recipe Import Dialog */}
+      <RecipeImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   )
 }
