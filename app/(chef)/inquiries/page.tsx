@@ -40,6 +40,8 @@ import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-b
 import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
 import { getPlatformAnalytics } from '@/lib/inquiries/platform-analytics'
 import { PlatformAnalyticsCard } from '@/components/inquiries/platform-analytics-card'
+import { getPlatformRawFeed } from '@/lib/inquiries/platform-raw-feed'
+import { PlatformRawFeedTab } from '@/components/inquiries/platform-raw-feed-tab'
 import { safeFetch } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 
@@ -235,6 +237,11 @@ function InquiryRow({
 async function PlatformAnalyticsSection() {
   const analytics = await getPlatformAnalytics()
   return <PlatformAnalyticsCard analytics={analytics} />
+}
+
+async function PlatformRawFeedSection() {
+  const items = await getPlatformRawFeed(30)
+  return <PlatformRawFeedTab items={items} />
 }
 
 async function InquiryList({
@@ -531,6 +538,11 @@ export default async function InquiriesPage({
       {/* Platform Analytics */}
       <Suspense fallback={null}>
         <PlatformAnalyticsSection />
+      </Suspense>
+
+      {/* Platform Raw Feed */}
+      <Suspense fallback={null}>
+        <PlatformRawFeedSection />
       </Suspense>
 
       {/* View wrapper: manages list/kanban toggle */}
