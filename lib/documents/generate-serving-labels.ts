@@ -1,246 +1,242 @@
-// Serving Labels Generator
-// Generates printable food labels for event dishes/components.
-// Each label includes: dish name, allergens, dietary tags, prep/use-by dates,
-// reheating instructions, client name, and chef branding.
-// Labels are laid out in a grid on US Letter paper for easy cutting.
+// Serving Labels PDF Generator
+// Produces printable labels for containers/plates during service.
+// Each label shows: dish name, course, allergens, date prepared, reheating notes.
+// Supports 3 label sizes: 2x3, 2x4, and full-page.
 
 'use server'
 
+import { jsPDF } from 'jspdf'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { jsPDF } from 'jspdf'
-import { format, parseISO, addDays } from 'date-fns'
+import { allergenShortName } from '@/lib/constants/allergens'
+import { format, parseISO } from 'date-fns'
 
-// ── Types ───────────────────────────────────────────────────────────────────
+// --- Types ---
 
-export type LabelOptions = {
-  labelSize: '2x3' | '2x4' | '3x5'
-  includeReheating: boolean
-  includeAllergens: boolean
-  prepDate: string // ISO date string
-  shelfLifeDays: number // default 3
-}
+export type LabelSize = '2x3' | '2x4' | 'full-page'
 
 type LabelData = {
   dishName: string
-  componentName: string | null
-  allergenFlags: string[]
-  dietaryTags: string[]
-  reheatingNotes: string | null
-  clientName: string
-  chefName: string
-  prepDate: string
-  useByDate: string
+  courseName: string
+  allergens: string[]
+  datePrepared: string
+  reheatNote: string | null
 }
 
-// ── Label size configs (in mm) ──────────────────────────────────────────────
-
-const LABEL_CONFIGS = {
-  '2x3': { width: 76.2, height: 50.8 }, // 3" x 2" (width x height)
-  '2x4': { width: 101.6, height: 50.8 }, // 4" x 2"
-  '3x5': { width: 127.0, height: 76.2 }, // 5" x 3"
-} as const
-
-const LETTER_WIDTH = 215.9 // mm
-const LETTER_HEIGHT = 279.4 // mm
-const PAGE_MARGIN = 10 // mm
-
-// ── Dietary tag abbreviations ───────────────────────────────────────────────
-
-const DIETARY_ABBREV: Record<string, string> = {
-  vegan: 'V',
-  vegetarian: 'VG',
-  'gluten-free': 'GF',
-  gluten_free: 'GF',
-  'dairy-free': 'DF',
-  dairy_free: 'DF',
-  'nut-free': 'NF',
-  nut_free: 'NF',
-  pescatarian: 'PESC',
-  keto: 'KETO',
-  paleo: 'PALEO',
-  halal: 'HALAL',
-  kosher: 'KOSHER',
+type LabelGrid = {
+  cols: number
+  rows: number
+  labelWidthMm: number
+  labelHeightMm: number
+  marginXMm: number
+  marginYMm: number
+  gapXMm: number
+  gapYMm: number
 }
 
-// ── Allergen display names ──────────────────────────────────────────────────
+// --- Label Size Configs ---
 
-const ALLERGEN_DISPLAY: Record<string, string> = {
-  dairy: 'Dairy',
-  eggs: 'Eggs',
-  fish: 'Fish',
-  shellfish: 'Shellfish',
-  tree_nuts: 'Tree Nuts',
-  peanuts: 'Peanuts',
-  wheat: 'Wheat',
-  soy: 'Soy',
-  sesame: 'Sesame',
-  gluten: 'Gluten',
-  sulfites: 'Sulfites',
-  mustard: 'Mustard',
-  celery: 'Celery',
-  lupin: 'Lupin',
-  mollusks: 'Mollusks',
+const LETTER_WIDTH_MM = 215.9
+const LETTER_HEIGHT_MM = 279.4
+
+function getLabelGrid(size: LabelSize): LabelGrid {
+  switch (size) {
+    case '2x3': {
+      const lw = 50.8
+      const lh = 76.2
+      const cols = 2
+      const rows = 3
+      const totalW = cols * lw
+      const totalH = rows * lh
+      const mx = (LETTER_WIDTH_MM - totalW) / (cols + 1)
+      const my = (LETTER_HEIGHT_MM - totalH) / (rows + 1)
+      return {
+        cols,
+        rows,
+        labelWidthMm: lw,
+        labelHeightMm: lh,
+        marginXMm: mx,
+        marginYMm: my,
+        gapXMm: mx,
+        gapYMm: my,
+      }
+    }
+    case '2x4': {
+      const lw = 50.8
+      const lh = 101.6
+      const cols = 2
+      const rows = 2
+      const totalW = cols * lw
+      const totalH = rows * lh
+      const mx = (LETTER_WIDTH_MM - totalW) / (cols + 1)
+      const my = (LETTER_HEIGHT_MM - totalH) / (rows + 1)
+      return {
+        cols,
+        rows,
+        labelWidthMm: lw,
+        labelHeightMm: lh,
+        marginXMm: mx,
+        marginYMm: my,
+        gapXMm: mx,
+        gapYMm: my,
+      }
+    }
+    case 'full-page': {
+      const mx = 20
+      const my = 20
+      return {
+        cols: 1,
+        rows: 1,
+        labelWidthMm: LETTER_WIDTH_MM - 2 * mx,
+        labelHeightMm: LETTER_HEIGHT_MM - 2 * my,
+        marginXMm: mx,
+        marginYMm: my,
+        gapXMm: 0,
+        gapYMm: 0,
+      }
+    }
+  }
 }
 
-// ── Data fetcher ────────────────────────────────────────────────────────────
+// --- Reheat Detection ---
 
-export async function fetchServingLabelsData(
-  eventId: string,
-  options: LabelOptions
-): Promise<LabelData[] | null> {
+const REHEAT_PATTERNS: { pattern: RegExp; hasTemp: boolean }[] = [
+  { pattern: /reheat\s+(?:at|to)\s+(\d{2,3}\s*[°]?\s*[FCfc])/i, hasTemp: true },
+  { pattern: /warm\s+(?:at|to)\s+(\d{2,3}\s*[°]?\s*[FCfc])/i, hasTemp: true },
+  { pattern: /(\d{2,3}\s*[°]\s*[FCfc])\s+(?:for|until)/i, hasTemp: true },
+  { pattern: /reheat/i, hasTemp: false },
+  { pattern: /warm\s+(?:in|through|gently)/i, hasTemp: false },
+]
+
+function extractReheatNote(method: string | null): string | null {
+  if (!method) return null
+  for (const { pattern, hasTemp } of REHEAT_PATTERNS) {
+    const match = method.match(pattern)
+    if (match) {
+      if (hasTemp && match[1]) {
+        return `Reheat to ${match[1].trim()}`
+      }
+      return 'Reheat before serving'
+    }
+  }
+  return null
+}
+
+// --- Fetch Label Data ---
+
+async function fetchLabelData(
+  eventId: string
+): Promise<{ labels: LabelData[]; eventName: string } | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const tenantId = user.tenantId!
+  const supabase: any = createServerClient()
 
-  // Fetch event + client
   const { data: event } = await supabase
     .from('events')
-    .select(
-      `
-      id, event_date,
-      client:clients(full_name)
-    `
-    )
+    .select('id, occasion, event_date, menu_id')
     .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
-  if (!event) return null
+  if (!event || !event.menu_id) return null
 
-  // Fetch chef info for branding
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('business_name')
-    .eq('id', user.tenantId!)
-    .single()
+  const eventDate = event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'N/A'
 
-  const chefName = chef?.business_name || 'Chef'
-  const clientName =
-    (event.client as unknown as { full_name: string } | null)?.full_name ?? 'Client'
-
-  // Find menu
-  const { data: menus } = await supabase
-    .from('menus')
-    .select('id')
-    .eq('event_id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .order('created_at', { ascending: true })
-    .limit(1)
-
-  if (!menus || menus.length === 0) return null
-  const menuId = menus[0].id
-
-  // Fetch dishes
   const { data: dishes } = await supabase
     .from('dishes')
-    .select('id, course_name, course_number, allergen_flags, dietary_tags')
-    .eq('menu_id', menuId)
-    .eq('tenant_id', user.tenantId!)
+    .select('id, name, course_name, course_number, allergen_flags')
+    .eq('menu_id', event.menu_id)
+    .eq('tenant_id', tenantId)
     .order('course_number', { ascending: true })
+    .order('sort_order', { ascending: true })
 
   if (!dishes || dishes.length === 0) return null
 
-  // Fetch components with recipes
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
+
   const { data: components } = await supabase
     .from('components')
-    .select(
-      `
-      id, name, dish_id, recipe_id, execution_notes, storage_notes,
-      recipe:recipes(id, method, dietary_tags)
-    `
-    )
+    .select('id, name, dish_id, recipe_id, sort_order')
     .in('dish_id', dishIds)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .order('sort_order', { ascending: true })
 
-  if (!components || components.length === 0) return null
+  const recipeIds = (components ?? []).map((c: any) => c.recipe_id).filter(Boolean) as string[]
 
-  // Build dish lookup
-  const dishById = new Map(dishes.map((d) => [d.id, d]))
+  const recipeMethods: Record<string, string> = {}
+  if (recipeIds.length > 0) {
+    const { data: recipes } = await supabase
+      .from('recipes')
+      .select('id, method')
+      .in('id', recipeIds)
+      .eq('tenant_id', tenantId)
 
-  // For each component with a recipe, fetch allergen flags via the DB function
-  const recipeIds = components
-    .filter((c) => c.recipe_id)
-    .map((c) => c.recipe_id!)
-    .filter((v, i, a) => a.indexOf(v) === i) // dedupe
-
-  // Fetch allergen flags for all recipes
-  const allergenMap = new Map<string, string[]>()
-  for (const recipeId of recipeIds) {
-    try {
-      const { data } = await supabase.rpc('get_recipe_allergen_flags', {
-        p_recipe_id: recipeId,
-      })
-      if (data) allergenMap.set(recipeId, data as string[])
-    } catch {
-      // Function may not exist yet; fall back to empty
+    for (const r of (recipes ?? []) as any[]) {
+      recipeMethods[r.id] = r.method ?? ''
     }
   }
 
-  // Compute dates
-  const prepDateStr = options.prepDate || new Date().toISOString().split('T')[0]
-  const prepDate = parseISO(prepDateStr)
-  const useByDate = addDays(prepDate, options.shelfLifeDays)
-  const formattedPrepDate = format(prepDate, 'MMM d, yyyy')
-  const formattedUseBy = format(useByDate, 'MMM d, yyyy')
+  // Fetch allergens from recipe_ingredients -> ingredients for components.
+  // Supplements the dish-level allergen_flags with ingredient-level data.
+  const componentAllergens: Record<string, string[]> = {}
+  if (recipeIds.length > 0) {
+    const { data: riRows } = await supabase
+      .from('recipe_ingredients')
+      .select('recipe_id, ingredients(allergen_flags)')
+      .in('recipe_id', recipeIds)
 
-  // Build labels: one per component
+    for (const ri of (riRows ?? []) as any[]) {
+      const flags = (ri.ingredients as any)?.allergen_flags
+      if (flags && Array.isArray(flags) && flags.length > 0) {
+        if (!componentAllergens[ri.recipe_id]) {
+          componentAllergens[ri.recipe_id] = []
+        }
+        for (const f of flags) {
+          if (!componentAllergens[ri.recipe_id].includes(f)) {
+            componentAllergens[ri.recipe_id].push(f)
+          }
+        }
+      }
+    }
+  }
+
+  // One label per dish (components roll up into the dish)
   const labels: LabelData[] = []
 
-  for (const comp of components) {
-    const dish = dishById.get(comp.dish_id)
-    if (!dish) continue
+  for (const dish of dishes as any[]) {
+    const dishName = dish.name || dish.course_name
+    const courseName = dish.course_name
+    const allergenSet = new Set<string>(dish.allergen_flags ?? [])
 
-    const recipe = comp.recipe as unknown as {
-      id: string
-      method: string | null
-      dietary_tags: string[]
-    } | null
+    const dishComponents = (components ?? []).filter((c: any) => c.dish_id === dish.id) as any[]
 
-    // Allergens: from recipe ingredients (via DB function), fall back to dish-level
-    let allergens: string[] = []
-    if (recipe?.id && allergenMap.has(recipe.id)) {
-      allergens = allergenMap.get(recipe.id) || []
-    }
-    // Also merge dish-level allergen flags
-    const dishAllergens = (dish.allergen_flags as string[]) || []
-    const allAllergens = [...new Set([...allergens, ...dishAllergens])]
+    let reheatNote: string | null = null
 
-    // Dietary tags: merge recipe + dish level
-    const recipeTags = recipe?.dietary_tags || []
-    const dishTags = (dish.dietary_tags as string[]) || []
-    const allDietaryTags = [...new Set([...recipeTags, ...dishTags])]
-
-    // Reheating: from execution_notes or recipe method (first sentence)
-    let reheatingNotes: string | null = null
-    if (comp.execution_notes) {
-      reheatingNotes = comp.execution_notes
-    } else if (recipe?.method) {
-      // Extract a brief note from method (first sentence, max 100 chars)
-      const firstSentence = recipe.method.split(/[.!?]/)[0]?.trim()
-      if (firstSentence && firstSentence.length <= 100) {
-        reheatingNotes = firstSentence
+    for (const comp of dishComponents) {
+      if (comp.recipe_id) {
+        const recipeAllergens = componentAllergens[comp.recipe_id] ?? []
+        for (const a of recipeAllergens) {
+          allergenSet.add(a)
+        }
+        if (!reheatNote) {
+          reheatNote = extractReheatNote(recipeMethods[comp.recipe_id] ?? null)
+        }
       }
     }
 
     labels.push({
-      dishName: dish.course_name,
-      componentName: comp.name,
-      allergenFlags: allAllergens,
-      dietaryTags: allDietaryTags,
-      reheatingNotes,
-      clientName,
-      chefName,
-      prepDate: formattedPrepDate,
-      useByDate: formattedUseBy,
+      dishName,
+      courseName,
+      allergens: Array.from(allergenSet).sort(),
+      datePrepared: eventDate,
+      reheatNote,
     })
   }
 
-  return labels
+  return { labels, eventName: event.occasion ?? 'Event' }
 }
 
-// ── PDF renderer ────────────────────────────────────────────────────────────
+// --- Render Single Label ---
 
 function renderLabel(
   doc: jsPDF,
@@ -249,218 +245,180 @@ function renderLabel(
   y: number,
   width: number,
   height: number,
-  options: LabelOptions
+  size: LabelSize
 ) {
-  const padding = 3 // mm
-  const innerW = width - padding * 2
+  const padding = size === 'full-page' ? 8 : 3
+  const innerW = width - 2 * padding
   let curY = y + padding
 
-  // Border with cut marks
+  // Dashed border for cut guides
   doc.setDrawColor(180, 180, 180)
   doc.setLineWidth(0.3)
+  doc.setLineDashPattern([2, 2], 0)
   doc.rect(x, y, width, height)
+  doc.setLineDashPattern([], 0)
 
-  // Cut marks at corners (small L-shapes outside the border)
-  const markLen = 3
-  doc.setDrawColor(200, 200, 200)
-  doc.setLineWidth(0.2)
-  // Top-left
-  doc.line(x - markLen, y, x - 0.5, y)
-  doc.line(x, y - markLen, x, y - 0.5)
-  // Top-right
-  doc.line(x + width + 0.5, y, x + width + markLen, y)
-  doc.line(x + width, y - markLen, x + width, y - 0.5)
-  // Bottom-left
-  doc.line(x - markLen, y + height, x - 0.5, y + height)
-  doc.line(x, y + height + 0.5, x, y + height + markLen)
-  // Bottom-right
-  doc.line(x + width + 0.5, y + height, x + width + markLen, y + height)
-  doc.line(x + width, y + height + 0.5, x + width, y + height + markLen)
+  const maxY = y + height - padding
 
-  // Determine font sizes based on label size
-  const isSmall = options.labelSize === '2x3'
-  const titleSize = isSmall ? 9 : 11
-  const bodySize = isSmall ? 6 : 7
-  const smallSize = isSmall ? 5 : 6
+  // Font sizes scale with label size
+  const nameFontSize = size === 'full-page' ? 24 : size === '2x4' ? 14 : 11
+  const courseFontSize = size === 'full-page' ? 14 : size === '2x4' ? 10 : 8
+  const detailFontSize = size === 'full-page' ? 12 : size === '2x4' ? 9 : 7
+  const badgeFontSize = size === 'full-page' ? 11 : size === '2x4' ? 8 : 6.5
 
-  // ── Dish / component name (large, bold) ──
-  doc.setFontSize(titleSize)
+  // Dish name (bold, prominent)
   doc.setFont('helvetica', 'bold')
+  doc.setFontSize(nameFontSize)
   doc.setTextColor(0, 0, 0)
 
-  const displayName = label.componentName ? `${label.componentName}` : label.dishName
-
-  const nameLines = doc.splitTextToSize(displayName, innerW) as string[]
-  const lineH = titleSize * 0.38
+  const nameLines = doc.splitTextToSize(label.dishName, innerW)
+  const lineH = nameFontSize * 0.38
   for (const line of nameLines.slice(0, 2)) {
-    // max 2 lines
-    doc.text(line, x + padding, curY + lineH)
-    curY += lineH + 0.5
+    if (curY + lineH > maxY) break
+    doc.text(line, x + padding, curY)
+    curY += lineH
   }
-
-  // Course name in smaller text if showing component
-  if (label.componentName) {
-    doc.setFontSize(smallSize)
-    doc.setFont('helvetica', 'italic')
-    doc.setTextColor(100, 100, 100)
-    const courseLines = doc.splitTextToSize(label.dishName, innerW) as string[]
-    doc.text(courseLines[0] || '', x + padding, curY + smallSize * 0.35)
-    curY += smallSize * 0.38 + 0.5
-    doc.setTextColor(0, 0, 0)
-  }
-
   curY += 1
 
-  // ── Dietary badges ──
-  const dietaryBadges = label.dietaryTags
-    .map((t) => DIETARY_ABBREV[t.toLowerCase()] || t.toUpperCase())
-    .slice(0, 5) // max 5 badges
-
-  if (dietaryBadges.length > 0) {
-    doc.setFontSize(smallSize)
-    doc.setFont('helvetica', 'bold')
-    let badgeX = x + padding
-    for (const badge of dietaryBadges) {
-      const tw = doc.getTextWidth(badge) + 3
-      if (badgeX + tw > x + width - padding) break
-
-      // Badge background
-      doc.setFillColor(34, 139, 34) // forest green
-      doc.setDrawColor(34, 139, 34)
-      const badgeH = smallSize * 0.45
-      doc.roundedRect(badgeX, curY - 0.5, tw, badgeH + 1.5, 0.8, 0.8, 'F')
-
-      // Badge text
-      doc.setTextColor(255, 255, 255)
-      doc.text(badge, badgeX + 1.5, curY + badgeH)
-      doc.setTextColor(0, 0, 0)
-
-      badgeX += tw + 1.5
-    }
-    curY += smallSize * 0.45 + 2.5
-  }
-
-  // ── Allergens ──
-  if (options.includeAllergens && label.allergenFlags.length > 0) {
-    doc.setFontSize(smallSize)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(180, 0, 0)
-
-    const allergenNames = label.allergenFlags
-      .map((f) => ALLERGEN_DISPLAY[f.toLowerCase()] || f)
-      .join(', ')
-
-    const allergenText = `CONTAINS: ${allergenNames}`
-    const allergenLines = doc.splitTextToSize(allergenText, innerW) as string[]
-    for (const line of allergenLines.slice(0, 2)) {
-      doc.text(line, x + padding, curY + smallSize * 0.35)
-      curY += smallSize * 0.38 + 0.3
-    }
-    doc.setTextColor(0, 0, 0)
-    curY += 0.5
-  }
-
-  // ── Dates ──
-  doc.setFontSize(bodySize)
-  doc.setFont('helvetica', 'normal')
-  const bodyH = bodySize * 0.38
-
-  doc.setFont('helvetica', 'bold')
-  doc.text('Prepared:', x + padding, curY + bodyH)
-  const prepLabelW = doc.getTextWidth('Prepared: ')
-  doc.setFont('helvetica', 'normal')
-  doc.text(label.prepDate, x + padding + prepLabelW, curY + bodyH)
-  curY += bodyH + 0.5
-
-  doc.setFont('helvetica', 'bold')
-  doc.text('Use by:', x + padding, curY + bodyH)
-  const useLabelW = doc.getTextWidth('Use by: ')
-  doc.setFont('helvetica', 'normal')
-  doc.text(label.useByDate, x + padding + useLabelW, curY + bodyH)
-  curY += bodyH + 1
-
-  // ── Reheating instructions ──
-  if (options.includeReheating && label.reheatingNotes) {
-    doc.setFontSize(smallSize)
+  // Course name
+  if (curY + courseFontSize * 0.38 < maxY) {
     doc.setFont('helvetica', 'italic')
-    doc.setTextColor(60, 60, 60)
-
-    const reheatLines = doc.splitTextToSize(label.reheatingNotes, innerW) as string[]
-    const maxReheatLines = isSmall ? 2 : 3
-    for (const line of reheatLines.slice(0, maxReheatLines)) {
-      if (curY + smallSize * 0.38 > y + height - padding - 4) break // leave room for footer
-      doc.text(line, x + padding, curY + smallSize * 0.35)
-      curY += smallSize * 0.38 + 0.2
-    }
-    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(courseFontSize)
+    doc.setTextColor(100, 100, 100)
+    doc.text(label.courseName, x + padding, curY)
+    curY += courseFontSize * 0.38 + 1
   }
 
-  // ── Footer: client name + chef branding ──
-  doc.setFontSize(smallSize)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(120, 120, 120)
+  // Separator line
+  if (curY + 2 < maxY) {
+    doc.setDrawColor(200, 200, 200)
+    doc.setLineWidth(0.2)
+    doc.line(x + padding, curY, x + padding + innerW, curY)
+    curY += 2
+  }
 
-  const footerY = y + height - padding
-  doc.text(`For: ${label.clientName}`, x + padding, footerY)
+  // Allergen badges
+  if (label.allergens.length > 0 && curY + badgeFontSize * 0.38 + 2 < maxY) {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(badgeFontSize)
 
-  doc.setFont('helvetica', 'italic')
-  const chefText = `Prepared by ${label.chefName}`
-  const chefTextW = doc.getTextWidth(chefText)
-  doc.text(chefText, x + width - padding - chefTextW, footerY)
+    const allergenText = label.allergens.map((a) => allergenShortName(a)).join(' | ')
 
-  doc.setTextColor(0, 0, 0)
+    const prefixW = doc.getTextWidth('CONTAINS: ')
+    doc.setTextColor(100, 100, 100)
+    doc.text('CONTAINS:', x + padding, curY)
+    doc.setTextColor(180, 50, 50)
+
+    const allergenLines = doc.splitTextToSize(allergenText, innerW - prefixW)
+    if (allergenLines.length === 1) {
+      doc.text(allergenLines[0], x + padding + prefixW, curY)
+      curY += badgeFontSize * 0.38 + 1
+    } else {
+      curY += badgeFontSize * 0.38
+      const allLines = doc.splitTextToSize(allergenText, innerW)
+      for (const line of allLines.slice(0, 2)) {
+        if (curY + badgeFontSize * 0.38 > maxY) break
+        doc.text(line, x + padding, curY)
+        curY += badgeFontSize * 0.38
+      }
+      curY += 1
+    }
+  } else if (label.allergens.length === 0 && curY + badgeFontSize * 0.38 + 2 < maxY) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(badgeFontSize)
+    doc.setTextColor(80, 140, 80)
+    doc.text('No known allergens', x + padding, curY)
+    curY += badgeFontSize * 0.38 + 1
+  }
+
+  // Reheat note
+  if (label.reheatNote && curY + detailFontSize * 0.38 + 1 < maxY) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(detailFontSize)
+    doc.setTextColor(60, 60, 60)
+    const reheatLines = doc.splitTextToSize(label.reheatNote, innerW)
+    for (const line of reheatLines.slice(0, 1)) {
+      if (curY + detailFontSize * 0.38 > maxY) break
+      doc.text(line, x + padding, curY)
+      curY += detailFontSize * 0.38
+    }
+    curY += 1
+  }
+
+  // Date prepared (anchored toward bottom of label)
+  const dateLineH = detailFontSize * 0.38
+  const dateY = Math.max(curY, y + height - padding - dateLineH)
+  if (dateY > curY && dateY + dateLineH <= y + height) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(detailFontSize)
+    doc.setTextColor(120, 120, 120)
+    doc.text('Prepared: ' + label.datePrepared, x + padding, dateY)
+  }
 }
 
-// ── Main generator ──────────────────────────────────────────────────────────
+// --- Public API ---
 
 export async function generateServingLabels(
   eventId: string,
-  options?: Partial<LabelOptions>
-): Promise<Buffer> {
-  const opts: LabelOptions = {
-    labelSize: options?.labelSize || '2x3',
-    includeReheating: options?.includeReheating ?? true,
-    includeAllergens: options?.includeAllergens ?? true,
-    prepDate: options?.prepDate || new Date().toISOString().split('T')[0],
-    shelfLifeDays: options?.shelfLifeDays ?? 3,
-  }
-
-  const labels = await fetchServingLabelsData(eventId, opts)
-  if (!labels || labels.length === 0) {
-    throw new Error('Cannot generate serving labels: no menu components found')
-  }
-
-  const config = LABEL_CONFIGS[opts.labelSize]
-  const doc = new jsPDF({ unit: 'mm', format: 'letter' })
-
-  // Calculate grid layout
-  const usableWidth = LETTER_WIDTH - PAGE_MARGIN * 2
-  const usableHeight = LETTER_HEIGHT - PAGE_MARGIN * 2
-
-  const cols = Math.floor(usableWidth / config.width)
-  const rows = Math.floor(usableHeight / config.height)
-  const labelsPerPage = cols * rows
-
-  // Center the grid on the page
-  const gridWidth = cols * config.width
-  const gridHeight = rows * config.height
-  const offsetX = PAGE_MARGIN + (usableWidth - gridWidth) / 2
-  const offsetY = PAGE_MARGIN + (usableHeight - gridHeight) / 2
-
-  for (let i = 0; i < labels.length; i++) {
-    if (i > 0 && i % labelsPerPage === 0) {
-      doc.addPage('letter')
+  labelSize: LabelSize = '2x3'
+): Promise<{ pdf: string; labelCount: number } | { error: string }> {
+  try {
+    const result = await fetchLabelData(eventId)
+    if (!result) {
+      return {
+        error: 'Event not found, has no menu assigned, or no dishes in the menu.',
+      }
     }
 
-    const indexOnPage = i % labelsPerPage
-    const col = indexOnPage % cols
-    const row = Math.floor(indexOnPage / cols)
+    const { labels } = result
+    if (labels.length === 0) {
+      return { error: 'No dishes found to generate labels for.' }
+    }
 
-    const x = offsetX + col * config.width
-    const y = offsetY + row * config.height
+    const grid = getLabelGrid(labelSize)
+    const labelsPerPage = grid.cols * grid.rows
+    const totalPages = Math.ceil(labels.length / labelsPerPage)
 
-    renderLabel(doc, labels[i], x, y, config.width, config.height, opts)
+    const doc = new jsPDF({ unit: 'mm', format: 'letter' })
+
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) doc.addPage()
+
+      const startIdx = page * labelsPerPage
+      const pageLabels = labels.slice(startIdx, startIdx + labelsPerPage)
+
+      for (let i = 0; i < pageLabels.length; i++) {
+        const col = i % grid.cols
+        const row = Math.floor(i / grid.cols)
+
+        const lx = grid.marginXMm + col * (grid.labelWidthMm + grid.gapXMm)
+        const ly = grid.marginYMm + row * (grid.labelHeightMm + grid.gapYMm)
+
+        renderLabel(doc, pageLabels[i], lx, ly, grid.labelWidthMm, grid.labelHeightMm, labelSize)
+      }
+    }
+
+    const pdfBase64 = doc.output('datauristring')
+    return { pdf: pdfBase64, labelCount: labels.length }
+  } catch (err) {
+    console.error('[serving-labels] Generation failed', err)
+    return { error: 'Failed to generate serving labels. Please try again.' }
   }
+}
 
-  return Buffer.from(doc.output('arraybuffer'))
+// --- Preview Count (lightweight, no PDF generation) ---
+
+export async function getServingLabelCount(
+  eventId: string
+): Promise<{ count: number } | { error: string }> {
+  try {
+    const result = await fetchLabelData(eventId)
+    if (!result) {
+      return { error: 'Event not found or no menu assigned.' }
+    }
+    return { count: result.labels.length }
+  } catch (err) {
+    console.error('[serving-labels] Count failed', err)
+    return { error: 'Failed to count labels.' }
+  }
 }

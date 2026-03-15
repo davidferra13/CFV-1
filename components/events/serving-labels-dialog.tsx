@@ -1,141 +1,191 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { AccessibleDialog } from '@/components/ui/accessible-dialog'
+import {
+  generateServingLabels,
+  getServingLabelCount,
+} from '@/lib/documents/generate-serving-labels'
+import type { LabelSize } from '@/lib/documents/generate-serving-labels'
+import { toast } from 'sonner'
 
 type ServingLabelsDialogProps = {
   eventId: string
+  menuName?: string
+  open: boolean
+  onClose: () => void
 }
 
-export function ServingLabelsDialog({ eventId }: ServingLabelsDialogProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [labelSize, setLabelSize] = useState<'2x3' | '2x4' | '3x5'>('2x3')
-  const [includeReheating, setIncludeReheating] = useState(true)
-  const [includeAllergens, setIncludeAllergens] = useState(true)
-  const [prepDate, setPrepDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [shelfLifeDays, setShelfLifeDays] = useState(3)
+const LABEL_SIZE_OPTIONS: { value: LabelSize; label: string; description: string }[] = [
+  { value: '2x3', label: '2" x 3"', description: '6 labels per page' },
+  { value: '2x4', label: '2" x 4"', description: '4 labels per page' },
+  { value: 'full-page', label: 'Full Page', description: '1 label per page (large print)' },
+]
+
+export function ServingLabelsDialog({
+  eventId,
+  menuName,
+  open,
+  onClose,
+}: ServingLabelsDialogProps) {
+  const [labelSize, setLabelSize] = useState<LabelSize>('2x3')
+  const [labelCount, setLabelCount] = useState<number | null>(null)
+  const [countError, setCountError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const [isLoadingCount, setIsLoadingCount] = useState(false)
+
+  // Fetch label count when dialog opens
+  useEffect(() => {
+    if (!open) return
+    setIsLoadingCount(true)
+    setCountError(null)
+
+    getServingLabelCount(eventId)
+      .then((result) => {
+        if ('error' in result) {
+          setCountError(result.error)
+          setLabelCount(null)
+        } else {
+          setLabelCount(result.count)
+          setCountError(null)
+        }
+      })
+      .catch(() => {
+        setCountError('Failed to load label count.')
+        setLabelCount(null)
+      })
+      .finally(() => setIsLoadingCount(false))
+  }, [open, eventId])
 
   function handleGenerate() {
-    const params = new URLSearchParams({
-      type: 'labels',
-      labelSize,
-      includeReheating: String(includeReheating),
-      includeAllergens: String(includeAllergens),
-      prepDate,
-      shelfLifeDays: String(shelfLifeDays),
+    startTransition(async () => {
+      try {
+        const result = await generateServingLabels(eventId, labelSize)
+
+        if ('error' in result) {
+          toast.error(result.error)
+          return
+        }
+
+        // Trigger download
+        const link = document.createElement('a')
+        link.href = result.pdf
+        link.download = `serving-labels-${labelSize}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        toast.success(
+          `Generated ${result.labelCount} serving label${result.labelCount === 1 ? '' : 's'}`
+        )
+        onClose()
+      } catch (err) {
+        toast.error('Failed to generate serving labels. Please try again.')
+      }
     })
-
-    window.open(`/api/documents/${eventId}?${params.toString()}`, '_blank')
-    setIsOpen(false)
   }
 
-  if (!isOpen) {
-    return (
-      <Button variant="secondary" size="sm" onClick={() => setIsOpen(true)}>
-        Print Serving Labels
-      </Button>
-    )
-  }
+  const selectedOption = LABEL_SIZE_OPTIONS.find((o) => o.value === labelSize)
+  const pagesNeeded =
+    labelCount !== null && selectedOption
+      ? Math.ceil(labelCount / (labelSize === '2x3' ? 6 : labelSize === '2x4' ? 4 : 1))
+      : null
 
   return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setIsOpen(false)} />
+    <AccessibleDialog
+      open={open}
+      onClose={onClose}
+      title="Serving Labels"
+      description={
+        menuName
+          ? `Generate labels for: ${menuName}`
+          : 'Generate printable serving labels for this event'
+      }
+      widthClassName="max-w-sm"
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleGenerate}
+            disabled={isPending || labelCount === null || labelCount === 0}
+          >
+            {isPending ? 'Generating...' : 'Generate PDF'}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {/* Label count preview */}
+        <div className="rounded-lg bg-stone-50 p-3 text-sm text-stone-600">
+          {isLoadingCount ? (
+            <span>Loading dish count...</span>
+          ) : countError ? (
+            <span className="text-red-600">{countError}</span>
+          ) : labelCount !== null ? (
+            <span>
+              <strong>{labelCount}</strong> label{labelCount === 1 ? '' : 's'} will be generated
+              {pagesNeeded !== null && (
+                <>
+                  {' '}
+                  ({pagesNeeded} page{pagesNeeded === 1 ? '' : 's'})
+                </>
+              )}
+            </span>
+          ) : null}
+        </div>
 
-      {/* Dialog */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-5"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div>
-            <h3 className="text-lg font-semibold text-stone-900">Serving Labels</h3>
-            <p className="text-sm text-stone-500 mt-1">
-              Generate printable labels for each dish component. Print on standard letter paper and
-              cut along the marks.
-            </p>
-          </div>
-
-          {/* Label Size */}
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">Label Size</label>
-            <div className="flex gap-2">
-              {(['2x3', '2x4', '3x5'] as const).map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setLabelSize(size)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                    labelSize === size
-                      ? 'bg-stone-900 text-white border-stone-900'
-                      : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
+        {/* Label size selector */}
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-stone-700">Label Size</legend>
+          <div className="space-y-2">
+            {LABEL_SIZE_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                  labelSize === option.value
+                    ? 'border-amber-500 bg-amber-50'
+                    : 'border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="labelSize"
+                  value={option.value}
+                  checked={labelSize === option.value}
+                  onChange={() => setLabelSize(option.value)}
+                  className="sr-only"
+                />
+                <div
+                  className={`h-4 w-4 rounded-full border-2 ${
+                    labelSize === option.value
+                      ? 'border-amber-500 bg-amber-500'
+                      : 'border-stone-300'
                   }`}
                 >
-                  {size === '2x3' ? '2" x 3"' : size === '2x4' ? '2" x 4"' : '3" x 5"'}
-                </button>
-              ))}
-            </div>
+                  {labelSize === option.value && (
+                    <div className="mx-auto mt-0.5 h-2 w-2 rounded-full bg-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-stone-800">{option.label}</div>
+                  <div className="text-xs text-stone-500">{option.description}</div>
+                </div>
+              </label>
+            ))}
           </div>
+        </fieldset>
 
-          {/* Prep Date */}
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Date Prepared</label>
-            <input
-              type="date"
-              value={prepDate}
-              onChange={(e) => setPrepDate(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
-            />
-          </div>
-
-          {/* Shelf Life */}
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
-              Shelf Life (days)
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={365}
-              value={shelfLifeDays}
-              onChange={(e) => setShelfLifeDays(Math.max(1, parseInt(e.target.value) || 3))}
-              className="w-24 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
-            />
-            <p className="text-xs text-stone-400 mt-1">Use-by date = prep date + shelf life</p>
-          </div>
-
-          {/* Checkboxes */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeAllergens}
-                onChange={(e) => setIncludeAllergens(e.target.checked)}
-                className="rounded border-stone-300 text-stone-900 focus:ring-stone-500"
-              />
-              Include allergen warnings
-            </label>
-            <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeReheating}
-                onChange={(e) => setIncludeReheating(e.target.checked)}
-                className="rounded border-stone-300 text-stone-900 focus:ring-stone-500"
-              />
-              Include reheating instructions
-            </label>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleGenerate}>
-              Generate Labels
-            </Button>
-          </div>
-        </div>
+        {/* Info note */}
+        <p className="text-xs text-stone-400">
+          Labels include dish name, course, allergens, prep date, and reheating notes (when
+          available). Print on adhesive label sheets or plain paper and cut along the dashed lines.
+        </p>
       </div>
-    </>
+    </AccessibleDialog>
   )
 }
