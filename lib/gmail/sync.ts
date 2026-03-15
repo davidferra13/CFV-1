@@ -36,6 +36,12 @@ import {
   parseGoogleBusinessEmail,
 } from './google-business-parser'
 import { isWixFormsEmail, parseWixFormsEmail } from './wix-forms-parser'
+import {
+  isPrivateChefManagerEmail,
+  parsePrivateChefManagerEmail,
+} from './privatechefmanager-parser'
+import { isHireAChefEmail, parseHireAChefEmail } from './hireachef-parser'
+import { isCuisineistChefEmail, parseCuisineistChefEmail } from './cuisineistchef-parser'
 import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
 import { mergePlatformIdentityKeys } from './platform-identity'
 import { buildSeriesSchedulePlan } from '@/lib/booking/series-planning'
@@ -369,6 +375,45 @@ async function processMessage(
       result,
       'wix_forms',
       parseWixFormsEmail
+    )
+    return
+  }
+
+  if (isPrivateChefManagerEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'privatechefmanager',
+      parsePrivateChefManagerEmail
+    )
+    return
+  }
+
+  if (isHireAChefEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'hireachef',
+      parseHireAChefEmail
+    )
+    return
+  }
+
+  if (isCuisineistChefEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'cuisineistchef',
+      parseCuisineistChefEmail
     )
     return
   }
@@ -2238,6 +2283,9 @@ type PlatformChannel =
   | 'gigsalad'
   | 'google_business'
   | 'wix_forms'
+  | 'privatechefmanager'
+  | 'hireachef'
+  | 'cuisineistchef'
 
 // Common parsed result shape — all parsers follow this pattern
 interface GenericParseResult {
@@ -2259,6 +2307,9 @@ const PLATFORM_TO_INQUIRY_CHANNEL: Record<PlatformChannel, string> = {
   gigsalad: 'gigsalad',
   google_business: 'google_business',
   wix_forms: 'wix',
+  privatechefmanager: 'privatechefmanager',
+  hireachef: 'hireachef',
+  cuisineistchef: 'cuisineistchef',
 }
 
 // Map platform channels to display names for notifications
@@ -2270,6 +2321,9 @@ const PLATFORM_DISPLAY_NAMES: Record<PlatformChannel, string> = {
   gigsalad: 'GigSalad',
   google_business: 'Google Business',
   wix_forms: 'Wix Forms',
+  privatechefmanager: 'PrivateChefManager',
+  hireachef: 'HireAChef',
+  cuisineistchef: 'CuisineistChef',
 }
 
 // Email type suffixes that indicate a new lead/inquiry
