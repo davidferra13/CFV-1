@@ -18,6 +18,7 @@ import { UnusedIngredients } from '@/components/events/unused-ingredients'
 import { ContingencyPanel } from '@/components/events/contingency-panel'
 import { ContingencyAIPanel } from '@/components/ai/contingency-ai-panel'
 import { DocumentSection } from '@/components/documents/document-section'
+import { AllergyCardButton } from '@/components/events/allergy-card-button'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
@@ -54,6 +55,7 @@ type EventDetailOpsTabProps = {
   eventMenus: string | false | null
   unrecordedComponents: any[]
   aiConfigured: boolean
+  hasAllergyData: boolean
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -85,6 +87,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     eventMenus,
     unrecordedComponents,
     aiConfigured,
+    hasAllergyData,
   } = props
 
   return (
@@ -209,6 +212,9 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
 
       {/* Printed Documents (8 Sheets) + Business Documents */}
       <DocumentSection eventId={event.id} readiness={docReadiness} businessDocs={businessDocs} />
+
+      {/* Emergency Allergy Card (standalone landscape PDF for kitchen) */}
+      <AllergyCardButton eventId={event.id} hasAllergyData={hasAllergyData} />
 
       {/* Readiness Gate Panel â€” shown for events approaching their next transition */}
       {eventReadiness && eventReadiness.gates.length > 0 && (

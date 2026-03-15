@@ -13,6 +13,7 @@ import {
 } from '@/lib/events/actions'
 import { getAARByEventId } from '@/lib/aar/actions'
 import { getDocumentReadiness, getBusinessDocInfo } from '@/lib/documents/actions'
+import { hasAllergyData } from '@/lib/documents/generate-allergy-card'
 import { getEventExpenses, getEventProfitSummary, getBudgetGuardrail } from '@/lib/expenses/actions'
 import { getUnrecordedComponentsForEvent } from '@/lib/recipes/actions'
 import { isAIConfigured } from '@/lib/ai/parse'
@@ -329,6 +330,7 @@ export default async function EventDetailPage({
     menuLibraryData,
     chefDisplayName,
     takeAChefFinance,
+    eventHasAllergyData,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -401,6 +403,7 @@ export default async function EventDetailPage({
       }
     })(),
     getTakeAChefEventFinance(params.id).catch(() => null),
+    hasAllergyData(params.id).catch(() => false),
   ])
 
   // Compute share URL (shortenUrl depends on guestShares resolving)
@@ -705,6 +708,7 @@ export default async function EventDetailPage({
         eventMenus={eventMenus}
         unrecordedComponents={unrecordedComponents}
         aiConfigured={aiConfigured}
+        hasAllergyData={eventHasAllergyData as boolean}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
       {/* ============================================ */}
