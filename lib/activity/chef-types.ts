@@ -47,6 +47,7 @@ export type ChefActivityAction =
   | 'menu_created'
   | 'menu_updated'
   | 'menu_transitioned'
+  | 'menu_initialized_for_event'
   | 'dish_added'
   | 'dish_updated'
   | 'component_added'

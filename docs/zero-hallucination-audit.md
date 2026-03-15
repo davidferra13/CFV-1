@@ -45,25 +45,30 @@ Added **ZERO HALLUCINATION RULE** section with three enforceable laws:
 2. Never hide failure as zero (show error states, not fake data)
 3. Never render non-functional features as functional (gate unfinished features)
 
-## Known Remaining Items (Placeholders — not hallucinations)
+## Known Remaining Items (Placeholders, not hallucinations)
 
 These are **not false information** but are incomplete features flagged for the developer's awareness:
 
-| Item                                                  | Status                                           | File                                            |
-| ----------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- |
-| Demo data has no UI badge (`is_demo` flag unused)     | Needs UI work                                    | `lib/onboarding/demo-data.ts`                   |
-| $29/month hardcoded on pricing page (not from Stripe) | Needs price confirmation                         | `app/(public)/pricing/page.tsx`                 |
-| Event creation wizard ("coming soon" stub)            | Stub — not implemented                           | `components/events/event-creation-wizard.tsx`   |
-| Disconnect Gmail button (no-op)                       | Not implemented                                  | `components/integrations/take-a-chef-setup.tsx` |
-| Recall dismiss (returns fake success)                 | Needs migration + implementation                 | `lib/safety/recall-actions.ts`                  |
-| Addon toggle (doesn't persist to DB)                  | Needs `quote_line_items` implementation          | `lib/proposals/addon-actions.ts`                |
-| Menu picker in push dinner builder ("coming soon")    | Not implemented                                  | `components/campaigns/push-dinner-builder.tsx`  |
-| Desktop app download ("coming soon")                  | Not available                                    | `components/settings/desktop-app-settings.tsx`  |
-| Chefs roster page ("coming soon" empty state)         | No discoverable chefs yet                        | `app/(public)/chefs/page.tsx`                   |
-| Menu engineering `salesCount = 1`                     | Placeholder — table doesn't exist                | `lib/analytics/menu-engineering.ts`             |
-| CAC metric always $0                                  | `marketing_spend_log` table doesn't exist        | `lib/analytics/client-analytics.ts`             |
-| Multi-night package prices = $0                       | Needs actual prices from chef                    | `lib/pricing/constants.ts`                      |
-| Staff labor shows nothing pre-event                   | `pay_amount_cents` only set after hours recorded | `components/events/event-staff-panel.tsx`       |
-| Remy conversational responses not post-validated      | Inherent LLM risk                                | Remy drawer                                     |
-| USDA static pricing data freshness                    | No staleness indicator                           | Grocery pricing                                 |
-| Grocery cache `hasNoApiData` flag inverted            | Bug — data provenance misreported                | Grocery cache                                   |
+| Item                                               | Status                                           | File                                           |
+| -------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------- |
+| Demo data has no UI badge (`is_demo` flag unused)  | Needs UI work                                    | `lib/onboarding/demo-data.ts`                  |
+| Event creation wizard ("coming soon" stub)         | Stub, properly gated with visible label          | `components/events/event-creation-wizard.tsx`  |
+| Menu picker in push dinner builder ("coming soon") | Stub, properly gated with visible label          | `components/campaigns/push-dinner-builder.tsx` |
+| Desktop app download ("coming soon")               | Properly gated with italic note                  | `components/settings/desktop-app-settings.tsx` |
+| Recall dismiss (returns fake success)              | Needs migration + implementation                 | `lib/safety/recall-actions.ts`                 |
+| Addon toggle (doesn't persist to DB)               | Needs `quote_line_items` implementation          | `lib/proposals/addon-actions.ts`               |
+| Menu engineering `salesCount = 1`                  | Placeholder, needs dish appearance data          | `lib/analytics/menu-engineering.ts`            |
+| CAC metric always $0                               | `marketing_spend_log` table doesn't exist        | `lib/analytics/client-analytics.ts`            |
+| Multi-night package prices = $0                    | Needs actual prices from chef                    | `lib/pricing/constants.ts`                     |
+| Staff labor shows nothing pre-event                | `pay_amount_cents` only set after hours recorded | `components/events/event-staff-panel.tsx`      |
+| Remy conversational responses not post-validated   | Inherent LLM risk                                | Remy drawer                                    |
+| USDA static pricing data freshness                 | No staleness indicator                           | Grocery pricing                                |
+
+### Resolved Since Last Audit (2026-03-15)
+
+| Item                                          | Resolution                                                                  |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| $29/month hardcoded on pricing page           | Fixed: extracted to `PRO_PRICE_MONTHLY` constant in `lib/billing/tier.ts`   |
+| Grocery cache `hasNoApiData` flag inverted    | Fixed: now derives from null-check on API price columns                     |
+| Disconnect Gmail button (no-op)               | Already properly gated: `disabled` + `cursor-not-allowed` + title text      |
+| Chefs roster page ("coming soon" empty state) | Not empty: fully functional directory with search, filters, structured data |

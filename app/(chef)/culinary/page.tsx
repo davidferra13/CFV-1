@@ -9,6 +9,7 @@ import { getMenus } from '@/lib/menus/actions'
 import { getIngredients } from '@/lib/recipes/actions'
 import { listVendors } from '@/lib/vendors/actions'
 import { Card, CardContent } from '@/components/ui/card'
+import { PriceAlertsWidget } from '@/components/culinary/price-alerts-widget'
 
 export const metadata: Metadata = { title: 'Culinary — ChefFlow' }
 
@@ -88,6 +89,9 @@ export default async function CulinaryHubPage() {
           </Card>
         ))}
       </div>
+
+      {/* Price alerts */}
+      <PriceAlertsWidget />
 
       {/* Nav tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1111,6 +1111,75 @@ export function autoTitle(firstMessage: string): string {
 // ─── Bulk Operations ────────────────────────────────────────────────
 
 /** Clear all Remy conversation history from this browser */
+// ─── Session Summaries (stored alongside conversations in IndexedDB) ──────
+
+import type { ConversationSummary } from './remy-conversation-summary'
+
+const SUMMARY_STORAGE_KEY = 'remy-conversation-summaries'
+
+/**
+ * Save a conversation summary to localStorage (keyed by conversationId).
+ * Summaries are lightweight metadata, so localStorage is fine (no IndexedDB needed).
+ */
+export function saveSummary(conversationId: string, summary: ConversationSummary): void {
+  try {
+    const stored = localStorage.getItem(SUMMARY_STORAGE_KEY)
+    const summaries: Record<string, ConversationSummary> = stored ? JSON.parse(stored) : {}
+    summaries[conversationId] = summary
+
+    // Keep at most 50 summaries (prune oldest)
+    const entries = Object.entries(summaries)
+    if (entries.length > 50) {
+      entries.sort(
+        ([, a], [, b]) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime()
+      )
+      const pruned = Object.fromEntries(entries.slice(0, 50))
+      localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(pruned))
+    } else {
+      localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(summaries))
+    }
+  } catch {
+    // localStorage unavailable (SSR, private browsing) - silently skip
+  }
+}
+
+/**
+ * Get recent conversation summaries (excluding the current conversation).
+ * Returns the most recent 3 summaries for context in new conversations.
+ */
+export function getRecentSummaries(excludeConversationId: string | null): ConversationSummary[] {
+  try {
+    const stored = localStorage.getItem(SUMMARY_STORAGE_KEY)
+    if (!stored) return []
+
+    const summaries: Record<string, ConversationSummary> = JSON.parse(stored)
+    return Object.entries(summaries)
+      .filter(([id]) => id !== excludeConversationId)
+      .map(([, summary]) => summary)
+      .sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime())
+      .slice(0, 3)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Get the last session summary (most recent conversation summary).
+ * Used to provide continuity context when starting a new conversation.
+ */
+export async function getLastSessionSummary(
+  excludeConversationId: string | null
+): Promise<ConversationSummary | null> {
+  try {
+    const recent = getRecentSummaries(excludeConversationId)
+    return recent.length > 0 ? recent[0] : null
+  } catch {
+    return null
+  }
+}
+
+// ─── Bulk Operations ────────────────────────────────────────────────
+
 export async function clearAllHistory(): Promise<void> {
   const db = await openDB()
   return new Promise((resolve, reject) => {

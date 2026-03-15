@@ -16,9 +16,9 @@
                                                                                                                     - Post all findings to `#openclaw-leads` in structured format.
                                                                                                                     - Keep a running tally of total leads found (cumulative across all runs).
 
-                                                                                                                    ### CRITICAL: Search Budget Conservation
+                                                                                                                    ### Search Budget Conservation
 
-                                                                                                                    **Serper has 2,500 LIFETIME searches (not monthly). Every `web_search` call costs 1 search. Budget wisely.**
+                                                                                                                    **Web search uses Gemini (1,000 searches/day, resets daily). Web fetch uses Firecrawl (500 pages/month, resets monthly).**
 
                                                                                                                     Rules:
                                                                                                                     1. **Batch queries with OR operators** to combine related searches into one call. Example: `"private chef" OR "personal chef" site:yelp.com` instead of two separate Yelp searches.
@@ -26,7 +26,7 @@
                                                                                                                     3. **Prioritize high-yield sources first.** If a directory gives 50 leads per search, hit it before a source that gives 2.
                                                                                                                     4. **Skip dead-end sources permanently.** If a query returns zero useful results, log it and never run it again.
                                                                                                                     5. **Use `web_fetch` freely** (500/month on Firecrawl, resets monthly). Once you find a real URL from search, scrape it without hesitation.
-                                                                                                                    6. **Target: ~15-30 searches per run, max 2 runs per day.** That gives ~80-160 total runs before the budget is gone.
+                                                                                                                    6. **Stay under ~200 searches per run** to leave headroom for other jobs that also use web search.
                                                                                                                     7. **Every search must have a purpose.** Don't search speculatively. Know what you expect to find before burning a query.
 
                                                                                                                     ## Target Personas (Who We Want)
@@ -139,7 +139,7 @@
                                                                                                                     | Phase 5: Competitors | 6 | 2 | 67% |
                                                                                                                     | **TOTAL** | **~247** | **17** | **93%** |
 
-                                                                                                                    **One full scraper run now uses ~17 searches instead of ~247.** At 2,500 lifetime, that's ~147 full runs instead of ~10.
+                                                                                                                    **One full scraper run now uses ~17 searches instead of ~247.** With Gemini's 1,000/day limit, you can run the full scraper ~58 times per day.
 
                                                                                                                     ## Email Extraction Rules
 

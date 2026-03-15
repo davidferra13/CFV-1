@@ -553,6 +553,77 @@ export async function addRemyMemoryManual(input: {
   return { id: data.id }
 }
 
+// ─── Draft Feedback Learning ─────────────────────────────────────────────────
+// Detects when a chef gives feedback on a draft (email, message, etc.) and
+// saves the style preference as a memory for future drafts.
+
+const DRAFT_TASK_TYPES = [
+  'email.followup',
+  'email.generic',
+  'email.thankyou',
+  'email.inquiry_reply',
+  'communication.draft',
+]
+
+const FEEDBACK_PATTERNS: Array<{ pattern: RegExp; preference: string }> = [
+  {
+    pattern: /too (formal|stiff|corporate|cold)/i,
+    preference: 'Prefers less formal, warmer tone in drafts',
+  },
+  {
+    pattern: /too (casual|informal|chatty|friendly)/i,
+    preference: 'Prefers more professional tone in drafts',
+  },
+  { pattern: /too (long|wordy|verbose)/i, preference: 'Prefers shorter, more concise drafts' },
+  { pattern: /too (short|brief|terse)/i, preference: 'Prefers more detailed, longer drafts' },
+  {
+    pattern: /more (personal|warm|friendly|human)/i,
+    preference: 'Prefers warm, personal tone in drafts',
+  },
+  {
+    pattern: /more (professional|formal|polished)/i,
+    preference: 'Prefers professional, polished tone in drafts',
+  },
+  { pattern: /shorter|cut it down|trim/i, preference: 'Prefers shorter, more concise drafts' },
+  { pattern: /more detail|flesh.* out|expand/i, preference: 'Prefers more detailed drafts' },
+  {
+    pattern: /don'?t (say|use|write|include) ["']?(\w+)/i,
+    preference: 'Avoid specific phrasing in drafts',
+  },
+  {
+    pattern: /sound(s)? like (ai|a robot|chatgpt|automated)/i,
+    preference: 'Drafts should sound natural and human, not AI-generated',
+  },
+]
+
+export async function detectDraftFeedback(
+  userMessage: string,
+  previousTasks: Array<{ taskType: string; status: string; data?: unknown }>
+): Promise<void> {
+  // Only trigger if previous message had a draft-producing task
+  const hadDraft = previousTasks.some(
+    (t) => DRAFT_TASK_TYPES.includes(t.taskType) && (t.status === 'done' || t.status === 'pending')
+  )
+  if (!hadDraft) return
+
+  // Check if the user's message contains draft feedback
+  for (const { pattern, preference } of FEEDBACK_PATTERNS) {
+    if (pattern.test(userMessage)) {
+      try {
+        await addRemyMemoryManual({
+          content: preference,
+          category: 'communication_style',
+          importance: 6,
+        })
+        console.log(`[remy-memory] Saved draft feedback preference: "${preference}"`)
+      } catch (err) {
+        console.error('[remy-memory] Failed to save draft feedback:', err)
+      }
+      return // Save at most one preference per message
+    }
+  }
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 function hashContent(content: string): string {
