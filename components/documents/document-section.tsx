@@ -30,6 +30,18 @@ const QUOTE_STATUS_LABELS: Record<string, string> = {
   expired: 'Expired',
 }
 
+function ServingLabelsButton({ eventId }: { eventId: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+        Print Serving Labels
+      </Button>
+      <ServingLabelsDialog eventId={eventId} open={open} onClose={() => setOpen(false)} />
+    </>
+  )
+}
+
 type DocumentSectionProps = {
   eventId: string
   readiness: DocumentReadiness
@@ -376,7 +388,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {readiness.prepSheet.ready ? (
-              <ServingLabelsDialog eventId={eventId} />
+              <ServingLabelsButton eventId={eventId} />
             ) : (
               <Button variant="secondary" size="sm" disabled>
                 Print Serving Labels

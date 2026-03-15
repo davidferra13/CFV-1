@@ -341,9 +341,12 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         shelfLifeDays: sp.get('shelfLifeDays') ? parseInt(sp.get('shelfLifeDays')!, 10) : undefined,
       }
 
-      const pdfBuffer = await generateServingLabels(eventId, labelOptions)
+      const result = await generateServingLabels(eventId, labelOptions)
+      if ('error' in result) {
+        return NextResponse.json({ error: result.error }, { status: 400 })
+      }
       const labelsDateSuffix = format(new Date(), 'yyyy-MM-dd')
-      const bytes = new Uint8Array(pdfBuffer)
+      const bytes = Buffer.from(result.pdf, 'base64')
       return new NextResponse(bytes, {
         status: 200,
         headers: {

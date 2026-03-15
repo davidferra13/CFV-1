@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { addMileageEntry, deleteMileageEntry } from '@/lib/finance/mileage-actions'
+import { addMileageLog, deleteMileageLog } from '@/lib/finance/mileage-actions'
 import type { MileageEntry } from '@/lib/finance/mileage-actions'
 import { Trash2, Plus, Car } from '@/components/ui/icons'
 
@@ -27,15 +27,22 @@ export function MileageLogPanel({ eventId, initialEntries }: Props) {
     e.preventDefault()
     setSubmitting(true)
     const fd = new FormData(e.currentTarget)
-    if (eventId) fd.set('eventId', eventId)
-    await addMileageEntry(fd)
+    await addMileageLog({
+      eventId: eventId || (fd.get('eventId') as string) || undefined,
+      tripDate: fd.get('tripDate') as string,
+      purpose: (fd.get('purpose') as any) || 'other',
+      fromLocation: (fd.get('fromLocation') as string) || undefined,
+      toLocation: (fd.get('toLocation') as string) || undefined,
+      miles: parseFloat(fd.get('miles') as string) || 0,
+      notes: (fd.get('notes') as string) || undefined,
+    })
     setSubmitting(false)
     setIsAdding(false)
     window.location.reload()
   }
 
   async function handleDelete(id: string) {
-    await deleteMileageEntry(id, eventId)
+    await deleteMileageLog(id)
     setEntries((prev) => prev.filter((e) => e.id !== id))
   }
 

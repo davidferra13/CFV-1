@@ -126,10 +126,10 @@ async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | 
     .in('rsvp_status', ['attending', 'maybe', 'pending'])
 
   // Fetch guest event profile dietary notes
-  const { data: guestProfiles } = await supabase
-    .from('guest_event_profile')
-    .select('dietary_notes, guest_id')
-    .eq('event_id', eventId)
+  const { data: guestProfiles } = (await (supabase as any)
+    .from('guest_event_profiles')
+    .select('dietary_notes')
+    .eq('event_id', eventId)) as { data: Array<{ dietary_notes: string | null }> | null }
 
   const clientData = event.client as unknown as {
     full_name: string

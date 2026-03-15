@@ -116,7 +116,7 @@ export function PrepTimelineView({ eventId }: { eventId: string }) {
     setIsDownloading(true)
     try {
       const buffer = await generatePrepTimelinePdf(eventId)
-      const blob = new Blob([buffer], { type: 'application/pdf' })
+      const blob = new Blob([new Uint8Array(buffer)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

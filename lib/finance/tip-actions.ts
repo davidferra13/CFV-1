@@ -8,7 +8,9 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
-import { log } from '@/lib/logger'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('tips')
 
 export interface TipEntry {
   id: string

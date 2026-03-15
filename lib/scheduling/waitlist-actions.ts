@@ -253,13 +253,13 @@ export async function convertWaitlistToEvent(entryId: string): Promise<string> {
     .insert({
       tenant_id: chefId,
       client_id: entry.client_id,
-      title: entry.occasion ? `${entry.occasion} (from waitlist)` : 'Event (from waitlist)',
+      occasion: entry.occasion ? `${entry.occasion} (from waitlist)` : 'Event (from waitlist)',
       event_date: entry.requested_date,
       guest_count: entry.guest_count_estimate ?? 0,
-      status: 'draft',
+      status: 'draft' as const,
       notes: entry.notes,
-      created_by: user.authUserId,
-    })
+      created_by: user.id,
+    } as any)
     .select('id')
     .single()
 

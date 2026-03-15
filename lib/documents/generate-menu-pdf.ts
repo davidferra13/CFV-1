@@ -83,12 +83,12 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
   // Fetch chef business info
   const { data: chef } = await supabase
     .from('chefs')
-    .select('business_name, business_tagline')
+    .select('business_name')
     .eq('id', tenantId)
     .single()
 
   const businessName = chef?.business_name || 'Chef'
-  const businessTagline = chef?.business_tagline || null
+  const businessTagline: string | null = null
 
   // Fetch dishes with components and linked recipes
   const { data: dishes, error: dishErr } = await supabase

@@ -15,6 +15,14 @@ import { format, parseISO } from 'date-fns'
 
 export type LabelSize = '2x3' | '2x4' | 'full-page'
 
+export type LabelOptions = {
+  labelSize: LabelSize
+  includeReheating?: boolean
+  includeAllergens?: boolean
+  prepDate?: string
+  shelfLifeDays?: number
+}
+
 type LabelData = {
   dishName: string
   courseName: string
@@ -360,8 +368,10 @@ function renderLabel(
 
 export async function generateServingLabels(
   eventId: string,
-  labelSize: LabelSize = '2x3'
+  optionsOrSize: Partial<LabelOptions> | LabelSize = '2x3'
 ): Promise<{ pdf: string; labelCount: number } | { error: string }> {
+  const labelSize: LabelSize =
+    typeof optionsOrSize === 'string' ? optionsOrSize : (optionsOrSize.labelSize ?? '2x3')
   try {
     const result = await fetchLabelData(eventId)
     if (!result) {
