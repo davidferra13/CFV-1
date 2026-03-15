@@ -4,209 +4,275 @@ import { useState, useTransition } from 'react'
 import {
   createSeasonalPeriod,
   updateSeasonalPeriod,
-  type SeasonalPeriod,
-  type SeasonalPeriodInput,
+  deleteSeasonalPeriod,
 } from '@/lib/scheduling/seasonal-availability-actions'
-import { Button } from '@/components/ui/button'
+import type {
+  SeasonalPeriod,
+  SeasonalPeriodInput,
+} from '@/lib/scheduling/seasonal-availability-actions'
 
 type Props = {
   period?: SeasonalPeriod | null
-  defaultStartDate?: string | null
-  onDone: () => void
-  onCancel: () => void
+  onSaved?: () => void
+  onCancelled?: () => void
 }
 
-export function SeasonalPeriodForm({ period, defaultStartDate, onDone, onCancel }: Props) {
+export default function SeasonalPeriodForm({ period, onSaved, onCancelled }: Props) {
   const isEditing = !!period
 
-  const [seasonName, setSeasonName] = useState(period?.season_name ?? '')
+  const [name, setName] = useState(period?.period_name ?? '')
   const [location, setLocation] = useState(period?.location ?? '')
-  const [startDate, setStartDate] = useState(period?.start_date ?? defaultStartDate ?? '')
+  const [startDate, setStartDate] = useState(period?.start_date ?? '')
   const [endDate, setEndDate] = useState(period?.end_date ?? '')
-  const [isAvailable, setIsAvailable] = useState(period?.is_available ?? true)
+  const [acceptingBookings, setAcceptingBookings] = useState(period?.is_accepting_bookings ?? true)
+  const [maxEventsPerWeek, setMaxEventsPerWeek] = useState(period?.max_events_per_week ?? 5)
   const [travelRadius, setTravelRadius] = useState<string>(
-    period?.travel_radius_miles?.toString() ?? ''
+    period?.travel_radius_miles != null ? String(period.travel_radius_miles) : ''
   )
-  const [isRecurring, setIsRecurring] = useState(period?.is_recurring ?? false)
   const [notes, setNotes] = useState(period?.notes ?? '')
+  const [recurringYearly, setRecurringYearly] = useState(period?.recurring_yearly ?? false)
 
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [isDeleting, startDeleteTransition] = useTransition()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (!seasonName.trim()) {
-      setError('Season name is required')
+    if (!name.trim() || !location.trim() || !startDate || !endDate) {
+      setError('Please fill in all required fields')
       return
     }
-    if (!location.trim()) {
-      setError('Location is required')
-      return
-    }
-    if (!startDate || !endDate) {
-      setError('Both start and end dates are required')
-      return
-    }
-    if (new Date(endDate) <= new Date(startDate)) {
+
+    if (endDate <= startDate) {
       setError('End date must be after start date')
       return
     }
 
-    const data: SeasonalPeriodInput = {
-      season_name: seasonName.trim(),
+    const input: SeasonalPeriodInput = {
+      period_name: name.trim(),
       location: location.trim(),
       start_date: startDate,
       end_date: endDate,
-      is_available: isAvailable,
+      is_accepting_bookings: acceptingBookings,
+      max_events_per_week: maxEventsPerWeek,
       travel_radius_miles: travelRadius ? parseInt(travelRadius, 10) : null,
-      is_recurring: isRecurring,
       notes: notes.trim() || null,
+      recurring_yearly: recurringYearly,
     }
 
     startTransition(async () => {
       try {
-        if (isEditing && period) {
-          const result = await updateSeasonalPeriod(period.id, data)
-          if (!result.success) {
-            setError(result.error ?? 'Failed to update')
-            return
-          }
-        } else {
-          const result = await createSeasonalPeriod(data)
-          if (!result.success) {
-            setError(result.error ?? 'Failed to create')
-            return
-          }
+        const result = isEditing
+          ? await updateSeasonalPeriod(period.id, input)
+          : await createSeasonalPeriod(input)
+
+        if (!result.success) {
+          setError(result.error ?? 'Failed to save period')
+          return
         }
-        onDone()
-      } catch {
-        setError('An unexpected error occurred')
+
+        onSaved?.()
+      } catch (err) {
+        setError('Something went wrong. Please try again.')
       }
     })
   }
 
+  function handleDelete() {
+    if (!period) return
+
+    startDeleteTransition(async () => {
+      try {
+        const result = await deleteSeasonalPeriod(period.id)
+        if (!result.success) {
+          setError(result.error ?? 'Failed to delete period')
+          return
+        }
+        onSaved?.()
+      } catch (err) {
+        setError('Failed to delete period. Please try again.')
+      }
+    })
+  }
+
+  const inputClasses =
+    'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+  const labelClasses = 'block text-sm font-medium text-foreground mb-1'
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <h3 className="text-lg font-semibold">
+        {isEditing ? 'Edit Seasonal Period' : 'New Seasonal Period'}
+      </h3>
+
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      {/* Season Name */}
+      {/* Period Name */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Season Name</label>
+        <label className={labelClasses}>Period Name *</label>
         <input
           type="text"
-          value={seasonName}
-          onChange={(e) => setSeasonName(e.target.value)}
-          placeholder="e.g. Hamptons Summer, Aspen Ski Season"
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
+          className={inputClasses}
+          placeholder="e.g. Hamptons Summer"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
         />
       </div>
 
       {/* Location */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Location</label>
+        <label className={labelClasses}>Location *</label>
         <input
           type="text"
+          className={inputClasses}
+          placeholder="e.g. Hamptons, NY"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="e.g. East Hampton, NY"
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
+          required
         />
       </div>
 
       {/* Date Range */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Start Date</label>
+          <label className={labelClasses}>Start Date *</label>
           <input
             type="date"
+            className={inputClasses}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
+            required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">End Date</label>
+          <label className={labelClasses}>End Date *</label>
           <input
             type="date"
+            className={inputClasses}
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
+            required
           />
         </div>
       </div>
 
-      {/* Available Toggle */}
+      {/* Accepting Bookings Toggle */}
       <div className="flex items-center gap-3">
-        <label className="relative inline-flex cursor-pointer items-center">
-          <input
-            type="checkbox"
-            checked={isAvailable}
-            onChange={(e) => setIsAvailable(e.target.checked)}
-            className="peer sr-only"
+        <button
+          type="button"
+          role="switch"
+          aria-checked={acceptingBookings}
+          onClick={() => setAcceptingBookings(!acceptingBookings)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            acceptingBookings ? 'bg-primary' : 'bg-muted'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+              acceptingBookings ? 'translate-x-6' : 'translate-x-1'
+            }`}
           />
-          <div className="h-5 w-9 rounded-full bg-stone-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-emerald-500 peer-checked:after:translate-x-full" />
+        </button>
+        <label className="text-sm font-medium text-foreground">
+          Accepting bookings during this period
         </label>
-        <span className="text-sm text-stone-700">Available for bookings at this location</span>
+      </div>
+
+      {/* Max Events Per Week */}
+      <div>
+        <label className={labelClasses}>Max Events Per Week</label>
+        <input
+          type="number"
+          className={inputClasses}
+          min={1}
+          max={20}
+          value={maxEventsPerWeek}
+          onChange={(e) => setMaxEventsPerWeek(parseInt(e.target.value, 10) || 5)}
+        />
       </div>
 
       {/* Travel Radius */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
-          Travel Radius (miles)
-        </label>
+        <label className={labelClasses}>Travel Radius (miles)</label>
         <input
           type="number"
+          className={inputClasses}
+          min={0}
+          placeholder="Leave empty for no limit"
           value={travelRadius}
           onChange={(e) => setTravelRadius(e.target.value)}
-          placeholder="e.g. 50"
-          min={0}
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
         />
-        <p className="mt-1 text-xs text-stone-400">
-          How far you will travel from this location for events
-        </p>
-      </div>
-
-      {/* Recurring Toggle */}
-      <div className="flex items-center gap-3">
-        <label className="relative inline-flex cursor-pointer items-center">
-          <input
-            type="checkbox"
-            checked={isRecurring}
-            onChange={(e) => setIsRecurring(e.target.checked)}
-            className="peer sr-only"
-          />
-          <div className="h-5 w-9 rounded-full bg-stone-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-emerald-500 peer-checked:after:translate-x-full" />
-        </label>
-        <span className="text-sm text-stone-700">Recurring every year</span>
       </div>
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
+        <label className={labelClasses}>Notes</label>
         <textarea
+          className={inputClasses + ' min-h-[80px] resize-y'}
+          placeholder="Any additional details about this period..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          rows={2}
-          placeholder="Any additional notes about this season..."
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
+          rows={3}
         />
       </div>
 
+      {/* Recurring Yearly */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={recurringYearly}
+          onClick={() => setRecurringYearly(!recurringYearly)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            recurringYearly ? 'bg-primary' : 'bg-muted'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+              recurringYearly ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+        <label className="text-sm font-medium text-foreground">Repeat every year</label>
+      </div>
+
       {/* Actions */}
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="ghost" type="button" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" type="submit" disabled={isPending}>
-          {isPending ? 'Saving...' : isEditing ? 'Update Season' : 'Add Season'}
-        </Button>
+      <div className="flex items-center gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {isPending ? 'Saving...' : isEditing ? 'Update Period' : 'Create Period'}
+        </button>
+
+        {onCancelled && (
+          <button
+            type="button"
+            onClick={onCancelled}
+            className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent"
+          >
+            Cancel
+          </button>
+        )}
+
+        {isEditing && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="ml-auto rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </button>
+        )}
       </div>
     </form>
   )
