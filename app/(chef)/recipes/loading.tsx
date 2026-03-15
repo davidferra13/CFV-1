@@ -1,5 +1,6 @@
 // Recipes Loading Skeleton — seasonal banner + searchable recipe grid
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -8,6 +9,9 @@ function Bone({ className }: { className: string }) {
 export default function RecipesLoading() {
   return (
     <div className="space-y-6">
+      {/* Context-aware message */}
+      <ContextLoader contextId="nav-recipes" size="sm" className="py-0 items-start" />
+
       {/* Seasonal banner */}
       <Card className="bg-stone-800">
         <CardContent className="py-5 px-6 space-y-2">

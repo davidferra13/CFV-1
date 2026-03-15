@@ -2,6 +2,7 @@
 // Shown immediately while the server fetches the events list.
 
 import { Card, CardContent } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -10,9 +11,9 @@ function Bone({ className }: { className: string }) {
 export default function EventsLoading() {
   return (
     <div className="space-y-6">
-      {/* Header row */}
+      {/* Header row with context-aware message */}
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-32" />
+        <ContextLoader contextId="nav-events" size="sm" className="py-0 items-start" />
         <Bone className="h-9 w-28" />
       </div>
 

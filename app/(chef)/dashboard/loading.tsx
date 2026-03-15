@@ -3,6 +3,7 @@
 // Matches the real page's grid layout so the transition is smooth.
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -11,8 +12,8 @@ function Bone({ className }: { className: string }) {
 export default function DashboardLoading() {
   return (
     <div className="space-y-6">
-      {/* Page title */}
-      <Bone className="h-8 w-56" />
+      {/* Context-aware status message */}
+      <ContextLoader contextId="nav-dashboard" size="sm" />
 
       {/* Stat cards row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

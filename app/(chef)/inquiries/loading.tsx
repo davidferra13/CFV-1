@@ -2,6 +2,7 @@
 // Shown immediately while the server fetches the inquiry pipeline.
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -10,8 +11,8 @@ function Bone({ className }: { className: string }) {
 export default function InquiriesLoading() {
   return (
     <div className="space-y-6">
-      {/* Page title */}
-      <Bone className="h-8 w-36" />
+      {/* Context-aware message */}
+      <ContextLoader contextId="nav-inquiries" size="sm" className="py-0 items-start" />
 
       {/* Stage stat pills */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

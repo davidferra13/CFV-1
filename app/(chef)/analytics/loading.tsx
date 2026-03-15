@@ -1,14 +1,12 @@
 // Analytics Hub Loading Skeleton — shown instantly when navigating to /analytics
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 export default function AnalyticsLoading() {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="h-9 w-48 bg-stone-700 rounded animate-pulse" />
-        <div className="h-4 w-80 bg-stone-700 rounded animate-pulse mt-2" />
-      </div>
+      {/* Context-aware message with elapsed timer for longer load */}
+      <ContextLoader contextId="nav-analytics" size="sm" className="py-0 items-start" showElapsed />
 
       {/* Tab bar skeleton */}
       <div className="flex gap-2 border-b border-stone-700 pb-2">

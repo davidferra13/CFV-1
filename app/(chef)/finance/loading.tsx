@@ -1,14 +1,12 @@
 // Finance Loading Skeleton — shown instantly when navigating to /finance
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 export default function FinanceLoading() {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="h-9 w-36 bg-stone-700 rounded animate-pulse" />
-        <div className="h-4 w-64 bg-stone-700 rounded animate-pulse mt-2" />
-      </div>
+      {/* Context-aware header */}
+      <ContextLoader contextId="nav-finance" size="sm" className="py-0 items-start" />
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
