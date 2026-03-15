@@ -676,10 +676,12 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ## 6. CULINARY
 
+- **`/culinary`** — Culinary hub landing page. Quick stats (recipes, menus, ingredients, vendors). **Price alerts widget** (ingredients 30%+ above average, with affected menus). Nav tiles to all subsections.
+
 ### 6.1 Menus
 
 - **`/menus`** — Grid of menu cards with search + sort. Cards show Template and **Showcase** badges. "Create Menu" → `/menus/new`.
-- **`/menus/[id]`** — Menu detail with edit mode (draft only), per-component recipe linking (inline search), duplicate/delete. **Showcase toggle** (switch to make menu visible to clients as portfolio). "Open Editor" → `/menus/[id]/editor`.
+- **`/menus/[id]`** — Menu detail with two-column layout (main + intelligence sidebar on lg+). Main: hero image, menu editor (draft-only edit), cost breakdown tree (collapsible Course > Dish > Component > Ingredient with scaled quantities and costs). Sidebar: live cost summary (food cost %, total cost, cost/guest, margin alerts), context sidebar (season/guest tier badges, client allergies in red, dietary restrictions in amber, previous menus for same client, matching templates). Top bar: scale dialog (guest count auto-scaling with adjustment preview), "View Event" link. Showcase toggle, duplicate/delete. "Open Editor" → `/menus/[id]/editor`.
 - **`/menus/[id]/editor`** — Full document editor with auto-save (1.5s debounce), structured mode (courses/dishes with dietary toggles, allergen flags, chef notes, dish photos, hover reorder/delete) or freeform mode. Right sidebar: event/client/season/pricing/previous menus panels.
 
 ### 6.2 Recipes
