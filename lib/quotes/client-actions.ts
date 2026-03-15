@@ -195,6 +195,10 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   // Chef-side cache invalidation
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${quoteId}`)
+  if (quote.inquiry_id) {
+    revalidatePath(`/inquiries/${quote.inquiry_id}`)
+    revalidatePath('/inquiries')
+  }
 
   // Notify chef that quote was rejected (non-blocking)
   if (quote.tenant_id) {

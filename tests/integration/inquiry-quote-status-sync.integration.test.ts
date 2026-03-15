@@ -6,6 +6,9 @@
  *    through quoted -> confirmed.
  * 2) The inquiry transition validator accepts new -> quoted and still rejects
  *    illegal shortcuts like new -> confirmed.
+ * 3) Rejecting a quote does NOT change the linked inquiry status.
+ * 4) The awaiting_client -> quoted skip path is allowed by the validator.
+ * 5) Transition metadata records the quote_client_acceptance source.
  */
 
 import { after, before, describe, it } from 'node:test'
@@ -179,5 +182,144 @@ describe('Inquiry/Quote Status Sync', () => {
     })
 
     assert.ok(illegalError, 'new -> confirmed should be rejected by the DB validator')
+  })
+
+  it('rejecting a quote does NOT change the linked inquiry status', async () => {
+    const now = Date.now()
+
+    const rejectInquiry = await testDb.insertTracked('inquiries', {
+      tenant_id: chefId,
+      client_id: clientId,
+      channel: 'email',
+      status: 'new',
+      first_contact_at: new Date().toISOString(),
+      confirmed_date: new Date(now + 21 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      confirmed_guest_count: 8,
+      confirmed_occasion: 'Rejection Test Dinner',
+    })
+
+    const rejectQuote = await testDb.insertTracked('quotes', {
+      tenant_id: chefId,
+      client_id: clientId,
+      inquiry_id: rejectInquiry.id,
+      quote_name: 'Rejection Test Quote',
+      pricing_model: 'flat_rate',
+      total_quoted_cents: 50000,
+      deposit_required: false,
+      deposit_amount_cents: 0,
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+    })
+
+    const { error: rejectError } = await supabase.rpc('respond_to_quote_atomic', {
+      p_quote_id: rejectQuote.id,
+      p_client_id: clientId,
+      p_new_status: 'rejected',
+      p_actor_id: actorUserId,
+      p_rejected_reason: 'Too expensive',
+    })
+
+    assert.equal(rejectError, null, rejectError?.message)
+
+    // Inquiry should still be 'new' (rejection does not touch it)
+    const { data: inquiry, error: inquiryError } = await supabase
+      .from('inquiries')
+      .select('status')
+      .eq('id', rejectInquiry.id)
+      .single()
+
+    assert.equal(inquiryError, null, inquiryError?.message)
+    assert.equal(
+      inquiry?.status,
+      'new',
+      'Inquiry should remain in new status after quote rejection'
+    )
+
+    // No inquiry_state_transitions should exist for this inquiry
+    const { data: transitions } = await supabase
+      .from('inquiry_state_transitions')
+      .select('id')
+      .eq('inquiry_id', rejectInquiry.id)
+
+    assert.equal(
+      (transitions ?? []).length,
+      0,
+      'No inquiry transitions should be created on quote rejection'
+    )
+  })
+
+  it('awaiting_client -> quoted skip path is allowed by the validator', async () => {
+    const now = Date.now()
+
+    const skipInquiry = await testDb.insertTracked('inquiries', {
+      tenant_id: chefId,
+      client_id: clientId,
+      channel: 'phone',
+      status: 'awaiting_client',
+      first_contact_at: new Date().toISOString(),
+      confirmed_date: new Date(now + 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      confirmed_guest_count: 10,
+      confirmed_occasion: 'Skip Path Dinner',
+    })
+
+    // awaiting_client -> quoted should succeed
+    const { error: skipError } = await supabase.from('inquiry_state_transitions').insert({
+      tenant_id: chefId,
+      inquiry_id: skipInquiry.id,
+      from_status: 'awaiting_client',
+      to_status: 'quoted',
+      transitioned_by: actorUserId,
+      reason: 'skip_path_test',
+    })
+
+    assert.equal(
+      skipError,
+      null,
+      `awaiting_client -> quoted should be allowed: ${skipError?.message}`
+    )
+
+    // awaiting_client -> confirmed should be rejected
+    const { error: illegalSkip } = await supabase.from('inquiry_state_transitions').insert({
+      tenant_id: chefId,
+      inquiry_id: skipInquiry.id,
+      from_status: 'awaiting_client',
+      to_status: 'confirmed',
+      transitioned_by: actorUserId,
+      reason: 'skip_path_test_illegal',
+    })
+
+    assert.ok(illegalSkip, 'awaiting_client -> confirmed should be rejected by the DB validator')
+  })
+
+  it('acceptance transitions carry quote_client_acceptance metadata source', async () => {
+    // The main test (first test) already accepted the quote.
+    // Check that the transitions have the correct metadata.
+    const { data: transitions, error } = await supabase
+      .from('inquiry_state_transitions')
+      .select('from_status, to_status, metadata')
+      .eq('inquiry_id', inquiryId)
+      .order('transitioned_at', { ascending: true })
+
+    assert.equal(error, null, error?.message)
+
+    const quotedTransition = (transitions ?? []).find(
+      (row) => row.from_status === 'new' && row.to_status === 'quoted'
+    )
+    assert.ok(quotedTransition, 'Should have new -> quoted transition')
+    assert.equal(
+      (quotedTransition.metadata as any)?.source,
+      'quote_client_acceptance',
+      'new -> quoted transition should have quote_client_acceptance source'
+    )
+
+    const confirmedTransition = (transitions ?? []).find(
+      (row) => row.from_status === 'quoted' && row.to_status === 'confirmed'
+    )
+    assert.ok(confirmedTransition, 'Should have quoted -> confirmed transition')
+    assert.equal(
+      (confirmedTransition.metadata as any)?.source,
+      'quote_client_acceptance',
+      'quoted -> confirmed transition should have quote_client_acceptance source'
+    )
   })
 })

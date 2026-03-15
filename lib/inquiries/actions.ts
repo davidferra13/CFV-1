@@ -54,11 +54,13 @@ type EventRow = {
   source_session_id?: string | null
 }
 
-// Valid transitions map (matches DB trigger)
+// Valid transitions map (matches DB trigger in 20260330000088)
+// Skip paths: new -> quoted and awaiting_client -> quoted allow quote-sending
+// to advance an inquiry even if manual statuses were skipped.
 const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
-  new: ['awaiting_client', 'declined'],
-  awaiting_client: ['awaiting_chef', 'declined', 'expired'],
-  awaiting_chef: ['quoted', 'declined'],
+  new: ['awaiting_client', 'quoted', 'declined'],
+  awaiting_client: ['awaiting_chef', 'quoted', 'declined', 'expired'],
+  awaiting_chef: ['awaiting_client', 'quoted', 'declined'],
   quoted: ['confirmed', 'declined', 'expired'],
   confirmed: [], // terminal — converts to event
   declined: [], // terminal

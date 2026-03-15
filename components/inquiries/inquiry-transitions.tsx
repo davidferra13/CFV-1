@@ -389,7 +389,10 @@ export function InquiryTransitions({
               <p>Client has replied. Review their details and send a quote when ready.</p>
             )}
             {inquiry.status === 'quoted' && (
-              <p>Quote sent. Waiting for client to accept or decline.</p>
+              <p>
+                Quote sent. Waiting for client to accept or decline. When a client accepts, this
+                inquiry auto-confirms and is ready to convert to an event.
+              </p>
             )}
             {inquiry.status === 'confirmed' && (
               <p>

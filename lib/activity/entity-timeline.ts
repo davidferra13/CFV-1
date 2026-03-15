@@ -126,16 +126,29 @@ export async function getEntityActivityTimeline(
   for (const row of (transitionsResult as any).data ?? []) {
     const fromStatus = row.from_status ? String(row.from_status).replace(/_/g, ' ') : 'created'
     const toStatus = String(row.to_status ?? '').replace(/_/g, ' ')
-    const summary = row.from_status
-      ? `Status changed: ${fromStatus} → ${toStatus}`
-      : `Status initialized: ${toStatus}`
+    const meta = row.metadata && typeof row.metadata === 'object' ? row.metadata : {}
+    const syncSource = meta.source as string | undefined
 
+    // Auto-sync transitions from quote acceptance get a descriptive summary
+    const summary =
+      syncSource === 'quote_client_acceptance'
+        ? row.to_status === 'confirmed'
+          ? 'Client accepted quote (auto-confirmed)'
+          : `Auto-advanced to ${toStatus} (quote sent)`
+        : row.from_status
+          ? `Status changed: ${fromStatus} → ${toStatus}`
+          : `Status initialized: ${toStatus}`
+
+    // Transitions triggered by quote sync show as "Client" not "Teammate"
     const actorType: 'system' | 'user' = row.transitioned_by ? 'user' : 'system'
-    const actorLabel = row.transitioned_by
-      ? row.transitioned_by === user.id
-        ? 'You'
-        : 'Teammate'
-      : 'System'
+    const actorLabel =
+      syncSource === 'quote_client_acceptance'
+        ? 'Client'
+        : row.transitioned_by
+          ? row.transitioned_by === user.id
+            ? 'You'
+            : 'Teammate'
+          : 'System'
 
     entries.push({
       id: `transition-${row.id}`,
