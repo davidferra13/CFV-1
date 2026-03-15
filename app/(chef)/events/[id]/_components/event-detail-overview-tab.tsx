@@ -26,6 +26,7 @@ import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
+import { RepeatMenuAlert } from '@/components/menus/repeat-menu-alert'
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -319,7 +320,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
       {/* Social Hub Link */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <EventHubLinkPanel groupToken={hubGroupToken as string | null} />
+        <EventHubLinkPanel groupToken={hubGroupToken as string | null} eventId={event.id} />
       )}
 
       {/* Guests & RSVPs */}
@@ -404,6 +405,11 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
       {/* AI Allergen Risk Matrix */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
         <AllergenRiskPanel eventId={event.id} />
+      )}
+
+      {/* Repeat Menu Detection */}
+      {eventMenus && event.menu_id && !['draft', 'cancelled'].includes(event.status) && (
+        <RepeatMenuAlert eventId={event.id} clientName={event.client?.full_name} />
       )}
 
       {/* AI Menu Nutritional Summary */}

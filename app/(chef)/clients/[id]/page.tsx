@@ -39,6 +39,7 @@ import { getClientAllergyRecords } from '@/lib/events/readiness'
 import { AllergyRecordsPanel } from '@/components/clients/allergy-records-panel'
 import { getClientOutreachHistory } from '@/lib/marketing/actions'
 import { DirectOutreachPanel } from '@/components/marketing/direct-outreach-panel'
+import { ClientMenuHistory } from '@/components/menus/client-menu-history'
 import { ClientStatusBadge } from '@/components/clients/client-status-badge'
 import { getClientDormancyInfo } from '@/lib/clients/actions'
 import { getChefReviews } from '@/lib/reviews/actions'
@@ -849,6 +850,16 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <Suspense fallback={<div className="text-sm text-stone-500">Loading events...</div>}>
             <ClientEventsContent clientId={client.id} />
           </Suspense>
+        </CardContent>
+      </Card>
+
+      {/* Menu History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Menu History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ClientMenuHistory clientId={client.id} />
         </CardContent>
       </Card>
 
