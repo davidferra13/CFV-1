@@ -97,6 +97,43 @@ export async function createMessage(input: CreateMessageInput) {
   if (validated.event_id) revalidatePath(`/events/${validated.event_id}`)
   if (validated.client_id) revalidatePath(`/clients/${validated.client_id}`)
 
+  // Reset follow-up timer on outbound messages linked to an inquiry (non-blocking)
+  if (validated.direction === 'outbound' && validated.inquiry_id) {
+    try {
+      const followUpDue = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+      const updatePayload: Record<string, string | null> = {
+        follow_up_due_at: followUpDue,
+        next_action_by: 'client',
+        next_action_required: 'Waiting for client response',
+        last_response_at: new Date().toISOString(),
+      }
+
+      await supabase
+        .from('inquiries')
+        .update(updatePayload)
+        .eq('id', validated.inquiry_id)
+        .eq('tenant_id', user.tenantId!)
+
+      // If inquiry is new or awaiting_chef, advance to awaiting_client
+      const { data: inq } = await supabase
+        .from('inquiries')
+        .select('status')
+        .eq('id', validated.inquiry_id)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (inq && (inq.status === 'new' || inq.status === 'awaiting_chef')) {
+        await supabase
+          .from('inquiries')
+          .update({ status: 'awaiting_client' })
+          .eq('id', validated.inquiry_id)
+          .eq('tenant_id', user.tenantId!)
+      }
+    } catch (err) {
+      console.error('[createMessage] Failed to reset follow-up timer (non-blocking):', err)
+    }
+  }
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
