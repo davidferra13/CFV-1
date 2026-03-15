@@ -50,6 +50,7 @@ import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-promp
 import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
+import { LeadScoreFactors } from '@/components/inquiries/lead-score-factors'
 import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
@@ -205,6 +206,27 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   const scheduleSummary = summarizeScheduleRequest(scheduleRequest)
   const tacPageCapture = inquiry.channel === 'take_a_chef' ? getTakeAChefPageCapture(inquiry) : null
 
+  // Compute GOLDMINE lead score (used for badge + factors display)
+  const uf = inquiry.unknown_fields as Record<string, unknown> | null
+  let leadScore: LeadScoreData | null = null
+  if (uf?.lead_score != null && uf?.lead_tier) {
+    leadScore = {
+      lead_score: uf.lead_score as number,
+      lead_tier: uf.lead_tier as 'hot' | 'warm' | 'cold',
+      lead_score_factors: (uf.lead_score_factors as string[]) || [],
+    }
+  } else {
+    leadScore = scoreInquiryFields({
+      confirmed_date: inquiry.confirmed_date ?? null,
+      confirmed_guest_count: inquiry.confirmed_guest_count ?? null,
+      confirmed_budget_cents: inquiry.confirmed_budget_cents ?? null,
+      confirmed_location: (inquiry as any).confirmed_location ?? null,
+      confirmed_occasion: inquiry.confirmed_occasion ?? null,
+      confirmed_dietary_restrictions: (inquiry as any).confirmed_dietary_restrictions ?? null,
+      confirmed_cannabis_preference: null,
+    })
+  }
+
   // Track which confirmed facts are still missing
   const missingFacts: string[] = []
   if (!inquiry.confirmed_date) missingFacts.push('Event Date')
@@ -253,30 +275,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
             )}
             {bookingScore && <BookingScoreBadge score={bookingScore} />}
-            {(() => {
-              // Read stored GOLDMINE score, or compute deterministically
-              const uf = inquiry.unknown_fields as Record<string, unknown> | null
-              let leadScore: LeadScoreData | null = null
-              if (uf?.lead_score != null && uf?.lead_tier) {
-                leadScore = {
-                  lead_score: uf.lead_score as number,
-                  lead_tier: uf.lead_tier as 'hot' | 'warm' | 'cold',
-                  lead_score_factors: (uf.lead_score_factors as string[]) || [],
-                }
-              } else {
-                leadScore = scoreInquiryFields({
-                  confirmed_date: inquiry.confirmed_date ?? null,
-                  confirmed_guest_count: inquiry.confirmed_guest_count ?? null,
-                  confirmed_budget_cents: inquiry.confirmed_budget_cents ?? null,
-                  confirmed_location: (inquiry as any).confirmed_location ?? null,
-                  confirmed_occasion: inquiry.confirmed_occasion ?? null,
-                  confirmed_dietary_restrictions:
-                    (inquiry as any).confirmed_dietary_restrictions ?? null,
-                  confirmed_cannabis_preference: null,
-                })
-              }
-              return leadScore ? <LeadScoreBadge score={leadScore} /> : null
-            })()}
+            {leadScore ? <LeadScoreBadge score={leadScore} /> : null}
             {inquiry.channel === 'take_a_chef' && (
               <LikelihoodToggle
                 inquiryId={inquiry.id}
@@ -314,6 +313,11 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             </Link>
           </div>
         </Card>
+      )}
+
+      {/* Lead Score Factors — visible breakdown for mobile users */}
+      {leadScore && leadScore.lead_score_factors.length > 0 && (
+        <LeadScoreFactors factors={leadScore.lead_score_factors} />
       )}
 
       {/* Missing Facts Warning */}
