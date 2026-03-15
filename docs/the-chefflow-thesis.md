@@ -1,4 +1,6 @@
-# ChefFlow Market Intelligence Report
+# The ChefFlow Thesis
+
+_Private Chef Market Intelligence Report_
 
 **Date:** March 14, 2026 (Updated: Deep Scan Edition)
 **Source:** 60+ sources across chef forums, industry blogs, competitor sites, community discussions, industry reports, consulting sites, chef interviews, and market research firms
