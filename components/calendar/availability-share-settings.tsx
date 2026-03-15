@@ -6,6 +6,7 @@ import { generateShareToken, revokeShareToken } from '@/lib/scheduling/availabil
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/lib/hooks/use-confirm'
 
 type Token = {
   id: string
@@ -20,6 +21,7 @@ type Token = {
 export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
   const [isPending, startTransition] = useTransition()
   const [label, setLabel] = useState('')
+  const { confirm, ConfirmDialog } = useConfirm()
 
   const activeTokens = tokens.filter((t) => t.is_active)
 
@@ -34,7 +36,14 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
     })
   }
 
-  function handleRevoke(id: string) {
+  async function handleRevoke(id: string) {
+    const ok = await confirm({
+      title: 'Revoke this share link?',
+      description: 'Anyone using this link will no longer be able to see your availability.',
+      confirmLabel: 'Revoke Link',
+      variant: 'danger',
+    })
+    if (!ok) return
     startTransition(async () => {
       try {
         await revokeShareToken(id)
@@ -46,6 +55,7 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Generate Share Link</CardTitle>

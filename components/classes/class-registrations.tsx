@@ -11,6 +11,8 @@ import {
   type ClassCapacityStatus,
   type ClassDietarySummary,
 } from '@/lib/classes/class-actions'
+import { useConfirm } from '@/lib/hooks/use-confirm'
+import { toast } from 'sonner'
 
 type ClassRegistrationsProps = {
   registrations: ClassRegistrationRow[]
@@ -37,6 +39,7 @@ export function ClassRegistrations({
   const [isPending, startTransition] = useTransition()
   const [activeTab, setActiveTab] = useState<'registered' | 'waitlisted'>('registered')
   const [error, setError] = useState<string | null>(null)
+  const { confirm, ConfirmDialog } = useConfirm()
 
   const registered = registrations.filter(
     (r) => r.status === 'registered' || r.status === 'confirmed'
@@ -44,14 +47,25 @@ export function ClassRegistrations({
   const waitlisted = registrations.filter((r) => r.status === 'waitlisted')
   const activeList = activeTab === 'registered' ? registered : waitlisted
 
-  function handleCancel(regId: string) {
+  async function handleCancel(regId: string) {
+    const ok = await confirm({
+      title: 'Cancel this registration?',
+      description:
+        'The attendee will be removed from the class. If there is a waitlist, the next person will be notified.',
+      confirmLabel: 'Cancel Registration',
+      variant: 'danger',
+    })
+    if (!ok) return
     setError(null)
     startTransition(async () => {
       try {
         await cancelRegistration(regId)
+        toast.success('Registration cancelled')
         router.refresh()
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Failed to cancel registration')
+        const msg = err instanceof Error ? err.message : 'Failed to cancel registration'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }
@@ -61,6 +75,7 @@ export function ClassRegistrations({
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog />
       {error && (
         <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}

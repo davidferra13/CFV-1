@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS tip_requests (
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  request_token TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  request_token TEXT UNIQUE NOT NULL DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   suggested_amounts_cents INTEGER[] NOT NULL DEFAULT '{1500,2000,2500,0}',
   suggested_percentages INTEGER[] NOT NULL DEFAULT '{15,18,20,0}',
   tip_amount_cents INTEGER,

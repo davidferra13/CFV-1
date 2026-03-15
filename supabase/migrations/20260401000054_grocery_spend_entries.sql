@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS grocery_spend_entries (
 );
 
 -- Indexes
-CREATE INDEX idx_grocery_spend_tenant_event ON grocery_spend_entries(tenant_id, event_id);
-CREATE INDEX idx_grocery_spend_event ON grocery_spend_entries(event_id);
+CREATE INDEX IF NOT EXISTS idx_grocery_spend_tenant_event ON grocery_spend_entries(tenant_id, event_id);
+CREATE INDEX IF NOT EXISTS idx_grocery_spend_event ON grocery_spend_entries(event_id);
 
 -- RLS
 ALTER TABLE grocery_spend_entries ENABLE ROW LEVEL SECURITY;
@@ -27,6 +27,7 @@ CREATE POLICY "grocery_spend_tenant_isolation" ON grocery_spend_entries
   FOR ALL USING (tenant_id = auth.uid());
 
 -- updated_at trigger (reuse existing moddatetime if available)
+DROP TRIGGER IF EXISTS set_grocery_spend_updated_at ON grocery_spend_entries;
 CREATE TRIGGER set_grocery_spend_updated_at
   BEFORE UPDATE ON grocery_spend_entries
   FOR EACH ROW

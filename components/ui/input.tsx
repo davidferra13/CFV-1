@@ -27,6 +27,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       ${className}
     `.trim()
 
+    const errorId = error ? `${inputId}-error` : undefined
+    const helperId = helperText && !error ? `${inputId}-helper` : undefined
+    const describedBy = [errorId, helperId].filter(Boolean).join(' ') || undefined
+    const ariaInvalid = error ? 'true' : ('false' as const)
+
     return (
       <div className="w-full">
         {label && (
@@ -41,6 +46,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={isPassword && showPassword ? 'text' : type}
             className={inputClasses}
+            aria-invalid={ariaInvalid}
+            aria-describedby={describedBy}
             {...props}
           />
           {isPassword && (
@@ -87,8 +94,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </button>
           )}
         </div>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
+        {error && (
+          <p id={errorId} className="mt-1 text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+        {helperText && !error && (
+          <p id={helperId} className="mt-1.5 text-sm text-stone-400">
+            {helperText}
+          </p>
+        )}
       </div>
     )
   }

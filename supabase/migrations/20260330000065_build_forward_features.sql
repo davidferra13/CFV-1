@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS client_proposals (
   menu_id             UUID REFERENCES menus(id) ON DELETE SET NULL,
 
   -- Shareable token (public access without auth)
-  share_token         TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  share_token         TEXT NOT NULL DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
 
   -- Content
   title               TEXT NOT NULL DEFAULT '',
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS staff_event_tokens (
   staff_member_id UUID NOT NULL,
 
   -- Token for public access
-  token           TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token           TEXT NOT NULL DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
 
   -- What the staff member sees
   assigned_tasks  JSONB NOT NULL DEFAULT '[]',

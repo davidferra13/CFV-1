@@ -4,6 +4,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import {
   createIntakeForm,
   updateIntakeForm,
@@ -44,7 +45,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
           window.location.reload()
         }
       } catch (err) {
-        console.error('[intake] Failed to create defaults:', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to create default templates')
       }
     })
   }
@@ -69,7 +70,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
         setShowCreate(false)
       } catch (err) {
         setForms(previous)
-        console.error('[intake] Create failed:', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to create form')
       }
     })
   }
@@ -84,7 +85,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
         await deleteIntakeForm(formId)
       } catch (err) {
         setForms(previous)
-        console.error('[intake] Delete failed:', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to delete form')
       }
     })
   }
@@ -97,7 +98,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
       setCopiedToken(formId)
       setTimeout(() => setCopiedToken(null), 2000)
     } catch (err) {
-      console.error('[intake] Share failed:', err)
+      toast.error(err instanceof Error ? err.message : 'Failed to copy share link')
     }
   }
 

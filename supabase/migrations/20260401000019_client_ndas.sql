@@ -29,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_client_ndas_expiry
 ALTER TABLE client_ndas ENABLE ROW LEVEL SECURITY;
 
 -- Chef can read/write their own NDAs
+DROP POLICY IF EXISTS client_ndas_chef_all ON client_ndas;
 CREATE POLICY client_ndas_chef_all ON client_ndas
   FOR ALL
   USING (

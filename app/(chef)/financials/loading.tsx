@@ -1,4 +1,5 @@
 // Financials Loading Skeleton — stat cards + ledger panels
+import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
@@ -8,7 +9,7 @@ function Bone({ className }: { className: string }) {
 export default function FinancialsLoading() {
   return (
     <div className="space-y-6">
-      <Bone className="h-8 w-40" />
+      <ContextLoader contextId="nav-finance" size="sm" className="py-0 items-start" />
 
       {/* Top stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

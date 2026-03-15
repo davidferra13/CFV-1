@@ -12,9 +12,17 @@ interface RadioGroupProps {
   value: string
   onValueChange: (value: string) => void
   required?: boolean
+  error?: string
 }
 
-export function RadioGroup({ label, options, value, onValueChange, required }: RadioGroupProps) {
+export function RadioGroup({
+  label,
+  options,
+  value,
+  onValueChange,
+  required,
+  error,
+}: RadioGroupProps) {
   return (
     <fieldset className="w-full">
       {label && (
@@ -50,6 +58,11 @@ export function RadioGroup({ label, options, value, onValueChange, required }: R
           </label>
         ))}
       </div>
+      {error && (
+        <p className="mt-1.5 text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      )}
     </fieldset>
   )
 }

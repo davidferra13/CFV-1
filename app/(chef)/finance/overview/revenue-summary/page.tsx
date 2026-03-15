@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { ErrorState } from '@/components/ui/error-state'
+import { FadeIn } from '@/components/ui/fade-in'
 
 export const metadata: Metadata = { title: 'Revenue Summary - ChefFlow' }
 
@@ -25,7 +27,28 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default async function RevenueSummaryPage() {
   await requireChef()
-  const events = await getEvents()
+
+  let events
+  try {
+    events = await getEvents()
+  } catch (err) {
+    console.error('[RevenueSummary] Failed to load events:', err)
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/finance/overview" className="text-sm text-stone-500 hover:text-stone-300">
+            ← Overview
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Revenue Summary</h1>
+        </div>
+        <ErrorState
+          title="Could not load revenue data"
+          description="Event data failed to load. Try refreshing the page."
+          size="lg"
+        />
+      </div>
+    )
+  }
 
   const revenueEvents = events
     .filter((e: any) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
@@ -40,7 +63,7 @@ export default async function RevenueSummaryPage() {
     .reduce((sum: any, e: any) => sum + (e.quoted_price_cents ?? 0), 0)
 
   return (
-    <div className="space-y-6">
+    <FadeIn as="div" className="space-y-6">
       <div>
         <Link href="/finance/overview" className="text-sm text-stone-500 hover:text-stone-300">
           ← Overview
@@ -135,6 +158,6 @@ export default async function RevenueSummaryPage() {
           </Table>
         </Card>
       )}
-    </div>
+    </FadeIn>
   )
 }

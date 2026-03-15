@@ -1,11 +1,12 @@
 // Client Portal Loading Page
+import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent } from '@/components/ui/card'
 
 export default function ClientLoading() {
   return (
     <div className="space-y-6">
       {/* Page Title Skeleton */}
-      <div className="h-8 w-48 bg-stone-200 rounded animate-pulse" />
+      <ContextLoader contextId="nav-client-portal" size="sm" className="py-0 items-start" />
 
       {/* Events Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -35,9 +36,7 @@ export default function ClientLoading() {
       </div>
 
       {/* Loading Text */}
-      <div className="text-center text-stone-500 text-sm">
-        Loading your events...
-      </div>
+      <div className="text-center text-stone-500 text-sm">Loading your events...</div>
     </div>
   )
 }

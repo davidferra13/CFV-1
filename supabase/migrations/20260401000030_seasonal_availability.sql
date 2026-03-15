@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS seasonal_availability_periods (
 );
 
 -- Index for efficient lookups by chef and date range
-CREATE INDEX idx_seasonal_availability_chef_dates
+CREATE INDEX IF NOT EXISTS idx_seasonal_availability_chef_dates
   ON seasonal_availability_periods (chef_id, start_date, end_date);
 
 -- RLS

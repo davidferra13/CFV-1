@@ -14,7 +14,7 @@
 -- Each template is a reusable workflow blueprint.
 -- Chefs can use system defaults or create custom ones.
 
-CREATE TABLE workflow_templates (
+CREATE TABLE IF NOT EXISTS workflow_templates (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
 
@@ -45,8 +45,8 @@ CREATE TABLE workflow_templates (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_workflow_templates_chef ON workflow_templates(chef_id, is_active);
-CREATE INDEX idx_workflow_templates_trigger ON workflow_templates(trigger_type) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_workflow_templates_chef ON workflow_templates(chef_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_workflow_templates_trigger ON workflow_templates(trigger_type) WHERE is_active = true;
 -- ============================================
 -- TABLE 2: WORKFLOW_STEPS
 -- ============================================
@@ -55,7 +55,7 @@ CREATE INDEX idx_workflow_templates_trigger ON workflow_templates(trigger_type) 
 --   - An optional condition (skip this step if condition fails)
 --   - An action to execute
 
-CREATE TABLE workflow_steps (
+CREATE TABLE IF NOT EXISTS workflow_steps (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   template_id   UUID NOT NULL REFERENCES workflow_templates(id) ON DELETE CASCADE,
 
@@ -92,13 +92,13 @@ CREATE TABLE workflow_steps (
 
   UNIQUE (template_id, step_order)
 );
-CREATE INDEX idx_workflow_steps_template ON workflow_steps(template_id, step_order);
+CREATE INDEX IF NOT EXISTS idx_workflow_steps_template ON workflow_steps(template_id, step_order);
 -- ============================================
 -- TABLE 3: WORKFLOW_EXECUTIONS
 -- ============================================
 -- One row per (workflow, entity) activation. Tracks progress through the steps.
 
-CREATE TABLE workflow_executions (
+CREATE TABLE IF NOT EXISTS workflow_executions (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   template_id   UUID NOT NULL REFERENCES workflow_templates(id) ON DELETE CASCADE,
@@ -122,17 +122,17 @@ CREATE TABLE workflow_executions (
   -- Prevent duplicate enrollments for the same workflow + entity
   UNIQUE (template_id, entity_id)
 );
-CREATE INDEX idx_workflow_executions_pending
+CREATE INDEX IF NOT EXISTS idx_workflow_executions_pending
   ON workflow_executions(next_step_at)
   WHERE status = 'active' AND next_step_at IS NOT NULL;
-CREATE INDEX idx_workflow_executions_chef
+CREATE INDEX IF NOT EXISTS idx_workflow_executions_chef
   ON workflow_executions(chef_id, status);
 -- ============================================
 -- TABLE 4: WORKFLOW_EXECUTION_LOG
 -- ============================================
 -- Immutable audit trail of every step executed.
 
-CREATE TABLE workflow_execution_log (
+CREATE TABLE IF NOT EXISTS workflow_execution_log (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   execution_id  UUID NOT NULL REFERENCES workflow_executions(id) ON DELETE CASCADE,
   chef_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -148,7 +148,7 @@ CREATE TABLE workflow_execution_log (
 
   executed_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_workflow_execution_log_exec
+CREATE INDEX IF NOT EXISTS idx_workflow_execution_log_exec
   ON workflow_execution_log(execution_id, step_order);
 -- ============================================
 -- ROW LEVEL SECURITY
@@ -159,6 +159,7 @@ ALTER TABLE workflow_steps          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workflow_executions     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workflow_execution_log  ENABLE ROW LEVEL SECURITY;
 -- Workflow templates
+DROP POLICY IF EXISTS wt_chef_all ON workflow_templates;
 CREATE POLICY wt_chef_all ON workflow_templates FOR ALL
   USING (
     chef_id IN (
@@ -172,10 +173,12 @@ CREATE POLICY wt_chef_all ON workflow_templates FOR ALL
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+DROP POLICY IF EXISTS wt_service_all ON workflow_templates;
 CREATE POLICY wt_service_all ON workflow_templates FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 -- Workflow steps (owned by chef via parent template)
+DROP POLICY IF EXISTS ws_chef_all ON workflow_steps;
 CREATE POLICY ws_chef_all ON workflow_steps FOR ALL
   USING (
     EXISTS (
@@ -197,10 +200,12 @@ CREATE POLICY ws_chef_all ON workflow_steps FOR ALL
         )
     )
   );
+DROP POLICY IF EXISTS ws_service_all ON workflow_steps;
 CREATE POLICY ws_service_all ON workflow_steps FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 -- Workflow executions
+DROP POLICY IF EXISTS we_chef_all ON workflow_executions;
 CREATE POLICY we_chef_all ON workflow_executions FOR ALL
   USING (
     chef_id IN (
@@ -214,10 +219,12 @@ CREATE POLICY we_chef_all ON workflow_executions FOR ALL
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+DROP POLICY IF EXISTS we_service_all ON workflow_executions;
 CREATE POLICY we_service_all ON workflow_executions FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 -- Workflow execution log
+DROP POLICY IF EXISTS wel_chef_select ON workflow_execution_log;
 CREATE POLICY wel_chef_select ON workflow_execution_log FOR SELECT
   USING (
     chef_id IN (
@@ -225,6 +232,7 @@ CREATE POLICY wel_chef_select ON workflow_execution_log FOR SELECT
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+DROP POLICY IF EXISTS wel_service_all ON workflow_execution_log;
 CREATE POLICY wel_service_all ON workflow_execution_log FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
@@ -232,6 +240,7 @@ CREATE POLICY wel_service_all ON workflow_execution_log FOR ALL
 -- UPDATED_AT TRIGGERS
 -- ============================================
 
+DROP TRIGGER IF EXISTS trg_workflow_templates_updated_at ON workflow_templates;
 CREATE TRIGGER trg_workflow_templates_updated_at
   BEFORE UPDATE ON workflow_templates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

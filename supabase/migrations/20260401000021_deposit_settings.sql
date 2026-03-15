@@ -26,18 +26,22 @@ CREATE INDEX IF NOT EXISTS idx_chef_deposit_settings_chef ON chef_deposit_settin
 ALTER TABLE chef_deposit_settings ENABLE ROW LEVEL SECURITY;
 
 -- Chef can read own settings
+DROP POLICY IF EXISTS chef_deposit_settings_select ON chef_deposit_settings;
 CREATE POLICY chef_deposit_settings_select ON chef_deposit_settings
   FOR SELECT USING (chef_id = get_current_tenant_id());
 
 -- Chef can insert own settings
+DROP POLICY IF EXISTS chef_deposit_settings_insert ON chef_deposit_settings;
 CREATE POLICY chef_deposit_settings_insert ON chef_deposit_settings
   FOR INSERT WITH CHECK (chef_id = get_current_tenant_id());
 
 -- Chef can update own settings
+DROP POLICY IF EXISTS chef_deposit_settings_update ON chef_deposit_settings;
 CREATE POLICY chef_deposit_settings_update ON chef_deposit_settings
   FOR UPDATE USING (chef_id = get_current_tenant_id());
 
 -- Updated_at trigger
+DROP TRIGGER IF EXISTS set_updated_at_chef_deposit_settings ON chef_deposit_settings;
 CREATE TRIGGER set_updated_at_chef_deposit_settings
   BEFORE UPDATE ON chef_deposit_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

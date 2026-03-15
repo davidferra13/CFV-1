@@ -1,5 +1,11 @@
 import { ListPageSkeleton } from '@/components/ui/page-skeleton'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 export default function Loading() {
-  return <ListPageSkeleton />
+  return (
+    <>
+      <ContextLoader contextId="nav-menus" size="sm" className="py-0 items-start" />
+      <ListPageSkeleton />
+    </>
+  )
 }

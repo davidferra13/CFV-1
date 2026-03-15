@@ -36,6 +36,7 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS readiness_gate_updated_at ON public.event_readiness_gates;
+DROP TRIGGER IF EXISTS readiness_gate_updated_at ON public;
 CREATE TRIGGER readiness_gate_updated_at
   BEFORE UPDATE ON public.event_readiness_gates
   FOR EACH ROW
@@ -43,6 +44,7 @@ CREATE TRIGGER readiness_gate_updated_at
 
 ALTER TABLE public.event_readiness_gates ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS readiness_gates_chef_all ON public.event_readiness_gates;
+DROP POLICY IF EXISTS readiness_gates_chef_all ON public;
 CREATE POLICY readiness_gates_chef_all
   ON public.event_readiness_gates
   FOR ALL TO authenticated
@@ -60,6 +62,7 @@ GRANT SELECT, INSERT, UPDATE ON public.event_readiness_gates TO authenticated;
 ALTER TABLE public.dop_task_completions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Chefs manage their own DOP completions" ON public.dop_task_completions;
 DROP POLICY IF EXISTS dop_task_completions_chef_all ON public.dop_task_completions;
+DROP POLICY IF EXISTS dop_task_completions_chef_all ON public;
 CREATE POLICY dop_task_completions_chef_all
   ON public.dop_task_completions
   FOR ALL TO authenticated
@@ -77,6 +80,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.dop_task_completions TO authentic
 ALTER TABLE public.packing_confirmations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Chefs manage own packing confirmations" ON public.packing_confirmations;
 DROP POLICY IF EXISTS packing_confirmations_chef_all ON public.packing_confirmations;
+DROP POLICY IF EXISTS packing_confirmations_chef_all ON public;
 CREATE POLICY packing_confirmations_chef_all
   ON public.packing_confirmations
   FOR ALL TO authenticated

@@ -1,7 +1,7 @@
 # Context-Aware Loading Animation System
 
 **Date:** 2026-03-15
-**Status:** Foundational implementation complete
+**Status:** End-to-end integration complete
 
 ## What Changed
 
@@ -63,7 +63,6 @@ export default function DashboardLoading() {
 
 ```tsx
 import { TaskLoader } from '@/components/ui/task-loader'
-
 ;<Button disabled={isPending}>
   {isPending ? <TaskLoader contextId="data-save-event" /> : 'Save Event'}
 </Button>
@@ -73,7 +72,6 @@ import { TaskLoader } from '@/components/ui/task-loader'
 
 ```tsx
 import { SavingLoader, GeneratingLoader } from '@/components/ui/task-loader'
-
 ;<Button disabled={saving}>{saving ? <SavingLoader what="recipe" /> : 'Save Recipe'}</Button>
 ```
 
@@ -311,7 +309,6 @@ import { InlineError } from '@/components/ui/error-state'
 
 ```tsx
 import { DataGuard } from '@/components/ui/error-state'
-
 ;<DataGuard data={revenue} loading={isLoading} contextId="nav-finance" onRetry={refetch}>
   {(data) => <RevenueChart data={data} />}
 </DataGuard>
@@ -400,3 +397,53 @@ Features: `xs`/`sm`/`md` sizes, `brand`/`success`/`warning` color variants, auto
 - `app/(chef)/recipes/loading.tsx` - Added ContextLoader
 - `app/(chef)/inquiries/loading.tsx` - Added ContextLoader
 - `app/(chef)/analytics/loading.tsx` - Added ContextLoader with elapsed timer
+
+## End-to-End Integration (2026-03-15)
+
+### Bulk ContextLoader rollout (40+ loading.tsx files)
+
+All chef-section loading.tsx files now import ContextLoader with their registered context ID:
+
+- clients, menus, quotes, calendar, schedule, inbox, staff, settings, tasks, notifications
+- vendors, network, marketing, leads, loyalty, reviews, travel, operations, insights, inventory
+- activity, calls, charity, culinary, financials, goals, import, partners, prospecting, queue
+- social, stations, public pages, client portal, booking
+
+### AI panel TaskLoader integration (9 panels)
+
+Replaced `Loader2 animate-spin` with `TaskLoader` in all AI panels:
+
+- aar-generator-panel, allergen-risk-panel, contingency-ai-panel, contract-generator-panel
+- business-insights-panel, chef-bio-panel, campaign-outreach-panel
+- grocery-consolidation-panel, equipment-depreciation-panel
+
+### StepProgress in recipe import
+
+`components/recipes/recipe-import-dialog.tsx` now shows a 3-step progress indicator during save:
+
+1. Creating recipe record
+2. Processing ingredients
+3. Finalizing
+
+Each step advances as the server action progresses, with failure states if the save fails.
+
+### ErrorState on financial pages
+
+- `app/(chef)/finance/overview/page.tsx` - try/catch around Promise.all, renders ErrorState on failure
+- `app/(chef)/finance/overview/revenue-summary/page.tsx` - try/catch around getEvents(), renders ErrorState on failure
+
+This prevents Zero Hallucination Law 2 violations (showing $0 when data fetch fails).
+
+### FadeIn transitions
+
+Smooth skeleton-to-content transitions added to:
+
+- `app/(chef)/finance/overview/page.tsx`
+- `app/(chef)/finance/overview/revenue-summary/page.tsx`
+- `app/(chef)/events/page.tsx`
+
+### What's left (future work)
+
+- Wire FadeIn to remaining page.tsx files as needed
+- Wire DataGuard into dashboard business-cards.tsx (replace `safe()` zero-fallbacks with error states)
+- Add DeterminateProgress to file upload flows when upload progress events are available

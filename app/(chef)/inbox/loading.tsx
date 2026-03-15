@@ -1,5 +1,6 @@
 // Inbox Loading Skeleton — tabbed communication inbox
 import { Card, CardContent } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -9,7 +10,7 @@ export default function InboxLoading() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-24" />
+        <ContextLoader contextId="nav-inbox" size="sm" className="py-0 items-start" />
         <Bone className="h-9 w-32" />
       </div>
 

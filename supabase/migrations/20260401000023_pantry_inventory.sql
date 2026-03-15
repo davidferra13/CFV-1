@@ -5,7 +5,7 @@
 -- TABLE: pantry_locations
 -- =====================================================================================
 
-CREATE TABLE pantry_locations (
+CREATE TABLE IF NOT EXISTS pantry_locations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -15,13 +15,13 @@ CREATE TABLE pantry_locations (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_pantry_locations_tenant ON pantry_locations(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_pantry_locations_tenant ON pantry_locations(tenant_id);
 
 -- =====================================================================================
 -- TABLE: pantry_items
 -- =====================================================================================
 
-CREATE TABLE pantry_items (
+CREATE TABLE IF NOT EXISTS pantry_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   location_id UUID NOT NULL REFERENCES pantry_locations(id) ON DELETE CASCADE,
@@ -37,8 +37,8 @@ CREATE TABLE pantry_items (
   updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_pantry_items_tenant_location ON pantry_items(tenant_id, location_id);
-CREATE INDEX idx_pantry_items_tenant_ingredient ON pantry_items(tenant_id, ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_pantry_items_tenant_location ON pantry_items(tenant_id, location_id);
+CREATE INDEX IF NOT EXISTS idx_pantry_items_tenant_ingredient ON pantry_items(tenant_id, ingredient_id);
 
 -- =====================================================================================
 -- RLS
@@ -48,6 +48,7 @@ ALTER TABLE pantry_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pantry_items ENABLE ROW LEVEL SECURITY;
 
 -- pantry_locations policies
+DROP POLICY IF EXISTS pantry_locations_select ON pantry_locations;
 CREATE POLICY pantry_locations_select ON pantry_locations
   FOR SELECT USING (
     tenant_id IN (
@@ -55,6 +56,7 @@ CREATE POLICY pantry_locations_select ON pantry_locations
     )
   );
 
+DROP POLICY IF EXISTS pantry_locations_insert ON pantry_locations;
 CREATE POLICY pantry_locations_insert ON pantry_locations
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -62,6 +64,7 @@ CREATE POLICY pantry_locations_insert ON pantry_locations
     )
   );
 
+DROP POLICY IF EXISTS pantry_locations_update ON pantry_locations;
 CREATE POLICY pantry_locations_update ON pantry_locations
   FOR UPDATE USING (
     tenant_id IN (
@@ -69,6 +72,7 @@ CREATE POLICY pantry_locations_update ON pantry_locations
     )
   );
 
+DROP POLICY IF EXISTS pantry_locations_delete ON pantry_locations;
 CREATE POLICY pantry_locations_delete ON pantry_locations
   FOR DELETE USING (
     tenant_id IN (
@@ -77,6 +81,7 @@ CREATE POLICY pantry_locations_delete ON pantry_locations
   );
 
 -- pantry_items policies
+DROP POLICY IF EXISTS pantry_items_select ON pantry_items;
 CREATE POLICY pantry_items_select ON pantry_items
   FOR SELECT USING (
     tenant_id IN (
@@ -84,6 +89,7 @@ CREATE POLICY pantry_items_select ON pantry_items
     )
   );
 
+DROP POLICY IF EXISTS pantry_items_insert ON pantry_items;
 CREATE POLICY pantry_items_insert ON pantry_items
   FOR INSERT WITH CHECK (
     tenant_id IN (
@@ -91,6 +97,7 @@ CREATE POLICY pantry_items_insert ON pantry_items
     )
   );
 
+DROP POLICY IF EXISTS pantry_items_update ON pantry_items;
 CREATE POLICY pantry_items_update ON pantry_items
   FOR UPDATE USING (
     tenant_id IN (
@@ -98,6 +105,7 @@ CREATE POLICY pantry_items_update ON pantry_items
     )
   );
 
+DROP POLICY IF EXISTS pantry_items_delete ON pantry_items;
 CREATE POLICY pantry_items_delete ON pantry_items
   FOR DELETE USING (
     tenant_id IN (

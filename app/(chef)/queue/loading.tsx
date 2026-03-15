@@ -1,3 +1,4 @@
+import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
@@ -7,7 +8,7 @@ function Bone({ className }: { className: string }) {
 export default function QueueLoading() {
   return (
     <div className="space-y-6">
-      <Bone className="h-8 w-48" />
+      <ContextLoader contextId="nav-dashboard" size="sm" className="py-0 items-start" />
       <Bone className="h-10 w-full rounded-lg" />
       <div className="space-y-3">
         {[1, 2, 3, 4, 5, 6].map((i) => (

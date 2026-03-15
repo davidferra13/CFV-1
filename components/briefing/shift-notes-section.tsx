@@ -6,9 +6,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/lib/hooks/use-confirm'
 import {
   createShiftNote,
   togglePinNote,
@@ -52,6 +54,7 @@ function formatNoteDate(dateStr: string): string {
 function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: boolean }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const { confirm, ConfirmDialog } = useConfirm()
 
   function handlePin() {
     startTransition(async () => {
@@ -59,18 +62,25 @@ function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: bool
         await togglePinNote(note.id)
         router.refresh()
       } catch (err) {
-        console.error('Failed to toggle pin:', err)
+        toast.error('Failed to toggle pin')
       }
     })
   }
 
-  function handleDelete() {
+  async function handleDelete() {
+    const ok = await confirm({
+      title: 'Delete this shift note?',
+      description: 'This handoff note will be permanently removed.',
+      confirmLabel: 'Delete Note',
+      variant: 'danger',
+    })
+    if (!ok) return
     startTransition(async () => {
       try {
         await deleteShiftNote(note.id)
         router.refresh()
       } catch (err) {
-        console.error('Failed to delete note:', err)
+        toast.error('Failed to delete note')
       }
     })
   }
@@ -79,6 +89,7 @@ function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: bool
     <div
       className={`rounded-lg border px-3 py-2.5 ${SHIFT_COLORS[note.shift] ?? 'bg-stone-800/50 border-stone-700 text-stone-400'}`}
     >
+      <ConfirmDialog />
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">

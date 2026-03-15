@@ -1,4 +1,5 @@
 // Partners Loading Skeleton — partner cards with stats
+import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
@@ -9,7 +10,7 @@ export default function PartnersLoading() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-36" />
+        <ContextLoader contextId="nav-network" size="sm" className="py-0 items-start" />
         <Bone className="h-9 w-32" />
       </div>
 

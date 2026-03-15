@@ -3,12 +3,18 @@
 -- Builds a cumulative taste profile over time (SevenRooms pattern).
 
 -- Create the rating enum
-CREATE TYPE client_preference_rating AS ENUM ('loved', 'liked', 'neutral', 'disliked');
+DO $$ BEGIN
+  CREATE TYPE client_preference_rating AS ENUM ('loved', 'liked', 'neutral', 'disliked');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Create the item type enum
-CREATE TYPE client_preference_item_type AS ENUM ('dish', 'ingredient', 'cuisine', 'technique');
+DO $$ BEGIN
+  CREATE TYPE client_preference_item_type AS ENUM ('dish', 'ingredient', 'cuisine', 'technique');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE client_preferences (
+CREATE TABLE IF NOT EXISTS client_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
@@ -23,11 +29,11 @@ CREATE TABLE client_preferences (
 );
 
 -- Indexes
-CREATE INDEX idx_client_preferences_tenant ON client_preferences(tenant_id);
-CREATE INDEX idx_client_preferences_client ON client_preferences(client_id);
-CREATE INDEX idx_client_preferences_item_type ON client_preferences(item_type);
-CREATE INDEX idx_client_preferences_rating ON client_preferences(rating);
-CREATE INDEX idx_client_preferences_client_type ON client_preferences(client_id, item_type);
+CREATE INDEX IF NOT EXISTS idx_client_preferences_tenant ON client_preferences(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_client_preferences_client ON client_preferences(client_id);
+CREATE INDEX IF NOT EXISTS idx_client_preferences_item_type ON client_preferences(item_type);
+CREATE INDEX IF NOT EXISTS idx_client_preferences_rating ON client_preferences(rating);
+CREATE INDEX IF NOT EXISTS idx_client_preferences_client_type ON client_preferences(client_id, item_type);
 
 -- RLS
 ALTER TABLE client_preferences ENABLE ROW LEVEL SECURITY;

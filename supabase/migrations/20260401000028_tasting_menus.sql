@@ -3,7 +3,7 @@
 
 -- ─── tasting_menus ──────────────────────────────────────────────────────────────
 
-CREATE TABLE tasting_menus (
+CREATE TABLE IF NOT EXISTS tasting_menus (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE tasting_menus (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_tasting_menus_chef_id ON tasting_menus(chef_id);
+CREATE INDEX IF NOT EXISTS idx_tasting_menus_chef_id ON tasting_menus(chef_id);
 
 ALTER TABLE tasting_menus ENABLE ROW LEVEL SECURITY;
 
@@ -40,7 +40,7 @@ CREATE POLICY "Chefs manage own tasting menus"
 
 -- ─── tasting_menu_courses ───────────────────────────────────────────────────────
 
-CREATE TABLE tasting_menu_courses (
+CREATE TABLE IF NOT EXISTS tasting_menu_courses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tasting_menu_id uuid NOT NULL REFERENCES tasting_menus(id) ON DELETE CASCADE,
   course_number int NOT NULL,
@@ -59,8 +59,8 @@ CREATE TABLE tasting_menu_courses (
   UNIQUE (tasting_menu_id, course_number)
 );
 
-CREATE INDEX idx_tasting_menu_courses_menu_id ON tasting_menu_courses(tasting_menu_id);
-CREATE INDEX idx_tasting_menu_courses_recipe_id ON tasting_menu_courses(recipe_id) WHERE recipe_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_tasting_menu_courses_menu_id ON tasting_menu_courses(tasting_menu_id);
+CREATE INDEX IF NOT EXISTS idx_tasting_menu_courses_recipe_id ON tasting_menu_courses(recipe_id) WHERE recipe_id IS NOT NULL;
 
 ALTER TABLE tasting_menu_courses ENABLE ROW LEVEL SECURITY;
 

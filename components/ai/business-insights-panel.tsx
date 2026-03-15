@@ -1,14 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  BarChart3,
-  Loader2,
-  Sparkles,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-} from '@/components/ui/icons'
+import { BarChart3, Sparkles, TrendingUp, TrendingDown, AlertCircle } from '@/components/ui/icons'
+import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -61,10 +55,7 @@ export function BusinessInsightsPanel() {
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Analyzing...
-              </>
+              <TaskLoader contextId="ai-business-insights" />
             ) : (
               <>
                 <Sparkles className="w-3 h-3 mr-1" />
@@ -93,7 +84,7 @@ export function BusinessInsightsPanel() {
         <div className="flex items-center gap-2">
           <span className="text-xs text-stone-500">Score: {result.healthScore}/100</span>
           <Button variant="ghost" onClick={run} disabled={loading}>
-            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Refresh'}
+            {loading ? <TaskLoader message="Regenerating..." iconSize={12} /> : 'Refresh'}
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { unenrollBetaTester, type BetaClientSummary } from '@/lib/beta/onboarding-actions'
@@ -23,8 +24,9 @@ export function BetaOnboardingAdmin({ testers }: { testers: BetaClientSummary[] 
     startTransition(async () => {
       try {
         await unenrollBetaTester(clientId)
-      } catch {
+      } catch (err) {
         setList(previous)
+        toast.error(err instanceof Error ? err.message : 'Failed to unenroll tester')
       }
     })
   }

@@ -4,6 +4,7 @@
 // Full control over cannabis tier grants and invite approvals.
 // Only callable by users in ADMIN_EMAILS env var.
 
+import { revalidateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
@@ -118,6 +119,8 @@ export async function grantCannabisTier(input: {
 
   if (error) throw new Error('Failed to grant cannabis tier: ' + error.message)
 
+  revalidateTag(`cannabis-access-${input.authUserId}`)
+
   await logAdminAction({
     actorEmail: admin.email,
     actorUserId: admin.id,
@@ -142,6 +145,8 @@ export async function revokeCannabisTier(authUserId: string) {
     .eq('auth_user_id', authUserId)
 
   if (error) throw new Error('Failed to revoke cannabis tier: ' + error.message)
+
+  revalidateTag(`cannabis-access-${authUserId}`)
 
   await logAdminAction({
     actorEmail: admin.email,

@@ -27,14 +27,15 @@ CREATE TABLE IF NOT EXISTS expense_tax_categories (
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_etc_tenant_year ON expense_tax_categories(tenant_id, tax_year);
-CREATE INDEX idx_etc_schedule_line ON expense_tax_categories(tenant_id, schedule_c_line, tax_year);
-CREATE INDEX idx_etc_source ON expense_tax_categories(source, source_id) WHERE source_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_etc_tenant_year ON expense_tax_categories(tenant_id, tax_year);
+CREATE INDEX IF NOT EXISTS idx_etc_schedule_line ON expense_tax_categories(tenant_id, schedule_c_line, tax_year);
+CREATE INDEX IF NOT EXISTS idx_etc_source ON expense_tax_categories(source, source_id) WHERE source_id IS NOT NULL;
 
 COMMENT ON TABLE expense_tax_categories IS 'Maps expenses to IRS Schedule C line items. Used by the Tax Preparation Helper for year-end filing.';
 COMMENT ON COLUMN expense_tax_categories.schedule_c_line IS 'IRS Schedule C line reference (e.g. line_8 = Advertising, line_22 = Supplies).';
 COMMENT ON COLUMN expense_tax_categories.source IS 'Where this categorization came from: ledger entry, manual input, mileage log, or expense record.';
 
+DROP TRIGGER IF EXISTS trg_etc_updated_at ON expense_tax_categories;
 CREATE TRIGGER trg_etc_updated_at
   BEFORE UPDATE ON expense_tax_categories
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -45,7 +46,11 @@ CREATE TRIGGER trg_etc_updated_at
 
 ALTER TABLE expense_tax_categories ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS etc_chef_select ON expense_tax_categories;
 CREATE POLICY etc_chef_select ON expense_tax_categories FOR SELECT USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS etc_chef_insert ON expense_tax_categories;
 CREATE POLICY etc_chef_insert ON expense_tax_categories FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS etc_chef_update ON expense_tax_categories;
 CREATE POLICY etc_chef_update ON expense_tax_categories FOR UPDATE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS etc_chef_delete ON expense_tax_categories;
 CREATE POLICY etc_chef_delete ON expense_tax_categories FOR DELETE USING (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());

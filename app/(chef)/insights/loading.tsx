@@ -1,9 +1,11 @@
+import { ContextLoader } from '@/components/ui/context-loader'
+
 export default function InsightsLoading() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-pulse">
       {/* Header */}
       <div className="space-y-2">
-        <div className="h-7 w-36 bg-stone-700 rounded" />
+        <ContextLoader contextId="nav-analytics" size="sm" className="py-0 items-start" />
         <div className="h-4 w-64 bg-stone-800 rounded" />
       </div>
 

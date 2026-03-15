@@ -1,10 +1,12 @@
+import { ContextLoader } from '@/components/ui/context-loader'
+
 export default function LeadsLoading() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 animate-pulse">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
-          <div className="h-7 w-32 bg-stone-700 rounded" />
+          <ContextLoader contextId="nav-leads" size="sm" className="py-0 items-start" />
           <div className="h-4 w-56 bg-stone-800 rounded" />
         </div>
       </div>

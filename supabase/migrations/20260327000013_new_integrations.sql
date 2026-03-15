@@ -1,7 +1,7 @@
 -- New integrations: QuickBooks, DocuSign, Zapier, Yelp, iCal feed, Apple/Google Pay toggle
 -- Additive only — no drops, no deletes.
 
--- pgcrypto needed for gen_random_bytes() in webhook secret generation
+-- pgcrypto needed for extensions.gen_random_bytes() in webhook secret generation
 DO $$
 BEGIN
   CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;

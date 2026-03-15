@@ -28,6 +28,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       ${className}
     `.trim()
 
+    const errorId = error ? `${selectId}-error` : undefined
+    const helperId = helperText && !error ? `${selectId}-helper` : undefined
+    const describedBy = [errorId, helperId].filter(Boolean).join(' ') || undefined
+    const ariaInvalid = error ? 'true' : ('false' as const)
+
     return (
       <div className="w-full">
         {label && (
@@ -36,7 +41,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <select ref={ref} id={selectId} className={selectClasses} {...props}>
+        <select
+          ref={ref}
+          id={selectId}
+          className={selectClasses}
+          aria-invalid={ariaInvalid}
+          aria-describedby={describedBy}
+          {...props}
+        >
           <option value="">Select...</option>
           {groups
             ? groups.map((group) => (
@@ -54,8 +66,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 </option>
               ))}
         </select>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1 text-sm text-stone-400">{helperText}</p>}
+        {error && (
+          <p id={errorId} className="mt-1 text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+        {helperText && !error && (
+          <p id={helperId} className="mt-1 text-sm text-stone-400">
+            {helperText}
+          </p>
+        )}
       </div>
     )
   }

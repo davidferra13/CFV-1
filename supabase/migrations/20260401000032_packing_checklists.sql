@@ -37,10 +37,10 @@ CREATE TABLE IF NOT EXISTS packing_checklist_items (
 );
 
 -- Indexes
-CREATE INDEX idx_chef_equipment_chef_id ON chef_equipment(chef_id);
-CREATE INDEX idx_packing_checklists_chef_id ON packing_checklists(chef_id);
-CREATE INDEX idx_packing_checklists_event_id ON packing_checklists(event_id);
-CREATE INDEX idx_packing_checklist_items_checklist_id ON packing_checklist_items(checklist_id);
+CREATE INDEX IF NOT EXISTS idx_chef_equipment_chef_id ON chef_equipment(chef_id);
+CREATE INDEX IF NOT EXISTS idx_packing_checklists_chef_id ON packing_checklists(chef_id);
+CREATE INDEX IF NOT EXISTS idx_packing_checklists_event_id ON packing_checklists(event_id);
+CREATE INDEX IF NOT EXISTS idx_packing_checklist_items_checklist_id ON packing_checklist_items(checklist_id);
 
 -- RLS
 ALTER TABLE chef_equipment ENABLE ROW LEVEL SECURITY;

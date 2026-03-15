@@ -1,5 +1,6 @@
 // Quotes Loading Skeleton — status tabs + quote cards
 import { Card, CardContent } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -9,7 +10,7 @@ export default function QuotesLoading() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-28" />
+        <ContextLoader contextId="nav-quotes" size="sm" className="py-0 items-start" />
         <Bone className="h-9 w-32" />
       </div>
 

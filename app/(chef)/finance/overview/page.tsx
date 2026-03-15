@@ -6,6 +6,8 @@ import { getEvents } from '@/lib/events/actions'
 import { getExpenses } from '@/lib/expenses/actions'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ErrorState } from '@/components/ui/error-state'
+import { FadeIn } from '@/components/ui/fade-in'
 
 export const metadata: Metadata = { title: 'Finance Overview - ChefFlow' }
 
@@ -32,11 +34,32 @@ const VIEWS = [
 
 export default async function FinanceOverviewPage() {
   await requireChef()
-  const [summary, events, expenses] = await Promise.all([
-    getTenantFinancialSummary(),
-    getEvents(),
-    getExpenses(),
-  ])
+
+  let summary, events, expenses
+  try {
+    ;[summary, events, expenses] = await Promise.all([
+      getTenantFinancialSummary(),
+      getEvents(),
+      getExpenses(),
+    ])
+  } catch (err) {
+    console.error('[FinanceOverview] Failed to load financial data:', err)
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
+            ← Finance
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Overview</h1>
+        </div>
+        <ErrorState
+          title="Could not load financial data"
+          description="Revenue, expenses, and event data failed to load. Try refreshing the page."
+          size="lg"
+        />
+      </div>
+    )
+  }
 
   const totalExpenses = expenses.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   const completedEvents = events.filter((e: any) => e.status === 'completed')
@@ -50,7 +73,7 @@ export default async function FinanceOverviewPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <FadeIn as="div" className="space-y-6">
       <div>
         <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
           ← Finance
@@ -105,6 +128,6 @@ export default async function FinanceOverviewPage() {
           </Link>
         ))}
       </div>
-    </div>
+    </FadeIn>
   )
 }

@@ -2,6 +2,8 @@
 -- Allows chefs to create customizable intake forms and send them to clients via shareable links.
 -- Clients submit responses without needing an account. Chefs can then merge responses into client profiles.
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Form templates (chef-created)
 CREATE TABLE IF NOT EXISTS client_intake_forms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -15,7 +17,7 @@ CREATE TABLE IF NOT EXISTS client_intake_forms (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_intake_forms_tenant ON client_intake_forms(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_intake_forms_tenant ON client_intake_forms(tenant_id);
 
 -- Client responses to intake forms
 CREATE TABLE IF NOT EXISTS client_intake_responses (
@@ -28,13 +30,13 @@ CREATE TABLE IF NOT EXISTS client_intake_responses (
   responses JSONB NOT NULL DEFAULT '{}',
   applied_at TIMESTAMPTZ,
   submitted_at TIMESTAMPTZ DEFAULT now(),
-  share_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex')
+  share_token TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(32), 'hex')
 );
 
-CREATE INDEX idx_intake_responses_tenant ON client_intake_responses(tenant_id);
-CREATE INDEX idx_intake_responses_form ON client_intake_responses(form_id);
-CREATE INDEX idx_intake_responses_client ON client_intake_responses(client_id);
-CREATE INDEX idx_intake_responses_token ON client_intake_responses(share_token);
+CREATE INDEX IF NOT EXISTS idx_intake_responses_tenant ON client_intake_responses(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_intake_responses_form ON client_intake_responses(form_id);
+CREATE INDEX IF NOT EXISTS idx_intake_responses_client ON client_intake_responses(client_id);
+CREATE INDEX IF NOT EXISTS idx_intake_responses_token ON client_intake_responses(share_token);
 
 -- Share links for sending forms to clients (pre-populated with client info)
 CREATE TABLE IF NOT EXISTS client_intake_shares (
@@ -44,14 +46,14 @@ CREATE TABLE IF NOT EXISTS client_intake_shares (
   client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
   client_email TEXT,
   client_name TEXT,
-  share_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  share_token TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   response_id UUID REFERENCES client_intake_responses(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT now(),
   expires_at TIMESTAMPTZ DEFAULT (now() + interval '30 days')
 );
 
-CREATE INDEX idx_intake_shares_token ON client_intake_shares(share_token);
-CREATE INDEX idx_intake_shares_tenant ON client_intake_shares(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_intake_shares_token ON client_intake_shares(share_token);
+CREATE INDEX IF NOT EXISTS idx_intake_shares_tenant ON client_intake_shares(tenant_id);
 
 -- RLS policies
 ALTER TABLE client_intake_forms ENABLE ROW LEVEL SECURITY;
@@ -59,6 +61,7 @@ ALTER TABLE client_intake_responses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_intake_shares ENABLE ROW LEVEL SECURITY;
 
 -- Chef can manage their own forms
+DO $$ BEGIN
 CREATE POLICY intake_forms_chef_all ON client_intake_forms
   FOR ALL USING (
     tenant_id IN (
@@ -66,8 +69,11 @@ CREATE POLICY intake_forms_chef_all ON client_intake_forms
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Chef can manage their own responses
+DO $$ BEGIN
 CREATE POLICY intake_responses_chef_all ON client_intake_responses
   FOR ALL USING (
     tenant_id IN (
@@ -75,13 +81,18 @@ CREATE POLICY intake_responses_chef_all ON client_intake_responses
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Public can INSERT responses (via share token validation in server action)
--- We use anon key for public submissions, so allow insert for anon role
+DO $$ BEGIN
 CREATE POLICY intake_responses_public_insert ON client_intake_responses
   FOR INSERT WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Chef can manage their own shares
+DO $$ BEGIN
 CREATE POLICY intake_shares_chef_all ON client_intake_shares
   FOR ALL USING (
     tenant_id IN (
@@ -89,14 +100,22 @@ CREATE POLICY intake_shares_chef_all ON client_intake_shares
       WHERE auth_user_id = auth.uid() AND role = 'chef'
     )
   );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Public can read shares by token (for loading the form)
+DO $$ BEGIN
 CREATE POLICY intake_shares_public_select ON client_intake_shares
   FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Public can read forms (needed to render the form on the public page)
+DO $$ BEGIN
 CREATE POLICY intake_forms_public_select ON client_intake_forms
   FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 COMMENT ON TABLE client_intake_forms IS 'Chef-created intake/assessment form templates with customizable fields.';
 COMMENT ON TABLE client_intake_responses IS 'Client submissions to intake forms. Can be linked to a client record and merged into their profile.';

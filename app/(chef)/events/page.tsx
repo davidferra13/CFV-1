@@ -22,6 +22,7 @@ import { EventsFinancialBar } from '@/components/intelligence/events-financial-b
 import { GeographicBar } from '@/components/intelligence/geographic-bar'
 import { PrepEfficiencyBar } from '@/components/intelligence/prep-efficiency-bar'
 import { UntappedMarketsBar } from '@/components/intelligence/untapped-markets-bar'
+import { FadeIn } from '@/components/ui/fade-in'
 
 type EventStatus =
   | 'all'
@@ -117,7 +118,7 @@ export default async function EventsPage({
   const view = (searchParams.view || 'list') as ViewMode
 
   return (
-    <div className="space-y-6">
+    <FadeIn as="div" className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -178,6 +179,6 @@ export default async function EventsPage({
           </Suspense>
         </>
       )}
-    </div>
+    </FadeIn>
   )
 }

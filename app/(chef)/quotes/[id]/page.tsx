@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getQuoteById, getQuoteVersionHistory } from '@/lib/quotes/actions'
+import { safeFetchAll } from '@/lib/utils/safe-fetch'
+import { ErrorState } from '@/components/ui/error-state'
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
@@ -18,11 +20,24 @@ import { format, formatDistanceToNow } from 'date-fns'
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [quote, versionHistory, timelineEntries] = await Promise.all([
-    getQuoteById(params.id),
-    getQuoteVersionHistory(params.id),
-    getEntityActivityTimeline('quote', params.id),
-  ])
+  const result = await safeFetchAll({
+    quote: () => getQuoteById(params.id),
+    versionHistory: () => getQuoteVersionHistory(params.id),
+    timelineEntries: () => getEntityActivityTimeline('quote', params.id),
+  })
+
+  if (result.error) {
+    return (
+      <div className="space-y-6">
+        <Link href="/quotes">
+          <Button variant="ghost">Back to Quotes</Button>
+        </Link>
+        <ErrorState title="Could not load quote" description={result.error} />
+      </div>
+    )
+  }
+
+  const { quote, versionHistory, timelineEntries } = result.data
 
   if (!quote) {
     notFound()

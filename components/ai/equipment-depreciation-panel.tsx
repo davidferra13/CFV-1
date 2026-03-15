@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Wrench, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { Wrench, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -36,10 +37,7 @@ export function EquipmentDepreciationPanel() {
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Explaining...
-              </>
+              <TaskLoader contextId="ai-depreciation" />
             ) : (
               <>
                 <Sparkles className="w-3 h-3 mr-1" />
@@ -64,7 +62,7 @@ export function EquipmentDepreciationPanel() {
           <Badge variant="info">${result.totalAnnualDeductionDollars.toFixed(0)}/yr total</Badge>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
-          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Refresh'}
+          {loading ? <TaskLoader message="Regenerating..." iconSize={12} /> : 'Refresh'}
         </Button>
       </div>
 

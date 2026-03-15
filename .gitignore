@@ -173,3 +173,4 @@ CON
 docs/demo-videos/*.webm
 docs/demo-videos/*.mp4
 docs/demo-videos/_tmp/
+.claude/worktrees/

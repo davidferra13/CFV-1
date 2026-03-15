@@ -18,6 +18,8 @@ import { PendingInvitationsTable } from './pending-invitations-table'
 import { getClientHealthScores } from '@/lib/clients/health-score'
 import { getChurnPreventionTriggers } from '@/lib/intelligence/churn-prevention-triggers'
 import { RebookingBar } from '@/components/intelligence/rebooking-bar'
+import { safeFetch } from '@/lib/utils/safe-fetch'
+import { ErrorState } from '@/components/ui/error-state'
 
 export default async function ClientsPage() {
   await requireChef()
@@ -97,12 +99,17 @@ async function PendingInvitationsContent() {
 }
 
 async function ClientsListContent() {
-  const [clients, healthSummary, churnResult] = await Promise.all([
-    getClientsWithStats(),
+  const clientsResult = await safeFetch(() => getClientsWithStats())
+  if (clientsResult.error) {
+    return <ErrorState title="Could not load clients" description={clientsResult.error} />
+  }
+
+  const [healthSummary, churnResult] = await Promise.all([
     getClientHealthScores().catch(() => ({ scores: [], medianLtv: 0, avgEventsPerYear: 0 })),
     getChurnPreventionTriggers().catch(() => null),
   ])
 
+  const clients = clientsResult.data
   const healthMap = new Map(healthSummary.scores.map((s) => [s.clientId, s]))
   const churnMap = new Map((churnResult?.atRiskClients || []).map((c) => [c.clientId, c]))
 

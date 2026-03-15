@@ -22,6 +22,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       ${className}
     `.trim()
 
+    const errorId = error ? `${textareaId}-error` : undefined
+    const helperId = helperText && !error ? `${textareaId}-helper` : undefined
+    const describedBy = [errorId, helperId].filter(Boolean).join(' ') || undefined
+    const ariaInvalid = error ? 'true' : ('false' as const)
+
     return (
       <div className="w-full">
         {label && (
@@ -30,9 +35,25 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <textarea ref={ref} id={textareaId} className={textareaClasses} rows={4} {...props} />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1 text-sm text-stone-400">{helperText}</p>}
+        <textarea
+          ref={ref}
+          id={textareaId}
+          className={textareaClasses}
+          rows={4}
+          aria-invalid={ariaInvalid}
+          aria-describedby={describedBy}
+          {...props}
+        />
+        {error && (
+          <p id={errorId} className="mt-1 text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+        {helperText && !error && (
+          <p id={helperId} className="mt-1 text-sm text-stone-400">
+            {helperText}
+          </p>
+        )}
       </div>
     )
   }

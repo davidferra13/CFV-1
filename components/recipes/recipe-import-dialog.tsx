@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { StepProgress, useStepProgress } from '@/components/ui/step-progress'
 import { fetchRecipeFromUrl, saveImportedRecipe } from '@/lib/recipes/import-actions'
 import type { ImportedRecipePreview } from '@/lib/recipes/import-actions'
 
@@ -29,6 +30,11 @@ export function RecipeImportDialog({ open, onClose }: Props) {
   const [savedIngredientCount, setSavedIngredientCount] = useState(0)
   const [isFetching, startFetchTransition] = useTransition()
   const [isSaving, startSaveTransition] = useTransition()
+  const saveSteps = useStepProgress([
+    'Creating recipe record',
+    'Processing ingredients',
+    'Finalizing',
+  ])
 
   if (!open) return null
 
@@ -38,6 +44,7 @@ export function RecipeImportDialog({ open, onClose }: Props) {
     setError(null)
     setPreview(null)
     setSavedRecipeId(null)
+    saveSteps.reset()
     onClose()
   }
 
@@ -67,19 +74,28 @@ export function RecipeImportDialog({ open, onClose }: Props) {
     if (!preview) return
 
     setStep('saving')
+    saveSteps.reset()
     startSaveTransition(async () => {
       try {
+        // Step 1: Creating recipe record (advance past it when server responds)
         const result = await saveImportedRecipe(preview)
+        saveSteps.advance() // -> Processing ingredients
         if (result.success) {
-          setSavedRecipeId(result.recipeId)
-          setSavedName(result.name)
-          setSavedIngredientCount(result.ingredientCount)
-          setStep('done')
+          saveSteps.advance() // -> Finalizing
+          setTimeout(() => {
+            saveSteps.advance() // -> all done
+            setSavedRecipeId(result.recipeId)
+            setSavedName(result.name)
+            setSavedIngredientCount(result.ingredientCount)
+            setStep('done')
+          }, 400)
         } else {
+          saveSteps.fail(result.error)
           setError(result.error)
           setStep('preview')
         }
       } catch (err) {
+        saveSteps.fail('Failed to save recipe')
         setError('Failed to save recipe. Please try again.')
         setStep('preview')
       }
@@ -257,28 +273,8 @@ export function RecipeImportDialog({ open, onClose }: Props) {
 
           {/* Step 3: Saving */}
           {step === 'saving' && (
-            <div className="flex flex-col items-center justify-center py-8 gap-3">
-              <svg
-                className="animate-spin h-8 w-8 text-brand-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <p className="text-stone-600">Saving recipe and ingredients...</p>
+            <div className="py-4">
+              <StepProgress steps={saveSteps.steps} compact />
             </div>
           )}
 

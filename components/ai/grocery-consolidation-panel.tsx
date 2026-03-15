@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ShoppingCart, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { ShoppingCart, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -46,10 +47,7 @@ export function GroceryConsolidationPanel({ eventId }: { eventId: string }) {
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Consolidating...
-              </>
+              <TaskLoader contextId="ai-grocery-consolidation" />
             ) : (
               <>
                 <Sparkles className="w-3 h-3 mr-1" />
@@ -77,7 +75,7 @@ export function GroceryConsolidationPanel({ eventId }: { eventId: string }) {
           <Badge variant="info">{result.ingredients.length} items</Badge>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
-          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Refresh'}
+          {loading ? <TaskLoader message="Regenerating..." iconSize={12} /> : 'Refresh'}
         </Button>
       </div>
 

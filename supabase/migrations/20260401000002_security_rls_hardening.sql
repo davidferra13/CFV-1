@@ -59,6 +59,7 @@ DROP POLICY IF EXISTS guest_event_profile_public_update ON guest_event_profile;
 -- Anon can only SELECT their own profile row (by guest_token match).
 -- The app layer passes guest_token as a query filter; without it,
 -- the RLS policy blocks access to all rows.
+DROP POLICY IF EXISTS guest_event_profile_anon_select ON guest_event_profile;
 CREATE POLICY guest_event_profile_anon_select ON guest_event_profile
   FOR SELECT TO anon
   USING (
@@ -76,6 +77,7 @@ CREATE POLICY guest_event_profile_anon_select ON guest_event_profile
 
 -- Anon can only INSERT a new profile if they provide a valid guest_token
 -- that matches an event with a guest share link.
+DROP POLICY IF EXISTS guest_event_profile_anon_insert ON guest_event_profile;
 CREATE POLICY guest_event_profile_anon_insert ON guest_event_profile
   FOR INSERT TO anon
   WITH CHECK (
@@ -88,6 +90,7 @@ CREATE POLICY guest_event_profile_anon_insert ON guest_event_profile
   );
 
 -- Anon can only UPDATE their own profile row (matched by guest_token).
+DROP POLICY IF EXISTS guest_event_profile_anon_update ON guest_event_profile;
 CREATE POLICY guest_event_profile_anon_update ON guest_event_profile
   FOR UPDATE TO anon
   USING (

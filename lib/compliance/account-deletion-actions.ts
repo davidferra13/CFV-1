@@ -3,7 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { log } from '@/lib/logger'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { randomBytes } from 'crypto'
 import { runPreDeletionChecks } from './pre-deletion-checks'
 import { cleanupStorageBuckets } from './storage-cleanup'
@@ -152,6 +152,7 @@ export async function requestAccountDeletion(
   }
 
   // 8. Revalidate so the deletion banner appears immediately
+  revalidateTag(`deletion-status-${user.entityId}`)
   revalidatePath('/', 'layout')
 
   return { success: true }
@@ -225,6 +226,9 @@ export async function cancelAccountDeletion(token: string): Promise<{ success: t
   } catch {
     // Non-blocking
   }
+
+  // 6. Bust the deletion status cache
+  revalidateTag(`deletion-status-${chef.id}`)
 
   return { success: true }
 }

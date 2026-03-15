@@ -7,7 +7,7 @@
 -- Daily food-safety temperature readings (not event-specific like event_temp_logs)
 -- ============================================
 
-CREATE TABLE compliance_temp_logs (
+CREATE TABLE IF NOT EXISTS compliance_temp_logs (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id           UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
 
@@ -37,8 +37,8 @@ CREATE TABLE compliance_temp_logs (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_compliance_temp_chef_date ON compliance_temp_logs(chef_id, log_date DESC);
-CREATE INDEX idx_compliance_temp_alerts ON compliance_temp_logs(chef_id, is_in_range) WHERE is_in_range = false;
+CREATE INDEX IF NOT EXISTS idx_compliance_temp_chef_date ON compliance_temp_logs(chef_id, log_date DESC);
+CREATE INDEX IF NOT EXISTS idx_compliance_temp_alerts ON compliance_temp_logs(chef_id, is_in_range) WHERE is_in_range = false;
 
 COMMENT ON TABLE compliance_temp_logs IS 'Daily food-safety temperature readings for walk-ins, holding units, and equipment.';
 
@@ -47,7 +47,7 @@ COMMENT ON TABLE compliance_temp_logs IS 'Daily food-safety temperature readings
 -- Daily cleaning checklist tasks
 -- ============================================
 
-CREATE TABLE compliance_cleaning_logs (
+CREATE TABLE IF NOT EXISTS compliance_cleaning_logs (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id           UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
 
@@ -65,8 +65,8 @@ CREATE TABLE compliance_cleaning_logs (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_compliance_cleaning_chef_date ON compliance_cleaning_logs(chef_id, log_date DESC);
-CREATE INDEX idx_compliance_cleaning_area ON compliance_cleaning_logs(chef_id, area);
+CREATE INDEX IF NOT EXISTS idx_compliance_cleaning_chef_date ON compliance_cleaning_logs(chef_id, log_date DESC);
+CREATE INDEX IF NOT EXISTS idx_compliance_cleaning_area ON compliance_cleaning_logs(chef_id, area);
 
 COMMENT ON TABLE compliance_cleaning_logs IS 'Daily cleaning checklist tasks grouped by area (kitchen, FOH, restroom, storage).';
 
@@ -89,21 +89,29 @@ ALTER TABLE compliance_temp_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE compliance_cleaning_logs ENABLE ROW LEVEL SECURITY;
 
 -- Temperature logs
+DROP POLICY IF EXISTS ctl_chef_select ON compliance_temp_logs;
 CREATE POLICY ctl_chef_select ON compliance_temp_logs
   FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ctl_chef_insert ON compliance_temp_logs;
 CREATE POLICY ctl_chef_insert ON compliance_temp_logs
   FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ctl_chef_update ON compliance_temp_logs;
 CREATE POLICY ctl_chef_update ON compliance_temp_logs
   FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ctl_chef_delete ON compliance_temp_logs;
 CREATE POLICY ctl_chef_delete ON compliance_temp_logs
   FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
 
 -- Cleaning logs
+DROP POLICY IF EXISTS ccl_chef_select ON compliance_cleaning_logs;
 CREATE POLICY ccl_chef_select ON compliance_cleaning_logs
   FOR SELECT USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ccl_chef_insert ON compliance_cleaning_logs;
 CREATE POLICY ccl_chef_insert ON compliance_cleaning_logs
   FOR INSERT WITH CHECK (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ccl_chef_update ON compliance_cleaning_logs;
 CREATE POLICY ccl_chef_update ON compliance_cleaning_logs
   FOR UPDATE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ccl_chef_delete ON compliance_cleaning_logs;
 CREATE POLICY ccl_chef_delete ON compliance_cleaning_logs
   FOR DELETE USING (get_current_user_role() = 'chef' AND chef_id = get_current_tenant_id());

@@ -6,7 +6,7 @@
 -- TABLE 1: SHIFT TEMPLATES
 -- ============================================
 
-CREATE TABLE shift_templates (
+CREATE TABLE IF NOT EXISTS shift_templates (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id     UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name          TEXT NOT NULL,
@@ -18,10 +18,11 @@ CREATE TABLE shift_templates (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_shift_templates_tenant ON shift_templates(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_shift_templates_tenant ON shift_templates(tenant_id);
 
 COMMENT ON TABLE shift_templates IS 'Reusable shift templates (Morning, Evening, Split, etc.) for scheduling.';
 
+DROP TRIGGER IF EXISTS trg_shift_templates_updated_at ON shift_templates;
 CREATE TRIGGER trg_shift_templates_updated_at
   BEFORE UPDATE ON shift_templates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -30,7 +31,7 @@ CREATE TRIGGER trg_shift_templates_updated_at
 -- TABLE 2: SCHEDULED SHIFTS
 -- ============================================
 
-CREATE TABLE scheduled_shifts (
+CREATE TABLE IF NOT EXISTS scheduled_shifts (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id        UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   staff_member_id  UUID NOT NULL REFERENCES staff_members(id) ON DELETE CASCADE,
@@ -47,11 +48,12 @@ CREATE TABLE scheduled_shifts (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_scheduled_shifts_tenant_date ON scheduled_shifts(tenant_id, shift_date);
-CREATE INDEX idx_scheduled_shifts_staff_date ON scheduled_shifts(tenant_id, staff_member_id, shift_date);
+CREATE INDEX IF NOT EXISTS idx_scheduled_shifts_tenant_date ON scheduled_shifts(tenant_id, shift_date);
+CREATE INDEX IF NOT EXISTS idx_scheduled_shifts_staff_date ON scheduled_shifts(tenant_id, staff_member_id, shift_date);
 
 COMMENT ON TABLE scheduled_shifts IS 'Individual shift assignments for staff on specific dates.';
 
+DROP TRIGGER IF EXISTS trg_scheduled_shifts_updated_at ON scheduled_shifts;
 CREATE TRIGGER trg_scheduled_shifts_updated_at
   BEFORE UPDATE ON scheduled_shifts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -60,7 +62,7 @@ CREATE TRIGGER trg_scheduled_shifts_updated_at
 -- TABLE 3: STAFF AVAILABILITY
 -- ============================================
 
-CREATE TABLE staff_availability (
+CREATE TABLE IF NOT EXISTS staff_availability (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id        UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   staff_member_id  UUID NOT NULL REFERENCES staff_members(id) ON DELETE CASCADE,
@@ -73,7 +75,7 @@ CREATE TABLE staff_availability (
   UNIQUE (tenant_id, staff_member_id, day_of_week)
 );
 
-CREATE INDEX idx_staff_availability_tenant ON staff_availability(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_staff_availability_tenant ON staff_availability(tenant_id);
 
 COMMENT ON TABLE staff_availability IS 'Weekly availability preferences per staff member. day_of_week: 0=Sunday through 6=Saturday.';
 
@@ -81,7 +83,7 @@ COMMENT ON TABLE staff_availability IS 'Weekly availability preferences per staf
 -- TABLE 4: SHIFT SWAP REQUESTS
 -- ============================================
 
-CREATE TABLE shift_swap_requests (
+CREATE TABLE IF NOT EXISTS shift_swap_requests (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id           UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   shift_id            UUID NOT NULL REFERENCES scheduled_shifts(id) ON DELETE CASCADE,
@@ -94,10 +96,11 @@ CREATE TABLE shift_swap_requests (
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_shift_swap_requests_tenant ON shift_swap_requests(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_shift_swap_requests_tenant ON shift_swap_requests(tenant_id);
 
 COMMENT ON TABLE shift_swap_requests IS 'Shift swap/coverage requests between staff members.';
 
+DROP TRIGGER IF EXISTS trg_shift_swap_requests_updated_at ON shift_swap_requests;
 CREATE TRIGGER trg_shift_swap_requests_updated_at
   BEFORE UPDATE ON shift_swap_requests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -112,25 +115,41 @@ ALTER TABLE staff_availability    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shift_swap_requests   ENABLE ROW LEVEL SECURITY;
 
 -- shift_templates: tenant-scoped
+DROP POLICY IF EXISTS st_select ON shift_templates;
 CREATE POLICY st_select ON shift_templates FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS st_insert ON shift_templates;
 CREATE POLICY st_insert ON shift_templates FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS st_update ON shift_templates;
 CREATE POLICY st_update ON shift_templates FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS st_delete ON shift_templates;
 CREATE POLICY st_delete ON shift_templates FOR DELETE USING (tenant_id = get_current_tenant_id());
 
 -- scheduled_shifts: tenant-scoped
+DROP POLICY IF EXISTS ss_select ON scheduled_shifts;
 CREATE POLICY ss_select ON scheduled_shifts FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ss_insert ON scheduled_shifts;
 CREATE POLICY ss_insert ON scheduled_shifts FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ss_update ON scheduled_shifts;
 CREATE POLICY ss_update ON scheduled_shifts FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ss_delete ON scheduled_shifts;
 CREATE POLICY ss_delete ON scheduled_shifts FOR DELETE USING (tenant_id = get_current_tenant_id());
 
 -- staff_availability: tenant-scoped
+DROP POLICY IF EXISTS sa_select ON staff_availability;
 CREATE POLICY sa_select ON staff_availability FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sa_insert ON staff_availability;
 CREATE POLICY sa_insert ON staff_availability FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sa_update ON staff_availability;
 CREATE POLICY sa_update ON staff_availability FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS sa_delete ON staff_availability;
 CREATE POLICY sa_delete ON staff_availability FOR DELETE USING (tenant_id = get_current_tenant_id());
 
 -- shift_swap_requests: tenant-scoped
+DROP POLICY IF EXISTS ssr_select ON shift_swap_requests;
 CREATE POLICY ssr_select ON shift_swap_requests FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ssr_insert ON shift_swap_requests;
 CREATE POLICY ssr_insert ON shift_swap_requests FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ssr_update ON shift_swap_requests;
 CREATE POLICY ssr_update ON shift_swap_requests FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS ssr_delete ON shift_swap_requests;
 CREATE POLICY ssr_delete ON shift_swap_requests FOR DELETE USING (tenant_id = get_current_tenant_id());

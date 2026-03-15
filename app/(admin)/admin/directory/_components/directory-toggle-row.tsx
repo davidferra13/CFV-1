@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import type { DirectoryCandidate } from '@/lib/directory/admin-actions'
 import { approveChefForDirectory, revokeChefFromDirectory } from '@/lib/directory/admin-actions'
 
@@ -18,8 +19,9 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
         } else {
           await revokeChefFromDirectory(chef.id)
         }
-      } catch {
+      } catch (err) {
         setApproved(!next) // revert on error
+        toast.error(err instanceof Error ? err.message : 'Failed to update directory listing')
       }
     })
   }

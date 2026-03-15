@@ -1,3 +1,0 @@
--- This migration was previously applied to the remote database.
--- Placeholder file to keep local/remote migration history in sync.
--- Original content unknown - migration was applied before being tracked in git.

@@ -2,6 +2,7 @@
 // Shown immediately while the server fetches the client list.
 
 import { Card, CardContent } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -12,7 +13,7 @@ export default function ClientsLoading() {
     <div className="space-y-6">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-32" />
+        <ContextLoader contextId="nav-clients" size="sm" className="py-0 items-start" />
         <div className="flex gap-2">
           <Bone className="h-9 w-48" />
           <Bone className="h-9 w-28" />

@@ -24,10 +24,10 @@ CREATE TABLE IF NOT EXISTS experience_packages (
 );
 
 -- Indexes
-CREATE INDEX idx_experience_packages_tenant ON experience_packages(tenant_id);
-CREATE INDEX idx_experience_packages_type ON experience_packages(tenant_id, package_type);
-CREATE INDEX idx_experience_packages_active ON experience_packages(tenant_id, is_active);
-CREATE INDEX idx_experience_packages_menu ON experience_packages(menu_id);
+CREATE INDEX IF NOT EXISTS idx_experience_packages_tenant ON experience_packages(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_experience_packages_type ON experience_packages(tenant_id, package_type);
+CREATE INDEX IF NOT EXISTS idx_experience_packages_active ON experience_packages(tenant_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_experience_packages_menu ON experience_packages(menu_id);
 
 -- RLS
 ALTER TABLE experience_packages ENABLE ROW LEVEL SECURITY;

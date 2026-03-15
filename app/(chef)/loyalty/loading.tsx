@@ -1,5 +1,6 @@
 // Loyalty Loading Skeleton — tier stat cards + rewards catalog
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -9,7 +10,7 @@ export default function LoyaltyLoading() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-36" />
+        <ContextLoader contextId="nav-loyalty" size="sm" className="py-0 items-start" />
         <Bone className="h-9 w-28" />
       </div>
 

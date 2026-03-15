@@ -1,4 +1,5 @@
 // Activity Loading Skeleton — resume section + filtered activity feed
+import { ContextLoader } from '@/components/ui/context-loader'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
@@ -8,7 +9,7 @@ function Bone({ className }: { className: string }) {
 export default function ActivityLoading() {
   return (
     <div className="space-y-6">
-      <Bone className="h-8 w-36" />
+      <ContextLoader contextId="nav-dashboard" size="sm" className="py-0 items-start" />
 
       {/* Resume / pick up where you left off */}
       <Card>

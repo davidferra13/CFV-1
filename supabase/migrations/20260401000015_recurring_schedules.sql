@@ -1,7 +1,7 @@
 -- Recurring Meal Prep Scheduling
 -- Allows chefs to set up weekly/biweekly/monthly recurring schedules for clients
 
-CREATE TABLE recurring_schedules (
+CREATE TABLE IF NOT EXISTS recurring_schedules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   client_id UUID NOT NULL REFERENCES clients(id) ON DELETE RESTRICT,
@@ -21,7 +21,7 @@ CREATE TABLE recurring_schedules (
 );
 
 -- Index for fast lookup by tenant + client + active status
-CREATE INDEX idx_recurring_schedules_tenant_client_active
+CREATE INDEX IF NOT EXISTS idx_recurring_schedules_tenant_client_active
   ON recurring_schedules (tenant_id, client_id, is_active);
 
 -- RLS

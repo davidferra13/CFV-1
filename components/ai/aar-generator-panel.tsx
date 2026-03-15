@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, Loader2, Sparkles, CheckCircle, AlertCircle } from '@/components/ui/icons'
+import { ClipboardList, Sparkles, CheckCircle, AlertCircle } from '@/components/ui/icons'
+import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateAARDraft, type AARDraft } from '@/lib/ai/aar-generator'
@@ -35,10 +36,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Generating...
-              </>
+              <TaskLoader contextId="ai-aar-generation" />
             ) : (
               <>
                 <Sparkles className="w-3 h-3 mr-1" />
@@ -77,7 +75,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
             Full Report
           </button>
           <Button variant="ghost" onClick={run} disabled={loading}>
-            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Regenerate'}
+            {loading ? <TaskLoader message="Regenerating..." iconSize={12} /> : 'Regenerate'}
           </Button>
         </div>
       </div>

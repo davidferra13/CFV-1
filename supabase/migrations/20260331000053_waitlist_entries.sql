@@ -3,10 +3,13 @@
 -- Additive only. No existing tables modified.
 
 -- ENUM: Waitlist entry status
-DO $$ BEGIN CREATE TYPE waitlist_status AS ENUM ('waiting', 'notified', 'seated', 'cancelled', 'no_show'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN DO $$ BEGIN
+  CREATE TYPE waitlist_status AS ENUM ('waiting', 'notified', 'seated', 'cancelled', 'no_show');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Waitlist Entries
-CREATE TABLE waitlist_entries (
+CREATE TABLE IF NOT EXISTS waitlist_entries (
   id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id                 UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   guest_name              TEXT NOT NULL,
@@ -23,13 +26,14 @@ CREATE TABLE waitlist_entries (
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_waitlist_entries_chef ON waitlist_entries(chef_id, status);
-CREATE INDEX idx_waitlist_entries_position ON waitlist_entries(chef_id, position) WHERE status = 'waiting';
-CREATE INDEX idx_waitlist_entries_date ON waitlist_entries(chef_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_waitlist_entries_chef ON waitlist_entries(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_waitlist_entries_position ON waitlist_entries(chef_id, position) WHERE status = 'waiting';
+CREATE INDEX IF NOT EXISTS idx_waitlist_entries_date ON waitlist_entries(chef_id, created_at);
 
 COMMENT ON TABLE waitlist_entries IS 'Walk-in waitlist queue. Tracks position, estimated wait, and status through seating.';
 
 ALTER TABLE waitlist_entries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS waitlist_entries_chef_policy ON waitlist_entries;
 CREATE POLICY waitlist_entries_chef_policy ON waitlist_entries
   USING (chef_id = (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1

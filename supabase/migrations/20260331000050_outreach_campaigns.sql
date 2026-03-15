@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS outreach_campaigns (
   updated_at            timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_outreach_campaigns_chef ON outreach_campaigns(chef_id);
-CREATE INDEX idx_outreach_campaigns_status ON outreach_campaigns(chef_id, status);
-CREATE INDEX idx_outreach_campaigns_instantly ON outreach_campaigns(instantly_campaign_id) WHERE instantly_campaign_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_outreach_campaigns_chef ON outreach_campaigns(chef_id);
+CREATE INDEX IF NOT EXISTS idx_outreach_campaigns_status ON outreach_campaigns(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_outreach_campaigns_instantly ON outreach_campaigns(instantly_campaign_id) WHERE instantly_campaign_id IS NOT NULL;
 
 ALTER TABLE outreach_campaigns ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Chefs manage own outreach campaigns"
@@ -42,7 +42,7 @@ DO $$
 BEGIN
   -- Link prospect to an outreach campaign
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'prospects' AND column_name = 'outreach_campaign_id') THEN
-    ALTER TABLE prospects ADD COLUMN outreach_campaign_id uuid REFERENCES outreach_campaigns(id) ON DELETE SET NULL;
+    ALTER TABLE prospects ADD COLUMN IF NOT EXISTS outreach_campaign_id uuid REFERENCES outreach_campaigns(id) ON DELETE SET NULL;
   END IF;
 
   -- Instantly's internal lead ID for API sync
@@ -52,23 +52,23 @@ BEGIN
 
   -- Email delivery tracking timestamps
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'prospects' AND column_name = 'email_sent_at') THEN
-    ALTER TABLE prospects ADD COLUMN email_sent_at timestamptz;
+    ALTER TABLE prospects ADD COLUMN IF NOT EXISTS email_sent_at timestamptz;
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'prospects' AND column_name = 'email_opened_at') THEN
-    ALTER TABLE prospects ADD COLUMN email_opened_at timestamptz;
+    ALTER TABLE prospects ADD COLUMN IF NOT EXISTS email_opened_at timestamptz;
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'prospects' AND column_name = 'reply_received_at') THEN
-    ALTER TABLE prospects ADD COLUMN reply_received_at timestamptz;
+    ALTER TABLE prospects ADD COLUMN IF NOT EXISTS reply_received_at timestamptz;
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'prospects' AND column_name = 'reply_sentiment') THEN
-    ALTER TABLE prospects ADD COLUMN reply_sentiment text CHECK (reply_sentiment IN ('interested', 'not_interested', 'unknown'));
+    ALTER TABLE prospects ADD COLUMN IF NOT EXISTS reply_sentiment text CHECK (reply_sentiment IN ('interested', 'not_interested', 'unknown'));
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'prospects' AND column_name = 'reply_text') THEN
-    ALTER TABLE prospects ADD COLUMN reply_text text;
+    ALTER TABLE prospects ADD COLUMN IF NOT EXISTS reply_text text;
   END IF;
 END $$;
 

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Copy, Plus, Trash2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { createApiKey, revokeApiKey } from '@/lib/api/key-actions'
+import { useConfirm } from '@/lib/hooks/use-confirm'
 
 interface ApiKey {
   id: string
@@ -22,6 +23,7 @@ export function ApiKeyManager({ apiKeys }: { apiKeys: ApiKey[] }) {
   const [keyName, setKeyName] = useState('')
   const [newKey, setNewKey] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const { confirm, ConfirmDialog } = useConfirm()
 
   function handleCreate() {
     if (!keyName.trim()) return toast.error('Name is required')
@@ -38,7 +40,15 @@ export function ApiKeyManager({ apiKeys }: { apiKeys: ApiKey[] }) {
     })
   }
 
-  function handleRevoke(id: string) {
+  async function handleRevoke(id: string) {
+    const ok = await confirm({
+      title: 'Revoke this API key?',
+      description:
+        'Any integration using this key will stop working immediately. This cannot be undone.',
+      confirmLabel: 'Revoke Key',
+      variant: 'danger',
+    })
+    if (!ok) return
     startTransition(async () => {
       try {
         await revokeApiKey(id)
@@ -51,6 +61,7 @@ export function ApiKeyManager({ apiKeys }: { apiKeys: ApiKey[] }) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog />
       {newKey && (
         <Card className="border-green-300 bg-green-950">
           <CardContent className="py-4">

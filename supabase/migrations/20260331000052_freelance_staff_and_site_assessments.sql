@@ -66,10 +66,11 @@ CREATE TABLE IF NOT EXISTS event_site_assessments (
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_site_assessments_event ON event_site_assessments(event_id);
-CREATE INDEX idx_site_assessments_chef ON event_site_assessments(chef_id);
-CREATE INDEX idx_site_assessments_venue ON event_site_assessments(chef_id, venue_name);
+CREATE INDEX IF NOT EXISTS idx_site_assessments_event ON event_site_assessments(event_id);
+CREATE INDEX IF NOT EXISTS idx_site_assessments_chef ON event_site_assessments(chef_id);
+CREATE INDEX IF NOT EXISTS idx_site_assessments_venue ON event_site_assessments(chef_id, venue_name);
 
+DROP TRIGGER IF EXISTS trg_site_assessments_updated_at ON event_site_assessments;
 CREATE TRIGGER trg_site_assessments_updated_at
   BEFORE UPDATE ON event_site_assessments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -82,6 +83,7 @@ COMMENT ON TABLE event_site_assessments IS 'Structured venue evaluation for firs
 
 ALTER TABLE event_site_assessments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS site_assessments_chef_all ON event_site_assessments;
 CREATE POLICY site_assessments_chef_all ON event_site_assessments
   FOR ALL
   USING (chef_id IN (SELECT id FROM chefs WHERE user_id = auth.uid()))

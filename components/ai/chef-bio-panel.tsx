@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { UserCircle, Copy, Loader2, Sparkles } from '@/components/ui/icons'
+import { UserCircle, Copy, Sparkles } from '@/components/ui/icons'
+import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateChefBioDraft, type ChefBioDraft } from '@/lib/ai/chef-bio'
@@ -40,10 +41,7 @@ export function ChefBioPanel() {
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Writing...
-              </>
+              <TaskLoader contextId="ai-chef-bio" />
             ) : (
               <>
                 <Sparkles className="w-3 h-3 mr-1" />
@@ -78,7 +76,7 @@ export function ChefBioPanel() {
             </button>
           ))}
           <Button variant="ghost" onClick={run} disabled={loading}>
-            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Redo'}
+            {loading ? <TaskLoader message="Regenerating..." iconSize={12} /> : 'Redo'}
           </Button>
         </div>
       </div>

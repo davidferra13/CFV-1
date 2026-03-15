@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Loader2, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { FileText, Download, Sparkles, AlertTriangle } from '@/components/ui/icons'
+import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { generateContract, type GeneratedContract } from '@/lib/ai/contract-generator'
@@ -47,10 +48,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Drafting...
-              </>
+              <TaskLoader contextId="gen-contract" />
             ) : (
               <>
                 <Sparkles className="w-3 h-3 mr-1" />
@@ -83,7 +81,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
             {expanded ? 'Collapse' : 'Expand'}
           </Button>
           <Button variant="ghost" onClick={run} disabled={loading}>
-            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Regenerate'}
+            {loading ? <TaskLoader message="Regenerating..." iconSize={12} /> : 'Regenerate'}
           </Button>
         </div>
       </div>

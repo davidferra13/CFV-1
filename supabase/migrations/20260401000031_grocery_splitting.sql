@@ -4,7 +4,7 @@
 -- ============================================
 -- grocery_trips: one shopping trip
 -- ============================================
-CREATE TABLE grocery_trips (
+CREATE TABLE IF NOT EXISTS grocery_trips (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id     uuid NOT NULL REFERENCES chefs(id),
   store_name  text,
@@ -21,13 +21,13 @@ CREATE POLICY "chef_own_trips"
   USING (chef_id = auth.uid())
   WITH CHECK (chef_id = auth.uid());
 
-CREATE INDEX idx_grocery_trips_chef ON grocery_trips(chef_id);
-CREATE INDEX idx_grocery_trips_date ON grocery_trips(chef_id, trip_date);
+CREATE INDEX IF NOT EXISTS idx_grocery_trips_chef ON grocery_trips(chef_id);
+CREATE INDEX IF NOT EXISTS idx_grocery_trips_date ON grocery_trips(chef_id, trip_date);
 
 -- ============================================
 -- grocery_trip_items: individual line items
 -- ============================================
-CREATE TABLE grocery_trip_items (
+CREATE TABLE IF NOT EXISTS grocery_trip_items (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id     uuid NOT NULL REFERENCES grocery_trips(id) ON DELETE CASCADE,
   item_name   text NOT NULL,
@@ -59,12 +59,12 @@ CREATE POLICY "chef_own_trip_items"
     )
   );
 
-CREATE INDEX idx_trip_items_trip ON grocery_trip_items(trip_id);
+CREATE INDEX IF NOT EXISTS idx_trip_items_trip ON grocery_trip_items(trip_id);
 
 -- ============================================
 -- grocery_trip_splits: how costs are divided
 -- ============================================
-CREATE TABLE grocery_trip_splits (
+CREATE TABLE IF NOT EXISTS grocery_trip_splits (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id      uuid NOT NULL REFERENCES grocery_trips(id) ON DELETE CASCADE,
   item_id      uuid REFERENCES grocery_trip_items(id) ON DELETE CASCADE,
@@ -95,5 +95,5 @@ CREATE POLICY "chef_own_trip_splits"
     )
   );
 
-CREATE INDEX idx_trip_splits_trip ON grocery_trip_splits(trip_id);
-CREATE INDEX idx_trip_splits_client ON grocery_trip_splits(client_id);
+CREATE INDEX IF NOT EXISTS idx_trip_splits_trip ON grocery_trip_splits(trip_id);
+CREATE INDEX IF NOT EXISTS idx_trip_splits_client ON grocery_trip_splits(client_id);

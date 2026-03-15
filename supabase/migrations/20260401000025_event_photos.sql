@@ -62,6 +62,7 @@ CREATE INDEX IF NOT EXISTS idx_event_photos_type
 -- =====================================================================================
 
 -- Anyone can view public portfolio photos (for chef website embedding)
+DROP POLICY IF EXISTS event_photos_public_select ON event_photos;
 CREATE POLICY event_photos_public_select ON event_photos
   FOR SELECT
   USING (

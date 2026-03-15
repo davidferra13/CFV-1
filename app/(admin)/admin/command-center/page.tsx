@@ -7,6 +7,8 @@ import {
   getGlobalNotificationFeed,
   getGlobalSocialFeed,
 } from '@/lib/admin/owner-observability'
+import { safeFetchAll } from '@/lib/utils/safe-fetch'
+import { ErrorState } from '@/components/ui/error-state'
 
 function formatDate(value: string | null) {
   if (!value) return '-'
@@ -20,12 +22,23 @@ export default async function AdminCommandCenterPage() {
     redirect('/unauthorized')
   }
 
-  const [conversations, social, hubGroups, notifications] = await Promise.all([
-    getGlobalConversationList({ limit: 10 }),
-    getGlobalSocialFeed({ limit: 10 }),
-    getGlobalHubGroups({ limit: 10 }),
-    getGlobalNotificationFeed({ limit: 20 }),
-  ])
+  const result = await safeFetchAll({
+    conversations: () => getGlobalConversationList({ limit: 10 }),
+    social: () => getGlobalSocialFeed({ limit: 10 }),
+    hubGroups: () => getGlobalHubGroups({ limit: 10 }),
+    notifications: () => getGlobalNotificationFeed({ limit: 20 }),
+  })
+
+  if (result.error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-slate-900">Owner Command Center</h1>
+        <ErrorState title="Could not load command center data" description={result.error} />
+      </div>
+    )
+  }
+
+  const { conversations, social, hubGroups, notifications } = result.data
 
   return (
     <div className="space-y-6">

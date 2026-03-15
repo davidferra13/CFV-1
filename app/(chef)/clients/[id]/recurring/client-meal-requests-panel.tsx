@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import {
   fulfillClientMealRequest,
@@ -112,7 +113,9 @@ export function ClientMealRequestsPanel({ requests }: ClientMealRequestsPanelPro
         setSuccess(`Request ${status}.`)
         router.refresh()
       } catch (err: any) {
-        setError(err?.message || 'Could not update this request')
+        const msg = err?.message || 'Could not update this request'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }
@@ -129,12 +132,15 @@ export function ClientMealRequestsPanel({ requests }: ClientMealRequestsPanelPro
           notes: notes.trim() || undefined,
         })
         setSuccess('Request fulfilled and added to dish history.')
+        toast.success('Request fulfilled')
         setFulfillRequestId(null)
         setReaction('')
         setNotes('')
         router.refresh()
       } catch (err: any) {
-        setError(err?.message || 'Could not fulfill this request')
+        const msg = err?.message || 'Could not fulfill this request'
+        setError(msg)
+        toast.error(msg)
       }
     })
   }

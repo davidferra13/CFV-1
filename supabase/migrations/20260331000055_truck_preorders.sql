@@ -26,8 +26,8 @@ CREATE POLICY "Chefs manage their own truck preorders"
   FOR ALL
   USING (tenant_id = auth.uid())
   WITH CHECK (tenant_id = auth.uid());
-CREATE INDEX idx_truck_preorders_tenant_date ON truck_preorders(tenant_id, pickup_date);
-CREATE INDEX idx_truck_preorders_schedule ON truck_preorders(schedule_id);
+CREATE INDEX IF NOT EXISTS idx_truck_preorders_tenant_date ON truck_preorders(tenant_id, pickup_date);
+CREATE INDEX IF NOT EXISTS idx_truck_preorders_schedule ON truck_preorders(schedule_id);
 ALTER TABLE truck_preorders
   ADD CONSTRAINT truck_preorders_status_check
   CHECK (status IN ('pending', 'confirmed', 'ready', 'picked_up', 'cancelled', 'no_show'));

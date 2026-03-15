@@ -32,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_testimonials_request_token
 ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
 
 -- Chef can read/write their own testimonials
+DROP POLICY IF EXISTS testimonials_chef_all ON testimonials;
 CREATE POLICY testimonials_chef_all ON testimonials
   FOR ALL
   USING (
@@ -48,11 +49,13 @@ CREATE POLICY testimonials_chef_all ON testimonials
   );
 
 -- Public read for approved + public testimonials (chef website display)
+DROP POLICY IF EXISTS testimonials_public_read ON testimonials;
 CREATE POLICY testimonials_public_read ON testimonials
   FOR SELECT
   USING (is_approved = true AND is_public = true);
 
 -- Service role can insert (for public token-based submissions)
+DROP POLICY IF EXISTS testimonials_service_insert ON testimonials;
 CREATE POLICY testimonials_service_insert ON testimonials
   FOR ALL
   USING (true)

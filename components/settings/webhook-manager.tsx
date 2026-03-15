@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { createWebhookEndpoint, deleteWebhookEndpoint } from '@/lib/webhooks/actions'
+import { useConfirm } from '@/lib/hooks/use-confirm'
 
 interface WebhookEndpoint {
   id: string
@@ -30,6 +31,7 @@ export function WebhookManager({ endpoints }: { endpoints: WebhookEndpoint[] }) 
   const [description, setDescription] = useState('')
   const [selectedEvents, setSelectedEvents] = useState<string[]>(['event.completed'])
   const [isPending, startTransition] = useTransition()
+  const { confirm, ConfirmDialog } = useConfirm()
 
   function toggleEvent(e: string) {
     setSelectedEvents((prev) => (prev.includes(e) ? prev.filter((x) => x !== e) : [...prev, e]))
@@ -55,7 +57,14 @@ export function WebhookManager({ endpoints }: { endpoints: WebhookEndpoint[] }) 
     })
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
+    const ok = await confirm({
+      title: 'Delete this webhook endpoint?',
+      description: 'External systems listening on this endpoint will stop receiving events.',
+      confirmLabel: 'Delete Endpoint',
+      variant: 'danger',
+    })
+    if (!ok) return
     startTransition(async () => {
       try {
         await deleteWebhookEndpoint(id)
@@ -68,6 +77,7 @@ export function WebhookManager({ endpoints }: { endpoints: WebhookEndpoint[] }) 
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog />
       <div className="flex justify-between items-center">
         <p className="text-sm text-stone-400">
           {endpoints.length} endpoint{endpoints.length !== 1 ? 's' : ''} configured

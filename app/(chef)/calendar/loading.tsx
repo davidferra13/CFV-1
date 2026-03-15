@@ -1,5 +1,6 @@
 // Calendar Loading Skeleton — monthly grid with event chips
 import { Card, CardContent } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -10,7 +11,7 @@ export default function CalendarLoading() {
     <div className="space-y-6">
       {/* Month nav */}
       <div className="flex items-center justify-between">
-        <Bone className="h-8 w-48" />
+        <ContextLoader contextId="nav-calendar" size="sm" className="py-0 items-start" />
         <div className="flex gap-2">
           <Bone className="h-9 w-9" />
           <Bone className="h-9 w-9" />

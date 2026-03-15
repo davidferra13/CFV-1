@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getMenus, getAllComponents } from '@/lib/menus/actions'
 import { getRecipes } from '@/lib/recipes/actions'
+import { safeFetchAll } from '@/lib/utils/safe-fetch'
+import { ErrorState } from '@/components/ui/error-state'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -17,11 +19,27 @@ export const metadata: Metadata = { title: 'Menu Cost - ChefFlow' }
 
 export default async function MenuCostPage() {
   await requireChef()
-  const [menus, components, recipes] = await Promise.all([
-    getMenus(),
-    getAllComponents(),
-    getRecipes(),
-  ])
+  const result = await safeFetchAll({
+    menus: () => getMenus(),
+    components: () => getAllComponents(),
+    recipes: () => getRecipes(),
+  })
+
+  if (result.error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-300">
+            ← Costing
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Menu Cost</h1>
+        </div>
+        <ErrorState title="Could not load menu cost data" description={result.error} />
+      </div>
+    )
+  }
+
+  const { menus, components, recipes } = result.data
 
   // Build recipe cost lookup
   const recipeCostMap = new Map<string, number>()

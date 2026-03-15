@@ -1,5 +1,6 @@
 // Settings Loading Skeleton — sectioned form layout
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
 
 function Bone({ className }: { className: string }) {
   return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
@@ -9,7 +10,7 @@ export default function SettingsLoading() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <Bone className="h-8 w-28" />
+        <ContextLoader contextId="nav-settings" size="sm" className="py-0 items-start" />
         <Bone className="h-4 w-64 mt-2" />
       </div>
 

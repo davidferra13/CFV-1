@@ -33,10 +33,10 @@ CREATE TABLE IF NOT EXISTS store_item_assignments (
 );
 
 -- Indexes for common queries
-CREATE INDEX idx_chef_preferred_stores_chef ON chef_preferred_stores(chef_id);
-CREATE INDEX idx_store_item_assignments_chef ON store_item_assignments(chef_id);
-CREATE INDEX idx_store_item_assignments_store ON store_item_assignments(store_id);
-CREATE INDEX idx_store_item_assignments_keyword ON store_item_assignments(chef_id, ingredient_keyword);
+CREATE INDEX IF NOT EXISTS idx_chef_preferred_stores_chef ON chef_preferred_stores(chef_id);
+CREATE INDEX IF NOT EXISTS idx_store_item_assignments_chef ON store_item_assignments(chef_id);
+CREATE INDEX IF NOT EXISTS idx_store_item_assignments_store ON store_item_assignments(store_id);
+CREATE INDEX IF NOT EXISTS idx_store_item_assignments_keyword ON store_item_assignments(chef_id, ingredient_keyword);
 
 -- RLS
 ALTER TABLE chef_preferred_stores ENABLE ROW LEVEL SECURITY;

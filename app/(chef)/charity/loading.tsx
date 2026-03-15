@@ -1,4 +1,5 @@
 // Charity Hub Loading Skeleton — header + stat cards + 4 collapsible sections
+import { ContextLoader } from '@/components/ui/context-loader'
 import { Card } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
@@ -10,7 +11,7 @@ export default function CharityLoading() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Bone className="h-8 w-44" />
+        <ContextLoader contextId="nav-dashboard" size="sm" className="py-0 items-start" />
         <Bone className="h-4 w-80 mt-2" />
       </div>
 

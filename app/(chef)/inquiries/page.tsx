@@ -38,6 +38,8 @@ import {
 import { AlertTriangle, Clock, TrendingUp, BarChart3 } from '@/components/ui/icons'
 import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-bar'
 import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
+import { safeFetch } from '@/lib/utils/safe-fetch'
+import { ErrorState } from '@/components/ui/error-state'
 
 type InquiryFilter =
   | 'all'
@@ -239,13 +241,17 @@ async function InquiryList({
 }) {
   await requireChef()
 
-  const [allInquiries, bookingScores, urgencies] = await Promise.all([
-    getInquiries(),
+  const inquiriesResult = await safeFetch(() => getInquiries())
+  if (inquiriesResult.error) {
+    return <ErrorState title="Could not load inquiries" description={inquiriesResult.error} />
+  }
+
+  const [bookingScores, urgencies] = await Promise.all([
     getBookingScoresForOpenInquiries().catch(() => [] as BookingScore[]),
     getInquiryUrgencies().catch(() => [] as InquiryUrgency[]),
   ])
 
-  let inquiries = allInquiries
+  let inquiries = inquiriesResult.data
 
   // Apply channel filter
   if (channelFilter) {

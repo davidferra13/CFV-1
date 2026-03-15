@@ -8,6 +8,7 @@
 
 -- ─── 1. Client can create conversations ────────────────────────────────────
 
+DROP POLICY IF EXISTS conversations_client_insert ON conversations;
 CREATE POLICY conversations_client_insert ON conversations
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'client' AND
@@ -15,6 +16,7 @@ CREATE POLICY conversations_client_insert ON conversations
   );
 -- ─── 2. Client can add participants to their conversations ─────────────────
 
+DROP POLICY IF EXISTS conv_participants_client_insert ON conversation_participants;
 CREATE POLICY conv_participants_client_insert ON conversation_participants
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'client' AND

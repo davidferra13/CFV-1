@@ -6,6 +6,7 @@ interface CheckboxGroupProps {
   value: string[]
   onValueChange: (value: string[]) => void
   required?: boolean
+  error?: string
 }
 
 export function CheckboxGroup({
@@ -14,6 +15,7 @@ export function CheckboxGroup({
   value,
   onValueChange,
   required,
+  error,
 }: CheckboxGroupProps) {
   const toggle = (option: string) => {
     if (value.includes(option)) {
@@ -54,6 +56,11 @@ export function CheckboxGroup({
           )
         })}
       </div>
+      {error && (
+        <p className="mt-1.5 text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      )}
     </fieldset>
   )
 }
