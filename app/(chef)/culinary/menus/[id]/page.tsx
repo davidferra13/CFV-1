@@ -6,6 +6,7 @@ import { MenuCostSidebar } from '@/components/culinary/menu-cost-sidebar'
 import { MenuBreakdownView } from '@/components/culinary/menu-breakdown-view'
 import { MenuScaleDialog } from '@/components/culinary/menu-scale-dialog'
 import { MenuContextSidebar } from '@/components/culinary/menu-context-sidebar'
+import { MenuAssemblyBrowser } from '@/components/culinary/menu-assembly-browser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,17 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
   // menu name + cuisine type for a more relevant image.
   const searchQuery = [menu.name, menu.cuisine_type].filter(Boolean).join(' ')
   const placeholderImage = await getPlaceholderImage(searchQuery)
+
+  // Extract unique courses for the assembly browser
+  const courseMap = new Map<number, { courseNumber: number; courseName: string }>()
+  for (const d of (menu.dishes || []) as any[]) {
+    if (!courseMap.has(d.course_number)) {
+      courseMap.set(d.course_number, { courseNumber: d.course_number, courseName: d.course_name })
+    }
+  }
+  const existingCourses = Array.from(courseMap.values()).sort(
+    (a, b) => a.courseNumber - b.courseNumber
+  )
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -47,6 +59,11 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
         {/* Main editor column */}
         <div className="flex-1 min-w-0 space-y-2">
           <FoodPlaceholderImage image={placeholderImage} size="hero" />
+          <MenuAssemblyBrowser
+            menuId={menu.id}
+            menuStatus={menu.status}
+            existingCourses={existingCourses}
+          />
           <MenuEditorClient menu={menu} />
           <MenuBreakdownView menuId={menu.id} className="mt-4" />
         </div>
