@@ -38,6 +38,8 @@ import {
 import { AlertTriangle, Clock, TrendingUp, BarChart3 } from '@/components/ui/icons'
 import { PipelineSummaryBar } from '@/components/intelligence/pipeline-summary-bar'
 import { InquiryTriageBar } from '@/components/intelligence/inquiry-triage-bar'
+import { getPlatformAnalytics } from '@/lib/inquiries/platform-analytics'
+import { PlatformAnalyticsCard } from '@/components/inquiries/platform-analytics-card'
 import { safeFetch } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 
@@ -228,6 +230,11 @@ function InquiryRow({
       </div>
     </Link>
   )
+}
+
+async function PlatformAnalyticsSection() {
+  const analytics = await getPlatformAnalytics()
+  return <PlatformAnalyticsCard analytics={analytics} />
 }
 
 async function InquiryList({
@@ -519,6 +526,11 @@ export default async function InquiriesPage({
       {/* Inquiry Triage & Communication */}
       <Suspense fallback={null}>
         <InquiryTriageBar />
+      </Suspense>
+
+      {/* Platform Analytics */}
+      <Suspense fallback={null}>
+        <PlatformAnalyticsSection />
       </Suspense>
 
       {/* View wrapper: manages list/kanban toggle */}
