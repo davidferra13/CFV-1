@@ -1,45 +1,57 @@
 export const PLATFORM_NAME = 'ChefFlow'
 
 export const PLATFORM_AUDIENCE_LABEL =
-  'private chefs, personal chefs, caterers, and chef-led service businesses'
+  'private chefs, caterers, meal prep chefs, restaurants, food trucks, and bakeries'
 
-export const PLATFORM_TAGLINE =
-  'The chef-owned business layer for private chefs growing beyond booking platforms.'
+export const PLATFORM_TAGLINE = 'Discover what to eat.'
 
-export const PLATFORM_META_DESCRIPTION = `Chef-owned operating system for ${PLATFORM_AUDIENCE_LABEL}. Keep your booking channels working for demand while ChefFlow handles client memory, service ops, payments, margins, and repeat business in one place.`
+export const PLATFORM_META_DESCRIPTION =
+  'Find private chefs, caterers, restaurants, food trucks, bakeries, and more near you. Browse menus, explore cuisines, and connect directly with food providers in your area.'
 
 export const PLATFORM_SHORT_DESCRIPTION =
-  'Keep booking demand flowing while you run client memory, service ops, and repeat business in one place.'
+  'Discover chefs, restaurants, and food experiences near you.'
 
-export const PLATFORM_HERO_HEADLINE =
-  'Keep your bookings. Run the rest of your business in ChefFlow.'
+export const PLATFORM_HERO_HEADLINE = 'Find exactly what you want to eat.'
 
 export const PLATFORM_HERO_COPY =
-  'ChefFlow is the chef-owned layer for private chefs who already book through marketplaces, referrals, and direct leads. Keep the booking channels that bring demand. Own the client memory, service ops, margins, and repeat business.'
+  'Browse private chefs, restaurants, caterers, food trucks, and bakeries in your area. Explore menus, compare styles, and connect directly with the people who make your food.'
 
 export const PLATFORM_KEYWORDS = [
+  // Consumer-facing (primary)
+  'find food near me',
+  'private chef near me',
+  'hire a private chef',
+  'book a caterer',
+  'restaurants near me',
+  'food trucks near me',
+  'bakeries near me',
+  'private dining experience',
+  'chef for dinner party',
+  'meal prep delivery',
+  'find a caterer',
+  'personal chef for hire',
+  'browse local food',
+  'food discovery',
+  // Operator-facing (secondary)
+  'chef business software',
   'private chef software',
-  'personal chef software',
   'catering management software',
-  'private chef crm',
-  'chef business operating system',
-  'private chef client management',
-  'private chef scheduling software',
-  'private chef invoicing software',
-  'private chef profit tracking',
-  'booking platform companion for chefs',
-  'marketplace to direct booking',
-  'chef client retention software',
+  'restaurant management platform',
+  'food truck operations software',
+  'bakery order management',
+  'chef operating system',
+  'food business management',
 ]
 
 export const PLATFORM_STRUCTURED_DATA_FEATURES = [
+  'Food provider discovery and search',
+  'Chef, restaurant, and food truck directory',
+  'Direct connection to food providers',
+  'Menu browsing and cuisine exploration',
+  'Online booking for private chefs and caterers',
   'Client CRM and household memory',
-  'Marketplace booking capture and follow-up',
   'Orders, proposals, and event workflows',
   'Menus, recipes, and food costing',
   'Invoices, payouts, and expense tracking',
-  'Client portal with approvals and updates',
   'Calendar, staffing, and service scheduling',
-  'Kitchen, prep, and event coordination',
-  'Direct booking conversion and repeat client workflows',
 ]

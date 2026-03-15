@@ -1,5 +1,4 @@
-// Chef Directory Hero — warm, inviting, TakeAChef-inspired
-// Sets the tone: premium private dining experience, not a generic marketplace
+// Chef Directory Hero - consumer-first food discovery framing
 
 export function ChefHero() {
   return (
@@ -10,15 +9,15 @@ export function ChefHero() {
 
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28 lg:px-8">
         <p className="mb-4 rounded-full border border-brand-400/30 bg-brand-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-300">
-          Private Chef Directory
+          Food Directory
         </p>
 
         <h1 className="max-w-3xl text-4xl font-display tracking-tight text-white md:text-5xl lg:text-6xl">
-          Find the right chef for your event.
+          Discover chefs and food near you.
         </h1>
 
         <p className="mt-6 max-w-xl text-base leading-relaxed text-stone-300 md:text-lg">
-          Browse vetted chefs, compare styles, and send an inquiry in minutes.
+          Browse by cuisine, service type, or location. Connect directly with providers.
         </p>
 
         <div className="mt-8 flex items-center gap-6 text-sm text-stone-300">
@@ -30,7 +29,7 @@ export function ChefHero() {
                 clipRule="evenodd"
               />
             </svg>
-            Free to inquire
+            Free to browse
           </span>
           <span className="flex items-center gap-2">
             <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
@@ -40,7 +39,7 @@ export function ChefHero() {
                 clipRule="evenodd"
               />
             </svg>
-            Custom menus
+            No middleman
           </span>
           <span className="flex items-center gap-2">
             <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
@@ -50,7 +49,7 @@ export function ChefHero() {
                 clipRule="evenodd"
               />
             </svg>
-            Home or venue
+            Connect directly
           </span>
         </div>
       </div>

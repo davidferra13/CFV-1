@@ -7,6 +7,7 @@ import { SwRegister } from '@/components/pwa/sw-register'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
+import { GlobalTooltipProvider } from '@/components/ui/global-tooltip-provider'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -31,11 +32,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChefFlow - Private Chef Business Software',
+    default: 'ChefFlow - Discover Chefs, Restaurants, and Food Near You',
     template: '%s | ChefFlow',
   },
   description:
-    'Ops for Artists - The business operating system built by a chef, for chefs. Manage events, clients, menus, and payments from one calm workspace.',
+    'Find private chefs, caterers, restaurants, food trucks, and bakeries near you. Browse menus, explore cuisines, and connect directly with food providers.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -53,16 +54,17 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: 'ChefFlow - Private Chef Business Software',
-    description: 'Ops for Artists - The business operating system built by a chef, for chefs.',
+    title: 'ChefFlow - Discover Chefs, Restaurants, and Food Near You',
+    description:
+      'Find private chefs, caterers, restaurants, food trucks, and bakeries near you. Browse menus and connect directly.',
     siteName: 'ChefFlow',
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow - Private Chef Business Software',
-    description: 'Ops for Artists - The business OS built by a chef, for chefs.',
+    title: 'ChefFlow - Discover Chefs, Restaurants, and Food Near You',
+    description: 'Find private chefs, caterers, restaurants, food trucks, and bakeries near you.',
   },
   robots: {
     index: true,
@@ -116,10 +118,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <IconProvider>
           <ColorPaletteProvider>
             <PostHogProvider>
-              <Suspense fallback={null}>
-                <PerformanceTelemetry />
-              </Suspense>
-              {children}
+              <GlobalTooltipProvider>
+                <Suspense fallback={null}>
+                  <PerformanceTelemetry />
+                </Suspense>
+                {children}
+              </GlobalTooltipProvider>
             </PostHogProvider>
           </ColorPaletteProvider>
         </IconProvider>

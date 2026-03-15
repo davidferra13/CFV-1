@@ -2,24 +2,23 @@ import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_HREF } from '@/lib/marketing/launch-mode'
-import {
-  PLATFORM_AUDIENCE_LABEL,
-  PLATFORM_SHORT_DESCRIPTION,
-} from '@/lib/marketing/platform-positioning'
+import { PLATFORM_SHORT_DESCRIPTION } from '@/lib/marketing/platform-positioning'
 
 const FOOTER_LINKS = {
-  product: [
+  discover: [
     { href: '/', label: 'Home' },
-    { href: '/compare', label: 'Compare' },
-    { href: '/chefs', label: 'Find a Chef' },
-    { href: '/pricing', label: 'Pricing' },
+    { href: '/chefs', label: 'Explore' },
+    { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
   ],
+  forOperators: [
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/compare', label: 'Compare Plans' },
+    { href: '/partner-signup', label: 'Become a Partner' },
+  ],
   resources: [
-    { href: '/blog', label: 'Blog' },
     { href: '/faq', label: 'FAQ' },
     { href: '/trust', label: 'Trust Center' },
-    { href: '/partner-signup', label: 'Become a Partner' },
   ],
   legal: [
     { href: '/privacy', label: 'Privacy Policy' },
@@ -30,10 +29,6 @@ const FOOTER_LINKS = {
 export function PublicFooter() {
   const year = new Date().getFullYear()
   const isBeta = LAUNCH_MODE === 'beta'
-  const resourcesLinks = [
-    ...FOOTER_LINKS.resources,
-    { href: PRIMARY_SIGNUP_HREF, label: isBeta ? 'Join Beta' : 'Sign up' },
-  ]
 
   return (
     <footer className="border-t border-stone-700/50 bg-stone-950/60 backdrop-blur-sm">
@@ -44,22 +39,19 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            Built for {PLATFORM_AUDIENCE_LABEL}. Keep marketplace demand flowing while ChefFlow runs
-            your client memory, service ops, follow-up, and payments in one workspace.
-          </p>
-          <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-500/80">
-            Ops for Artists
+            Discover private chefs, caterers, restaurants, food trucks, and bakeries near you.
+            Connect directly with providers and explore what to eat.
           </p>
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-stone-100">Product</p>
+          <p className="text-sm font-semibold text-stone-100">Discover</p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_LINKS.product.map((link) => (
+            {FOOTER_LINKS.discover.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-stone-400 hover:text-stone-100 transition-colors"
+                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
                 >
                   {link.label}
                 </Link>
@@ -69,13 +61,35 @@ export function PublicFooter() {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-stone-100">Resources</p>
+          <p className="text-sm font-semibold text-stone-100">For Operators</p>
           <ul className="mt-4 space-y-2">
-            {resourcesLinks.map((link) => (
+            {FOOTER_LINKS.forOperators.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-stone-400 hover:text-stone-100 transition-colors"
+                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                href={PRIMARY_SIGNUP_HREF}
+                className="text-sm text-brand-400 transition-colors hover:text-brand-300"
+              >
+                {isBeta ? 'Join the Beta' : 'List Your Business'}
+              </Link>
+            </li>
+          </ul>
+
+          <p className="mt-6 text-sm font-semibold text-stone-100">Resources</p>
+          <ul className="mt-3 space-y-2">
+            {FOOTER_LINKS.resources.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
                 >
                   {link.label}
                 </Link>
@@ -86,8 +100,8 @@ export function PublicFooter() {
 
         <div>
           <p className="text-sm font-semibold text-stone-100">Stay Updated</p>
-          <p className="mt-4 mb-3 text-sm text-stone-400">
-            Short guides for modern food-business operations.
+          <p className="mb-3 mt-4 text-sm text-stone-400">
+            Tips and guides for finding great food experiences.
           </p>
           <NewsletterSignup />
 
@@ -97,7 +111,7 @@ export function PublicFooter() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-stone-400 hover:text-stone-100 transition-colors"
+                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
                 >
                   {link.label}
                 </Link>
