@@ -13,7 +13,7 @@ interface Props {
   initialEntries: MileageEntry[]
 }
 
-const IRS_RATE_DISPLAY = '67¢/mi' // 2024 IRS rate
+const IRS_RATE_DISPLAY = '72.5¢/mi' // 2026 IRS rate
 
 export function MileageLogPanel({ eventId, initialEntries }: Props) {
   const [entries, setEntries] = useState(initialEntries)

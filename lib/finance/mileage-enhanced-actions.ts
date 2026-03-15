@@ -51,8 +51,8 @@ export type LogRoundTripInput = z.infer<typeof LogRoundTripSchema>
 
 const TaxYearSchema = z.number().int().min(2020).max(2030)
 
-// IRS standard mileage rate for 2026 (67 cents/mile)
-const MILEAGE_RATE_CENTS_2026 = 67
+// IRS standard mileage rate for 2026 (72.5 cents/mile)
+const MILEAGE_RATE_CENTS_2026 = 72.5
 
 // --- Actions ---
 
