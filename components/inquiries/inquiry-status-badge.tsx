@@ -42,6 +42,18 @@ const CHANNEL_CONFIG: Record<
   phone: { label: 'Phone', variant: 'default' },
   website: { label: 'Website', variant: 'info' },
   other: { label: 'Other', variant: 'default' },
+  thumbtack: { label: 'Thumbtack', variant: 'info' },
+  theknot: { label: 'The Knot', variant: 'info' },
+  bark: { label: 'Bark', variant: 'info' },
+  cozymeal: { label: 'Cozymeal', variant: 'info' },
+  google_business: { label: 'Google', variant: 'info' },
+  gigsalad: { label: 'GigSalad', variant: 'info' },
+  wix: { label: 'Wix', variant: 'info' },
+  referral: { label: 'Referral', variant: 'success' },
+  walk_in: { label: 'Walk-In', variant: 'default' },
+  outbound_prospecting: { label: 'Outbound', variant: 'warning' },
+  kiosk: { label: 'Kiosk', variant: 'default' },
+  campaign_response: { label: 'Campaign', variant: 'warning' },
 }
 
 export function InquiryChannelBadge({ channel }: { channel: string }) {

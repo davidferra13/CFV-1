@@ -11,6 +11,13 @@ import { Badge } from '@/components/ui/badge'
 const PLATFORM_DISPLAY: Record<string, { label: string; badge: string }> = {
   yhangry: { label: 'Yhangry', badge: 'Yhangry' },
   take_a_chef: { label: 'TakeAChef', badge: 'TakeAChef' },
+  thumbtack: { label: 'Thumbtack', badge: 'Thumbtack' },
+  theknot: { label: 'The Knot', badge: 'The Knot' },
+  bark: { label: 'Bark', badge: 'Bark' },
+  cozymeal: { label: 'Cozymeal', badge: 'Cozymeal' },
+  gigsalad: { label: 'GigSalad', badge: 'GigSalad' },
+  google_business: { label: 'Google Business', badge: 'Google' },
+  wix_forms: { label: 'Wix', badge: 'Wix' },
 }
 
 interface PlatformLinkBannerProps {
