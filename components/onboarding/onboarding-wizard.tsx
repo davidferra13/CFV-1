@@ -1,598 +1,367 @@
 'use client'
 
-// Onboarding Wizard — 5-step setup for new chefs
-// Steps: Profile → Branding → Public URL → Payments → Done
-// Each step saves immediately so progress is preserved if the chef
-// navigates away (e.g., to Stripe and back).
+import { useState, useEffect, useTransition } from 'react'
+import {
+  ONBOARDING_STEPS,
+  getOnboardingProgress,
+  completeStep,
+  skipStep,
+} from '@/lib/onboarding/onboarding-actions'
+import { ProfileStep } from './onboarding-steps/profile-step'
+import { ServicesStep } from './onboarding-steps/services-step'
+import { FirstClientStep } from './onboarding-steps/first-client-step'
+import { PricingStep } from './onboarding-steps/pricing-step'
 
-import { useState, useTransition, useCallback, useEffect, useRef } from 'react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { markOnboardingComplete, updateChefFullProfile } from '@/lib/chef/profile-actions'
-import { updateChefSlug, updateChefPortalTheme } from '@/lib/profile/actions'
-import { createConnectAccountLink } from '@/lib/stripe/connect'
-import { checkSlugAvailability } from '@/lib/onboarding/actions'
-import type { ConnectAccountStatus } from '@/lib/stripe/connect'
-import type { ChefFullProfile } from '@/lib/chef/profile-actions'
-
-// ─── Slug util (pure, client-side) ────────────────────────────────────────────
-
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 50)
+type ProgressEntry = {
+  step_key: string
+  completed_at: string | null
+  skipped: boolean
+  data: Record<string, unknown>
 }
 
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-
-const TOTAL_STEPS = 5
-
-function ProgressBar({ current, total }: { current: number; total: number }) {
-  const pct = Math.round((current / total) * 100)
-  return (
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-stone-500">
-          Step {current} of {total}
-        </span>
-        <span className="text-sm font-medium text-stone-500">{pct}%</span>
-      </div>
-      <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-brand-600 rounded-full transition-all duration-300"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-// ─── Step 1: Profile ──────────────────────────────────────────────────────────
-
-function Step1({
-  profile,
-  onSaveAndContinue,
-  onSkip,
-  saving,
-}: {
-  profile: ChefFullProfile | null
-  onSaveAndContinue: (displayName: string, bio: string) => void
-  onSkip: () => void
-  saving: boolean
-}) {
-  const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
-  const [bio, setBio] = useState(profile?.bio ?? '')
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-stone-900">Set Up Your Profile</h2>
-        <p className="mt-1 text-stone-500">Your name and bio appear on your public profile page</p>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="displayName" className="block text-sm font-medium text-stone-700 mb-1">
-            Display name
-          </label>
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder={profile?.business_name ?? 'Chef Maria'}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-          />
-          <p className="mt-1 text-xs text-stone-400">
-            Defaults to your business name if left blank
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="bio" className="block text-sm font-medium text-stone-700 mb-1">
-            Bio
-          </label>
-          <textarea
-            id="bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={4}
-            maxLength={1200}
-            placeholder="Tell clients a bit about your cooking style, background, and what makes your events special…"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-none"
-          />
-          <p className="mt-1 text-xs text-stone-400">{bio.length}/1200</p>
-        </div>
-
-        <p className="text-xs text-stone-400">
-          Profile photo can be added in{' '}
-          <a href="/settings/my-profile" className="underline">
-            Settings → My Profile
-          </a>
-          .
-        </p>
-      </div>
-
-      <div className="flex gap-3">
-        <Button
-          variant="primary"
-          loading={saving}
-          onClick={() => onSaveAndContinue(displayName, bio)}
-        >
-          Save &amp; Continue
-        </Button>
-        <Button variant="ghost" onClick={onSkip} disabled={saving}>
-          Skip for now
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Step 2: Branding ─────────────────────────────────────────────────────────
-
-function Step2({
-  profile,
-  onSaveAndContinue,
-  onSkip,
-  saving,
-}: {
-  profile: ChefFullProfile | null
-  onSaveAndContinue: (tagline: string, color: string) => void
-  onSkip: () => void
-  saving: boolean
-}) {
-  const [tagline, setTagline] = useState(profile?.tagline ?? '')
-  const [color, setColor] = useState('#18181b')
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-stone-900">Brand Your Portal</h2>
-        <p className="mt-1 text-stone-500">
-          A tagline and brand color make your client portal feel professional
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="tagline" className="block text-sm font-medium text-stone-700 mb-1">
-            Tagline
-          </label>
-          <input
-            id="tagline"
-            type="text"
-            value={tagline}
-            onChange={(e) => setTagline(e.target.value)}
-            maxLength={160}
-            placeholder="Restaurant-quality dining in your home"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="brandColor" className="block text-sm font-medium text-stone-700 mb-1">
-            Brand color
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              id="brandColor"
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="h-10 w-16 rounded border border-stone-300 cursor-pointer"
-            />
-            <span className="text-sm text-stone-600 font-mono">{color}</span>
-          </div>
-          <p className="mt-1 text-xs text-stone-400">
-            Used for buttons and accents in your client portal
-          </p>
-        </div>
-      </div>
-
-      <div className="flex gap-3">
-        <Button
-          variant="primary"
-          loading={saving}
-          onClick={() => onSaveAndContinue(tagline, color)}
-        >
-          Save &amp; Continue
-        </Button>
-        <Button variant="ghost" onClick={onSkip} disabled={saving}>
-          Skip for now
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Step 3: Public URL ───────────────────────────────────────────────────────
-
-type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
-
-function Step3({
-  profile,
-  onSaveAndContinue,
-  onSkip,
-  saving,
-}: {
-  profile: ChefFullProfile | null
-  onSaveAndContinue: (slug: string) => void
-  onSkip: () => void
-  saving: boolean
-}) {
-  const initialSlug = toSlug(profile?.display_name ?? profile?.business_name ?? '')
-  const [slug, setSlug] = useState(initialSlug)
-  const [slugStatus, setSlugStatus] = useState<SlugStatus>('idle')
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const checkSlug = useCallback(async (value: string) => {
-    if (!value || !/^[a-z0-9-]{3,50}$/.test(value)) {
-      setSlugStatus(value.length > 0 ? 'invalid' : 'idle')
-      return
-    }
-    setSlugStatus('checking')
-    try {
-      const available = await checkSlugAvailability(value)
-      setSlugStatus(available ? 'available' : 'taken')
-    } catch {
-      setSlugStatus('idle')
-    }
-  }, [])
+export function OnboardingWizard() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [progress, setProgress] = useState<ProgressEntry[]>([])
+  const [isComplete, setIsComplete] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => checkSlug(slug), 500)
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [slug, checkSlug])
+    loadProgress()
+  }, [])
 
-  const statusMessage: Record<SlugStatus, { text: string; color: string } | null> = {
-    idle: null,
-    checking: { text: 'Checking availability…', color: 'text-stone-400' },
-    available: { text: 'Available!', color: 'text-green-600' },
-    taken: { text: 'Already taken — try another', color: 'text-red-600' },
-    invalid: {
-      text: 'Only lowercase letters, numbers, and hyphens (min 3 chars)',
-      color: 'text-amber-600',
-    },
-  }
-
-  const canSave = slugStatus === 'available' && slug.length >= 3
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-stone-900">Your Public URL</h2>
-        <p className="mt-1 text-stone-500">Clients will find your profile at this address</p>
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="slug" className="block text-sm font-medium text-stone-700">
-          Profile URL
-        </label>
-        <div className="flex items-center border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500">
-          <span className="px-3 py-2 text-sm text-stone-400 bg-stone-50 border-r border-stone-300 whitespace-nowrap">
-            cheflowhq.com/chef/
-          </span>
-          <input
-            id="slug"
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value.toLowerCase())}
-            placeholder="your-name"
-            className="flex-1 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 outline-none"
-          />
-        </div>
-
-        {statusMessage[slugStatus] && (
-          <p className={`text-xs ${statusMessage[slugStatus]!.color}`}>
-            {statusMessage[slugStatus]!.text}
-          </p>
-        )}
-      </div>
-
-      <div className="flex gap-3">
-        <Button
-          variant="primary"
-          loading={saving}
-          disabled={!canSave}
-          onClick={() => onSaveAndContinue(slug)}
-        >
-          Save &amp; Continue
-        </Button>
-        <Button variant="ghost" onClick={onSkip} disabled={saving}>
-          Skip for now
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Step 4: Stripe Connect ────────────────────────────────────────────────────
-
-function Step4({
-  connectStatus,
-  onContinue,
-}: {
-  connectStatus: ConnectAccountStatus
-  onContinue: () => void
-}) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleConnect = async () => {
-    setLoading(true)
-    setError(null)
+  async function loadProgress() {
     try {
-      const { url } = await createConnectAccountLink(true)
-      window.location.href = url
+      const data = await getOnboardingProgress()
+      setProgress(data as ProgressEntry[])
+      // Find first incomplete step
+      const doneKeys = new Set(data.map((p: ProgressEntry) => p.step_key))
+      const firstIncomplete = ONBOARDING_STEPS.findIndex((s) => !doneKeys.has(s.key))
+      if (firstIncomplete === -1) {
+        setIsComplete(true)
+      } else {
+        setCurrentIndex(firstIncomplete)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start Stripe onboarding')
-      setLoading(false)
+      console.error('[onboarding] Failed to load progress', err)
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-stone-900">Get Paid</h2>
-        <p className="mt-1 text-stone-500">Connect Stripe so clients can pay you directly</p>
-      </div>
+  function handleComplete(data?: Record<string, unknown>) {
+    const stepKey = ONBOARDING_STEPS[currentIndex].key
+    const previousProgress = [...progress]
 
-      {connectStatus.connected ? (
-        <div className="bg-green-950 border border-green-200 rounded-xl p-4 space-y-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-green-800">
-            <span className="text-green-500">✓</span>
-            Stripe account connected
-          </div>
-          <div className="flex items-center gap-2 text-sm text-green-700">
-            <span className="text-green-500">✓</span>
-            Charges enabled — ready to accept payments
-          </div>
-          <div className="flex items-center gap-2 text-sm text-green-700">
-            <span className="text-green-500">✓</span>
-            Payouts enabled — funds transfer to your bank
-          </div>
-        </div>
-      ) : connectStatus.pending ? (
-        <div className="space-y-4">
-          <div className="bg-amber-950 border border-amber-200 rounded-xl p-4">
-            <p className="text-sm text-amber-800">
-              Your Stripe account was created but onboarding isn&apos;t complete yet. Click below to
-              continue where you left off.
-            </p>
-          </div>
-          <Button variant="primary" loading={loading} onClick={handleConnect}>
-            Continue Stripe Setup
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
-            <ul className="space-y-2 text-sm text-stone-600">
-              <li className="flex items-start gap-2">
-                <span className="text-brand-600 font-bold mt-0.5">→</span>
-                Direct deposits to your bank account
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-brand-600 font-bold mt-0.5">→</span>
-                Automatic payouts on your schedule
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-brand-600 font-bold mt-0.5">→</span>
-                Takes about 5 minutes — bank-level security
-              </li>
-            </ul>
-          </div>
-          <Button variant="primary" loading={loading} onClick={handleConnect}>
-            Connect Stripe Account
-          </Button>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-        </div>
-      )}
+    // Optimistic update
+    const newEntry: ProgressEntry = {
+      step_key: stepKey,
+      completed_at: new Date().toISOString(),
+      skipped: false,
+      data: data ?? {},
+    }
+    const updated = [...progress.filter((p) => p.step_key !== stepKey), newEntry]
+    setProgress(updated)
 
-      <button
-        type="button"
-        onClick={onContinue}
-        className="block text-sm text-stone-400 hover:text-stone-600 underline"
-      >
-        {connectStatus.connected
-          ? 'Continue to finish'
-          : 'Skip for now — connect later in Settings'}
-      </button>
-    </div>
-  )
-}
+    startTransition(async () => {
+      try {
+        const result = await completeStep(stepKey, data)
+        if (!result.success) {
+          setProgress(previousProgress)
+          return
+        }
+        advanceStep()
+      } catch (err) {
+        console.error('[onboarding] Failed to complete step', err)
+        setProgress(previousProgress)
+      }
+    })
+  }
 
-// ─── Step 5: Done ─────────────────────────────────────────────────────────────
+  function handleSkip() {
+    const stepKey = ONBOARDING_STEPS[currentIndex].key
+    const previousProgress = [...progress]
 
-function Step5({
-  connectStatus,
-  onFinish,
-  finishing,
-}: {
-  connectStatus: ConnectAccountStatus
-  onFinish: () => void
-  finishing: boolean
-}) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <div className="text-4xl mb-3">🎉</div>
-        <h2 className="text-2xl font-bold text-stone-900">You&apos;re All Set!</h2>
-        <p className="mt-1 text-stone-500">
-          Your ChefFlow account is ready. Here&apos;s what&apos;s been configured:
-        </p>
-      </div>
+    const newEntry: ProgressEntry = {
+      step_key: stepKey,
+      completed_at: null,
+      skipped: true,
+      data: {},
+    }
+    const updated = [...progress.filter((p) => p.step_key !== stepKey), newEntry]
+    setProgress(updated)
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm text-stone-700 bg-stone-50 rounded-lg px-3 py-2">
-          <span className="text-green-500">✓</span>
-          Profile and branding set up
-        </div>
-        <div className="flex items-center gap-2 text-sm text-stone-700 bg-stone-50 rounded-lg px-3 py-2">
-          <span className="text-green-500">✓</span>
-          Public profile URL configured
-        </div>
-        <div
-          className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
-            connectStatus.connected ? 'text-stone-700 bg-stone-50' : 'text-amber-700 bg-amber-950'
-          }`}
-        >
-          {connectStatus.connected ? (
-            <>
-              <span className="text-green-500">✓</span> Stripe payments connected
-            </>
-          ) : (
-            <>
-              <span className="text-amber-500">!</span> Stripe not connected — add later in Settings
-            </>
-          )}
-        </div>
-      </div>
+    startTransition(async () => {
+      try {
+        const result = await skipStep(stepKey)
+        if (!result.success) {
+          setProgress(previousProgress)
+          return
+        }
+        advanceStep()
+      } catch (err) {
+        console.error('[onboarding] Failed to skip step', err)
+        setProgress(previousProgress)
+      }
+    })
+  }
 
-      <Button variant="primary" size="lg" className="w-full" loading={finishing} onClick={onFinish}>
-        Go to Dashboard
-      </Button>
-    </div>
-  )
-}
-
-// ─── Main Wizard ──────────────────────────────────────────────────────────────
-
-interface OnboardingWizardProps {
-  profile: ChefFullProfile | null
-  connectStatus: ConnectAccountStatus
-  initialStep?: number
-}
-
-export function OnboardingWizard({
-  profile,
-  connectStatus,
-  initialStep = 1,
-}: OnboardingWizardProps) {
-  const router = useRouter()
-  const [step, setStep] = useState(initialStep)
-  const [isPending, startTransition] = useTransition()
-  const [stepError, setStepError] = useState<string | null>(null)
-
-  function goNext() {
-    setStepError(null)
-    setStep((s) => Math.min(TOTAL_STEPS, s + 1))
+  function advanceStep() {
+    if (currentIndex >= ONBOARDING_STEPS.length - 1) {
+      setIsComplete(true)
+    } else {
+      setCurrentIndex((i) => i + 1)
+    }
   }
 
   function goBack() {
-    setStepError(null)
-    setStep((s) => Math.max(1, s - 1))
+    if (currentIndex > 0) setCurrentIndex((i) => i - 1)
   }
 
-  async function handleProfileSave(displayName: string, bio: string) {
-    startTransition(async () => {
-      try {
-        await updateChefFullProfile({
-          display_name: displayName || undefined,
-          bio: bio || undefined,
-        })
-        goNext()
-      } catch (err) {
-        setStepError(err instanceof Error ? err.message : 'Failed to save profile')
-      }
-    })
+  function goToStep(index: number) {
+    setCurrentIndex(index)
+    if (isComplete) setIsComplete(false)
   }
 
-  async function handleBrandingSave(tagline: string, color: string) {
-    startTransition(async () => {
-      try {
-        await updateChefPortalTheme({
-          tagline: tagline || undefined,
-          portal_primary_color: /^#[0-9a-fA-F]{6}$/.test(color) ? color : undefined,
-        })
-        goNext()
-      } catch (err) {
-        setStepError(err instanceof Error ? err.message : 'Failed to save branding')
-      }
-    })
+  const completedCount = progress.filter((p) => p.completed_at).length
+  const percentComplete = Math.round((completedCount / ONBOARDING_STEPS.length) * 100)
+
+  if (isComplete) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="mx-auto max-w-lg text-center p-8">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+            <svg
+              className="h-10 w-10 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">You're all set!</h1>
+          <p className="mt-3 text-gray-600">
+            Your ChefFlow account is ready to go. You just replaced 8 apps in 10 minutes.
+          </p>
+          <div className="mt-8 flex gap-3 justify-center">
+            <a
+              href="/dashboard"
+              className="rounded-md bg-orange-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-orange-500"
+            >
+              Go to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  async function handleSlugSave(slug: string) {
-    startTransition(async () => {
-      try {
-        await updateChefSlug(slug)
-        goNext()
-      } catch (err) {
-        setStepError(err instanceof Error ? err.message : 'Failed to save URL')
-      }
-    })
-  }
-
-  function handleFinish() {
-    startTransition(async () => {
-      try {
-        await markOnboardingComplete()
-        router.push('/dashboard')
-      } catch (err) {
-        toast.error('Failed to complete onboarding')
-      }
-    })
-  }
+  const currentStep = ONBOARDING_STEPS[currentIndex]
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-xl">
-        <ProgressBar current={step} total={TOTAL_STEPS} />
+    <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      {/* Sidebar */}
+      <div className="hidden w-72 border-r border-orange-200 bg-white/80 backdrop-blur-sm p-6 lg:block">
+        <div className="mb-6">
+          <h1 className="text-lg font-bold text-gray-900">ChefFlow Setup</h1>
+          <p className="text-xs text-gray-500 mt-1">Replace 8 apps in 10 minutes</p>
+        </div>
 
-        <Card>
-          <CardContent className="pt-8 pb-8">
-            {step === 1 && (
-              <Step1
-                profile={profile}
-                onSaveAndContinue={handleProfileSave}
-                onSkip={goNext}
-                saving={isPending}
-              />
-            )}
-            {step === 2 && (
-              <Step2
-                profile={profile}
-                onSaveAndContinue={handleBrandingSave}
-                onSkip={goNext}
-                saving={isPending}
-              />
-            )}
-            {step === 3 && (
-              <Step3
-                profile={profile}
-                onSaveAndContinue={handleSlugSave}
-                onSkip={goNext}
-                saving={isPending}
-              />
-            )}
-            {step === 4 && <Step4 connectStatus={connectStatus} onContinue={goNext} />}
-            {step === 5 && (
-              <Step5 connectStatus={connectStatus} onFinish={handleFinish} finishing={isPending} />
-            )}
+        <nav className="space-y-1">
+          {ONBOARDING_STEPS.map((step, i) => {
+            const entry = progress.find((p) => p.step_key === step.key)
+            const isDone = !!entry?.completed_at
+            const isSkipped = !!entry?.skipped
+            const isCurrent = i === currentIndex
 
-            {stepError && <p className="mt-4 text-sm text-red-600">{stepError}</p>}
-          </CardContent>
+            return (
+              <button
+                key={step.key}
+                onClick={() => goToStep(i)}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                  isCurrent
+                    ? 'bg-orange-100 text-orange-900 font-medium'
+                    : isDone
+                      ? 'text-green-700 hover:bg-green-50'
+                      : isSkipped
+                        ? 'text-gray-400 hover:bg-gray-50'
+                        : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <span
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
+                    isCurrent
+                      ? 'bg-orange-600 text-white'
+                      : isDone
+                        ? 'bg-green-100 text-green-700'
+                        : isSkipped
+                          ? 'bg-gray-100 text-gray-400'
+                          : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {isDone ? (
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
+                </span>
+                <span className="truncate">{step.title}</span>
+              </button>
+            )
+          })}
+        </nav>
+      </div>
 
-          {step > 1 && step < TOTAL_STEPS && (
-            <div className="px-6 pb-6 border-t border-stone-100 pt-4">
-              <Button variant="ghost" onClick={goBack}>
-                Back
-              </Button>
-            </div>
+      {/* Main content */}
+      <div className="flex-1">
+        {/* Progress bar */}
+        <div className="border-b border-orange-200 bg-white/60 backdrop-blur-sm px-6 py-3">
+          <div className="flex items-center justify-between text-sm text-gray-600 mb-1.5">
+            <span>
+              Step {currentIndex + 1} of {ONBOARDING_STEPS.length}
+            </span>
+            <span>{percentComplete}% complete</span>
+          </div>
+          <div className="h-2 rounded-full bg-gray-200">
+            <div
+              className="h-2 rounded-full bg-orange-500 transition-all duration-300"
+              style={{ width: `${percentComplete}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Step content */}
+        <div className="mx-auto max-w-2xl px-6 py-10">
+          {/* Mobile step indicator */}
+          <div className="mb-6 lg:hidden">
+            <p className="text-xs text-gray-500 uppercase tracking-wide">{currentStep.title}</p>
+          </div>
+
+          {/* Back button */}
+          {currentIndex > 0 && (
+            <button
+              onClick={goBack}
+              disabled={isPending}
+              className="mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back
+            </button>
           )}
-        </Card>
+
+          {/* Render current step */}
+          {currentStep.key === 'profile' && (
+            <ProfileStep onComplete={handleComplete} onSkip={handleSkip} />
+          )}
+          {currentStep.key === 'services' && (
+            <ServicesStep onComplete={handleComplete} onSkip={handleSkip} />
+          )}
+          {currentStep.key === 'first_client' && (
+            <FirstClientStep onComplete={handleComplete} onSkip={handleSkip} />
+          )}
+          {currentStep.key === 'first_recipe' && (
+            <PlaceholderStep
+              title="Add your first recipe"
+              description="Add a signature dish from your repertoire. You can import recipes later too."
+              onComplete={() => handleComplete({})}
+              onSkip={handleSkip}
+            />
+          )}
+          {currentStep.key === 'first_event' && (
+            <PlaceholderStep
+              title="Create your first event"
+              description="Set up an upcoming event, dinner, or booking to see how ChefFlow manages your workflow."
+              onComplete={() => handleComplete({})}
+              onSkip={handleSkip}
+            />
+          )}
+          {currentStep.key === 'pricing' && (
+            <PricingStep onComplete={handleComplete} onSkip={handleSkip} />
+          )}
+          {currentStep.key === 'calendar' && (
+            <PlaceholderStep
+              title="Set your availability"
+              description="Define your working hours and days off so clients know when you're available."
+              onComplete={() => handleComplete({})}
+              onSkip={handleSkip}
+            />
+          )}
+          {currentStep.key === 'communication' && (
+            <PlaceholderStep
+              title="Communication preferences"
+              description="Configure how you receive inquiries and communicate with clients."
+              onComplete={() => handleComplete({})}
+              onSkip={handleSkip}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Placeholder for steps that don't have dedicated forms yet
+function PlaceholderStep({
+  title,
+  description,
+  onComplete,
+  onSkip,
+}: {
+  title: string
+  description: string
+  onComplete: () => void
+  onSkip: () => void
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+        <p className="mt-1 text-sm text-gray-500">{description}</p>
+      </div>
+
+      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+        <p className="text-sm text-gray-500">
+          Full form coming soon. For now, mark as complete or skip.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between pt-4">
+        <button
+          type="button"
+          onClick={onSkip}
+          className="text-sm text-gray-500 hover:text-gray-700 underline"
+        >
+          I'll do this later
+        </button>
+        <button
+          type="button"
+          onClick={onComplete}
+          className="rounded-md bg-orange-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        >
+          Mark Complete & Continue
+        </button>
       </div>
     </div>
   )
