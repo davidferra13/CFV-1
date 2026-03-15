@@ -1264,6 +1264,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: ShieldCheck,
     context: 'Settings',
   },
+  {
+    href: '/settings/platform-connections',
+    label: 'Platform Connections',
+    icon: Settings,
+    context: 'Settings',
+  },
   { href: '/settings/embed', label: 'Embed Widget', icon: Settings, context: 'Settings' },
   {
     href: '/settings/calendar-sync',
