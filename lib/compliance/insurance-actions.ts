@@ -1,8 +1,14 @@
 // @ts-nocheck - insurance_policies table pending schema migration
-'use server'
+//
+// DEFERRED: This file is inactive until the insurance_policies table migration
+// is applied. The 'use server' directive has been removed to prevent runtime
+// crashes from importing these functions. Re-enable once the schema exists.
+//
+// Original directive: 'use server'
 
-// Insurance Documentation Tracking - Server Actions
+// Insurance Documentation Tracking - Server Actions (DEFERRED)
 // CRUD for insurance_policies. All mutations are tenant-scoped via requireChef().
+// DO NOT import or call these functions until the table migration is complete.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -104,15 +110,12 @@ export async function getExpiringPolicies(daysAhead: number = 30): Promise<Insur
 
 export async function getInsuranceStats(): Promise<InsuranceStats> {
   const policies = await getInsurancePolicies()
-  const nonCancelled = policies.filter(p => p.computed_status !== 'cancelled')
-  const active = nonCancelled.filter(p => p.computed_status === 'active')
-  const expiringSoon = nonCancelled.filter(p => p.computed_status === 'expiring_soon')
-  const totalCoverageCents = active.reduce(
-    (sum, p) => sum + (p.coverage_amount_cents ?? 0),
-    0
-  )
+  const nonCancelled = policies.filter((p) => p.computed_status !== 'cancelled')
+  const active = nonCancelled.filter((p) => p.computed_status === 'active')
+  const expiringSoon = nonCancelled.filter((p) => p.computed_status === 'expiring_soon')
+  const totalCoverageCents = active.reduce((sum, p) => sum + (p.coverage_amount_cents ?? 0), 0)
   const nextExpiry = nonCancelled
-    .filter(p => new Date(p.end_date) >= new Date())
+    .filter((p) => new Date(p.end_date) >= new Date())
     .sort((a, b) => new Date(a.end_date).getTime() - new Date(b.end_date).getTime())[0]
 
   return {
