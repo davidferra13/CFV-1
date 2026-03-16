@@ -34,25 +34,47 @@ Lightweight error boundary for individual widgets/panels. Two modes:
 
 Unlike the full-page ErrorBoundary, this keeps the rest of the page functional when one widget crashes.
 
-### Direct Rollout (main branch, done by lead)
+### Form Protection Rollout (useProtectedForm + FormShield)
 
-| File                                                      | What Changed                                                  |
-| --------------------------------------------------------- | ------------------------------------------------------------- |
-| `app/(chef)/dashboard/page.tsx`                           | All 5 dashboard sections wrapped in `WidgetErrorBoundary`     |
-| `components/expenses/expense-actions.tsx`                 | Delete converted to `useDeferredAction` (8s undo window)      |
-| `app/(chef)/recipes/[id]/recipe-detail-client.tsx`        | Delete converted to `useDeferredAction` (8s undo window)      |
-| `app/(chef)/culinary/vendors/vendor-directory-client.tsx` | Delete converted to optimistic removal + `showUndoToast` (8s) |
-| `components/prospecting/script-editor.tsx`                | Full `useProtectedForm` + `FormShield` added                  |
+| File                                                   | What Changed                              |
+| ------------------------------------------------------ | ----------------------------------------- |
+| `components/prospecting/script-editor.tsx`             | Full protection added                     |
+| `components/settings/cancellation-policy-editor.tsx`   | Full protection + baseline data tracking  |
+| `app/(chef)/recipes/[id]/edit/edit-recipe-client.tsx`  | Full protection (25+ fields, ingredients) |
+| `app/(chef)/recipes/new/create-recipe-client.tsx`      | Full protection (new record drafts)       |
+| `app/(chef)/settings/my-profile/chef-profile-form.tsx` | Full protection (text fields only)        |
+| `components/expenses/expense-form.tsx`                 | Full protection (financial data)          |
+| `components/staff/staff-member-form.tsx`               | Full protection                           |
+| `components/contracts/contract-template-editor.tsx`    | Full protection (long-form text, 10s)     |
+| `components/menus/menu-doc-editor.tsx`                 | Full protection                           |
 
-### Parallel Agent Rollout (worktrees, pending merge)
+### Undo for Destructive Actions (useDeferredAction / showUndoToast)
 
-5 agents deployed to protect critical-risk forms:
+| File                                                          | What Changed                    |
+| ------------------------------------------------------------- | ------------------------------- |
+| `components/expenses/expense-actions.tsx`                     | 8s deferred delete with undo    |
+| `app/(chef)/recipes/[id]/recipe-detail-client.tsx`            | 8s deferred delete with undo    |
+| `app/(chef)/culinary/vendors/vendor-directory-client.tsx`     | Optimistic removal + undo toast |
+| `app/(chef)/marketing/templates/template-actions-client.tsx`  | 8s deferred delete with undo    |
+| `app/(chef)/inventory/locations/locations-client.tsx`         | Optimistic removal + undo toast |
+| `components/tasks/template-page-client.tsx`                   | 8s deferred delete with undo    |
+| `components/social/social-post-card.tsx`                      | 8s deferred delete with undo    |
+| `components/partners/partner-detail-client.tsx`               | 8s deferred delete with undo    |
+| `components/events/travel-plan-client.tsx`                    | Optimistic removal + undo toast |
+| `app/(chef)/clients/intake/intake-forms-client.tsx`           | Optimistic removal + undo toast |
+| `app/(chef)/settings/automations/automations-list.tsx`        | 8s deferred delete with undo    |
+| `components/messages/template-manager.tsx`                    | 8s deferred delete with undo    |
+| `app/(chef)/settings/emergency/emergency-contacts-client.tsx` | Optimistic removal + undo toast |
 
-1. Recipe create/edit forms (~25 fields each)
-2. Email composer + template editor + business hours editor
-3. Chef profile form + profile settings + expense form + vendor form
-4. Finance forms (7 files) + contract template editor + menu doc editor
-5. Staff/compliance forms (7 files) + culinary profile questionnaire
+### Error Boundaries (WidgetErrorBoundary)
+
+| Page           | Sections Wrapped                          |
+| -------------- | ----------------------------------------- |
+| Dashboard      | 5 sections (hero, schedule, alerts, etc.) |
+| Inquiries list | 1 section (inquiry list)                  |
+| Events list    | 1 section (events list)                   |
+| Recipes        | 1 section (dietary trends)                |
+| Client detail  | 3 sections (duplicates, intel, events)    |
 
 ## Existing Infrastructure (already in codebase, unchanged)
 
@@ -69,19 +91,21 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 
 ## What's Next (Phase 2+)
 
-### Remaining form rollout (high-risk, ~33 forms)
+### Remaining form rollout (~25 forms)
 
-- All client editor components (demographics, personal info, dietary)
-- All settings forms with multi-field input (~20 forms)
-- All modal/dialog forms with significant input
+- Client editor components (demographics, personal info, dietary)
+- Remaining settings forms (notifications, billing, embed)
+- Modal/dialog forms with significant input
 - Public/embed forms (localStorage-based, no tenant scoping)
 
-### Remaining undo rollout (~50 destructive actions)
+### Remaining undo rollout (~20 destructive actions)
 
 - Client deletion
-- Photo/media deletions (client, event, recipe)
-- Kitchen rental, campaign template, automation rule deletions
+- Photo/media deletions (client gallery, dish photos, event media)
 - Calendar event deletions
+- Journey entry/idea/media deletions
+- Certification deletions
+- Prep schedule task deletions
 
 ### Session recovery
 
