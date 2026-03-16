@@ -10,7 +10,7 @@ import { ChevronLeft } from '@/components/ui/icons'
 import { format } from 'date-fns'
 
 export default async function SocialPostEditPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
 
   const [allPosts, assets, allLinks, hashtagSets, connectedPlatforms] = await Promise.all([
     getSocialPosts(),
@@ -50,6 +50,7 @@ export default async function SocialPostEditPage({ params }: { params: { id: str
         hashtagSets={hashtagSets}
         allPosts={allPosts}
         connectedPlatforms={connectedPlatforms}
+        chefId={user.entityId}
       />
     </div>
   )

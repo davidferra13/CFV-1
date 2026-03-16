@@ -13,6 +13,7 @@ import {
   Calendar,
   FileText,
 } from '@/components/ui/icons'
+import { requireChef } from '@/lib/auth/get-user'
 import { getCall } from '@/lib/calls/actions'
 import { CallPrepPanel } from '@/components/calls/call-prep-panel'
 import { CallOutcomeForm } from '@/components/calls/call-outcome-form'
@@ -42,6 +43,7 @@ const STATUS_PILL: Record<string, string> = {
 }
 
 export default async function CallDetailPage({ params }: Props) {
+  const user = await requireChef()
   const call = await getCall(params.id)
 
   if (!call) notFound()
@@ -165,7 +167,7 @@ export default async function CallDetailPage({ params }: Props) {
         call.status === 'confirmed' ||
         call.status === 'completed') && (
         <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
-          <CallOutcomeForm call={call} />
+          <CallOutcomeForm call={call} chefId={user.entityId} />
         </div>
       )}
 

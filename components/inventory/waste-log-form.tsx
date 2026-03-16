@@ -3,7 +3,7 @@
 // WasteLogForm - Quick waste logging form for post-event or day-to-day waste tracking.
 // Captures ingredient, quantity, estimated cost, reason, and optional notes.
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,8 @@ import { Select } from '@/components/ui/select'
 import { Trash2, Plus } from '@/components/ui/icons'
 import { logWaste } from '@/lib/inventory/waste-actions'
 import { toast } from 'sonner'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 const WASTE_REASONS = [
   { value: 'overcooked', label: 'Overcooked' },
@@ -36,7 +38,7 @@ const UNIT_OPTIONS = [
   { value: 'L', label: 'L' },
 ]
 
-export function WasteLogForm({ eventId }: { eventId?: string }) {
+export function WasteLogForm({ eventId, chefId }: { eventId?: string; chefId: string }) {
   const [pending, startTransition] = useTransition()
   const [ingredientName, setIngredientName] = useState('')
   const [quantity, setQuantity] = useState('')
@@ -46,6 +48,40 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
   const [notes, setNotes] = useState('')
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const defaultData = useMemo(
+    () => ({
+      ingredientName: '',
+      quantity: '',
+      unit: 'oz',
+      estimatedCostDollars: '',
+      reason: 'leftover',
+      notes: '',
+    }),
+    []
+  )
+  const currentData = useMemo(
+    () => ({ ingredientName, quantity, unit, estimatedCostDollars, reason, notes }),
+    [ingredientName, quantity, unit, estimatedCostDollars, reason, notes]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'waste-log',
+    recordId: eventId ?? null,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+  })
+
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.ingredientName === 'string') setIngredientName(data.ingredientName)
+    if (typeof data.quantity === 'string') setQuantity(data.quantity)
+    if (typeof data.unit === 'string') setUnit(data.unit)
+    if (typeof data.estimatedCostDollars === 'string')
+      setEstimatedCostDollars(data.estimatedCostDollars)
+    if (typeof data.reason === 'string') setReason(data.reason)
+    if (typeof data.notes === 'string') setNotes(data.notes)
+  }
 
   function resetForm() {
     setIngredientName('')
@@ -93,6 +129,7 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
             | 'other',
           notes: notes.trim() || undefined,
         })
+        protection.markCommitted()
         setSuccess(true)
         resetForm()
         setTimeout(() => setSuccess(false), 3000)
@@ -103,88 +140,102 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trash2 className="h-5 w-5 text-stone-400" />
-          Log Waste
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Ingredient Name"
-            placeholder="e.g., Chicken breast"
-            value={ingredientName}
-            onChange={(e) => setIngredientName(e.target.value)}
-            required
-          />
-
-          <div className="grid grid-cols-2 gap-3">
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-stone-400" />
+            Log Waste
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Quantity"
-              type="number"
-              min={0}
-              step="0.1"
-              placeholder="0"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              label="Ingredient Name"
+              placeholder="e.g., Chicken breast"
+              value={ingredientName}
+              onChange={(e) => setIngredientName(e.target.value)}
               required
             />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Quantity"
+                type="number"
+                min={0}
+                step="0.1"
+                placeholder="0"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                required
+              />
+              <Select
+                label="Unit"
+                options={UNIT_OPTIONS}
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+              />
+            </div>
+
+            <Input
+              label="Estimated Cost"
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="0.00"
+              value={estimatedCostDollars}
+              onChange={(e) => setEstimatedCostDollars(e.target.value)}
+              helperText="Dollar amount (optional)"
+            />
+
             <Select
-              label="Unit"
-              options={UNIT_OPTIONS}
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
+              label="Reason"
+              options={[...WASTE_REASONS]}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              required
             />
-          </div>
 
-          <Input
-            label="Estimated Cost"
-            type="number"
-            min={0}
-            step="0.01"
-            placeholder="0.00"
-            value={estimatedCostDollars}
-            onChange={(e) => setEstimatedCostDollars(e.target.value)}
-            helperText="Dollar amount (optional)"
-          />
+            <div className="w-full">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Notes</label>
+              <textarea
+                className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 min-h-[72px] resize-y"
+                placeholder="Additional details..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
 
-          <Select
-            label="Reason"
-            options={[...WASTE_REASONS]}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            required
-          />
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <div className="w-full">
-            <label className="block text-sm font-medium text-stone-300 mb-1.5">Notes</label>
-            <textarea
-              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 min-h-[72px] resize-y"
-              placeholder="Additional details..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-            />
-          </div>
+            {success && (
+              <p className="text-sm text-emerald-600">Waste entry logged successfully.</p>
+            )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
-          {success && <p className="text-sm text-emerald-600">Waste entry logged successfully.</p>}
-
-          <Button
-            type="submit"
-            variant="primary"
-            loading={pending}
-            disabled={pending}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4" />
-            Log Waste Entry
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={pending}
+              disabled={pending}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4" />
+              Log Waste Entry
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </FormShield>
   )
 }

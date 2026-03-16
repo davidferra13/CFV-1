@@ -2,15 +2,17 @@
 
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { logCallOutcome, updateCallStatus, type ScheduledCall } from '@/lib/calls/actions'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
-export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
+export function CallOutcomeForm({ call, chefId }: { call: ScheduledCall; chefId: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +26,41 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
   const [actualDuration, setActualDuration] = useState(
     call.actual_duration_minutes ? String(call.actual_duration_minutes) : ''
   )
+
+  const defaultData = useMemo(
+    () => ({
+      outcomeSummary: call.outcome_summary ?? '',
+      callNotes: call.call_notes ?? '',
+      nextAction: call.next_action ?? '',
+      nextActionDueAt: call.next_action_due_at
+        ? new Date(call.next_action_due_at).toISOString().slice(0, 10)
+        : '',
+      actualDuration: call.actual_duration_minutes ? String(call.actual_duration_minutes) : '',
+    }),
+    [call]
+  )
+
+  const currentData = useMemo(
+    () => ({ outcomeSummary, callNotes, nextAction, nextActionDueAt, actualDuration }),
+    [outcomeSummary, callNotes, nextAction, nextActionDueAt, actualDuration]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'call-outcome',
+    recordId: call.id,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+    throttleMs: 10_000,
+  })
+
+  function applyDraftData(data: Record<string, unknown>) {
+    if (typeof data.outcomeSummary === 'string') setOutcomeSummary(data.outcomeSummary)
+    if (typeof data.callNotes === 'string') setCallNotes(data.callNotes)
+    if (typeof data.nextAction === 'string') setNextAction(data.nextAction)
+    if (typeof data.nextActionDueAt === 'string') setNextActionDueAt(data.nextActionDueAt)
+    if (typeof data.actualDuration === 'string') setActualDuration(data.actualDuration)
+  }
 
   const isTerminal =
     call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
@@ -41,6 +78,7 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
           next_action_due_at: nextActionDueAt ? new Date(nextActionDueAt).toISOString() : null,
           actual_duration_minutes: actualDuration ? parseInt(actualDuration) : null,
         })
+        protection.markCommitted()
         router.refresh()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -65,110 +103,122 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <h3 className="font-semibold text-stone-100">
-        {isTerminal ? 'Call Outcome' : 'Log Outcome'}
-      </h3>
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyDraftData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <h3 className="font-semibold text-stone-100">
+          {isTerminal ? 'Call Outcome' : 'Log Outcome'}
+        </h3>
 
-      {/* Outcome summary */}
-      <div className="space-y-1.5">
-        <Label htmlFor="outcome_summary">
-          Summary <span className="text-gray-400 font-normal">(optional)</span>
-        </Label>
-        <Textarea
-          id="outcome_summary"
-          value={outcomeSummary}
-          onChange={(e) => setOutcomeSummary(e.target.value)}
-          placeholder="What was decided? What's the status after this call?"
-          rows={3}
-          maxLength={2000}
-          disabled={isTerminal}
-        />
-      </div>
-
-      {/* Call notes */}
-      <div className="space-y-1.5">
-        <Label htmlFor="call_notes">
-          Detailed notes <span className="text-gray-400 font-normal">(optional)</span>
-        </Label>
-        <Textarea
-          id="call_notes"
-          value={callNotes}
-          onChange={(e) => setCallNotes(e.target.value)}
-          placeholder="Anything else worth capturing - preferences, concerns, ideas discussed…"
-          rows={4}
-          maxLength={5000}
-          disabled={isTerminal}
-        />
-      </div>
-
-      {/* Next action */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Outcome summary */}
         <div className="space-y-1.5">
-          <Label htmlFor="next_action">
-            Next action <span className="text-gray-400 font-normal">(optional)</span>
+          <Label htmlFor="outcome_summary">
+            Summary <span className="text-gray-400 font-normal">(optional)</span>
           </Label>
-          <Input
-            id="next_action"
-            value={nextAction}
-            onChange={(e) => setNextAction(e.target.value)}
-            placeholder="e.g. Send draft menu by Friday"
-            maxLength={500}
+          <Textarea
+            id="outcome_summary"
+            value={outcomeSummary}
+            onChange={(e) => setOutcomeSummary(e.target.value)}
+            placeholder="What was decided? What's the status after this call?"
+            rows={3}
+            maxLength={2000}
             disabled={isTerminal}
           />
         </div>
+
+        {/* Call notes */}
         <div className="space-y-1.5">
-          <Label htmlFor="next_action_due">
-            Due date <span className="text-gray-400 font-normal">(optional)</span>
+          <Label htmlFor="call_notes">
+            Detailed notes <span className="text-gray-400 font-normal">(optional)</span>
           </Label>
-          <Input
-            id="next_action_due"
-            type="date"
-            value={nextActionDueAt}
-            onChange={(e) => setNextActionDueAt(e.target.value)}
+          <Textarea
+            id="call_notes"
+            value={callNotes}
+            onChange={(e) => setCallNotes(e.target.value)}
+            placeholder="Anything else worth capturing - preferences, concerns, ideas discussed…"
+            rows={4}
+            maxLength={5000}
             disabled={isTerminal}
           />
         </div>
-      </div>
 
-      {/* Actual duration */}
-      <div className="space-y-1.5 max-w-xs">
-        <Label htmlFor="actual_duration">
-          Actual call duration (minutes){' '}
-          <span className="text-gray-400 font-normal">(optional)</span>
-        </Label>
-        <Input
-          id="actual_duration"
-          type="number"
-          min={1}
-          max={600}
-          value={actualDuration}
-          onChange={(e) => setActualDuration(e.target.value)}
-          placeholder={String(call.duration_minutes)}
-          disabled={isTerminal}
-        />
-      </div>
-
-      {/* Error */}
-      {error && <p className="text-sm text-red-600 bg-red-950 px-3 py-2 rounded">{error}</p>}
-
-      {/* Actions */}
-      {!isTerminal && (
-        <div className="flex gap-3 flex-wrap">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Saving…' : 'Mark complete & save'}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isPending}
-            onClick={handleNoShow}
-            className="text-amber-600 border-amber-300 hover:bg-amber-950"
-          >
-            Mark as no-show
-          </Button>
+        {/* Next action */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="next_action">
+              Next action <span className="text-gray-400 font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="next_action"
+              value={nextAction}
+              onChange={(e) => setNextAction(e.target.value)}
+              placeholder="e.g. Send draft menu by Friday"
+              maxLength={500}
+              disabled={isTerminal}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="next_action_due">
+              Due date <span className="text-gray-400 font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="next_action_due"
+              type="date"
+              value={nextActionDueAt}
+              onChange={(e) => setNextActionDueAt(e.target.value)}
+              disabled={isTerminal}
+            />
+          </div>
         </div>
-      )}
-    </form>
+
+        {/* Actual duration */}
+        <div className="space-y-1.5 max-w-xs">
+          <Label htmlFor="actual_duration">
+            Actual call duration (minutes){' '}
+            <span className="text-gray-400 font-normal">(optional)</span>
+          </Label>
+          <Input
+            id="actual_duration"
+            type="number"
+            min={1}
+            max={600}
+            value={actualDuration}
+            onChange={(e) => setActualDuration(e.target.value)}
+            placeholder={String(call.duration_minutes)}
+            disabled={isTerminal}
+          />
+        </div>
+
+        {/* Error */}
+        {error && <p className="text-sm text-red-600 bg-red-950 px-3 py-2 rounded">{error}</p>}
+
+        {/* Actions */}
+        {!isTerminal && (
+          <div className="flex gap-3 flex-wrap">
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Saving…' : 'Mark complete & save'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isPending}
+              onClick={handleNoShow}
+              className="text-amber-600 border-amber-300 hover:bg-amber-950"
+            >
+              Mark as no-show
+            </Button>
+          </div>
+        )}
+      </form>
+    </FormShield>
   )
 }

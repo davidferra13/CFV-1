@@ -23,7 +23,7 @@ const WasteDashboard = dynamic(
 export const metadata: Metadata = { title: 'Waste Tracking - ChefFlow' }
 
 export default async function WasteTrackingPage() {
-  await requireChef()
+  const user = await requireChef()
 
   const [dashboard, trend] = await Promise.all([
     getWasteDashboard().catch(() => ({
@@ -70,7 +70,7 @@ export default async function WasteTrackingPage() {
       {/* Log new waste entry */}
       <div className="max-w-xl">
         <h2 className="text-lg font-semibold text-stone-100 mb-3">Log Waste</h2>
-        <WasteLogForm />
+        <WasteLogForm chefId={user.entityId} />
       </div>
     </div>
   )
