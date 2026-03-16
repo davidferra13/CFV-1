@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import type { ChefFriend } from '@/lib/network/actions'
 import {
   addTrustedChef,
@@ -82,16 +84,33 @@ export function TrustedCircle({ connections, initialTrusted }: TrustedCircleProp
   }
 
   function handleRemoveTrustedChef(chefId: string) {
+    const target = trusted.find((member) => member.chef.chef_id === chefId)
+    if (!target) return
+
     setError(null)
 
-    startTransition(async () => {
+    // Optimistic removal
+    setTrusted((prev) => prev.filter((member) => member.chef.chef_id !== chefId))
+
+    // Deferred execution with undo
+    const timer = setTimeout(async () => {
       try {
         await removeTrustedChef(chefId)
-        setTrusted((prev) => prev.filter((member) => member.chef.chef_id !== chefId))
       } catch (err: any) {
+        setTrusted((prev) => [...prev, target]) // rollback
         setError(err.message || 'Failed to remove trusted chef.')
+        toast.error('Failed to remove trusted chef')
       }
-    })
+    }, 8000)
+
+    showUndoToast(
+      'Removed from trusted circle',
+      () => {
+        clearTimeout(timer)
+        setTrusted((prev) => [...prev, target])
+      },
+      8000
+    )
   }
 
   return (

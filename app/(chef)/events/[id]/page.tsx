@@ -121,6 +121,7 @@ import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
 import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
 import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 
 function isEventSoon(eventDate: string): boolean {
@@ -545,16 +546,18 @@ export default async function EventDetailPage({
       )}
 
       {/* Event Intelligence */}
-      <Suspense fallback={null}>
-        <EventIntelligencePanel
-          eventId={params.id}
-          guestCount={event.guest_count ?? null}
-          occasion={event.occasion ?? null}
-          quotedPriceCents={(event as any).quoted_price_cents ?? null}
-          status={event.status}
-          eventDate={event.event_date ?? null}
-        />
-      </Suspense>
+      <WidgetErrorBoundary name="Event Intelligence" compact>
+        <Suspense fallback={null}>
+          <EventIntelligencePanel
+            eventId={params.id}
+            guestCount={event.guest_count ?? null}
+            occasion={event.occasion ?? null}
+            quotedPriceCents={(event as any).quoted_price_cents ?? null}
+            status={event.status}
+            eventDate={event.event_date ?? null}
+          />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (

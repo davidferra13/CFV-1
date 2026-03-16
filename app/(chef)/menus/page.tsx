@@ -2,6 +2,7 @@
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -41,14 +42,18 @@ export default async function MenusPage() {
   return (
     <div className="space-y-4">
       {/* Dietary Intelligence */}
-      <Suspense fallback={null}>
-        <DietaryTrendsBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Dietary Trends" compact>
+        <Suspense fallback={null}>
+          <DietaryTrendsBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Ingredient Consolidation */}
-      <Suspense fallback={null}>
-        <IngredientConsolidationBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Ingredient Consolidation" compact>
+        <Suspense fallback={null}>
+          <IngredientConsolidationBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />
     </div>

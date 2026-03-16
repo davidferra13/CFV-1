@@ -12,6 +12,7 @@ import { TakeAChefSetup } from '@/components/integrations/take-a-chef-setup'
 import { getTakeAChefStats } from '@/lib/gmail/take-a-chef-stats'
 import { createServerClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { IntegrationCallbackToast } from '@/components/settings/integration-callback-toast'
 import { listConnectedAccounts } from '@/lib/integrations/integration-hub'
 import { ConnectedAccounts } from '@/components/integrations/connected-accounts'
@@ -53,9 +54,11 @@ export default async function IntegrationsSettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Suspense>
-        <IntegrationCallbackToast />
-      </Suspense>
+      <WidgetErrorBoundary name="Integration Callback">
+        <Suspense>
+          <IntegrationCallbackToast />
+        </Suspense>
+      </WidgetErrorBoundary>
       <div>
         <Link
           href="/settings"

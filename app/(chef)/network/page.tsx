@@ -52,6 +52,7 @@ import {
   Handshake,
 } from '@/components/ui/icons'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { NetworkReferralBar } from '@/components/intelligence/network-referral-bar'
 
 export const metadata: Metadata = { title: 'Chef Community - ChefFlow' }
@@ -131,9 +132,11 @@ export default async function NetworkPage({
       </div>
 
       {/* Referral Intelligence */}
-      <Suspense fallback={null}>
-        <NetworkReferralBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Network Referral" compact>
+        <Suspense fallback={null}>
+          <NetworkReferralBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Privacy notice */}
       {!discoverable && (

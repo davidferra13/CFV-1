@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
 
@@ -48,9 +49,11 @@ export default async function ClientsPage() {
       </div>
 
       {/* Rebooking Intelligence */}
-      <Suspense fallback={null}>
-        <RebookingBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Rebooking Intelligence" compact>
+        <Suspense fallback={null}>
+          <RebookingBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Invitation Section */}
       <Card id="invite">
@@ -58,9 +61,11 @@ export default async function ClientsPage() {
           <CardTitle>Send Client Invitation</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Suspense fallback={<div className="text-sm text-stone-500">Loading...</div>}>
-            <ClientInvitationForm />
-          </Suspense>
+          <WidgetErrorBoundary name="Client Invitation Form">
+            <Suspense fallback={<div className="text-sm text-stone-500">Loading...</div>}>
+              <ClientInvitationForm />
+            </Suspense>
+          </WidgetErrorBoundary>
 
           <div className="border-t pt-6">
             <h3 className="text-sm font-medium text-stone-100 mb-4">Pending Invitations</h3>

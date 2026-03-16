@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
@@ -153,14 +154,18 @@ export default async function FinancePage() {
       )}
 
       {/* Financial Intelligence */}
-      <Suspense fallback={null}>
-        <FinanceHealthBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Finance Health" compact>
+        <Suspense fallback={null}>
+          <FinanceHealthBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Pricing Intelligence */}
-      <Suspense fallback={null}>
-        <PricingIntelligenceBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Pricing Intelligence" compact>
+        <Suspense fallback={null}>
+          <PricingIntelligenceBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">

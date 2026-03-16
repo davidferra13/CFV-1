@@ -32,6 +32,7 @@ import {
   EyeOff,
 } from '@/components/ui/icons'
 import { toast } from 'sonner'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   getNotifications,
   markAsRead,
@@ -296,15 +297,35 @@ export function NotificationListClient() {
   }
 
   const handleArchive = async (notificationId: string) => {
-    try {
-      await archiveNotification(notificationId)
-      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
-      setTotalCount((prev) => Math.max(0, prev - 1))
-      await refreshCount()
-    } catch (err) {
-      console.error('[NotificationListClient] Failed to archive notification:', err)
-      toast.error('Could not archive notification')
-    }
+    const target = notifications.find((n) => n.id === notificationId)
+    if (!target) return
+
+    // Optimistic removal
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
+    setTotalCount((prev) => Math.max(0, prev - 1))
+
+    // Deferred execution with undo
+    const timer = setTimeout(async () => {
+      try {
+        await archiveNotification(notificationId)
+        await refreshCount()
+      } catch (err) {
+        console.error('[NotificationListClient] Failed to archive notification:', err)
+        setNotifications((prev) => [...prev, target])
+        setTotalCount((prev) => prev + 1)
+        toast.error('Could not archive notification')
+      }
+    }, 8000)
+
+    showUndoToast(
+      'Notification archived',
+      () => {
+        clearTimeout(timer)
+        setNotifications((prev) => [...prev, target])
+        setTotalCount((prev) => prev + 1)
+      },
+      8000
+    )
   }
 
   const handleNavigate = async (notification: Notification) => {

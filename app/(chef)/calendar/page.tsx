@@ -10,6 +10,7 @@ import { getUnifiedCalendar } from '@/lib/calendar/actions'
 import { AvailabilityCalendarClient } from './availability-calendar-client'
 import { SeasonalPaleteSidebar } from '@/components/calendar/seasonal-palate-sidebar'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { Button } from '@/components/ui/button'
 import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
@@ -101,14 +102,18 @@ export default async function CalendarPage({
       )}
 
       {/* Scheduling Intelligence */}
-      <Suspense fallback={null}>
-        <SchedulingInsightsBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Scheduling Insights" compact>
+        <Suspense fallback={null}>
+          <SchedulingInsightsBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Capacity & Seasonal Forecast */}
-      <Suspense fallback={null}>
-        <CapacitySeasonalBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Capacity & Seasonal" compact>
+        <Suspense fallback={null}>
+          <CapacitySeasonalBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         <div className="min-w-0">

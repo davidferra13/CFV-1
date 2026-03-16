@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getQuotes } from '@/lib/quotes/actions'
@@ -129,14 +130,18 @@ export default async function QuotesPage({
       </div>
 
       {/* Quote Intelligence */}
-      <Suspense fallback={null}>
-        <QuoteIntelligenceBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Quote Intelligence" compact>
+        <Suspense fallback={null}>
+          <QuoteIntelligenceBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Pricing Intelligence */}
-      <Suspense fallback={null}>
-        <PricingIntelligenceBar />
-      </Suspense>
+      <WidgetErrorBoundary name="Pricing Intelligence" compact>
+        <Suspense fallback={null}>
+          <PricingIntelligenceBar />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Quote Acceptance Insights */}
       {insights && <QuoteAcceptanceInsightsPanel data={insights} />}

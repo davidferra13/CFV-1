@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAutoResponseConfig } from '@/lib/communication/auto-response'
 import { getBusinessHoursConfig } from '@/lib/communication/business-hours'
@@ -36,17 +37,23 @@ export default async function CommunicationSettingsPage() {
         </p>
       </div>
 
-      <Suspense fallback={<SectionSkeleton title="Auto-Response" />}>
-        <AutoResponseSection />
-      </Suspense>
+      <WidgetErrorBoundary name="Auto-Response">
+        <Suspense fallback={<SectionSkeleton title="Auto-Response" />}>
+          <AutoResponseSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={<SectionSkeleton title="Business Hours" />}>
-        <BusinessHoursSection />
-      </Suspense>
+      <WidgetErrorBoundary name="Business Hours">
+        <Suspense fallback={<SectionSkeleton title="Business Hours" />}>
+          <BusinessHoursSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={<SectionSkeleton title="Response Templates" />}>
-        <TemplatesSection />
-      </Suspense>
+      <WidgetErrorBoundary name="Response Templates">
+        <Suspense fallback={<SectionSkeleton title="Response Templates" />}>
+          <TemplatesSection />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
 }

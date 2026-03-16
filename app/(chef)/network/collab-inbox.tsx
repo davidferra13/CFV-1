@@ -9,7 +9,9 @@ import {
   useState,
   useTransition,
 } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import {
   cancelCollabHandoff,
   createCollabHandoff,
@@ -473,15 +475,34 @@ export function CollabInboxPanel({
   }
 
   function handleDeleteSignal(signalId: string) {
+    const target = signals.find((s) => s.id === signalId)
+    if (!target) return
+
     setError(null)
-    startTransition(async () => {
+
+    // Optimistic removal
+    setSignals((prev) => prev.filter((s) => s.id !== signalId))
+
+    // Deferred execution with undo
+    const timer = setTimeout(async () => {
       try {
         await deleteCollabAvailabilitySignal(signalId)
         await refreshSnapshot()
       } catch (err: any) {
+        setSignals((prev) => [...prev, target]) // rollback
         setError(err.message || 'Failed to delete availability signal.')
+        toast.error('Failed to delete signal')
       }
-    })
+    }, 8000)
+
+    showUndoToast(
+      'Signal deleted',
+      () => {
+        clearTimeout(timer)
+        setSignals((prev) => [...prev, target])
+      },
+      8000
+    )
   }
 
   function handleRefresh() {

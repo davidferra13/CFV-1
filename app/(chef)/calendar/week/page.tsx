@@ -3,6 +3,7 @@
 // and chef calendar entries (vacation banners, market blocks, etc.).
 
 import { Suspense } from 'react'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { getWeekSchedule } from '@/lib/scheduling/actions'
 import { getWeekPrepBlocks, getSchedulingGaps } from '@/lib/scheduling/prep-block-actions'
@@ -46,16 +47,18 @@ export default async function WeekPlannerPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
-      <Suspense fallback={null}>
-        <WeekPlannerClient
-          weekSchedule={weekSchedule}
-          prepBlocks={prepBlocks}
-          weekGaps={weekGaps}
-          weekOffset={offset}
-          calendarEntries={calendarEntries}
-          weatherByDate={weatherByDate}
-        />
-      </Suspense>
+      <WidgetErrorBoundary name="Week Planner">
+        <Suspense fallback={null}>
+          <WeekPlannerClient
+            weekSchedule={weekSchedule}
+            prepBlocks={prepBlocks}
+            weekGaps={weekGaps}
+            weekOffset={offset}
+            calendarEntries={calendarEntries}
+            weatherByDate={weatherByDate}
+          />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
 }

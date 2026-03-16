@@ -1,10 +1,12 @@
 // Friends List - Display accepted connections with search/filter
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo } from 'react'
 import { Search, UserMinus } from '@/components/ui/icons'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ChefCard } from '@/components/network/chef-card'
+import { showUndoToast } from '@/components/ui/undo-toast'
 import { removeConnection } from '@/lib/network/actions'
 import type { ChefFriend } from '@/lib/network/actions'
 
@@ -15,9 +17,7 @@ interface FriendsListProps {
 export function FriendsList({ friends: initialFriends }: FriendsListProps) {
   const [friends, setFriends] = useState(initialFriends)
   const [search, setSearch] = useState('')
-  const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [confirmRemove, setConfirmRemove] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     if (!search) return friends
@@ -32,21 +32,33 @@ export function FriendsList({ friends: initialFriends }: FriendsListProps) {
   }, [friends, search])
 
   function handleRemove(connectionId: string) {
-    if (confirmRemove !== connectionId) {
-      setConfirmRemove(connectionId)
-      return
-    }
+    const target = friends.find((f) => f.id === connectionId)
+    if (!target) return
 
     setError(null)
-    setConfirmRemove(null)
-    startTransition(async () => {
+
+    // Optimistic removal
+    setFriends((prev) => prev.filter((f) => f.id !== connectionId))
+
+    // Deferred execution with undo
+    const timer = setTimeout(async () => {
       try {
         await removeConnection(connectionId)
-        setFriends((prev) => prev.filter((f) => f.id !== connectionId))
       } catch (err: any) {
+        setFriends((prev) => [...prev, target]) // rollback
         setError(err.message || 'Failed to remove connection')
+        toast.error('Failed to remove connection')
       }
-    })
+    }, 8000)
+
+    showUndoToast(
+      'Connection removed',
+      () => {
+        clearTimeout(timer)
+        setFriends((prev) => [...prev, target])
+      },
+      8000
+    )
   }
 
   if (friends.length === 0) {
@@ -89,32 +101,14 @@ export function FriendsList({ friends: initialFriends }: FriendsListProps) {
             city={friend.city}
             state={friend.state}
             actions={
-              confirmRemove === friend.id ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-stone-500">Sure?</span>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => handleRemove(friend.id)}
-                    disabled={isPending}
-                  >
-                    Remove
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setConfirmRemove(null)}>
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleRemove(friend.id)}
-                  disabled={isPending}
-                  title="Remove connection"
-                >
-                  <UserMinus className="h-4 w-4 text-stone-400" />
-                </Button>
-              )
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleRemove(friend.id)}
+                title="Remove connection"
+              >
+                <UserMinus className="h-4 w-4 text-stone-400" />
+              </Button>
             }
           />
         ))}
