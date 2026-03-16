@@ -14,6 +14,7 @@ import { PageInfoButton } from '@/components/ui/page-info'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { isFounderEmail } from '@/lib/platform/owner-account'
+import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 
 export const metadata = {
   title: 'Admin | ChefFlow',
@@ -38,11 +39,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <NotificationProvider userId={admin.id}>
           <ToastProvider />
           <TestAccountBanner />
-          <div className="min-h-screen bg-stone-900">
+          <div className="min-h-screen bg-stone-900" data-cf-portal="admin">
             <ChefSidebar isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMobileNav isAdmin userId={admin.id} tenantId={admin.id} />
             <ChefMainContent>{children}</ChefMainContent>
             {isFounderEmail(admin.email) && <RemyWrapper />}
+            <AnalyticsIdentify userId={admin.id} email={admin.email} role="admin" />
             <PresenceBeacon />
             <PageInfoButton />
           </div>

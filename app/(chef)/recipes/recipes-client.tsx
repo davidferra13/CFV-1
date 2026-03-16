@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState } from 'react'
@@ -84,6 +85,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
   const [importOpen, setImportOpen] = useState(false)
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
 
   const currentCategory = searchParams.get('category') || ''
   const currentCuisine = searchParams.get('cuisine') || ''
@@ -111,14 +113,57 @@ export function RecipeLibraryClient({ recipes }: Props) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Recipe Book</h1>
           <p className="text-stone-400 mt-1">
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your collection
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="space-y-2 md:hidden">
+          <div className="flex gap-2">
+            <Button href="/recipes/new" data-tour="add-recipe" className="w-full flex-1">
+              New Recipe
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setMobileActionsOpen((isOpen) => !isOpen)}
+              aria-expanded={mobileActionsOpen}
+              aria-controls="recipe-mobile-actions"
+            >
+              {mobileActionsOpen ? 'Less' : 'More'}
+            </Button>
+          </div>
+          {mobileActionsOpen && (
+            <div id="recipe-mobile-actions" className="grid gap-2">
+              <Button
+                href="/recipes/production-log"
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                Production Log
+              </Button>
+              <Button
+                href="/recipes/ingredients"
+                variant="secondary"
+                className="w-full justify-start"
+              >
+                Ingredients
+              </Button>
+              <Button
+                variant="secondary"
+                className="w-full justify-start"
+                onClick={() => {
+                  setMobileActionsOpen(false)
+                  setImportOpen(true)
+                }}
+              >
+                Import Link
+              </Button>
+            </div>
+          )}
+        </div>
+        <div className="hidden flex-wrap gap-2 md:flex">
           <Link href="/recipes/production-log">
             <Button variant="ghost">Production Log</Button>
           </Link>
@@ -126,7 +171,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
             <Button variant="secondary">Ingredients</Button>
           </Link>
           <Button variant="secondary" onClick={() => setImportOpen(true)}>
-            Import from URL
+            Import Link
           </Button>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>

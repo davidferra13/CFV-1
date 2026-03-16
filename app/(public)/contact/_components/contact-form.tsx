@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { submitContactForm } from '@/lib/contact/actions'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 
 interface FormData {
   name: string
@@ -68,6 +69,11 @@ export default function ContactForm() {
 
     try {
       await submitContactForm(formData)
+      trackEvent(ANALYTICS_EVENTS.CONTACT_FORM_SUBMITTED, {
+        source: 'contact_page',
+        has_subject: Boolean(formData.subject.trim()),
+        message_length: formData.message.trim().length,
+      })
 
       setShowSuccess(true)
       setFormData({ name: '', email: '', subject: '', message: '' })

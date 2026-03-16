@@ -17,6 +17,7 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 import { ClientTourWrapper } from '@/components/onboarding/client-tour-wrapper'
+import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -31,7 +32,7 @@ export default async function ClientLayout({ children }: { children: React.React
       <NotificationProvider userId={user.id}>
         <ToastProvider />
         <TestAccountBanner />
-        <div className="min-h-screen bg-stone-800">
+        <div className="min-h-screen bg-stone-800" data-cf-portal="client">
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"
@@ -48,6 +49,12 @@ export default async function ClientLayout({ children }: { children: React.React
           <ClientMainContent>
             <ClientTourWrapper>{children}</ClientTourWrapper>
           </ClientMainContent>
+          <AnalyticsIdentify
+            userId={user.id}
+            email={user.email}
+            role={user.role}
+            traits={{ entity_id: user.entityId, tenant_id: user.tenantId || '' }}
+          />
           <PresenceBeacon />
           <PageInfoButton />
         </div>

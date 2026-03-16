@@ -53,12 +53,11 @@ type InquiryFilter =
   | 'confirmed'
   | 'closed'
 
+type InquiryListItem = Awaited<ReturnType<typeof getInquiries>>[number]
+
 const OPEN_STATUSES = new Set(['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
-function getDisplayName(inquiry: {
-  client: { id: string; full_name: string; email: string; phone: string | null } | null
-  unknown_fields: unknown
-}): string {
+function getDisplayName(inquiry: Pick<InquiryListItem, 'client' | 'unknown_fields'>): string {
   if (inquiry.client?.full_name) return inquiry.client.full_name
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.client_name as string) || 'Unknown Lead'
@@ -72,7 +71,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
     getBookingScoresForOpenInquiries().catch(() => [] as BookingScore[]),
   ])
 
-  let inquiries = allInquiries
+  let inquiries: InquiryListItem[] = allInquiries
 
   // Apply filter
   if (filter === 'closed') {
@@ -97,7 +96,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
         </p>
         {filter === 'all' && (
           <Link href="/inquiries/new">
-            <Button>Log New Inquiry</Button>
+            <Button>New Inquiry</Button>
           </Link>
         )}
       </Card>
@@ -190,32 +189,36 @@ export default async function InquiriesPage({
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'new', label: 'New' },
-    { value: 'awaiting_client', label: 'Awaiting Client' },
-    { value: 'awaiting_chef', label: 'Awaiting Chef' },
+    { value: 'awaiting_client', label: 'Client Reply' },
+    { value: 'awaiting_chef', label: 'Your Reply' },
     { value: 'quoted', label: 'Quoted' },
     { value: 'confirmed', label: 'Confirmed' },
-    { value: 'closed', label: 'Declined / Expired' },
+    { value: 'closed', label: 'Closed' },
   ]
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-stone-900">Inquiry Pipeline</h1>
           <p className="text-stone-600 mt-1">Track every lead from first contact to booked event</p>
         </div>
         <Link href="/inquiries/new">
-          <Button>+ Log New Inquiry</Button>
+          <Button>New Inquiry</Button>
         </Link>
       </div>
 
       {/* Status Tabs */}
       <Card className="p-4">
-        <div className="flex gap-2 flex-wrap">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
           {tabs.map((tab) => (
             <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
-              <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
+              <Button
+                size="sm"
+                variant={filter === tab.value ? 'primary' : 'secondary'}
+                className="shrink-0 whitespace-nowrap"
+              >
                 {tab.label}
               </Button>
             </Link>

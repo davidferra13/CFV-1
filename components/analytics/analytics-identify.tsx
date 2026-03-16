@@ -7,6 +7,7 @@ interface AnalyticsIdentifyProps {
   userId: string
   email: string
   role: string
+  traits?: Record<string, string | number | boolean>
 }
 
 /**
@@ -16,7 +17,7 @@ interface AnalyticsIdentifyProps {
  * Place inside any authenticated layout to associate analytics events
  * with the logged-in user.
  */
-export function AnalyticsIdentify({ userId, email, role }: AnalyticsIdentifyProps) {
+export function AnalyticsIdentify({ userId, email, role, traits }: AnalyticsIdentifyProps) {
   const identified = useRef(false)
 
   useEffect(() => {
@@ -25,11 +26,11 @@ export function AnalyticsIdentify({ userId, email, role }: AnalyticsIdentifyProp
 
     // Small delay to let PostHog provider finish initializing
     const timer = setTimeout(() => {
-      identifyUser(userId, { email, role })
+      identifyUser(userId, { email, role, ...traits })
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [userId, email, role])
+  }, [userId, email, role, traits])
 
   return null
 }

@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { TagInput } from '@/components/ui/tag-input'
 import { createEvent, type CreateEventInput } from '@/lib/events/actions'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import { toast } from 'sonner'
 
@@ -202,6 +203,13 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
       try {
         const result = await createEvent(input)
         if (result.success && result.event) {
+          trackEvent(ANALYTICS_EVENTS.EVENT_CREATED, {
+            source: 'chef_event_creation_wizard',
+            guest_count: guestCountNum,
+            has_budget_min: Boolean(budgetMin),
+            has_budget_max: Boolean(budgetMax),
+            has_service_style: Boolean(serviceStyle),
+          })
           toast.success('Event created successfully')
           router.push(`/events/${result.event.id}`)
         } else {

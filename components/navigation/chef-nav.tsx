@@ -1001,7 +1001,7 @@ export function ChefSidebar({
               className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
               <Plus className="w-4 h-4 text-stone-400" />
-              <span className="flex-1 text-left">Quick Create</span>
+              <span className="flex-1 text-left">New</span>
               <ChevronDown
                 className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                   quickCreateOpen ? 'rotate-0' : '-rotate-90'
@@ -1105,7 +1105,7 @@ export function ChefSidebar({
               aria-expanded={settingsOpen}
               className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
-              <span className="flex-1 text-left">Settings & Tools</span>
+              <span className="flex-1 text-left">Settings</span>
               <ChevronDown
                 className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                   settingsOpen ? 'rotate-0' : '-rotate-90'
@@ -1809,7 +1809,7 @@ export function ChefMobileNav({
                   className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
                 >
                   <Plus className="w-4 h-4 text-stone-400" />
-                  <span className="flex-1 text-left">Quick Create</span>
+                  <span className="flex-1 text-left">New</span>
                   <ChevronDown
                     className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                       mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
@@ -1953,7 +1953,7 @@ export function ChefMobileNav({
                 aria-expanded={mobileSettingsOpen}
                 className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
               >
-                <span className="flex-1 text-left">Settings & Tools</span>
+                <span className="flex-1 text-left">Settings</span>
                 <ChevronDown
                   className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                     mobileSettingsOpen ? 'rotate-0' : '-rotate-90'

@@ -158,6 +158,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
             <TestAccountBanner />
             <KeyboardShortcutsWrapper>
               <div
+                data-cf-portal="chef"
                 className="min-h-screen"
                 style={{
                   backgroundColor: profile.portal_background_color || '#0c0a09',
@@ -244,7 +245,12 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <MilestoneOverlay />
 
                 {/* Analytics identity -- associates events with logged-in user */}
-                <AnalyticsIdentify userId={user.id} email={user.email} role={user.role} />
+                <AnalyticsIdentify
+                  userId={user.id}
+                  email={user.email}
+                  role={user.role}
+                  traits={{ entity_id: user.entityId, tenant_id: user.tenantId ?? user.entityId }}
+                />
 
                 {/* Presence beacon -- authenticated user presence for live admin visibility */}
                 <PresenceBeacon />

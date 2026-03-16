@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { QueueIcon } from './queue-icon'
 import { QueueItemInlineAction } from './queue-item-inline-action'
-import type { QueueItem, QueueUrgency, QueueDomain } from '@/lib/queue/types'
+import type { QueueItem, QueueUrgency, QueueDomain, InlineActionType } from '@/lib/queue/types'
 
 const URGENCY_STYLES: Record<QueueUrgency, string> = {
   critical: 'border-l-4 border-l-red-500 bg-red-950/50',
@@ -38,6 +38,14 @@ const DOMAIN_LABELS: Record<QueueDomain, string> = {
   post_event: 'Post-Event',
   client: 'Client',
   culinary: 'Culinary',
+}
+
+const INLINE_ACTION_LABELS: Record<InlineActionType, string> = {
+  respond_inquiry: 'Respond',
+  send_followup: 'Follow Up',
+  record_payment: 'Record Payment',
+  send_message: 'Send Message',
+  log_expense: 'Log Expense',
 }
 
 interface Props {
@@ -104,7 +112,7 @@ export function QueueItemRow({ item }: Props) {
           onClick={() => setExpanded(true)}
           className="mt-2 text-xs text-brand-500 hover:text-brand-400 font-medium"
         >
-          Quick Action
+          {INLINE_ACTION_LABELS[item.inlineAction!.type]}
         </button>
       )}
 
