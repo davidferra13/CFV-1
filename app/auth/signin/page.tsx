@@ -31,7 +31,6 @@ function SignInForm() {
 
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [formData, setFormData] = useState<SignInInput>({
     email: '',
     password: '',
@@ -45,33 +44,10 @@ function SignInForm() {
     setMessage(callbackMessage || null)
   }, [searchParams])
 
-  function validateForm(): boolean {
-    const errors: { email?: string; password?: string } = {}
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required'
-    } else if (!emailRegex.test(formData.email.trim())) {
-      errors.email = 'Please enter a valid email address'
-    }
-
-    if (!formData.password) {
-      errors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters'
-    }
-
-    setFieldErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
-
-    if (!validateForm()) return
-
     setLoading(true)
 
     try {
@@ -109,29 +85,18 @@ function SignInForm() {
                 type="email"
                 label="Email"
                 value={formData.email}
-                onChange={(e) => {
-                  setFormData({ ...formData, email: e.target.value })
-                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
-                }}
-                error={fieldErrors.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 autoComplete="email"
-                aria-invalid={!!fieldErrors.email}
               />
 
               <Input
                 type="password"
                 label="Password"
                 value={formData.password}
-                onChange={(e) => {
-                  setFormData({ ...formData, password: e.target.value })
-                  if (fieldErrors.password)
-                    setFieldErrors((prev) => ({ ...prev, password: undefined }))
-                }}
-                error={fieldErrors.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 autoComplete="current-password"
-                aria-invalid={!!fieldErrors.password}
               />
 
               <div className="flex items-center justify-between">
@@ -140,14 +105,14 @@ function SignInForm() {
                     type="checkbox"
                     checked={formData.rememberMe}
                     onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                    className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-stone-300 text-brand-700 focus:ring-brand-500"
                   />
                   <span className="text-sm text-stone-600">Stay signed in</span>
                 </label>
 
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-sm text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Forgot password?
                 </Link>
@@ -163,14 +128,14 @@ function SignInForm() {
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Chef sign up
                 </Link>{' '}
                 or{' '}
                 <Link
                   href="/auth/client-signup"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Client sign up
                 </Link>

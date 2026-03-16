@@ -34,11 +34,11 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-            <p className="text-stone-400 mt-2">Check your email</p>
+            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+            <p className="text-stone-600 mt-2">Check your email</p>
           </div>
 
           <Card>
@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
                 link shortly.
               </Alert>
 
-              <p className="text-sm text-stone-400 text-center">
+              <p className="text-sm text-stone-600 text-center">
                 Didn&apos;t receive an email? Check your spam folder or try again with a different
                 email address.
               </p>
@@ -66,10 +66,10 @@ export default function ForgotPasswordPage() {
                 Try Again
               </Button>
 
-              <div className="text-sm text-center text-stone-400">
+              <div className="text-sm text-center text-stone-600">
                 <Link
                   href="/auth/signin"
-                  className="text-brand-500 hover:text-brand-400 font-medium"
+                  className="text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Back to Sign In
                 </Link>
@@ -82,11 +82,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-          <p className="text-stone-400 mt-2">Reset your password</p>
+          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+          <p className="text-stone-600 mt-2">Reset your password</p>
         </div>
 
         <Card>
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
             <CardContent className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
 
-              <p className="text-sm text-stone-400">
+              <p className="text-sm text-stone-600">
                 Enter the email address associated with your account and we&apos;ll send you a link
                 to reset your password.
               </p>
@@ -106,7 +106,6 @@ export default function ForgotPasswordPage() {
               <Input
                 type="email"
                 label="Email"
-                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -120,11 +119,11 @@ export default function ForgotPasswordPage() {
                 Send Reset Link
               </Button>
 
-              <div className="text-sm text-center text-stone-400">
+              <div className="text-sm text-center text-stone-600">
                 Remember your password?{' '}
                 <Link
                   href="/auth/signin"
-                  className="text-brand-500 hover:text-brand-400 font-medium"
+                  className="text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Sign in
                 </Link>

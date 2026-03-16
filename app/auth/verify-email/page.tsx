@@ -10,11 +10,11 @@ import { Button } from '@/components/ui/button'
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-          <p className="text-stone-400 mt-2">Almost there!</p>
+          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+          <p className="text-stone-600 mt-2">Almost there!</p>
         </div>
 
         <Card>
@@ -23,20 +23,20 @@ export default function VerifyEmailPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <p className="text-stone-300">
+            <p className="text-stone-700">
               Check your email to verify your account. Click the link in your email to complete
               registration.
             </p>
-            <p className="text-sm text-stone-400">
+            <p className="text-sm text-stone-500">
               If you don&apos;t see the email, check your spam folder. The verification link will
               expire after 24 hours.
             </p>
           </CardContent>
 
           <CardFooter>
-            <div className="w-full text-sm text-center text-stone-400">
+            <div className="w-full text-sm text-center text-stone-600">
               Already verified?{' '}
-              <Link href="/auth/signin" className="text-brand-500 hover:text-brand-400 font-medium">
+              <Link href="/auth/signin" className="text-brand-700 hover:text-brand-700 font-medium">
                 Sign in
               </Link>
             </div>

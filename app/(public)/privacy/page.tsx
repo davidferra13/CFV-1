@@ -8,15 +8,15 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-      <div className="mb-10 border-b border-stone-700 pb-8">
-        <h1 className="text-4xl font-bold tracking-tight text-stone-100">Privacy Policy</h1>
+    <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+      <div className="mb-10 border-b border-stone-200 pb-8">
+        <h1 className="text-4xl font-bold tracking-tight text-stone-900">Privacy Policy</h1>
         <p className="mt-3 text-sm text-stone-500">Last updated: March 1, 2026</p>
       </div>
 
-      <div className="space-y-10 text-stone-300">
+      <div className="space-y-10 text-stone-700">
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">1. Introduction</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">1. Introduction</h2>
           <p className="leading-relaxed">
             ChefFlow (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) operates the
             ChefFlow platform at cheflowhq.com (the &ldquo;Service&rdquo;), a business operations
@@ -27,36 +27,36 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">2. Information We Collect</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">2. Information We Collect</h2>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-200">Account information</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-800">Account information</h3>
           <p className="mb-4 leading-relaxed">
             When you create an account we collect your name, email address, and a hashed password.
             Chefs may also provide a business name, public profile tagline, bio, and profile photo.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-200">Event and client data</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-800">Event and client data</h3>
           <p className="mb-4 leading-relaxed">
             Chefs enter information about their events (dates, menus, guest counts, locations) and
             their clients (names, email addresses, contact details, dietary preferences). This data
             belongs to the chef who entered it and is processed on their behalf.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-200">Payment information</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-800">Payment information</h3>
           <p className="mb-4 leading-relaxed">
             Payments are processed by Stripe. We do not store full credit card numbers or sensitive
             payment details on our servers. Stripe provides us with a token and basic transaction
             metadata (amount, status, last four digits) that we use to display financial records.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-200">Usage data</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-800">Usage data</h3>
           <p className="mb-4 leading-relaxed">
             We collect information about how you interact with the Service, such as pages visited,
             features used, and actions taken. This helps us understand what is working and what
             needs improvement.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-200">Inquiry submissions</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-800">Inquiry submissions</h3>
           <p className="leading-relaxed">
             When a prospective client submits an inquiry through a chef&apos;s public profile, we
             collect the information they provide in the form (name, email, event details). This is
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">
             3. How We Use Your Information
           </h2>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">
             4. Third-Party Service Providers
           </h2>
           <p className="mb-4 leading-relaxed">
@@ -96,28 +96,28 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
-              <strong>Supabase</strong> - our database and authentication provider. Your account
+              <strong>Supabase</strong> — our database and authentication provider. Your account
               data and chef/client records are stored on Supabase infrastructure.
             </li>
             <li>
-              <strong>Stripe</strong> - our payment processor. Client payment details are submitted
+              <strong>Stripe</strong> — our payment processor. Client payment details are submitted
               directly to Stripe and governed by{' '}
               <a
                 href="https://stripe.com/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-500 hover:underline"
+                className="text-brand-700 hover:underline"
               >
                 Stripe&apos;s Privacy Policy
               </a>
               .
             </li>
             <li>
-              <strong>Resend / email provider</strong> - used to deliver transactional emails. We
+              <strong>Resend / email provider</strong> — used to deliver transactional emails. We
               pass recipient email addresses and message content to this provider for delivery only.
             </li>
             <li>
-              <strong>Vercel</strong> - our hosting platform. Web requests pass through
+              <strong>Vercel</strong> — our hosting platform. Web requests pass through
               Vercel&apos;s infrastructure and are subject to their data processing terms.
             </li>
           </ul>
@@ -128,7 +128,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">5. Data Retention</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">5. Data Retention</h2>
           <p className="leading-relaxed">
             We retain your account data for as long as your account is active. If you cancel your
             subscription, your data remains accessible to you for 30 days, after which it may be
@@ -139,35 +139,35 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">6. Your Rights and Choices</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">6. Your Rights and Choices</h2>
           <p className="mb-4 leading-relaxed">
             Depending on where you are located, you may have the following rights regarding your
             personal information:
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
-              <strong>Access</strong> - request a copy of the personal data we hold about you
+              <strong>Access</strong> — request a copy of the personal data we hold about you
             </li>
             <li>
-              <strong>Correction</strong> - request that we correct inaccurate or incomplete
+              <strong>Correction</strong> — request that we correct inaccurate or incomplete
               information
             </li>
             <li>
-              <strong>Deletion</strong> - request deletion of your personal data (subject to legal
+              <strong>Deletion</strong> — request deletion of your personal data (subject to legal
               retention requirements)
             </li>
             <li>
-              <strong>Portability</strong> - request your data in a structured, machine-readable
+              <strong>Portability</strong> — request your data in a structured, machine-readable
               format
             </li>
             <li>
-              <strong>Objection</strong> - object to processing of your data in certain
+              <strong>Objection</strong> — object to processing of your data in certain
               circumstances
             </li>
           </ul>
           <p className="mt-4 leading-relaxed">
             To exercise any of these rights, email us at{' '}
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-700 hover:underline">
               privacy@cheflowhq.com
             </a>
             . We will respond within 30 days. We may need to verify your identity before fulfilling
@@ -176,7 +176,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">7. Cookies and Tracking</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">7. Cookies and Tracking</h2>
           <p className="leading-relaxed">
             We use cookies and similar technologies to keep you signed in, remember your
             preferences, and understand how the Service is used. We do not use third-party
@@ -188,13 +188,13 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">8. Security</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">8. Security</h2>
           <p className="leading-relaxed">
             We implement industry-standard security measures including encrypted connections (TLS),
             hashed passwords, row-level security on our database, and access controls that limit
             data access to authorized users. No method of transmission or storage is 100% secure. If
             you become aware of a security issue, please contact us immediately at{' '}
-            <a href="mailto:security@cheflowhq.com" className="text-brand-500 hover:underline">
+            <a href="mailto:security@cheflowhq.com" className="text-brand-700 hover:underline">
               security@cheflowhq.com
             </a>
             .
@@ -202,7 +202,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">9. Children&apos;s Privacy</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">9. Children&apos;s Privacy</h2>
           <p className="leading-relaxed">
             The Service is not directed to individuals under the age of 18. We do not knowingly
             collect personal information from children. If we become aware that a child has provided
@@ -211,7 +211,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">10. Changes to This Policy</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">10. Changes to This Policy</h2>
           <p className="leading-relaxed">
             We may update this Privacy Policy from time to time. When we do, we will revise the
             &ldquo;Last updated&rdquo; date at the top of this page. If the changes are material, we
@@ -222,7 +222,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-100">11. Contact Us</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-900">11. Contact Us</h2>
           <p className="leading-relaxed">
             If you have questions or concerns about this Privacy Policy or our data practices,
             please contact us at:
@@ -230,18 +230,18 @@ export default function PrivacyPage() {
           <address className="mt-4 not-italic leading-relaxed">
             <strong>ChefFlow</strong>
             <br />
-            <a href="mailto:privacy@cheflowhq.com" className="text-brand-500 hover:underline">
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-700 hover:underline">
               privacy@cheflowhq.com
             </a>
           </address>
         </section>
       </div>
 
-      <div className="mt-12 border-t border-stone-700 pt-8">
-        <Link href="/" className="text-sm font-medium text-stone-300 hover:text-stone-100">
+      <div className="mt-12 border-t border-stone-200 pt-8">
+        <Link href="/" className="text-sm font-medium text-stone-600 hover:text-stone-900">
           &larr; Back to Home
         </Link>
       </div>
-    </div>
+    </main>
   )
 }

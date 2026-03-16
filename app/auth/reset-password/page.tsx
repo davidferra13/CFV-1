@@ -52,11 +52,11 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-            <p className="text-stone-400 mt-2">Password updated</p>
+            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+            <p className="text-stone-600 mt-2">Password updated</p>
           </div>
 
           <Card>
@@ -80,11 +80,11 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
-          <p className="text-stone-400 mt-2">Set your new password</p>
+          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+          <p className="text-stone-600 mt-2">Set your new password</p>
         </div>
 
         <Card>
@@ -122,10 +122,10 @@ export default function ResetPasswordPage() {
                 Update Password
               </Button>
 
-              <div className="text-sm text-center text-stone-400">
+              <div className="text-sm text-center text-stone-600">
                 <Link
                   href="/auth/signin"
-                  className="text-brand-500 hover:text-brand-400 font-medium"
+                  className="text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Back to Sign In
                 </Link>

@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { getCancellationPolicy, updateCancellationPolicy } from '@/lib/events/cancellation-actions'
 import type { CancellationPolicy, CancellationTier } from '@/lib/events/cancellation-actions'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 // ─── Tier Editor Row ──────────────────────────────────────────────────────────
 
