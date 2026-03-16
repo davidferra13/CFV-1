@@ -206,8 +206,20 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 
   const knownClientEmails = (clients || []).map((c) => c.email).filter(Boolean) as string[]
 
-  // 5. Process each message
+  // 5. Batch-fetch already-synced message IDs to avoid N+1 dedup queries
+  const { data: alreadySynced } = await supabase
+    .from('gmail_sync_log')
+    .select('gmail_message_id')
+    .eq('tenant_id', tenantId)
+    .in('gmail_message_id', messageIds)
+  const syncedSet = new Set((alreadySynced ?? []).map((r) => r.gmail_message_id))
+
+  // 6. Process each message
   for (const messageId of messageIds) {
+    if (syncedSet.has(messageId)) {
+      result.skipped++
+      continue
+    }
     try {
       await processMessage(
         supabase,
@@ -224,7 +236,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     }
   }
 
-  // 6. Update sync timestamp
+  // 7. Update sync timestamp
   await supabase
     .from('google_connections')
     .update({
@@ -247,18 +259,7 @@ async function processMessage(
   knownClientEmails: string[],
   result: SyncResult
 ) {
-  // Dedup check — skip if already processed
-  const { data: existing } = await supabase
-    .from('gmail_sync_log')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('gmail_message_id', messageId)
-    .single()
-
-  if (existing) {
-    result.skipped++
-    return
-  }
+  // Dedup already handled by batch check in syncGmailInbox (syncedSet)
 
   // Fetch full message
   const email = await getFullMessage(accessToken, messageId)
