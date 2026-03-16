@@ -148,7 +148,7 @@ function ClientSignUpForm() {
 
               <div className="text-sm text-center text-stone-600">
                 Already have an account?{' '}
-                <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/auth/signin" className="text-brand-700 hover:text-brand-700 font-medium">
                   Sign in
                 </Link>
               </div>

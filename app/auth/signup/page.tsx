@@ -256,11 +256,11 @@ function SignUpForm() {
 
               <div className="text-sm text-center text-stone-600">
                 Already have an account?{' '}
-                <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/auth/signin" className="text-brand-700 hover:text-brand-700 font-medium">
                   Sign in
                 </Link>
                 <span className="mx-1">·</span>
-                <Link href="/auth/client-signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/auth/client-signup" className="text-brand-700 hover:text-brand-700 font-medium">
                   Client sign up
                 </Link>
               </div>

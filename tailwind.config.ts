@@ -16,6 +16,11 @@ const config: Config = {
           300: '#f3c596',
           400: '#eda86b',
           500: '#e88f47',
+          // Contrast ratios against white (#fff):
+          //   brand-600: 3.29:1 (fails WCAG AA normal text, OK for large text/icons)
+          //   brand-700: 4.74:1 (passes WCAG AA normal text at 4.5:1)
+          //   brand-800: 6.66:1 (passes WCAG AAA)
+          // Use brand-700+ for body/link text on white/light backgrounds.
           600: '#d47530',
           700: '#b15c26',
           800: '#8e4a24',

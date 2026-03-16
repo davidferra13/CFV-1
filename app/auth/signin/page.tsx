@@ -109,12 +109,12 @@ function SignInForm() {
                     type="checkbox"
                     checked={formData.rememberMe}
                     onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                    className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-stone-300 text-brand-700 focus:ring-brand-500"
                   />
                   <span className="text-sm text-stone-600">Stay signed in</span>
                 </label>
 
-                <Link href="/auth/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/auth/forgot-password" className="text-sm text-brand-700 hover:text-brand-700 font-medium">
                   Forgot password?
                 </Link>
               </div>
@@ -132,11 +132,11 @@ function SignInForm() {
 
               <div className="text-sm text-center text-stone-600">
                 Don&apos;t have an account?{' '}
-                <Link href="/auth/signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/auth/signup" className="text-brand-700 hover:text-brand-700 font-medium">
                   Chef sign up
                 </Link>
                 {' '}or{' '}
-                <Link href="/auth/client-signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/auth/client-signup" className="text-brand-700 hover:text-brand-700 font-medium">
                   Client sign up
                 </Link>
               </div>
