@@ -1,134 +1,198 @@
+// Protected Time Management - Server Actions
+// CRUD for blocked-off personal time using the existing chef_availability_blocks table.
+// Extends the availability system with structured "protected time" semantics.
+
 'use server'
 
-// Protected Time & Rest Day Blocking — Server Actions
-// Creates and manages personal-time blocks in the event_prep_blocks table.
-// block_type column was added by migration 20260322000012_capacity_protection.sql.
-// Only blocks with block_type IN ('protected_personal', 'rest') are managed here.
-
-import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
-export type ProtectedBlockType = 'protected_personal' | 'rest'
+// ============================================
+// SCHEMAS
+// ============================================
 
-export type ProtectedBlock = {
+const CreateProtectedTimeSchema = z.object({
+  block_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
+  block_type: z.enum(['full_day', 'partial']).default('full_day'),
+  start_time: z.string().nullable().optional(), // HH:MM
+  end_time: z.string().nullable().optional(), // HH:MM
+  reason: z.string().min(1, 'Reason required'),
+  is_recurring: z.boolean().default(false),
+  recurrence_rule: z.string().nullable().optional(), // e.g. "weekly", "monthly"
+})
+
+const UpdateProtectedTimeSchema = CreateProtectedTimeSchema.partial()
+
+export type CreateProtectedTimeInput = z.infer<typeof CreateProtectedTimeSchema>
+export type UpdateProtectedTimeInput = z.infer<typeof UpdateProtectedTimeSchema>
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface ProtectedTimeBlock {
   id: string
-  title: string
-  start_date: string
-  end_date: string
-  block_type: ProtectedBlockType
-  created_at: string
+  chefId: string
+  blockDate: string
+  blockType: 'full_day' | 'partial'
+  startTime: string | null
+  endTime: string | null
+  reason: string
+  isRecurring: boolean
+  recurrenceRule: string | null
+  createdAt: string
 }
 
-// ─── Create ───────────────────────────────────────────────────────────────────
+// ============================================
+// ACTIONS
+// ============================================
 
-export async function createProtectedBlock(input: {
-  title: string
-  start_date: string
-  end_date: string
-  block_type: ProtectedBlockType
-}): Promise<{ success: boolean; id?: string }> {
-  const chef = await requireChef()
-  const supabase: any = createServerClient()
+/**
+ * Create a protected time block (personal time off, vacation, family time, etc.)
+ * Uses the existing chef_availability_blocks table with is_event_auto = false.
+ */
+export async function createProtectedTime(
+  input: CreateProtectedTimeInput
+): Promise<ProtectedTimeBlock> {
+  const user = await requirePro('advanced-calendar')
+  const validated = CreateProtectedTimeSchema.parse(input)
+  const supabase = createServerClient()
 
-  if (!['protected_personal', 'rest'].includes(input.block_type)) {
-    throw new Error('Invalid block_type for protected block')
-  }
-
-  // event_prep_blocks uses chef_id (not tenant_id) — see migration 20260304000001
-  // block_type column added by migration 20260322000012
-  // We store start_date in block_date; end_date in a notes-friendly way via title + notes.
-  // Since event_prep_blocks only has block_date (not start/end), we insert one row per day
-  // OR we store end_date in the notes column. Using notes for end_date is the pragmatic
-  // approach until a dedicated table is added.
-  const { data, error } = await supabase
-    .from('event_prep_blocks' as any)
+  const { data, error } = await (supabase as any)
+    .from('chef_availability_blocks')
     .insert({
-      chef_id: chef.tenantId!,
-      block_date: input.start_date,
-      title: input.title,
-      notes: input.end_date !== input.start_date ? `Until: ${input.end_date}` : null,
-      block_type: input.block_type,
-      is_system_generated: false,
-      is_completed: false,
+      chef_id: user.tenantId!,
+      block_date: validated.block_date,
+      block_type: validated.block_type,
+      start_time: validated.start_time ?? null,
+      end_time: validated.end_time ?? null,
+      reason: validated.reason,
+      is_event_auto: false,
     })
-    .select('id')
+    .select()
     .single()
 
   if (error) {
-    console.error('[createProtectedBlock] Error:', error)
-    throw new Error('Failed to create protected block')
+    console.error('[createProtectedTime] Error:', error)
+    throw new Error('Failed to create protected time block')
   }
 
-  revalidatePath('/schedule')
   revalidatePath('/calendar')
-  return { success: true, id: (data as any)?.id }
+
+  return mapToProtectedTime(data, validated.is_recurring, validated.recurrence_rule ?? null)
 }
 
-// ─── Delete ───────────────────────────────────────────────────────────────────
+/**
+ * Update a protected time block.
+ */
+export async function updateProtectedTime(
+  blockId: string,
+  input: UpdateProtectedTimeInput
+): Promise<ProtectedTimeBlock> {
+  const user = await requirePro('advanced-calendar')
+  const validated = UpdateProtectedTimeSchema.parse(input)
+  const supabase = createServerClient()
 
-export async function deleteProtectedBlock(id: string): Promise<{ success: boolean }> {
-  const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const updateData: Record<string, unknown> = {}
+  if (validated.block_date !== undefined) updateData.block_date = validated.block_date
+  if (validated.block_type !== undefined) updateData.block_type = validated.block_type
+  if (validated.start_time !== undefined) updateData.start_time = validated.start_time
+  if (validated.end_time !== undefined) updateData.end_time = validated.end_time
+  if (validated.reason !== undefined) updateData.reason = validated.reason
 
-  // Verify ownership before deleting
-  const { data: existing } = await supabase
-    .from('event_prep_blocks' as any)
-    .select('id, chef_id')
-    .eq('id', id)
+  const { data, error } = await (supabase as any)
+    .from('chef_availability_blocks')
+    .update(updateData)
+    .eq('id', blockId)
+    .eq('chef_id', user.tenantId!)
+    .eq('is_event_auto', false) // only allow editing manual blocks
+    .select()
     .single()
 
-  if (!existing || (existing as any).chef_id !== chef.tenantId!) {
-    throw new Error('Block not found or access denied')
+  if (error) {
+    console.error('[updateProtectedTime] Error:', error)
+    throw new Error('Failed to update protected time block')
   }
 
-  const { error } = await supabase
-    .from('event_prep_blocks' as any)
+  revalidatePath('/calendar')
+
+  return mapToProtectedTime(
+    data,
+    validated.is_recurring ?? false,
+    validated.recurrence_rule ?? null
+  )
+}
+
+/**
+ * Delete a protected time block.
+ */
+export async function deleteProtectedTime(blockId: string): Promise<void> {
+  const user = await requirePro('advanced-calendar')
+  const supabase = createServerClient()
+
+  const { error } = await (supabase as any)
+    .from('chef_availability_blocks')
     .delete()
-    .eq('id', id)
+    .eq('id', blockId)
+    .eq('chef_id', user.tenantId!)
+    .eq('is_event_auto', false) // only allow deleting manual blocks
 
   if (error) {
-    console.error('[deleteProtectedBlock] Error:', error)
-    throw new Error('Failed to delete protected block')
+    console.error('[deleteProtectedTime] Error:', error)
+    throw new Error('Failed to delete protected time block')
   }
 
-  revalidatePath('/schedule')
   revalidatePath('/calendar')
-  return { success: true }
 }
 
-// ─── List ─────────────────────────────────────────────────────────────────────
+/**
+ * Get all protected time blocks for a date range.
+ */
+export async function getProtectedTime(
+  startDate: string,
+  endDate: string
+): Promise<ProtectedTimeBlock[]> {
+  const user = await requirePro('advanced-calendar')
+  const supabase = createServerClient()
 
-export async function listProtectedBlocks(): Promise<ProtectedBlock[]> {
-  const chef = await requireChef()
-  const supabase: any = createServerClient()
-
-  const { data, error } = await supabase
-    .from('event_prep_blocks' as any)
-    .select('id, title, block_date, notes, block_type, created_at')
-    .eq('chef_id', chef.tenantId!)
-    .in('block_type', ['protected_personal', 'rest'])
-    .order('block_date', { ascending: true })
+  const { data, error } = await (supabase as any)
+    .from('chef_availability_blocks')
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .eq('is_event_auto', false) // only manual blocks = protected time
+    .gte('block_date', startDate)
+    .lte('block_date', endDate)
+    .order('block_date')
 
   if (error) {
-    console.error('[listProtectedBlocks] Error:', error)
-    return []
+    console.error('[getProtectedTime] Error:', error)
+    throw new Error('Failed to load protected time blocks')
   }
 
-  return (data ?? []).map((row: any) => {
-    // Parse end_date from notes if present, otherwise same as start_date
-    let endDate = row.block_date
-    if (row.notes && (row.notes as string).startsWith('Until: ')) {
-      endDate = (row.notes as string).replace('Until: ', '').trim()
-    }
+  return (data ?? []).map((d: any) => mapToProtectedTime(d, false, null))
+}
 
-    return {
-      id: row.id,
-      title: row.title,
-      start_date: row.block_date,
-      end_date: endDate,
-      block_type: row.block_type as ProtectedBlockType,
-      created_at: row.created_at,
-    }
-  })
+// ============================================
+// HELPERS
+// ============================================
+
+function mapToProtectedTime(
+  row: any,
+  isRecurring: boolean,
+  recurrenceRule: string | null
+): ProtectedTimeBlock {
+  return {
+    id: row.id,
+    chefId: row.chef_id,
+    blockDate: row.block_date,
+    blockType: row.block_type,
+    startTime: row.start_time ?? null,
+    endTime: row.end_time ?? null,
+    reason: row.reason ?? '',
+    isRecurring,
+    recurrenceRule,
+    createdAt: row.created_at,
+  }
 }
