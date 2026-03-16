@@ -34,7 +34,7 @@ Lightweight error boundary for individual widgets/panels. Two modes:
 
 Unlike the full-page ErrorBoundary, this keeps the rest of the page functional when one widget crashes.
 
-### Form Protection Rollout (useProtectedForm + FormShield) - 25 Forms
+### Form Protection Rollout (useProtectedForm + FormShield) - 37 Forms
 
 | File                                                            | What Changed                              |
 | --------------------------------------------------------------- | ----------------------------------------- |
@@ -50,8 +50,20 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 | `app/(chef)/operations/kitchen-rentals/kitchen-rental-form.tsx` | Full protection (10-field form)           |
 | `app/(chef)/loyalty/rewards/new/create-reward-form.tsx`         | Full protection (6-field form)            |
 | `app/(chef)/loyalty/raffle/create-raffle-form.tsx`              | Full protection (3 text areas)            |
+| `components/clients/demographics-editor.tsx`                    | Full protection (8 fields, client PII)    |
+| `components/clients/personal-info-editor.tsx`                   | Full protection (3 fields)                |
+| `components/clients/client-dates-form.tsx`                      | Full protection (dates + array)           |
+| `app/(chef)/clients/new/client-create-form.tsx`                 | Full protection (20+ fields)              |
+| `app/(chef)/loyalty/settings/loyalty-settings-form.tsx`         | Full protection (8+ fields)               |
+| `components/commerce/product-form.tsx`                          | Full protection (10 fields)               |
+| `components/retainers/retainer-form.tsx`                        | Full protection (8 fields)                |
+| `components/communication/template-editor.tsx`                  | Full protection (5 fields)                |
+| `components/social/social-post-editor.tsx`                      | Full protection (20+ fields, 10s)         |
+| `components/communication/business-hours-editor.tsx`            | Full protection (schedule + text, 10s)    |
+| `components/calls/call-outcome-form.tsx`                        | Full protection (5 fields, 10s)           |
+| `components/inventory/waste-log-form.tsx`                       | Full protection (6 fields)                |
 
-### Undo for Destructive Actions (useDeferredAction / showUndoToast) - 17 Actions
+### Undo for Destructive Actions (useDeferredAction / showUndoToast) - 24 Actions
 
 | File                                                          | What Changed                    |
 | ------------------------------------------------------------- | ------------------------------- |
@@ -72,6 +84,13 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 | `app/(chef)/network/friends-list.tsx`                         | Optimistic removal + undo toast |
 | `app/(chef)/network/trusted-circle.tsx`                       | Optimistic removal + undo toast |
 | `app/(chef)/network/collab-inbox.tsx`                         | Optimistic signal delete + undo |
+| `components/clients/client-photo-gallery.tsx`                 | Optimistic removal + undo toast |
+| `components/events/event-photo-gallery.tsx`                   | Optimistic removal + undo toast |
+| `components/recipes/step-photo-gallery.tsx`                   | Optimistic removal + undo toast |
+| `components/compliance/certification-manager.tsx`             | Optimistic removal + undo toast |
+| `components/journey/journey-entry-panel.tsx`                  | Optimistic removal + undo toast |
+| `components/journey/journey-idea-panel.tsx`                   | Optimistic removal + undo toast |
+| `components/journey/journey-media-panel.tsx`                  | Optimistic removal + undo toast |
 
 ### Error Boundaries (WidgetErrorBoundary) - 15 Pages
 
@@ -106,19 +125,16 @@ Unlike the full-page ErrorBoundary, this keeps the rest of the page functional w
 | Save state model         | `lib/save-state/model.ts`                     | Unchanged                                |
 | QoL metrics              | `lib/qol/metrics-client.ts`                   | Unchanged                                |
 
-## What's Next (Phase 2+)
+## What's Next (Phase 3+)
 
-### Remaining form rollout (~15 forms)
+### Remaining form rollout (~5 forms)
 
-- Client editor components (demographics, personal info, dietary)
-- Modal/dialog forms with significant input (event form, quote form)
 - Public/embed forms (localStorage-based, no tenant scoping)
+- Modal-only forms with brief input (guest form, reservation form, quick notes)
 
-### Remaining undo rollout (~10 destructive actions)
+### Remaining undo rollout (~3 destructive actions)
 
-- Photo/media deletions (client gallery, dish photos, event media)
-- Journey entry/idea/media deletions
-- Certification deletions
+- Guest photo deletions
 - Prep schedule task deletions
 - Remy conversation archive/delete
 
