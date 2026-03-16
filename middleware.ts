@@ -81,6 +81,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Expose current pathname to server components (e.g. chef layout onboarding gate).
+  // Set on request.headers so it survives Supabase setAll response re-creation.
+  request.headers.set('x-pathname', pathname)
+
   // Create Supabase client for middleware with getAll/setAll cookie API
   let response = NextResponse.next({
     request: {

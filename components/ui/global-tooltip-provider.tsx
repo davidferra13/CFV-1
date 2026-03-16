@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { clampTooltipText, isTooltipLabelRedundant, normalizeTooltipText } from '@/lib/ui/tooltip'
 
 const POINTER_SHOW_DELAY_MS = 480
@@ -50,8 +50,8 @@ type TooltipPosition = {
 }
 
 const DEFAULT_POSITION: TooltipPosition = {
-  top: 0,
-  left: 0,
+  top: -9999,
+  left: -9999,
   placement: 'top',
   ready: false,
 }
@@ -344,13 +344,10 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
     pendingTargetRef.current = null
     activeTargetRef.current = candidate.root
     setPosition(DEFAULT_POSITION)
+    setIsOpen(false)
     setRenderedTooltip({
       target: candidate.root,
       text: candidate.text,
-    })
-
-    window.requestAnimationFrame(() => {
-      setIsOpen(true)
     })
   }
 
@@ -510,25 +507,29 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
     renderedTooltipRef.current = renderedTooltip
   }, [renderedTooltip])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!renderedTooltip || !tooltipRef.current) {
       return
     }
 
+    if (!renderedTooltip.target.isConnected) {
+      clearTooltip(true)
+      return
+    }
+
+    const nextPosition = computeTooltipPosition(
+      renderedTooltip.target.getBoundingClientRect(),
+      tooltipRef.current.getBoundingClientRect(),
+      window.innerWidth,
+      window.innerHeight
+    )
+
+    setPosition(nextPosition)
+
+    // Defer isOpen to the next frame so the browser paints at the correct
+    // position first, then the opacity transition animates in.
     const frame = window.requestAnimationFrame(() => {
-      if (!renderedTooltip.target.isConnected || !tooltipRef.current) {
-        clearTooltip(true)
-        return
-      }
-
-      const nextPosition = computeTooltipPosition(
-        renderedTooltip.target.getBoundingClientRect(),
-        tooltipRef.current.getBoundingClientRect(),
-        window.innerWidth,
-        window.innerHeight
-      )
-
-      setPosition(nextPosition)
+      setIsOpen(true)
     })
 
     return () => {
