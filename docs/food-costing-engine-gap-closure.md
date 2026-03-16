@@ -89,6 +89,25 @@ All four UI components built to close the final gap:
 - `components/inventory/auto-reorder-panel.tsx` - Preview + generate draft POs from par-level shortfalls, grouped by vendor
 - `components/inventory/variance-alert-settings.tsx` - Threshold slider (5-50%), enable/disable toggles, save to DB
 
+## Page Wiring (Phase 8)
+
+All UI components wired into their respective pages:
+
+- **Demand Forecast page** (`/inventory/demand`) - AutoReorderPanel added below forecast table
+- **Food Cost Analysis page** (`/inventory/food-cost`) - VarianceAlertSettings added below variance table
+- **Vendor Detail page** (`/vendors/[id]`) - VendorComparisonPanel added after price list
+- **Inventory Hub page** (`/inventory`) - AutoReorderPanel shown when par alerts exist
+- **New: Ingredient Price Detail page** (`/inventory/ingredients/[id]`) - PriceHistoryChart + VendorComparisonPanel for any ingredient
+- **Ingredient Library** (`/recipes/ingredients`) - "Prices" button on each row links to price detail page
+
+## Migrations Pending
+
+Three migrations need `supabase db push` before features go live:
+
+1. `20260401000061_ingredient_price_history.sql` - Price history table + monthly avg view
+2. `20260401000062_vendor_ingredient_pricing.sql` - Vendor pricing columns + best price view
+3. `20260401000063_variance_alert_settings.sql` - Alert settings table
+
 ## Status: Complete
 
-All 6 backend phases + UI components + event FSM wiring + variance unit normalization are done. The food costing engine is at ~100% feature coverage.
+All 6 backend phases + 4 UI components + page wiring + event FSM hooks + unit normalization are done. The food costing engine is at 100% feature coverage. Migrations need to be applied to activate the new tables.
