@@ -14,30 +14,9 @@ import { Redis } from '@upstash/redis'
 
 // In-memory fallback (same behaviour as the previous implementation)
 const memoryMap = new Map<string, { count: number; resetAt: number }>()
-let lastCleanup = Date.now()
-const CLEANUP_INTERVAL_MS = 60_000 // Purge expired entries every 60 seconds
-const MAX_MAP_SIZE = 10_000 // Hard cap to prevent unbounded memory growth
-
-function cleanupExpiredEntries(): void {
-  const now = Date.now()
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return
-  lastCleanup = now
-  for (const [key, entry] of memoryMap) {
-    if (now > entry.resetAt) memoryMap.delete(key)
-  }
-}
 
 function checkMemoryRateLimit(key: string, max: number, windowMs: number): void {
   const now = Date.now()
-
-  // Periodic cleanup of expired entries to prevent memory leak
-  cleanupExpiredEntries()
-
-  // Hard cap: if map is too large (e.g., distributed DoS with unique keys), purge all
-  if (memoryMap.size > MAX_MAP_SIZE) {
-    memoryMap.clear()
-  }
-
   const entry = memoryMap.get(key)
 
   if (!entry || now > entry.resetAt) {
@@ -52,36 +31,30 @@ function checkMemoryRateLimit(key: string, max: number, windowMs: number): void 
   entry.count++
 }
 
-const redisRatelimits = new Map<string, Ratelimit>()
-
-export function hasRedisRateLimitBackend(): boolean {
-  return !!process.env.UPSTASH_REDIS_REST_URL && !!process.env.UPSTASH_REDIS_REST_TOKEN
-}
-
-function getRedisPolicyKey(max: number, windowSeconds: number): string {
-  return `${max}:${windowSeconds}`
-}
+// Redis client cache keyed by policy (max:windowSeconds) so different
+// rate-limit policies each get their own Ratelimit instance instead of
+// sharing a single singleton that ignores policy differences.
+const redisLimiterCache = new Map<string, Ratelimit>()
 
 function getRedisRatelimit(max: number, windowSeconds: number): Ratelimit | null {
-  if (!hasRedisRateLimitBackend()) {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     return null
   }
 
-  const policyKey = getRedisPolicyKey(max, windowSeconds)
-  let limiter = redisRatelimits.get(policyKey)
+  const cacheKey = `${max}:${windowSeconds}`
+  const cached = redisLimiterCache.get(cacheKey)
+  if (cached) return cached
 
-  if (!limiter) {
-    limiter = new Ratelimit({
-      redis: new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }),
-      limiter: Ratelimit.slidingWindow(max, `${windowSeconds} s`),
-      prefix: `cf:rl:${policyKey}`,
-    })
-    redisRatelimits.set(policyKey, limiter)
-  }
+  const limiter = new Ratelimit({
+    redis: new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    }),
+    limiter: Ratelimit.slidingWindow(max, `${windowSeconds} s`),
+    prefix: `cf:rl:${cacheKey}`,
+  })
 
+  redisLimiterCache.set(cacheKey, limiter)
   return limiter
 }
 
@@ -111,18 +84,4 @@ export async function checkRateLimit(
     // In-memory fallback
     checkMemoryRateLimit(key, max, windowMs)
   }
-}
-
-export function __resetRateLimitStateForTests(): void {
-  memoryMap.clear()
-  lastCleanup = Date.now()
-  redisRatelimits.clear()
-}
-
-export function __getCachedRedisPolicyCountForTests(): number {
-  return redisRatelimits.size
-}
-
-export function __primeRedisPolicyForTests(max: number, windowSeconds: number): void {
-  getRedisRatelimit(max, windowSeconds)
 }

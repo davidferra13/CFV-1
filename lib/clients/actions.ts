@@ -248,8 +248,9 @@ export async function inviteClient(input: InviteClientInput) {
     throw new ValidationError('Pending invitation already exists for this email')
   }
 
-  // Generate secure token
+  // Generate secure token and store its SHA-256 hash (not plaintext)
   const token = crypto.randomBytes(32).toString('hex')
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
 
   // Create invitation (expires in 7 days)
   const expiresAt = new Date()
@@ -261,7 +262,7 @@ export async function inviteClient(input: InviteClientInput) {
       tenant_id: user.tenantId!,
       email: validated.email,
       full_name: validated.full_name,
-      token,
+      token: tokenHash,
       expires_at: expiresAt.toISOString(),
       created_by: user.id,
     })

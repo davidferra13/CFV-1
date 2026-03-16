@@ -1,19 +1,47 @@
 // Invitation token lookup, usage, and revocation for the signup flow
 // Extracted from lib/clients/actions.ts to decouple auth from Phase 3 code
+//
+// Tokens are stored as SHA-256 hashes. The raw token is sent to the client
+// in the invitation URL; on lookup we hash the incoming value before querying.
 
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import crypto from 'crypto'
 
 /**
- * Get invitation by token (public - for signup flow)
+ * Hash a raw invitation token for DB comparison.
+ * Tokens created before hashing was introduced are stored as plaintext hex;
+ * this function produces the SHA-256 hex digest used for new tokens.
+ */
+function hashToken(raw: string): string {
+  return crypto.createHash('sha256').update(raw).digest('hex')
+}
+
+/**
+ * Get invitation by token (public - for signup flow).
+ * Checks the hashed token first; falls back to plaintext match
+ * for tokens generated before the hashing migration.
  */
 export async function getInvitationByToken(token: string) {
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
+  const hashed = hashToken(token)
 
-  const { data: invitation, error } = await supabase
+  // Try hashed match first (new tokens)
+  const { data: invitation } = await supabase
+    .from('client_invitations')
+    .select('*')
+    .eq('token', hashed)
+    .is('used_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .single()
+
+  if (invitation) return invitation
+
+  // Fallback: plaintext match for legacy tokens created before hashing
+  const { data: legacyInvitation } = await supabase
     .from('client_invitations')
     .select('*')
     .eq('token', token)
@@ -21,11 +49,7 @@ export async function getInvitationByToken(token: string) {
     .gt('expires_at', new Date().toISOString())
     .single()
 
-  if (error || !invitation) {
-    return null
-  }
-
-  return invitation
+  return legacyInvitation ?? null
 }
 
 /**
@@ -53,7 +77,7 @@ export async function markInvitationUsed(invitationId: string) {
  */
 export async function revokeInvitation(invitationId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('client_invitations')

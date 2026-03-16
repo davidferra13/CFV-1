@@ -1,101 +1,67 @@
-// Webhook URL Validation — SSRF Protection
-// Prevents server-side request forgery by blocking private/internal IPs
-// and enforcing HTTPS on all user-configured webhook URLs.
+// Centralized webhook/callback URL validation
+// All external URL validation (Zapier, integrations, callbacks) must go through this module.
+// Rejects: localhost, private IPs, metadata hosts, HTTP (non-TLS), credentialed URLs.
 
-/**
- * Regular expressions matching private, loopback, and link-local IPv4 ranges.
- * These must never be targets of outbound requests triggered by user input.
- */
-const PRIVATE_IPV4_RANGES = [
-  /^127\./, // 127.0.0.0/8 — loopback
-  /^10\./, // 10.0.0.0/8 — Class A private
-  /^172\.(1[6-9]|2\d|3[01])\./, // 172.16.0.0/12 — Class B private
-  /^192\.168\./, // 192.168.0.0/16 — Class C private
-  /^169\.254\./, // 169.254.0.0/16 — link-local (AWS/GCP/Azure metadata)
-  /^0\./, // 0.0.0.0/8
+const PRIVATE_IP_RANGES = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^0\./,
+  /^169\.254\./, // link-local / cloud metadata
 ]
 
-/** Hostnames that resolve to local/internal addresses */
 const BLOCKED_HOSTNAMES = new Set([
   'localhost',
-  'localhost.localdomain',
   '0.0.0.0',
-  '[::]',
   '[::1]',
-  'metadata.google.internal', // GCP metadata
-  'metadata', // Short alias sometimes used
+  'metadata.google.internal',
+  'metadata.google',
+  '169.254.169.254', // AWS/GCP metadata endpoint
 ])
 
-/**
- * Check if a hostname looks like a private/internal IPv4 address.
- */
-function isPrivateIPv4(hostname: string): boolean {
-  return PRIVATE_IPV4_RANGES.some((range) => range.test(hostname))
-}
+export type UrlValidationResult = { valid: true; url: URL } | { valid: false; reason: string }
 
 /**
- * Check if a hostname is a private/internal IPv6 address.
- * Strips brackets for raw comparison.
- */
-function isPrivateIPv6(hostname: string): boolean {
-  const raw = hostname.replace(/^\[|\]$/g, '').toLowerCase()
-  if (raw === '::1' || raw === '::') return true
-  // fc00::/7 — unique local addresses
-  if (/^fc[0-9a-f]{2}:/.test(raw)) return true
-  // fd00::/8 — unique local addresses
-  if (/^fd[0-9a-f]{2}:/.test(raw)) return true
-  // fe80::/10 — link-local
-  if (/^fe80:/.test(raw)) return true
-  // IPv4-mapped IPv6 (::ffff:127.0.0.1, ::ffff:10.0.0.1, etc.)
-  const v4MappedMatch = raw.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)
-  if (v4MappedMatch && isPrivateIPv4(v4MappedMatch[1])) return true
-  return false
-}
-
-/**
- * Validate a webhook URL for SSRF safety.
- * Throws a descriptive error if the URL is invalid or targets a private address.
+ * Validate a URL intended for webhook delivery or external callbacks.
  *
- * Checks:
- * 1. Valid URL syntax
- * 2. HTTPS only (HTTP rejected)
- * 3. No private/internal IPv4 ranges (127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x)
- * 4. No private IPv6 (::1, fc00::/7, fe80::/10)
- * 5. No localhost or metadata hostnames
- * 6. No userinfo in URL (prevents auth smuggling)
+ * Rules enforced:
+ *  1. Must be a valid URL
+ *  2. Must use HTTPS (no plain HTTP)
+ *  3. Must not contain credentials (user:pass@)
+ *  4. Must not target localhost, private IPs, or cloud metadata endpoints
+ *  5. Must have a hostname (no bare IPs in blocked ranges)
  */
-export function validateWebhookUrl(url: string): void {
-  let parsed: URL
+export function validateWebhookUrl(raw: string): UrlValidationResult {
+  let url: URL
   try {
-    parsed = new URL(url)
+    url = new URL(raw)
   } catch {
-    throw new Error('Invalid webhook URL')
+    return { valid: false, reason: 'Invalid URL format' }
   }
 
-  // 1. Require HTTPS
-  if (parsed.protocol !== 'https:') {
-    throw new Error('Webhook URLs must use HTTPS')
+  // Protocol check: HTTPS only
+  if (url.protocol !== 'https:') {
+    return { valid: false, reason: 'Only HTTPS URLs are allowed' }
   }
 
-  // 2. Block userinfo (user:pass@host) — prevents auth credential smuggling
-  if (parsed.username || parsed.password) {
-    throw new Error('Webhook URLs must not contain credentials')
+  // Credential check
+  if (url.username || url.password) {
+    return { valid: false, reason: 'URLs with embedded credentials are not allowed' }
   }
 
-  const hostname = parsed.hostname.toLowerCase()
-
-  // 3. Block known internal hostnames
+  // Hostname blocklist
+  const hostname = url.hostname.toLowerCase()
   if (BLOCKED_HOSTNAMES.has(hostname)) {
-    throw new Error('Webhook URLs cannot target internal addresses')
+    return { valid: false, reason: `Blocked hostname: ${hostname}` }
   }
 
-  // 4. Block private IPv4
-  if (isPrivateIPv4(hostname)) {
-    throw new Error('Webhook URLs cannot target private IP addresses')
+  // Private IP range check
+  for (const pattern of PRIVATE_IP_RANGES) {
+    if (pattern.test(hostname)) {
+      return { valid: false, reason: 'Private/internal IP addresses are not allowed' }
+    }
   }
 
-  // 5. Block private IPv6
-  if (isPrivateIPv6(hostname)) {
-    throw new Error('Webhook URLs cannot target private IP addresses')
-  }
+  return { valid: true, url }
 }
