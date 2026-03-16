@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { clampTooltipText, isTooltipLabelRedundant, normalizeTooltipText } from '@/lib/ui/tooltip'
 
 const POINTER_SHOW_DELAY_MS = 480
@@ -278,7 +278,7 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
   const coarsePointerRef = useRef(false)
   const suppressedTitleRef = useRef<{ element: HTMLElement; value: string } | null>(null)
 
-  const restoreSuppressedTitle = () => {
+  const restoreSuppressedTitle = useCallback(() => {
     const suppressedTitle = suppressedTitleRef.current
     if (!suppressedTitle) {
       return
@@ -289,55 +289,61 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
     }
 
     suppressedTitleRef.current = null
-  }
+  }, [])
 
-  const suppressNativeTitle = (candidate: TooltipCandidate) => {
-    restoreSuppressedTitle()
-
-    if (candidate.sourceType !== 'title') {
-      return
-    }
-
-    const title = candidate.source.getAttribute('title')
-    if (!title) {
-      return
-    }
-
-    candidate.source.setAttribute('data-tooltip-title', title)
-    candidate.source.removeAttribute('title')
-    suppressedTitleRef.current = {
-      element: candidate.source,
-      value: title,
-    }
-  }
-
-  const clearTooltip = (immediate = false) => {
-    clearTimer(showTimerRef)
-    pendingTargetRef.current = null
-
-    const hideNow = () => {
-      clearTimer(hideTimerRef)
-      setIsOpen(false)
-      activeTargetRef.current = null
+  const suppressNativeTitle = useCallback(
+    (candidate: TooltipCandidate) => {
       restoreSuppressedTitle()
 
-      clearTimer(exitTimerRef)
-      exitTimerRef.current = window.setTimeout(() => {
-        setRenderedTooltip(null)
-        setPosition(DEFAULT_POSITION)
-      }, EXIT_DURATION_MS)
-    }
+      if (candidate.sourceType !== 'title') {
+        return
+      }
 
-    if (immediate) {
-      hideNow()
-      return
-    }
+      const title = candidate.source.getAttribute('title')
+      if (!title) {
+        return
+      }
 
-    clearTimer(hideTimerRef)
-    hideTimerRef.current = window.setTimeout(hideNow, HIDE_DELAY_MS)
-  }
+      candidate.source.setAttribute('data-tooltip-title', title)
+      candidate.source.removeAttribute('title')
+      suppressedTitleRef.current = {
+        element: candidate.source,
+        value: title,
+      }
+    },
+    [restoreSuppressedTitle]
+  )
 
-  const showTooltip = (candidate: TooltipCandidate) => {
+  const clearTooltip = useCallback(
+    (immediate = false) => {
+      clearTimer(showTimerRef)
+      pendingTargetRef.current = null
+
+      const hideNow = () => {
+        clearTimer(hideTimerRef)
+        setIsOpen(false)
+        activeTargetRef.current = null
+        restoreSuppressedTitle()
+
+        clearTimer(exitTimerRef)
+        exitTimerRef.current = window.setTimeout(() => {
+          setRenderedTooltip(null)
+          setPosition(DEFAULT_POSITION)
+        }, EXIT_DURATION_MS)
+      }
+
+      if (immediate) {
+        hideNow()
+        return
+      }
+
+      clearTimer(hideTimerRef)
+      hideTimerRef.current = window.setTimeout(hideNow, HIDE_DELAY_MS)
+    },
+    [restoreSuppressedTitle]
+  )
+
+  const showTooltip = useCallback((candidate: TooltipCandidate) => {
     clearTimer(showTimerRef)
     clearTimer(hideTimerRef)
     clearTimer(exitTimerRef)
@@ -349,26 +355,29 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
       target: candidate.root,
       text: candidate.text,
     })
-  }
+  }, [])
 
-  const scheduleTooltip = (candidate: TooltipCandidate, delay: number) => {
-    clearTimer(showTimerRef)
-    clearTimer(hideTimerRef)
-    clearTimer(exitTimerRef)
+  const scheduleTooltip = useCallback(
+    (candidate: TooltipCandidate, delay: number) => {
+      clearTimer(showTimerRef)
+      clearTimer(hideTimerRef)
+      clearTimer(exitTimerRef)
 
-    if (
-      activeTargetRef.current === candidate.root &&
-      renderedTooltipRef.current?.text === candidate.text
-    ) {
+      if (
+        activeTargetRef.current === candidate.root &&
+        renderedTooltipRef.current?.text === candidate.text
+      ) {
+        suppressNativeTitle(candidate)
+        setIsOpen(true)
+        return
+      }
+
+      pendingTargetRef.current = candidate.root
       suppressNativeTitle(candidate)
-      setIsOpen(true)
-      return
-    }
-
-    pendingTargetRef.current = candidate.root
-    suppressNativeTitle(candidate)
-    showTimerRef.current = window.setTimeout(() => showTooltip(candidate), delay)
-  }
+      showTimerRef.current = window.setTimeout(() => showTooltip(candidate), delay)
+    },
+    [showTooltip, suppressNativeTitle]
+  )
 
   useEffect(() => {
     const pointerMediaQuery = window.matchMedia('(pointer: coarse)')
@@ -501,11 +510,11 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
       clearTimer(exitTimerRef)
       restoreSuppressedTitle()
     }
-  }, [])
+  }, [clearTooltip, restoreSuppressedTitle, scheduleTooltip])
 
   useEffect(() => {
     renderedTooltipRef.current = renderedTooltip
-  }, [renderedTooltip])
+  }, [clearTooltip, renderedTooltip])
 
   useLayoutEffect(() => {
     if (!renderedTooltip || !tooltipRef.current) {
@@ -535,7 +544,7 @@ export function GlobalTooltipProvider({ children }: { children: React.ReactNode 
     return () => {
       window.cancelAnimationFrame(frame)
     }
-  }, [renderedTooltip])
+  }, [clearTooltip, renderedTooltip])
 
   return (
     <>

@@ -4,7 +4,7 @@
 // Menu > Course > Dish > Component > Recipe > Ingredient
 // Each level shows scaled quantities and costs
 
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getMenuBreakdown } from '@/lib/menus/menu-intelligence-actions'
@@ -147,11 +147,7 @@ export function MenuBreakdownView({ menuId, className = '' }: MenuBreakdownViewP
   const [breakdown, setBreakdown] = useState<MenuCostBreakdown | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadBreakdown()
-  }, [menuId])
-
-  function loadBreakdown() {
+  const loadBreakdown = useCallback(() => {
     startTransition(async () => {
       try {
         const result = await getMenuBreakdown(menuId)
@@ -162,7 +158,11 @@ export function MenuBreakdownView({ menuId, className = '' }: MenuBreakdownViewP
         setLoadError('Could not load menu breakdown')
       }
     })
-  }
+  }, [menuId, startTransition])
+
+  useEffect(() => {
+    loadBreakdown()
+  }, [loadBreakdown])
 
   if (loadError) {
     return (

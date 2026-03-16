@@ -369,7 +369,7 @@ export function MilestoneOverlay() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isDemo])
 
   const handleDone = useCallback(() => {
     if (!current) return

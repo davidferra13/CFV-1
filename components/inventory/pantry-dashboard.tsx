@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -42,15 +42,7 @@ export function PantryDashboard() {
     notes: '',
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    loadItems()
-  }, [selectedLocationId])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       setLoadError(null)
       const [locs, low, expiring] = await Promise.all([
@@ -68,9 +60,9 @@ export function PantryDashboard() {
       setLoadError('Failed to load pantry data. Please try again.')
       console.error('[pantry-dashboard] loadData error:', err)
     }
-  }
+  }, [selectedLocationId])
 
-  async function loadItems() {
+  const loadItems = useCallback(async () => {
     if (!selectedLocationId) {
       setItems([])
       return
@@ -82,7 +74,15 @@ export function PantryDashboard() {
       console.error('[pantry-dashboard] loadItems error:', err)
       toast.error('Failed to load items')
     }
-  }
+  }, [selectedLocationId])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  useEffect(() => {
+    loadItems()
+  }, [loadItems])
 
   function handleAddItem() {
     if (!selectedLocationId || !newItem.name || !newItem.quantity) {

@@ -1,14 +1,10 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import {
-  getEnrollments,
-  pauseEnrollment,
-  cancelEnrollment,
-} from '@/lib/email/sequence-actions'
+import { getEnrollments, pauseEnrollment, cancelEnrollment } from '@/lib/email/sequence-actions'
 
 // ============================================
 // TYPES
@@ -53,11 +49,7 @@ export function EnrollmentManager({ sequenceId }: EnrollmentManagerProps) {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  useEffect(() => {
-    loadEnrollments()
-  }, [sequenceId])
-
-  async function loadEnrollments() {
+  const loadEnrollments = useCallback(async () => {
     try {
       const data = await getEnrollments(sequenceId)
       setEnrollments(data)
@@ -67,16 +59,18 @@ export function EnrollmentManager({ sequenceId }: EnrollmentManagerProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [sequenceId])
+
+  useEffect(() => {
+    loadEnrollments()
+  }, [loadEnrollments])
 
   function handlePause(enrollmentId: string) {
     const previousEnrollments = [...enrollments]
 
     setEnrollments((prev) =>
       prev.map((e) =>
-        e.id === enrollmentId
-          ? { ...e, status: 'paused' as const, next_send_at: null }
-          : e
+        e.id === enrollmentId ? { ...e, status: 'paused' as const, next_send_at: null } : e
       )
     )
 
@@ -96,9 +90,7 @@ export function EnrollmentManager({ sequenceId }: EnrollmentManagerProps) {
 
     setEnrollments((prev) =>
       prev.map((e) =>
-        e.id === enrollmentId
-          ? { ...e, status: 'cancelled' as const, next_send_at: null }
-          : e
+        e.id === enrollmentId ? { ...e, status: 'cancelled' as const, next_send_at: null } : e
       )
     )
 
@@ -123,20 +115,14 @@ export function EnrollmentManager({ sequenceId }: EnrollmentManagerProps) {
   }
 
   const filtered =
-    statusFilter === 'all'
-      ? enrollments
-      : enrollments.filter((e) => e.status === statusFilter)
+    statusFilter === 'all' ? enrollments : enrollments.filter((e) => e.status === statusFilter)
 
   // ----------------------------------------
   // RENDER
   // ----------------------------------------
 
   if (loading) {
-    return (
-      <p className="text-sm text-muted-foreground py-8 text-center">
-        Loading enrollments...
-      </p>
-    )
+    return <p className="text-sm text-muted-foreground py-8 text-center">Loading enrollments...</p>
   }
 
   if (error) {
@@ -193,20 +179,14 @@ export function EnrollmentManager({ sequenceId }: EnrollmentManagerProps) {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <span>
-                    Sequence: {enrollment.email_sequences?.name ?? 'Unknown'}
-                  </span>
+                  <span>Sequence: {enrollment.email_sequences?.name ?? 'Unknown'}</span>
                   <span>Step {enrollment.current_step}</span>
                   <span>Enrolled: {formatDate(enrollment.enrolled_at)}</span>
                   {enrollment.next_send_at && (
-                    <span>
-                      Next send: {formatDate(enrollment.next_send_at)}
-                    </span>
+                    <span>Next send: {formatDate(enrollment.next_send_at)}</span>
                   )}
                   {enrollment.completed_at && (
-                    <span>
-                      Completed: {formatDate(enrollment.completed_at)}
-                    </span>
+                    <span>Completed: {formatDate(enrollment.completed_at)}</span>
                   )}
                 </div>
               </div>

@@ -35,7 +35,7 @@ export function CookieConsent() {
     }
 
     setVisible(true)
-  }, [])
+  }, [isDemo])
 
   function handleConsent(value: 'accepted' | 'declined') {
     setCookie('cookieConsent', value, 365)
