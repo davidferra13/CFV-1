@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import {
   ArrowRight,
   CheckCircle2,
@@ -21,6 +22,25 @@ import {
   type PricingPlanId,
 } from '@/lib/billing/pricing-catalog'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
+export const metadata: Metadata = {
+  title: 'Pricing | ChefFlow',
+  description:
+    'ChefFlow pricing plans for private chefs and chef-led teams. Free tier for solo operators, Pro for growing businesses, and Scale for teams.',
+  openGraph: {
+    title: 'ChefFlow Pricing',
+    description:
+      'Free, Pro, and Scale plans for private chef operations. Start free, upgrade when your business grows.',
+    url: `${BASE_URL}/pricing`,
+    siteName: 'ChefFlow',
+    type: 'website',
+  },
+  alternates: {
+    canonical: `${BASE_URL}/pricing`,
+  },
+}
 
 const PLAN_COLUMNS: PricingPlanId[] = ['free', 'pro', 'scale']
 

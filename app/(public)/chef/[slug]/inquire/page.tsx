@@ -15,9 +15,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
   if (!data) return { title: 'Chef Not Found' }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const slug = data.chef.inquiry_slug || data.chef.public_slug || params.slug
+
   return {
     title: `Inquire with ${data.chef.display_name}`,
     description: `Share your event details with ${data.chef.display_name}.`,
+    alternates: {
+      canonical: `${baseUrl}/chef/${slug}/inquire`,
+    },
   }
 }
 

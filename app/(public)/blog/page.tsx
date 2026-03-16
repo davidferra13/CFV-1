@@ -1,6 +1,25 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BLOG_POSTS } from '@/lib/blog/posts'
 import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
+export const metadata: Metadata = {
+  title: 'Blog | ChefFlow',
+  description:
+    'Short, practical guides for private chef operations. Tips on inquiry management, event workflows, pricing, and growing a chef-led business.',
+  openGraph: {
+    title: 'ChefFlow Blog',
+    description: 'Practical guides for private chefs on operations, pricing, and business growth.',
+    url: `${BASE_URL}/blog`,
+    siteName: 'ChefFlow',
+    type: 'website',
+  },
+  alternates: {
+    canonical: `${BASE_URL}/blog`,
+  },
+}
 
 export default function BlogIndexPage() {
   return (

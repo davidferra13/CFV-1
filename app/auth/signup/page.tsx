@@ -327,6 +327,7 @@ function SignUpForm() {
                   <Input
                     type="text"
                     label="Full Name"
+                    name="fullName"
                     value={clientFormData.full_name}
                     disabled={isSubmitting}
                     onChange={(event) =>
@@ -339,6 +340,7 @@ function SignUpForm() {
                   <Input
                     type="email"
                     label="Email"
+                    name="email"
                     value={clientFormData.email}
                     disabled
                     helperText="This email is from your invitation."
@@ -347,6 +349,7 @@ function SignUpForm() {
                   <Input
                     type="tel"
                     label="Phone"
+                    name="phone"
                     value={clientFormData.phone}
                     disabled={isSubmitting}
                     onChange={(event) =>
@@ -358,6 +361,7 @@ function SignUpForm() {
                   <Input
                     type="password"
                     label="Password"
+                    name="password"
                     value={clientFormData.password}
                     disabled={isSubmitting}
                     onChange={(event) =>
@@ -486,6 +490,7 @@ function SignUpForm() {
                   <Input
                     type="email"
                     label="Email"
+                    name="email"
                     value={chefFormData.email}
                     disabled={isSubmitting}
                     onChange={(event) =>
@@ -500,6 +505,7 @@ function SignUpForm() {
                   <Input
                     type="password"
                     label="Password"
+                    name="password"
                     value={chefFormData.password}
                     disabled={isSubmitting}
                     onChange={(event) =>
@@ -522,6 +528,7 @@ function SignUpForm() {
                       <Input
                         type="text"
                         label="Your Name or Business Name"
+                        name="businessName"
                         value={chefFormData.business_name}
                         disabled={isSubmitting}
                         onChange={(event) =>
@@ -536,6 +543,7 @@ function SignUpForm() {
                       <Input
                         type="tel"
                         label="Phone"
+                        name="phone"
                         value={chefFormData.phone}
                         disabled={isSubmitting}
                         onChange={(event) =>

@@ -406,7 +406,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             />
           </div>
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-stone-100">Send inquiry</h2>
+            <h1 className="text-3xl font-semibold text-stone-100">Send inquiry</h1>
             <p className="text-base text-stone-500 mt-2">
               Share the basics and we&apos;ll follow up.
             </p>
