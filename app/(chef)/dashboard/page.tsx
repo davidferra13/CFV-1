@@ -15,12 +15,14 @@ import type { PriorityQueue } from '@/lib/queue/types'
 import { ShortcutStrip } from '@/components/dashboard/shortcut-strip'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 
 // New card-based sections
 import { ScheduleCards } from './_sections/schedule-cards'
 import { AlertCards } from './_sections/alerts-cards'
 import { BusinessCards } from './_sections/business-cards'
 import { IntelligenceCards } from './_sections/intelligence-cards'
+import { HeroMetrics } from './_sections/hero-metrics'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 
@@ -133,6 +135,11 @@ export default async function ChefDashboard() {
           <p className="text-sm text-stone-400 mt-0.5">
             Good {timeOfDay}
             {firstName ? `, ${firstName}` : ''}.
+            {timeOfDay === 'morning'
+              ? " Here's your schedule and what needs attention today."
+              : timeOfDay === 'afternoon'
+                ? ' Check your alerts and upcoming events.'
+                : " Here's your end-of-day financial summary."}
           </p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
@@ -157,6 +164,29 @@ export default async function ChefDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* ============================================ */}
+      {/* HERO METRICS                                 */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Hero Metrics" compact>
+        <Suspense
+          fallback={
+            <div className="col-span-1 sm:col-span-2 lg:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3"
+                >
+                  <div className="h-3 w-16 bg-stone-800 rounded animate-pulse" />
+                  <div className="h-6 w-12 bg-stone-800 rounded animate-pulse mt-2" />
+                </div>
+              ))}
+            </div>
+          }
+        >
+          <HeroMetrics />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* SHORTCUT STRIP                               */}
@@ -233,32 +263,52 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* SCHEDULE CARDS (streamed)                    */}
+      {/* STREAMED SECTIONS (time-aware order)          */}
+      {/* Morning: Schedule > Alerts > Intelligence > Business  */}
+      {/* Afternoon: Schedule > Alerts > Business > Intelligence */}
+      {/* Evening: Business > Alerts > Schedule > Intelligence   */}
       {/* ============================================ */}
-      <Suspense fallback={<ScheduleCardsSkeleton />}>
-        <ScheduleCards />
-      </Suspense>
-
-      {/* ============================================ */}
-      {/* INTELLIGENCE CARDS (streamed)                */}
-      {/* ============================================ */}
-      <Suspense fallback={<IntelligenceCardsSkeleton />}>
-        <IntelligenceCards />
-      </Suspense>
-
-      {/* ============================================ */}
-      {/* ALERT CARDS (streamed)                       */}
-      {/* ============================================ */}
-      <Suspense fallback={<AlertCardsSkeleton />}>
-        <AlertCards />
-      </Suspense>
-
-      {/* ============================================ */}
-      {/* BUSINESS CARDS (streamed - heaviest)         */}
-      {/* ============================================ */}
-      <Suspense fallback={<BusinessCardsSkeleton />}>
-        <BusinessCards />
-      </Suspense>
+      {(timeOfDay === 'evening'
+        ? (['business', 'alerts', 'schedule', 'intelligence'] as const)
+        : timeOfDay === 'afternoon'
+          ? (['schedule', 'alerts', 'business', 'intelligence'] as const)
+          : (['schedule', 'intelligence', 'alerts', 'business'] as const)
+      ).map((section) => {
+        switch (section) {
+          case 'schedule':
+            return (
+              <WidgetErrorBoundary key="schedule" name="Schedule" compact>
+                <Suspense fallback={<ScheduleCardsSkeleton />}>
+                  <ScheduleCards />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case 'intelligence':
+            return (
+              <WidgetErrorBoundary key="intelligence" name="Intelligence" compact>
+                <Suspense fallback={<IntelligenceCardsSkeleton />}>
+                  <IntelligenceCards />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case 'alerts':
+            return (
+              <WidgetErrorBoundary key="alerts" name="Alerts" compact>
+                <Suspense fallback={<AlertCardsSkeleton />}>
+                  <AlertCards />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case 'business':
+            return (
+              <WidgetErrorBoundary key="business" name="Business" compact>
+                <Suspense fallback={<BusinessCardsSkeleton />}>
+                  <BusinessCards />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+        }
+      })}
     </div>
   )
 }

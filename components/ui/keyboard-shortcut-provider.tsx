@@ -75,9 +75,13 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
       return
     }
 
-    // Cmd+K or Ctrl+K - open Remy drawer (search uses "/" shortcut)
+    // Cmd+K or Ctrl+K - open command palette (handled by CommandPalette component in capture phase)
     if (key === 'k' && (e.metaKey || e.ctrlKey)) {
-      // Let the RemyProvider's keydown handler handle this
+      return
+    }
+
+    // Cmd+J or Ctrl+J - open Remy drawer
+    if (key === 'j' && (e.metaKey || e.ctrlKey)) {
       return
     }
 

@@ -32,12 +32,15 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
     ],
   },
   {
-    category: 'Remy',
-    shortcuts: [{ keys: ['⌘', 'K'], description: 'Open Remy chat' }],
+    category: 'Command Palette',
+    shortcuts: [
+      { keys: ['⌘', 'K'], description: 'Open command palette' },
+      { keys: ['/'], description: 'Open command palette' },
+    ],
   },
   {
-    category: 'Search',
-    shortcuts: [{ keys: ['/'], description: 'Open search' }],
+    category: 'Remy',
+    shortcuts: [{ keys: ['⌘', 'J'], description: 'Open Remy chat' }],
   },
   {
     category: 'Help',

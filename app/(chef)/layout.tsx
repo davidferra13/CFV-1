@@ -33,6 +33,7 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { Suspense } from 'react'
 import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
+import { CommandPalette } from '@/components/search/command-palette'
 
 const PushPermissionPrompt = dynamic(
   () =>
@@ -221,6 +222,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                 {/* Offline connectivity bar - shows status, queue count, sync progress */}
                 <OfflineStatusBar />
+
+                {/* Command Palette - Cmd+K universal search and navigation */}
+                <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
                 {/* Remy - AI companion chatbot, Pro tier + admins */}
                 {shouldRenderRemy && <RemyWrapper />}
