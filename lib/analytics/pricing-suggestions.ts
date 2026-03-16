@@ -1,9 +1,12 @@
 'use server'
 
+import type { Database } from '@/types/database'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+
+type PricingModel = Database['public']['Enums']['pricing_model']
 
 export interface PricingSuggestion {
   status: 'ok' | 'insufficient_data'
@@ -39,7 +42,7 @@ export async function getPricingSuggestion(params: {
     .select('id, total_quoted_cents, guest_count_estimated, event_id')
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'accepted')
-    .eq('pricing_model', pricingModel as 'per_person' | 'flat_rate' | 'custom')
+    .eq('pricing_model', pricingModel as PricingModel)
     .gte('guest_count_estimated', guestMin)
     .lte('guest_count_estimated', guestMax)
     .order('accepted_at', { ascending: false })
@@ -59,7 +62,7 @@ export async function getPricingSuggestion(params: {
       // We don't have occasion on quotes directly, so we match on occasion substring
       // This is a best-effort filter using confirmed_occasion from the inquiry join
       // For simplicity: if we had more data we'd join inquiries, but keep it fast here
-      return false // placeholder — occasion matching skipped at DB level; left for future
+      return false // placeholder - occasion matching skipped at DB level; left for future
     })
     if (occasionMatches.length >= 3) {
       candidates = occasionMatches

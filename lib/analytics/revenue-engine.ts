@@ -1,12 +1,9 @@
-// Note: 'use server' removed — file mixes server actions (async) with pure utility fns (sync)
+'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
-import type { Database } from '@/types/database'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-
-type ClientRow = Database['public']['Tables']['clients']['Row']
 
 export interface DateRange {
   start: string // YYYY-MM-DD
@@ -56,11 +53,11 @@ export interface RevenueStrategy {
   achievable: boolean
 }
 
-export async function solveRevenueClosure(
+export function solveRevenueClosure(
   goalCents: number,
   bookedCents: number,
   remainingDays: number
-): Promise<{ strategies: RevenueStrategy[]; gap: number; achievable: boolean }> {
+): { strategies: RevenueStrategy[]; gap: number; achievable: boolean } {
   const gap = goalCents - bookedCents
   if (gap <= 0) {
     return { strategies: [], gap: 0, achievable: true }
@@ -80,7 +77,7 @@ export async function solveRevenueClosure(
     const count = Math.ceil(gap / tier.avg)
     const feasible = remainingDays >= count * 3 // need ~3 days per event
     strategies.push({
-      strategy: `Book ${count} × ${tier.label}`,
+      strategy: `Book ${count} x ${tier.label}`,
       targetCount: count,
       targetValue: tier.avg,
       achievable: feasible,
@@ -99,36 +96,31 @@ export async function solveRevenueClosure(
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
   const supabase = createServerClient()
+  const tenantId = chef.tenantId!
 
   // Events in range
-  const { data: events, error: eventsErr } = await supabase
+  const { data: events } = await supabase
     .from('events')
     .select('id, status, quoted_price_cents, guest_count, event_date')
-    .eq('tenant_id', chef.tenantId!)
+    .eq('tenant_id', tenantId)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
-  if (eventsErr) throw new Error(`Failed to load events: ${eventsErr.message}`)
-
   // Ledger entries for revenue
-  const { data: ledger, error: ledgerErr } = await supabase
+  const { data: ledger } = await supabase
     .from('ledger_entries')
     .select('id, entry_type, amount_cents')
-    .eq('tenant_id', chef.tenantId!)
+    .eq('tenant_id', tenantId)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
-
-  if (ledgerErr) throw new Error(`Failed to load ledger: ${ledgerErr.message}`)
 
   // Inquiries in range
-  const { data: inquiries, error: inqErr } = await supabase
+  const { data: inquiries } = await supabase
     .from('inquiries')
     .select('id, status, converted_to_event_id')
-    .eq('tenant_id', chef.tenantId!)
+    .eq('tenant_id', tenantId)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
-
-  if (inqErr) throw new Error(`Failed to load inquiries: ${inqErr.message}`)
 
   const allEvents = events || []
   const allLedger = ledger || []
@@ -142,14 +134,14 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .filter((l) => l.entry_type === 'refund')
     .reduce((s, l) => s + Math.abs(l.amount_cents), 0)
 
-  // Booked value from quoted_price_cents
+  // Booked value (using quoted_price_cents instead of total_price)
   const nonCancelled = allEvents.filter((e) => e.status !== 'cancelled')
   const bookedValue = nonCancelled.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
 
   // Completed
   const completed = allEvents.filter((e) => e.status === 'completed')
 
-  // Conversion — inquiries that became events (have a linked event)
+  // Conversion (inquiries that converted to events)
   const converted = allInquiries.filter((i) => i.converted_to_event_id != null)
 
   // Average event value
@@ -222,7 +214,7 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
   const { data: events } = await supabase
     .from('events')
-    .select('id, client_id, quoted_price_cents, status, clients(full_name)')
+    .select('id, client_id, quoted_price_cents, status, client:clients(full_name)')
     .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
@@ -233,9 +225,9 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
   for (const e of events || []) {
     const clientId = e.client_id
     if (!clientId) continue
-    const clientJoin = e.clients as unknown as Pick<ClientRow, 'full_name'> | null
+    const clientData = e.client as unknown as { full_name: string } | null
     const entry = clientMap.get(clientId) || {
-      name: clientJoin?.full_name || 'Unknown',
+      name: clientData?.full_name || 'Unknown',
       revenue: 0,
       count: 0,
     }
@@ -289,7 +281,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
     }
     entry.total++
     if (e.status === 'cancelled') entry.cancelled++
-    if (e.guest_count && e.guest_count > 0) {
+    if (e.guest_count > 0) {
       entry.guestSum += e.guest_count
       entry.guestCount++
     }
@@ -310,10 +302,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
 
 // ─── CSV Export ─────────────────────────────────────────────────────────────
 
-export async function exportToCSV(
-  rows: Record<string, unknown>[],
-  filename: string
-): Promise<string> {
+export function exportToCSV(rows: Record<string, unknown>[], filename: string): string {
   if (rows.length === 0) return ''
   const headers = Object.keys(rows[0])
   const csvLines = [
@@ -331,12 +320,14 @@ export async function exportToCSV(
         .join(',')
     ),
   ]
+  // filename parameter reserved for future use (download trigger)
+  void filename
   return csvLines.join('\n')
 }
 
 // ─── Range Helpers ──────────────────────────────────────────────────────────
 
-export async function defaultRange(days = 30): Promise<DateRange> {
+export function defaultRange(days = 30): DateRange {
   const end = new Date()
   const start = new Date(end.getTime() - days * 86400000)
   return {
@@ -345,7 +336,7 @@ export async function defaultRange(days = 30): Promise<DateRange> {
   }
 }
 
-export async function yearRange(): Promise<DateRange> {
+export function yearRange(): DateRange {
   const now = new Date()
   return {
     start: `${now.getFullYear()}-01-01`,

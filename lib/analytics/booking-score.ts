@@ -27,7 +27,7 @@ export interface BookingScore {
 
 export async function getBookingScoreForInquiry(inquiryId: string): Promise<BookingScore | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: inquiry, error } = await supabase
     .from('inquiries')
@@ -40,7 +40,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
   if (error || !inquiry) return null
 
-  // ── Profitability (0–40 pts) ──────────────────────────────────────────────
+  // ── Profitability (0-40 pts) ──────────────────────────────────────────────
   let profitabilityPoints = 20 // default midpoint
 
   const [avgData] = await Promise.all([
@@ -54,14 +54,13 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   ])
 
   const allAccepted = (avgData.data ?? []).filter(
-    (q: any) => q.guest_count_estimated && q.total_quoted_cents
+    (q): q is typeof q & { guest_count_estimated: number; total_quoted_cents: number } =>
+      q.guest_count_estimated != null && q.guest_count_estimated > 0 && q.total_quoted_cents != null
   )
   const tenantAvgPerGuest =
     allAccepted.length > 0
-      ? allAccepted.reduce(
-          (s: any, q: any) => s + q.total_quoted_cents / q.guest_count_estimated!,
-          0
-        ) / allAccepted.length
+      ? allAccepted.reduce((s, q) => s + q.total_quoted_cents / q.guest_count_estimated, 0) /
+        allAccepted.length
       : 0
 
   const inquiryPerGuest =
@@ -79,7 +78,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
     else profitabilityPoints = 5
   }
 
-  // ── Client reliability (0–30 pts) ────────────────────────────────────────
+  // ── Client reliability (0-30 pts) ────────────────────────────────────────
   let clientReliabilityPoints = 0
   let isNewClient = true
 
@@ -92,9 +91,9 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
     const completed = summary?.total_events_completed ?? 0
     const cancelled = summary?.total_events_cancelled ?? 0
-    const total = (summary as any)?.total_events_count ?? 0
+    const totalCount = summary?.total_events_count ?? 0
 
-    if (total > 0) {
+    if (totalCount > 0) {
       isNewClient = false
       const rate = completed + cancelled > 0 ? completed / (completed + cancelled) : 0
       if (rate >= 0.9) clientReliabilityPoints = 30
@@ -137,6 +136,9 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
         ? 'medium'
         : 'low'
 
+  // Extract client name from the joined relation
+  const clientData = inquiry.client as unknown as { full_name: string } | null
+
   return {
     inquiryId,
     score: total,
@@ -150,7 +152,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
     },
     hasDateConflict,
     isNewClient,
-    clientName: (inquiry.client as any)?.full_name ?? null,
+    clientName: clientData?.full_name ?? null,
   }
 }
 
@@ -158,7 +160,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
 export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: inquiries } = await supabase
     .from('inquiries')
@@ -169,7 +171,7 @@ export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]
   if (!inquiries || inquiries.length === 0) return []
 
   const results = await Promise.allSettled(
-    inquiries.map((inq: any) => getBookingScoreForInquiry(inq.id))
+    inquiries.map((inq) => getBookingScoreForInquiry(inq.id))
   )
 
   return results

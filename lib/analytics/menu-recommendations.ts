@@ -36,7 +36,7 @@ export async function getMenuRecommendations(params: {
   limit?: number
 }): Promise<MenuRecommendationResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const allergies = params.allergies ?? []
   const limit = params.limit ?? 20
@@ -54,21 +54,22 @@ export async function getMenuRecommendations(params: {
     return empty(allergies)
   }
 
-  // Fetch allergen flags for required ingredients
-  const recipeIds = recipes.map((r: any) => r.id)
-  const { data: ingredients } = await supabase
+  // Fetch allergen flags for required ingredients (allergen_flags lives on ingredients table)
+  const recipeIds = recipes.map((r) => r.id)
+  const { data: recipeIngredients } = await supabase
     .from('recipe_ingredients')
-    .select('recipe_id, allergen_flags')
+    .select('recipe_id, ingredient:ingredients(allergen_flags)')
     .in('recipe_id', recipeIds)
     .eq('is_optional', false)
 
-  // Build recipe → allergen set map
+  // Build recipe -> allergen set map
   const allergenMap = new Map<string, Set<string>>()
-  for (const ing of ingredients ?? []) {
-    if (!ing.recipe_id) continue
-    const flags = (ing.allergen_flags as string[] | null) ?? []
-    if (!allergenMap.has(ing.recipe_id)) allergenMap.set(ing.recipe_id, new Set())
-    for (const flag of flags) allergenMap.get(ing.recipe_id)!.add(flag.toLowerCase())
+  for (const ri of recipeIngredients ?? []) {
+    if (!ri.recipe_id) continue
+    const ingredientData = ri.ingredient as unknown as { allergen_flags: string[] } | null
+    const flags = ingredientData?.allergen_flags ?? []
+    if (!allergenMap.has(ri.recipe_id)) allergenMap.set(ri.recipe_id, new Set())
+    for (const flag of flags) allergenMap.get(ri.recipe_id)!.add(flag.toLowerCase())
   }
 
   // Normalize event allergens
@@ -76,7 +77,7 @@ export async function getMenuRecommendations(params: {
 
   // Hard filter by allergens
   let filteredOutCount = 0
-  const safeRecipes = recipes.filter((r: any) => {
+  const safeRecipes = recipes.filter((r) => {
     if (eventAllergens.size === 0) return true
     const recipeAllergens = allergenMap.get(r.id) ?? new Set()
     const conflict = [...eventAllergens].some((a) => recipeAllergens.has(a))
@@ -95,7 +96,7 @@ export async function getMenuRecommendations(params: {
   const now = Date.now()
   const recentMs = RECENT_DAYS * 86_400_000
 
-  const scored = safeRecipes.map((r: any) => {
+  const scored = safeRecipes.map((r) => {
     const isPopular = (r.times_cooked ?? 0) >= POPULAR_THRESHOLD
     const isRecent = r.last_cooked_at
       ? now - new Date(r.last_cooked_at).getTime() < recentMs
@@ -108,11 +109,9 @@ export async function getMenuRecommendations(params: {
     return { ...r, score, reason }
   })
 
-  scored.sort(
-    (a: any, b: any) => b.score - a.score || (b.times_cooked ?? 0) - (a.times_cooked ?? 0)
-  )
+  scored.sort((a, b) => b.score - a.score || (b.times_cooked ?? 0) - (a.times_cooked ?? 0))
 
-  const hints: RecipeHint[] = scored.slice(0, limit).map((r: any) => ({
+  const hints: RecipeHint[] = scored.slice(0, limit).map((r) => ({
     id: r.id,
     name: r.name,
     category: r.category ?? 'other',

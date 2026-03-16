@@ -63,8 +63,8 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
     )
     .map((q: any) => ({
       id: q.id,
-      clientName: (q.client as any)?.full_name ?? 'Unknown',
-      validUntil: q.valid_until!,
+      clientName: (q.client as unknown as { full_name: string } | null)?.full_name ?? 'Unknown',
+      validUntil: q.valid_until as string,
       totalCents: q.total_quoted_cents ?? 0,
     }))
 
