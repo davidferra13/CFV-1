@@ -8,6 +8,59 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
+import { getProfitAndLossReport } from '@/lib/finance/profit-loss-report-actions'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
+
+/** Inline P&L snapshot for the current month */
+async function MonthlyPLSnapshot() {
+  const now = new Date()
+  const startDate = format(startOfMonth(now), 'yyyy-MM-dd')
+  const endDate = format(endOfMonth(now), 'yyyy-MM-dd')
+  const monthLabel = format(now, 'MMMM yyyy')
+
+  const report = await getProfitAndLossReport(startDate, endDate)
+  const { revenue, operatingExpenses, cogs, totals } = report
+  const totalExpenses = operatingExpenses.totalOperatingExpensesCents + cogs.purchaseOrdersCents
+  const isProfit = totals.netProfitLossCents >= 0
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-stone-300">P&amp;L Snapshot: {monthLabel}</h3>
+        <Link href="/finance/reporting" className="text-xs text-brand-600 hover:underline">
+          Full report →
+        </Link>
+      </div>
+      <div className="grid grid-cols-4 gap-3">
+        <div>
+          <p className="text-lg font-bold text-stone-100">
+            {formatCurrency(revenue.totalRevenueCents)}
+          </p>
+          <p className="text-xs text-stone-500">Revenue</p>
+        </div>
+        <div>
+          <p className="text-lg font-bold text-red-400">{formatCurrency(totalExpenses)}</p>
+          <p className="text-xs text-stone-500">Expenses</p>
+        </div>
+        <div>
+          <p className={`text-lg font-bold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+            {isProfit ? '' : '-'}
+            {formatCurrency(Math.abs(totals.netProfitLossCents))}
+          </p>
+          <p className="text-xs text-stone-500">Net {isProfit ? 'Profit' : 'Loss'}</p>
+        </div>
+        <div>
+          <p
+            className={`text-lg font-bold ${totals.profitMarginPercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+          >
+            {totals.profitMarginPercent.toFixed(0)}%
+          </p>
+          <p className="text-xs text-stone-500">Margin</p>
+        </div>
+      </div>
+    </Card>
+  )
+}
 
 export const metadata: Metadata = { title: 'Finance - ChefFlow' }
 
@@ -195,6 +248,13 @@ export default async function FinancePage() {
           </Card>
         )}
       </div>
+
+      {/* Monthly P&L Snapshot */}
+      <WidgetErrorBoundary name="Monthly P&L" compact>
+        <Suspense fallback={null}>
+          <MonthlyPLSnapshot />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <div className="grid grid-cols-2 gap-4">
         {SECTIONS.map((section) => (

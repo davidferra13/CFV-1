@@ -16,6 +16,7 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 import { Tables } from '@/types/database'
 import { isDemoClient } from '@/lib/onboarding/demo-data'
+import { CalendarPlus, MessageCircle, ExternalLink } from '@/components/ui/icons'
 
 type ClientWithStats = Tables<'clients'> & {
   totalEvents: number
@@ -129,12 +130,13 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                 <SortIcon field="created" />
               </button>
             </TableHead>
+            <TableHead className="text-right w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredAndSortedClients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-stone-500 py-8">
+              <TableCell colSpan={7} className="text-center text-stone-500 py-8">
                 No clients found matching your search
               </TableCell>
             </TableRow>
@@ -142,7 +144,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
             filteredAndSortedClients.map((client) => (
               <TableRow
                 key={client.id}
-                className="cursor-pointer"
+                className="cursor-pointer group"
                 onClick={() => (window.location.href = `/clients/${client.id}`)}
               >
                 <TableCell className="font-medium">
@@ -161,6 +163,34 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                 </TableCell>
                 <TableCell className="text-stone-600">
                   {format(new Date(client.created_at), 'PP')}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link
+                      href={`/events/new?client_id=${client.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+                      title="Create event"
+                    >
+                      <CalendarPlus className="h-4 w-4" />
+                    </Link>
+                    <Link
+                      href={`/clients/${client.id}#communication`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+                      title="Send message"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Link>
+                    <Link
+                      href={`/clients/${client.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+                      title="View profile"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

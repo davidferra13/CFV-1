@@ -18,9 +18,31 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { formatDistanceToNow, format } from 'date-fns'
+import { formatDistanceToNow, format, differenceInHours } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
 import { isDemoInquiry } from '@/lib/onboarding/demo-data'
+
+const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
+
+/** Returns urgency level based on hours waiting for chef action */
+function getWaitingUrgency(updatedAt: string): 'ok' | 'warm' | 'hot' {
+  const hours = differenceInHours(new Date(), new Date(updatedAt))
+  if (hours >= 48) return 'hot'
+  if (hours >= 24) return 'warm'
+  return 'ok'
+}
+
+const URGENCY_STYLES = {
+  ok: 'bg-emerald-500',
+  warm: 'bg-amber-500',
+  hot: 'bg-red-500 animate-pulse',
+} as const
+
+const URGENCY_LABELS = {
+  ok: 'Responded recently',
+  warm: 'Waiting 24h+, respond soon',
+  hot: 'Waiting 48h+, urgent',
+} as const
 
 type InquiryFilter =
   | 'all'
@@ -88,12 +110,14 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
         const name = getDisplayName(inquiry)
         const isNew = inquiry.status === 'new'
         const score = OPEN_STATUSES.has(inquiry.status) ? scoreMap.get(inquiry.id) : undefined
+        const needsChefAction = CHEF_ACTION_STATUSES.has(inquiry.status)
+        const urgency = needsChefAction ? getWaitingUrgency(inquiry.updated_at) : null
 
         return (
           <Link
             key={inquiry.id}
             href={`/inquiries/${inquiry.id}`}
-            className={`block rounded-lg border p-4 hover:shadow-sm transition-all ${
+            className={`group block rounded-lg border p-4 hover:shadow-sm transition-all ${
               isNew
                 ? 'border-l-4 border-l-amber-500 bg-amber-50/50 hover:bg-amber-50'
                 : 'border-stone-200 hover:bg-stone-50'
@@ -102,6 +126,12 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
+                  {urgency && (
+                    <span
+                      className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${URGENCY_STYLES[urgency]}`}
+                      title={URGENCY_LABELS[urgency]}
+                    />
+                  )}
                   <span className="font-medium text-stone-900">{name}</span>
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
@@ -133,6 +163,12 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                 <p className="text-xs text-stone-400 mt-1">
                   {formatDistanceToNow(new Date(inquiry.updated_at), { addSuffix: true })}
                 </p>
+                {/* Quick action hints on hover */}
+                {needsChefAction && (
+                  <p className="text-xs text-brand-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Click to respond →
+                  </p>
+                )}
               </div>
             </div>
           </Link>

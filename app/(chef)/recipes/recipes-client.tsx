@@ -57,6 +57,23 @@ const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info'
   salad: 'success',
 }
 
+const CATEGORY_GRADIENTS: Record<string, string> = {
+  sauce: 'from-amber-900/60 to-orange-950/40',
+  protein: 'from-red-900/60 to-rose-950/40',
+  starch: 'from-stone-800/60 to-stone-900/40',
+  vegetable: 'from-emerald-900/60 to-green-950/40',
+  dessert: 'from-pink-900/60 to-fuchsia-950/40',
+  pasta: 'from-amber-900/60 to-yellow-950/40',
+  soup: 'from-sky-900/60 to-blue-950/40',
+  salad: 'from-lime-900/60 to-green-950/40',
+  fruit: 'from-orange-900/60 to-amber-950/40',
+  bread: 'from-amber-800/60 to-yellow-950/40',
+  appetizer: 'from-violet-900/60 to-purple-950/40',
+  beverage: 'from-cyan-900/60 to-teal-950/40',
+  condiment: 'from-yellow-900/60 to-amber-950/40',
+  other: 'from-stone-800/60 to-stone-900/40',
+}
+
 type Props = {
   recipes: RecipeListItem[]
 }
@@ -293,71 +310,94 @@ export function RecipeLibraryClient({ recipes }: Props) {
         </Card>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recipes.map((recipe) => (
-            <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-              <Card className="hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer h-full">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-stone-100 leading-tight">{recipe.name}</h3>
-                    <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
-                      {recipe.category}
-                    </Badge>
-                  </div>
-
-                  {recipe.method && (
-                    <p className="text-sm text-stone-400 line-clamp-2 mb-3">{recipe.method}</p>
-                  )}
-
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
-                    {recipe.ingredient_count != null && (
-                      <span>
-                        {recipe.ingredient_count} ingredient
-                        {recipe.ingredient_count !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                    {recipe.calories_per_serving != null && (
-                      <span>
-                        {recipe.calories_per_serving} kcal
-                        {recipe.servings ? ` / ${recipe.servings} servings` : '/ serving'}
-                      </span>
-                    )}
-                    {recipe.times_cooked > 0 && <span>Used {recipe.times_cooked}x</span>}
-                    {recipe.total_cost_cents != null && recipe.has_all_prices && (
-                      <span>${(recipe.total_cost_cents / 100).toFixed(2)}</span>
-                    )}
-                    {recipe.total_cost_cents != null && !recipe.has_all_prices && (
-                      <span>~${(recipe.total_cost_cents / 100).toFixed(2)} est.</span>
-                    )}
-                  </div>
-
-                  {(recipe.dietary_tags?.length > 0 ||
-                    recipe.cuisine ||
-                    (recipe.meal_type && recipe.meal_type !== 'any')) && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {recipe.cuisine && (
-                        <span className="text-xs px-1.5 py-0.5 bg-blue-950 text-blue-400 rounded">
-                          {CUISINE_DISPLAY[recipe.cuisine] || recipe.cuisine}
+          {recipes.map((recipe) => {
+            const gradient = CATEGORY_GRADIENTS[recipe.category] || CATEGORY_GRADIENTS.other
+            return (
+              <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
+                <Card className="hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer h-full overflow-hidden">
+                  {/* Photo or gradient header */}
+                  <div className={`relative h-32 bg-gradient-to-br ${gradient}`}>
+                    {recipe.photo_url ? (
+                      <img
+                        src={recipe.photo_url}
+                        alt={recipe.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-4xl font-serif italic text-white/20 select-none">
+                          {recipe.name.charAt(0)}
                         </span>
-                      )}
-                      {recipe.meal_type && recipe.meal_type !== 'any' && (
-                        <span className="text-xs px-1.5 py-0.5 bg-purple-950 text-purple-400 rounded">
-                          {MEAL_TYPE_DISPLAY[recipe.meal_type] || recipe.meal_type}
-                        </span>
-                      )}
-                      {recipe.dietary_tags?.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-1.5 py-0.5 bg-green-950 text-green-700 rounded"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
+                        {recipe.category}
+                      </Badge>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  </div>
+
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-stone-100 leading-tight mb-1">
+                      {recipe.name}
+                    </h3>
+
+                    {recipe.method && (
+                      <p className="text-sm text-stone-400 line-clamp-2 mb-3">{recipe.method}</p>
+                    )}
+
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+                      {recipe.ingredient_count != null && (
+                        <span>
+                          {recipe.ingredient_count} ingredient
+                          {recipe.ingredient_count !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {recipe.calories_per_serving != null && (
+                        <span>
+                          {recipe.calories_per_serving} kcal
+                          {recipe.servings ? ` / ${recipe.servings} servings` : '/ serving'}
+                        </span>
+                      )}
+                      {recipe.times_cooked > 0 && <span>Used {recipe.times_cooked}x</span>}
+                      {recipe.total_cost_cents != null && recipe.has_all_prices && (
+                        <span>${(recipe.total_cost_cents / 100).toFixed(2)}</span>
+                      )}
+                      {recipe.total_cost_cents != null && !recipe.has_all_prices && (
+                        <span>~${(recipe.total_cost_cents / 100).toFixed(2)} est.</span>
+                      )}
+                    </div>
+
+                    {(recipe.dietary_tags?.length > 0 ||
+                      recipe.cuisine ||
+                      (recipe.meal_type && recipe.meal_type !== 'any')) && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {recipe.cuisine && (
+                          <span className="text-xs px-1.5 py-0.5 bg-blue-950 text-blue-400 rounded">
+                            {CUISINE_DISPLAY[recipe.cuisine] || recipe.cuisine}
+                          </span>
+                        )}
+                        {recipe.meal_type && recipe.meal_type !== 'any' && (
+                          <span className="text-xs px-1.5 py-0.5 bg-purple-950 text-purple-400 rounded">
+                            {MEAL_TYPE_DISPLAY[recipe.meal_type] || recipe.meal_type}
+                          </span>
+                        )}
+                        {recipe.dietary_tags?.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-xs px-1.5 py-0.5 bg-green-950 text-green-700 rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
         </div>
       ) : null}
 
