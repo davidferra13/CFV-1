@@ -19,7 +19,11 @@ export default function ChefError({
 }) {
   useEffect(() => {
     Sentry.captureException(error, {
-      tags: { boundary: 'chef', digest: error.digest },
+      tags: {
+        boundary: 'chef',
+        digest: error.digest,
+        route: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+      },
     })
     console.error('[Chef Portal Error]', error)
   }, [error])

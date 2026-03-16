@@ -20,7 +20,11 @@ function reportToSentry(error: Error & { digest?: string }) {
         stack: error.stack,
         name: error.name,
         digest: error.digest,
-        tags: { boundary: 'global' },
+        tags: {
+          boundary: 'global',
+          route: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        },
       }),
     }).catch(() => {
       // Swallow - reporting must never affect the user

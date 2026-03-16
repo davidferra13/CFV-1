@@ -151,6 +151,7 @@ function ClientSignUpForm() {
               <Input
                 type="text"
                 label="Full Name"
+                name="fullName"
                 value={formData.full_name}
                 disabled={isSubmitting}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
@@ -161,6 +162,7 @@ function ClientSignUpForm() {
               <Input
                 type="email"
                 label="Email"
+                name="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={!!token || isSubmitting}
@@ -171,6 +173,7 @@ function ClientSignUpForm() {
               <Input
                 type="tel"
                 label="Phone"
+                name="phone"
                 value={formData.phone}
                 disabled={isSubmitting}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -180,6 +183,7 @@ function ClientSignUpForm() {
               <Input
                 type="password"
                 label="Password"
+                name="password"
                 value={formData.password}
                 disabled={isSubmitting}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
