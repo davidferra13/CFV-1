@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -20,6 +20,8 @@ import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedRecipe, ParsedIngredient } from '@/lib/ai/parse-recipe'
 import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
 import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 
 const RECIPE_CATEGORIES = [
   'sauce',
@@ -49,6 +51,7 @@ type IngredientRow = {
 
 type Props = {
   aiConfigured: boolean
+  chefId: string
   prefillComponent?: {
     componentId: string
     name: string
@@ -56,7 +59,7 @@ type Props = {
   }
 }
 
-export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
+export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: Props) {
   const router = useRouter()
   const [mode, setMode] = useState<'import' | 'manual'>(aiConfigured ? 'import' : 'manual')
   const [loading, setLoading] = useState(false)
@@ -100,6 +103,95 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
       is_optional: false,
     },
   ])
+
+  // ---- Form protection (draft persistence + unsaved changes guard) ----
+  const defaultData = useMemo(
+    () => ({
+      name: prefillComponent?.name || '',
+      category: prefillComponent?.category || 'other',
+      method: '',
+      methodDetailed: '',
+      description: '',
+      notes: '',
+      prepTime: '',
+      cookTime: '',
+      yieldQty: '',
+      yieldUnit: '',
+      dietaryTags: '',
+      ingredients: JSON.stringify([
+        {
+          name: '',
+          quantity: 1,
+          unit: '',
+          category: 'other',
+          preparation_notes: '',
+          is_optional: false,
+        },
+      ]),
+    }),
+    [prefillComponent]
+  )
+
+  const currentData = useMemo(
+    () => ({
+      name,
+      category,
+      method,
+      methodDetailed,
+      description,
+      notes,
+      prepTime,
+      cookTime,
+      yieldQty,
+      yieldUnit,
+      dietaryTags,
+      ingredients: JSON.stringify(ingredients),
+    }),
+    [
+      name,
+      category,
+      method,
+      methodDetailed,
+      description,
+      notes,
+      prepTime,
+      cookTime,
+      yieldQty,
+      yieldUnit,
+      dietaryTags,
+      ingredients,
+    ]
+  )
+
+  const protection = useProtectedForm({
+    surfaceId: 'recipe-create',
+    recordId: null,
+    tenantId: chefId,
+    defaultData,
+    currentData,
+    throttleMs: 10000,
+  })
+
+  const applyFormData = useCallback((d: Record<string, unknown>) => {
+    if (typeof d.name === 'string') setName(d.name)
+    if (typeof d.category === 'string') setCategory(d.category)
+    if (typeof d.method === 'string') setMethod(d.method)
+    if (typeof d.methodDetailed === 'string') setMethodDetailed(d.methodDetailed)
+    if (typeof d.description === 'string') setDescription(d.description)
+    if (typeof d.notes === 'string') setNotes(d.notes)
+    if (typeof d.prepTime === 'string') setPrepTime(d.prepTime)
+    if (typeof d.cookTime === 'string') setCookTime(d.cookTime)
+    if (typeof d.yieldQty === 'string') setYieldQty(d.yieldQty)
+    if (typeof d.yieldUnit === 'string') setYieldUnit(d.yieldUnit)
+    if (typeof d.dietaryTags === 'string') setDietaryTags(d.dietaryTags)
+    if (typeof d.ingredients === 'string') {
+      try {
+        setIngredients(JSON.parse(d.ingredients))
+      } catch {
+        /* skip */
+      }
+    }
+  }, [])
 
   // Smart Import: parse
   const handleParse = async () => {
@@ -258,6 +350,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
       // Nutrition enrichment is non-blocking for the primary save path.
       await recalculateAndSaveRecipeNutrition(recipeId).catch(() => null)
 
+      protection.markCommitted()
       router.push(`/recipes/${recipeId}`)
     } catch (err: any) {
       setError(err.message || 'Failed to save recipe')
@@ -304,567 +397,591 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-stone-100">New Recipe</h1>
-          {prefillComponent && (
-            <p className="text-stone-400 mt-1">Recording recipe for: {prefillComponent.name}</p>
-          )}
-        </div>
-        <Link href="/recipes">
-          <Button variant="ghost">Back to Recipes</Button>
-        </Link>
-      </div>
-
-      {error && <Alert variant="error">{error}</Alert>}
-
-      {/* Mode Tabs */}
-      <div className="flex gap-1 border-b border-stone-700">
-        <button
-          onClick={() => {
-            setMode('import')
-            setPhase('input')
-          }}
-          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-            mode === 'import'
-              ? 'border-brand-500 text-brand-400'
-              : 'border-transparent text-stone-500 hover:text-stone-300'
-          }`}
-        >
-          Smart Import
-        </button>
-        <button
-          onClick={() => setMode('manual')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-            mode === 'manual'
-              ? 'border-brand-500 text-brand-400'
-              : 'border-transparent text-stone-500 hover:text-stone-300'
-          }`}
-        >
-          Manual Entry
-        </button>
-      </div>
-
-      {/* Smart Import - Input Phase */}
-      {mode === 'import' && phase === 'input' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Describe Your Recipe</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!aiConfigured && (
-              <Alert variant="warning">
-                Smart import is not configured. Contact your administrator to enable this feature.
-              </Alert>
-            )}
-            <Textarea
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-              placeholder="Diane sauce - sear the steak, set aside. Saut&eacute; shallots and mushrooms. Deglaze with cognac. Add beef stock, cream, worcestershire, dijon. Reduce. Finish with steak drippings, lemon, parsley. Makes about 2 cups."
-              rows={8}
-              disabled={!aiConfigured || loading}
-            />
-            <div className="flex gap-3">
-              <Button onClick={handleParse} disabled={!aiConfigured || !rawText.trim() || loading}>
-                {loading ? 'Parsing...' : 'Parse Recipe'}
-              </Button>
-              <Button variant="ghost" onClick={() => setRawText('')} disabled={loading}>
-                Clear
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Smart Import - Review Phase */}
-      {mode === 'import' && phase === 'review' && parsed && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Badge
-              variant={
-                confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'error'
-              }
-            >
-              {confidence} confidence
-            </Badge>
-            {warnings.length > 0 && (
-              <span className="text-sm text-amber-600">{warnings.length} warning(s)</span>
+    <FormShield
+      guard={protection.guard}
+      showRestorePrompt={protection.showRestorePrompt}
+      lastSavedAt={protection.lastSavedAt}
+      onRestore={() => {
+        const d = protection.restoreDraft()
+        if (d) applyFormData(d)
+      }}
+      onDiscard={protection.discardDraft}
+      saveState={protection.saveState}
+    >
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-100">New Recipe</h1>
+            {prefillComponent && (
+              <p className="text-stone-400 mt-1">Recording recipe for: {prefillComponent.name}</p>
             )}
           </div>
-
-          {warnings.length > 0 && (
-            <Alert variant="warning">
-              {warnings.map((w, i) => (
-                <p key={i}>{w}</p>
-              ))}
-            </Alert>
-          )}
-
-          <p className="text-sm text-stone-400">
-            Review and edit the parsed recipe below, then save.
-          </p>
+          <Link href="/recipes">
+            <Button variant="ghost">Back to Recipes</Button>
+          </Link>
         </div>
-      )}
 
-      {/* Manual Form / Review Form (same form for both modes) */}
-      {(mode === 'manual' || (mode === 'import' && phase === 'review')) && (
-        <div className="space-y-6">
-          {/* Basic Info */}
+        {error && <Alert variant="error">{error}</Alert>}
+
+        {/* Mode Tabs */}
+        <div className="flex gap-1 border-b border-stone-700">
+          <button
+            onClick={() => {
+              setMode('import')
+              setPhase('input')
+            }}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
+              mode === 'import'
+                ? 'border-brand-500 text-brand-400'
+                : 'border-transparent text-stone-500 hover:text-stone-300'
+            }`}
+          >
+            Smart Import
+          </button>
+          <button
+            onClick={() => setMode('manual')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
+              mode === 'manual'
+                ? 'border-brand-500 text-brand-400'
+                : 'border-transparent text-stone-500 hover:text-stone-300'
+            }`}
+          >
+            Manual Entry
+          </button>
+        </div>
+
+        {/* Smart Import - Input Phase */}
+        {mode === 'import' && phase === 'input' && (
           <Card>
             <CardHeader>
-              <CardTitle>Recipe Details</CardTitle>
+              <CardTitle>Describe Your Recipe</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Recipe Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., Diane Sauce"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    aria-label="Category"
-                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
-                  >
-                    {RECIPE_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {description !== undefined && (
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Description
-                  </label>
-                  <Input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Brief description"
-                  />
-                </div>
+              {!aiConfigured && (
+                <Alert variant="warning">
+                  Smart import is not configured. Contact your administrator to enable this feature.
+                </Alert>
               )}
-
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
-                <Textarea
-                  value={method}
-                  onChange={(e) => setMethod(e.target.value)}
-                  placeholder="Concise, outcome-oriented. The chef knows how to cook - just capture what to do."
-                  rows={4}
-                />
+              <Textarea
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                placeholder="Diane sauce - sear the steak, set aside. Saut&eacute; shallots and mushrooms. Deglaze with cognac. Add beef stock, cream, worcestershire, dijon. Reduce. Finish with steak drippings, lemon, parsley. Makes about 2 cups."
+                rows={8}
+                disabled={!aiConfigured || loading}
+              />
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleParse}
+                  disabled={!aiConfigured || !rawText.trim() || loading}
+                >
+                  {loading ? 'Parsing...' : 'Parse Recipe'}
+                </Button>
+                <Button variant="ghost" onClick={() => setRawText('')} disabled={loading}>
+                  Clear
+                </Button>
               </div>
+            </CardContent>
+          </Card>
+        )}
 
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">
-                  Detailed Method
-                </label>
-                <Textarea
-                  value={methodDetailed}
-                  onChange={(e) => setMethodDetailed(e.target.value)}
-                  placeholder="Optional: more detailed version with specific techniques or timings"
-                  rows={3}
-                />
-              </div>
+        {/* Smart Import - Review Phase */}
+        {mode === 'import' && phase === 'review' && parsed && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Badge
+                variant={
+                  confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'error'
+                }
+              >
+                {confidence} confidence
+              </Badge>
+              {warnings.length > 0 && (
+                <span className="text-sm text-amber-600">{warnings.length} warning(s)</span>
+              )}
+            </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {warnings.length > 0 && (
+              <Alert variant="warning">
+                {warnings.map((w, i) => (
+                  <p key={i}>{w}</p>
+                ))}
+              </Alert>
+            )}
+
+            <p className="text-sm text-stone-400">
+              Review and edit the parsed recipe below, then save.
+            </p>
+          </div>
+        )}
+
+        {/* Manual Form / Review Form (same form for both modes) */}
+        {(mode === 'manual' || (mode === 'import' && phase === 'review')) && (
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recipe Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Recipe Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g., Diane Sauce"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Category <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      aria-label="Category"
+                      className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+                    >
+                      {RECIPE_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {description !== undefined && (
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Description
+                    </label>
+                    <Input
+                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Brief description"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
+                  <Textarea
+                    value={method}
+                    onChange={(e) => setMethod(e.target.value)}
+                    placeholder="Concise, outcome-oriented. The chef knows how to cook - just capture what to do."
+                    rows={4}
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Prep (min)
+                    Detailed Method
                   </label>
-                  <Input
-                    type="number"
-                    value={prepTime}
-                    onChange={(e) => setPrepTime(e.target.value)}
-                    placeholder="15"
+                  <Textarea
+                    value={methodDetailed}
+                    onChange={(e) => setMethodDetailed(e.target.value)}
+                    placeholder="Optional: more detailed version with specific techniques or timings"
+                    rows={3}
                   />
                 </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Prep (min)
+                    </label>
+                    <Input
+                      type="number"
+                      value={prepTime}
+                      onChange={(e) => setPrepTime(e.target.value)}
+                      placeholder="15"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Cook (min)
+                    </label>
+                    <Input
+                      type="number"
+                      value={cookTime}
+                      onChange={(e) => setCookTime(e.target.value)}
+                      placeholder="30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">Yield</label>
+                    <Input
+                      type="number"
+                      value={yieldQty}
+                      onChange={(e) => setYieldQty(e.target.value)}
+                      placeholder="4"
+                      step="0.25"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Yield Unit
+                    </label>
+                    <Input
+                      type="text"
+                      value={yieldUnit}
+                      onChange={(e) => setYieldUnit(e.target.value)}
+                      placeholder="servings"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Cook (min)
-                  </label>
-                  <Input
-                    type="number"
-                    value={cookTime}
-                    onChange={(e) => setCookTime(e.target.value)}
-                    placeholder="30"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">Yield</label>
-                  <Input
-                    type="number"
-                    value={yieldQty}
-                    onChange={(e) => setYieldQty(e.target.value)}
-                    placeholder="4"
-                    step="0.25"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Yield Unit
+                    Dietary Tags
                   </label>
                   <Input
                     type="text"
-                    value={yieldUnit}
-                    onChange={(e) => setYieldUnit(e.target.value)}
-                    placeholder="servings"
+                    value={dietaryTags}
+                    onChange={(e) => setDietaryTags(e.target.value)}
+                    placeholder="gluten-free, dairy-free (comma separated)"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">
-                  Dietary Tags
-                </label>
-                <Input
-                  type="text"
-                  value={dietaryTags}
-                  onChange={(e) => setDietaryTags(e.target.value)}
-                  placeholder="gluten-free, dairy-free (comma separated)"
-                />
-              </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Servings
+                    </label>
+                    <Input
+                      type="number"
+                      value={servings}
+                      onChange={(e) => setServings(e.target.value)}
+                      placeholder="e.g. 4"
+                      min={1}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Calories / Serving
+                    </label>
+                    <Input
+                      type="number"
+                      value={caloriesPerServing}
+                      onChange={(e) => setCaloriesPerServing(e.target.value)}
+                      placeholder="e.g. 320"
+                      min={0}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Difficulty (1–5)
+                    </label>
+                    <div className="flex gap-1 mt-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() => setDifficulty(difficulty === level ? 0 : level)}
+                          className={`w-9 h-9 rounded-md text-sm font-medium transition-colors ${
+                            level <= difficulty
+                              ? 'bg-brand-500 text-white'
+                              : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                          }`}
+                        >
+                          {level}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">Servings</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Equipment</label>
                   <Input
-                    type="number"
-                    value={servings}
-                    onChange={(e) => setServings(e.target.value)}
-                    placeholder="e.g. 4"
-                    min={1}
+                    type="text"
+                    value={equipment}
+                    onChange={(e) => setEquipment(e.target.value)}
+                    placeholder="stand mixer, food processor, blowtorch (comma separated)"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Calories / Serving
-                  </label>
-                  <Input
-                    type="number"
-                    value={caloriesPerServing}
-                    onChange={(e) => setCaloriesPerServing(e.target.value)}
-                    placeholder="e.g. 320"
-                    min={0}
-                  />
+
+                {/* Organization Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">Cuisine</label>
+                    <select
+                      value={cuisine}
+                      onChange={(e) => setCuisine(e.target.value)}
+                      aria-label="Cuisine"
+                      className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+                    >
+                      <option value="">Select cuisine...</option>
+                      {Object.entries(CUISINE_DISPLAY).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Meal Type
+                    </label>
+                    <select
+                      value={mealType}
+                      onChange={(e) => setMealType(e.target.value)}
+                      aria-label="Meal Type"
+                      className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+                    >
+                      <option value="">Select meal type...</option>
+                      {Object.entries(MEAL_TYPE_DISPLAY).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Difficulty (1–5)
-                  </label>
-                  <div className="flex gap-1 mt-1">
-                    {[1, 2, 3, 4, 5].map((level) => (
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Season</label>
+                  <div className="flex flex-wrap gap-2">
+                    {SEASON_OPTIONS.map((s) => (
                       <button
-                        key={level}
+                        key={s}
                         type="button"
-                        onClick={() => setDifficulty(difficulty === level ? 0 : level)}
-                        className={`w-9 h-9 rounded-md text-sm font-medium transition-colors ${
-                          level <= difficulty
-                            ? 'bg-brand-500 text-white'
-                            : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                        onClick={() => {
+                          if (s === 'Year-Round') {
+                            setSeason(season.includes(s) ? [] : [s])
+                          } else {
+                            setSeason((prev) => {
+                              const without = prev.filter((x) => x !== 'Year-Round')
+                              return without.includes(s)
+                                ? without.filter((x) => x !== s)
+                                : [...without, s]
+                            })
+                          }
+                        }}
+                        className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                          season.includes(s)
+                            ? 'border-brand-500 bg-brand-950 text-brand-400 font-medium'
+                            : 'border-stone-600 text-stone-400 hover:bg-stone-800'
                         }`}
                       >
-                        {level}
+                        {s}
                       </button>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">Equipment</label>
-                <Input
-                  type="text"
-                  value={equipment}
-                  onChange={(e) => setEquipment(e.target.value)}
-                  placeholder="stand mixer, food processor, blowtorch (comma separated)"
-                />
-              </div>
-
-              {/* Organization Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">Cuisine</label>
-                  <select
-                    value={cuisine}
-                    onChange={(e) => setCuisine(e.target.value)}
-                    aria-label="Cuisine"
-                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
-                  >
-                    <option value="">Select cuisine...</option>
-                    {Object.entries(CUISINE_DISPLAY).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Occasion Tags
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {OCCASION_SUGGESTIONS.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() =>
+                          setOccasionTags((prev) =>
+                            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                          )
+                        }
+                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                          occasionTags.includes(tag)
+                            ? 'border-brand-500 bg-brand-950 text-brand-400'
+                            : 'border-stone-600 text-stone-400 hover:bg-stone-800'
+                        }`}
+                      >
+                        {tag}
+                      </button>
                     ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">Meal Type</label>
-                  <select
-                    value={mealType}
-                    onChange={(e) => setMealType(e.target.value)}
-                    aria-label="Meal Type"
-                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
-                  >
-                    <option value="">Select meal type...</option>
-                    {Object.entries(MEAL_TYPE_DISPLAY).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">Season</label>
-                <div className="flex flex-wrap gap-2">
-                  {SEASON_OPTIONS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => {
-                        if (s === 'Year-Round') {
-                          setSeason(season.includes(s) ? [] : [s])
-                        } else {
-                          setSeason((prev) => {
-                            const without = prev.filter((x) => x !== 'Year-Round')
-                            return without.includes(s)
-                              ? without.filter((x) => x !== s)
-                              : [...without, s]
-                          })
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      value={customOccasion}
+                      onChange={(e) => setCustomOccasion(e.target.value)}
+                      placeholder="Add custom occasion..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && customOccasion.trim()) {
+                          e.preventDefault()
+                          if (!occasionTags.includes(customOccasion.trim())) {
+                            setOccasionTags([...occasionTags, customOccasion.trim()])
+                          }
+                          setCustomOccasion('')
                         }
                       }}
-                      className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                        season.includes(s)
-                          ? 'border-brand-500 bg-brand-950 text-brand-400 font-medium'
-                          : 'border-stone-600 text-stone-400 hover:bg-stone-800'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">
-                  Occasion Tags
-                </label>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {OCCASION_SUGGESTIONS.map((tag) => (
-                    <button
-                      key={tag}
+                    />
+                    <Button
                       type="button"
-                      onClick={() =>
-                        setOccasionTags((prev) =>
-                          prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                        )
-                      }
-                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                        occasionTags.includes(tag)
-                          ? 'border-brand-500 bg-brand-950 text-brand-400'
-                          : 'border-stone-600 text-stone-400 hover:bg-stone-800'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    value={customOccasion}
-                    onChange={(e) => setCustomOccasion(e.target.value)}
-                    placeholder="Add custom occasion..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && customOccasion.trim()) {
-                        e.preventDefault()
-                        if (!occasionTags.includes(customOccasion.trim())) {
+                      variant="secondary"
+                      onClick={() => {
+                        if (
+                          customOccasion.trim() &&
+                          !occasionTags.includes(customOccasion.trim())
+                        ) {
                           setOccasionTags([...occasionTags, customOccasion.trim()])
                         }
                         setCustomOccasion('')
-                      }
-                    }}
+                      }}
+                      disabled={!customOccasion.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {occasionTags.filter((t) => !OCCASION_SUGGESTIONS.includes(t as any)).length >
+                    0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {occasionTags
+                        .filter((t) => !OCCASION_SUGGESTIONS.includes(t as any))
+                        .map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-stone-800 text-stone-300 rounded-full"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setOccasionTags((prev) => prev.filter((t) => t !== tag))
+                              }
+                              className="hover:text-red-400"
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Any additional notes about this recipe"
+                    rows={2}
                   />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => {
-                      if (customOccasion.trim() && !occasionTags.includes(customOccasion.trim())) {
-                        setOccasionTags([...occasionTags, customOccasion.trim()])
-                      }
-                      setCustomOccasion('')
-                    }}
-                    disabled={!customOccasion.trim()}
-                  >
-                    Add
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Ingredients */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Ingredients</CardTitle>
+                  <Button size="sm" variant="secondary" onClick={addIngredientRow}>
+                    Add Ingredient
                   </Button>
                 </div>
-                {occasionTags.filter((t) => !OCCASION_SUGGESTIONS.includes(t as any)).length >
-                  0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {occasionTags
-                      .filter((t) => !OCCASION_SUGGESTIONS.includes(t as any))
-                      .map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-stone-800 text-stone-300 rounded-full"
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {ingredients.map((ing, index) => (
+                    <div key={index} className="flex gap-2 items-start">
+                      <div className="flex-1 min-w-[140px]">
+                        {index === 0 && (
+                          <label className="block text-xs text-stone-500 mb-1">Name</label>
+                        )}
+                        <Input
+                          type="text"
+                          value={ing.name}
+                          onChange={(e) => updateIngredientRow(index, 'name', e.target.value)}
+                          placeholder="Ingredient name"
+                        />
+                      </div>
+                      <div className="w-20">
+                        {index === 0 && (
+                          <label className="block text-xs text-stone-500 mb-1">Qty</label>
+                        )}
+                        <Input
+                          type="number"
+                          value={ing.quantity}
+                          onChange={(e) =>
+                            updateIngredientRow(index, 'quantity', parseFloat(e.target.value) || 0)
+                          }
+                          step="0.25"
+                        />
+                      </div>
+                      <div className="w-24">
+                        {index === 0 && (
+                          <label className="block text-xs text-stone-500 mb-1">Unit</label>
+                        )}
+                        <Input
+                          type="text"
+                          value={ing.unit}
+                          onChange={(e) => updateIngredientRow(index, 'unit', e.target.value)}
+                          placeholder="cup, tbsp"
+                        />
+                      </div>
+                      <div className="w-28">
+                        {index === 0 && (
+                          <label className="block text-xs text-stone-500 mb-1">Prep</label>
+                        )}
+                        <Input
+                          type="text"
+                          value={ing.preparation_notes}
+                          onChange={(e) =>
+                            updateIngredientRow(index, 'preparation_notes', e.target.value)
+                          }
+                          placeholder="diced, etc."
+                        />
+                      </div>
+                      <div className="flex items-end pb-1">
+                        {index === 0 && (
+                          <label className="block text-xs text-stone-500 mb-1">&nbsp;</label>
+                        )}
+                        <button
+                          onClick={() => removeIngredientRow(index)}
+                          className="p-2 text-stone-400 hover:text-red-500"
+                          title="Remove ingredient"
                         >
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => setOccasionTags((prev) => prev.filter((t) => t !== tag))}
-                            className="hover:text-red-400"
-                          >
-                            &times;
-                          </button>
-                        </span>
-                      ))}
-                  </div>
-                )}
-              </div>
+                          &times;
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-              <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Any additional notes about this recipe"
-                  rows={2}
-                />
-              </div>
-            </CardContent>
-          </Card>
+            <NutritionalCalculator
+              ingredients={ingredients.map((ingredient) => ({
+                name: ingredient.name,
+                quantity: Number(ingredient.quantity) || 0,
+                unit: ingredient.unit,
+              }))}
+              servings={parseInt(servings || '1', 10) || 1}
+              onApplyCalories={(calories) => setCaloriesPerServing(String(Math.max(0, calories)))}
+            />
 
-          {/* Ingredients */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Ingredients</CardTitle>
-                <Button size="sm" variant="secondary" onClick={addIngredientRow}>
-                  Add Ingredient
+            {/* Actions */}
+            <div className="flex justify-between">
+              {mode === 'import' && phase === 'review' && (
+                <Button variant="ghost" onClick={handleStartOver} disabled={loading}>
+                  Start Over
+                </Button>
+              )}
+              <div className="flex gap-3 ml-auto">
+                <Link href="/recipes">
+                  <Button variant="ghost" disabled={loading}>
+                    Cancel
+                  </Button>
+                </Link>
+                <Button onClick={handleSave} disabled={loading || !name.trim()}>
+                  {loading ? 'Saving...' : 'Save Recipe'}
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {ingredients.map((ing, index) => (
-                  <div key={index} className="flex gap-2 items-start">
-                    <div className="flex-1 min-w-[140px]">
-                      {index === 0 && (
-                        <label className="block text-xs text-stone-500 mb-1">Name</label>
-                      )}
-                      <Input
-                        type="text"
-                        value={ing.name}
-                        onChange={(e) => updateIngredientRow(index, 'name', e.target.value)}
-                        placeholder="Ingredient name"
-                      />
-                    </div>
-                    <div className="w-20">
-                      {index === 0 && (
-                        <label className="block text-xs text-stone-500 mb-1">Qty</label>
-                      )}
-                      <Input
-                        type="number"
-                        value={ing.quantity}
-                        onChange={(e) =>
-                          updateIngredientRow(index, 'quantity', parseFloat(e.target.value) || 0)
-                        }
-                        step="0.25"
-                      />
-                    </div>
-                    <div className="w-24">
-                      {index === 0 && (
-                        <label className="block text-xs text-stone-500 mb-1">Unit</label>
-                      )}
-                      <Input
-                        type="text"
-                        value={ing.unit}
-                        onChange={(e) => updateIngredientRow(index, 'unit', e.target.value)}
-                        placeholder="cup, tbsp"
-                      />
-                    </div>
-                    <div className="w-28">
-                      {index === 0 && (
-                        <label className="block text-xs text-stone-500 mb-1">Prep</label>
-                      )}
-                      <Input
-                        type="text"
-                        value={ing.preparation_notes}
-                        onChange={(e) =>
-                          updateIngredientRow(index, 'preparation_notes', e.target.value)
-                        }
-                        placeholder="diced, etc."
-                      />
-                    </div>
-                    <div className="flex items-end pb-1">
-                      {index === 0 && (
-                        <label className="block text-xs text-stone-500 mb-1">&nbsp;</label>
-                      )}
-                      <button
-                        onClick={() => removeIngredientRow(index)}
-                        className="p-2 text-stone-400 hover:text-red-500"
-                        title="Remove ingredient"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <NutritionalCalculator
-            ingredients={ingredients.map((ingredient) => ({
-              name: ingredient.name,
-              quantity: Number(ingredient.quantity) || 0,
-              unit: ingredient.unit,
-            }))}
-            servings={parseInt(servings || '1', 10) || 1}
-            onApplyCalories={(calories) => setCaloriesPerServing(String(Math.max(0, calories)))}
-          />
-
-          {/* Actions */}
-          <div className="flex justify-between">
-            {mode === 'import' && phase === 'review' && (
-              <Button variant="ghost" onClick={handleStartOver} disabled={loading}>
-                Start Over
-              </Button>
-            )}
-            <div className="flex gap-3 ml-auto">
-              <Link href="/recipes">
-                <Button variant="ghost" disabled={loading}>
-                  Cancel
-                </Button>
-              </Link>
-              <Button onClick={handleSave} disabled={loading || !name.trim()}>
-                {loading ? 'Saving...' : 'Save Recipe'}
-              </Button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </FormShield>
   )
 }

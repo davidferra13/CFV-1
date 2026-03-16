@@ -10,17 +10,22 @@ export default async function NewRecipePage({
 }: {
   searchParams: { component?: string; componentName?: string; componentCategory?: string }
 }) {
-  await requireChef()
+  const user = await requireChef()
   const aiConfigured = await isAIConfigured()
 
   return (
     <CreateRecipeClient
       aiConfigured={aiConfigured}
-      prefillComponent={searchParams.component ? {
-        componentId: searchParams.component,
-        name: searchParams.componentName || '',
-        category: searchParams.componentCategory || '',
-      } : undefined}
+      chefId={user.entityId}
+      prefillComponent={
+        searchParams.component
+          ? {
+              componentId: searchParams.component,
+              name: searchParams.componentName || '',
+              category: searchParams.componentCategory || '',
+            }
+          : undefined
+      }
     />
   )
 }

@@ -6,12 +6,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipeById } from '@/lib/recipes/actions'
 import { EditRecipeClient } from './edit-recipe-client'
 
-export default async function EditRecipePage({
-  params
-}: {
-  params: { id: string }
-}) {
-  await requireChef()
+export default async function EditRecipePage({ params }: { params: { id: string } }) {
+  const user = await requireChef()
 
   const recipe = await getRecipeById(params.id)
 
@@ -19,5 +15,5 @@ export default async function EditRecipePage({
     notFound()
   }
 
-  return <EditRecipeClient recipe={recipe} />
+  return <EditRecipeClient recipe={recipe} chefId={user.entityId} />
 }
