@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import {
   Table,
   TableHeader,
@@ -142,57 +142,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
             </TableRow>
           ) : (
             filteredAndSortedClients.map((client) => (
-              <TableRow
-                key={client.id}
-                className="cursor-pointer group"
-                onClick={() => (window.location.href = `/clients/${client.id}`)}
-              >
-                <TableCell className="font-medium">
-                  {client.full_name}
-                  {isDemoClient(client) && (
-                    <Badge variant="info" className="ml-2 text-[10px] px-1.5 py-0">
-                      Sample
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-stone-600">{client.email}</TableCell>
-                <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>
-                <TableCell className="text-right">{client.totalEvents}</TableCell>
-                <TableCell className="text-right font-medium">
-                  {formatCurrency(client.totalSpentCents)}
-                </TableCell>
-                <TableCell className="text-stone-600">
-                  {format(new Date(client.created_at), 'PP')}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Link
-                      href={`/events/new?client_id=${client.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
-                      title="Create event"
-                    >
-                      <CalendarPlus className="h-4 w-4" />
-                    </Link>
-                    <Link
-                      href={`/clients/${client.id}#communication`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
-                      title="Send message"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                    </Link>
-                    <Link
-                      href={`/clients/${client.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
-                      title="View profile"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </TableCell>
-              </TableRow>
+              <ClientTableRow key={client.id} client={client} />
             ))
           )}
         </TableBody>
@@ -204,3 +154,56 @@ export function ClientsTable({ clients }: ClientsTableProps) {
     </div>
   )
 }
+
+const ClientTableRow = memo(function ClientTableRow({ client }: { client: ClientWithStats }) {
+  return (
+    <TableRow
+      className="cursor-pointer group"
+      onClick={() => (window.location.href = `/clients/${client.id}`)}
+    >
+      <TableCell className="font-medium">
+        {client.full_name}
+        {isDemoClient(client) && (
+          <Badge variant="info" className="ml-2 text-[10px] px-1.5 py-0">
+            Sample
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell className="text-stone-600">{client.email}</TableCell>
+      <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>
+      <TableCell className="text-right">{client.totalEvents}</TableCell>
+      <TableCell className="text-right font-medium">
+        {formatCurrency(client.totalSpentCents)}
+      </TableCell>
+      <TableCell className="text-stone-600">{format(new Date(client.created_at), 'PP')}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Link
+            href={`/events/new?client_id=${client.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+            title="Create event"
+          >
+            <CalendarPlus className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/clients/${client.id}#communication`}
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+            title="Send message"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/clients/${client.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 rounded hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+            title="View profile"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+})

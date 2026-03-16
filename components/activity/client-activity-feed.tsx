@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import Link from 'next/link'
 import type { ActivityEvent } from '@/lib/activity/types'
 
@@ -48,7 +49,7 @@ export function ClientActivityFeed({ events }: ClientActivityFeedProps) {
   )
 }
 
-function ClientActivityRow({ event }: { event: ActivityEvent }) {
+const ClientActivityRow = memo(function ClientActivityRow({ event }: { event: ActivityEvent }) {
   const href = event.client_id
     ? `/clients/${event.client_id}`
     : event.entity_type === 'event' && event.entity_id
@@ -81,7 +82,7 @@ function ClientActivityRow({ event }: { event: ActivityEvent }) {
       </Link>
     )
   return content
-}
+})
 
 function formatCents(cents: unknown): string | null {
   if (typeof cents !== 'number' || cents <= 0) return null

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useRef } from 'react'
+import { useState, useTransition, useRef, memo } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, CheckCircle2, Circle } from '@/components/ui/icons'
@@ -10,7 +10,7 @@ import { createTodo, toggleTodo, deleteTodo, type ChefTodo } from '@/lib/todos/a
 // TODO ITEM ROW
 // ============================================
 
-function TodoRow({
+const TodoRow = memo(function TodoRow({
   todo,
   onToggle,
   onDelete,
@@ -60,7 +60,7 @@ function TodoRow({
       </button>
     </div>
   )
-}
+})
 
 // ============================================
 // ADD TODO FORM

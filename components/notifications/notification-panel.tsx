@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Inbox,
@@ -91,7 +91,7 @@ function getRelativeTime(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-function NotificationItem({
+const NotificationItem = memo(function NotificationItem({
   notification,
   onNavigate,
 }: {
@@ -135,7 +135,7 @@ function NotificationItem({
       </div>
     </button>
   )
-}
+})
 
 // ─── Filter bar config ──────────────────────────────────────────────────
 
