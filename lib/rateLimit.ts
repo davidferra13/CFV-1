@@ -31,28 +31,31 @@ function checkMemoryRateLimit(key: string, max: number, windowMs: number): void 
   entry.count++
 }
 
-// Singleton Redis client — only instantiated if env vars are present
-let redisRatelimit: Ratelimit | null = null
+// Redis client cache keyed by policy (max:windowSeconds) so different
+// rate-limit policies each get their own Ratelimit instance instead of
+// sharing a single singleton that ignores policy differences.
+const redisLimiterCache = new Map<string, Ratelimit>()
 
 function getRedisRatelimit(max: number, windowSeconds: number): Ratelimit | null {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     return null
   }
 
-  // One limiter per (max, window) combination; for simplicity we recreate if needed.
-  // In practice this module is loaded once per server process.
-  if (!redisRatelimit) {
-    redisRatelimit = new Ratelimit({
-      redis: new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }),
-      limiter: Ratelimit.slidingWindow(max, `${windowSeconds} s`),
-      prefix: 'cf:rl', // chefflow rate limit namespace
-    })
-  }
+  const cacheKey = `${max}:${windowSeconds}`
+  const cached = redisLimiterCache.get(cacheKey)
+  if (cached) return cached
 
-  return redisRatelimit
+  const limiter = new Ratelimit({
+    redis: new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    }),
+    limiter: Ratelimit.slidingWindow(max, `${windowSeconds} s`),
+    prefix: `cf:rl:${cacheKey}`,
+  })
+
+  redisLimiterCache.set(cacheKey, limiter)
+  return limiter
 }
 
 /**
