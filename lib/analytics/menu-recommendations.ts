@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -55,21 +54,22 @@ export async function getMenuRecommendations(params: {
     return empty(allergies)
   }
 
-  // Fetch allergen flags for required ingredients
+  // Fetch allergen flags for required ingredients (allergen_flags lives on ingredients table)
   const recipeIds = recipes.map((r) => r.id)
-  const { data: ingredients } = await supabase
+  const { data: recipeIngredients } = await supabase
     .from('recipe_ingredients')
-    .select('recipe_id, allergen_flags')
+    .select('recipe_id, ingredient:ingredients(allergen_flags)')
     .in('recipe_id', recipeIds)
     .eq('is_optional', false)
 
-  // Build recipe → allergen set map
+  // Build recipe -> allergen set map
   const allergenMap = new Map<string, Set<string>>()
-  for (const ing of ingredients ?? []) {
-    if (!ing.recipe_id) continue
-    const flags = (ing.allergen_flags as string[] | null) ?? []
-    if (!allergenMap.has(ing.recipe_id)) allergenMap.set(ing.recipe_id, new Set())
-    for (const flag of flags) allergenMap.get(ing.recipe_id)!.add(flag.toLowerCase())
+  for (const ri of recipeIngredients ?? []) {
+    if (!ri.recipe_id) continue
+    const ingredientData = ri.ingredient as unknown as { allergen_flags: string[] } | null
+    const flags = ingredientData?.allergen_flags ?? []
+    if (!allergenMap.has(ri.recipe_id)) allergenMap.set(ri.recipe_id, new Set())
+    for (const flag of flags) allergenMap.get(ri.recipe_id)!.add(flag.toLowerCase())
   }
 
   // Normalize event allergens

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -13,10 +12,10 @@ export interface InquiryFunnelStats {
   completedCount: number
   declinedCount: number
   expiredCount: number
-  quoteRate: number        // inquiries → quoted %
-  confirmRate: number      // quoted → confirmed %
-  completionRate: number   // confirmed → completed %
-  overallConversionRate: number  // inquiries → completed %
+  quoteRate: number        // inquiries -> quoted %
+  confirmRate: number      // quoted -> confirmed %
+  completionRate: number   // confirmed -> completed %
+  overallConversionRate: number  // inquiries -> completed %
 }
 
 export interface QuoteAcceptanceStats {
@@ -38,8 +37,8 @@ export interface GhostRateStats {
 }
 
 export interface LeadTimeStats {
-  avgLeadTimeDays: number         // inquiry first_contact_at → event_date
-  avgSalesCycleDays: number       // inquiry created → quote accepted
+  avgLeadTimeDays: number         // inquiry first_contact_at -> event_date
+  avgSalesCycleDays: number       // inquiry created -> quote accepted
   buckets: {
     under2weeks: number
     twoTo4weeks: number
@@ -98,18 +97,17 @@ function daysBetween(a: string | null, b: string | null): number | null {
 
 export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
-    .select('status')
-    .eq('tenant_id', chef.id)
+    .select('status, converted_to_event_id')
+    .eq('tenant_id', chef.tenantId!)
 
   const inquiries = data ?? []
   const total = inquiries.length
   const quotedCount = inquiries.filter(i => ['quoted', 'confirmed', 'declined', 'expired'].includes(i.status)).length
   const confirmedCount = inquiries.filter(i => i.status === 'confirmed').length
-  const completedCount = inquiries.filter(i => i.converted_to_event_id != null).length
   const declinedCount = inquiries.filter(i => i.status === 'declined').length
   const expiredCount = inquiries.filter(i => i.status === 'expired').length
 
@@ -117,7 +115,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const { count: completedFromInquiries } = await supabase
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .not('converted_to_event_id', 'is', null)
 
   return {
@@ -136,12 +134,12 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
 
 export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('quotes')
     .select('status, total_quoted_cents')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .in('status', ['sent', 'accepted', 'rejected', 'expired'])
 
   const quotes = data ?? []
@@ -167,68 +165,42 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   }
 }
 
+// DEFERRED: getGhostRateStats requires inquiries.ghost_at column (not yet in schema).
+// Returns safe defaults until the column migration is applied.
 export async function getGhostRateStats(): Promise<GhostRateStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
+  // We can still count expired inquiries (ghosted) even without ghost_at
   const { data } = await supabase
     .from('inquiries')
-    .select('status, ghost_at, created_at')
-    .eq('tenant_id', chef.id)
+    .select('status, created_at')
+    .eq('tenant_id', chef.tenantId!)
 
   const all = data ?? []
   const ghosted = all.filter(i => i.status === 'expired')
-
-  const ghostDays = ghosted
-    .map(i => daysBetween(i.created_at, i.ghost_at ?? null))
-    .filter((d): d is number => d !== null)
-
-  const avgDays = ghostDays.length > 0
-    ? Math.round(ghostDays.reduce((a, b) => a + b, 0) / ghostDays.length)
-    : 0
 
   return {
     totalInquiries: all.length,
     ghosted: ghosted.length,
     ghostRate: pct(ghosted.length, all.length),
-    avgDaysToGhost: avgDays,
+    avgDaysToGhost: 0, // DEFERRED: needs inquiries.ghost_at column
   }
 }
 
+// DEFERRED: getLeadTimeStats partially requires events.inquiry_received_at column (not yet in schema).
+// Lead time calculation is deferred; sales cycle from quotes still works.
 export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
-  const { data } = await supabase
-    .from('events')
-    .select('inquiry_received_at, event_date')
-    .eq('tenant_id', chef.id)
-    .not('inquiry_received_at', 'is', null)
-    .not('event_date', 'is', null)
+  const emptyBuckets = { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }
 
-  const events = (data ?? []).filter(e => e.inquiry_received_at && e.event_date)
-  const leadDays = events
-    .map(e => daysBetween(e.inquiry_received_at, e.event_date))
-    .filter((d): d is number => d !== null && d >= 0)
-
-  const avg = leadDays.length > 0
-    ? Math.round(leadDays.reduce((a, b) => a + b, 0) / leadDays.length)
-    : 0
-
-  const buckets = {
-    under2weeks: leadDays.filter(d => d < 14).length,
-    twoTo4weeks: leadDays.filter(d => d >= 14 && d < 28).length,
-    oneToThreeMonths: leadDays.filter(d => d >= 28 && d < 90).length,
-    over3months: leadDays.filter(d => d >= 90).length,
-  }
-
-  const total = leadDays.length
-
-  // Sales cycle: inquiry created → quote accepted
+  // Sales cycle: inquiry created -> quote accepted (this part works)
   const { data: quotes } = await supabase
     .from('quotes')
     .select('created_at, accepted_at')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'accepted')
     .not('accepted_at', 'is', null)
 
@@ -241,102 +213,44 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
     : 0
 
   return {
-    avgLeadTimeDays: avg,
+    avgLeadTimeDays: 0, // DEFERRED: needs events.inquiry_received_at column
     avgSalesCycleDays: avgCycle,
-    buckets,
-    bucketPercents: {
-      under2weeks: pct(buckets.under2weeks, total),
-      twoTo4weeks: pct(buckets.twoTo4weeks, total),
-      oneToThreeMonths: pct(buckets.oneToThreeMonths, total),
-      over3months: pct(buckets.over3months, total),
-    },
+    buckets: emptyBuckets,
+    bucketPercents: emptyBuckets,
   }
 }
 
+// DEFERRED: getDeclineReasonStats requires inquiries.decline_reason column (not yet in schema).
+// Returns empty data until the column migration is applied.
 export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
-  const chef = await requireChef()
-  const supabase = await createServerClient()
-
-  const { data } = await supabase
-    .from('inquiries')
-    .select('decline_reason')
-    .eq('tenant_id', chef.id)
-    .not('decline_reason', 'is', null)
-
-  const all = data ?? []
-  const counts = new Map<string, number>()
-  for (const i of all) {
-    if (i.decline_reason) {
-      counts.set(i.decline_reason, (counts.get(i.decline_reason) ?? 0) + 1)
-    }
-  }
-
-  const sorted = Array.from(counts.entries())
-    .sort(([, a], [, b]) => b - a)
-    .map(([reason, count]) => ({
-      reason,
-      count,
-      percent: pct(count, all.length),
-    }))
-
-  return { reasons: sorted, totalDeclined: all.length }
+  await requireChef() // still enforce auth
+  return { reasons: [], totalDeclined: 0 }
 }
 
+// DEFERRED: getNegotiationStats requires quotes.negotiation_occurred and quotes.original_quoted_cents
+// columns (not yet in schema). Returns empty data until the column migration is applied.
 export async function getNegotiationStats(): Promise<NegotiationStats> {
-  const chef = await requireChef()
-  const supabase = await createServerClient()
-
-  const { data } = await supabase
-    .from('quotes')
-    .select('total_quoted_cents, original_quoted_cents, negotiation_occurred')
-    .eq('tenant_id', chef.id)
-    .not('total_quoted_cents', 'is', null)
-
-  const quotes = data ?? []
-  const negotiated = quotes.filter(q => q.negotiation_occurred)
-
-  const discounts = negotiated
-    .filter(q => q.original_quoted_cents && q.total_quoted_cents)
-    .map(q => ({
-      original: q.original_quoted_cents!,
-      final: q.total_quoted_cents!,
-      discountCents: q.original_quoted_cents! - q.total_quoted_cents!,
-      discountPct: pct(q.original_quoted_cents! - q.total_quoted_cents!, q.original_quoted_cents!),
-    }))
-
-  const avgOriginal = discounts.length > 0
-    ? Math.round(discounts.reduce((s, d) => s + d.original, 0) / discounts.length)
-    : 0
-  const avgFinal = discounts.length > 0
-    ? Math.round(discounts.reduce((s, d) => s + d.final, 0) / discounts.length)
-    : 0
-  const avgDiscountCents = discounts.length > 0
-    ? Math.round(discounts.reduce((s, d) => s + d.discountCents, 0) / discounts.length)
-    : 0
-  const avgDiscountPct = discounts.length > 0
-    ? Math.round(discounts.reduce((s, d) => s + d.discountPct, 0) / discounts.length * 10) / 10
-    : 0
-
+  await requireChef() // still enforce auth
   return {
-    totalQuotes: quotes.length,
-    negotiatedCount: negotiated.length,
-    negotiationRate: pct(negotiated.length, quotes.length),
-    avgOriginalCents: avgOriginal,
-    avgFinalCents: avgFinal,
-    avgDiscountPercent: avgDiscountPct,
-    avgDiscountCents: avgDiscountCents,
+    totalQuotes: 0,
+    negotiatedCount: 0,
+    negotiationRate: 0,
+    avgOriginalCents: 0,
+    avgFinalCents: 0,
+    avgDiscountPercent: 0,
+    avgDiscountCents: 0,
   }
 }
 
 export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Find first outbound message per inquiry
   const { data: inquiries } = await supabase
     .from('inquiries')
     .select('id, created_at')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
 
   if (!inquiries?.length) {
     return { avgHoursToFirstResponse: 0, under1hour: 0, under4hours: 0, under24hours: 0, over24hours: 0, under1hourPercent: 0, under4hoursPercent: 0 }

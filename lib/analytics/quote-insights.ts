@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -59,8 +58,8 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
     .filter(q => q.status === 'sent' && q.valid_until && q.valid_until >= today && q.valid_until <= in7Days)
     .map(q => ({
       id: q.id,
-      clientName: (q.client as any)?.full_name ?? 'Unknown',
-      validUntil: q.valid_until!,
+      clientName: (q.client as unknown as { full_name: string } | null)?.full_name ?? 'Unknown',
+      validUntil: q.valid_until as string,
       totalCents: q.total_quoted_cents ?? 0,
     }))
 

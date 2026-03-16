@@ -1,7 +1,3 @@
-// @ts-nocheck
-// TODO: This file references columns (total_price, etc.) that don't match the current schema.
-// Suppress type checking until revenue engine is aligned with schema.
-// DEFERRED: Revenue analytics engine. Requires menu_items table and total_price column (Phase 2 schema). Do not remove - will be enabled when schema is extended.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -81,7 +77,7 @@ export function solveRevenueClosure(
     const count = Math.ceil(gap / tier.avg)
     const feasible = remainingDays >= count * 3 // need ~3 days per event
     strategies.push({
-      strategy: `Book ${count} × ${tier.label}`,
+      strategy: `Book ${count} x ${tier.label}`,
       targetCount: count,
       targetValue: tier.avg,
       achievable: feasible,
@@ -99,13 +95,14 @@ export function solveRevenueClosure(
 
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
+  const tenantId = chef.tenantId!
 
   // Events in range
   const { data: events } = await supabase
     .from('events')
-    .select('id, status, total_price, guest_count, event_date')
-    .eq('chef_id', chef.id)
+    .select('id, status, quoted_price_cents, guest_count, event_date')
+    .eq('tenant_id', tenantId)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
@@ -113,15 +110,15 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
   const { data: ledger } = await supabase
     .from('ledger_entries')
     .select('id, entry_type, amount_cents')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', tenantId)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
   // Inquiries in range
   const { data: inquiries } = await supabase
     .from('inquiries')
-    .select('id, status')
-    .eq('chef_id', chef.id)
+    .select('id, status, converted_to_event_id')
+    .eq('tenant_id', tenantId)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
@@ -137,15 +134,15 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .filter(l => l.entry_type === 'refund')
     .reduce((s, l) => s + Math.abs(l.amount_cents), 0)
 
-  // Booked value
+  // Booked value (using quoted_price_cents instead of total_price)
   const nonCancelled = allEvents.filter(e => e.status !== 'cancelled')
-  const bookedValue = nonCancelled.reduce((s, e) => s + (e.total_price || 0), 0)
+  const bookedValue = nonCancelled.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
 
   // Completed
   const completed = allEvents.filter(e => e.status === 'completed')
 
-  // Conversion
-  const converted = allInquiries.filter(i => i.status === 'converted')
+  // Conversion (inquiries that converted to events)
+  const converted = allInquiries.filter(i => i.converted_to_event_id != null)
 
   // Average event value
   const avgValue = nonCancelled.length > 0
@@ -159,7 +156,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     },
     totalBookedValue: {
       value: bookedValue,
-      definition: 'Sum of total_price for non-cancelled events in period',
+      definition: 'Sum of quoted_price_cents for non-cancelled events in period',
     },
     inquiriesCount: {
       value: allInquiries.length,
@@ -177,7 +174,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     },
     averageEventValue: {
       value: avgValue,
-      definition: 'Mean total_price of non-cancelled events in period',
+      definition: 'Mean quoted_price_cents of non-cancelled events in period',
     },
   }
 }
@@ -186,12 +183,12 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
 export async function computeRevenueByMonth(range: DateRange): Promise<RevenueByPeriod[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: ledger } = await supabase
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
@@ -213,12 +210,12 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
 
 export async function computeTopClients(range: DateRange): Promise<TopClient[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
-    .select('id, client_id, total_price, status, clients(name)')
-    .eq('chef_id', chef.id)
+    .select('id, client_id, quoted_price_cents, status, client:clients(full_name)')
+    .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
     .neq('status', 'cancelled')
@@ -228,12 +225,13 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
   for (const e of events || []) {
     const clientId = e.client_id
     if (!clientId) continue
+    const clientData = e.client as unknown as { full_name: string } | null
     const entry = clientMap.get(clientId) || {
-      name: (e.clients as any)?.name || 'Unknown',
+      name: clientData?.full_name || 'Unknown',
       revenue: 0,
       count: 0,
     }
-    entry.revenue += e.total_price || 0
+    entry.revenue += e.quoted_price_cents || 0
     entry.count++
     clientMap.set(clientId, entry)
   }
@@ -252,12 +250,12 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
 export async function computeSeasonalPerformance(range: DateRange): Promise<SeasonalMonth[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
-    .select('id, event_date, status, guest_count, total_price')
-    .eq('chef_id', chef.id)
+    .select('id, event_date, status, guest_count, quoted_price_cents')
+    .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
@@ -271,7 +269,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
     entry.total++
     if (e.status === 'cancelled') entry.cancelled++
     if (e.guest_count > 0) { entry.guestSum += e.guest_count; entry.guestCount++ }
-    entry.revenue += e.total_price || 0
+    entry.revenue += e.quoted_price_cents || 0
     monthMap.set(key, entry)
   }
 
@@ -304,6 +302,8 @@ export function exportToCSV(rows: Record<string, unknown>[], filename: string): 
       }).join(',')
     ),
   ]
+  // filename parameter reserved for future use (download trigger)
+  void filename
   return csvLines.join('\n')
 }
 

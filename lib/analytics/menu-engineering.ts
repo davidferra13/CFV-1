@@ -1,8 +1,8 @@
 // @ts-nocheck
-// TODO: This file references menu_items table which does not exist yet.
-// Suppress type checking until the schema is updated.
-// DEFERRED: Menu engineering analytics. Requires menu_items table (Phase 2 schema). Do not remove - will be enabled when schema is extended.
-'use server'
+// DEFERRED: This entire file requires the menu_items table (Phase 2 schema) which does not exist yet.
+// 'use server' is commented out to prevent runtime crashes from exported server actions.
+// Uncomment when the menu_items migration is applied.
+// 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
@@ -58,7 +58,7 @@ export async function computeMenuEngineering(
   const supabase = await createServerClient()
 
   // Get menu items with their recipes and cost data
-  // TODO: menu_items table does not exist yet — using dishes as proxy
+  // TODO: menu_items table does not exist yet - using dishes as proxy
   let query = (supabase as any)
     .from('menu_items')
     .select(`
@@ -90,7 +90,7 @@ export async function computeMenuEngineering(
   const rawItems = menuItems.map((mi: any) => {
     const price = mi.price || 0
     const cost = (mi.recipe as any)?.cost_per_serving || 0
-    const salesCount = 1 // placeholder — would come from event_menu_items join
+    const salesCount = 1 // placeholder - would come from event_menu_items join
     return {
       id: mi.id,
       name: mi.name,

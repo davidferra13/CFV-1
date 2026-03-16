@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -72,13 +71,13 @@ function pct(numerator: number, denominator: number): number {
 
 export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Count distinct clients with completed events
   const { data: events } = await supabase
     .from('events')
     .select('client_id, event_date')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
     .not('client_id', 'is', null)
     .order('client_id')
@@ -133,7 +132,7 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
 
 export async function getClientChurnStats(): Promise<ClientChurnStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const now = new Date()
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
@@ -143,7 +142,7 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
   const { data } = await supabase
     .from('clients')
     .select('id, last_event_date, total_events_count')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .not('last_event_date', 'is', null)
     .gt('total_events_count', 0)
 
@@ -178,13 +177,13 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
 
 export async function getRevenueConcentration(): Promise<RevenueConcentrationStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Get total revenue per client from ledger
   const { data: ledger } = await supabase
     .from('ledger_entries')
     .select('client_id, amount_cents, is_refund')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on', 'credit'])
 
   if (!ledger?.length) {
@@ -248,18 +247,18 @@ export async function getClientAcquisitionStats(
   endDate: string,
 ): Promise<ClientAcquisitionStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // New clients in period = clients whose first_event_date falls in range
   const { count: newClients } = await supabase
     .from('clients')
     .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .gte('first_event_date', startDate)
     .lte('first_event_date', endDate)
 
   // Marketing spend in period
-  // TODO: marketing_spend_log table not yet created — stub to 0
+  // TODO: marketing_spend_log table not yet created - stub to 0
   const totalSpend = 0
   const newClientCount = newClients ?? 0
   const cac = newClientCount > 0 ? Math.round(totalSpend / newClientCount) : 0
@@ -268,7 +267,7 @@ export async function getClientAcquisitionStats(
   const { data: firstEvents } = await supabase
     .from('clients')
     .select('average_spend_cents')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .gte('first_event_date', startDate)
     .lte('first_event_date', endDate)
 
@@ -286,12 +285,12 @@ export async function getClientAcquisitionStats(
 
 export async function getReferralConversionStats(): Promise<ReferralConversionStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: inquiries } = await supabase
     .from('inquiries')
     .select('status, converted_to_event_id')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('channel', 'referral')
 
   const referred = inquiries?.length ?? 0
@@ -307,7 +306,7 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
     const { data: ledger } = await supabase
       .from('ledger_entries')
       .select('amount_cents, is_refund')
-      .eq('tenant_id', chef.id)
+      .eq('tenant_id', chef.tenantId!)
       .in('event_id', eventIds)
       .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on'])
 
@@ -322,50 +321,22 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
   }
 }
 
+// DEFERRED: getNpsStats requires client_satisfaction_surveys table (not yet created).
+// Returns empty data until the table migration is applied.
 export async function getNpsStats(): Promise<NpsStats> {
-  const chef = await requireChef()
-  const supabase = await createServerClient()
-
-  const { data: surveys } = await supabase
-    .from('client_satisfaction_surveys')
-    .select('*')
-    .eq('chef_id', chef.id)
-    .not('responded_at', 'is', null)
-
-  const { data: sent } = await supabase
-    .from('client_satisfaction_surveys')
-    .select('id', { count: 'exact', head: true })
-    .eq('chef_id', chef.id)
-    .not('sent_at', 'is', null)
-
-  const responses = surveys ?? []
-  const sentCount = (sent as unknown as { count: number })?.count ?? 0
-
-  const withNps = responses.filter(s => s.nps_score != null)
-  const promoters = withNps.filter(s => (s.nps_score ?? 0) >= 9).length
-  const detractors = withNps.filter(s => (s.nps_score ?? 0) <= 6).length
-  const passives = withNps.length - promoters - detractors
-  const npsScore = withNps.length > 0 ? Math.round((promoters - detractors) / withNps.length * 100) : 0
-
-  const avg = (field: keyof typeof responses[0]) => {
-    const vals = responses.filter(s => s[field] != null).map(s => Number(s[field]))
-    return vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10 : 0
-  }
-
-  const withRebook = responses.filter(s => s.would_rebook != null)
-
+  await requireChef() // still enforce auth
   return {
-    npsScore,
-    promoters,
-    passives,
-    detractors,
-    totalResponses: responses.length,
-    avgOverallRating: avg('overall_rating'),
-    avgFoodQualityRating: avg('food_quality_rating'),
-    avgServiceRating: avg('service_rating'),
-    avgValueRating: avg('value_rating'),
-    avgPresentationRating: avg('presentation_rating'),
-    wouldRebookPercent: pct(withRebook.filter(s => s.would_rebook).length, withRebook.length),
-    responseRate: pct(responses.length, sentCount),
+    npsScore: 0,
+    promoters: 0,
+    passives: 0,
+    detractors: 0,
+    totalResponses: 0,
+    avgOverallRating: 0,
+    avgFoodQualityRating: 0,
+    avgServiceRating: 0,
+    avgValueRating: 0,
+    avgPresentationRating: 0,
+    wouldRebookPercent: 0,
+    responseRate: 0,
   }
 }
