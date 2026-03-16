@@ -77,14 +77,14 @@ export async function recordPricePoint(
   const { data, error } = await supabase
     .from('ingredient_price_history')
     .insert({
-      chef_id: user.tenantId!,
+      tenant_id: user.tenantId!,
       ingredient_id: ingredientId,
       price_cents: priceCents,
       unit,
       source,
       source_id: options?.sourceId ?? null,
       vendor_id: options?.vendorId ?? null,
-      recorded_at: options?.recordedAt ?? new Date().toISOString().split('T')[0],
+      purchase_date: options?.recordedAt ?? new Date().toISOString().split('T')[0],
       notes: options?.notes ?? null,
     })
     .select('id')
@@ -124,14 +124,14 @@ export async function getIngredientPriceHistory(
   let query = supabase
     .from('ingredient_price_history')
     .select('*')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .eq('ingredient_id', ingredientId)
-    .order('recorded_at', { ascending: false })
+    .order('purchase_date', { ascending: false })
 
   if (options?.months) {
     const cutoff = new Date()
     cutoff.setMonth(cutoff.getMonth() - options.months)
-    query = query.gte('recorded_at', cutoff.toISOString().split('T')[0])
+    query = query.gte('purchase_date', cutoff.toISOString().split('T')[0])
   }
 
   if (options?.limit) {
@@ -150,7 +150,7 @@ export async function getIngredientPriceHistory(
     source: row.source as PriceSource,
     sourceId: row.source_id,
     vendorId: row.vendor_id,
-    recordedAt: row.recorded_at,
+    recordedAt: row.purchase_date,
     notes: row.notes,
     createdAt: row.created_at,
   }))
@@ -169,9 +169,9 @@ export async function getIngredientPriceTrend(ingredientId: string): Promise<Pri
   const { data, error } = await supabase
     .from('ingredient_price_history')
     .select('price_cents')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .eq('ingredient_id', ingredientId)
-    .order('recorded_at', { ascending: false })
+    .order('purchase_date', { ascending: false })
     .limit(10)
 
   if (error) throw new Error(`Failed to fetch price trend: ${error.message}`)
@@ -237,7 +237,7 @@ export async function getSeasonalPricePattern(ingredientId: string): Promise<Sea
   const { data, error } = await supabase
     .from('ingredient_monthly_price_avg')
     .select('month, avg_price_cents, min_price_cents, max_price_cents, data_points')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .eq('ingredient_id', ingredientId)
     .order('month', { ascending: true })
 
@@ -313,7 +313,7 @@ export async function getMonthlyPriceAverages(
   const { data, error } = await supabase
     .from('ingredient_monthly_price_avg')
     .select('year, month, avg_price_cents, data_points')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .eq('ingredient_id', ingredientId)
     .or(`year.gt.${cutoffYear},and(year.eq.${cutoffYear},month.gte.${cutoffMonth})`)
     .order('year', { ascending: true })
